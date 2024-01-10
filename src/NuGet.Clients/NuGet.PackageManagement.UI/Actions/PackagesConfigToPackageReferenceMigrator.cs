@@ -3,18 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
-using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -23,13 +23,12 @@ namespace NuGet.PackageManagement.UI
         internal static async Task<string> DoUpgradeAsync(
             INuGetUIContext context,
             INuGetUI uiService,
-            NuGetProject nuGetProject,
+            IProjectContextInfo project,
             IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems,
             IEnumerable<PackageIdentity> notFoundPackages,
             IProgress<ProgressDialogData> progress,
             CancellationToken token)
         {
-
             var startTime = DateTimeOffset.Now;
             var packagesCount = 0;
             var status = NuGetOperationStatus.Succeeded;
@@ -48,117 +47,110 @@ namespace NuGet.PackageManagement.UI
                         return null;
                     }
 
-                    // 1. Backup files (csproj and packages.config) that will change
-                    var solutionManager = context.SolutionManager;
-                    var msBuildNuGetProject = (MSBuildNuGetProject)nuGetProject;
-                    var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem;
-                    var backupPath = string.Empty;
-                    try
+                    IServiceBroker serviceBroker = context.ServiceBroker;
+
+                    using (INuGetProjectUpgraderService projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
+                        NuGetServices.ProjectUpgraderService,
+                        token))
                     {
-                        backupPath = CreateBackup(msBuildNuGetProject, solutionManager.SolutionDirectory);
-                    }
-                    catch (Exception ex)
-                    {
-                        status = NuGetOperationStatus.Failed;
-                        // log error message
-                        uiService.ShowError(ex);
-                        uiService.ProjectContext.Log(MessageLevel.Info,
-                            string.Format(CultureInfo.CurrentCulture, Resources.Upgrader_BackupFailed));
+                        Assumes.NotNull(projectUpgrader);
 
-                        return null;
-                    }
+                        string backupPath;
 
-
-                    // 2. Uninstall all packages currently in packages.config
-                    var progressData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage, Resources.NuGetUpgrade_Progress_Uninstalling);
-                    progress.Report(progressData);
-
-                    // Don't uninstall packages we couldn't find - that will just fail
-                    var actions = upgradeDependencyItems.Select(d => d.Identity)
-                        .Where(p => !notFoundPackages.Contains(p))
-                        .Select(t => NuGetProjectAction.CreateUninstallProjectAction(t, nuGetProject));
-
-                    try
-                    {
-                        await context.PackageManager.ExecuteNuGetProjectActionsAsync(nuGetProject, actions, uiService.ProjectContext, NullSourceCacheContext.Instance, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        status = NuGetOperationStatus.Failed;
-                        // log error message
-                        uiService.ShowError(ex);
-                        uiService.ProjectContext.Log(MessageLevel.Info,
-                            string.Format(CultureInfo.CurrentCulture, Resources.Upgrade_UninstallFailed));
-
-                        return null;
-                    }
-
-                    // Reload the project, and get a reference to the reloaded project
-                    var uniqueName = msBuildNuGetProjectSystem.ProjectUniqueName;
-                    await msBuildNuGetProject.SaveAsync(token);
-
-                    nuGetProject = await solutionManager.GetNuGetProjectAsync(uniqueName);
-                    nuGetProject = await solutionManager.UpgradeProjectToPackageReferenceAsync(nuGetProject);
-
-                    // Ensure we use the updated project for installing, and don't display preview or license acceptance windows.
-                    context.Projects = new[] { nuGetProject };
-                    var nuGetUI = (NuGetUI)uiService;
-                    nuGetUI.Projects = new[] { nuGetProject };
-                    nuGetUI.DisplayPreviewWindow = false;
-
-                    // 4. Install the requested packages
-                    var ideExecutionContext = uiService.ProjectContext.ExecutionContext as IDEExecutionContext;
-                    if (ideExecutionContext != null)
-                    {
-                        await ideExecutionContext.SaveExpandedNodeStates(solutionManager);
-                    }
-
-                    progressData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage, Resources.NuGetUpgrade_Progress_Installing);
-                    progress.Report(progressData);
-                    var activeSources = new List<SourceRepository>();
-                    PackageSourceMoniker
-                        .PopulateList(context.SourceProvider)
-                        .ForEach(s => activeSources.AddRange(s.SourceRepositories));
-                    var packagesToInstall = GetPackagesToInstall(upgradeDependencyItems).ToList();
-                    packagesCount = packagesToInstall.Count;
-
-                    // create low level NuGet actions based on number of packages being installed
-                    var lowLevelActions = new List<NuGetProjectAction>();
-                    foreach (var packageIdentity in packagesToInstall)
-                    {
-                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, activeSources.FirstOrDefault(), nuGetProject));
-                    }
-
-                    try
-                    {
-                        var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-                        await context.PackageManager.ExecuteBuildIntegratedProjectActionsAsync(
-                            buildIntegratedProject,
-                            lowLevelActions,
-                            uiService.ProjectContext,
-                            token);
-
-                        if (ideExecutionContext != null)
+                        // 1. Backup files (csproj and packages.config) that will change
+                        try
                         {
-                            await ideExecutionContext.CollapseAllNodes(solutionManager);
+                            backupPath = await projectUpgrader.BackupProjectAsync(project.ProjectId, token);
+                        }
+                        catch (Exception ex)
+                        {
+                            status = NuGetOperationStatus.Failed;
+
+                            uiService.ShowError(ex);
+                            uiService.ProjectContext.Log(
+                                MessageLevel.Info,
+                                string.Format(CultureInfo.CurrentCulture, Resources.Upgrader_BackupFailed));
+
+                            return null;
                         }
 
-                        return backupPath;
-                    }
-                    catch (Exception ex)
-                    {
-                        status = NuGetOperationStatus.Failed;
+                        // 2. Uninstall all packages currently in packages.config
+                        var progressData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage, Resources.NuGetUpgrade_Progress_Uninstalling);
+                        progress.Report(progressData);
 
-                        uiService.ShowError(ex);
-                        uiService.ProjectContext.Log(MessageLevel.Info,
+                        // Don't uninstall packages we couldn't find - that will just fail
+                        PackageIdentity[] packagesToUninstall = upgradeDependencyItems.Select(d => d.Identity)
+                            .Where(p => !notFoundPackages.Contains(p))
+                            .ToArray();
+
+                        try
+                        {
+                            await projectUpgrader.UninstallPackagesAsync(project.ProjectId, packagesToUninstall, token);
+                        }
+                        catch (Exception ex)
+                        {
+                            status = NuGetOperationStatus.Failed;
+                            // log error message
+                            uiService.ShowError(ex);
+                            uiService.ProjectContext.Log(MessageLevel.Info,
+                                string.Format(CultureInfo.CurrentCulture, Resources.Upgrade_UninstallFailed));
+
+                            return null;
+                        }
+
+                        // Reload the project, and get a reference to the reloaded project
+                        await projectUpgrader.SaveProjectAsync(project.ProjectId, token);
+
+                        IProjectContextInfo upgradedProject = await projectUpgrader.UpgradeProjectToPackageReferenceAsync(
+                            project.ProjectId,
+                            token);
+
+                        // Ensure we use the updated project for installing, and don't display preview or license acceptance windows.
+                        context.Projects = new[] { upgradedProject };
+                        var nuGetUI = (NuGetUI)uiService;
+                        nuGetUI.Projects = new[] { upgradedProject };
+                        nuGetUI.DisplayPreviewWindow = false;
+
+                        // 4. Install the requested packages
+                        var ideExecutionContext = uiService.ProjectContext.ExecutionContext as IDEExecutionContext;
+                        if (ideExecutionContext != null)
+                        {
+                            await ideExecutionContext.SaveExpandedNodeStates(context.SolutionManager);
+                        }
+
+                        progressData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage, Resources.NuGetUpgrade_Progress_Installing);
+                        progress.Report(progressData);
+
+                        List<PackageIdentity> packagesToInstall = GetPackagesToInstall(upgradeDependencyItems).ToList();
+                        packagesCount = packagesToInstall.Count;
+
+                        try
+                        {
+                            await projectUpgrader.InstallPackagesAsync(
+                                project.ProjectId,
+                                packagesToInstall,
+                                token);
+
+                            if (ideExecutionContext != null)
+                            {
+                                await ideExecutionContext.CollapseAllNodes(context.SolutionManager);
+                            }
+
+                            return backupPath;
+                        }
+                        catch (Exception ex)
+                        {
+                            status = NuGetOperationStatus.Failed;
+
+                            uiService.ShowError(ex);
+                            uiService.ProjectContext.Log(MessageLevel.Info,
                                 string.Format(CultureInfo.CurrentCulture, Resources.Upgrade_InstallFailed, backupPath));
-                        uiService.ProjectContext.Log(MessageLevel.Info,
-                            string.Format(CultureInfo.CurrentCulture, Resources.Upgrade_RevertSteps, "https://aka.ms/nugetupgraderevertv1"));
+                            uiService.ProjectContext.Log(MessageLevel.Info,
+                                string.Format(CultureInfo.CurrentCulture, Resources.Upgrade_RevertSteps, "https://aka.ms/nugetupgraderevertv1"));
 
-                        return null;
+                            return null;
+                        }
                     }
-
-
                 }
                 catch (Exception ex)
                 {
@@ -168,7 +160,12 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    upgradeInformationTelemetryEvent.SetResult(uiService.Projects, status, packagesCount);
+                    IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(
+                        uiService.UIContext.ServiceBroker,
+                        uiService.Projects,
+                        token);
+
+                    upgradeInformationTelemetryEvent.SetResult(projectIds, status, packagesCount);
                 }
             }
         }
@@ -176,30 +173,8 @@ namespace NuGet.PackageManagement.UI
         private static IEnumerable<PackageIdentity> GetPackagesToInstall(
             IEnumerable<NuGetProjectUpgradeDependencyItem> upgradeDependencyItems)
         {
-            return
-                upgradeDependencyItems.Where(
-                    upgradeDependencyItem => upgradeDependencyItem.InstallAsTopLevel)
-                    .Select(upgradeDependencyItem => upgradeDependencyItem.Identity);
-        }
-
-        private static string CreateBackup(MSBuildNuGetProject msBuildNuGetProject, string solutionDirectory)
-        {
-            var guid = Guid.NewGuid().ToString().Split('-').First();
-            var backupPath = Path.Combine(solutionDirectory, "MigrationBackup", guid, NuGetProject.GetUniqueNameOrName(msBuildNuGetProject));
-            Directory.CreateDirectory(backupPath);
-
-            // Backup packages.config
-            var packagesConfigFullPath = msBuildNuGetProject.PackagesConfigNuGetProject.FullPath;
-            var packagesConfigFileName = Path.GetFileName(packagesConfigFullPath);
-            File.Copy(packagesConfigFullPath, Path.Combine(backupPath, packagesConfigFileName), overwrite: true);
-
-            // Backup project file
-            var msBuildNuGetProjectSystem = msBuildNuGetProject.ProjectSystem;
-            var projectFullPath = msBuildNuGetProjectSystem.ProjectFileFullPath;
-            var projectFileName = Path.GetFileName(projectFullPath);
-            File.Copy(projectFullPath, Path.Combine(backupPath, projectFileName), overwrite: true);
-
-            return backupPath;
+            return upgradeDependencyItems.Where(upgradeDependencyItem => upgradeDependencyItem.InstallAsTopLevel)
+                .Select(upgradeDependencyItem => upgradeDependencyItem.Identity);
         }
     }
 }

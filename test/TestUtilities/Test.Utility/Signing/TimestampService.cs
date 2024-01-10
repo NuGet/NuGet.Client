@@ -136,7 +136,7 @@ namespace Test.Utility.Signing
             return new TimestampService(certificateAuthority, certificate, issueCertificateOptions.KeyPair, uri, serviceOptions);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)
@@ -216,7 +216,7 @@ namespace Test.Utility.Signing
 
             if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V1))
             {
-                byte[] hash = DigestUtilities.CalculateDigest("SHA-1", certificateBytes.Value);
+                byte[] hash = _options.SigningCertificateV1Hash ?? DigestUtilities.CalculateDigest("SHA-1", certificateBytes.Value);
                 var signingCertificate = new SigningCertificate(new EssCertID(hash));
                 var attributeValue = new DerSet(signingCertificate);
                 var attribute = new BcAttribute(PkcsObjectIdentifiers.IdAASigningCertificate, attributeValue);

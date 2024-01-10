@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -11,7 +11,8 @@ namespace NuGet.VisualStudio.Implementation.Test
 {
     public class PathLookupTrieTests
     {
-        private static readonly PathLookupTrie<int> TestInstance = new PathLookupTrie<int> {
+        private static readonly PathLookupTrie<int> TestInstance = new PathLookupTrie<int>
+        {
             [@"C:\src\MyProject\packages\NuGet.Versioning.3.5.0-rc1-final"] = 1,
             [@"C:\Users\.nuget\packages\Autofac\3.5.2"] = 2,
             [@"\\SharedFolder\packages\NuGet.Core\2.12.0"] = 3

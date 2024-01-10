@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,10 +22,17 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("")]
         public void IsValid_ThrowsForNullOrEmpty(string filePath)
         {
-            var expectedMessage = $"Argument cannot be null or empty.{Environment.NewLine}Parameter name: filePath";
+            var expectedMessage = "Argument cannot be null or empty.";
+            var expectedParam = "filePath";
             var exception = Assert.Throws<ArgumentException>(() => _verifier.IsValid(filePath));
 
-            Assert.Equal(expectedMessage, exception.Message);
+            Assert.Contains(expectedMessage, exception.Message);
+            Assert.Equal(expectedParam, exception.ParamName);
+            //Remove the expected message from the exception message, the rest part should have param info.
+            //Background of this change: System.ArgumentException(string message, string paramName) used to generate two lines of message before, but changed to generate one line
+            //in PR: https://github.com/dotnet/coreclr/pull/25185/files#diff-0365d5690376ef849bf908dfc225b8e8
+            var paramPart = exception.Message.Substring(exception.Message.IndexOf(expectedMessage) + expectedMessage.Length);
+            Assert.Contains(expectedParam, paramPart);
         }
 
         [PlatformFact(Platform.Windows)]

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Commands.Test.RestoreCommandTests;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
@@ -19,20 +20,9 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class BuildAssetsUtilsTests
     {
-        [Fact]
-        public void BuildAssetsUtils_GenerateMSBuildAllProjectsProperty()
-        {
-            // Arrange & Act
-            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
-
-            var props = TargetsUtility.GetMSBuildProperties(doc);
-
-            // Assert
-            Assert.Equal("$(MSBuildAllProjects);$(MSBuildThisFileFullPath)", props["MSBuildAllProjects"]);
-        }
-
         [Fact]
         public void BuildAssetsUtils_GenerateProjectAssetsFilePath()
         {
@@ -57,6 +47,36 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void AddNuGetProperty_WithPackageFolders_AddsSourceRootItem()
+        {
+            // Arrange
+            var separator = Path.DirectorySeparatorChar;
+            var packageFolders = $"{separator}tmp{separator}gpf;{separator}tmp{separator}fallbackFolder";
+
+            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+
+            // Act
+            BuildAssetsUtils.AddNuGetProperties(
+                doc,
+                packageFolders: packageFolders.Split(';'),
+                string.Empty,
+                ProjectStyle.PackageReference,
+                "/tmp/test/project.assets.json",
+                success: true);
+
+            var props = TargetsUtility.GetMSBuildProperties(doc);
+            var items = TargetsUtility.GetMSBuildItems(doc);
+            var sourceRootItems = items.Where(e => e.Item1.Equals("SourceRoot")).Select(e => e.Item2).ToList();
+
+            // Assert
+            Assert.Equal(packageFolders, props["NuGetPackageFolders"]);
+            Assert.Equal(2, items.Count);
+            Assert.Equal(2, sourceRootItems.Count);
+            Assert.Equal($"{separator}tmp{separator}gpf{separator}", sourceRootItems[0]["Include"]);
+            Assert.Equal($"{separator}tmp{separator}fallbackFolder{separator}", sourceRootItems[1]["Include"]);
+        }
+
+        [Fact]
         public void BuildAssetsUtils_GenerateContentFilesItem_CompileAsset()
         {
             // Arrange
@@ -75,6 +95,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("Compile", metadata["NuGetItemType"]);
             Assert.Equal("False", metadata["Private"]);
             Assert.Equal("test/test.cs", metadata["Link"].Replace('\\', '/'));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Fact]
@@ -101,6 +122,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("PreserveNewest", metadata["CopyToOutputDirectory"]);
             Assert.Equal("a/b/", metadata["DestinationSubDirectory"].Replace('\\', '/'));
             Assert.Equal("a/b/c.txt", metadata["TargetPath"].Replace('\\', '/'));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Fact]
@@ -127,6 +149,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("a/b/c.txt", metadata["Link"].Replace('\\', '/'));
             Assert.Equal("PreserveNewest", metadata["CopyToOutputDirectory"]);
             Assert.False(metadata.ContainsKey("DestinationSubDirectory"));
+            Assert.Equal("false", metadata["Pack"]);
         }
 
         [Theory]
@@ -663,7 +686,7 @@ namespace NuGet.Commands.Test
                     OriginalCaseGlobalPackageFolderTests.GetRestoreTargetGraph(pathContext.PackageSource, identity, packagePath, logger)
                 };
 
-                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies;
+                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies.ToList();
 
                 var lockFile = new LockFile
                 {
@@ -714,7 +737,7 @@ namespace NuGet.Commands.Test
                 var expectedPropertyGroup = outputFiles.FirstOrDefault().Content.Root.Elements().LastOrDefault();
 
                 Assert.NotNull(expectedPropertyGroup);
-                
+
                 Assert.Equal(" '$(ExcludeRestorePackageImports)' != 'true' ", expectedPropertyGroup.Attribute("Condition")?.Value);
 
                 var expectedProperty = expectedPropertyGroup.Elements().FirstOrDefault();
@@ -774,7 +797,7 @@ namespace NuGet.Commands.Test
                     OriginalCaseGlobalPackageFolderTests.GetRestoreTargetGraph(pathContext.PackageSource, identity, packagePath, logger)
                 };
 
-                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies;
+                targetGraphs[0].Graphs.FirstOrDefault().Item.Data.Dependencies = spec.Dependencies.ToList();
 
                 var lockFile = new LockFile
                 {

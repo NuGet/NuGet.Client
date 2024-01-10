@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
     /// Enumeration of package assembly group types.
     /// </summary>
     /// <remarks>
-    /// Use by <see cref="PackageAssemblyGroupItem"/>, <see cref="PackageAssemblyItem"/> and their <see cref="IRelation"/> types.
+    /// Used by <see cref="PackageAssemblyGroupItem"/>, <see cref="PackageAssemblyItem"/> and their <see cref="IRelation"/> types.
     /// </remarks>
     internal enum PackageAssemblyGroupType
     {

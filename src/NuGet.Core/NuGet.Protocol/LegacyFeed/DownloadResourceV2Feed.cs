@@ -20,7 +20,7 @@ namespace NuGet.Protocol
 
         [Obsolete("Use constructor with source parameter")]
         public DownloadResourceV2Feed(V2FeedParser feedParser)
-            : this (feedParser, source: null)
+            : this(feedParser, source: null)
         {
         }
 

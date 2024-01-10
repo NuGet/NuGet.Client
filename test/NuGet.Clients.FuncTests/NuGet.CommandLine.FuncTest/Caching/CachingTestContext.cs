@@ -16,6 +16,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
 {
@@ -89,7 +90,7 @@ namespace NuGet.CommandLine.Test.Caching
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        var mockResponse = builder.BuildV3IndexResponse(MockServer);
+                        var mockResponse = builder.BuildV3IndexResponse(MockServer.Uri);
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);
@@ -110,7 +111,7 @@ namespace NuGet.CommandLine.Test.Caching
                             return;
                         }
 
-                        var mockResponse = builder.BuildV2IndexResponse(MockServer);
+                        var mockResponse = builder.BuildV2IndexResponse();
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);
@@ -133,7 +134,7 @@ namespace NuGet.CommandLine.Test.Caching
                             response.StatusCode = 404;
                             return;
                         }
-                        
+
                         var packagePath = getPackagePath();
                         var mockResponse = builder.BuildODataResponse(packagePath);
 
@@ -155,7 +156,7 @@ namespace NuGet.CommandLine.Test.Caching
                         {
                             packagePaths.Add(getPackagePath());
                         }
-                        
+
                         var mockResponse = builder.BuildFindPackagesByIdResponse(packagePaths);
 
                         response.ContentType = mockResponse.ContentType;
@@ -176,7 +177,7 @@ namespace NuGet.CommandLine.Test.Caching
                             return;
                         }
 
-                        var mockResponse = builder.BuildRegistrationIndexResponse(MockServer, new PackageIdentity[] { identity });
+                        var mockResponse = builder.BuildRegistrationIndexResponse(MockServer.Uri, new PackageIdentity[] { identity });
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);
@@ -251,14 +252,33 @@ namespace NuGet.CommandLine.Test.Caching
             ProjectPath = Path.Combine(WorkingPath, "project.csproj");
 
             OutputPackagesPath = Path.Combine(WorkingPath, "packages");
+            CreateNuGetConfig(WorkingPath);
+
             Directory.CreateDirectory(OutputPackagesPath);
+        }
+
+        private void CreateNuGetConfig(string workingDirectory)
+        {
+            string nugetConfigContent =
+                @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <packageSources>
+    <clear />
+  </packageSources>
+  <packageSourceMapping>
+    <clear />
+  </packageSourceMapping>
+</configuration>";
+            var fileName = NuGet.Configuration.Settings.DefaultSettingsFileName;
+
+            File.WriteAllText(Path.Combine(workingDirectory, fileName), nugetConfigContent);
         }
 
         private string MakeTestPackage(string repositoryPath, PackageIdentity identity, string packageFileName, string contentFileName)
         {
             var directory = Path.Combine(repositoryPath, Guid.NewGuid().ToString());
             Directory.CreateDirectory(directory);
-            
+
             File.WriteAllBytes(Path.Combine(directory, contentFileName), new byte[0]);
 
             var assemblyFileName = "assembly.dll";

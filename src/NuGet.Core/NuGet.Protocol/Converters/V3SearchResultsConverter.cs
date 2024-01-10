@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Converters
                         switch ((string)reader.Value)
                         {
                             case "totalHits":
-                                if(long.TryParse(reader.ReadAsString(), out var totalHits))
+                                if (long.TryParse(reader.ReadAsString(), out var totalHits))
                                 {
                                     searchResults.TotalHits = totalHits;
                                 }

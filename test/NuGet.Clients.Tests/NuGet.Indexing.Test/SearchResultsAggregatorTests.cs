@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -90,7 +90,7 @@ namespace NuGet.Indexing.Test
                 .Select(r => r.Identity.Id)
                 .ToArray();
             Assert.Equal(
-                expected: packageIdsOrderedInInitialOrder, 
+                expected: packageIdsOrderedInInitialOrder,
                 actual: mergedSearchResults.Select(r => r.Identity.Id).Where(id => packageIdsOrderedInInitialOrder.Contains(id)));
         }
 

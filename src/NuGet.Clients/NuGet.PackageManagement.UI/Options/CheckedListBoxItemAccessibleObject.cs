@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft;
-using NuGet.PackageManagement.UI;
 
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     internal class CheckedListBoxItemAccessibleObject : AccessibleObject
     {
@@ -33,7 +33,7 @@ namespace NuGet.Options
                 var rect = ParentCheckedListBox.GetItemRectangle(_index);
 
                 var pt = new NativeMethods.POINT(rect.X, rect.Y);
-                NativeMethods.ClientToScreen(new HandleRef(ParentCheckedListBox, ParentCheckedListBox.Handle), pt);
+                _ = NativeMethods.ClientToScreen(new HandleRef(ParentCheckedListBox, ParentCheckedListBox.Handle), pt);
 
                 return new Rectangle(pt.x, pt.y, rect.Width, rect.Height);
             }
@@ -116,7 +116,7 @@ namespace NuGet.Options
         {
             get
             {
-                return ParentCheckedListBox.GetItemChecked(_index).ToString();
+                return ParentCheckedListBox.GetItemChecked(_index).ToString(CultureInfo.CurrentCulture);
             }
         }
 
@@ -150,7 +150,7 @@ namespace NuGet.Options
 
         public override void Select(AccessibleSelection flags)
         {
-            (ParentCheckedListBox.AccessibilityObject as CheckedListBoxAccessibleObject)?.SelectChild(flags, _index);
+            (ParentCheckedListBox.AccessibilityObject as CheckedListBoxAccessibleObject)?.SelectChild(_index);
         }
     }
 }

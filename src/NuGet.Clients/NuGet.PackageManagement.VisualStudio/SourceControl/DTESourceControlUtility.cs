@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
 using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -11,6 +12,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public static void EnsureCheckedOutIfExists(SourceControl sourceControl, string fullPath)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (File.Exists(fullPath))
             {
                 FileSystemUtility.MakeWritable(fullPath);
@@ -26,20 +29,5 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
         }
-
-        //public static void AddOrCheckoutItems(SourceControl sourceControl, IEnumerable<string> files)
-        //{
-        //    if(sourceControl != null)
-        //    {
-        //        List<object> filesToAdd = new List<object>();
-        //        foreach(var path in files)
-        //        {
-        //            if(File.Exists(path))
-        //            {
-        //                sourceControl.CheckOutItem(path);
-        //            }
-        //        }
-        //    }
-        //}
     }
 }

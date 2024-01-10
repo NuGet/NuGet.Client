@@ -27,12 +27,13 @@ namespace NuGet.Configuration
                 !string.Equals(a.Key, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
             ).ToDictionary(a => a.Key, a => a.Value));
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = new HashSet<string>(new[] { ConfigurationConstants.KeyAttribute, ConfigurationConstants.ValueAttribute });
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> DisallowedValues { get; } = new ReadOnlyDictionary<string, IReadOnlyCollection<string>>(
             new Dictionary<string, IReadOnlyCollection<string>>()
             {
-                { ConfigurationConstants.KeyAttribute, new HashSet<string>() { string.Empty } }
+                { ConfigurationConstants.KeyAttribute, new HashSet<string>(new [] {string.Empty }) }
             });
 
         public AddItem(string key, string value)
@@ -77,7 +78,7 @@ namespace NuGet.Configuration
 
         public void AddOrUpdateAdditionalAttribute(string attributeName, string value)
         {
-            if (Origin != null && Origin.IsMachineWide)
+            if (Origin != null && Origin.IsReadOnly)
             {
                 return;
             }
@@ -98,7 +99,10 @@ namespace NuGet.Configuration
             }
         }
 
-        public override bool Equals(object other)
+        // Due to how settings AddOrUpdate is implemented, anything extending AddItem must only use the Key in GetHashCode and Equals
+        // otherwise existing items won't be updated and new duplicates will always be added.
+        // In other words, all sub-class properties must be ignored by these methods.
+        public sealed override bool Equals(object other)
         {
             var item = other as AddItem;
 
@@ -115,7 +119,10 @@ namespace NuGet.Configuration
             return string.Equals(Key, item.Key, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => Key.GetHashCode();
+        // Due to how settings AddOrUpdate is implemented, anything extending AddItem must only use the Key in GetHashCode and Equals
+        // otherwise existing items won't be updated and new duplicates will always be added.
+        // In other words, all sub-class properties must be ignored by these methods.
+        public sealed override int GetHashCode() => Key.GetHashCode();
 
         public override SettingBase Clone()
         {

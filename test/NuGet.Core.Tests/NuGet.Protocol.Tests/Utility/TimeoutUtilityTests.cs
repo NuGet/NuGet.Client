@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -23,19 +23,19 @@ namespace NuGet.Protocol.Tests
                 timeoutToken = token;
                 return Task.FromResult(expected);
             };
-            
+
             // Act
             var actual = await TimeoutUtility.StartWithTimeout(
                 actionAsync,
                 TimeSpan.FromSeconds(1),
                 "message",
                 CancellationToken.None);
-                
+
             // Assert
             Assert.Equal(expected, actual);
             Assert.False(timeoutToken.IsCancellationRequested);
         }
-        
+
         [Fact]
         public async Task TimeoutUtility_FailsWithResult()
         {
@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Tests
                 timeoutToken = token;
                 throw expected;
             };
-            
+
             // Act & Assert
             var actual = await Assert.ThrowsAsync<Exception>(() => TimeoutUtility.StartWithTimeout(
                 actionAsync,
@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Tests
             Assert.Same(expected, actual);
             Assert.False(timeoutToken.IsCancellationRequested);
         }
-        
+
         [Fact]
         public async Task TimeoutUtility_TimesOutWithResult()
         {
@@ -67,10 +67,10 @@ namespace NuGet.Protocol.Tests
             Func<CancellationToken, Task<int>> actionAsync = async token =>
             {
                 timeoutToken = token;
-                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await Task.Delay(TimeSpan.FromMilliseconds(250), token);
                 return 23;
-            }; 
-            
+            };
+
             // Act & Assert
             var exception = await Assert.ThrowsAsync<TimeoutException>(() => TimeoutUtility.StartWithTimeout(
                 actionAsync,
@@ -80,7 +80,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(expected, exception.Message);
             Assert.True(timeoutToken.IsCancellationRequested);
         }
-        
+
         [Fact]
         public async Task TimeoutUtility_SucceedsWithoutResult()
         {
@@ -89,20 +89,20 @@ namespace NuGet.Protocol.Tests
             Func<CancellationToken, Task> actionAsync = token =>
             {
                 timeoutToken = token;
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             };
-            
+
             // Act
             await TimeoutUtility.StartWithTimeout(
                 actionAsync,
                 TimeSpan.FromSeconds(1),
                 "message",
                 CancellationToken.None);
-                
+
             // Assert
             Assert.False(timeoutToken.IsCancellationRequested);
         }
-        
+
         [Fact]
         public async Task TimeoutUtility_FailsWithoutResult()
         {
@@ -114,7 +114,7 @@ namespace NuGet.Protocol.Tests
                 timeoutToken = token;
                 throw expected;
             };
-            
+
             // Act & Assert
             var actual = await Assert.ThrowsAsync<Exception>(() => TimeoutUtility.StartWithTimeout(
                 actionAsync,
@@ -124,19 +124,19 @@ namespace NuGet.Protocol.Tests
             Assert.Same(expected, actual);
             Assert.False(timeoutToken.IsCancellationRequested);
         }
-        
+
         [Fact]
         public async Task TimeoutUtility_TimesOutWithoutResult()
         {
             // Arrange
             var expected = "timeout message";
-            CancellationToken timeoutToken = CancellationToken.None; 
+            CancellationToken timeoutToken = CancellationToken.None;
             Func<CancellationToken, Task> actionAsync = async token =>
             {
                 timeoutToken = token;
-                await Task.Delay(TimeSpan.FromMilliseconds(250));
-            }; 
-            
+                await Task.Delay(TimeSpan.FromMilliseconds(250), token);
+            };
+
             // Act & Assert
             var exception = await Assert.ThrowsAsync<TimeoutException>(() => TimeoutUtility.StartWithTimeout(
                 actionAsync,

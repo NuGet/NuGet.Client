@@ -341,7 +341,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(mockConsole.Object, signArgs.Logger);
             Assert.Equal(nonInteractive, signArgs.NonInteractive);
             Assert.Equal(overwrite, signArgs.Overwrite);
-            Assert.Equal(packagePath, signArgs.PackagePath, StringComparer.Ordinal);
+            Assert.Equal(packagePath, signArgs.PackagePaths[0], StringComparer.Ordinal);
             Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
             Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }
@@ -394,7 +394,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(mockConsole.Object, signArgs.Logger);
             Assert.Equal(nonInteractive, signArgs.NonInteractive);
             Assert.Equal(overwrite, signArgs.Overwrite);
-            Assert.Equal(packagePath, signArgs.PackagePath, StringComparer.Ordinal);
+            Assert.Equal(packagePath, signArgs.PackagePaths[0], StringComparer.Ordinal);
             Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
             Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }
@@ -445,7 +445,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(mockConsole.Object, signArgs.Logger);
             Assert.Equal(nonInteractive, signArgs.NonInteractive);
             Assert.Equal(overwrite, signArgs.Overwrite);
-            Assert.Equal(packagePath, signArgs.PackagePath, StringComparer.Ordinal);
+            Assert.Equal(packagePath, signArgs.PackagePaths[0], StringComparer.Ordinal);
             Assert.Equal(timestamper, signArgs.Timestamper, StringComparer.Ordinal);
             Assert.Equal(outputDir, signArgs.OutputDirectory, StringComparer.Ordinal);
         }

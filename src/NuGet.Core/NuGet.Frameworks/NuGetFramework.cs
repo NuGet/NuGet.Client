@@ -6,28 +6,23 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
     /// <summary>
     /// A portable implementation of the .NET FrameworkName type with added support for NuGet folder names.
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    partial class NuGetFramework : IEquatable<NuGetFramework>
+    public partial class NuGetFramework : IEquatable<NuGetFramework>
     {
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
-        private const string Portable = "portable";
+        private string? _targetFrameworkMoniker;
+        private string? _targetPlatformMoniker;
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
-            : this(framework.Framework, framework.Version, framework.Profile)
+            : this(framework.Framework, framework.Version, framework.Profile, framework.Platform, framework.PlatformVersion)
         {
         }
 
@@ -46,59 +41,31 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Creates a new NuGetFramework instance, with an optional profile (only available for netframework)
         /// </summary>
-        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile)
+        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string? frameworkProfile)
+            : this(frameworkIdentifier, frameworkVersion, profile: frameworkProfile ?? string.Empty, platform: string.Empty, platformVersion: FrameworkConstants.EmptyVersion)
         {
-            if (frameworkIdentifier == null)
-            {
-                throw new ArgumentNullException("frameworkIdentifier");
-            }
-
-            if (frameworkVersion == null)
-            {
-                throw new ArgumentNullException("frameworkVersion");
-            }
-
-            _frameworkIdentifier = frameworkIdentifier;
-            _frameworkVersion = NormalizeVersion(frameworkVersion);
-
-            IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
-
-            _frameworkProfile = profile ?? string.Empty;
-            Platform = string.Empty;
-            PlatformVersion = FrameworkConstants.EmptyVersion;
         }
 
         /// <summary>
         /// Creates a new NuGetFramework instance, with an optional platform and platformVersion (only available for net5.0+)
         /// </summary>
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platform, Version platformVersion)
+            : this(frameworkIdentifier, frameworkVersion, profile: string.Empty, platform: platform, platformVersion: platformVersion)
         {
-            if (frameworkIdentifier == null)
-            {
-                throw new ArgumentNullException("frameworkIdentifier");
-            }
+        }
 
-            if (frameworkVersion == null)
-            {
-                throw new ArgumentNullException("frameworkVersion");
-            }
-
-            if (platform == null)
-            {
-                throw new ArgumentNullException("platform");
-            }
-
-            if (platformVersion == null)
-            {
-                throw new ArgumentNullException("platformVersion");
-            }
+        internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile, string platform, Version platformVersion)
+        {
+            if (frameworkIdentifier == null) throw new ArgumentNullException(nameof(frameworkIdentifier));
+            if (frameworkVersion == null) throw new ArgumentNullException(nameof(frameworkVersion));
+            if (platform == null) throw new ArgumentNullException(nameof(platform));
+            if (platformVersion == null) throw new ArgumentNullException(nameof(platformVersion));
 
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
-            _frameworkProfile = string.Empty;
+            _frameworkProfile = profile;
 
             IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
-
             Platform = IsNet5Era ? platform : string.Empty;
             PlatformVersion = IsNet5Era ? NormalizeVersion(platformVersion) : FrameworkConstants.EmptyVersion;
         }
@@ -106,36 +73,22 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Target framework
         /// </summary>
-        public string Framework
-        {
-            get { return _frameworkIdentifier; }
-        }
+        public string Framework => _frameworkIdentifier;
 
         /// <summary>
         /// Target framework version
         /// </summary>
-        public Version Version
-        {
-            get { return _frameworkVersion; }
-        }
+        public Version Version => _frameworkVersion;
 
         /// <summary>
         /// Framework Platform (net5.0+)
         /// </summary>
-        public string Platform
-        {
-            get;
-            private set;
-        }
+        public string Platform { get; }
 
         /// <summary>
         /// Framework Platform Version (net5.0+)
         /// </summary>
-        public Version PlatformVersion
-        {
-            get;
-            private set;
-        }
+        public Version PlatformVersion { get; }
 
         /// <summary>
         /// True if the platform is non-empty
@@ -156,35 +109,35 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Target framework profile
         /// </summary>
-        public string Profile
-        {
-            get { return _frameworkProfile; }
-        }
+        public string Profile => _frameworkProfile;
 
-        /// <summary>
-        /// Formatted to a System.Versioning.FrameworkName
-        /// </summary>
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFramework.</summary>
+        /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
         public string DotNetFrameworkName
         {
             get
             {
-                return GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
+                if (_targetFrameworkMoniker == null)
+                {
+                    _targetFrameworkMoniker = GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
+                }
+                return _targetFrameworkMoniker;
             }
         }
 
-        /// <summary>
-        /// Formatted to a System.Versioning.FrameworkName
-        /// </summary>
+        /// <summary>The TargetFrameworkMoniker identifier of the current NuGetFramework.</summary>
+        /// <remarks>Formatted to a System.Versioning.FrameworkName</remarks>
         public string GetDotNetFrameworkName(IFrameworkNameProvider mappings)
         {
+            if (mappings == null)
+            {
+                throw new ArgumentNullException(nameof(mappings));
+            }
+
             // Check for rewrites
             var framework = mappings.GetFullNameReplacement(this);
 
-            if (framework.IsNet5Era)
-            {
-                return GetShortFolderName();
-            }
-            else if (framework.IsSpecificFramework)
+            if (framework.IsSpecificFramework)
             {
                 var parts = new List<string>(3) { Framework };
 
@@ -200,6 +153,23 @@ namespace NuGet.Frameworks
             else
             {
                 return string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+            }
+        }
+
+        /// <summary>The TargetPlatformMoniker identifier of the current NuGetFramework.</summary>
+        /// <remarks>Similar to a System.Versioning.FrameworkName, but missing the v at the beginning of the version.</remarks>
+        public string DotNetPlatformName
+        {
+            get
+            {
+                if (_targetPlatformMoniker == null)
+                {
+                    _targetPlatformMoniker = string.IsNullOrEmpty(Platform)
+                        ? string.Empty
+                        : Platform + ",Version=" + GetDisplayVersion(PlatformVersion);
+                }
+
+                return _targetPlatformMoniker;
             }
         }
 
@@ -263,18 +233,17 @@ namespace NuGet.Frameworks
                 {
                     sb.Append("-");
 
-                    IEnumerable<NuGetFramework> frameworks = null;
                     if (framework.HasProfile
-                        && mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks)
+                        && mappings.TryGetPortableFrameworks(framework.Profile, includeOptional: false, out IEnumerable<NuGetFramework>? frameworks)
                         && frameworks.Any())
                     {
                         var required = new HashSet<NuGetFramework>(frameworks, Comparer);
 
                         // Normalize by removing all optional frameworks
-                        mappings.TryGetPortableFrameworks(framework.Profile, false, out frameworks);
+                        mappings.TryGetPortableFrameworks(framework.Profile, includeOptional: false, out frameworks);
 
                         // sort the PCL frameworks by alphabetical order
-                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
+                        var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase);
 
                         sb.Append(string.Join("+", sortedFrameworks));
                     }
@@ -288,16 +257,10 @@ namespace NuGet.Frameworks
                 }
                 else if (IsNet5Era)
                 {
-                    var platform = string.Empty;
-                    if (!string.IsNullOrEmpty(framework.Platform) && !mappings.TryGetShortPlatform(framework.Framework, framework.Version, framework.Platform, out platform))
-                    {
-                        platform = framework.Platform;
-                    }
-
-                    if (!string.IsNullOrEmpty(platform))
+                    if (!string.IsNullOrEmpty(framework.Platform))
                     {
                         sb.Append("-");
-                        sb.Append(platform);
+                        sb.Append(framework.Platform.ToLowerInvariant());
 
                         if (framework.PlatformVersion != FrameworkConstants.EmptyVersion)
                         {
@@ -437,34 +400,42 @@ namespace NuGet.Frameworks
         /// <summary>
         /// True if this framework is Net5 or later, until we invent something new.
         /// </summary>
-        internal bool IsNet5Era { get; set; }
+        internal bool IsNet5Era { get; private set; }
 
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version
         /// </summary>
-        public static readonly IEqualityComparer<NuGetFramework> Comparer = new NuGetFrameworkFullComparer();
+        public static readonly IEqualityComparer<NuGetFramework> Comparer = NuGetFrameworkFullComparer.Instance;
 
         /// <summary>
         /// Framework name only comparison.
         /// </summary>
-        public static readonly IEqualityComparer<NuGetFramework> FrameworkNameComparer = new NuGetFrameworkNameComparer();
+        public static readonly IEqualityComparer<NuGetFramework> FrameworkNameComparer = NuGetFrameworkNameComparer.Instance;
 
         public override string ToString()
         {
-            return DotNetFrameworkName;
+            return IsNet5Era
+                ? GetShortFolderName()
+                : DotNetFrameworkName;
         }
 
-        public bool Equals(NuGetFramework other)
+        public bool Equals(NuGetFramework? other)
         {
+#pragma warning disable CS8604 // Possible null reference argument.
+            // Nullable annotations were added to the BCL for IEqualityComparer in .NET 5
             return Comparer.Equals(this, other);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
-        public static bool operator ==(NuGetFramework left, NuGetFramework right)
+        public static bool operator ==(NuGetFramework? left, NuGetFramework? right)
         {
+#pragma warning disable CS8604 // Possible null reference argument.
+            // Nullable annotations were added to the BCL for IEqualityComparer in .NET 5
             return Comparer.Equals(left, right);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
-        public static bool operator !=(NuGetFramework left, NuGetFramework right)
+        public static bool operator !=(NuGetFramework? left, NuGetFramework? right)
         {
             return !(left == right);
         }
@@ -479,7 +450,7 @@ namespace NuGet.Frameworks
             return _hashCode.Value;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as NuGetFramework;
 

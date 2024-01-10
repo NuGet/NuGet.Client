@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -58,10 +58,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         var valueTask = valueSelector(s, cancellationToken);
                         var ignored = valueTask.ContinueWith(
-                            observeErrorAction, 
-                            s, 
-                            cancellationToken, 
-                            TaskContinuationOptions.OnlyOnFaulted, 
+                            observeErrorAction,
+                            s,
+                            cancellationToken,
+                            TaskContinuationOptions.OnlyOnFaulted,
                             TaskScheduler.Current);
                         return valueTask;
                     });

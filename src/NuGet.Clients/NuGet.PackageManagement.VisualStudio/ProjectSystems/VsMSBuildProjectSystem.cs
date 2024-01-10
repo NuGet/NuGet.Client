@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -20,7 +19,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.Utility;
 using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using PathUtility = NuGet.Common.PathUtility;
 using Task = System.Threading.Tasks.Task;
@@ -59,87 +57,20 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private string _projectFullPath;
-
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
         /// </summary>
-        public string ProjectFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectFullPath))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectFullPath = VsProjectAdapter.ProjectDirectory;
-                    });
-                }
-
-                return _projectFullPath;
-            }
-        }
-
-        private string _projectFileFullPath;
+        public string ProjectFullPath => VsProjectAdapter.ProjectDirectory;
 
         /// <summary>
         /// This contains the directory and the file name of the project file.
         /// </summary>
-        public string ProjectFileFullPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectFileFullPath))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+        public string ProjectFileFullPath => VsProjectAdapter.FullProjectPath;
 
-                        _projectFileFullPath = VsProjectAdapter.FullProjectPath;
-                    });
-                }
+        public virtual string ProjectName => VsProjectAdapter.ProjectName;
 
-                return _projectFileFullPath;
-            }
-        }
 
-        private string _projectName;
-
-        public virtual string ProjectName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectName))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        _projectName = VsProjectAdapter.ProjectName;
-                    });
-                }
-                return _projectName;
-            }
-        }
-
-        private string _projectCustomUniqueName;
-
-        public virtual string ProjectUniqueName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_projectCustomUniqueName))
-                {
-                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                        {
-                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                            _projectCustomUniqueName = VsProjectAdapter.CustomUniqueName;
-                        });
-                }
-
-                return _projectCustomUniqueName;
-            }
-        }
+        public virtual string ProjectUniqueName => VsProjectAdapter.CustomUniqueName;
 
         public NuGetFramework TargetFramework
         {
@@ -190,12 +121,12 @@ namespace NuGet.PackageManagement.VisualStudio
             });
         }
 
-        private Task AddFileCoreAsync(string path, Action addFile)
+        private async Task AddFileCoreAsync(string path, Action addFile)
         {
             // Do not try to add file to project, if the path is null or empty.
             if (string.IsNullOrEmpty(path))
             {
-                return Task.FromResult(false);
+                return;
             }
 
             var fileExistsInProject = FileExistsInProject(path);
@@ -208,26 +139,26 @@ namespace NuGet.PackageManagement.VisualStudio
             var lockFileFullPath = PackagesConfigLockFileUtility.GetPackagesLockFilePath(ProjectFullPath, GetPropertyValue("NuGetLockFilePath")?.ToString(), ProjectName);
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
-                && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile)
-                && !fileName.Equals("packages." + ProjectName + ".config")
-                && !fileName.Equals(EnvDTEProjectInfoUtility.WebConfig)
-                && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig)
-                && !fileName.Equals(Path.GetFileName(lockFileFullPath))
+                && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile, StringComparison.Ordinal)
+                && !fileName.Equals("packages." + ProjectName + ".config", StringComparison.Ordinal)
+                && !fileName.Equals(EnvDteProjectExtensions.WebConfig, StringComparison.Ordinal)
+                && !fileName.Equals(EnvDteProjectExtensions.AppConfig, StringComparison.Ordinal)
+                && !fileName.Equals(Path.GetFileName(lockFileFullPath), StringComparison.Ordinal)
                 )
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }
             else
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 EnvDTEProjectUtility.EnsureCheckedOutIfExists(VsProjectAdapter.Project, ProjectFullPath, path);
                 addFile();
                 if (!fileExistsInProject)
                 {
-                    return AddFileToProjectAsync(path);
+                    await AddFileToProjectAsync(path);
                 }
             }
-
-            return Task.FromResult(false);
         }
 
         public void AddExistingFile(string path)
@@ -263,8 +194,6 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         protected virtual async Task AddFileToProjectAsync(string path)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (ExcludeFile(path))
             {
                 return;
@@ -465,14 +394,20 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var containsFile = await EnvDTEProjectUtility.ContainsFile(VsProjectAdapter.Project, path);
+                    var containsFile = await EnvDTEProjectUtility.ContainsFileAsync(VsProjectAdapter.Project, path);
                     return containsFile;
                 });
         }
 
         public virtual dynamic GetPropertyValue(string propertyName)
         {
-            return VsProjectAdapter.BuildProperties.GetPropertyValue(propertyName);
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                return VsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(propertyName);
+
+            });
         }
 
         public virtual bool IsSupportedFile(string path)
@@ -545,7 +480,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void AddBindingRedirects()
         {
-            var settings = ServiceLocator.GetInstanceSafe<Configuration.ISettings>();
+            var settings = ServiceLocator.GetComponentModelService<Configuration.ISettings>();
 
             var behavior = new BindingRedirectBehavior(settings);
 
@@ -557,7 +492,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                        InitForBindingRedirects();
+                        await InitForBindingRedirectsAsync();
                         if (IsBindingRedirectSupported && VSSolutionManager != null)
                         {
                             await RuntimeHelpers.AddBindingRedirectsAsync(VSSolutionManager,
@@ -592,13 +527,13 @@ namespace NuGet.PackageManagement.VisualStudio
         private VSSolutionManager VSSolutionManager { get; set; }
         private IVsFrameworkMultiTargeting VSFrameworkMultiTargeting { get; set; }
 
-        private void InitForBindingRedirects()
+        private async Task InitForBindingRedirectsAsync()
         {
             if (!_bindingRedirectsRelatedInitialized)
             {
-                var solutionManager = ServiceLocator.GetInstanceSafe<ISolutionManager>();
+                var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<ISolutionManager>();
                 VSSolutionManager = (solutionManager != null) ? (solutionManager as VSSolutionManager) : null;
-                VSFrameworkMultiTargeting = ServiceLocator.GetGlobalService<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
+                VSFrameworkMultiTargeting = await ServiceLocator.GetGlobalServiceAsync<SVsFrameworkMultiTargeting, IVsFrameworkMultiTargeting>();
             }
         }
 
@@ -684,7 +619,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             if (StringComparer.OrdinalIgnoreCase.Equals(item.Name, fileName))
                             {
-                                paths.Add(item.FileNames[1]);
+                                paths.Add(item.get_FileNames(1));
                             }
                         }
                         else if (item.Kind == VsProjectTypes.VsProjectItemKindPhysicalFolder)
@@ -1002,7 +937,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddProjectItemAsync(string filePath, string folderPath, bool createFolderIfNotExists)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var container = await GetProjectItemsAsync(folderPath, createFolderIfNotExists);
 

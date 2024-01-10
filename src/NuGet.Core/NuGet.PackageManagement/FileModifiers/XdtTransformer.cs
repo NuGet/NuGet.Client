@@ -7,8 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Web.XmlTransform;
 using NuGet.PackageManagement;
+using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.ProjectManagement
 {
@@ -26,9 +29,9 @@ namespace NuGet.ProjectManagement
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamTaskFactory" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectSystem" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task TransformFileAsync(
@@ -62,11 +65,11 @@ namespace NuGet.ProjectManagement
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamTaskFactory" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="matchingFiles" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectSystem" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task RevertFileAsync(
@@ -91,7 +94,7 @@ namespace NuGet.ProjectManagement
             await PerformXdtTransformAsync(streamTaskFactory, targetPath, projectSystem, cancellationToken);
         }
 
-        private static async Task PerformXdtTransformAsync(
+        internal static async Task PerformXdtTransformAsync(
             Func<Task<Stream>> streamTaskFactory,
             string targetPath,
             IMSBuildProjectSystem msBuildNuGetProjectSystem,
@@ -107,13 +110,13 @@ namespace NuGet.ProjectManagement
                     {
                         using (var document = new XmlTransformableDocument())
                         {
-                            document.PreserveWhitespace = true;
-
                             // make sure we close the input stream immediately so that we can override 
                             // the file below when we save to it.
-                            using (var inputStream = File.OpenRead(FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath)))
+                            string path = FileSystemUtility.GetFullPath(msBuildNuGetProjectSystem.ProjectFullPath, targetPath);
+                            using (FileStream fileStream = File.OpenRead(path))
                             {
-                                document.Load(inputStream);
+                                using var xmlReader = XmlReader.Create(fileStream, GetXmlReaderSettings(LoadOptions.PreserveWhitespace));
+                                document.Load(xmlReader);
                             }
 
                             var succeeded = transformation.Apply(document);

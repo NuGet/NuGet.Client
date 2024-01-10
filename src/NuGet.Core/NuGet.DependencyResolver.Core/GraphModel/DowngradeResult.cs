@@ -1,4 +1,4 @@
-﻿namespace NuGet.DependencyResolver
+namespace NuGet.DependencyResolver
 {
     public class DowngradeResult<TItem>
     {

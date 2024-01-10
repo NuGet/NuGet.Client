@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -45,7 +46,7 @@ namespace NuGet.Commands
             return symbolSource;
         }
 
-        public static string GetApiKey(ISettings settings, string endpoint, string source, string defaultApiKey, bool isSymbolApiKey)
+        public static string GetApiKey(ISettings settings, string endpoint, string source)
         {
             // try searching API key by endpoint first
             // needed to support config key mappings like 'https://www.nuget.org/api/v2/package'
@@ -56,18 +57,26 @@ namespace NuGet.Commands
 
             // fallback for a case of nuget.org source
             // try to retrieve an api key mapped to a default "gallery" url
-            if (apiKey == null
-                && source.IndexOf(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) >= 0)
+            if (apiKey == null &&
+                UriUtility.IsNuGetOrg(source))
             {
-                var defaultConfigKey = isSymbolApiKey ? NuGetConstants.DefaultSymbolServerUrl : NuGetConstants.DefaultGalleryServerUrl;
+                var defaultConfigKey = NuGetConstants.DefaultGalleryServerUrl;
                 apiKey = SettingsUtility.GetDecryptedValueForAddItem(settings, ConfigurationConstants.ApiKeys, defaultConfigKey);
             }
 
-            // return an API key when found or the default one
-            return apiKey ?? defaultApiKey;
+            // return an API key when found or null when not found
+            return apiKey;
         }
 
-        public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)
+        public static async Task<PackageUpdateResource> GetPackageUpdateResource(IPackageSourceProvider sourceProvider, PackageSource packageSource)
+        {
+            var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
+            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
+
+            return await sourceRepository.GetResourceAsync<PackageUpdateResource>();
+        }
+
+        public static PackageSource GetOrCreatePackageSource(IPackageSourceProvider sourceProvider, string source)
         {
             // Use a loaded PackageSource if possible since it contains credential info
             PackageSource packageSource = null;
@@ -85,10 +94,7 @@ namespace NuGet.Commands
                 packageSource = new PackageSource(source);
             }
 
-            var sourceRepositoryProvider = new CachingSourceProvider(sourceProvider);
-            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
-
-            return await sourceRepository.GetResourceAsync<PackageUpdateResource>();
+            return packageSource;
         }
 
         public static async Task<SymbolPackageUpdateResourceV3> GetSymbolPackageUpdateResource(IPackageSourceProvider sourceProvider, string source)

@@ -8,21 +8,16 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class CompatibilityProvider : IFrameworkCompatibilityProvider
+    public class CompatibilityProvider : IFrameworkCompatibilityProvider
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
-        private static readonly NuGetFrameworkFullComparer FullComparer = new NuGetFrameworkFullComparer();
+        private static readonly NuGetFrameworkFullComparer FullComparer = NuGetFrameworkFullComparer.Instance;
         private readonly ConcurrentDictionary<CompatibilityCacheKey, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
-            _mappings = mappings;
+            _mappings = mappings ?? throw new ArgumentNullException(nameof(mappings));
             _expander = new FrameworkExpander(mappings);
             _cache = new ConcurrentDictionary<CompatibilityCacheKey, bool>();
         }
@@ -35,24 +30,19 @@ namespace NuGet.Frameworks
         /// <returns>True if framework supports other</returns>
         public bool IsCompatible(NuGetFramework target, NuGetFramework candidate)
         {
-            if (target == null)
-            {
-                throw new ArgumentNullException("target");
-            }
-
-            if (candidate == null)
-            {
-                throw new ArgumentNullException("candidate");
-            }
+            if (target == null) throw new ArgumentNullException(nameof(target));
+            if (candidate == null) throw new ArgumentNullException(nameof(candidate));
 
             // check the cache for a solution
             var cacheKey = new CompatibilityCacheKey(target, candidate);
 
-            bool? result = _cache.GetOrAdd(cacheKey, (Func<CompatibilityCacheKey, bool>)((key)
-                =>
-            { return IsCompatibleCore(target, candidate) == true; }));
+            if (!_cache.TryGetValue(cacheKey, out bool result))
+            {
+                result = IsCompatibleCore(target, candidate) == true;
+                _cache.TryAdd(cacheKey, result);
+            }
 
-            return result == true;
+            return result;
         }
 
         /// <summary>
@@ -126,13 +116,16 @@ namespace NuGet.Frameworks
                 return IsCompatibleWithTarget(target, candidate);
             }
 
-            IEnumerable<NuGetFramework> targetFrameworks;
-            IEnumerable<NuGetFramework> candidateFrameworks;
+            IEnumerable<NuGetFramework>? targetFrameworks;
+            IEnumerable<NuGetFramework>? candidateFrameworks;
 
             if (target.IsPCL)
             {
                 // do not include optional frameworks here since we might be unable to tell what is optional on the other framework
-                _mappings.TryGetPortableFrameworks(target.Profile, false, out targetFrameworks);
+                if (!_mappings.TryGetPortableFrameworks(target.Profile, includeOptional: false, out targetFrameworks))
+                {
+                    targetFrameworks = Array.Empty<NuGetFramework>();
+                }
             }
             else
             {
@@ -142,7 +135,10 @@ namespace NuGet.Frameworks
             if (candidate.IsPCL)
             {
                 // include optional frameworks here, the larger the list the more compatible it is
-                _mappings.TryGetPortableFrameworks(candidate.Profile, true, out candidateFrameworks);
+                if (!_mappings.TryGetPortableFrameworks(candidate.Profile, includeOptional: true, out candidateFrameworks))
+                {
+                    candidateFrameworks = Array.Empty<NuGetFramework>();
+                }
             }
             else
             {
@@ -182,16 +178,37 @@ namespace NuGet.Frameworks
 
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
-            bool result = NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
-                    && IsVersionCompatible(target.Version, candidate.Version)
-                    && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile);
-
-            if (target.IsNet5Era && candidate.HasPlatform)
+            bool result = true;
+            bool isNet6Era = target.IsNet5Era && target.Version.Major >= 6;
+            if (isNet6Era && target.HasPlatform && !NuGetFramework.FrameworkNameComparer.Equals(target, candidate))
             {
-                result = result
-                    && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, candidate.Platform)
-                    && IsVersionCompatible(target.PlatformVersion, candidate.PlatformVersion);
+                if (candidate.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.MonoAndroid, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, "android");
+                }
+                else if (candidate.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.Tizen, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = result && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, "tizen");
+                }
+                else
+                {
+                    result = false;
+                }
             }
+            else
+            {
+                result = NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+                            && IsVersionCompatible(target.Version, candidate.Version)
+                            && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile);
+
+                if (target.IsNet5Era && candidate.HasPlatform)
+                {
+                    result = result
+                        && StringComparer.OrdinalIgnoreCase.Equals(target.Platform, candidate.Platform)
+                        && IsVersionCompatible(target.PlatformVersion, candidate.PlatformVersion);
+                }
+            }
+
 
             return result;
         }
@@ -223,9 +240,7 @@ namespace NuGet.Frameworks
             {
                 var frameworkToExpand = toExpand.Pop();
 
-                IEnumerable<NuGetFramework> compatibleFrameworks = null;
-
-                if (_mappings.TryGetEquivalentFrameworks(frameworkToExpand, out compatibleFrameworks))
+                if (_mappings.TryGetEquivalentFrameworks(frameworkToExpand, out IEnumerable<NuGetFramework>? compatibleFrameworks))
                 {
                     foreach (var curFramework in compatibleFrameworks)
                     {

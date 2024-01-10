@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -12,7 +12,12 @@ namespace NuGet.VisualStudio
     {
         private readonly RegistryKey _registryKey;
 
-        public RegistryKeyWrapper(RegistryKey registryKey)
+        public RegistryKeyWrapper(RegistryHive registryHive, RegistryView registryView = RegistryView.Registry32)
+        {
+            _registryKey = RegistryKey.OpenBaseKey(registryHive, registryView);
+        }
+
+        private RegistryKeyWrapper(RegistryKey registryKey)
         {
             Debug.Assert(registryKey != null);
             _registryKey = registryKey;

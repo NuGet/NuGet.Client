@@ -9,11 +9,13 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PackageSearchResourceV3Tests
     {
         [Fact]
@@ -103,6 +105,42 @@ namespace NuGet.Protocol.Tests
 
             // Assert
             Assert.Empty(packages);
+        }
+
+        [Fact]
+        public async Task PackageSearchResourceV3_GetMetadataAsync_VersionsDownloadCount()
+        {
+            // Arrange
+            long largerThanIntMax = (long)int.MaxValue + 10;
+            var responses = new Dictionary<string, string>();
+            responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EntityFrameworkSearch.json", GetType()));
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var resource = await repo.GetResourceAsync<PackageSearchResource>();
+
+            // Act
+            var packages = await resource.SearchAsync(
+                "entityframework",
+                new SearchFilter(false),
+                skip: 0,
+                take: 1,
+                log: NullLogger.Instance,
+                cancellationToken: CancellationToken.None);
+
+            var package = packages.SingleOrDefault();
+
+            var versions = (await package.GetVersionsAsync()).ToList();
+
+            // Assert
+            Assert.Equal(28390569, package.DownloadCount);
+            Assert.Equal(14, versions.Count());
+            Assert.Equal(64099, versions[0].DownloadCount);
+            // Make sure NuGet can handle package download count larger than int.MaxValue
+            // EntityFrameworkSearch.json has a 2nd version with download count that is too large for an int32
+            Assert.Equal(largerThanIntMax, versions[1].DownloadCount);
         }
 
         [Fact]

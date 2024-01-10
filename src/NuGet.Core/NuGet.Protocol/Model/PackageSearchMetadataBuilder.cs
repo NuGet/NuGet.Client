@@ -38,6 +38,7 @@ namespace NuGet.Protocol.Core.Types
             public string Owners { get; set; }
             public Uri ProjectUrl { get; set; }
             public DateTimeOffset? Published { get; set; }
+            public Uri ReadmeUrl { get; set; }
             public Uri ReportAbuseUrl { get; set; }
             public Uri PackageDetailsUrl { get; set; }
             public bool RequireLicenseAcceptance { get; set; }
@@ -52,8 +53,11 @@ namespace NuGet.Protocol.Core.Types
 
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
+            public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
             public bool IsListed { get; set; }
+            [Obsolete("PackagePath is recommended in place of PackageReader")]
             public Func<PackageReaderBase> PackageReader { get; set; }
+            public string PackagePath { get; set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -91,6 +95,7 @@ namespace NuGet.Protocol.Core.Types
                 Owners = _metadata.Owners,
                 ProjectUrl = _metadata.ProjectUrl,
                 Published = _metadata.Published,
+                ReadmeUrl = _metadata.ReadmeUrl,
                 ReportAbuseUrl = _metadata.ReportAbuseUrl,
                 PackageDetailsUrl = _metadata.PackageDetailsUrl,
                 RequireLicenseAcceptance = _metadata.RequireLicenseAcceptance,
@@ -102,15 +107,21 @@ namespace NuGet.Protocol.Core.Types
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
+                Vulnerabilities = _metadata.Vulnerabilities,
+#pragma warning disable CS0618 // Type or member is obsolete
                 PackageReader =
                     (_metadata as LocalPackageSearchMetadata)?.PackageReader ??
                     (_metadata as ClonedPackageSearchMetadata)?.PackageReader,
+#pragma warning restore CS0618 // Type or member is obsolete
+                PackagePath =
+                    (_metadata as LocalPackageSearchMetadata)?.PackagePath ??
+                    (_metadata as ClonedPackageSearchMetadata)?.PackagePath,
             };
 
             return clonedMetadata;
         }
 
-        public static PackageSearchMetadataBuilder FromMetadata(IPackageSearchMetadata metadata) 
+        public static PackageSearchMetadataBuilder FromMetadata(IPackageSearchMetadata metadata)
             => new PackageSearchMetadataBuilder(metadata);
 
         public static PackageSearchMetadataBuilder FromIdentity(PackageIdentity identity)

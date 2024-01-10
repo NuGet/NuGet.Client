@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,7 +45,7 @@ namespace NuGet.Packaging
         {
             if (fullPath == null)
             {
-                throw new ArgumentException(nameof(fullPath));
+                throw new ArgumentNullException(nameof(fullPath));
             }
 
             _frameworkMappings = frameworkMappings;
@@ -67,7 +67,7 @@ namespace NuGet.Packaging
                 }
                 catch (Exception ex)
                 {
-                    throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
+                    throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                         Strings.FailToLoadPackagesConfig), ex);
                 }
             }
@@ -93,7 +93,7 @@ namespace NuGet.Packaging
         {
             if (stream == null)
             {
-                throw new ArgumentException(nameof(stream));
+                throw new ArgumentNullException(nameof(stream));
             }
 
             _stream = stream;
@@ -118,7 +118,7 @@ namespace NuGet.Packaging
         {
             if (_minClientVersion != null)
             {
-                throw new PackagingException(string.Format(CultureInfo.CurrentCulture, 
+                throw new PackagingException(string.Format(CultureInfo.CurrentCulture,
                     Strings.MinClientVersionAlreadyExist));
             }
 
@@ -182,7 +182,7 @@ namespace NuGet.Packaging
 
             if (_disposed)
             {
-                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToAddEntry));
             }
 
@@ -191,7 +191,7 @@ namespace NuGet.Packaging
             XElement package;
             if (PackagesConfig.HasAttributeValue(packagesNode, PackagesConfig.IdAttributeName, entry.PackageIdentity.Id, out package))
             {
-                throw new PackagesConfigWriterException(String.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackageEntryAlreadyExist, entry.PackageIdentity.Id));
             }
             else
@@ -222,7 +222,7 @@ namespace NuGet.Packaging
 
             if (_disposed)
             {
-                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToAddEntry));
             }
 
@@ -233,7 +233,7 @@ namespace NuGet.Packaging
 
             if (matchingNode == null)
             {
-                throw new PackagesConfigWriterException(String.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackageEntryNotExist, oldEntry.PackageIdentity.Id, oldEntry.PackageIdentity.Version));
             }
             else
@@ -260,7 +260,7 @@ namespace NuGet.Packaging
 
             if (_disposed)
             {
-                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToAddEntry));
             }
 
@@ -338,7 +338,7 @@ namespace NuGet.Packaging
 
             if (_disposed)
             {
-                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToAddEntry));
             }
 
@@ -348,7 +348,7 @@ namespace NuGet.Packaging
 
             if (matchingNode == null)
             {
-                throw new PackagesConfigWriterException(String.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackageEntryNotExist, entry.PackageIdentity.Id, entry.PackageIdentity.Version));
             }
             else
@@ -370,7 +370,7 @@ namespace NuGet.Packaging
             {
                 var frameworkShortName = entry.TargetFramework.GetShortFolderName(_frameworkMappings);
 
-                if (!String.IsNullOrEmpty(frameworkShortName))
+                if (!string.IsNullOrEmpty(frameworkShortName))
                 {
                     node.Add(new XAttribute(XName.Get(PackagesConfig.TargetFrameworkAttributeName), frameworkShortName));
                 }
@@ -409,7 +409,7 @@ namespace NuGet.Packaging
 
             if (packagesNode == null)
             {
-                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
+                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture,
                     Strings.PackagesNodeNotExist, _filePath));
             }
 
@@ -419,7 +419,7 @@ namespace NuGet.Packaging
         private XElement FindMatchingPackageNode(PackageReference entry, XElement packagesNode)
         {
             XElement matchingIdNode;
-            bool hasMatchingNode = PackagesConfig.HasAttributeValue(packagesNode, PackagesConfig.IdAttributeName, 
+            bool hasMatchingNode = PackagesConfig.HasAttributeValue(packagesNode, PackagesConfig.IdAttributeName,
                 entry.PackageIdentity.Id, out matchingIdNode);
 
             if (matchingIdNode != null)
@@ -521,7 +521,7 @@ namespace NuGet.Packaging
             {
                 var directorypath = Path.GetDirectoryName(fullPath);
 
-                var configFileCopyPath = Path.Combine(directorypath, 
+                var configFileCopyPath = Path.Combine(directorypath,
                     @"packages.config.old." + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
 
                 // Delete configFileCopyPath if it already exists
@@ -575,7 +575,7 @@ namespace NuGet.Packaging
             {
                 throw new PackagesConfigWriterException(
                     string.Format(
-                        CultureInfo.CurrentCulture, 
+                        CultureInfo.CurrentCulture,
                         Strings.FailToWritePackagesConfig,
                         fullPath,
                         ex.Message),
@@ -588,10 +588,19 @@ namespace NuGet.Packaging
         /// </summary>
         public void Dispose()
         {
-            if (!_disposed)
-            {
-                _disposed = true;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
                 if (!string.IsNullOrEmpty(_filePath))
                 {
                     WriteFile(_filePath);
@@ -601,6 +610,8 @@ namespace NuGet.Packaging
                     WriteFile();
                 }
             }
+
+            _disposed = true;
         }
     }
 }

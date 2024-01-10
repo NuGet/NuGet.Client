@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
 {
@@ -19,6 +20,7 @@ namespace NuGetConsole
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
         private readonly AsyncLazy<IVsOutputWindowPane> _outputWindowPane;
+        private readonly AsyncLazy<OutputWindowTextWriter> _outputWindowTextWriter;
 
         private IVsOutputWindowPane VsOutputWindowPane => NuGetUIThreadHelper.JoinableTaskFactory.Run(_outputWindowPane.GetValueAsync);
 
@@ -44,8 +46,10 @@ namespace NuGetConsole
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // create the Package Manager pane within the Output window
+                Guid outputWindowPaneId = GuidList.NuGetOutputWindowPaneGuid;
+
                 var hr = _vsOutputWindow.CreatePane(
-                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    ref outputWindowPaneId,
                     Resources.OutputConsolePaneName,
                     fInitVisible: 1,
                     fClearWithSolution: 0);
@@ -53,13 +57,23 @@ namespace NuGetConsole
 
                 IVsOutputWindowPane pane;
                 hr = _vsOutputWindow.GetPane(
-                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    ref outputWindowPaneId,
                     out pane);
                 ErrorHandler.ThrowOnFailure(hr);
+
+                GuidList.NuGetOutputWindowPaneGuid = outputWindowPaneId;
 
                 return pane;
 
             }, NuGetUIThreadHelper.JoinableTaskFactory);
+
+            _outputWindowTextWriter = new AsyncLazy<OutputWindowTextWriter>(async () =>
+            {
+                var outputWindowPane = await _outputWindowPane.GetValueAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return new OutputWindowTextWriter(outputWindowPane);
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public override async Task WriteAsync(string text)
@@ -69,14 +83,17 @@ namespace NuGetConsole
                 return;
             }
 
-            Start();
+            await StartAsync();
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            VsOutputWindowPane.OutputStringThreadSafe(text);
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.WriteAsync(text);
         }
 
         public override async Task ActivateAsync()
         {
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.FlushAsync();
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _vsUiShell.FindToolWindow(0,
@@ -89,7 +106,10 @@ namespace NuGetConsole
 
         public override async Task ClearAsync()
         {
-            Start();
+            await StartAsync();
+
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.FlushAsync();
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -100,6 +120,11 @@ namespace NuGetConsole
         public override void StartConsoleDispatcher()
         {
             _ = VsOutputWindowPane;
+        }
+
+        public override async Task StartConsoleDispatcherAsync()
+        {
+            await _outputWindowPane.GetValueAsync();
         }
     }
 }

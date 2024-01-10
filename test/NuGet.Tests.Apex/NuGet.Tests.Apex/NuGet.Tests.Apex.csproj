@@ -1,11 +1,7 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
-    <TestProject>true</TestProject>
     <NoWarn>$(NoWarn);1762</NoWarn>
     <Description>End-to-end tests for the Package Manager Console and Package Manager UI built on top of Apex framework.</Description>
   </PropertyGroup>
@@ -16,7 +12,7 @@
     <None Remove="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
     <None Remove="Utility\SigningUtility.cs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -27,76 +23,44 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
+ 
   <ItemGroup>
-    <Compile Include="Apex\ApexBaseTestClass.cs" />
-    <Compile Include="Apex\ApexTestContext.cs" />
-    <Compile Include="Apex\NuGetConsoleTestExtension.cs" />
-    <Compile Include="Apex\NuGetTestOperationConfiguration.cs" />
-    <Compile Include="Apex\SharedVisualStudioHostTestClass.cs" />
-    <Compile Include="Apex\NuGetApexTestService.cs" />
-    <Compile Include="Apex\NuGetApexVerifier.cs" />
-    <Compile Include="Fixtures\ApexTestRequirementsFixture.cs" />
-    <Compile Include="Fixtures\IVisualStudioHostFixtureFactory.cs" />
-    <Compile Include="Fixtures\SignedPackagesTestsApexFixture.cs" />
-    <Compile Include="Fixtures\VisualStudioHostFixture.cs" />
-    <Compile Include="Fixtures\VisualStudioHostFixtureFactory.cs" />
-    <Compile Include="Fixtures\VisualStudioOperationsFixture.cs" />
-    <Compile Include="NuGetEndToEndTests\IVsPackageInstallerTestCase.cs" />
-    <Compile Include="NuGetPackageSigningTests\AuthorSignedPackageTestCase.cs" />
-    <Compile Include="NuGetEndToEndTests\NuGetConsoleTestCase.cs" />
-    <Compile Include="NuGetEndToEndTests\NetCoreProjectTestCase.cs" />
-    <Compile Include="NuGetEndToEndTests\NuGetUITestCase.cs" />
-    <Compile Include="NuGetPackageSigningTests\RepositoryCountersignedPackageTestCase.cs" />
-    <Compile Include="Utility\CommonUtility.cs" />
-    <Compile Include="Apex\NuGetTypeConstraint.cs" />
-    <Compile Include="Apex\NuGetUIProjectTestExtensionVerifier.cs" />
-    <Compile Include="Apex\NuGetUIProjectTestExtension.cs" />
-    <Compile Include="Apex\NuGetBaseTestExtension.cs" />
-    <Compile Include="Utility\SigningUtility.cs" />
-    <Compile Include="VisualStudioHostExtension.cs" />
+    <PackageReference Include="Microsoft.Test.Apex.VisualStudio" ExcludeAssets="Compile" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Apex\NuGetConsoleTestExtensionVerifier.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Test.Apex.VisualStudio" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Xunit.StaFact" />
+    <!-- Manually consuming compile-time assets from Microsoft.Test.Apex.VisualStudio and excluding ones that cause compile warnings -->
+    <Reference Include="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\*.dll"
+               Exclude="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.PrismIntegration.dll;
+                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.dll;
+                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.x64.dll"
+               Name="%(Filename)" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </ProjectReference>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.VisualStudio\NuGet.VisualStudio.csproj">
-      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
-      <Name>NuGet.VisualStudio</Name>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj" />
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
-    <ProjectReference Include="..\..\TestExtensions\NuGet.StaFact\NuGet.StaFact.csproj" />
     <ProjectReference Include="..\NuGet.Console.TestContract\NuGet.Console.TestContract.csproj" />
     <ProjectReference Include="..\NuGet.PackageManagement.UI.TestContract\NuGet.PackageManagement.UI.TestContract.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <!-- Make sure VSIX is deployed to experimental instance -->
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup>
     <Platform>x86</Platform>
     <RuntimeIdentifier>x86</RuntimeIdentifier>
   </PropertyGroup>
-  
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <Target Name="MakeNuGetApexTestDebuggable" AfterTargets="PostBuildEvent">
+    <Delete Files="$(OutDir)\NuGet.PackageManagement.UI.dll" />
+    <Delete Files="$(OutDir)\NuGet.VisualStudio.dll" />
+    <Delete Files="$(OutDir)\NuGet.VisualStudio.Contracts.dll" />
+  </Target>
 </Project>

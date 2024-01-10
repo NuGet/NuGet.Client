@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_content != null)
             {
-                _content.CleanUp();
+                _content.Dispose();
                 _content = null;
             }
         }
@@ -52,9 +52,6 @@ namespace NuGet.PackageManagement.UI
                 if (disposing)
                 {
                     CleanUp();
-
-                    // Because Dispose() will do our cleanup, we can tell the GC not to call the finalizer.
-                    GC.SuppressFinalize(this);
                 }
             }
             finally
@@ -69,6 +66,7 @@ namespace NuGet.PackageManagement.UI
             _content.Model.Context.UserSettingsManager.PersistSettings();
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
+
             return VSConstants.S_OK;
         }
 

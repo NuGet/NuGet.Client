@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement
         IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion();
 
         /// <summary>
-        /// Checks for any pacakge directories that are pending to be deleted and raises the
+        /// Checks for any package directories that are pending to be deleted and raises the
         /// <see cref="PackagesMarkedForDeletionFound"/> event.
         /// </summary>
         void CheckAndRaisePackageDirectoriesMarkedForDeletion();

@@ -8,22 +8,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Represents a package feed enumerating installed packages.
     /// </summary>
-    public sealed class InstalledPackageFeed : PlainPackageFeedBase
+    public class InstalledPackageFeed : PlainPackageFeedBase
     {
-        private readonly IEnumerable<PackageCollectionItem> _installedPackages;
-        private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly Common.ILogger _logger;
+        internal readonly IEnumerable<PackageCollectionItem> _installedPackages;
+        internal readonly IPackageMetadataProvider _metadataProvider;
 
         public InstalledPackageFeed(
             IEnumerable<PackageCollectionItem> installedPackages,
-            IPackageMetadataProvider metadataProvider,
-            Common.ILogger logger)
+            IPackageMetadataProvider metadataProvider)
         {
             if (installedPackages == null)
             {
@@ -36,72 +35,58 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(metadataProvider));
             }
             _metadataProvider = metadataProvider;
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            _logger = logger;
-
-            PageSize = 25;
         }
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
+            var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var packages = _installedPackages
-                .GetLatest()
-                .Where(p => p.Id.IndexOf(searchToken.SearchString, StringComparison.OrdinalIgnoreCase) != -1)
-                .OrderBy(p => p.Id)
-                .Skip(searchToken.StartIndex)
-                .Take(PageSize + 1)
-                .ToArray();
+            IPackageSearchMetadata[] searchItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages.GetLatest(), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
 
-            var hasMoreItems = packages.Length > PageSize;
-            if (hasMoreItems)
-            {
-                packages = packages.Take(packages.Length - 1).ToArray();
-            }
+            return CreateResult(searchItems);
+        }
 
-            var items = await TaskCombinators.ThrottledAsync(
+        internal async Task<IPackageSearchMetadata[]> GetMetadataForPackagesAndSortAsync<T>(T[] packages, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
                 packages,
-                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
+                (p, t) => GetPackageMetadataAsync(p, includePrerelease, t),
                 cancellationToken);
 
-            //  The packages were originally sorted which is important because we Skip and Take based on that sort
-            //  however the asynchronous execution has randomly reordered the set. So we need to resort. 
-            var result = SearchResult.FromItems(items.OrderBy(p => p.Identity.Id).ToArray());
+            // The packages were originally sorted which is important because we skip based on that sort
+            // however, the asynchronous execution has randomly reordered the set. So, we need to resort.
+            return items.OrderBy(p => p.Identity.Id).ToArray();
+        }
 
-            var loadingStatus = hasMoreItems
-                ? LoadingStatus.Ready
-                : packages.Length == 0
-                ? LoadingStatus.NoItemsFound
-                : LoadingStatus.NoMoreItems;
+        internal static T[] PerformLookup<T>(IEnumerable<T> items, FeedSearchContinuationToken token) where T : PackageIdentity
+        {
+            return items
+                .Where(p => p.Id.IndexOf(token.SearchString, StringComparison.OrdinalIgnoreCase) != -1)
+                .OrderBy(p => p.Id)
+                .Skip(token.StartIndex)
+                .ToArray();
+        }
+
+        internal static SearchResult<IPackageSearchMetadata> CreateResult(IPackageSearchMetadata[] items)
+        {
+            SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(items);
+
+            var loadingStatus = result.Any() ? LoadingStatus.NoMoreItems : LoadingStatus.NoItemsFound; // No pagination on installed-based feeds
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
             {
                 { "Installed", loadingStatus }
             };
 
-            if (hasMoreItems)
-            {
-                result.NextToken = new FeedSearchContinuationToken
-                {
-                    SearchString = searchToken.SearchString,
-                    SearchFilter = searchToken.SearchFilter,
-                    StartIndex = searchToken.StartIndex + packages.Length
-                };
-            }
-
             return result;
         }
 
-        public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        internal virtual async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // first we try and load the metadata from a local package
             var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
             if (packageMetadata == null)

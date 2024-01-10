@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
+using System.Xml;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.RpcContracts.OutputChannel;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -47,7 +49,7 @@ namespace NuGetConsole
 
             _serviceBrokerClient = new AsyncLazy<ServiceBrokerClient>(async () =>
             {
-                IBrokeredServiceContainer container = (IBrokeredServiceContainer)await asyncServiceProvider.GetServiceAsync(typeof(SVsBrokeredServiceContainer));
+                IBrokeredServiceContainer container = await asyncServiceProvider.GetFreeThreadedServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
                 Assumes.Present(container);
                 IServiceBroker serviceBroker = container.GetFullAccessServiceBroker();
                 return new ServiceBrokerClient(serviceBroker, _joinableTaskFactory);
@@ -140,6 +142,11 @@ namespace NuGetConsole
             // Nothing to do here in Visual Studio Online Environments mode. We do not create the pane
         }
 
+        public override Task StartConsoleDispatcherAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!_disposedValue)
@@ -158,6 +165,8 @@ namespace NuGetConsole
                     {
                         // Ignore exceptions
                     }
+
+                    _pipeLock.Dispose();
                 }
                 _disposedValue = true;
             }

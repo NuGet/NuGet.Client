@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Text;
 using NuGet.Versioning;
 using Xunit;
@@ -156,7 +157,7 @@ namespace NuGet.Protocol.Tests
             // Strings
             Assert.NotSame(objectToCache.StringCachedBefore, stringCachedBefore);
             Assert.Equal(objectToCache.StringCachedBefore, stringCachedBefore);
-            
+
             Assert.NotSame(objectToCache.StringCachedDuring1, objectToCache.StringCachedDuring2);
             Assert.Equal(objectToCache.StringCachedDuring1, objectToCache.StringCachedDuring2);
 
@@ -189,6 +190,24 @@ namespace NuGet.Protocol.Tests
 
             // Check that uncached fields are untouched.
             Assert.Equal(objectToCache.DateTimeNeverCached, ObjectCacheTest.TestDateTimeNeverCached);
+        }
+
+        [Fact]
+        public void AssertMetadataReferenceCache_CachesStringMethodCorrectly()
+        {
+            // Arrange
+            var objectToCache = new ObjectCacheTest();
+            var cache = new MetadataReferenceCache();
+
+            // Act
+            var cachedObject = cache.GetObject(objectToCache);
+
+            // Assert
+            Assert.True(ReferenceEquals(cachedObject, objectToCache));
+            Assert.Equal(objectToCache.StringCachedBefore, ObjectCacheTest.TestStringCachedBefore);
+            Assert.Equal(cache.CachableMethodTypes.Count(), 1);
+            Assert.Equal(cache.CachableMethodTypes.Single().Key.Name, "MetadataReferenceCache");
+            Assert.Equal(cache.CachableMethodTypes.Single().Value.Name, "GetString");
         }
     }
 }

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Threading;
@@ -26,6 +26,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class TrustedSignerActionsProviderTests
     {
         private const string _expectedCertificateFingerprint = "3f9001ea83c560d712c24cf213c3d312cb3bff51ee89435d3430bd06b5d0eece";
@@ -195,7 +196,7 @@ namespace NuGet.Commands.Test
                     SettingsTestUtils.DeepEquals(i.Certificates.First(), expectedCert))));
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task AddTrustedSignerAsync_WithNullPackage_ThrowsAsync()
         {
@@ -305,7 +306,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task AddTrustedSignersAsync_UnsignedPackage_ThrowsAsync()
+        public async Task AddTrustedSignerAsync_UnsignedPackage_ThrowsAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -332,7 +333,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_TargetRepository_NonRepositorySignedPackage_ThrowsAsync()
+        public async Task AddTrustedSignerAsync_TargetRepository_NonRepositorySignedPackage_ThrowsAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -364,7 +365,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_NameAlreadyExists_ThrowsAsync()
+        public async Task AddTrustedSignerAsync_NameAlreadyExists_ThrowsAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -403,7 +404,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_ServiceIndexAlreadyExists_ThrowsAsync()
+        public async Task AddTrustedSignerAsync_ServiceIndexAlreadyExists_ThrowsAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -443,7 +444,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_WithUnknownPrimarySignature_ThrowsAsync()
+        public async Task AddTrustedSignerAsync_WithUnknownPrimarySignature_ThrowsAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -491,7 +492,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_RepositorySignedPackage_AddsRepositoryCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_RepositorySignedPackage_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -536,7 +537,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_RepositorySignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_RepositorySignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -582,7 +583,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_RepositorySignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_RepositorySignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -628,7 +629,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_RepositoryCountersignedPackage_AddsRepositoryCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -675,7 +676,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_RepositoryCountersignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_WithOwners_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -723,7 +724,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_RepositoryCountersignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_RepositoryCountersignedPackage_WithAllowUntrustedRoot_AddsRepositoryCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -771,7 +772,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_AuthorSignedPackage_AddsAuthorCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_AuthorSignedPackage_AddsAuthorCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();
@@ -813,7 +814,7 @@ namespace NuGet.Commands.Test
         }
 
         [CIOnlyFact]
-        public async Task AddTrustedSignersAsync_AuthorSignedPackage_WithAllowUntrustedRoot_AddsAuthorCorrectlyAsync()
+        public async Task AddTrustedSignerAsync_AuthorSignedPackage_WithAllowUntrustedRoot_AddsAuthorCorrectlyAsync()
         {
             // Arrange
             var trustedSignersProvider = new Mock<ITrustedSignersProvider>();

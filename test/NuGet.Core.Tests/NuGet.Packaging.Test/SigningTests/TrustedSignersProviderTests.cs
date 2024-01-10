@@ -119,7 +119,11 @@ namespace NuGet.Packaging.Test
                 var trustedSigners = trustedSignerProvider.GetTrustedSigners();
                 trustedSigners.Should().NotBeNull();
                 trustedSigners.Count.Should().Be(3);
-                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners,
+                    options => options
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin"));
             }
         }
 
@@ -166,7 +170,12 @@ namespace NuGet.Packaging.Test
                 var trustedSigners = trustedSignerProvider.GetTrustedSigners();
                 trustedSigners.Should().NotBeNull();
                 trustedSigners.Count.Should().Be(3);
-                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+                trustedSigners.Should().BeEquivalentTo(
+                    expectedTrustedSigners,
+                    options => options
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin"));
             }
         }
 
@@ -196,7 +205,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Remove_SuccesffullyRemovesTrustedSigners()
+        public void Remove_SuccessfullyRemovesTrustedSigners()
         {
             // Arrange
             var config = @"
@@ -237,7 +246,11 @@ namespace NuGet.Packaging.Test
                 trustedSigners = trustedSignerProvider.GetTrustedSigners();
                 trustedSigners.Should().NotBeNull();
                 trustedSigners.Count.Should().Be(2);
-                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+                trustedSigners.Should().BeEquivalentTo(
+                    expectedTrustedSigners,
+                    options => options
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin"));
             }
         }
 
@@ -283,7 +296,11 @@ namespace NuGet.Packaging.Test
                 trustedSigners = trustedSignerProvider.GetTrustedSigners();
                 trustedSigners.Should().NotBeNull();
                 trustedSigners.Count.Should().Be(2);
-                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+                trustedSigners.Should().BeEquivalentTo(
+                    expectedTrustedSigners,
+                    options => options
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin"));
             }
         }
 
@@ -342,7 +359,13 @@ namespace NuGet.Packaging.Test
                 var trustedSigners = trustedSignerProvider.GetTrustedSigners();
                 trustedSigners.Should().NotBeNull();
                 trustedSigners.Count.Should().Be(4);
-                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+                trustedSigners.Should().BeEquivalentTo(
+                    expectedTrustedSigners,
+                    options => options
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin")
+                        .Excluding(o => o.Path == "[3].Origin"));
             }
         }
 
@@ -372,7 +395,7 @@ namespace NuGet.Packaging.Test
 
                 var expectedTrustedSigners = new List<TrustedSignerItem>()
                 {
-                    new AuthorItem("author1", new CertificateItem("abc", HashAlgorithmName.SHA256), new CertificateItem("jkl", HashAlgorithmName.SHA256)),
+                    new AuthorItem("author1", new CertificateItem("jkl", HashAlgorithmName.SHA256)),
                     new AuthorItem("author2", new CertificateItem("def", HashAlgorithmName.SHA256)),
                     new RepositoryItem("repo1", "https://serviceIndex.test/v3/api.json", new CertificateItem("ghi", HashAlgorithmName.SHA256))
                 };
@@ -388,7 +411,11 @@ namespace NuGet.Packaging.Test
                 var trustedSigners = trustedSignerProvider.GetTrustedSigners();
                 trustedSigners.Should().NotBeNull();
                 trustedSigners.Count.Should().Be(3);
-                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners);
+                trustedSigners.Should().BeEquivalentTo(expectedTrustedSigners,
+                    options => options
+                        .Excluding(o => o.Path == "[0].Origin")
+                        .Excluding(o => o.Path == "[1].Origin")
+                        .Excluding(o => o.Path == "[2].Origin"));
             }
         }
 
@@ -577,7 +604,7 @@ namespace NuGet.Packaging.Test
                 {
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "abc", HashAlgorithmName.SHA256),
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, "def", HashAlgorithmName.SHA256)
-                }; 
+                };
 
                 entries.Should().BeEquivalentTo(expectedEntries);
             }

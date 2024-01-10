@@ -10,14 +10,16 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A case insensitive compare of the framework, version, and profile
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class NuGetFrameworkFullComparer : IEqualityComparer<NuGetFramework>
+    public class NuGetFrameworkFullComparer : IEqualityComparer<NuGetFramework>
     {
-        public bool Equals(NuGetFramework x, NuGetFramework y)
+#pragma warning disable CS0618 // Type or member is obsolete
+        public static NuGetFrameworkFullComparer Instance { get; } = new();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        [Obsolete("Use singleton via NuGetFrameworkFullComparer.Instance instead")]
+        public NuGetFrameworkFullComparer() { }
+
+        public bool Equals(NuGetFramework? x, NuGetFramework? y)
         {
             if (ReferenceEquals(x, y))
             {

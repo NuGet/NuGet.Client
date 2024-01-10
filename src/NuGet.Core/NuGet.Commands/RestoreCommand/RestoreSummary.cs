@@ -26,6 +26,9 @@ namespace NuGet.Commands
 
         public int InstallCount { get; }
 
+        /// <summary>
+        /// All the warnings and errors that were produced as a result of the restore.
+        /// </summary>
         public IReadOnlyList<IRestoreLogMessage> Errors { get; }
 
         public RestoreSummary(bool success)
@@ -72,11 +75,6 @@ namespace NuGet.Commands
             FeedsUsed = feedsUsed;
             InstallCount = installCount;
             Errors = errors;
-        }
-
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)
-        {
-            Log(logger, restoreSummaries.ToList(), logErrors);
         }
 
         public static void Log(ILogger logger, IReadOnlyList<RestoreSummary> restoreSummaries, bool logErrors = false)
@@ -170,13 +168,16 @@ namespace NuGet.Commands
                 }
             }
 
-            if (noOpCount == restoreSummaries.Count)
+            if (!RuntimeEnvironmentHelper.IsRunningInVisualStudio)
             {
-                logger.LogMinimal(Strings.Log_AllProjectsUpToDate);
-            }
-            else if(noOpCount > 0)
-            {
-                logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectUpToDateSummary, noOpCount, restoreSummaries.Count));
+                if (noOpCount == restoreSummaries.Count)
+                {
+                    logger.LogMinimal(Strings.Log_AllProjectsUpToDate);
+                }
+                else if (noOpCount > 0)
+                {
+                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectUpToDateSummary, noOpCount, restoreSummaries.Count));
+                }
             }
         }
 

@@ -284,11 +284,10 @@ namespace NuGet.CommandLine.Test
             var r = CommandRunner.Run(
                 nugetexe,
                 pathContext.WorkingDirectory.Path,
-                string.Join(" ", args),
-                waitForExit: true);
+                string.Join(" ", args));
 
             // Assert
-            Assert.True(exitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+            Assert.True(exitCode == r.ExitCode, r.Errors + "\n\n" + r.Output);
 
             return r;
         }

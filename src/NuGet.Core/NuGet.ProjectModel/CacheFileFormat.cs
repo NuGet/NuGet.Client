@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
@@ -10,7 +11,7 @@ using NuGet.Common;
 
 namespace NuGet.ProjectModel
 {
-    public class CacheFileFormat
+    public static class CacheFileFormat
     {
         private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
@@ -20,6 +21,10 @@ namespace NuGet.ProjectModel
 
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+            if (log == null) throw new ArgumentNullException(nameof(log));
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             using (var textReader = new StreamReader(stream))
             {
                 return Read(textReader, log, path);
@@ -87,15 +92,14 @@ namespace NuGet.ProjectModel
             if (version >= 2)
             {
                 cacheFile.ProjectFilePath = ReadString(cursor[ProjectFilePathProperty]);
-
+                cacheFile.ExpectedPackageFilePaths = new List<string>();
                 foreach (JToken expectedFile in cursor[ExpectedPackageFilesProperty])
                 {
                     string path = ReadString(expectedFile);
 
-                    if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+                    if (!string.IsNullOrWhiteSpace(path))
                     {
-                        cacheFile.HasAnyMissingPackageFiles = true;
-                        break;
+                        cacheFile.ExpectedPackageFilePaths.Add(path);
                     }
                 }
 

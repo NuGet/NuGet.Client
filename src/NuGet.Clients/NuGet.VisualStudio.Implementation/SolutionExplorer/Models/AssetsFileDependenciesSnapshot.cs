@@ -88,21 +88,53 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                     continue;
                 }
 
-                previous.DataByTarget.TryGetValue(lockFileTarget.Name, out AssetsFileTarget? previousTarget);
+                string targetAlias = GetTargetAlias(lockFileTarget.Name);
+
+                previous.DataByTarget.TryGetValue(targetAlias, out AssetsFileTarget? previousTarget);
+
+                ImmutableArray<AssetsFileLogMessage> logMessages = ParseLogMessages(lockFile, previousTarget, lockFileTarget.Name);
 
                 dataByTarget.Add(
-                    lockFileTarget.Name,
+                    targetAlias,
                     new AssetsFileTarget(
                         this,
-                        lockFileTarget.Name,
-                        ParseLogMessages(lockFile, previousTarget, lockFileTarget.Name),
-                        ParseLibraries(lockFileTarget)));
+                        targetAlias,
+                        logMessages,
+                        ParseLibraries(lockFile, lockFileTarget, logMessages)));
             }
 
             DataByTarget = dataByTarget.ToImmutable();
             return;
 
-            static ImmutableArray<AssetsFileLogMessage> ParseLogMessages(LockFile lockFile, AssetsFileTarget previousTarget, string target)
+            string GetTargetAlias(string lockFileTargetName)
+            {
+                // In some places, the target alias specified in the project file (e.g. "net472") will not
+                // match the target name used throughout the lock file (e.g. ".NETFramework,Version=v4.7.2").
+                // The dependencies tree only uses the target alias (what's in the project file) so we need
+                // to map back to that. See https://github.com/dotnet/project-system/issues/6832.
+
+                if (lockFile.PackageSpec.TargetFrameworks.Any(t => t.TargetAlias == lockFileTargetName))
+                {
+                    // The target name used in the assets file matches the target alias in the project file.
+                    return lockFileTargetName;
+                }
+
+                // The target name used in the assets file does NOT match any target alias in the project.
+                // Attempt to find the name used in the project.
+                foreach (TargetFrameworkInformation targetInfo in lockFile.PackageSpec.TargetFrameworks)
+                {
+                    if (targetInfo.FrameworkName.DotNetFrameworkName == lockFileTargetName)
+                    {
+                        // We found a match, so return the alias.
+                        return targetInfo.TargetAlias;
+                    }
+                }
+
+                // No match was found. Not ideal. Nothing to do but return the original value.
+                return lockFileTargetName;
+            }
+
+            static ImmutableArray<AssetsFileLogMessage> ParseLogMessages(LockFile lockFile, AssetsFileTarget? previousTarget, string target)
             {
                 if (lockFile.LogMessages.Count == 0)
                 {
@@ -123,34 +155,47 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
 
                     j++;
 
-                    if (j < previousLogs.Length && previousLogs[j].Equals(logMessage))
+                    if (j < previousLogs.Length && previousLogs[j].Equals(logMessage, lockFile.PackageSpec.FilePath))
                     {
                         // Unchanged, so use previous value
                         builder.Add(previousLogs[j]);
                     }
                     else
                     {
-                        builder.Add(new AssetsFileLogMessage(logMessage));
+                        builder.Add(new AssetsFileLogMessage(lockFile.PackageSpec.FilePath, logMessage));
                     }
                 }
 
                 return builder.ToImmutable();
             }
+        }
 
-            static ImmutableDictionary<string, AssetsFileTargetLibrary> ParseLibraries(LockFileTarget lockFileTarget)
+        internal static ImmutableDictionary<string, AssetsFileTargetLibrary> ParseLibraries(LockFile lockFile, LockFileTarget lockFileTarget, ImmutableArray<AssetsFileLogMessage> logMessages)
+        {
+            ImmutableDictionary<string, AssetsFileTargetLibrary>.Builder builder = ImmutableDictionary.CreateBuilder<string, AssetsFileTargetLibrary>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (LockFileTargetLibrary lockFileLibrary in lockFileTarget.Libraries)
             {
-                ImmutableDictionary<string, AssetsFileTargetLibrary>.Builder builder = ImmutableDictionary.CreateBuilder<string, AssetsFileTargetLibrary>(StringComparer.Ordinal);
-
-                foreach (LockFileTargetLibrary lockFileLibrary in lockFileTarget.Libraries)
+                if (AssetsFileTargetLibrary.TryCreate(lockFile, lockFileLibrary, out AssetsFileTargetLibrary? library))
                 {
-                    if (AssetsFileTargetLibrary.TryCreate(lockFileLibrary, out AssetsFileTargetLibrary? library))
-                    {
-                        builder.Add(library.Name, library);
-                    }
+                    builder.Add(library.Name, library);
                 }
-
-                return builder.ToImmutable();
             }
+
+            // If a non-existent library is referenced, it will have an error log message, but no entry in "libraries".
+            // We want to show a diagnostic node beneath such nodes in the tree, so need to create a dummy library entry,
+            // otherwise there's nothing to attach that diagnostic to.
+            foreach (AssetsFileLogMessage message in logMessages)
+            {
+                string libraryName = message.LibraryName;
+
+                if (!builder.ContainsKey(libraryName))
+                {
+                    builder.Add(libraryName, AssetsFileTargetLibrary.CreatePlaceholder(libraryName));
+                }
+            }
+
+            return builder.ToImmutable();
         }
 
         public bool TryGetTarget(string? target, [NotNullWhen(returnValue: true)] out AssetsFileTarget? targetData)

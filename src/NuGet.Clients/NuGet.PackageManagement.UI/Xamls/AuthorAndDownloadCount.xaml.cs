@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -50,7 +51,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         private static void OnPropertyChanged(
-            DependencyObject dependencyObject, 
+            DependencyObject dependencyObject,
             DependencyPropertyChangedEventArgs e)
         {
             var control = dependencyObject as AuthorAndDownloadCount;
@@ -84,10 +85,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!string.IsNullOrEmpty(Author))
             {
-                _textBlockAuthor.Text = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Text_ByAuthor,
-                    Author);
+                _textBlockAuthor.Text = Author;
                 _textBlockAuthor.Visibility = Visibility.Visible;
             }
             else
@@ -99,12 +97,12 @@ namespace NuGet.PackageManagement.UI
             _textBlockDownloadCount.Inlines.Clear();
 
             if (DownloadCount.HasValue && DownloadCount.Value > 0)
-            {   
+            {
                 // Processing the format string ourselves. We only support "{0}".
                 var formatString = Resx.Text_Downloads;
                 string begin = string.Empty;
                 string end = string.Empty;
-                var index = formatString.IndexOf("{0}");
+                var index = formatString.IndexOf("{0}", StringComparison.Ordinal);
                 if (index == -1)
                 {
                     // Cannot find "{0}".
@@ -117,7 +115,7 @@ namespace NuGet.PackageManagement.UI
                     end = formatString.Substring(index + "{0}".Length);
                 }
 
-                _textBlockDownloadCount.Inlines.Add(new Run(begin)); 
+                _textBlockDownloadCount.Inlines.Add(new Run(begin));
                 _textBlockDownloadCount.Inlines.Add(
                     new Run(UIUtility.NumberToString(DownloadCount.Value, CultureInfo.CurrentCulture))
                     {
@@ -125,7 +123,7 @@ namespace NuGet.PackageManagement.UI
                     });
                 _textBlockDownloadCount.Inlines.Add(new Run(end));
                 _textBlockDownloadCount.Visibility = Visibility.Visible;
-            }        
+            }
             else
             {
                 _textBlockDownloadCount.Visibility = Visibility.Collapsed;

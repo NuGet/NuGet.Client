@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +16,8 @@ using Xunit;
 
 namespace NuGet.Packaging.FuncTest
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     [Collection(SigningTestCollection.Name)]
     public class TimestampTests
     {
@@ -28,7 +30,8 @@ namespace NuGet.Packaging.FuncTest
             _trustedTestCert = _testFixture.TrustedTestCertificate;
         }
 
-        [CIOnlyFact]
+        // https://github.com/NuGet/Home/issues/11459
+        [PlatformFact(Platform.Windows, Platform.Linux, CIOnly = true)]
         public async Task Timestamp_Verify_WithOfflineRevocation_ReturnsCorrectFlagsAndLogsAsync()
         {
             var nupkg = new SimpleTestPackageContext();
@@ -44,10 +47,13 @@ namespace NuGet.Packaging.FuncTest
                 responders.Add(testServer.RegisterResponder(intermediateCa));
                 responders.Add(testServer.RegisterResponder(rootCa));
 
+                StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
                 using (var trustedServerRoot = TrustedTestCert.Create(
                     new X509Certificate2(rootCa.Certificate.GetEncoded()),
+                    X509StorePurpose.Timestamping,
                     StoreName.Root,
-                    StoreLocation.LocalMachine))
+                    storeLocation))
                 {
                     var timestampService = TimestampService.Create(intermediateCa);
 
@@ -79,17 +85,17 @@ namespace NuGet.Packaging.FuncTest
                     result.HasFlag(SignatureVerificationStatusFlags.UnknownRevocation).Should().BeTrue();
 
                     var errors = logs.Where(l => l.Level == LogLevel.Error);
-                    errors.Count().Should().Be(RuntimeEnvironmentHelper.IsWindows ? 2 : 1);
 
-                    if (RuntimeEnvironmentHelper.IsWindows)
+                    if (RuntimeEnvironmentHelper.IsMacOSX)
                     {
-                        errors.Should().Contain(w => w.Code == NuGetLogCode.NU3028 && w.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached."));
-                        errors.Should().Contain(w => w.Code == NuGetLogCode.NU3028 && w.Message.Contains("The revocation function was unable to check revocation for the certificate."));
+                        errors.Count().Should().Be(1);
                     }
                     else
                     {
-                        errors.Should().Contain(w => w.Code == NuGetLogCode.NU3028 && w.Message.Contains("unable to get certificate CRL"));
+                        errors.Count().Should().Be(2);
+                        SigningTestUtility.AssertOfflineRevocationOnlineMode(errors, LogLevel.Error, NuGetLogCode.NU3028);
                     }
+                    SigningTestUtility.AssertRevocationStatusUnknown(errors, LogLevel.Error, NuGetLogCode.NU3028);
                 }
             }
         }

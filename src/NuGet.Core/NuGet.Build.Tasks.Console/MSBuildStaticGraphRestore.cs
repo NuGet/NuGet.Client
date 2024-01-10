@@ -15,6 +15,7 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
+using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
@@ -96,7 +97,9 @@ namespace NuGet.Build.Tasks.Console
         [MethodImpl(MethodImplOptions.NoInlining)]
         public async Task<bool> RestoreAsync(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
+            bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
+
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -104,13 +107,20 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
+            if (string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
+                    && dependencyGraphSpec.Restore.Count == 0)
+            {
+                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
+                return true;
+            }
+
             try
             {
-                return await BuildTasksUtility.RestoreAsync(
+                bool result = await BuildTasksUtility.RestoreAsync(
                     dependencyGraphSpec: dependencyGraphSpec,
-                    interactive: IsOptionTrue(nameof(RestoreTaskEx.Interactive), options),
+                    interactive,
                     recursive: IsOptionTrue(nameof(RestoreTaskEx.Recursive), options),
-                    noCache: IsOptionTrue(nameof(RestoreTaskEx.NoCache), options),
+                    noCache: IsOptionTrue(nameof(RestoreTaskEx.NoCache), options) || IsOptionTrue(nameof(RestoreTaskEx.NoHttpCache), options),
                     ignoreFailedSources: IsOptionTrue(nameof(RestoreTaskEx.IgnoreFailedSources), options),
                     disableParallel: IsOptionTrue(nameof(RestoreTaskEx.DisableParallel), options),
                     force: IsOptionTrue(nameof(RestoreTaskEx.Force), options),
@@ -119,14 +129,56 @@ namespace NuGet.Build.Tasks.Console
                     restorePC: IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options),
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
                     log: MSBuildLogger,
-                    cancellationToken: CancellationToken.None);
+                cancellationToken: CancellationToken.None);
+
+                LogFilesToEmbedInBinlog(dependencyGraphSpec, options);
+
+                return result;
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Generates a dependency graph spec for the given properties.
+        /// </summary>
+        /// <param name="entryProjectFilePath">The main project to generate that graph for.  This can be a project for a Visual Studio© Solution File.</param>
+        /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
+        /// <param name="options">The set of options to use to generate the graph, including the restore graph output path.</param>
+        /// <returns><code>true</code> if the dependency graph spec was generated and written, otherwise <code>false</code>.</returns>
+        public bool WriteDependencyGraphSpec(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
+        {
+            bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
+
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive);
+
+            try
+            {
+                if (dependencyGraphSpec == null)
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_DgSpecGenerationFailed);
+                    return false;
+                }
+
+                if (options.TryGetValue("RestoreGraphOutputPath", out var path))
+                {
+                    dependencyGraphSpec.Save(path);
+                    return true;
+                }
+                else
+                {
+                    LoggingQueue.TaskLoggingHelper.LogError(Strings.Error_MissingRestoreGraphOutputPath);
+                }
+            }
+            catch (Exception e)
+            {
+                LogErrorFromException(e);
+            }
+            return false;
         }
 
         /// <summary>
@@ -154,33 +206,6 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Gets the original target frameworks for the specified project.
-        /// </summary>
-        /// <param name="project">An <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <param name="frameworks">An <see cref="IReadOnlyCollection{NuGetFrameowrk}" /> object containing the frameworks that were parsed from the outer project.</param>
-        /// <returns>A <see cref="List{String}" /> containing the original target frameworks of the project.</returns>
-        internal static List<string> GetOriginalTargetFrameworks(IMSBuildProject project, IReadOnlyCollection<NuGetFramework> frameworks)
-        {
-            // If the project specified the TargetFrameworks property, just return that list
-            var projectTargetFrameworks = project.SplitPropertyValueOrNull("TargetFrameworks");
-
-            if (projectTargetFrameworks != null)
-            {
-                return projectTargetFrameworks.ToList();
-            }
-
-            // If the project did not specify a value for TargetFrameworks, return the short folder name of the frameworks which where parsed via other properties
-            var targetFrameworks = new List<string>(frameworks.Count);
-
-            foreach (var framework in frameworks)
-            {
-                targetFrameworks.Add(framework.GetShortFolderName());
-            }
-
-            return targetFrameworks;
-        }
-
-        /// <summary>
         /// Gets the package downloads for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get package downloads for.</param>
@@ -193,14 +218,20 @@ namespace NuGet.Build.Tasks.Console
                 string id = projectItemInstance.Identity;
 
                 // PackageDownload items can contain multiple versions
-                foreach (var version in MSBuildStringUtility.Split(projectItemInstance.GetProperty("Version")))
+                string versionRanges = projectItemInstance.GetProperty("Version");
+                if (string.IsNullOrEmpty(versionRanges))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
+                }
+
+                foreach (var version in MSBuildStringUtility.Split(versionRanges))
                 {
                     // Validate the version range
                     VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, id, versionRange.OriginalString));
                     }
 
                     yield return new DownloadDependency(id, versionRange);
@@ -247,6 +278,8 @@ namespace NuGet.Build.Tasks.Console
             {
                 string version = packageReferenceItem.GetProperty("Version");
 
+                string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
+
                 libraryDependencies.Add(new LibraryDependency
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
@@ -258,7 +291,8 @@ namespace NuGet.Build.Tasks.Console
                         string.IsNullOrWhiteSpace(version) ? isCentralPackageVersionManagementEnabled ? null : VersionRange.All : VersionRange.Parse(version),
                         LibraryDependencyTarget.Package),
                     NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
-                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
+                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
+                    VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
                 });
             }
 
@@ -274,7 +308,7 @@ namespace NuGet.Build.Tasks.Console
         internal static string GetPackagesPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestorePackagesPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPath")),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
         }
@@ -343,15 +377,17 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="projects">A <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance}" /> representing the target frameworks and their corresponding projects.</param>
         /// <returns>A <see cref="List{ProjectRestoreMetadataFrameworkInfo}" /> containing the restore metadata framework information for the specified project.</returns>
-        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projects)
+        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(List<TargetFrameworkInformation> targetFrameworkInfos, IReadOnlyDictionary<string, IMSBuildProject> projects)
         {
             var projectRestoreMetadataFrameworkInfos = new List<ProjectRestoreMetadataFrameworkInfo>(projects.Count);
 
-            foreach (var project in projects)
+            foreach (var targetFrameworkInfo in targetFrameworkInfos)
             {
-                projectRestoreMetadataFrameworkInfos.Add(new ProjectRestoreMetadataFrameworkInfo(project.Key)
+                var project = projects[targetFrameworkInfo.TargetAlias];
+                projectRestoreMetadataFrameworkInfos.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName)
                 {
-                    ProjectReferences = GetProjectReferences(project.Value)
+                    TargetAlias = targetFrameworkInfo.TargetAlias,
+                    ProjectReferences = GetProjectReferences(project)
                 });
             }
 
@@ -364,34 +400,44 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="project">An <see cref="IMSBuildProject" /> representing the main project.</param>
         /// <param name="innerNodes">An <see cref="IReadOnlyDictionary{String,IMSBuildProject}" /> representing all inner projects by their target framework.</param>
         /// <returns></returns>
-        internal static IReadOnlyDictionary<NuGetFramework, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
+        internal static IReadOnlyDictionary<string, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
         {
-            // Get the raw list of target frameworks that the project specifies
-            var projectFrameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                projectFilePath: project.FullPath,
-                targetFrameworks: project.GetProperty("TargetFrameworks"),
-                targetFramework: project.GetProperty("TargetFramework"),
-                targetFrameworkMoniker: project.GetProperty("TargetFrameworkMoniker"),
-                targetPlatformIdentifier: project.GetProperty("TargetPlatformIdentifier"),
-                targetPlatformVersion: project.GetProperty("TargetPlatformVersion"),
-                targetPlatformMinVersion: project.GetProperty("TargetPlatformMinVersion")).ToList();
+            var projectFrameworkStrings = GetTargetFrameworkStrings(project);
+            var projectTargetFrameworks = new Dictionary<string, IMSBuildProject>();
 
-            var projectTargetFrameworks = new Dictionary<NuGetFramework, IMSBuildProject>();
-
-            foreach (var projectTargetFramework in projectFrameworkStrings)
+            if (projectFrameworkStrings.Length > 0)
+            {
+                foreach (var projectTargetFramework in projectFrameworkStrings)
+                {
+                    // Attempt to get the corresponding project instance for the target framework.  If one is not found, then the project must not target multiple frameworks
+                    // and the main project should be used
+                    if (!innerNodes.TryGetValue(projectTargetFramework, out IMSBuildProject innerNode))
+                    {
+                        innerNode = project;
+                    }
+                    // Add the target framework and associate it with the project instance to be used for gathering details
+                    projectTargetFrameworks[projectTargetFramework] = innerNode;
+                }
+            }
+            else
             {
                 // Attempt to get the corresponding project instance for the target framework.  If one is not found, then the project must not target multiple frameworks
                 // and the main project should be used
-                if (!innerNodes.TryGetValue(projectTargetFramework, out IMSBuildProject innerNode))
-                {
-                    innerNode = project;
-                }
-
-                // Add the target framework and associate it with the project instance to be used for gathering details
-                projectTargetFrameworks[NuGetFramework.Parse(projectTargetFramework)] = innerNode;
+                projectTargetFrameworks[string.Empty] = project;
             }
 
             return projectTargetFrameworks;
+        }
+
+        internal static string[] GetTargetFrameworkStrings(IMSBuildProject project)
+        {
+            var targetFrameworks = project.GetProperty("TargetFrameworks");
+            if (string.IsNullOrEmpty(targetFrameworks))
+            {
+                targetFrameworks = project.GetProperty("TargetFramework");
+            }
+            var projectFrameworkStrings = MSBuildStringUtility.Split(targetFrameworks);
+            return projectFrameworkStrings;
         }
 
         /// <summary>
@@ -420,7 +466,7 @@ namespace NuGet.Build.Tasks.Console
         internal static string GetRepositoryPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetGlobalProperty("RestoreRepositoryPath")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPath")),
                 () => SettingsUtility.GetRepositoryPath(settings),
                 () =>
@@ -439,12 +485,12 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the restore output path for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <returns>The full path to the restore output directory for the specified project.</returns>
+        /// <returns>The full path to the restore output directory for the specified project if a value is specified, otherwise <code>null</code>.</returns>
         internal static string GetRestoreOutputPath(IMSBuildProject project)
         {
             string outputPath = project.GetProperty("RestoreOutputPath") ?? project.GetProperty("MSBuildProjectExtensionsPath");
 
-            return Path.GetFullPath(Path.Combine(project.Directory, outputPath));
+            return outputPath == null ? null : Path.GetFullPath(Path.Combine(project.Directory, outputPath));
         }
 
         /// <summary>
@@ -457,9 +503,10 @@ namespace NuGet.Build.Tasks.Console
         internal static List<PackageSource> GetSources(IMSBuildProject project, IReadOnlyCollection<IMSBuildProject> innerNodes, ISettings settings)
         {
             return BuildTasksUtility.GetSources(
+                project.GetGlobalProperty("OriginalMSBuildStartupDirectory"),
                 project.Directory,
                 project.SplitPropertyValueOrNull("RestoreSources"),
-                project.SplitPropertyValueOrNull("RestoreSourcesOverride"),
+                project.SplitGlobalPropertyValueOrNull("RestoreSources"),
                 innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectSources"))),
                 settings)
                 .Select(i => new PackageSource(i))
@@ -512,14 +559,26 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="entryProjectPath">The full path to the main project or solution file.</param>
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> representing the global properties for the project.</param>
         /// <returns></returns>
-        private static List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, IDictionary<string, string> globalProperties)
+        private List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, IDictionary<string, string> globalProperties)
         {
             // If the project's extension is .sln, parse it as a Visual Studio solution and return the projects it contains
             if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
             {
                 var solutionFile = SolutionFile.Parse(entryProjectPath);
 
-                return solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat).Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
+                IEnumerable<ProjectInSolution> projectsKnownToMSBuild = solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat);
+                IEnumerable<ProjectInSolution> projectsNotKnownToMSBuild = solutionFile.ProjectsInOrder.Except(projectsKnownToMSBuild);
+
+                if (projectsNotKnownToMSBuild.Any())
+                {
+                    IList<string> projects = projectsNotKnownToMSBuild.Select(project => project.ProjectName).ToList();
+
+                    MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Log_ProjectsInSolutionNotKnowntoMSBuild,
+                        projects.Count, string.Join(",", projects)));
+                }
+
+                return projectsKnownToMSBuild.Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
             }
 
             // Return just the main project in a list if its not a solution file
@@ -535,17 +594,27 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<string, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
             foreach (var projectInnerNode in projectInnerNodes)
             {
                 var msBuildProjectInstance = projectInnerNode.Value;
+                var targetAlias = string.IsNullOrEmpty(projectInnerNode.Key) ? string.Empty : projectInnerNode.Key;
 
-                var targetFrameworkInformation = new TargetFrameworkInformation
+                NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                    projectFilePath: projectInnerNode.Value.FullPath,
+                    targetFrameworkMoniker: msBuildProjectInstance.GetProperty("TargetFrameworkMoniker"),
+                    targetPlatformMoniker: msBuildProjectInstance.GetProperty("TargetPlatformMoniker"),
+                    targetPlatformMinVersion: msBuildProjectInstance.GetProperty("TargetPlatformMinVersion"),
+                    clrSupport: msBuildProjectInstance.GetProperty("CLRSupport"),
+                    windowsTargetPlatformMinVersion: msBuildProjectInstance.GetProperty("WindowsTargetPlatformMinVersion"));
+
+                var targetFrameworkInformation = new TargetFrameworkInformation()
                 {
-                    FrameworkName = projectInnerNode.Key,
+                    FrameworkName = targetFramework,
+                    TargetAlias = targetAlias,
                     RuntimeIdentifierGraphPath = msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.RuntimeIdentifierGraphPath))
                 };
 
@@ -563,9 +632,10 @@ namespace NuGet.Build.Tasks.Console
 
                 targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(msBuildProjectInstance));
 
-                if (isCpvmEnabled && targetFrameworkInformation.Dependencies.Any())
+                if (isCpvmEnabled)
                 {
                     targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
+                    LibraryDependency.ApplyCentralVersionInformation(targetFrameworkInformation.Dependencies, targetFrameworkInformation.CentralPackageVersions);
                 }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -579,8 +649,9 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="entryProjectPath">The full path to a project or Visual Studio Solution File.</param>
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
+        /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties)
+        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive)
         {
             try
             {
@@ -589,12 +660,12 @@ namespace NuGet.Build.Tasks.Console
                 var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
 
                 // Load the projects via MSBuild and create an array of them since Parallel.ForEach is optimized for arrays
-                var projects = LoadProjects(entryProjects)?.ToArray();
+                var projects = LoadProjects(entryProjects, interactive)?.ToArray();
 
-                // If no projects were loaded, return null indicating that the projects could not be loaded.
+                // If no projects were loaded, return an empty DependencyGraphSpec
                 if (projects == null || projects.Length == 0)
                 {
-                    return null;
+                    return new DependencyGraphSpec();
                 }
 
                 var sw = Stopwatch.StartNew();
@@ -629,7 +700,6 @@ namespace NuGet.Build.Tasks.Console
                                 projectPathLookup.TryAdd(projectPath, projectPath);
                             }
 
-                            // TODO: Remove this lock once https://github.com/NuGet/Home/issues/9002 is fixed
                             lock (dependencyGraphSpec)
                             {
                                 dependencyGraphSpec.AddProject(packageSpec);
@@ -637,19 +707,18 @@ namespace NuGet.Build.Tasks.Console
                         }
                     });
                 }
-                catch (AggregateException e)
+                catch (Exception e)
                 {
-                    // Log exceptions thrown while creating PackageSpec objects
-                    foreach (var exception in e.Flatten().InnerExceptions)
-                    {
-                        LoggingQueue.TaskLoggingHelper.LogErrorFromException(exception);
-                    }
+                    LogErrorFromException(e);
 
                     return null;
                 }
 
                 // Fix project reference casings to match the original project on case insensitive file systems.
                 MSBuildRestoreUtility.NormalizePathCasings(projectPathLookup, dependencyGraphSpec);
+
+                // Remove references to projects that could not be read by restore.
+                MSBuildRestoreUtility.RemoveMissingProjects(dependencyGraphSpec);
 
                 // Add all entry projects if they support restore.  In most cases this is just a single project but if the entry
                 // project is a solution, then all projects in the solution are added (if they support restore)
@@ -671,7 +740,7 @@ namespace NuGet.Build.Tasks.Console
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
             }
 
             return null;
@@ -695,13 +764,18 @@ namespace NuGet.Build.Tasks.Console
             // Get the target frameworks for the project and the project instance for each framework
             var projectsByTargetFramework = GetProjectTargetFrameworks(project, allInnerNodes);
 
-            var restoreMetadataAndTargetFrameworkInformation = GetProjectRestoreMetadataAndTargetFrameworkInformation(project, projectsByTargetFramework, settings);
+            (ProjectRestoreMetadata restoreMetadata, List<TargetFrameworkInformation> targetFrameworkInfos) = GetProjectRestoreMetadataAndTargetFrameworkInformation(project, projectsByTargetFramework, settings);
 
-            var packageSpec = new PackageSpec(restoreMetadataAndTargetFrameworkInformation.TargetFrameworkInfos)
+            if (restoreMetadata == null || targetFrameworkInfos == null)
+            {
+                return null;
+            }
+
+            var packageSpec = new PackageSpec(targetFrameworkInfos)
             {
                 FilePath = project.FullPath,
-                Name = restoreMetadataAndTargetFrameworkInformation.RestoreMetadata.ProjectName,
-                RestoreMetadata = restoreMetadataAndTargetFrameworkInformation.RestoreMetadata,
+                Name = restoreMetadata.ProjectName,
+                RestoreMetadata = restoreMetadata,
                 RuntimeGraph = new RuntimeGraph(
                     MSBuildStringUtility.Split($"{project.GetProperty("RuntimeIdentifiers")};{project.GetProperty("RuntimeIdentifier")}")
                         .Concat(projectsByTargetFramework.Values.SelectMany(i => MSBuildStringUtility.Split($"{i.GetProperty("RuntimeIdentifiers")};{i.GetProperty("RuntimeIdentifier")}")))
@@ -726,27 +800,21 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="projectsByTargetFramework">A <see cref="IReadOnlyDictionary{NuGetFramework,IMSBuildProject}" /> containing the inner nodes by target framework.</param>
         /// <param name="settings">The <see cref="ISettings" /> of the specified project.</param>
         /// <returns>A <see cref="Tuple" /> containing the <see cref="ProjectRestoreMetadata" /> and <see cref="List{TargetFrameworkInformation}" /> for the specified project.</returns>
-        private (ProjectRestoreMetadata RestoreMetadata, List<TargetFrameworkInformation> TargetFrameworkInfos) GetProjectRestoreMetadataAndTargetFrameworkInformation(IMSBuildProject project, IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectsByTargetFramework, ISettings settings)
+        private (ProjectRestoreMetadata RestoreMetadata, List<TargetFrameworkInformation> TargetFrameworkInfos) GetProjectRestoreMetadataAndTargetFrameworkInformation(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> projectsByTargetFramework, ISettings settings)
         {
-            var projectName = GetProjectName(project);
+            string projectName = GetProjectName(project);
 
-            var outputPath = GetRestoreOutputPath(project);
+            string outputPath = GetRestoreOutputPath(project);
 
-            var projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
-            var isCpvmEnabled = IsCentralVersionsManagementEnabled(project, projectStyleOrNull);
-            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCpvmEnabled);
+            (ProjectStyle projectStyle, string packagesConfigFilePath) = GetProjectStyle(project, projectsByTargetFramework, MSBuildLogger);
 
-            var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
-                restoreProjectStyle: projectStyleOrNull,
-                hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
-                projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
-                projectDirectory: project.Directory,
-                projectName: project.GetProperty("MSBuildProjectName"),
-                log: MSBuildLogger);
+            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = MSBuildRestoreUtility.GetCentralPackageManagementSettings(project, projectStyle);
 
-            var projectStyle = projectStyleResult.ProjectStyle;
+            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project);
 
-            var innerNodes = projectsByTargetFramework.Values.ToList();
+            List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
+
+            List<IMSBuildProject> innerNodes = projectsByTargetFramework.Values.ToList();
 
             ProjectRestoreMetadata restoreMetadata;
 
@@ -754,7 +822,7 @@ namespace NuGet.Build.Tasks.Console
             {
                 restoreMetadata = new PackagesConfigProjectRestoreMetadata
                 {
-                    PackagesConfigPath = projectStyleResult.PackagesConfigFilePath,
+                    PackagesConfigPath = packagesConfigFilePath,
                     RepositoryPath = GetRepositoryPath(project, settings)
                 };
             }
@@ -762,157 +830,181 @@ namespace NuGet.Build.Tasks.Console
             {
                 restoreMetadata = new ProjectRestoreMetadata
                 {
-                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && projectsByTargetFramework.Count > 1,
+                    // CrossTargeting is on, even if the TargetFrameworks property has only 1 tfm.
+                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && (
+                        projectsByTargetFramework.Count > 1 || !string.IsNullOrWhiteSpace(project.GetProperty("TargetFrameworks"))),
                     FallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                        project.GetProperty("MSBuildStartupDirectory"),
                         project.Directory,
                         project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
-                        project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride"),
+                        project.SplitGlobalPropertyValueOrNull("RestoreFallbackFolders"),
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
                         settings),
                     SkipContentFileWrite = IsLegacyProject(project),
                     ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
-                    CentralPackageVersionsEnabled = isCpvmEnabled && projectStyle == ProjectStyle.PackageReference
+                    CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
+                    CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled,
+                    CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
+                    CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
+                    RestoreAuditProperties = auditProperties
                 };
             }
 
             restoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath);
             restoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
             restoreMetadata.OutputPath = outputPath;
-            restoreMetadata.OriginalTargetFrameworks = GetOriginalTargetFrameworks(project, projectsByTargetFramework.Keys.ToList());
+            targetFrameworkInfos.ForEach(tfi =>
+                restoreMetadata.OriginalTargetFrameworks.Add(
+                        !string.IsNullOrEmpty(tfi.TargetAlias) ?
+                            tfi.TargetAlias :
+                            tfi.FrameworkName.GetShortFolderName()));
             restoreMetadata.PackagesPath = GetPackagesPath(project, settings);
             restoreMetadata.ProjectName = projectName;
             restoreMetadata.ProjectPath = project.FullPath;
             restoreMetadata.ProjectStyle = projectStyle;
             restoreMetadata.ProjectUniqueName = project.FullPath;
-            restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"));
+            restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"), project.GetProperty("WarningsNotAsErrors"));
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
-            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(projectsByTargetFramework);
+            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
 
             return (restoreMetadata, targetFrameworkInfos);
+
+            static (ProjectStyle, string packagesConfigPath) GetProjectStyle(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> tfms, Common.ILogger log)
+            {
+                ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
+                bool hasPackageReferenceItems = tfms.Values.Any(p => p.GetItems("PackageReference").Any());
+                (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
+                    restoreProjectStyle: projectStyleOrNull,
+                    hasPackageReferenceItems: hasPackageReferenceItems,
+                    projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
+                    projectDirectory: project.Directory,
+                    projectName: project.GetProperty("MSBuildProjectName"),
+                    log: log);
+
+                return (projectStyleResult.ProjectStyle, projectStyleResult.PackagesConfigFilePath);
+            }
         }
 
         /// <summary>
         /// Recursively loads and evaluates MSBuild projects.
         /// </summary>
         /// <param name="entryProjects">An <see cref="IEnumerable{ProjectGraphEntryPoint}" /> containing the entry projects to load.</param>
+        /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
-        private ICollection<ProjectWithInnerNodes> LoadProjects(IEnumerable<ProjectGraphEntryPoint> entryProjects)
+        private ICollection<ProjectWithInnerNodes> LoadProjects(IEnumerable<ProjectGraphEntryPoint> entryProjects, bool interactive)
         {
-            var loggers = new List<Microsoft.Build.Framework.ILogger>
-            {
-                LoggingQueue
-            };
-
-            // Get user specified parameters for a binary logger
-            string binlogParameters = Environment.GetEnvironmentVariable("RESTORE_TASK_BINLOG_PARAMETERS");
-
-            // Attach the binary logger if Debug or binlog parameters were specified
-            if (Debug || !string.IsNullOrWhiteSpace(binlogParameters))
-            {
-                loggers.Add(new BinaryLogger
-                {
-                    // Default the binlog parameters if only the debug option was specified
-                    Parameters = binlogParameters ?? "LogFile=nuget.binlog"
-                });
-            }
-
-            var projects = new ConcurrentDictionary<string, ProjectWithInnerNodes>(StringComparer.OrdinalIgnoreCase);
-
-            var projectCollection = new ProjectCollection(
-                globalProperties: null,
-                // Attach a logger for evaluation only if the Debug option is set
-                loggers: loggers,
-                remoteLoggers: null,
-                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
-                // Having more than 1 node spins up multiple msbuild.exe instances to run builds in parallel
-                // However, these targets complete so quickly that the added overhead makes it take longer
-                maxNodeCount: 1,
-                onlyLogCriticalEvents: false,
-                // Loading projects as readonly makes parsing a little faster since comments and whitespace can be ignored
-                loadProjectsReadOnly: true);
-
-            var failedBuildSubmissions = new ConcurrentBag<BuildSubmission>();
-
             try
             {
-                var sw = Stopwatch.StartNew();
+                var loggers = new List<Microsoft.Build.Framework.ILogger>
+                {
+                    LoggingQueue
+                };
 
-                var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+                // Get user specified parameters for a binary logger
+                string binlogParameters = Environment.GetEnvironmentVariable("RESTORE_TASK_BINLOG_PARAMETERS");
 
-                ProjectGraph projectGraph;
+                // Attach the binary logger if Debug or binlog parameters were specified
+                bool useBinlog = Debug || !string.IsNullOrWhiteSpace(binlogParameters);
+                if (useBinlog)
+                {
+                    loggers.Add(new BinaryLogger
+                    {
+                        // Default the binlog parameters if only the debug option was specified
+                        Parameters = binlogParameters ?? "LogFile=nuget.binlog"
+                    });
+                }
+
+                var projects = new ConcurrentDictionary<string, ProjectWithInnerNodes>(StringComparer.OrdinalIgnoreCase);
+
+                using var projectCollection = new ProjectCollection(
+                    globalProperties: null,
+                    // Attach a logger for evaluation only if the Debug option is set
+                    loggers: loggers,
+                    remoteLoggers: null,
+                    toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
+                    // Having more than 1 node spins up multiple msbuild.exe instances to run builds in parallel
+                    // However, these targets complete so quickly that the added overhead makes it take longer
+                    maxNodeCount: 1,
+                    onlyLogCriticalEvents: false,
+                    // Loading projects as readonly makes parsing a little faster since comments and whitespace can be ignored
+                    loadProjectsReadOnly: true);
+
+                Stopwatch sw = Stopwatch.StartNew();
+
+                EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+
+                // Create a ProjectGraph object and pass a factory method which creates a ProjectInstance
+                ProjectGraph projectGraph = new ProjectGraph(entryProjects, projectCollection, (path, properties, collection) =>
+                {
+                    var projectOptions = new ProjectOptions
+                    {
+                        EvaluationContext = evaluationContext,
+                        GlobalProperties = properties,
+                        Interactive = interactive,
+                        // Ignore bad imports to maximize the chances of being able to load the project and restore
+                        LoadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition,
+                        ProjectCollection = collection
+                    };
+
+                    return ProjectInstance.FromFile(path, projectOptions);
+                });
 
                 int buildCount = 0;
+                int failedBuildSubmissionCount = 0;
 
                 var buildParameters = new BuildParameters(projectCollection)
                 {
                     // Use the same loggers as the project collection
                     Loggers = projectCollection.Loggers,
-                    LogTaskInputs = Debug
+                    LogTaskInputs = useBinlog
                 };
-
-                // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
-                BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
 
                 try
                 {
-                    // Create a ProjectGraph object and pass a factory method which creates a ProjectInstance
-                    projectGraph = new ProjectGraph(entryProjects, projectCollection, (path, properties, collection) =>
+                    // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
+                    BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
+
+                    // Loop through each project and run the targets.  There is no need for this to run in parallel since there is only
+                    // one node in the process to run builds.
+                    foreach (ProjectGraphNode projectGraphItem in projectGraph.ProjectNodes)
                     {
-                        var projectOptions = new ProjectOptions
-                        {
-                            EvaluationContext = evaluationContext,
-                            GlobalProperties = properties,
-                            // Ignore bad imports to maximize the chances of being able to load the project and restore
-                            LoadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition,
-                            ProjectCollection = collection
-                        };
+                        ProjectInstance projectInstance = projectGraphItem.ProjectInstance;
 
-                        // Create a Project object which does the evaluation
-                        var project = Project.FromFile(path, projectOptions);
-
-                        // Create a ProjectInstance object which is what this factory needs to return
-                        var projectInstance = project.CreateProjectInstance(ProjectInstanceSettings.None, evaluationContext);
-
-                        if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || properties.TryGetValue("TargetFramework", out var targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
+                        if (!projectInstance.Targets.ContainsKey("_IsProjectRestoreSupported") || projectInstance.GlobalProperties == null || projectInstance.GlobalProperties.TryGetValue("TargetFramework", out string targetFramework) && string.IsNullOrWhiteSpace(targetFramework))
                         {
                             // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
                             // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
                             // with its actual TargetFramework.
-                            return projectInstance;
+                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(projectInstance.FullPath);
+                            MSBuildLogger.Log(message);
+                            continue;
                         }
 
                         // If the project supports restore, queue up a build of the 3 targets needed for restore
-                        BuildManager.DefaultBuildManager
-                            .PendBuildRequest(
-                                new BuildRequestData(
-                                    projectInstance,
-                                    TargetsToBuild,
-                                    hostServices: null,
-                                    // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
-                                    BuildRequestDataFlags.SkipNonexistentTargets))
-                            .ExecuteAsync(
-                                callback: buildSubmission =>
-                                {
-                                    // If the build failed, add its result to the list to be processed later
-                                    if (buildSubmission.BuildResult.OverallResult == BuildResultCode.Failure)
-                                    {
-                                        failedBuildSubmissions.Add(buildSubmission);
-                                    }
-                                },
-                                context: null);
+                        BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
+                            new BuildRequestData(
+                                projectInstance,
+                                TargetsToBuild,
+                                hostServices: null,
+                                // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
+                                BuildRequestDataFlags.SkipNonexistentTargets));
 
-                        Interlocked.Increment(ref buildCount);
+                        BuildResult result = buildSubmission.Execute();
 
-                        // Add the project instance to the list, if its an inner node for a multi-targeting project it will be added to the inner collection
+                        if (result.OverallResult == BuildResultCode.Failure)
+                        {
+                            failedBuildSubmissionCount++;
+                        }
+
+                        buildCount++;
+
                         projects.AddOrUpdate(
-                            path,
+                            projectInstance.FullPath,
                             key => new ProjectWithInnerNodes(targetFramework, new MSBuildProjectInstance(projectInstance)),
                             (_, item) => item.Add(targetFramework, new MSBuildProjectInstance(projectInstance)));
-
-                        return projectInstance;
-                    });
+                    }
                 }
                 finally
                 {
@@ -922,42 +1014,23 @@ namespace NuGet.Build.Tasks.Console
 
                 sw.Stop();
 
-                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissions.Count));
+                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissionCount));
 
-                if (failedBuildSubmissions.Any())
+                if (failedBuildSubmissionCount != 0)
                 {
                     // Return null if any builds failed, they will have logged errors
                     return null;
                 }
+
+                // Just return the projects not the whole dictionary as it was just used to group the projects together
+                return projects.Values;
             }
             catch (Exception e)
             {
-                LoggingQueue.TaskLoggingHelper.LogErrorFromException(e, showStackTrace: true);
+                LogErrorFromException(e);
 
                 return null;
             }
-            finally
-            {
-                projectCollection.Dispose();
-            }
-
-            // Just return the projects not the whole dictionary as it was just used to group the projects together
-            return projects.Values;
-        }
-
-        /// <summary>
-        /// It evaluates the project and returns true if the project has CentralPackageVersionManagement enabled.
-        /// </summary>
-        /// <param name="project">The <see cref="IMSBuildProject"/> for which the CentralPackageVersionManagement will be evaluated.</param>
-        /// <param name="projectStyle">The <see cref="ProjectStyle?"/>. Null is the project did not have a defined ProjectRestoreStyle property.</param>
-        /// <returns>True if the project has CentralPackageVersionManagement enabled and the project is PackageReference or the projectStyle is null.</returns>
-        internal static bool IsCentralVersionsManagementEnabled(IMSBuildProject project, ProjectStyle? projectStyle)
-        {
-            if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
-            {
-                return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("_CentralPackageVersionsEnabled"), bool.TrueString);
-            }
-            return false;
         }
 
         /// <summary>
@@ -970,6 +1043,87 @@ namespace NuGet.Build.Tasks.Console
         private static IEnumerable<IMSBuildItem> GetDistinctItemsOrEmpty(IMSBuildProject project, string itemName)
         {
             return project.GetItems(itemName)?.Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance) ?? Enumerable.Empty<IMSBuildItem>();
+        }
+
+        /// <summary>
+        /// Logs an error from the specified exception.
+        /// </summary>
+        /// <param name="exception">The <see cref="Exception" /> with details to be logged.</param>
+        private void LogErrorFromException(Exception exception)
+        {
+            switch (exception)
+            {
+                case AggregateException aggregateException:
+                    foreach (Exception innerException in aggregateException.Flatten().InnerExceptions)
+                    {
+                        LogErrorFromException(innerException);
+                    }
+                    break;
+
+                case InvalidProjectFileException invalidProjectFileException:
+                    // Special case the InvalidProjectFileException since it has extra information about what project file couldn't be loaded
+                    LoggingQueue.TaskLoggingHelper.LogError(
+                        invalidProjectFileException.ErrorSubcategory,
+                        invalidProjectFileException.ErrorCode,
+                        invalidProjectFileException.HelpKeyword,
+                        invalidProjectFileException.ProjectFile,
+                        invalidProjectFileException.LineNumber,
+                        invalidProjectFileException.ColumnNumber,
+                        invalidProjectFileException.EndLineNumber,
+                        invalidProjectFileException.EndColumnNumber,
+                        invalidProjectFileException.Message);
+                    break;
+
+                default:
+                    LoggingQueue.TaskLoggingHelper.LogErrorFromException(
+                        exception,
+                        showStackTrace: true);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Logs the list of files to embed in the MSBuild binary log.
+        /// </summary>
+        /// <param name="dependencyGraphSpec"></param>
+        private void LogFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec, IReadOnlyDictionary<string, string> options)
+        {
+            // Determines what the user wants embedded in the binary log where 0 or false disables embedding anything, 2 embeds everything, and 1 or true embeds just the assets file, g.props, and g.targets.
+            options.TryGetValue(nameof(RestoreTaskEx.EmbedFilesInBinlog), out string embedFilesInBinlog);
+
+            int embedInBinlogSelection = BuildTasksUtility.GetFilesToEmbedInBinlogValue(embedFilesInBinlog);
+
+            if (embedInBinlogSelection == 0)
+            {
+                return;
+            }
+
+            IReadOnlyList<PackageSpec> projects = dependencyGraphSpec.Projects;
+
+            foreach (PackageSpec project in projects)
+            {
+                if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
+                {
+                    LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName)));
+                    LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.PropsExtension)));
+                    LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.TargetsExtension)));
+
+                    // Only include the dgspec if the user wants everything embedded in the binlog.
+                    if (embedInBinlogSelection == 2)
+                    {
+                        LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
+                    }
+                }
+                else if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig)
+                {
+                    string packagesConfigPath = BuildTasksUtility.GetPackagesConfigFilePath(project.RestoreMetadata.ProjectPath);
+
+                    if (packagesConfigPath != null)
+                    {
+                        LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(packagesConfigPath));
+                    }
+                }
+            }
         }
     }
 }

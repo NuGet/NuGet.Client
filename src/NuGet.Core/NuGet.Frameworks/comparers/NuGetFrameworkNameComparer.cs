@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,14 +9,18 @@ namespace NuGet.Frameworks
     /// <summary>
     /// A case insensitive compare of the framework name only
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class NuGetFrameworkNameComparer : IEqualityComparer<NuGetFramework>
+    public class NuGetFrameworkNameComparer : IEqualityComparer<NuGetFramework>
     {
-        public bool Equals(NuGetFramework x, NuGetFramework y)
+#pragma warning disable CS0618 // Type or member is obsolete
+        public static NuGetFrameworkNameComparer Instance { get; } = new();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        [Obsolete("Use singleton NuGetFrameworkNameComparer instead")]
+        public NuGetFrameworkNameComparer()
+        {
+        }
+
+        public bool Equals(NuGetFramework? x, NuGetFramework? y)
         {
             if (ReferenceEquals(x, y))
             {

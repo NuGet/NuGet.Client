@@ -15,7 +15,8 @@
   <Target Name="GetSymbolsAndAssembliesToIndex">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
-      Targets="GetSymbolsToIndex">
+      Targets="GetSymbolsToIndex"
+      Properties="NoBuild=true;">
 
       <Output
           TaskParameter="TargetOutputs"

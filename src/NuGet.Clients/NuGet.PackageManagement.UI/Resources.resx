@@ -120,9 +120,6 @@
   <data name="Action_Consolidate" xml:space="preserve">
     <value>Consolidate</value>
   </data>
-  <data name="Action_Install" xml:space="preserve">
-    <value>Install</value>
-  </data>
   <data name="Button_Uninstall" xml:space="preserve">
     <value>Uninstall</value>
   </data>
@@ -171,29 +168,20 @@
   <data name="Label_FileConflictAction" xml:space="preserve">
     <value>File conflict action:</value>
   </data>
-  <data name="Label_Filter" xml:space="preserve">
-    <value>Filter:</value>
-  </data>
   <data name="Label_Options" xml:space="preserve">
     <value>Options</value>
   </data>
   <data name="Label_Owners" xml:space="preserve">
     <value>Owner(s):</value>
   </data>
-  <data name="Label_LegalDisclaimer" xml:space="preserve">
-    <value>Legal Disclaimer</value>
-  </data>
   <data name="Label_License" xml:space="preserve">
     <value>License:</value>
-  </data>
-  <data name="Label_Projects" xml:space="preserve">
-    <value>Select which projects to apply changes to:</value>
   </data>
   <data name="Label_ProjectUrl" xml:space="preserve">
     <value>Project URL:</value>
   </data>
-  <data name="Label_Publishers" xml:space="preserve">
-    <value>Publisher(s):</value>
+  <data name="Label_Readme" xml:space="preserve">
+    <value>Readme:</value>
   </data>
   <data name="Label_Repository" xml:space="preserve">
     <value>Package source:</value>
@@ -213,8 +201,9 @@
   <data name="Label_PackageManager" xml:space="preserve">
     <value>NuGet Package Manager: {0}</value>
   </data>
-  <data name="Button_OK" xml:space="preserve">
-    <value>OK</value>
+  <data name="Button_Apply" xml:space="preserve">
+    <value>_Apply</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Label_InstalledPackages" xml:space="preserve">
     <value>Installing:</value>
@@ -223,10 +212,12 @@
     <value>Uninstalling:</value>
   </data>
   <data name="Button_IAccept" xml:space="preserve">
-    <value>I Accept</value>
+    <value>I _Accept</value>
+    <comment>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_IDecline" xml:space="preserve">
-    <value>I Decline</value>
+    <value>I _Decline</value>
+    <comment>Button_IAccept and Button_IDecline must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Text_LicenseHeaderText" xml:space="preserve">
     <value>The following package(s) require that you accept their license terms before installing.</value>
@@ -239,9 +230,6 @@
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
     <value>Error occurred</value>
-  </data>
-  <data name="Label_Solution" xml:space="preserve">
-    <value>Solution '{0}'</value>
   </data>
   <data name="WindowTitle_PreviewChanges" xml:space="preserve">
     <value>Preview Changes</value>
@@ -262,43 +250,37 @@
     <value>File Conflict</value>
   </data>
   <data name="Button_No" xml:space="preserve">
-    <value>No</value>
+    <value>_No</value>
+    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_NoToAll" xml:space="preserve">
-    <value>No to All</value>
+    <value>No to A_ll</value>
+    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>_Yes</value>
+    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_YesToAll" xml:space="preserve">
-    <value>Yes to All</value>
+    <value>Yes to _All</value>
+    <comment>Button_Yes, Button_No, Button_YesToAll, Button_NoToAll must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="FileConflictAction_Prompt" xml:space="preserve">
     <value>Prompt</value>
   </data>
   <data name="Button_Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>_Cancel</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Button_Copy" xml:space="preserve">
-    <value>Copy</value>
+    <value>Co_py</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Text_Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>
   <data name="Text_NoPackagesFound" xml:space="preserve">
     <value>No packages found</value>
-  </data>
-  <data name="Text_Ready" xml:space="preserve">
-    <value>Ready</value>
-  </data>
-  <data name="Text_Working" xml:space="preserve">
-    <value>Working...</value>
-  </data>
-  <data name="Error_NoActiveRepository" xml:space="preserve">
-    <value>No repository is selected</value>
-  </data>
-  <data name="WindowTitle_Error" xml:space="preserve">
-    <value>Error</value>
   </data>
   <data name="Checkbox_IncludePrerelease" xml:space="preserve">
     <value>Include prerelease</value>
@@ -324,9 +306,6 @@
   <data name="Label_UpdatedPackages" xml:space="preserve">
     <value>Updates:</value>
   </data>
-  <data name="Text_ErrorDetails" xml:space="preserve">
-    <value>Error details</value>
-  </data>
   <data name="WindowTitle_LicenseAcceptance" xml:space="preserve">
     <value>License Acceptance</value>
   </data>
@@ -340,19 +319,7 @@
     <value>Show preview window</value>
   </data>
   <data name="Text_Changes" xml:space="preserve">
-    <value>Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below.</value>
-  </data>
-  <data name="Text_LicenseAcceptance" xml:space="preserve">
-    <value>License Acceptance</value>
-  </data>
-  <data name="Text_Progress" xml:space="preserve">
-    <value>Progress</value>
-  </data>
-  <data name="WindowTitle_Progress" xml:space="preserve">
-    <value>Progress</value>
-  </data>
-  <data name="Text_InstalledVersion" xml:space="preserve">
-    <value>Installed version: {0}</value>
+    <value>Visual Studio is about to make changes to this solution:</value>
   </data>
   <data name="Checkbox_ForceRemove" xml:space="preserve">
     <value>Force uninstall, even if there are dependencies on it</value>
@@ -366,23 +333,6 @@
   </data>
   <data name="AskForRestoreMessage" xml:space="preserve">
     <value>Some NuGet packages are missing from this solution. Click to restore from your online package sources.</value>
-  </data>
-  <data name="PackageRestoreCompleted" xml:space="preserve">
-    <value>Finished configuring this solution to restore NuGet packages on build.</value>
-  </data>
-  <data name="PackageRestoreWaitMessage" xml:space="preserve">
-    <value>Configuring the solution to restore NuGet packages on build...</value>
-  </data>
-  <data name="PackageRestoreErrorMessage" xml:space="preserve">
-    <value>An error occurred while configuring the solution to restore NuGet packages on build</value>
-  </data>
-  <data name="PackageRestoreDownloadPackageFailed" xml:space="preserve">
-    <value>Downloading package '{0}' failed.</value>
-  </data>
-  <data name="PackageRestoreConfirmation" xml:space="preserve">
-    <value>Do you want to configure this solution to download and restore missing NuGet packages during build? A .nuget folder will be added to the root of the solution that contains files that enable package restore.
-
-Packages installed into Website projects will not be restored during build. Consider converting those into Web application projects if necessary.</value>
   </data>
   <data name="PackageRestoreProgressMessage" xml:space="preserve">
     <value>Downloading missing packages...</value>
@@ -408,9 +358,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Checkbox_ProjectSelection" xml:space="preserve">
     <value>{0} project(s)</value>
   </data>
-  <data name="Text_ShowAll" xml:space="preserve">
-    <value>Show all</value>
-  </data>
   <data name="Link_LearnAboutInstallOptions" xml:space="preserve">
     <value>Learn about Install Options</value>
   </data>
@@ -418,19 +365,17 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Report Abuse:</value>
   </data>
   <data name="DoNotShowThisAgain" xml:space="preserve">
-    <value>Do not show this again</value>
-  </data>
-  <data name="Action_Downgrade" xml:space="preserve">
-    <value>Downgrade</value>
-  </data>
-  <data name="Action_Update" xml:space="preserve">
-    <value>Update</value>
+    <value>_Don't show this again</value>
+    <comment>DoNotShowThisAgain, Button_Cancel, Button_Copy and Button_Apply must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
   </data>
   <data name="Version_LatestPrerelease" xml:space="preserve">
     <value>Latest prerelease</value>
   </data>
   <data name="Text_ViewLicense" xml:space="preserve">
     <value>View License</value>
+  </data>
+  <data name="Text_ViewReadme" xml:space="preserve">
+    <value>View Readme</value>
   </data>
   <data name="Text_NotAvailableInSource" xml:space="preserve">
     <value>Not available in this source</value>
@@ -468,14 +413,6 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ToolTip_LatestVersion" xml:space="preserve">
     <value>Latest version: {0}</value>
   </data>
-  <data name="Label_UseInstead" xml:space="preserve">
-    <value>Incompatible: Use {0} instead</value>
-    <comment>The format string in the package list in the left pane. The string should contain exactly one instance of "{0}". No other formatting is supported.</comment>
-  </data>
-  <data name="Label_UseInsteadInSolutionPackageManager" xml:space="preserve">
-    <value>[Incompatible: Use {0} instead]</value>
-    <comment>The format string used for projects in the solution package manager. The string should contain exactly one instance of "{0}". No other formatting is supported.</comment>
-  </data>
   <data name="Label_SolutionNuGetWindowCaption" xml:space="preserve">
     <value>NuGet - Solution</value>
   </data>
@@ -503,7 +440,7 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ColumnHeader_Project" xml:space="preserve">
     <value>Project</value>
   </data>
-  <data name="ColumnHeader_Version" xml:space="preserve">
+  <data name="ColumnHeader_Requested" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="Text_MultipleVersionsInstalled" xml:space="preserve">
@@ -527,17 +464,11 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>Show {0} more results</value>
     <comment>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</comment>
   </data>
-  <data name="Text_SearchCompleted" xml:space="preserve">
-    <value>Search completed</value>
-  </data>
   <data name="Text_SearchIncomplete" xml:space="preserve">
     <value>Retrieving results from one or more sources</value>
   </data>
   <data name="Text_SearchStopped" xml:space="preserve">
     <value>Unable to retrieve results from one or more sources</value>
-  </data>
-  <data name="Text_NoMorePackages" xml:space="preserve">
-    <value>No more packages</value>
   </data>
   <data name="Text_PackageSources" xml:space="preserve">
     <value>Package sources:</value>
@@ -624,11 +555,8 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="ShowError_ConfigUnauthorizedAccess" xml:space="preserve">
     <value>Can not access NuGet.Config, Please check NuGet.Config</value>
   </data>
-  <data name="ShowInfo_ClearPackageCache" xml:space="preserve">
-    <value>All packages have been cleared from the cache.</value>
-  </data>
   <data name="ShowMessage_LocalsCommandFailure" xml:space="preserve">
-    <value>NuGet cache(s) clear failed at {0}. 
+    <value>NuGet storage clear failed at {0}. 
 Error: {1}
 Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} :error message;
@@ -636,11 +564,11 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
 </comment>
   </data>
   <data name="ShowMessage_LocalsCommandSuccess" xml:space="preserve">
-    <value>NuGet cache(s) cleared at {0}</value>
+    <value>NuGet storage cleared at {0}</value>
     <comment>{0} for date and time string</comment>
   </data>
   <data name="ShowMessage_LocalsCommandWorking" xml:space="preserve">
-    <value>Clearing all NuGet cache(s). </value>
+    <value>Clearing all NuGet storage. </value>
   </data>
   <data name="ShowWarning_InvalidSource" xml:space="preserve">
     <value>The source specified is invalid. Please provide a valid source.</value>
@@ -650,9 +578,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="ShowWarning_NameRequired" xml:space="preserve">
     <value>The name specified cannot be empty. Please provide a valid name.</value>
-  </data>
-  <data name="ShowWarning_OfficialSourceName" xml:space="preserve">
-    <value>The specified source's name is an official package source name, but there is already an official package source. Please provide a different name.</value>
   </data>
   <data name="ShowWarning_SourceRequried" xml:space="preserve">
     <value>The source specified cannot be empty. Please provide a valid source.</value>
@@ -687,9 +612,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Tooltip_PrefixReserved" xml:space="preserve">
     <value>The ID prefix of this package has been reserved for the owner of the package by the currently selected feed</value>
   </data>
-  <data name="RefreshButtonLabel" xml:space="preserve">
-    <value>Refresh</value>
-  </data>
   <data name="ShowError_ApplySettingFailed" xml:space="preserve">
     <value>Failed to apply NuGet Package Manager settings. Please report a problem using Help &gt; Send Feedback &gt; Report a Problem.</value>
   </data>
@@ -711,48 +633,15 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Text_NuGetUpgradeNoIssuesFound" xml:space="preserve">
     <value>No issues were found.</value>
   </data>
-  <data name="Text_NuGetUpgradeResolveErrorsBeforeUpgrading" xml:space="preserve">
-    <value>You must resolve any errors before upgrading.</value>
-  </data>
-  <data name="Text_UpgraderHeader" xml:space="preserve">
-    <value>Packages as PackageReference:</value>
-  </data>
-  <data name="Text_ProjectAnalysisResults" xml:space="preserve">
-    <value>Project Analysis Results</value>
-  </data>
-  <data name="Text_UpgradeComplete" xml:space="preserve">
-    <value>Upgrade Complete</value>
-  </data>
-  <data name="Text_UpgradeCompletePleaseBuild" xml:space="preserve">
-    <value>Please build and run your solution to verify that all packages are available.</value>
-  </data>
-  <data name="Text_UpgradeCompleteResolveProblemsBackup" xml:space="preserve">
-    <value>If you run into any issues and would like to revert, we have backed up changed files to the following location:</value>
-  </data>
-  <data name="Text_UpgradeCompleteResolveProblemsDirections" xml:space="preserve">
-    <value>Follow the directions described in the following document to revert changes:</value>
-  </data>
-  <data name="Link_RevertNuGetProjectUpgrade" xml:space="preserve">
-    <value>Reverting NuGet Project Upgrade</value>
-  </data>
-  <data name="Text_ChangesForProject" xml:space="preserve">
-    <value>Changes for {0}</value>
-  </data>
   <data name="WindowTitle_NuGetMigrator" xml:space="preserve">
     <value>Migrate NuGet format to PackageReference - {0}</value>
     <comment>{0} is the project name</comment>
-  </data>
-  <data name="WindowTitle_ConvertPackagesConfigIntro" xml:space="preserve">
-    <value>Convert</value>
   </data>
   <data name="UpgradeLogger_BackupPathMustBeValid" xml:space="preserve">
     <value>Must be a valid path.</value>
   </data>
   <data name="Error_ProjectNotInCache" xml:space="preserve">
     <value>Project {0} does not exist in the project system cache.</value>
-  </data>
-  <data name="Button_Upgrade" xml:space="preserve">
-    <value>Upgrade</value>
   </data>
   <data name="Text_UpgradeNuGetProjectDescription" xml:space="preserve">
     <value>Migrate this project from packages.config to PackageReference format.</value>
@@ -872,13 +761,11 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Alternate package</value>
   </data>
   <data name="Label_Installed_DeprecatedWarning" xml:space="preserve">
-    <value>You have {0} deprecated package(s) installed.</value>
+    <value>You have {0} deprecated package versions installed.</value>
+    <comment>{0} is the number of installed package versions</comment>
   </data>
   <data name="Label_DeprecationReasons" xml:space="preserve">
     <value>Deprecation reason</value>
-  </data>
-  <data name="Accessibility_PackageChanges" xml:space="preserve">
-    <value>Package changes</value>
   </data>
   <data name="Accessibility_PackageIdentity" xml:space="preserve">
     <value>{0} version {1}</value>
@@ -897,6 +784,9 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Hyperlink_ProjectUrl" xml:space="preserve">
     <value>Project URL</value>
   </data>
+  <data name="Hyperlink_Readme" xml:space="preserve">
+    <value>Readme</value>
+  </data>
   <data name="Hyperlink_ReportAbuse" xml:space="preserve">
     <value>Report Abuse</value>
   </data>
@@ -914,5 +804,242 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Status_Ready" xml:space="preserve">
     <value>Package list loaded</value>
+  </data>
+  <data name="PackageSourceOptions_OnActivated" xml:space="preserve">
+    <value>Getting Package Sources...</value>
+  </data>
+  <data name="PackageSourceOptions_OnApply" xml:space="preserve">
+    <value>Applying changes...</value>
+  </data>
+  <data name="ColumnHeader_InstalledVersion" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="ArgumentNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
+  <data name="Accessibility_ColumnNotSortedHelpText" xml:space="preserve">
+    <value>Not sorted, press space to sort ascending</value>
+  </data>
+  <data name="Accessibility_ColumnSortedAscendingHelpText" xml:space="preserve">
+    <value>Sorted ascending, press space to sort descending</value>
+  </data>
+  <data name="Accessibility_ColumnSortedDescendingHelpText" xml:space="preserve">
+    <value>Sorted descending, press space to sort ascending</value>
+  </data>
+  <data name="Label_PackageDeprecatedToolTip" xml:space="preserve">
+    <value>This package version is deprecated.</value>
+  </data>
+  <data name="Label_PackageSelectForInfoToolTip" xml:space="preserve">
+    <value>Select to view package details for more information.</value>
+  </data>
+  <data name="Label_PackageVulnerableToolTip" xml:space="preserve">
+    <value>This package version has a vulnerability with {0} severity.</value>
+    <comment>{0} is the severity of the vulnerability</comment>
+  </data>
+  <data name="VulnerabilitySeverity_Critical" xml:space="preserve">
+    <value>critical</value>
+  </data>
+  <data name="VulnerabilitySeverity_High" xml:space="preserve">
+    <value>high</value>
+  </data>
+  <data name="VulnerabilitySeverity_Low" xml:space="preserve">
+    <value>low</value>
+  </data>
+  <data name="VulnerabilitySeverity_Moderate" xml:space="preserve">
+    <value>moderate</value>
+  </data>
+  <data name="Label_Vulnerabilities" xml:space="preserve">
+    <value>Vulnerabilities detected ({0})</value>
+    <comment>{0} is the number of vulnerabilities</comment>
+  </data>
+  <data name="Label_VulnerabilitiesDescription" xml:space="preserve">
+    <value>This package version has at least one vulnerability with {0} severity. It may lead to specific problems in your project. Try updating the package version.</value>
+    <comment>{0} is the severity of the vulnerability</comment>
+  </data>
+  <data name="Label_VulnerabilityAdvisory" xml:space="preserve">
+    <value>Advisory ({0} severity):</value>
+    <comment>{0} is the severity of the vulnerability</comment>
+  </data>
+  <data name="Accessibility_PackageVulnerabilities" xml:space="preserve">
+    <value>Package vulnerabilities</value>
+  </data>
+  <data name="Accessibility_VulnerabilitiesDescriptionName" xml:space="preserve">
+    <value>Package vulnerability description</value>
+  </data>
+  <data name="Hyperlink_AdvisoryUrl" xml:space="preserve">
+    <value>Advisory URL</value>
+  </data>
+  <data name="Label_Details" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="Label_Installed_VulnerableAndDeprecatedWarning" xml:space="preserve">
+    <value>You have {0} vulnerable package versions and {1} deprecated package versions installed.</value>
+    <comment>{0} and {1} are numbers of installed package versions</comment>
+  </data>
+  <data name="Label_Installed_VulnerableWarning" xml:space="preserve">
+    <value>You have {0} vulnerable package versions installed.</value>
+    <comment>{0} is the number of installed package versions</comment>
+  </data>
+  <data name="Deprecation_MoreInfo" xml:space="preserve">
+    <value>More info</value>
+  </data>
+  <data name="Deprecation_LinkTooltip" xml:space="preserve">
+    <value>Select to view the alternative package.</value>
+  </data>
+  <data name="Deprecation_PackageItemMessage" xml:space="preserve">
+    <value>This package version is deprecated.</value>
+  </data>
+  <data name="Deprecation_PackageItemMessageAlternative" xml:space="preserve">
+    <value>This package version is deprecated. Use {0} instead.</value>
+    <comment>{0} is a NuGet package id (string)</comment>
+  </data>
+  <data name="Billion" xml:space="preserve">
+    <value>{0:G3}B</value>
+    <comment>American billions in short format notation</comment>
+  </data>
+  <data name="Million" xml:space="preserve">
+    <value>{0:G3}M</value>
+    <comment>Millions in short format notation</comment>
+  </data>
+  <data name="Thousand" xml:space="preserve">
+    <value>{0:G3}K</value>
+    <comment>Thousands in short format notation</comment>
+  </data>
+  <data name="Trillion" xml:space="preserve">
+    <value>{0:G3}T</value>
+    <comment>American trillions in short format notation</comment>
+  </data>
+  <data name="LicenseTerm_LinkName" xml:space="preserve">
+    <value>{0} license</value>
+    <comment>{0} = license name. Examples: MIT, Apache</comment>
+  </data>
+  <data name="PackageLevel_TopLevelPackageHeaderText" xml:space="preserve">
+    <value>Top-level packages ({0})</value>
+    <comment>{0} = number of packages</comment>
+  </data>
+  <data name="PackageLevel_TransitivePackageHeaderText" xml:space="preserve">
+    <value>Transitive packages ({0})</value>
+    <comment>{0} = number of packages</comment>
+  </data>
+  <data name="ToolTip_TransitiveDependency" xml:space="preserve">
+    <value>Transitively referenced version</value>
+  </data>
+  <data name="PackageVersionWithTransitiveOrigins" xml:space="preserve">
+    <value>{0} by {1}</value>
+    <comment>{0} - Version of package, {1} - Packages that transitively reference the package</comment>
+  </data>
+  <data name="ToolTip_TransitiveDependencyVersion" xml:space="preserve">
+    <value>Transitively referenced version: {0}</value>
+    <comment>{0} is a version number</comment>
+  </data>
+  <data name="Warning_HTTPSource" xml:space="preserve">
+    <value>Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
+  </data>
+  <data name="Warning_NewHTTPSource_VSOptions" xml:space="preserve">
+    <value>Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
+  </data>
+  <data name="VSOptions_Button_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="VSOptions_Button_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="VSOptions_Button_RemoveAll" xml:space="preserve">
+    <value>Remove All</value>
+  </data>
+  <data name="VSOptions_Button_Remove" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="VSOptions_Label_AddPackageNamespace" xml:space="preserve">
+    <value>Add New Package Source Mapping</value>
+  </data>
+  <data name="VSOptions_Label_PackageSourceMappings" xml:space="preserve">
+    <value>Package Source Mappings:</value>
+  </data>
+  <data name="VSOptions_Label_Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="VSOptions_Watermark_AddPackageNamespace" xml:space="preserve">
+    <value>Example: Contoso.Contracts or System.*</value>
+    <comment>"Contoso.Contracts" and "System.*" are examples of a package ID pattern and a package prefix pattern, respectively, so these two specific examples should not be translated.</comment>
+  </data>
+  <data name="PackageSourceMappingOptions_OnActivated" xml:space="preserve">
+    <value>Getting Package Source Mappings...</value>
+  </data>
+  <data name="VSOptions_Accessibility_SourcesList" xml:space="preserve">
+    <value>Package sources list</value>
+  </data>
+  <data name="VSOptions_Label_PackagePattern" xml:space="preserve">
+    <value>Package pattern:</value>
+  </data>
+  <data name="UpdateButton_VersionOverride_Tooltip" xml:space="preserve">
+    <value>Dependency version defined by VersionOverride, modify project file to change package version.</value>
+  </data>
+  <data name="Hyperlink_PackageSourceMappingSettings" xml:space="preserve">
+    <value>Configure</value>
+  </data>
+  <data name="Text_PackageMappingsFound" xml:space="preserve">
+    <value>Package source mapping found.</value>
+  </data>
+  <data name="Text_PackageMappingsNotFound" xml:space="preserve">
+    <value>Requires a package source mapping.</value>
+  </data>
+  <data name="Text_PackageMappingsDisabled" xml:space="preserve">
+    <value>Package source mapping is off.</value>
+  </data>
+  <data name="Label_Vulnerable" xml:space="preserve">
+    <value>Vulnerable</value>
+  </data>
+  <data name="Text_ApplyingConfigurationFiles" xml:space="preserve">
+    <value>Note: Configuration files are listed in order from highest to lowest priority.</value>
+  </data>
+  <data name="Text_ApplyingConfigurationFiles_DocumentLink" xml:space="preserve">
+    <value>Common NuGet configurations: How settings are applied</value>
+  </data>
+  <data name="VSOptions_Accessibility_ConfigurationFilesList" xml:space="preserve">
+    <value>Configuration files list</value>
+  </data>
+  <data name="VSOptions_Button_Open" xml:space="preserve">
+    <value>_Open</value>
+  </data>
+  <data name="VSOptions_Label_ConfigurationFiles" xml:space="preserve">
+    <value>Configuration Files:</value>
+  </data>
+  <data name="Button_OK" xml:space="preserve">
+    <value>_OK</value>
+    <comment>Button_Cancel and Button_OK must have underscore in different letters. See https://docs.microsoft.com/windows/apps/design/input/access-keys#choose-access-keys</comment>
+  </data>
+  <data name="Label_CreatingSourceMappings" xml:space="preserve">
+    <value>Creating source mappings to '{0}':</value>
+    <comment>{0} - The Name of a user-configured NuGet Package Source</comment>
+  </data>
+  <data name="Label_NetworkError" xml:space="preserve">
+    <value>An error occurred while fetching additional information about the package. Refresh to try again.</value>
+  </data>
+  <data name="ShowError_FileNotFound" xml:space="preserve">
+    <value>The following file could not be found:</value>
+  </data>
+  <data name="ConfigurationFilesOptions_OnActivated" xml:space="preserve">
+    <value>Getting Configuration Files...</value>
+  </data>
+  <data name="Error_MetadataNotFound" xml:space="preserve">
+    <value>Unable to find metadata of {0}</value>
+    <comment>{0} is the package ID</comment>
+  </data>
+  <data name="Label_Solution" xml:space="preserve">
+    <value>Solution</value>
+  </data>
+  <data name="Text_PackageMappingsAutoCreate" xml:space="preserve">
+    <value>A package source mapping will be created.</value>
+  </data>
+  <data name="Checkbox_Show_Vulnerable_Only" xml:space="preserve">
+    <value>Show only vulnerable</value>
+  </data>
+  <data name="Vulnerabilities_Loading" xml:space="preserve">
+    <value>Loading vulnerable packages...</value>
+  </data>
+  <data name="Error_SourceMapping_GPF_NotEnabled" xml:space="preserve">
+    <value>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</value>
+    <comment>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</comment>
   </data>
 </root>

@@ -23,13 +23,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class InstallCommandTests
     {
-        private static readonly string _NU3008Message = "The package integrity check failed.";
+        private static readonly string _NU3008Message = "The package integrity check failed. The package has changed since it was signed. Try clearing the local http-cache and run nuget operation again.";
         private static readonly string _NU3008 = "NU3008: {0}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
         private static readonly string _NU3027 = "NU3027: {0}";
-        private static readonly string _NU3012Message = "The author primary signature found a chain building issue: The certificate is revoked.";
+        private static readonly string _NU3012Message = "The author primary signature found a chain building issue: Revoked: The certificate is revoked.";
         private static readonly string _NU3012 = "NU3012: {0}";
-        private static readonly string _NU3018Message = "The author primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+        private static readonly string _NU3018Message = "The author primary signature's signing certificate is not trusted by the trust provider.";
         private static readonly string _NU3018 = "NU3018: {0}";
 
         private SignCommandTestFixture _testFixture;
@@ -101,7 +101,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 };
 
                 // Act
-                var result = RunInstall(_nugetExePath, context, expectedExitCode:0, additionalArgs: args);
+                var result = RunInstall(_nugetExePath, context, expectedExitCode: 0, additionalArgs: args);
 
                 // Assert
                 result.ExitCode.Should().Be(0);
@@ -195,10 +195,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, context.WorkingDirectory);
                 SignedArchiveTestUtility.TamperWithPackage(signedPackagePath);
+
+                await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
                 certificateAuthority.Revoke(
                     bcCertificate,
                     RevocationReason.KeyCompromise,
-                    DateTimeOffset.UtcNow);
+                    DateTimeOffset.UtcNow.AddSeconds(-1));
 
                 var args = new string[]
                 {
@@ -245,7 +247,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 nugetExe,
                 pathContext.WorkingDirectory,
                 string.Join(" ", args),
-                waitForExit: true,
                 environmentVariables: envVars);
 
             // Assert

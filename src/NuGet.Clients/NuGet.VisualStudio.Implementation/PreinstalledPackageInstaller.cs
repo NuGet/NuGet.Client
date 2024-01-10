@@ -23,6 +23,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
 
@@ -34,7 +35,9 @@ namespace NuGet.VisualStudio
     internal class PreinstalledPackageInstaller
     {
         private const string RegistryKeyRoot = @"SOFTWARE\NuGet\Repository";
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly IVsPackageInstallerServices _packageServices;
+#pragma warning restore CS0618 // Type or member is obsolete
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly VsPackageInstaller _installer;
@@ -44,7 +47,9 @@ namespace NuGet.VisualStudio
         public Action<string> InfoHandler { get; set; }
 
         public PreinstalledPackageInstaller(
+#pragma warning disable CS0618 // Type or member is obsolete
             IVsPackageInstallerServices packageServices,
+#pragma warning restore CS0618 // Type or member is obsolete
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
             ISourceRepositoryProvider sourceProvider,
@@ -76,7 +81,7 @@ namespace NuGet.VisualStudio
 
             if (!extensionManagerShim.TryGetExtensionInstallPath(extensionId, out installPath))
             {
-                throwingErrorHandler(String.Format(VsResources.PreinstalledPackages_InvalidExtensionId,
+                throwingErrorHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidExtensionId,
                     extensionId));
                 Debug.Fail("The throwingErrorHandler did not throw");
             }
@@ -100,11 +105,12 @@ namespace NuGet.VisualStudio
             string repositoryValue = null;
 
             // When pulling the repository from the registry, use CurrentUser first, falling back onto LocalMachine
+            // Documented here: https://docs.microsoft.com/nuget/visual-studio-extensibility/visual-studio-templates#registry-specified-folder-path
             registryKeys = registryKeys ??
                            new[]
                                {
-                                   new RegistryKeyWrapper(Registry.CurrentUser),
-                                   new RegistryKeyWrapper(Registry.LocalMachine)
+                                   new RegistryKeyWrapper(RegistryHive.CurrentUser),
+                                   new RegistryKeyWrapper(RegistryHive.LocalMachine, RegistryView.Registry32)
                                };
 
             // Find the first registry key that supplies the necessary subkey/value
@@ -116,7 +122,7 @@ namespace NuGet.VisualStudio
                 {
                     repositoryValue = repositoryKey.GetValue(keyName) as string;
 
-                    if (!String.IsNullOrEmpty(repositoryValue))
+                    if (!string.IsNullOrEmpty(repositoryValue))
                     {
                         break;
                     }
@@ -127,13 +133,13 @@ namespace NuGet.VisualStudio
 
             if (repositoryKey == null)
             {
-                throwingErrorHandler(String.Format(VsResources.PreinstalledPackages_RegistryKeyError, RegistryKeyRoot));
+                throwingErrorHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_RegistryKeyError, RegistryKeyRoot));
                 Debug.Fail("throwingErrorHandler did not throw");
             }
 
-            if (String.IsNullOrEmpty(repositoryValue))
+            if (string.IsNullOrEmpty(repositoryValue))
             {
-                throwingErrorHandler(String.Format(VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, RegistryKeyRoot));
+                throwingErrorHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, RegistryKeyRoot));
                 Debug.Fail("throwingErrorHandler did not throw");
             }
 
@@ -163,14 +169,13 @@ namespace NuGet.VisualStudio
         /// execution to continue.
         /// </param>
         internal async Task PerformPackageInstallAsync(
-            IVsPackageInstaller packageInstaller,
             EnvDTE.Project project,
             PreinstalledPackageConfiguration configuration,
             bool preferPackageReferenceFormat,
             Action<string> warningHandler,
             Action<string> errorHandler)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var repositoryPath = configuration.RepositoryPath;
             var repositorySource = new Configuration.PackageSource(repositoryPath);
@@ -208,7 +213,7 @@ namespace NuGet.VisualStudio
             var sources = repoProvider.GetRepositories().ToList();
 
             // store expanded node state
-            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync(_solutionManager);
+            var expandedNodes = await VsHierarchyUtility.GetAllExpandedNodesAsync();
 
             try
             {
@@ -217,13 +222,15 @@ namespace NuGet.VisualStudio
                     var packageIdentity = new PackageIdentity(package.Id, package.Version);
 
                     // Does the project already have this package installed?
+#pragma warning disable CS0618 // Type or member is obsolete
                     if (_packageServices.IsPackageInstalled(project, package.Id))
                     {
                         // If so, is it the right version?
                         if (!_packageServices.IsPackageInstalledEx(project, package.Id, package.Version.ToNormalizedString()))
+#pragma warning restore CS0618 // Type or member is obsolete
                         {
                             // No? Raise a warning (likely written to the Output window) and ignore this package.
-                            warningHandler(string.Format(VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
+                            warningHandler(string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_VersionConflict, package.Id, package.Version));
                         }
                         // Yes? Just silently ignore this package!
                     }
@@ -281,16 +288,16 @@ namespace NuGet.VisualStudio
                 if (failedPackageErrors.Any())
                 {
                     var errorString = new StringBuilder();
-                    errorString.AppendFormat(VsResources.PreinstalledPackages_FailedToInstallPackage, repositoryPath);
+                    errorString.AppendFormat(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_FailedToInstallPackage, repositoryPath);
                     errorString.AppendLine();
                     errorString.AppendLine();
-                    errorString.Append(String.Join(Environment.NewLine, failedPackageErrors));
+                    errorString.Append(string.Join(Environment.NewLine, failedPackageErrors));
 
                     errorHandler(errorString.ToString());
                 }
 
                 // RepositorySettings = null in unit tests
-                if (EnvDTEProjectInfoUtility.IsWebSite(project))
+                if (project.IsWebSite())
                 {
                     CreateRefreshFilesInBin(
                         project,
@@ -303,7 +310,7 @@ namespace NuGet.VisualStudio
             finally
             {
                 // collapse nodes
-                await VsHierarchyUtility.CollapseAllNodesAsync(_solutionManager, expandedNodes);
+                await VsHierarchyUtility.CollapseAllNodesAsync(expandedNodes);
             }
         }
 
@@ -330,12 +337,12 @@ namespace NuGet.VisualStudio
         {
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (repositoryPath == null)
             {
-                throw new ArgumentNullException("repositoryPath");
+                throw new ArgumentNullException(nameof(repositoryPath));
             }
 
             if (!packageNames.Any())
@@ -356,17 +363,16 @@ namespace NuGet.VisualStudio
 
             foreach (var packageName in packageNames)
             {
-                string packagePath = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageName.Id, packageName.Version);
+                string packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageName.Id, packageName.Version);
 
                 DirectoryInfo packageFolder = new DirectoryInfo(Path.Combine(repositoryPath, packagePath));
 
-                PackageFolderReader reader = new PackageFolderReader(packageFolder);
-
+                using var reader = new PackageFolderReader(packageFolder);
                 var frameworkGroups = reader.GetReferenceItems();
 
                 var groups = reader.GetReferenceItems();
 
-                var fwComparer = new NuGetFrameworkFullComparer();
+                var fwComparer = NuGetFrameworkFullComparer.Instance;
                 FrameworkReducer reducer = new FrameworkReducer();
                 NuGetFramework targetGroupFramework = reducer.GetNearest(projectSystem.TargetFramework, groups.Select(e => e.TargetFramework));
 
@@ -409,12 +415,12 @@ namespace NuGet.VisualStudio
             {
                 var packagePath = string.Format(CultureInfo.InvariantCulture, "{0}.{1}", packageInfo.Id, packageInfo.Version);
 
-                CopyNativeBinaries(projectSystem, repositoryPath,
+                CopyNativeBinaries(projectSystem,
                     Path.Combine(repositoryPath, packagePath));
             }
         }
 
-        private void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string repositoryPath, string packagePath)
+        private static void CopyNativeBinaries(VsMSBuildProjectSystem projectSystem, string packagePath)
         {
             const string nativeBinariesFolder = "NativeBinaries";
             const string binFolder = "bin";

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -223,7 +223,7 @@ namespace NuGet.Packaging.Test
             var reader = new PackagesConfigReader(doc);
 
             // Act
-            var ex = Assert.Throws<PackagesConfigReaderException>(() => 
+            var ex = Assert.Throws<PackagesConfigReaderException>(() =>
                 reader.GetPackages(allowDuplicatePackageIds: true));
 
             // Assert

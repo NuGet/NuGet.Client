@@ -14,7 +14,7 @@ namespace NuGet.VisualStudio.Common
     public class ErrorListTableEntry : ITableEntry
     {
         internal const string ErrorSouce = "NuGet";
-        internal const string HelpLink = "https://msdn.microsoft.com/query/dev15.query?appId=Dev15IDEF1&l={0}&k=k({1})&rd=true";
+        internal const string HelpLink = "https://docs.microsoft.com/nuget/reference/errors-and-warnings/{0}";
 
         public ILogMessage Message { get; }
 
@@ -71,7 +71,7 @@ namespace NuGet.VisualStudio.Common
                     if (Message.Code > NuGetLogCode.Undefined)
                     {
                         result = Message.Code.TryGetName(out var codeString);
-                        content = string.Format(HelpLink, CultureInfo.CurrentCulture, codeString);
+                        content = string.Format(CultureInfo.CurrentCulture, HelpLink, codeString);
                     }
 
                     return result;

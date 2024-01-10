@@ -18,6 +18,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
+using NuGetConsole.Host.PowerShell;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -29,8 +30,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public PackageActionBaseCommand()
         {
-            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
-            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
+            _lockService = componentModel.GetService<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -85,7 +87,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     result.Source));
             }
 
-            UpdateActiveSourceRepository(result.SourceRepository);            
+            UpdateActiveSourceRepository(result.SourceRepository);
             DetermineFileConflictAction();
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -155,19 +157,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     RefreshUI(actions);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.InnerException is PackageAlreadyInstalledException)
             {
-                if (ex.InnerException is PackageAlreadyInstalledException)
-                {
-                    // Set nuget operation status to NoOp for telemetry event when package
-                    // is already installed.
-                    _status = NuGetOperationStatus.NoOp;
-                    Log(MessageLevel.Info, ex.Message);
-                }
-                else
-                {
-                    throw ex;
-                }
+                // Set nuget operation status to NoOp for telemetry event when package
+                // is already installed.
+                _status = NuGetOperationStatus.NoOp;
+                Log(MessageLevel.Info, ex.Message);
             }
         }
 
@@ -198,7 +193,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     // update packages count to be logged under telemetry event
                     _packageCount = actions.Select(
-                        action => action.PackageIdentity.Id).Distinct().Count();
+                        action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                 }
 
                 // stop telemetry event timer to avoid UI interaction
@@ -229,48 +224,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     RefreshUI(actions);
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) when (ex.InnerException is PackageAlreadyInstalledException)
             {
-                if (ex.InnerException is PackageAlreadyInstalledException)
-                {
-                    // Set nuget operation status to NoOp for telemetry event when package
-                    // is already installed.
-                    _status = NuGetOperationStatus.NoOp;
-                    Log(MessageLevel.Info, ex.Message);
-                }
-                else
-                {
-                    throw ex;
-                }
+                // Set nuget operation status to NoOp for telemetry event when package
+                // is already installed.
+                _status = NuGetOperationStatus.NoOp;
+                Log(MessageLevel.Info, ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Normalize package Id input against server metadata for project K, which is case-sensitive.
-        /// </summary>
-        /// <param name="project"></param>
-        protected void NormalizePackageId(NuGetProject project)
-        {
-            if (!(project is ProjectKNuGetProjectBase))
-            {
-                return;
-            }
-
-            var metadata = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => GetPackagesFromRemoteSourceAsync(Id, includePrerelease: true));
-            if (!metadata.Any())
-            {
-                return;
-            }
-
-            // note that we're assuming that package id is the same for all versions.
-            Id = metadata.First().Identity.Id;
         }
 
         protected virtual void WarnIfParametersAreNotSupported()
         {
             if (Source != null && Project is BuildIntegratedNuGetProject)
             {
-                var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
+                var warning = string.Format(CultureInfo.CurrentCulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), NuGetProject.GetUniqueNameOrName(Project));
                 Log(MessageLevel.Warning, warning);
             }
         }

@@ -23,19 +23,24 @@ namespace NuGet.Protocol
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
         private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
+
 
         /// <summary>
         /// Maximum amount of time to store index.json
         /// </summary>
         public TimeSpan MaxCacheDuration { get; protected set; }
 
-        public ServiceIndexResourceV3Provider()
+        public ServiceIndexResourceV3Provider() : this(EnvironmentVariableWrapper.Instance) { }
+
+        internal ServiceIndexResourceV3Provider(IEnvironmentVariableReader environmentVariableReader)
             : base(typeof(ServiceIndexResourceV3),
                   nameof(ServiceIndexResourceV3Provider),
                   NuGetResourceProviderPositions.Last)
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
             MaxCacheDuration = _defaultCacheDuration;
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -100,8 +105,17 @@ namespace NuGet.Protocol
             return new Tuple<bool, INuGetResource>(index != null, index);
         }
 
-        // Read the source's end point to get the index json.
-        // An exception will be thrown on failure.
+        /// <summary>
+        /// Read the source's end point to get the index json.
+        /// Retries are logged to any provided <paramref name="log"/> as LogMinimal.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="utcNow"></param>
+        /// <param name="log"></param>
+        /// <param name="token"></param>
+        /// <exception cref="OperationCanceledException">Logged to any provided <paramref name="log"/> as LogMinimal prior to throwing.</exception>
+        /// <exception cref="FatalProtocolException">Encapsulates all other exceptions.</exception>
+        /// <returns></returns>
         private async Task<ServiceIndexResourceV3> GetServiceIndexResourceV3(
             SourceRepository source,
             DateTime utcNow,
@@ -112,7 +126,8 @@ namespace NuGet.Protocol
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            const int maxRetries = 3;
+            int maxRetries = _enhancedHttpRetryHelper.IsEnabled ? _enhancedHttpRetryHelper.RetryCount : 3;
+
             for (var retry = 1; retry <= maxRetries; retry++)
             {
                 using (var sourceCacheContext = new SourceCacheContext())
@@ -141,12 +156,31 @@ namespace NuGet.Protocol
                             log,
                             token);
                     }
+                    catch (OperationCanceledException ex)
+                    {
+                        var message = ExceptionUtilities.DisplayMessage(ex);
+                        log.LogMinimal(message);
+                        throw;
+                    }
                     catch (Exception ex) when (retry < maxRetries)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
+
+                        if (_enhancedHttpRetryHelper.IsEnabled &&
+                            ex.InnerException != null &&
+                            ex.InnerException is IOException &&
+                            ex.InnerException.InnerException != null &&
+                            ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                        {
+                            // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                            // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                            // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                            log.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                            await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds), token);
+                        }
                     }
                     catch (Exception ex) when (retry == maxRetries)
                     {

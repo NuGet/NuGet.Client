@@ -15,6 +15,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -25,34 +26,17 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
-using XmlUtility = NuGet.Common.XmlUtility;
+using static NuGet.Shared.XmlUtility;
+using System.Globalization;
 #endif
 
 namespace NuGet.Build.Tasks
 {
     public static class BuildTasksUtility
     {
-        public static void LogInputParam(Common.ILogger log, string name, params string[] values)
-        {
-            LogTaskParam(log, "in", name, values);
-        }
-
-        public static void LogOutputParam(Common.ILogger log, string name, params string[] values)
-        {
-            LogTaskParam(log, "out", name, values);
-        }
-
-        private static void LogTaskParam(Common.ILogger log, string direction, string name, params string[] values)
-        {
-            var stringValues = values?.Select(s => s) ?? Enumerable.Empty<string>();
-
-            log.Log(Common.LogLevel.Debug, $"({direction}) {name} '{string.Join(";", stringValues)}'");
-        }
-
         /// <summary>
         /// Add all restorable projects to the restore list.
         /// This is the behavior for --recursive
@@ -191,6 +175,8 @@ namespace NuGet.Build.Tasks
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet Desktop MSBuild Task"));
 #endif
 
+                X509TrustStore.InitializeForDotNetSdk(log);
+
                 var restoreSummaries = new List<RestoreSummary>();
                 var providerCache = new RestoreCommandProvidersCache();
 
@@ -203,8 +189,9 @@ namespace NuGet.Build.Tasks
                     if (restoreSummaries.Count < 1)
                     {
                         var message = string.Format(
-                               Strings.InstallCommandNothingToInstall,
-                               "packages.config"
+                            CultureInfo.CurrentCulture,
+                            Strings.InstallCommandNothingToInstall,
+                            NuGetConstants.PackageReferenceFile
                         );
 
                         log.LogMinimal(message);
@@ -279,7 +266,7 @@ namespace NuGet.Build.Tasks
                             {
                                 return;
                             }
-                            
+
                             // project.assets.json
                             FileUtility.Delete(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName));
 
@@ -421,23 +408,9 @@ namespace NuGet.Build.Tasks
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
             }
 
-            packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
+            packagesConfigPath = GetPackagesConfigFilePath(projectDirectory, projectName);
 
-            if (File.Exists(packagesConfigPath))
-            {
-                return true;
-            }
-
-            packagesConfigPath = Path.Combine(projectDirectory, $"packages.{projectName}.config");
-
-            if (File.Exists(packagesConfigPath))
-            {
-                return true;
-            }
-
-            packagesConfigPath = null;
-
-            return false;
+            return packagesConfigPath != null;
         }
 
 #if IS_DESKTOP
@@ -448,7 +421,7 @@ namespace NuGet.Build.Tasks
             string firstPackagesConfigPath = null;
             IList<PackageSource> packageSources = null;
 
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());
+            var installedPackageReferences = new HashSet<Packaging.PackageReference>(PackageReferenceComparer.Instance);
 
             ISettings settings = null;
 
@@ -474,11 +447,11 @@ namespace NuGet.Build.Tasks
 
                 settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths);
 
-                var packagesConfigPath = Path.Combine(Path.GetDirectoryName(pcRestoreMetadata.ProjectPath), NuGetConstants.PackageReferenceFile);
+                string packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
 
                 firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
 
-                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true, log));
+                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
             }
 
             if (string.IsNullOrEmpty(repositoryPath))
@@ -550,7 +523,9 @@ namespace NuGet.Build.Tasks
             {
                 cacheContext.NoCache = noCache;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false)
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false, packageSourceMapping)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -599,7 +574,8 @@ namespace NuGet.Build.Tasks
                     }
                     else
                     {
-                        string message = String.Format(
+                        string message = string.Format(
+                            CultureInfo.CurrentCulture,
                             Strings.Warning_InvalidPackageSaveMode,
                             v);
 
@@ -615,28 +591,29 @@ namespace NuGet.Build.Tasks
         }
 
 
-        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds, Common.ILogger log)
+        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
         {
             if (File.Exists(projectConfigFilePath))
             {
                 try
                 {
-                    XDocument xDocument = XmlUtility.Load(projectConfigFilePath);
+                    XDocument xDocument = Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
                 catch (XmlException ex)
                 {
                     var message = string.Format(
-                       Strings.Error_PackagesConfigParseError,
-                       projectConfigFilePath,
-                       ex.Message);
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_PackagesConfigParseError,
+                        projectConfigFilePath,
+                        ex.Message);
 
                     throw new XmlException(message, ex);
                 }
             }
 
-            return Enumerable.Empty<Packaging.PackageReference>();
+            return Enumerable.Empty<PackageReference>();
         }
 
         private static IEnumerable<RestoreLogMessage> ProcessFailedEventsIntoRestoreLogs(ConcurrentQueue<PackageRestoreFailedEventArgs> failedEvents)
@@ -645,16 +622,17 @@ namespace NuGet.Build.Tasks
 
             foreach (var failedEvent in failedEvents)
             {
-                if (failedEvent.Exception is SignatureException)
+                if (failedEvent.Exception is SignatureException signatureException)
                 {
-                    var signatureException = failedEvent.Exception as SignatureException;
+                    if (signatureException.Results != null)
+                    {
+                        IEnumerable<RestoreLogMessage> errorsAndWarnings = signatureException.Results
+                            .SelectMany(r => r.Issues)
+                            .Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning)
+                            .Select(i => i.AsRestoreLogMessage());
 
-                    var errorsAndWarnings = signatureException
-                        .Results.SelectMany(r => r.Issues)
-                        .Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning)
-                        .Select(i => i.AsRestoreLogMessage());
-
-                    result.AddRange(errorsAndWarnings);
+                        result.AddRange(errorsAndWarnings);
+                    }
                 }
                 else
                 {
@@ -666,39 +644,11 @@ namespace NuGet.Build.Tasks
         }
 #endif
 
-        /// <summary>
-        /// Gets the package fallback folders for a project.
-        /// </summary>
-        /// <param name="projectDirectory">The full path to the directory of the project.</param>
-        /// <param name="fallbackFolders">A <see cref="T:string[]" /> containing the fallback folders for the project.</param>
-        /// <param name="fallbackFoldersOverride">A <see cref="T:string[]" /> containing overrides for the fallback folders for the project.</param>
-        /// <param name="additionalProjectFallbackFolders">An <see cref="IEnumerable{String}" /> containing additional fallback folders for the project.</param>
-        /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
-        /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
-        /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
-        public static string[] GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
-        {
-            // Fallback folders
-            var currentFallbackFolders = RestoreSettingsUtils.GetValue(
-                () => fallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => MSBuildRestoreUtility.ContainsClearKeyword(fallbackFolders) ? Array.Empty<string>() : null,
-                () => fallbackFolders?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
-                () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
-
-            // Append additional fallback folders after removing excluded folders
-            var filteredAdditionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
-                    values: additionalProjectFallbackFolders,
-                    excludeValues: additionalProjectFallbackFoldersExcludes)
-                .ToArray();
-
-            return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
-        }
-
-        public static string[] GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
+        public static string[] GetSources(string startupDirectory, string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
         {
             // Sources
             var currentSources = RestoreSettingsUtils.GetValue(
-                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
+                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
                 () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? Array.Empty<string>() : null,
                 () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
                 () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
@@ -708,15 +658,42 @@ namespace NuGet.Build.Tasks
             var filteredAdditionalProjectSources = MSBuildRestoreUtility.AggregateSources(
                     values: additionalProjectSources,
                     excludeValues: Enumerable.Empty<string>())
-                .Select(MSBuildRestoreUtility.FixSourcePath)
-                .ToArray();
+                .Select(MSBuildRestoreUtility.FixSourcePath);
 
             return AppendItems(projectDirectory, currentSources, filteredAdditionalProjectSources);
         }
 
-        private static string[] AppendItems(string projectDirectory, string[] current, string[] additional)
+        /// <summary>
+        /// Gets the package fallback folders for a project.
+        /// </summary>
+        /// <param name="startupDirectory">The start-up directory of the tool.</param>
+        /// <param name="projectDirectory">The full path to the directory of the project.</param>
+        /// <param name="fallbackFolders">A <see cref="T:string[]" /> containing the fallback folders for the project.</param>
+        /// <param name="fallbackFoldersOverride">A <see cref="T:string[]" /> containing overrides for the fallback folders for the project.</param>
+        /// <param name="additionalProjectFallbackFolders">An <see cref="IEnumerable{String}" /> containing additional fallback folders for the project.</param>
+        /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
+        /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
+        /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
+        public static string[] GetFallbackFolders(string startupDirectory, string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
         {
-            if (additional == null || additional.Length == 0)
+            // Fallback folders
+            var currentFallbackFolders = RestoreSettingsUtils.GetValue(
+                () => fallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(startupDirectory, e)).ToArray(),
+                () => MSBuildRestoreUtility.ContainsClearKeyword(fallbackFolders) ? Array.Empty<string>() : null,
+                () => fallbackFolders?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
+                () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
+
+            // Append additional fallback folders after removing excluded folders
+            var filteredAdditionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
+                    values: additionalProjectFallbackFolders,
+                    excludeValues: additionalProjectFallbackFoldersExcludes);
+
+            return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
+        }
+
+        private static string[] AppendItems(string projectDirectory, string[] current, IEnumerable<string> additional)
+        {
+            if (additional == null || !additional.Any())
             {
                 // noop
                 return current;
@@ -726,5 +703,99 @@ namespace NuGet.Build.Tasks
 
             return current.Concat(additionalAbsolute).ToArray();
         }
+
+        /// <summary>
+        /// Gets the path to a packages.config for the specified project if one exists.
+        /// </summary>
+        /// <param name="projectFullPath">The full path to the project.</param>
+        /// <returns>The path to the packages.config file if one exists, otherwise <see langword="null" />.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="projectFullPath" /> is <see langword="null" />.</exception>
+        public static string GetPackagesConfigFilePath(string projectFullPath)
+        {
+            if (string.IsNullOrWhiteSpace(projectFullPath))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectFullPath));
+            }
+
+            return GetPackagesConfigFilePath(Path.GetDirectoryName(projectFullPath), Path.GetFileNameWithoutExtension(projectFullPath));
+        }
+
+        /// <summary>
+        /// Gets the path to a packages.config for the specified project if one exists.
+        /// </summary>
+        /// <param name="projectFullPath">The full path to the project directory.</param>
+        /// <param name="projectName">The name of the project file.</param>
+        /// <returns>The path to the packages.config file if one exists, otherwise <see langword="null" />.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="projectDirectory" /> -or- <paramref name="projectName" /> is <see langword="null" />.</exception>
+        public static string GetPackagesConfigFilePath(string projectDirectory, string projectName)
+        {
+            if (string.IsNullOrWhiteSpace(projectDirectory))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectDirectory));
+            }
+
+            if (string.IsNullOrWhiteSpace(projectName))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
+            }
+
+            string packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
+
+            if (File.Exists(packagesConfigPath))
+            {
+                return packagesConfigPath;
+            }
+
+            packagesConfigPath = Path.Combine(projectDirectory, "packages." + projectName + ".config");
+
+            if (File.Exists(packagesConfigPath))
+            {
+                return packagesConfigPath;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets an integer indicating what files should be embedded in the MSBuild binary log based on the user-specified value:
+        ///  - "0" or "false" = Do not embed any files
+        ///  - "2" = Embed dgspec, project.assets.json, g.props, and g.targets
+        /// Any other value embeds project.assets.json, g.props, and g.targets
+        /// </summary>
+        /// <param name="value">The user supplied value indicating what files to embed in the binary log.</param>
+        /// <returns>An integer representing what to embed in the binary log.</returns>
+        public static int GetFilesToEmbedInBinlogValue(string value)
+        {
+            return GetFilesToEmbedInBinlogValue(value, EnvironmentVariableWrapper.Instance);
+        }
+
+        internal static int GetFilesToEmbedInBinlogValue(string value, IEnvironmentVariableReader environmentVariableReader)
+        {
+            if (!string.Equals(environmentVariableReader.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            if (value == null)
+            {
+                return 1;
+            }
+
+            string trimmed = value.Trim();
+
+            if (string.Equals(bool.FalseString, trimmed, StringComparison.OrdinalIgnoreCase) || string.Equals("0", trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            if (string.Equals("2", trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return 2;
+            }
+
+            return 1;
+        }
+
     }
 }
+

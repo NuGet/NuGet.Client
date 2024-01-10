@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,12 +25,16 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
+                //This will come back as null if there are no matching RegistrationsBaseUrl types
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl);
 
-                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+                if (baseUrl != null)
+                {
+                    var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
-                // construct a new resource
-                regResource = new RegistrationResourceV3(httpSourceResource.HttpSource, baseUrl);
+                    // construct a new resource
+                    regResource = new RegistrationResourceV3(httpSourceResource.HttpSource, baseUrl);
+                }
             }
 
             return new Tuple<bool, INuGetResource>(regResource != null, regResource);

@@ -1,9 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <!-- Shared test project template -->
-  <PropertyGroup>
-    <RuntimeIdentifier Condition=" '$(IsXPlat)' != 'true' ">win7-x64</RuntimeIdentifier>
-  </PropertyGroup>
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CS1701;xUnit2013;xUnit2000;xUnit2017;xUnit2006;xUnit2009;xUnit2013;xUnit2014;xUnit2003;xUnit2010;xUnit2015;xUnit2007;xUnit1013;xUnit1014;xUnit2002;xUnit2012;xUnit2004</NoWarn>

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
@@ -10,6 +11,7 @@ using Moq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -69,12 +71,47 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard1.6" },
                     { "CrossTargeting", "true" },
                 };
 
                 itemsWithSameCasings.Add(projectAItem);
                 itemsWithDifferentCasings.Add(WithUniqueName(projectAItem, project1UniqueNameCasings[0]));
+
+                var projectATfmInformationNetItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+
+                itemsWithSameCasings.Add(projectATfmInformationNetItem);
+                itemsWithDifferentCasings.Add(WithUniqueName(projectATfmInformationNetItem, project1UniqueNameCasings[0]));
+
+                var projectATfmInformationNSItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+
+                itemsWithSameCasings.Add(projectATfmInformationNSItem);
+                itemsWithDifferentCasings.Add(WithUniqueName(projectATfmInformationNSItem, project1UniqueNameCasings[0]));
 
                 var projectBItem = new Dictionary<string, string>()
                 {
@@ -84,18 +121,53 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath2 },
                     { "ProjectUniqueName", project2UniqueName },
                     { "ProjectPath", project2Path },
-                    { "TargetFrameworks", "net45;netstandard1.0" },
                     { "CrossTargeting", "true" },
                 };
 
                 itemsWithSameCasings.Add(projectBItem);
                 itemsWithDifferentCasings.Add(WithUniqueName(projectBItem, project2UniqueNameCasings[0]));
 
+                var projectBTfmInformationNetItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net45" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.5" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.5" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+
+                itemsWithSameCasings.Add(projectBTfmInformationNetItem);
+                itemsWithDifferentCasings.Add(WithUniqueName(projectBTfmInformationNetItem, project2UniqueNameCasings[0]));
+
+                var projectBTfmInformationNSItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "netstandard1.0" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.0" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+
+                itemsWithSameCasings.Add(projectBTfmInformationNSItem);
+                itemsWithDifferentCasings.Add(WithUniqueName(projectBTfmInformationNSItem, project2UniqueNameCasings[0]));
+
                 // A -> B
                 var projectReference = new Dictionary<string, string>()
                 {
                     { "Type", "ProjectReference" },
-                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectUniqueName", project2UniqueName },
                     { "ProjectReferenceUniqueName", project2UniqueName },
                     { "ProjectPath", project2Path },
                     { "TargetFrameworks", "netstandard1.6" },
@@ -167,14 +239,14 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 // Verify package dependencies and framework references are the same
-                project1SpecWithSameCasings.TargetFrameworks.ShouldBeEquivalentTo(project1SpecWithDifferentCasings.TargetFrameworks);
-                project2SpecWithSameCasings.TargetFrameworks.ShouldBeEquivalentTo(project2SpecWithDifferentCasings.TargetFrameworks);
+                project1SpecWithSameCasings.TargetFrameworks.Should().BeEquivalentTo(project1SpecWithDifferentCasings.TargetFrameworks);
+                project2SpecWithSameCasings.TargetFrameworks.Should().BeEquivalentTo(project2SpecWithDifferentCasings.TargetFrameworks);
 
                 // Verify project references are the same
                 var projectReferencesSame = project1SpecWithSameCasings.RestoreMetadata.TargetFrameworks[0].ProjectReferences.Select(e => e.ProjectPath.ToLowerInvariant());
                 var projectReferencesDiff = project1SpecWithDifferentCasings.RestoreMetadata.TargetFrameworks[0].ProjectReferences.Select(e => e.ProjectPath.ToLowerInvariant());
 
-                projectReferencesSame.ShouldBeEquivalentTo(projectReferencesDiff);
+                projectReferencesSame.Should().BeEquivalentTo(projectReferencesDiff);
             }
         }
 
@@ -208,10 +280,41 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard1.6" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectAItem);
+
+                var projectATfmInformationNetItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+                items.Add(projectATfmInformationNetItem);
+
+                var projectATfmInformationNSItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+                items.Add(projectATfmInformationNSItem);
 
                 var projectA2Item = new Dictionary<string, string>()
                 {
@@ -221,10 +324,41 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath2 },
                     { "ProjectUniqueName", project2UniqueName },
                     { "ProjectPath", project2Path },
-                    { "TargetFrameworks", "net46;netstandard1.6" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectA2Item);
+
+                var project2TfmInformationNetItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+                items.Add(project2TfmInformationNetItem);
+
+                var project2TfmInformationNSItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+                items.Add(project2TfmInformationNSItem);
 
                 // Package references
                 // A net46 -> X
@@ -296,10 +430,25 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectAItem);
+
+                var project1TfmInformationItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+                items.Add(project1TfmInformationItem);
 
                 var projectBItem = new Dictionary<string, string>()
                 {
@@ -313,6 +462,22 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectBItem);
+
+                var project2TfmInformationItem = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+                items.Add(project2TfmInformationItem);
 
                 // A -> B
                 items.Add(new Dictionary<string, string>()
@@ -368,7 +533,6 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectAItem);
@@ -381,10 +545,39 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath2 },
                     { "ProjectUniqueName", project2UniqueName },
                     { "ProjectPath", project2Path },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectBItem);
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
 
                 // A -> B
                 items.Add(new Dictionary<string, string>()
@@ -439,7 +632,6 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath1 },
                     { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectAItem);
@@ -452,10 +644,39 @@ namespace NuGet.Commands.Test
                     { "OutputPath", outputPath2 },
                     { "ProjectUniqueName", project2UniqueName },
                     { "ProjectPath", project2Path },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
                 };
                 items.Add(projectBItem);
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
 
                 // A -> B
                 items.Add(new Dictionary<string, string>()
@@ -492,7 +713,7 @@ namespace NuGet.Commands.Test
             var expectedValues = expected.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
 
             MSBuildRestoreUtility.AggregateSources(inputValues, excludeValues)
-                .ShouldBeEquivalentTo(expectedValues);
+                .Should().BeEquivalentTo(expectedValues);
         }
 
         [Fact]
@@ -511,7 +732,8 @@ namespace NuGet.Commands.Test
                 var project3Root = Path.Combine(workingDir, "c");
                 var project3Path = Path.Combine(project3Root, "c.csproj");
                 var outputPath3 = Path.Combine(project3Root, "obj");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project2UniqueName = "C82C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -521,8 +743,54 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                    { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "Version", "2.0.0-rc.2+a.b.c" },
+                    { "ProjectName", "c" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath3 },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "ProjectPath", project3Path },
                     { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
@@ -533,19 +801,32 @@ namespace NuGet.Commands.Test
 
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "ProjectSpec" },
-                    { "Version", "2.0.0-rc.2+a.b.c" },
-                    { "ProjectName", "c" },
-                    { "ProjectStyle", "PackageReference" },
-                    { "OutputPath", outputPath3 },
-                    { "ProjectUniqueName", "C82C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
-                    { "ProjectPath", project3Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
-                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
-                    { "FallbackFolders", fallbackFolder },
-                    { "PackagesPath", packagesFolder },
-                    { "CrossTargeting", "true" },
-                    { "RestoreLegacyPackagesDirectory", "true" }
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 // A -> B
@@ -695,7 +976,7 @@ namespace NuGet.Commands.Test
                 var project1Root = Path.Combine(workingDir, "a");
                 var project1Path = Path.Combine(project1Root, "a.csproj");
                 var outputPath1 = Path.Combine(project1Root, "obj");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -704,10 +985,24 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 // Package references
@@ -781,7 +1076,7 @@ namespace NuGet.Commands.Test
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
                 var configFilePath = Path.Combine(project1Root, "nuget.config");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -791,15 +1086,44 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
                     { "ConfigFilePaths", configFilePath },
                     { "CrossTargeting", "true" },
                     { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -813,11 +1137,12 @@ namespace NuGet.Commands.Test
                 Assert.Equal("a", project1Spec.Name);
                 Assert.Equal("2.0.0-rc.2+a.b.c", project1Spec.Version.ToFullString());
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
-                Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", project1Spec.RestoreMetadata.ProjectUniqueName);
+                Assert.Equal(project1UniqueName, project1Spec.RestoreMetadata.ProjectUniqueName);
                 Assert.Equal(project1Path, project1Spec.RestoreMetadata.ProjectPath);
                 Assert.Equal(0, project1Spec.RestoreMetadata.TargetFrameworks.SelectMany(e => e.ProjectReferences).Count());
                 Assert.Null(project1Spec.RestoreMetadata.ProjectJsonPath);
                 Assert.Equal("net46|netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.Equal(outputPath1, project1Spec.RestoreMetadata.OutputPath);
                 Assert.Equal("https://nuget.org/a/index.json|https://nuget.org/b/index.json", string.Join("|", project1Spec.RestoreMetadata.Sources.Select(s => s.Source)));
@@ -843,7 +1168,7 @@ namespace NuGet.Commands.Test
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
                 var configFilePath = Path.Combine(project1Root, "nuget.config");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -852,15 +1177,44 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "ConfigFilePaths", configFilePath },
                     { "PackagesPath", packagesFolder },
                     { "CrossTargeting", "true" },
                     { "RestoreLegacyPackagesDirectory", "true" }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -927,7 +1281,7 @@ namespace NuGet.Commands.Test
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
                 var configFilePath = Path.Combine(project1Root, "nuget.config");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -936,13 +1290,28 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName",  project1UniqueName },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
                     { "ConfigFilePaths", configFilePath },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -956,6 +1325,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("a", project1Spec.Name);
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
+                Assert.Equal("netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
                 Assert.False(project1Spec.RestoreMetadata.CrossTargeting);
             }
@@ -972,6 +1342,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -981,12 +1352,27 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -1001,6 +1387,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("netstandard1.6", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("netstandard16", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
+                Assert.Equal("netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.False(project1Spec.RestoreMetadata.LegacyPackagesDirectory);
             }
         }
@@ -1016,7 +1403,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -1025,9 +1412,8 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
@@ -1037,9 +1423,30 @@ namespace NuGet.Commands.Test
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "TargetFrameworkInformation" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "PackageTargetFallback", "portable-net45+win8;dnxcore50;;" },
-                    { "TargetFramework", "netstandard16" }
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -1087,6 +1494,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -1096,9 +1504,8 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
@@ -1108,9 +1515,30 @@ namespace NuGet.Commands.Test
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "TargetFrameworkInformation" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "PackageTargetFallback", "" },
-                    { "TargetFramework", "netstandard16" }
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -1143,6 +1571,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -1152,9 +1581,8 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "  a\n  " },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "  net46  ;   netstandard16\n  " },
                     { "Sources", "https://nuget.org/a/index.json; https://nuget.org/b/index.json\n" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
@@ -1164,9 +1592,30 @@ namespace NuGet.Commands.Test
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "TargetFrameworkInformation" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46\n" },
+                    { "TargetFrameworkIdentifier", ".NETFramework\n" },
+                    { "TargetFrameworkVersion", "v4.6\n" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6\n" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "PackageTargetFallback", "   portable-net45+win8  ;   dnxcore50\n   ; ;  " },
-                    { "TargetFramework", " netstandard16\n  " }
+                    { "TargetFramework", " netstandard16\n  " },
+                    { "TargetFrameworkIdentifier", ".NETStandard\n" },
+                    { "TargetFrameworkVersion", "v1.6\n" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6\n" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -1205,6 +1654,7 @@ namespace NuGet.Commands.Test
                 // Verify original frameworks are trimmed
                 Assert.Equal("net46", project1Spec.RestoreMetadata.OriginalTargetFrameworks[0]);
                 Assert.Equal("netstandard16", project1Spec.RestoreMetadata.OriginalTargetFrameworks[1]);
+                Assert.Equal("net46|netstandard16", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
             }
         }
 
@@ -1219,7 +1669,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -1228,12 +1678,40 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
                     { "RuntimeIdentifiers", "win7-x86;linux-x64" },
                     { "RuntimeSupports", "net46.app;win8.app" },
                     { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -1263,6 +1741,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
 
                 var items = new List<IDictionary<string, string>>();
 
@@ -1272,12 +1751,40 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard16" },
                     { "RuntimeIdentifiers", "win7-x86;linux-x64;win7-x86;linux-x64" },
                     { "RuntimeSupports", "net46.app;win8.app;net46.app;win8.app" },
                     { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", "netstandard16" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -1311,6 +1818,9 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var outputPath2 = Path.Combine(project2Root, "obj");
 
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project2UniqueName = "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -1319,10 +1829,38 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46;netstandard1.6" },
                     { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 items.Add(new Dictionary<string, string>()
@@ -1331,10 +1869,38 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "b" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath2 },
-                    { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project2UniqueName },
                     { "ProjectPath", project2Path },
-                    { "TargetFrameworks", "net45;netstandard1.0" },
                     { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", "netstandard1.0" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.0" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project2UniqueName },
+                    { "TargetFramework", "net45" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.5" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.5" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 // A -> B
@@ -1454,7 +2020,7 @@ namespace NuGet.Commands.Test
                 var projectRoot = Path.Combine(workingDir, "a");
                 var projectPath = Path.Combine(projectRoot, "a.csproj");
                 var outputPath = Path.Combine(projectRoot, "obj");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 var specItem = new Dictionary<string, string>()
@@ -1463,9 +2029,8 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", projectPath },
-                    { "TargetFrameworks", "net46;netstandard1.6" },
                     { "CrossTargeting", "true" },
                 };
 
@@ -1477,7 +2042,7 @@ namespace NuGet.Commands.Test
                 var projectRef = new Dictionary<string, string>()
                 {
                     { "Type", "ProjectReference" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectReferenceUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectPath", "otherProjectPath.csproj" },
                     { "TargetFrameworks", "netstandard1.6" },
@@ -1492,7 +2057,7 @@ namespace NuGet.Commands.Test
                 var packageRef1 = new Dictionary<string, string>()
                 {
                     { "Type", "Dependency" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "Id", "z" },
                     { "VersionRange", "2.0.0" },
                     { "TargetFrameworks", "netstandard1.6" },
@@ -1506,7 +2071,7 @@ namespace NuGet.Commands.Test
                 var packageRef2 = new Dictionary<string, string>()
                 {
                     { "Type", "Dependency" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "Id", "y" },
                     { "VersionRange", "[1.0.0]" },
                     { "TargetFrameworks", "netstandard1.6;net46" },
@@ -1517,16 +2082,40 @@ namespace NuGet.Commands.Test
                 items.Add(packageRef2);
 
                 // TFM info
-                var tfmInfo = new Dictionary<string, string>()
+                var tfmInfoNS = new Dictionary<string, string>()
                 {
                     { "Type", "TargetFrameworkInformation" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "PackageTargetFallback", "portable-net45+win8;dnxcore50;;" },
-                    { "TargetFramework", "netstandard16" }
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 };
 
-                items.Add(tfmInfo);
-                items.Add(tfmInfo);
+                items.Add(tfmInfoNS);
+                items.Add(tfmInfoNS);
+
+                var tfmInfoNet = new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                };
+
+                items.Add(tfmInfoNet);
+                items.Add(tfmInfoNet);
 
                 var wrappedItems = items.Select(CreateItems).ToList();
 
@@ -1554,14 +2143,14 @@ namespace NuGet.Commands.Test
                 var outputPath = Path.Combine(projectRoot, "obj");
 
                 var items = new List<IDictionary<string, string>>();
-
+                var project1UniqueName = "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var specItem = new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath },
-                    { "ProjectUniqueName", "AA2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", projectPath },
                     { "TargetFrameworks", "net46;netstandard1.6" },
                     { "CrossTargeting", "true" },
@@ -1569,11 +2158,39 @@ namespace NuGet.Commands.Test
 
                 items.Add(specItem);
 
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", "netstandard1.6" },
+                    { "TargetFrameworkIdentifier", ".NETStandard" },
+                    { "TargetFrameworkVersion", "v1.6" },
+                    { "TargetFrameworkMoniker", ".NETStandard,Version=v1.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
                 // A -> B
                 var projectRef = new Dictionary<string, string>()
                 {
                     { "Type", "ProjectReference" },
-
                     // This ID does not match the project!
                     { "ProjectUniqueName", "BB2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
                     { "ProjectReferenceUniqueName", "CC2C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
@@ -1884,7 +2501,7 @@ namespace NuGet.Commands.Test
                 var outputPath1 = Path.Combine(project1Root, "obj");
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
                 items.Add(new Dictionary<string, string>()
@@ -1893,19 +2510,32 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
                 });
 
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
 
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "Dependency" },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0" },
                     { "IncludeAssets", "build;compile" },
@@ -1924,6 +2554,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(ProjectStyle.PackageReference, project1Spec.RestoreMetadata.ProjectStyle);
                 Assert.Equal("net46", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName())));
                 Assert.Equal("net46", string.Join("|", project1Spec.RestoreMetadata.OriginalTargetFrameworks));
+                Assert.Equal("net46", string.Join("|", project1Spec.TargetFrameworks.Select(e => e.TargetAlias)));
                 Assert.Equal("x", project1Spec.GetTargetFramework(NuGetFramework.Parse("net46")).Dependencies.SingleOrDefault().Name);
                 Assert.Empty(project1Spec.Dependencies);
             }
@@ -2016,7 +2647,7 @@ namespace NuGet.Commands.Test
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
                 var configFilePath = Path.Combine(project1Root, "nuget.config");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
 
@@ -2027,9 +2658,8 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
@@ -2037,6 +2667,21 @@ namespace NuGet.Commands.Test
                     { "TreatWarningsAsErrors", "true" },
                     { "WarningsAsErrors", "NU1001;NU1002" },
                     { "NoWarn", "NU1100;NU1101" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -2048,8 +2693,8 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 props.AllWarningsAsErrors.Should().BeTrue();
-                props.NoWarn.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1100, NuGetLogCode.NU1101 });
-                props.WarningsAsErrors.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
+                props.NoWarn.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1100, NuGetLogCode.NU1101 });
+                props.WarningsAsErrors.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
             }
         }
 
@@ -2065,7 +2710,7 @@ namespace NuGet.Commands.Test
                 var fallbackFolder = Path.Combine(project1Root, "fallback");
                 var packagesFolder = Path.Combine(project1Root, "packages");
                 var configFilePath = Path.Combine(project1Root, "nuget.config");
-
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
                 var items = new List<IDictionary<string, string>>();
 
 
@@ -2076,9 +2721,8 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "OutputPath", outputPath1 },
-                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectUniqueName", project1UniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "net46" },
                     { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
                     { "FallbackFolders", fallbackFolder },
                     { "PackagesPath", packagesFolder },
@@ -2086,6 +2730,21 @@ namespace NuGet.Commands.Test
                     { "TreatWarningsAsErrors", "" },
                     { "WarningsAsErrors", "" },
                     { "NoWarn", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -2122,9 +2781,23 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", uniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0" },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
                     { "NoWarn", "NU1001;NU1002" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -2135,7 +2808,7 @@ namespace NuGet.Commands.Test
                 var packageDependency = project1Spec.TargetFrameworks[0].Dependencies[0];
 
                 // Assert
-                packageDependency.NoWarn.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
+                packageDependency.NoWarn.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1001, NuGetLogCode.NU1002 });
             }
         }
 
@@ -2159,8 +2832,22 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", uniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0" },
-                    { "TargetFrameworks", "net46" },
                     { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -2195,8 +2882,22 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", uniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0" },
-                    { "TargetFrameworks", "net46" },
                     { "IsImplicitlyDefined", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -2257,7 +2958,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             codes.Should().NotBeNull();
-            codes.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1107 });
+            codes.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1107 });
         }
 
         [Theory]
@@ -2307,7 +3008,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             codes.Should().NotBeNull();
-            codes.ShouldBeEquivalentTo(new[] { NuGetLogCode.NU1107, NuGetLogCode.NU1701 });
+            codes.Should().BeEquivalentTo(new[] { NuGetLogCode.NU1107, NuGetLogCode.NU1701 });
         }
 
         [Theory]
@@ -2537,19 +3238,34 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var targetFramework = FrameworkConstants.CommonFrameworks.NetStandard20;
-
+            var alias = "netstandard2.0";
             var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
             {
-                CreateItems(new Dictionary<string, string>()
+                CreateItems(
+                new Dictionary<string, string>()
                 {
                     { "Type", "ProjectSpec" },
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "ProjectUniqueName", "a" },
-                    { "TargetFrameworks", targetFramework.GetShortFolderName() },
+                    { "TargetFrameworks", alias },
                     { "CrossTargeting", "true" },
+                }),
+                CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", targetFramework.Framework },
+                    { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 })
-                });
+            });
 
             var packageX = new Mock<IMSBuildItem>();
             packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
@@ -2579,7 +3295,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var targetFramework = FrameworkConstants.CommonFrameworks.NetStandard20;
-
+            var alias = "netstandard2.0";
             var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
             {
                 CreateItems(new Dictionary<string, string>()
@@ -2588,8 +3304,22 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "ProjectUniqueName", "a" },
-                    { "TargetFrameworks", targetFramework.GetShortFolderName() },
+                    { "TargetFrameworks", alias },
                     { "CrossTargeting", "true" },
+                }),
+                CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", targetFramework.Framework },
+                    { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 })
                 });
 
@@ -2626,6 +3356,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var targetFramework = FrameworkConstants.CommonFrameworks.NetStandard20;
+            var alias = "netstandard2.0";
 
             var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
             {
@@ -2635,8 +3366,22 @@ namespace NuGet.Commands.Test
                     { "ProjectName", "a" },
                     { "ProjectStyle", "PackageReference" },
                     { "ProjectUniqueName", "a" },
-                    { "TargetFrameworks", targetFramework.GetShortFolderName() },
+                    { "TargetFrameworks", alias },
                     { "CrossTargeting", "true" },
+                }),
+                CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", targetFramework.Framework },
+                    { "TargetFrameworkVersion", $"v{targetFramework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", $"{targetFramework.Framework},Version={targetFramework.Version.ToString(2)}" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 })
                 });
 
@@ -2653,6 +3398,27 @@ namespace NuGet.Commands.Test
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_AddPackageDownloads_NoVersion_ThrowsException()
+        {
+            // Arrange
+            PackageSpec spec = MSBuildRestoreUtility.GetPackageSpec(new[] { CreateItems(new Dictionary<string, string>()) });
+            Mock<IMSBuildItem> packageX = new Mock<IMSBuildItem>();
+            const string packageId = "x";
+            packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
+            packageX.Setup(p => p.GetProperty("Id")).Returns(packageId);
+
+            IMSBuildItem[] msbuildItems = new[]
+            {
+                packageX.Object
+            };
+
+            // Act & Assert
+            ArgumentException exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
+            string expectedMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, packageId);
+            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -2675,9 +3441,23 @@ namespace NuGet.Commands.Test
                     { "ProjectStyle", "PackageReference" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
                     { "_CentralPackageVersionsEnabled", "true"}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 // Package reference
@@ -2691,7 +3471,7 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 });
 
-                // Package reference with version 
+                // Package reference with version
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "Dependency" },
@@ -2733,7 +3513,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
                 var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
-               
+
                 // Assert
                 Assert.Equal(1, project1Spec.TargetFrameworks.Count());
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().Dependencies.Count);
@@ -2758,9 +3538,98 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal("z", centralDependencyZ.Name);
                 Assert.Equal("[3.0.0, )", centralDependencyZ.VersionRange.ToNormalizedString());
-               
+
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetDependencySpec_HandlesDuplicatesWhenCPVMEnabled()
+        {
+            // Arrange
+            using var workingDir = TestDirectory.Create();
+            const string projectName = "acpvm";
+            const string projectUniqueName = "21031AA5-93B3-4230-BA20-0EF4CFCEDAAB";
+            var project1Root = Path.Combine(workingDir, projectName);
+            var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+            var items = new List<IDictionary<string, string>>
+                {
+                    new Dictionary<string, string>()
+                    {
+                        { "Type", "ProjectSpec" },
+                        { "ProjectName", projectName },
+                        { "ProjectStyle", "PackageReference" },
+                        { "ProjectUniqueName", projectUniqueName },
+                        { "ProjectPath", project1Path },
+                        { "CrossTargeting", "true" },
+                        { "_CentralPackageVersionsEnabled", "true"}
+                    },
+                    new Dictionary<string, string>()
+                    {
+                        { "Type", "TargetFrameworkInformation" },
+                        { "AssetTargetFallback", "" },
+                        { "PackageTargetFallback", "" },
+                        { "ProjectUniqueName", projectUniqueName },
+                        { "TargetFramework", "netcoreapp3.0" },
+                        { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                        { "TargetFrameworkVersion", "v3.0" },
+                        { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                        { "TargetPlatformIdentifier", "" },
+                        { "TargetPlatformMoniker", "" },
+                        { "TargetPlatformVersion", "" },
+                    },
+                    // Package reference
+                    new Dictionary<string, string>()
+                    {
+                        { "Type", "Dependency" },
+                        { "ProjectUniqueName", projectUniqueName },
+                        { "Id", "x" },
+                        { "TargetFrameworks", "netcoreapp3.0" },
+                        { "IncludeAssets", "build;compile" },
+                        { "CrossTargeting", "true" },
+                    },
+                    // Duplicate central package versions
+                    new Dictionary<string, string>()
+                    {
+                        { "Type", "CentralPackageVersion" },
+                        { "ProjectUniqueName", projectUniqueName },
+                        { "Id", "x" },
+                        { "VersionRange", "1.0.0" },
+                        { "TargetFrameworks", "netcoreapp3.0" },
+                    },
+                    new Dictionary<string, string>()
+                    {
+                        { "Type", "CentralPackageVersion" },
+                        { "ProjectUniqueName", projectUniqueName },
+                        { "Id", "x" },
+                        { "VersionRange", "2.0.0" },
+                        { "TargetFrameworks", "netcoreapp3.0" },
+                    }
+                };
+
+            var wrappedItems = items.Select(CreateItems).ToList();
+
+            // Act
+            var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+            var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
+
+            // Assert
+            Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+            Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
+            Assert.Equal(1, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
+
+            var dependencyX = project1Spec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "x").First();
+
+            Assert.Equal("[2.0.0, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+            Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, dependencyX.IncludeType);
+
+            var centralDependencyX = project1Spec.TargetFrameworks.First().CentralPackageVersions["x"];
+
+            Assert.Equal("x", centralDependencyX.Name);
+            Assert.Equal("[2.0.0, )", centralDependencyX.VersionRange.ToNormalizedString());
+
+            Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
         [Fact]
@@ -2783,8 +3652,22 @@ namespace NuGet.Commands.Test
                     { "ProjectStyle", "PackageReference" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", ".NETFramework,Version=v4.7.2" },
                     { "_CentralPackageVersionsEnabled", "true"}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "net472" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.7.2" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 // Package reference
@@ -2798,7 +3681,7 @@ namespace NuGet.Commands.Test
                     { "CrossTargeting", "true" },
                 });
 
-                
+
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
@@ -2814,7 +3697,7 @@ namespace NuGet.Commands.Test
                     { "Id", "y" },
                     { "VersionRange", "2.0.0" },
                 });
-                
+
                 var wrappedItems = items.Select(CreateItems).ToList();
 
                 // Act
@@ -2836,6 +3719,216 @@ namespace NuGet.Commands.Test
                 Assert.Equal("[2.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
 
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+            }
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("true", false)]
+        [InlineData("invalid", false)]
+        [InlineData("false", true)]
+        public void MSBuildRestoreUtility_GetPackageSpec_CPVM_VersionOverrideCanBeDisabled(string isCentralPackageVersionOverrideEnabled, bool disabled)
+        {
+            var projectName = "alegacycpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectUniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "_CentralPackageVersionsEnabled", "true"},
+                    { "CentralPackageVersionOverrideEnabled", isCentralPackageVersionOverrideEnabled }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "net472" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.7.2" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                // Package reference
+                // No TargetFrameworks metadata
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
+                });
+
+
+                // Central Version for the package above and another one for a package y
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "2.0.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
+
+                // Assert
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
+                Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
+
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
+
+                Assert.Equal("x", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].Name);
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].VersionRange.ToNormalizedString());
+
+                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].Name);
+                Assert.Equal("[2.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
+
+                Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                if (disabled)
+                {
+                    Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+                }
+                else
+                {
+                    Assert.False(project1Spec.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("                     ", false)]
+        [InlineData("false", false)]
+        [InlineData("invalid", false)]
+        [InlineData("true", true)]
+        public void MSBuildRestoreUtility_GetPackageSpec_CPVM_FloatingVersionsCanBeEnabled(string isCentralPackageFloatingVersionsEnabled, bool enabled)
+        {
+            var projectName = "alegacycpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectUniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "_CentralPackageVersionsEnabled", "true"},
+                    { "CentralPackageFloatingVersionsEnabled", isCentralPackageFloatingVersionsEnabled }
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "net472" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.7.2" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=v4.7.2" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                // Package reference
+                // No TargetFrameworks metadata
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
+                });
+
+
+                // Central Version for the package above and another one for a package y
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "2.0.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
+
+                // Assert
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
+                Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
+
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
+
+                Assert.Equal("x", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].Name);
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].VersionRange.ToNormalizedString());
+
+                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].Name);
+                Assert.Equal("[2.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
+
+                Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                if (enabled)
+                {
+                    Assert.True(project1Spec.RestoreMetadata.CentralPackageFloatingVersionsEnabled);
+                }
+                else
+                {
+                    Assert.False(project1Spec.RestoreMetadata.CentralPackageFloatingVersionsEnabled);
+                }
             }
         }
 
@@ -2862,13 +3955,12 @@ namespace NuGet.Commands.Test
                     { "ProjectStyle", projectStyle.ToString() },
                     { "ProjectUniqueName", projectUniqueName },
                     { "ProjectPath", project1Path },
-                    { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
                     { "_CentralPackageVersionsEnabled", "true"}
                 });
 
                 // Act + Assert
-                Assert.False(MSBuildRestoreUtility.IsCentralVersionsManagementEnabled(projectSpec, projectStyle));
+                Assert.False(MSBuildRestoreUtility.GetCentralPackageManagementSettings(projectSpec, projectStyle).IsEnabled);
             }
         }
 
@@ -2895,6 +3987,21 @@ namespace NuGet.Commands.Test
                     { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
                     { "_CentralPackageVersionsEnabled", "false"}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
                 });
 
                 // Package reference
@@ -2966,6 +4073,21 @@ namespace NuGet.Commands.Test
                     { "_CentralPackageVersionsEnabled", "true"}
                 });
 
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
                 // Package reference
                 items.Add(new Dictionary<string, string>()
                 {
@@ -3019,11 +4141,601 @@ namespace NuGet.Commands.Test
                 var centralDependencyX = packSpec.TargetFrameworks.First().CentralPackageVersions["x"];
                 var centralDependencyY = packSpec.TargetFrameworks.First().CentralPackageVersions["Y"];
 
-                Assert.Null(dependencyX.LibraryRange.VersionRange);
-                Assert.Null(dependencyY.LibraryRange.VersionRange);
+                Assert.Equal("(, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal("(, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal("(, )", centralDependencyX.VersionRange.ToNormalizedString());
                 Assert.Equal("(, )", centralDependencyY.VersionRange.ToNormalizedString());
             }
+        }
+
+        [Theory]
+        [InlineData("false", false)]
+        [InlineData("true", true)]
+        public void MSBuildRestoreUtility_GetPackageSpec_CPVM_TransitiveDependencyPinning(string value, bool expected)
+        {
+            var projectName = "ccpvm2";
+            var projectStyle = ProjectStyle.PackageReference;
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectUniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var projectSpec = CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "bcpvm" },
+                    { "ProjectStyle", projectStyle.ToString() },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "CrossTargeting", "true" },
+                    { "_CentralPackageVersionsEnabled", "true"},
+                    { ProjectBuildProperties.CentralPackageTransitivePinningEnabled, value},
+                });
+
+                // Act
+                var settings = MSBuildRestoreUtility.GetCentralPackageManagementSettings(projectSpec, projectStyle);
+
+                // Assert
+                Assert.Equal(expected, settings.IsCentralPackageTransitivePinningEnabled);
+            }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> applies version overrides correctly depending on whether or not central package management is enabled.
+        /// </summary>
+        /// <param name="isCentralPackageManagementEnabled"><see langword="true" /> if central package management is enabled, otherwise <see langword="false" />.</param>
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void MSBuildRestoreUtility_GetDependencySpec_VersionOverrideAppliesWhenCPVMEnabled(bool isCentralPackageManagementEnabled)
+        {
+            var projectName = "acpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                const string projectUniqueName = "3BA10BF9-98DF-4952-A062-651AEE292848";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "CrossTargeting", "true" },
+                    { "_CentralPackageVersionsEnabled", isCentralPackageManagementEnabled.ToString()}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                // Package reference
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                    { "VersionRange", isCentralPackageManagementEnabled ? null : "1.0.0" },
+                    { "IncludeAssets", "build;compile" },
+                    { "CrossTargeting", "true" },
+                });
+
+                // Package reference with version but is implicitly defined
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "1.2.1" },
+                    { "IsImplicitlyDefined", "true" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                // Package reference with version
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", isCentralPackageManagementEnabled ? null : "3.0.0" },
+                    { "VersionOverride", isCentralPackageManagementEnabled ? "9.9.9" : null },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                // Central Version for the package above and another one for a package y
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "1.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "y" },
+                    { "VersionRange", "2.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "z" },
+                    { "VersionRange", "3.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single(e => e.Name == projectName);
+
+                TargetFrameworkInformation targetFrameworkInformation = project1Spec.TargetFrameworks.First();
+
+                // Assert
+                Assert.Equal(1, project1Spec.TargetFrameworks.Count());
+                Assert.Equal(3, targetFrameworkInformation.Dependencies.Count);
+                Assert.Equal(isCentralPackageManagementEnabled ? 3 : 0, targetFrameworkInformation.CentralPackageVersions.Count);
+
+                var dependencyX = targetFrameworkInformation.Dependencies.First(d => d.Name == "x");
+                var dependencyY = targetFrameworkInformation.Dependencies.First(d => d.Name == "y");
+                var dependencyZ = targetFrameworkInformation.Dependencies.First(d => d.Name == "z");
+
+                Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, dependencyX.IncludeType);
+
+                if (isCentralPackageManagementEnabled)
+                {
+                    Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                    Assert.True(dependencyX.VersionCentrallyManaged);
+                    Assert.False(dependencyY.VersionCentrallyManaged);
+                    Assert.False(dependencyZ.VersionCentrallyManaged);
+
+                    Assert.Equal("[1.0.0, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[1.2.1, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[9.9.9, )", dependencyZ.LibraryRange.VersionRange.ToNormalizedString());
+
+                    var centralDependencyX = targetFrameworkInformation.CentralPackageVersions["x"];
+                    var centralDependencyY = targetFrameworkInformation.CentralPackageVersions["y"];
+                    var centralDependencyZ = targetFrameworkInformation.CentralPackageVersions["Z"];
+
+                    Assert.Equal("x", centralDependencyX.Name);
+                    Assert.Equal("[1.0.0, )", centralDependencyX.VersionRange.ToNormalizedString());
+
+                    Assert.Equal("y", centralDependencyY.Name);
+                    Assert.Equal("[2.0.0, )", centralDependencyY.VersionRange.ToNormalizedString());
+
+                    Assert.Equal("z", centralDependencyZ.Name);
+                    Assert.Equal("[3.0.0, )", centralDependencyZ.VersionRange.ToNormalizedString());
+                }
+                else
+                {
+                    Assert.False(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
+
+                    Assert.Equal("[1.0.0, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[1.2.1, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal("[3.0.0, )", dependencyZ.LibraryRange.VersionRange.ToNormalizedString());
+
+                    Assert.False(dependencyX.VersionCentrallyManaged);
+                    Assert.False(dependencyY.VersionCentrallyManaged);
+                    Assert.False(dependencyZ.VersionCentrallyManaged);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="MSBuildRestoreUtility.GetDependencySpec(IEnumerable{IMSBuildItem})" /> throws a <see cref="ArgumentException" /> if PackageReference contains a value for VersionOverride is not a valid <see cref="VersionRange" />.
+        /// </summary>
+        [Fact]
+        public void MSBuildRestoreUtility_GetDependencySpec_ThrowsArgumentExceptionWhenVersionOverrideIsInvalid()
+        {
+            var projectName = "acpvm";
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                const string projectUniqueName = "3BA10BF9-98DF-4952-A062-651AEE292848";
+                var project1Root = Path.Combine(workingDir, projectName);
+                var project1Path = Path.Combine(project1Root, $"{projectName}.csproj");
+
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", projectName },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "ProjectPath", project1Path },
+                    { "CrossTargeting", "true" },
+                    { "_CentralPackageVersionsEnabled", bool.TrueString}
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "TargetFramework", "netcoreapp3.0" },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", "NETCoreApp,Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "Dependency" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                    { "VersionOverride", "invalid" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "CentralPackageVersion" },
+                    { "ProjectUniqueName", projectUniqueName },
+                    { "Id", "x" },
+                    { "VersionRange", "3.0.0" },
+                    { "TargetFrameworks", "netcoreapp3.0" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Assert
+                ArgumentException exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.GetDependencySpec(wrappedItems));
+
+                Assert.Equal("'invalid' is not a valid version string.", exception.Message);
+            }
+        }
+
+        [Fact]
+        public void GetPackageSpec_DootnetToolReference_WithTargetFrameworkInformation_Succeeds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var uniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var outputPath = Path.Combine(workingDir, "a", "obj");
+                var atf = FrameworkConstants.CommonFrameworks.Net462;
+                var items = new List<IDictionary<string, string>>();
+                var runtimeIdentifierGraphPath = Path.Combine(workingDir, "sdk", "runtime.json");
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a1" },
+                    { "ProjectStyle", "DotnetToolReference" },
+                    { "OutputPath", outputPath },
+                    { "ProjectUniqueName", uniqueName },
+                    { "ProjectPath", project1Root },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", atf.GetShortFolderName() },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", FrameworkConstants.FrameworkIdentifiers.NetCoreApp },
+                    { "TargetFrameworkVersion", "v3.0" },
+                    { "TargetFrameworkMoniker", $"{FrameworkConstants.FrameworkIdentifiers.NetCoreApp},Version=3.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                    { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var targetFrameworkInformation = dgSpec.Projects.Single().TargetFrameworks.Single();
+
+                // Assert
+                targetFrameworkInformation.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                targetFrameworkInformation.AssetTargetFallback.Should().BeTrue();
+                var assetTargetFallbackFramework = targetFrameworkInformation.FrameworkName as AssetTargetFallbackFramework;
+                assetTargetFallbackFramework.Fallback.Should().HaveCount(1);
+                assetTargetFallbackFramework.Fallback.Single().Should().Be(atf);
+                targetFrameworkInformation.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+            }
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithRuntimeIdentifierGraphPath_Succeeds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var uniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var runtimeIdentifierGraphPath = Path.Combine(workingDir, "sdk", "runtime.json");
+                var items = new List<IDictionary<string, string>>();
+
+                items.Add(CreateProject(project1Root, uniqueName));
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", "net46" },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.6" },
+                    { "TargetFrameworkMoniker", ".NETFramework,Version=4.6" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                    { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var targetFrameworkInformation = dgSpec.Projects.Single().TargetFrameworks.Single();
+
+                // Assert
+                targetFrameworkInformation.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+            }
+        }
+
+        [Fact]
+        public void GetPackageSpec_TargetFrameworkInformationWithAlias_Succeeds()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var uniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var runtimeIdentifierGraphPath = Path.Combine(workingDir, "sdk", "runtime.json");
+                var items = new List<IDictionary<string, string>>();
+                var alias = "blabla";
+                var framework = FrameworkConstants.CommonFrameworks.Net461;
+                items.Add(CreateProject(project1Root, uniqueName));
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "AssetTargetFallback", "" },
+                    { "PackageTargetFallback", "" },
+                    { "ProjectUniqueName", uniqueName },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", framework.Framework },
+                    { "TargetFrameworkVersion", $"v{framework.Version.ToString(2)}" },
+                    { "TargetFrameworkMoniker", framework.DotNetFrameworkName },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                    { "RuntimeIdentifierGraphPath", runtimeIdentifierGraphPath }
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var targetFrameworkInformation = dgSpec.Projects.Single().TargetFrameworks.Single();
+
+                // Assert
+                targetFrameworkInformation.RuntimeIdentifierGraphPath.Should().Be(runtimeIdentifierGraphPath);
+                targetFrameworkInformation.TargetAlias.Should().Be(alias);
+                targetFrameworkInformation.FrameworkName.Equals(framework);
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_MultiTargettingWithNet5_UsesIndividualProperties()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var items = new List<IDictionary<string, string>>();
+
+                var net60Alias = "net5.0";
+                var net50WithPlatformAlias = "net50-android21.0";
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", net50WithPlatformAlias },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v5.0" },
+                    { "TargetFrameworkMoniker", ".NETCoreApp,Version=v5.0" },
+                    { "TargetPlatformIdentifier", "android" },
+                    { "TargetPlatformVersion", "29.0" },
+                    { "TargetPlatformMoniker", "android,Version=29.0" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", net60Alias },
+                    { "TargetFrameworkIdentifier", ".NETCoreApp" },
+                    { "TargetFrameworkVersion", "v6.0" },
+                    { "TargetFrameworkMoniker", ".NETCoreApp,Version=v6.0" },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                var net60Framework = project1Spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(net60Alias));
+                var net50Android = project1Spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(net50WithPlatformAlias));
+
+                // Assert
+                net60Framework.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                net60Framework.FrameworkName.Version.Should().Be(new Version("6.0.0.0"));
+                net60Framework.FrameworkName.HasPlatform.Should().BeFalse();
+
+                net50Android.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.NetCoreApp);
+                net50Android.FrameworkName.Version.Should().Be(new Version("5.0.0.0"));
+                net50Android.FrameworkName.HasPlatform.Should().BeTrue();
+                net50Android.FrameworkName.Platform.Should().Be("android");
+                net50Android.FrameworkName.PlatformVersion.Should().Be(new Version("29.0.0.0"));
+            }
+        }
+
+        [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_SingleTargetingFrameworkWithProfile_UsesIndividualProperties()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var project1Root = Path.Combine(workingDir, "a");
+                var project1Path = Path.Combine(project1Root, "a.csproj");
+                var outputPath1 = Path.Combine(project1Root, "obj");
+                var fallbackFolder = Path.Combine(project1Root, "fallback");
+                var packagesFolder = Path.Combine(project1Root, "packages");
+                var project1UniqueName = "482C20DE-DFF9-4BD0-B90A-BD3201AA351A";
+                var items = new List<IDictionary<string, string>>();
+
+                var alias = "net5.0";
+                var profile = "Client";
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "OutputPath", outputPath1 },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "ProjectPath", project1Path },
+                    { "Sources", "https://nuget.org/a/index.json;https://nuget.org/b/index.json" },
+                    { "FallbackFolders", fallbackFolder },
+                    { "PackagesPath", packagesFolder },
+                    { "CrossTargeting", "true" },
+                });
+
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "TargetFrameworkInformation" },
+                    { "ProjectUniqueName", project1UniqueName },
+                    { "PackageTargetFallback", "" },
+                    { "TargetFramework", alias },
+                    { "TargetFrameworkIdentifier", ".NETFramework" },
+                    { "TargetFrameworkVersion", "v4.0" },
+                    { "TargetFrameworkMoniker", $".NETFramework,Version=v4.0,Profile={profile}" },
+                    { "TargetFrameworkProfile", profile },
+                    { "TargetPlatformIdentifier", "" },
+                    { "TargetPlatformMoniker", "" },
+                    { "TargetPlatformVersion", "" },
+                });
+
+                var wrappedItems = items.Select(CreateItems).ToList();
+
+                // Act
+                var dgSpec = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+                var project1Spec = dgSpec.Projects.Single();
+
+                var net60Framework = project1Spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(alias));
+
+                // Assert
+                net60Framework.FrameworkName.Framework.Should().Be(FrameworkConstants.FrameworkIdentifiers.Net);
+                net60Framework.FrameworkName.Version.Should().Be(new Version("4.0.0.0"));
+                net60Framework.FrameworkName.Profile.Should().Be(profile);
+                net60Framework.FrameworkName.HasPlatform.Should().BeFalse();
+            }
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("false", false)]
+        [InlineData("invalid", false)]
+        [InlineData("true", true)]
+        [InlineData("           true    ", true)]
+        public void IsPropertyTrue_ReturnsExpectedValue(string value, bool expected)
+        {
+            const string propertyName = "Property1";
+
+            MSBuildItem item = new("Item1", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [propertyName] = value
+            });
+
+            MSBuildRestoreUtility.IsPropertyTrue(item, propertyName).Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("                     ", false)]
+        [InlineData("false", true)]
+        [InlineData("   false     ", true)]
+        [InlineData("invalid", false)]
+        [InlineData("true", false)]
+        [InlineData("           true    ", false)]
+        public void IsPropertyFalse_ReturnsExpectedValue(string value, bool expected)
+        {
+            const string propertyName = "Property1";
+
+            MSBuildItem item = new("Item1", new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [propertyName] = value
+            });
+
+            MSBuildRestoreUtility.IsPropertyFalse(item, propertyName).Should().Be(expected);
         }
 
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)

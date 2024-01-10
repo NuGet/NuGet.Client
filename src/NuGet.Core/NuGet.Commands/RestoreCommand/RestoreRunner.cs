@@ -45,12 +45,12 @@ namespace NuGet.Commands
         /// </summary>
         private static async Task<IReadOnlyList<RestoreSummary>> RunAsync(
             IEnumerable<RestoreSummaryRequest> restoreRequests,
-            RestoreArgs restoreContext,
+            RestoreArgs restoreArgs,
             CancellationToken token)
         {
-            var maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreArgs);
 
-            var log = restoreContext.Log;
+            var log = restoreArgs.Log;
 
             if (maxTasks > 1)
             {
@@ -81,7 +81,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(() => ExecuteAndCommitAsync(request, token), token);
+                var task = Task.Run(() => ExecuteAndCommitAsync(request, restoreArgs.ProgressReporter, token), token);
                 restoreTasks.Add(task);
             }
 
@@ -226,11 +226,43 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
+        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, IRestoreProgressReporter progressReporter, CancellationToken token)
         {
-            var result = await ExecuteAsync(summaryRequest, token);
+            RestoreResultPair result = await ExecuteAsync(summaryRequest, token);
+            bool isNoOp = result.Result is NoOpRestoreResult;
+            IReadOnlyList<string> filesToBeUpdated = isNoOp ? null : GetFilesToBeUpdated(result);
+            RestoreSummary summary = null;
+            try
+            {
+                if (!isNoOp)
+                {
+                    progressReporter?.StartProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                }
 
-            return await CommitAsync(result, token);
+                summary = await CommitAsync(result, token);
+
+            }
+            finally
+            {
+                if (!isNoOp)
+                {
+                    progressReporter?.EndProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                }
+            }
+            return summary;
+
+            static IReadOnlyList<string> GetFilesToBeUpdated(RestoreResultPair result)
+            {
+                List<string> filesToBeUpdated = new(3); // We know that we have 3 files.
+                filesToBeUpdated.Add(result.Result.LockFilePath);
+
+                foreach (MSBuildOutputFile msbuildOutputFile in result.Result.MSBuildOutputFiles)
+                {
+                    filesToBeUpdated.Add(msbuildOutputFile.Path);
+                }
+
+                return filesToBeUpdated.AsReadOnly();
+            }
         }
 
         private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
@@ -259,7 +291,7 @@ namespace NuGet.Commands
             var log = summaryRequest.Request.Log;
 
             // Commit the result
-            log.LogInformation(Strings.Log_Committing);
+            log.LogVerbose(Strings.Log_Committing);
             await result.CommitAsync(log, token);
 
             if (result.Success)
@@ -286,9 +318,8 @@ namespace NuGet.Commands
                     summaryRequest.InputPath,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
-
-            // Remote the summary messages from the assets file. This will be removed later.
-            var messages = restoreResult.Result.LockFile?.LogMessages
+            // Remote the summary messages from the assets file.
+            var messages = restoreResult.Result.LogMessages
                 .Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message)) ?? Enumerable.Empty<RestoreLogMessage>();
 
             // Build the summary

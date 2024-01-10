@@ -14,31 +14,42 @@ using NuGet.VisualStudio.SolutionExplorer.Models;
 
 namespace NuGet.VisualStudio.SolutionExplorer
 {
+    [AppliesToProject(ProjectCapability.DependenciesTree)]
     [Export(typeof(IAttachedCollectionSourceProvider))]
     [Name(nameof(ProjectReferenceAttachedCollectionSourceProvider))]
     [Order(Before = HierarchyItemsProviderNames.Contains)]
-    internal sealed class ProjectReferenceAttachedCollectionSourceProvider : AssetsFileTopLevelDependenciesCollectionSourceProvider<string, ProjectReferenceItem>
+    internal sealed class ProjectReferenceAttachedCollectionSourceProvider : AssetsFileTopLevelDependenciesCollectionSourceProvider<ProjectReferenceItem>
     {
         public ProjectReferenceAttachedCollectionSourceProvider()
             : base(DependencyTreeFlags.ProjectDependency)
         {
         }
 
-        protected override bool TryGetIdentity(Properties properties, out string identity)
+        protected override bool TryGetLibraryName(Properties properties, [NotNullWhen(returnValue: true)] out string libraryName)
         {
-            if (properties.Item("Identity")?.Value is string identityString)
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            try
             {
-                identity = identityString;
-                return true;
+                if (properties.Item("Identity")?.Value is string identity)
+                {
+                    libraryName = identity;
+                    return true;
+                }
+            }
+            catch (Microsoft.VisualStudio.ProjectSystem.ProjectException)
+            {
+                // Work around https://github.com/dotnet/project-system/issues/6311
+                // "Could not find project item with item type 'ProjectReference' and include value '...'.
             }
 
-            identity = null!;
+            libraryName = null!;
             return false;
         }
 
-        protected override bool TryGetLibrary(AssetsFileTarget target, string identity, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? library)
+        protected override bool TryGetLibrary(AssetsFileTarget target, string libraryName, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? library)
         {
-            return target.TryGetProject(identity, out library);
+            return target.TryGetProject(libraryName, out library);
         }
 
         protected override ProjectReferenceItem CreateItem(AssetsFileTarget targetData, AssetsFileTargetLibrary library)

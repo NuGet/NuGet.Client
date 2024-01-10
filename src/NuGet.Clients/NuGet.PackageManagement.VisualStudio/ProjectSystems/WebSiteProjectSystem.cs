@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -25,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string GeneratedFilesFolder = "Generated___Files";
         private readonly HashSet<string> _excludedCodeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly string[] _sourceFileExtensions = { ".cs", ".vb" };
+        private static readonly string[] SourceFileExtensions = { ".cs", ".vb" };
 
         public WebSiteProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
             : base(vsProjectAdapter, nuGetProjectContext)
@@ -91,6 +90,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>This is identical to VsProjectSystem.RemoveReference except in the way we process exceptions.</remarks>
         private void RemoveDTEReference(string name)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Get the reference name without extension
             var referenceName = Path.GetFileNameWithoutExtension(name);
 
@@ -148,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static bool IsSourceFile(string path)
         {
             var extension = Path.GetExtension(path);
-            return _sourceFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            return SourceFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
         public override void RemoveImport(string targetFullPath)
@@ -189,7 +190,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task BeginProcessingAsync()
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public override void RegisterProcessedFiles(IEnumerable<string> files)
@@ -221,7 +222,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _excludedCodeFiles.Clear();
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

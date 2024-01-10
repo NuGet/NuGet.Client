@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.ContentModel.Infrastructure
@@ -63,7 +64,7 @@ namespace NuGet.ContentModel.Infrastructure
             }
         }
 
-        public ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
+        internal ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
             ContentItem item = null;
             var startIndex = 0;
@@ -169,7 +170,7 @@ namespace NuGet.ContentModel.Infrastructure
                 ContentPropertyDefinition propertyDefinition;
                 if (!propertyDefinitions.TryGetValue(_token, out propertyDefinition))
                 {
-                    throw new Exception(string.Format("Unable to find property definition for {{{0}}}", _token));
+                    throw new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find property definition for {{{0}}}", _token));
                 }
 
                 for (var scanIndex = startIndex; scanIndex != path.Length;)
@@ -203,7 +204,10 @@ namespace NuGet.ContentModel.Infrastructure
                                     Path = path
                                 };
                             }
-
+                            if (StringComparer.Ordinal.Equals(_token, "tfm"))
+                            {
+                                item.Properties.Add("tfm_raw", substring);
+                            }
                             item.Properties.Add(_token, value);
                         }
                         endIndex = delimiterIndex;

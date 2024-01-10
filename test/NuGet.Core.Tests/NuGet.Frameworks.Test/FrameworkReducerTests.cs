@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using NuGet.Frameworks;
 using Xunit;
@@ -93,6 +92,55 @@ namespace NuGet.Test
         [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.0", "portable-net45+netcore45+wpa81")]
         [InlineData("portable-net45+netcore45", "netstandard1.1,dotnet5.1", "netstandard1.1")]
         [InlineData("portable-net45+netcore45+bad", "netstandard1.0", null)]
+        // net5.0, generational compatibility is preferred over platform compatibility
+        [InlineData("net5.0", "net5.0,netcoreapp3.0", "net5.0")]
+        [InlineData("net6.0", "net5.0,netcoreapp3.0", "net5.0")]
+        [InlineData("net5.0-ios", "net5.0,netcoreapp3.0", "net5.0")]
+        [InlineData("net5.0-ios", "net5.0,net5.0-ios", "net5.0-ios")]
+        [InlineData("net6.0-ios", "net5.0,net5.0-ios", "net5.0-ios")]
+        [InlineData("net6.0", "net5.0,net5.0-ios", "net5.0")]
+        [InlineData("net6.0-ios", "net6.0,net5.0-ios,netstandard2.1", "net6.0")]
+        [InlineData("net6.0-ios", "net5.0-ios,net6.0,netstandard2.1", "net6.0")]
+        [InlineData("net6.0-ios", "net6.0-android,net7.0-ios,net6.1", null)]
+        [InlineData("net6.0-ios10.0", "net6.0-ios11.0,net6.0,net6.1", "net6.0")]
+        [InlineData("net6.0-ios10.0", "net6.0-ios11.0,net6.0,net6.0-android10.0", "net6.0")]
+        [InlineData("net6.0-ios10.0", "net6.0-ios11.0,net6.0,net6.0-ios9.0", "net6.0-ios9.0")]
+        [InlineData("net6.0-ios11.0", "net6.0-ios10.0,net6.0,net6.0-ios9.0", "net6.0-ios10.0")]
+        [InlineData("net6.0-ios11.0", "net6.0-ios12.0,net6.0,net6.0-ios13.0", "net6.0")]
+        [InlineData("net7.0-ios", "net6.0,net5.0-ios,netstandard2.1", "net6.0")]
+        [InlineData("net7.0-ios", "net6.0,net6.0-ios,netstandard2.1", "net6.0-ios")]
+        // Some net6.0 platforms have "special" fallbacks to xamarin over net5.0
+        [InlineData("net6.0-ios", "xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net6.0-android", "xamarin.mac,net7.0,net5.0,monoandroid12.0", "monoandroid12.0")]
+        [InlineData("net6.0-tizen", "xamarin.mac,net7.0,net5.0,tizen9.0,netcoreapp3.1", "tizen9.0")]
+        [InlineData("net6.0-ios", "xamarin.mac", null)]
+        [InlineData("net6.0-maccatalyst", "xamarin.mac", null)]
+        [InlineData("net6.0-mac", "xamarin.mac", null)] // the correct platform is "macos"
+        [InlineData("net6.0-whatever", "xamarin.whatever", null)]
+        // Special net6.0 platform fallbacks do not apply to xamarin.* frameworks
+        [InlineData("net6.0-ios", "xamarin.ios,xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net6.0-maccatalyst", "xamarin.ios,xamarin.mac,net5.0", "net5.0")]
+        [InlineData("net6.0-macos", "xamarin.mac,xamarin.ios,net5.0", "net5.0")]
+        [InlineData("net6.0-tvos", "xamarin.tvos,xamarin.ios,net5.0", "net5.0")]
+        [InlineData("net6.0-ios", "xamarin.mac,xamarin.ios,net5.0", "net5.0")]
+        [InlineData("net7.0-ios", "xamarin.mac,net5.0,net6.0", "net6.0")]
+        [InlineData("net7.0-ios", "net6.0,xamarin.ios,xamarin.mac,net5.0", "net6.0")]
+        [InlineData("net7.0-ios", "net7.0-macos,xamarin.mac,xamarin.ios,net6.0,net6.0-ios,net6.0-macos,net5.0", "net6.0-ios")]
+        [InlineData("net7.0-macos", "xamarin.ios,net5.0,net6.0", "net6.0")]
+        [InlineData("net7.0-macos", "net6.0,xamarin.ios,xamarin.tvos,net5.0", "net6.0")]
+        [InlineData("net7.0-macos", "net7.0-ios,xamarin.ios,net6.0,net6.0-ios,net6.0-macos,net5.0", "net6.0-macos")]
+        [InlineData("net7.0-tvos", "xamarin.ios,net5.0,net6.0", "net6.0")]
+        [InlineData("net7.0-tvos", "net6.0,xamarin.ios,xamarin.mac,net5.0", "net6.0")]
+        [InlineData("net7.0-tvos", "net7.0-ios,xamarin.ios,net6.0,net6.0-ios,net6.0-tvos,net5.0", "net6.0-tvos")]
+        [InlineData("net7.0-maccatalyst", "xamarin.mac,net5.0,net6.0", "net6.0")]
+        [InlineData("net7.0-maccatalyst", "net6.0,xamarin.tvos,xamarin.mac,net5.0", "net6.0")]
+        [InlineData("net7.0-maccatalyst", "net7.0-ios,xamarin.mac,net6.0,net6.0-maccatalyst,net6.0-ios,net5.0", "net6.0-maccatalyst")]
+        [InlineData("net7.0-tizen", "xamarin.mac,net6.0,net6.0-android,tizen9.0,net5.0,netcoreapp3.1", "net6.0")]
+        [InlineData("net7.0-tizen", "xamarin.mac,net7.0,net6.0-android,tizen9.0,net5.0,netcoreapp3.1", "net7.0")]
+        [InlineData("net7.0-tizen", "xamarin.mac,net7.0-android,net6.0-android,", null)]
+        [InlineData("net7.0-android", "xamarin.mac,net6.0,net6.0-tizen,monoandroid,net5.0,netcoreapp3.1", "net6.0")]
+        [InlineData("net7.0-android", "xamarin.mac,net7.0,net6.0-android,monoandroid,net5.0,netcoreapp3.1", "net7.0")]
+        [InlineData("net7.0-android", "xamarin.mac,net7.0-tizen,net6.0-macos,", null)]
         // Additional tests
         [InlineData("dotnet5.5", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet5.4")]
         [InlineData("dotnet7", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet6.0")]
@@ -109,6 +157,7 @@ namespace NuGet.Test
         [InlineData("unsupported", "any", "any")]
         [InlineData("any", "any", "any")]
         [InlineData("any", "unsupported", "unsupported")]
+        [InlineData("netnano1.0", "net48,netstandard1.0,netcoreapp1.0", null)]
         public void FrameworkReducer_GetNearestWithGenerations(
             string projectFramework,
             string packageFrameworks,
@@ -164,7 +213,7 @@ namespace NuGet.Test
             var result = reducer.GetNearest(project, frameworks);
 
             // Assert
-            Assert.Equal(expectedFramework, result.GetShortFolderName());
+            Assert.Equal(expectedFramework, result!.GetShortFolderName());
         }
 
         [Fact]
@@ -323,7 +372,7 @@ namespace NuGet.Test
             var result = reducer.GetNearest(project, frameworks);
 
             // Assert
-            Assert.Equal(expectedFramework, result.GetShortFolderName());
+            Assert.Equal(expectedFramework, result!.GetShortFolderName());
         }
 
         [Fact]
@@ -1017,7 +1066,7 @@ namespace NuGet.Test
 
             var result = reducer.GetNearest(projectFramework, frameworks);
 
-            Assert.Equal("net40", result.GetShortFolderName());
+            Assert.Equal("net40", result!.GetShortFolderName());
         }
 
         [Theory]

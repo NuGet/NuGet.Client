@@ -26,7 +26,6 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="sectionName">section where the <paramref name="item"/> has to be added. If this section does not exist, one will be created.</param>
         /// <param name="item">item to be added to the settings.</param>
-        /// <returns>true if the item was successfully updated or added in the settings</returns>
         void AddOrUpdate(string sectionName, SettingItem item);
 
         /// <summary>

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (bindingRedirects == null)
             {
-                throw new ArgumentNullException("bindingRedirects");
+                throw new ArgumentNullException(nameof(bindingRedirects));
             }
 
             // Do nothing if there are no binding redirects to add, bail out
@@ -125,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (bindingRedirects == null)
             {
-                throw new ArgumentNullException("bindingRedirects");
+                throw new ArgumentNullException(nameof(bindingRedirects));
             }
 
             // Do nothing if there are no binding redirects to remove, bail out
@@ -253,7 +254,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             catch (Exception ex)
             {
-                var errorMessage = string.Format(Strings.Error_WhileLoadingConfigForBindingRedirects,
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, Strings.Error_WhileLoadingConfigForBindingRedirects,
                                           configFileFullPath,
                                           ex.Message);
 

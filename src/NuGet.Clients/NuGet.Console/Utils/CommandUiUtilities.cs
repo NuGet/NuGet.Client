@@ -30,7 +30,10 @@ namespace NuGetConsole
                 CommandId = PkgCmdIDList.cmdidProjects
             };
 
+            // This interface is free-threaded.
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
             invalidator.InvalidateSpecificCommandUIState(command);
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
         }
     }
 }

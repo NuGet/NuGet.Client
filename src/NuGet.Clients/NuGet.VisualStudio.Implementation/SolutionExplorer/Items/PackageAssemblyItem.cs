@@ -8,6 +8,7 @@ using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
+using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 
@@ -35,7 +36,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
             GroupType = groupType;
         }
 
-        public override object Identity => Tuple.Create(Library.Name, Path);
+        public override object Identity => Tuple.Create(Library.Name, Path, GroupType);
 
         // All siblings are assemblies, so no prioritization needed (sort alphabetically)
         public override int Priority => 0;
@@ -46,7 +47,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override object? GetBrowseObject() => new BrowseObject(this);
 
-        private sealed class BrowseObject : BrowseObjectBase
+        private sealed class BrowseObject : LocalizableProperties
         {
             private readonly PackageAssemblyItem _item;
 
@@ -66,7 +67,9 @@ namespace NuGet.VisualStudio.SolutionExplorer
             {
                 get
                 {
-                    return _item.Target.TryResolvePackagePath(_item.Library.Name, _item.Library.Version, out string? fullPath)
+                    return
+                        _item.Library.Version is not null &&
+                        _item.Target.TryResolvePackagePath(_item.Library.Name, _item.Library.Version, out string? fullPath)
                         ? System.IO.Path.GetFullPath(System.IO.Path.Combine(fullPath, _item.Path))
                         : null;
                 }

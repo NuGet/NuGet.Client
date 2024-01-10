@@ -14,6 +14,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -151,7 +152,7 @@ namespace NuGet.Commands
 
             PackageSpec result = null;
 
-            // There should only be one ProjectSpec per project in the item set, 
+            // There should only be one ProjectSpec per project in the item set,
             // but if multiple do appear take only the first one in an effort
             // to handle this gracefully.
             var specItem = GetItemByType(items, "projectSpec").FirstOrDefault();
@@ -159,7 +160,8 @@ namespace NuGet.Commands
             if (specItem != null)
             {
                 ProjectStyle restoreType = GetProjectStyle(specItem);
-                bool isCpvmEnabled = IsCentralVersionsManagementEnabled(specItem, restoreType);
+
+                (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = GetCentralPackageManagementSettings(specItem, restoreType);
 
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -168,8 +170,8 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    // Read msbuild data for both non-nuget and .NET Core
-                    result = GetBaseSpec(specItem, restoreType);
+                    // Read msbuild data for PR and related projects
+                    result = GetBaseSpec(specItem, restoreType, items);
                 }
 
                 // Applies to all types
@@ -197,7 +199,7 @@ namespace NuGet.Commands
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
                     {
-                        // Fix slashes incorrectly removed by MSBuild 
+                        // Fix slashes incorrectly removed by MSBuild
                         var pkgSource = new PackageSource(FixSourcePath(source));
                         result.RestoreMetadata.Sources.Add(pkgSource);
                     }
@@ -222,15 +224,16 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddPackageReferences(result, items, isCpvmEnabled);
+                    AddPackageReferences(result, items, isCentralPackageManagementEnabled);
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
-                    foreach (var originalFramework in GetFrameworksStrings(specItem))
-                    {
-                        result.RestoreMetadata.OriginalTargetFrameworks.Add(originalFramework);
-                    }
+                    result.TargetFrameworks.ForEach(tfi =>
+                        result.RestoreMetadata.OriginalTargetFrameworks.Add(
+                                !string.IsNullOrEmpty(tfi.TargetAlias) ?
+                                    tfi.TargetAlias :
+                                    tfi.FrameworkName.GetShortFolderName()));
                 }
 
                 if (restoreType == ProjectStyle.PackageReference
@@ -242,12 +245,6 @@ namespace NuGet.Commands
 
                     // Add RIDs and Supports
                     result.RuntimeGraph = GetRuntimeGraph(specItem);
-
-                    // Add Target Framework Specific Properties
-                    AddTargetFrameworkSpecificProperties(result, items);
-
-                    // Add PackageTargetFallback
-                    AddPackageTargetFallbacks(result, items);
 
                     // Add CrossTargeting flag
                     result.RestoreMetadata.CrossTargeting = IsPropertyTrue(specItem, "CrossTargeting");
@@ -267,7 +264,10 @@ namespace NuGet.Commands
                     result.RestoreMetadata.ProjectWideWarningProperties = GetWarningProperties(specItem);
 
                     // Packages lock file properties
-                    result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+                    result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
+
+                    // NuGet audit properties
+                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem);
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -284,7 +284,7 @@ namespace NuGet.Commands
                             "packages"
                         );
                     }
-                    pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+                    pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
 
                 }
 
@@ -294,7 +294,10 @@ namespace NuGet.Commands
                     result.RestoreMetadata.ValidateRuntimeAssets = true;
                 }
 
-                result.RestoreMetadata.CentralPackageVersionsEnabled = isCpvmEnabled;
+                result.RestoreMetadata.CentralPackageVersionsEnabled = isCentralPackageManagementEnabled;
+                result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
+                result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
+                result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
             }
 
             return result;
@@ -317,11 +320,12 @@ namespace NuGet.Commands
             {
                 foreach (var framework in project.RestoreMetadata.TargetFrameworks)
                 {
-                    foreach (var projectReference in framework.ProjectReferences.ToArray())
+                    // Loop through the items in reverse order so items can be removed from the collection safely
+                    for (int i = framework.ProjectReferences.Count - 1; i >= 0; i--)
                     {
-                        if (!existingProjects.Contains(projectReference.ProjectPath))
+                        if (!existingProjects.Contains(framework.ProjectReferences[i].ProjectPath))
                         {
-                            framework.ProjectReferences.Remove(projectReference);
+                            framework.ProjectReferences.Remove(framework.ProjectReferences[i]);
                         }
                     }
                 }
@@ -416,27 +420,55 @@ namespace NuGet.Commands
             var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
             var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1503, text);
             message.FilePath = path;
+            message.ProjectPath = path;
 
             return message;
         }
 
-        private static void AddPackageTargetFallbacks(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        public static RestoreLogMessage GetMessageForUnsupportedProject(string path)
         {
+            var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
+            var message = new RestoreLogMessage(LogLevel.Information, text);
+            message.FilePath = path;
+            message.ProjectPath = path;
+
+            return message;
+        }
+
+        private static IEnumerable<TargetFrameworkInformation> GetTargetFrameworkInformation(string filePath, ProjectStyle restoreType, IEnumerable<IMSBuildItem> items)
+        {
+            var uniqueIds = new HashSet<string>();
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
             {
                 var frameworkString = item.GetProperty("TargetFramework");
-                var frameworks = new List<TargetFrameworkInformation>();
-
-                if (!string.IsNullOrEmpty(frameworkString))
+                var targetFrameworkMoniker = item.GetProperty("TargetFrameworkMoniker");
+                var targetPlatforMoniker = item.GetProperty("TargetPlatformMoniker");
+                var targetPlatformMinVersion = item.GetProperty("TargetPlatformMinVersion");
+                var clrSupport = item.GetProperty("CLRSupport");
+                var windowsTargetPlatformMinVersion = item.GetProperty("WindowsTargetPlatformMinVersion");
+                var targetAlias = string.IsNullOrEmpty(frameworkString) ? string.Empty : frameworkString;
+                if (uniqueIds.Contains(targetAlias))
                 {
-                    frameworks.Add(spec.GetTargetFramework(NuGetFramework.Parse(frameworkString)));
+                    continue;
                 }
-                else
-                {
-                    frameworks.AddRange(spec.TargetFrameworks);
-                }
+                uniqueIds.Add(targetAlias);
 
-                foreach (var targetFrameworkInfo in frameworks)
+                NuGetFramework targetFramework = MSBuildProjectFrameworkUtility.GetProjectFramework(
+                    projectFilePath: filePath,
+                    targetFrameworkMoniker: targetFrameworkMoniker,
+                    targetPlatformMoniker: targetPlatforMoniker,
+                    targetPlatformMinVersion: targetPlatformMinVersion,
+                    clrSupport: clrSupport,
+                    windowsTargetPlatformMinVersion: windowsTargetPlatformMinVersion);
+
+                var targetFrameworkInfo = new TargetFrameworkInformation()
+                {
+                    FrameworkName = targetFramework,
+                    TargetAlias = targetAlias
+                };
+                if (restoreType == ProjectStyle.PackageReference ||
+                    restoreType == ProjectStyle.Standalone ||
+                    restoreType == ProjectStyle.DotnetToolReference)
                 {
                     var packageTargetFallback = MSBuildStringUtility.Split(item.GetProperty("PackageTargetFallback"))
                         .Select(NuGetFramework.Parse)
@@ -447,21 +479,14 @@ namespace NuGet.Commands
                         .ToList();
 
                     // Throw if an invalid combination was used.
-                    AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, spec.FilePath);
+                    AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, filePath);
 
                     // Update the framework appropriately
                     AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInfo, packageTargetFallback, assetTargetFallback);
-                }
-            }
-        }
 
-        private static void AddTargetFrameworkSpecificProperties(PackageSpec spec, IEnumerable<IMSBuildItem> items)
-        {
-            foreach (var item in GetItemByType(items, "TargetFrameworkProperties"))
-            {
-                var frameworkString = item.GetProperty("TargetFramework");
-                var targetFrameworkInformation = spec.GetTargetFramework(NuGetFramework.Parse(frameworkString));
-                targetFrameworkInformation.RuntimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
+                    targetFrameworkInfo.RuntimeIdentifierGraphPath = item.GetProperty("RuntimeIdentifierGraphPath");
+                }
+                yield return targetFrameworkInfo;
             }
         }
 
@@ -507,10 +532,11 @@ namespace NuGet.Commands
         private static void AddProjectReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             // Add groups for each spec framework
-            var frameworkGroups = new Dictionary<NuGetFramework, List<ProjectRestoreReference>>();
-            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName).Distinct())
+            var aliasGroups = new Dictionary<string, List<ProjectRestoreReference>>();
+
+            foreach (string alias in spec.TargetFrameworks.Select(e => e.TargetAlias).Distinct())
             {
-                frameworkGroups.Add(framework, new List<ProjectRestoreReference>());
+                aliasGroups.Add(alias, new List<ProjectRestoreReference>());
             }
 
             var flatReferences = GetItemByType(items, "ProjectReference")
@@ -523,13 +549,13 @@ namespace NuGet.Commands
             {
                 // If no frameworks were given, apply to all
                 var addToFrameworks = frameworkPair.Item1.Count == 0
-                    ? frameworkGroups.Keys.ToList()
+                    ? aliasGroups.Keys.ToList()
                     : frameworkPair.Item1;
 
                 foreach (var framework in addToFrameworks)
                 {
                     List<ProjectRestoreReference> references;
-                    if (frameworkGroups.TryGetValue(framework, out references))
+                    if (aliasGroups.TryGetValue(framework, out references))
                     {
                         // Ensure unique
                         if (!references.Any(e => comparer.Equals(e.ProjectUniqueName, frameworkPair.Item2.ProjectUniqueName)))
@@ -541,16 +567,18 @@ namespace NuGet.Commands
             }
 
             // Add groups to spec
-            foreach (var frameworkPair in frameworkGroups)
+            foreach (KeyValuePair<string, List<ProjectRestoreReference>> frameworkPair in aliasGroups)
             {
-                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(frameworkPair.Key)
+                TargetFrameworkInformation targetFrameworkInformation = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(frameworkPair.Key, StringComparison.Ordinal));
+                spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInformation.FrameworkName)
                 {
-                    ProjectReferences = frameworkPair.Value
+                    ProjectReferences = frameworkPair.Value,
+                    TargetAlias = targetFrameworkInformation.TargetAlias
                 });
             }
         }
 
-        private static Tuple<List<NuGetFramework>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
+        private static Tuple<List<string>, ProjectRestoreReference> GetProjectRestoreReference(IMSBuildItem item)
         {
             var frameworks = GetFrameworks(item).ToList();
 
@@ -562,12 +590,12 @@ namespace NuGet.Commands
 
             ApplyIncludeFlags(reference, item.GetProperty("IncludeAssets"), item.GetProperty("ExcludeAssets"), item.GetProperty("PrivateAssets"));
 
-            return new Tuple<List<NuGetFramework>, ProjectRestoreReference>(frameworks, reference);
+            return new Tuple<List<string>, ProjectRestoreReference>(frameworks, reference);
         }
 
-        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, DownloadDependency dependency)
+        private static bool AddDownloadDependencyIfNotExist(PackageSpec spec, string targetAlias, DownloadDependency dependency)
         {
-            var frameworkInfo = spec.GetTargetFramework(framework);
+            TargetFrameworkInformation frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
 
             if (!frameworkInfo.DownloadDependencies.Contains(dependency))
             {
@@ -580,17 +608,18 @@ namespace NuGet.Commands
 
         private static bool AddDependencyIfNotExist(PackageSpec spec, LibraryDependency dependency)
         {
-            foreach (var framework in spec.TargetFrameworks.Select(e => e.FrameworkName))
+            foreach (var targetAlias in spec.TargetFrameworks.Select(e => e.TargetAlias))
             {
-                AddDependencyIfNotExist(spec, framework, dependency);
+                AddDependencyIfNotExist(spec, targetAlias, dependency);
             }
 
             return false;
         }
 
-        private static bool AddDependencyIfNotExist(PackageSpec spec, NuGetFramework framework, LibraryDependency dependency)
+
+        private static bool AddDependencyIfNotExist(PackageSpec spec, string targetAlias, LibraryDependency dependency)
         {
-            var frameworkInfo = spec.GetTargetFramework(framework);
+            var frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
 
             if (!spec.Dependencies
                             .Concat(frameworkInfo.Dependencies)
@@ -619,6 +648,7 @@ namespace NuGet.Commands
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
                     GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty"),
                     Aliases = item.GetProperty("Aliases"),
+                    VersionOverride = GetVersionRange(item, defaultValue: null, "VersionOverride")
                 };
 
                 // Add warning suppressions
@@ -658,6 +688,11 @@ namespace NuGet.Commands
             {
                 var id = item.GetProperty("Id");
                 var versionString = item.GetProperty("VersionRange");
+                if (string.IsNullOrEmpty(versionString))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_NoVersion, id));
+                }
+
                 var versions = versionString.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
 
                 foreach (var version in versions)
@@ -666,7 +701,7 @@ namespace NuGet.Commands
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, id, versionRange.OriginalString));
                     }
 
                     var downloadDependency = new DownloadDependency(id, versionRange);
@@ -715,9 +750,9 @@ namespace NuGet.Commands
             }
         }
 
-        private static bool AddFrameworkReferenceIfNotExists(PackageSpec spec, NuGetFramework framework, string frameworkReference, string privateAssetsValue)
+        private static bool AddFrameworkReferenceIfNotExists(PackageSpec spec, string targetAlias, string frameworkReference, string privateAssetsValue)
         {
-            var frameworkInfo = spec.GetTargetFramework(framework);
+            var frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
 
             if (!frameworkInfo
                 .FrameworkReferences
@@ -731,9 +766,9 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static VersionRange GetVersionRange(IMSBuildItem item, VersionRange defaultValue)
+        private static VersionRange GetVersionRange(IMSBuildItem item, VersionRange defaultValue, string propertyName = "VersionRange")
         {
-            var rangeString = item.GetProperty("VersionRange");
+            var rangeString = item.GetProperty(propertyName);
             return GetVersionRange(rangeString, defaultValue);
         }
 
@@ -763,32 +798,42 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static PackageSpec GetBaseSpec(IMSBuildItem specItem, ProjectStyle projectStyle)
+        private static PackageSpec GetBaseSpec(IMSBuildItem specItem, ProjectStyle projectStyle, IEnumerable<IMSBuildItem> items)
         {
-            var frameworkInfo = GetFrameworks(specItem)
-                .Select(framework => new TargetFrameworkInformation()
-                {
-                    FrameworkName = framework
-                })
-                .ToList();
-
-            var spec = new PackageSpec(frameworkInfo);
+            var spec = new PackageSpec();
             spec.RestoreMetadata = projectStyle == ProjectStyle.PackagesConfig
                 ? new PackagesConfigProjectRestoreMetadata()
                 : new ProjectRestoreMetadata();
             spec.FilePath = specItem.GetProperty("ProjectPath");
             spec.RestoreMetadata.ProjectName = specItem.GetProperty("ProjectName");
 
+            if (projectStyle == ProjectStyle.DotnetCliTool || projectStyle == ProjectStyle.Unknown || projectStyle == ProjectStyle.PackagesConfig)
+            {
+                var tfmProperty = specItem.GetProperty("TargetFrameworks");
+                if (!string.IsNullOrEmpty(tfmProperty))
+                {
+                    var needsAlias = projectStyle == ProjectStyle.DotnetCliTool;
+                    spec.TargetFrameworks.Add(
+                        new TargetFrameworkInformation()
+                        {
+                            FrameworkName = NuGetFramework.Parse(tfmProperty),
+                            TargetAlias = needsAlias ? tfmProperty : string.Empty
+                        });
+                }
+            }
+            else
+            {
+                spec.TargetFrameworks.AddRange(GetTargetFrameworkInformation(spec.FilePath, projectStyle, items).Distinct());
+            }
             return spec;
         }
 
-        private static HashSet<NuGetFramework> GetFrameworks(IMSBuildItem item)
+        private static HashSet<string> GetFrameworks(IMSBuildItem item)
         {
-            return new HashSet<NuGetFramework>(
-                GetFrameworksStrings(item).Select(NuGetFramework.Parse));
+            return GetTargetFrameworkStrings(item);
         }
 
-        private static HashSet<string> GetFrameworksStrings(IMSBuildItem item)
+        private static HashSet<string> GetTargetFrameworkStrings(IMSBuildItem item)
         {
             var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -856,10 +901,11 @@ namespace NuGet.Commands
             return WarningProperties.GetWarningProperties(
                 treatWarningsAsErrors: specItem.GetProperty("TreatWarningsAsErrors"),
                 warningsAsErrors: specItem.GetProperty("WarningsAsErrors"),
-                noWarn: specItem.GetProperty("NoWarn"));
+                noWarn: specItem.GetProperty("NoWarn"),
+                warningsNotAsErrors: specItem.GetProperty("WarningsNotAsErrors"));
         }
 
-        private static RestoreLockProperties GetRestoreLockProperites(IMSBuildItem specItem)
+        private static RestoreLockProperties GetRestoreLockProperties(IMSBuildItem specItem)
         {
             return new RestoreLockProperties(
                 specItem.GetProperty("RestorePackagesWithLockFile"),
@@ -867,8 +913,27 @@ namespace NuGet.Commands
                 IsPropertyTrue(specItem, "RestoreLockedMode"));
         }
 
+        public static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem)
+        {
+            string enableAudit = specItem.GetProperty("NuGetAudit");
+            string auditLevel = specItem.GetProperty("NuGetAuditLevel");
+            string auditMode = specItem.GetProperty("NuGetAuditMode");
+
+            if (enableAudit != null || auditLevel != null || auditMode != null)
+            {
+                return new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel,
+                    AuditMode = auditMode,
+                };
+            }
+
+            return null;
+        }
+
         /// <summary>
-        /// Convert http:/url to http://url 
+        /// Convert http:/url to http://url
         /// If not needed the same path is returned. This is to work around
         /// issues with msbuild dropping slashes from paths on linux and osx.
         /// </summary>
@@ -876,7 +941,7 @@ namespace NuGet.Commands
         {
             var result = s;
 
-            if (result.IndexOf('/') >= -1 && result.IndexOf(DoubleSlash) == -1)
+            if (result.IndexOf("/", StringComparison.Ordinal) >= -1 && result.IndexOf(DoubleSlash, StringComparison.Ordinal) == -1)
             {
                 for (var i = 0; i < HttpPrefixes.Length; i++)
                 {
@@ -904,21 +969,28 @@ namespace NuGet.Commands
             return s;
         }
 
-        private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
+        internal static bool IsPropertyFalse(IMSBuildItem item, string propertyName, bool defaultValue = false)
         {
-            return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
+            string value = item.GetProperty(propertyName);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return defaultValue;
+            }
+
+            return string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Function used to display errors and warnings at the end of restore operation.
-        /// The errors and warnings are read from the assets file based on restore result.
-        /// </summary>
-        /// <param name="lockFile">LockFile generated by preview restore.</param>
-        /// <param name="logger">Logger used to display warnings and errors.</param>
-        [Obsolete]
-        public static Task ReplayWarningsAndErrorsAsync(LockFile lockFile, ILogger logger)
+        internal static bool IsPropertyTrue(IMSBuildItem item, string propertyName, bool defaultValue = false)
         {
-            return ReplayWarningsAndErrorsAsync(lockFile?.LogMessages, logger);
+            string value = item.GetProperty(propertyName);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return defaultValue;
+            }
+
+            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -940,15 +1012,15 @@ namespace NuGet.Commands
             return logger.LogMessagesAsync(logMessages);
         }
 
-        private static Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
+        private static Dictionary<string, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
             IList<TargetFrameworkInformation> specFrameworks)
         {
             IEnumerable<IMSBuildItem> centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(MSBuildItemIdentityComparer.Default).ToList();
-            var result = new Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>>();
+            var result = new Dictionary<string, Dictionary<string, CentralPackageVersion>>();
 
             foreach (IMSBuildItem cv in centralVersions)
             {
-                HashSet<NuGetFramework> tfms = GetFrameworks(cv);
+                HashSet<string> tfms = GetFrameworks(cv);
                 string version = cv.GetProperty("VersionRange");
                 CentralPackageVersion centralPackageVersion = new CentralPackageVersion(cv.GetProperty("Id"), string.IsNullOrWhiteSpace(version) ? VersionRange.All : VersionRange.Parse(version));
 
@@ -958,28 +1030,27 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    AddCentralPackageVersion(result, centralPackageVersion, specFrameworks.Select(f => f.FrameworkName));
+                    AddCentralPackageVersion(result, centralPackageVersion, specFrameworks.Select(f => f.TargetAlias));
                 }
             }
 
             return result;
         }
 
-        private static void AddCentralPackageVersion(Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> centralPackageVersions,
+        private static void AddCentralPackageVersion(Dictionary<string, Dictionary<string, CentralPackageVersion>> centralPackageVersions,
             CentralPackageVersion centralPackageVersion,
-            IEnumerable<NuGetFramework> frameworks)
+            IEnumerable<string> frameworks)
         {
             foreach (var framework in frameworks)
             {
-                if (centralPackageVersions.ContainsKey(framework))
+                if (!centralPackageVersions.TryGetValue(framework, out Dictionary<string, CentralPackageVersion> versions))
                 {
-                    centralPackageVersions[framework].Add(centralPackageVersion.Name, centralPackageVersion);
+                    versions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
+
+                    centralPackageVersions.Add(framework, versions);
                 }
-                else
-                {
-                    var deps = new Dictionary<string, CentralPackageVersion>() { [centralPackageVersion.Name] = centralPackageVersion };
-                    centralPackageVersions.Add(framework, deps);
-                }
+
+                versions[centralPackageVersion.Name] = centralPackageVersion;
             }
         }
 
@@ -996,18 +1067,34 @@ namespace NuGet.Commands
             return restoreType;
         }
 
-        internal static bool IsCentralVersionsManagementEnabled(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
+        /// <summary>
+        /// Determines the current settings for central package management for the specified project.
+        /// </summary>
+        /// <param name="projectSpecItem">The <see cref="IMSBuildItem" /> to get the central package management settings from.</param>
+        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <see langword="null" /> when the project does not define a restore style.</param>
+        /// <returns>A <see cref="Tuple{T1, T2, T3, T4}" /> containing values indicating whether or not central package management is enabled, if the ability to override a package version 
+        public static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) GetCentralPackageManagementSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
         {
-            return IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference;
+            if (projectStyle == ProjectStyle.PackageReference)
+            {
+                bool isEnabled = IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled");
+                bool isVersionOverrideDisabled = IsPropertyFalse(projectSpecItem, "CentralPackageVersionOverrideEnabled");
+                bool isCentralPackageTransitivePinningEnabled = IsPropertyTrue(projectSpecItem, "CentralPackageTransitivePinningEnabled");
+                bool isCentralPackageFloatingVersionsEnabled = IsPropertyTrue(projectSpecItem, "CentralPackageFloatingVersionsEnabled");
+                return (isEnabled, isVersionOverrideDisabled, isCentralPackageTransitivePinningEnabled, isCentralPackageFloatingVersionsEnabled);
+            }
+
+            return (false, false, false, false);
         }
 
         private static void AddCentralPackageVersions(PackageSpec spec, IEnumerable<IMSBuildItem> items)
         {
             var centralVersionsDependencies = CreateCentralVersionDependencies(items, spec.TargetFrameworks);
-            foreach (var framework in centralVersionsDependencies.Keys)
+            foreach ((var targetAlias, var versions) in centralVersionsDependencies)
             {
-                var frameworkInfo = spec.GetTargetFramework(framework);
-                frameworkInfo.CentralPackageVersions.AddRange(centralVersionsDependencies[framework]);
+                var frameworkInfo = spec.TargetFrameworks.FirstOrDefault(f => targetAlias.Equals(f.TargetAlias, StringComparison.OrdinalIgnoreCase));
+                frameworkInfo.CentralPackageVersions.AddRange(versions);
+                LibraryDependency.ApplyCentralVersionInformation(frameworkInfo.Dependencies, frameworkInfo.CentralPackageVersions);
             }
         }
     }

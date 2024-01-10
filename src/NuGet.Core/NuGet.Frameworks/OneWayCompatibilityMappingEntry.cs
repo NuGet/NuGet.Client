@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,12 +6,7 @@ using System.Globalization;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
+    public class OneWayCompatibilityMappingEntry : IEquatable<OneWayCompatibilityMappingEntry>
     {
         private readonly FrameworkRange _targetFramework;
         private readonly FrameworkRange _supportedFramework;
@@ -46,10 +41,10 @@ namespace NuGet.Frameworks
 
         public static CompatibilityMappingComparer Comparer
         {
-            get { return new CompatibilityMappingComparer(); }
+            get { return CompatibilityMappingComparer.Instance; }
         }
 
-        public bool Equals(OneWayCompatibilityMappingEntry other)
+        public bool Equals(OneWayCompatibilityMappingEntry? other)
         {
             return Comparer.Equals(this, other);
         }

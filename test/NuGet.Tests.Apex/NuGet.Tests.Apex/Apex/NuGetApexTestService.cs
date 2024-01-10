@@ -6,15 +6,21 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.Test.Apex;
 using Microsoft.Test.Apex.VisualStudio;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Shell.ServiceBroker;
 using NuGet.Console.TestContract;
 using NuGet.PackageManagement.UI.TestContract;
 using NuGet.SolutionRestoreManager;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Contracts;
 
 namespace NuGet.Tests.Apex
 {
@@ -29,11 +35,6 @@ namespace NuGet.Tests.Apex
         public NuGetApexTestService()
         {
         }
-
-        /// <summary>
-        /// Gets the NuGet IVsPackageInstallerServices
-        /// </summary>
-        protected internal IVsPackageInstallerServices InstallerServices => VisualStudioObjectProviders.GetComponentModelService<IVsPackageInstallerServices>();
 
         /// <summary>
         /// Gets the NuGet IVsPackageInstaller
@@ -54,6 +55,8 @@ namespace NuGet.Tests.Apex
         protected internal IVsPackageUninstaller PackageUninstaller => VisualStudioObjectProviders.GetComponentModelService<IVsPackageUninstaller>();
 
         protected internal IVsUIShell UIShell => VisualStudioObjectProviders.GetService<SVsUIShell, IVsUIShell>();
+
+        protected internal IVsPathContextProvider2 PathContextProvider2 => VisualStudioObjectProviders.GetComponentModelService<IVsPathContextProvider2>();
 
         /// <summary>
         /// Wait for all nominations and auto restore to complete.
@@ -133,8 +136,19 @@ namespace NuGet.Tests.Apex
         /// </summary>
         public bool IsPackageInstalled(string projectName, string packageName, string packageVersion)
         {
-            var project = Dte.Solution.Projects.Item(projectName);
-            return InstallerServices.IsPackageInstalledEx(project, packageName, packageVersion);
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                var package = await GetInstalledPackageAsync(projectName, packageName);
+                if (package == null)
+                {
+                    return false;
+                }
+
+                var expectedVersion = NuGetVersion.Parse(packageVersion);
+                var actualVersion = NuGetVersion.Parse(package.Version);
+
+                return expectedVersion == actualVersion;
+            });
         }
 
         /// <summary>
@@ -142,9 +156,44 @@ namespace NuGet.Tests.Apex
         /// </summary>
         public bool IsPackageInstalled(string projectName, string packageName)
         {
-            var project = Dte.Solution.Projects.Item(projectName);
-            return InstallerServices.GetInstalledPackages(project)
-                .Any(e => e.Id.Equals(packageName, StringComparison.OrdinalIgnoreCase));
+            return ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                var package = await GetInstalledPackageAsync(projectName, packageName);
+                return package != null;
+            });
+        }
+
+        public async Task<NuGetInstalledPackage> GetInstalledPackageAsync(string projectName, string packageName)
+        {
+            var solution = VisualStudioObjectProviders.GetService<SVsSolution, IVsSolution>();
+            int result = solution.GetProjectOfUniqueName(projectName, out IVsHierarchy project);
+            if (result != VSConstants.S_OK)
+            {
+                throw new Exception($"Error calling {nameof(IVsSolution)}.{nameof(IVsSolution.GetProjectOfUniqueName)}: {result}");
+            }
+
+            result = solution.GetGuidOfProject(project, out Guid projectGuid);
+            if (result != VSConstants.S_OK)
+            {
+                throw new Exception($"Error calling {nameof(IVsSolution)}.{nameof(IVsSolution.GetGuidOfProject)}: {result}");
+            }
+
+            var serviceBrokerContainer = VisualStudioObjectProviders.GetService<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
+            var serviceBroker = serviceBrokerContainer.GetFullAccessServiceBroker();
+
+            INuGetProjectService projectService = await serviceBroker.GetProxyAsync<INuGetProjectService>(NuGetServices.NuGetProjectServiceV1);
+            using (projectService as IDisposable)
+            {
+                var packagesResult = await projectService.GetInstalledPackagesAsync(projectGuid, CancellationToken.None);
+                if (packagesResult.Status != InstalledPackageResultStatus.Successful)
+                {
+                    throw new Exception("Unexpected result from GetInstalledPackagesAsync: " + packagesResult.Status);
+                }
+
+                return packagesResult.Packages
+                    .Where(p => p.DirectDependency)
+                    .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, packageName));
+            }
         }
 
         /// <summary>
@@ -190,7 +239,7 @@ namespace NuGet.Tests.Apex
         public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project, TimeSpan timeout, TimeSpan interval)
         {
             var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name, timeout, interval);
-            return new NuGetUIProjectTestExtension(uiproject);
+            return new NuGetUIProjectTestExtension(uiproject, Logger);
         }
 
         /// <summary>
@@ -200,7 +249,7 @@ namespace NuGet.Tests.Apex
         public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project)
         {
             var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(1));
-            return new NuGetUIProjectTestExtension(uiproject);
+            return new NuGetUIProjectTestExtension(uiproject, Logger);
         }
 
         public NuGetConsoleTestExtension GetPackageManagerConsole(string project)
@@ -213,6 +262,12 @@ namespace NuGet.Tests.Apex
         {
             var pmconsole = NuGetApexConsoleTestService.GetApexTestConsole();
             return pmconsole != null;
+        }
+
+        public string GetUserPackagesFolderFromUserWideContext()
+        {
+            PathContextProvider2.TryCreateNoSolutionContext(out var pathContext);
+            return pathContext.UserPackageFolder;
         }
     }
 }

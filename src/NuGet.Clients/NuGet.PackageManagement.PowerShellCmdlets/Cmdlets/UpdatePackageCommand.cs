@@ -9,12 +9,10 @@ using System.Management.Automation;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -133,35 +131,49 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WaitAndLogPackageActions();
                     UnsubscribeFromProgressEvents();
 
-                    return Task.FromResult(true);
+                    return TaskResult.True;
                 }, Token);
             });
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryServiceUtility.StopTimer();
+
+            var isPackageSourceMappingEnabled = PackageSourceMappingUtility.IsMappingEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
-                NuGetOperationType.Update,
+                NuGetProjectActionType.Update,
                 OperationSource.PMC,
                 startTime,
                 _status,
                 _packageCount,
-                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
+                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
         }
 
         protected override void WarnIfParametersAreNotSupported()
-        {            
+        {
             if (Source != null)
             {
                 var projectNames = string.Join(",", Projects.Where(e => e is BuildIntegratedNuGetProject).Select(p => NuGetProject.GetUniqueNameOrName(p)));
-                if (!string.IsNullOrEmpty(projectNames)) { 
-                    var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), projectNames);
+                if (!string.IsNullOrEmpty(projectNames))
+                {
+                    var warning = string.Format(CultureInfo.CurrentCulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), projectNames);
                     Log(MessageLevel.Warning, warning);
                 }
+            }
+        }
+
+        private void WarnForReinstallOfBuildIntegratedProjects(IEnumerable<BuildIntegratedNuGetProject> projects)
+        {
+            if (projects.Any())
+            {
+                var projectNames = string.Join(",", projects.Select(p => NuGetProject.GetUniqueNameOrName(p)));
+                var warning = string.Format(CultureInfo.CurrentCulture, Resources.Warning_ReinstallNotRespectedForProjectType, projectNames);
+                Log(MessageLevel.Warning, warning);
             }
         }
 
@@ -183,9 +195,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         new GatherCache(),
                         sourceCacheContext);
 
+                    // PackageReference projects don't support `Update-Package -Reinstall`. 
+                    List<NuGetProject> applicableProjects = GetApplicableProjectsAndWarnForRest(Projects);
+
                     // if the source is explicitly specified we will use exclusively that source otherwise use ALL enabled sources
                     var actions = await PackageManager.PreviewUpdatePackagesAsync(
-                        Projects,
+                        applicableProjects,
                         resolutionContext,
                         this,
                         PrimarySourceRepositories,
@@ -198,7 +213,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     }
                     else
                     {
-                        _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct().Count();
+                        _packageCount = actions.Select(action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                     }
 
                     await ExecuteActions(actions, sourceCacheContext);
@@ -214,9 +229,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                    logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                }
             }
             catch (Exception ex)
             {
@@ -227,6 +245,36 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 BlockingCollection.Add(new ExecutionCompleteMessage());
             }
+        }
+
+        private List<NuGetProject> GetApplicableProjectsAndWarnForRest(List<NuGetProject> applicableProjects)
+        {
+            if (Reinstall.IsPresent)
+            {
+                var buildIntegratedProjects = new List<NuGetProject>();
+                var nonBuildIntegratedProjects = new List<NuGetProject>();
+
+                foreach (var project in applicableProjects)
+                {
+                    if (project is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
+                    {
+                        buildIntegratedProjects.Add(buildIntegratedNuGetProject);
+                    }
+                    else
+                    {
+                        nonBuildIntegratedProjects.Add(project);
+                    }
+                }
+
+                if (buildIntegratedProjects != null && buildIntegratedProjects.Any())
+                {
+                    WarnForReinstallOfBuildIntegratedProjects(buildIntegratedProjects.AsEnumerable().Cast<BuildIntegratedNuGetProject>());
+                }
+
+                return nonBuildIntegratedProjects;
+            }
+
+            return applicableProjects;
         }
 
         /// <summary>
@@ -261,9 +309,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(p));
+                    logMessages.ForEach(p => Log(p));
+                }
             }
             catch (Exception ex)
             {
@@ -294,12 +345,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     new GatherCache(),
                     sourceCacheContext);
 
+                // PackageReference projects don't support `Update-Package -Reinstall`. 
+                List<NuGetProject> applicableProjects = GetApplicableProjectsAndWarnForRest(Projects);
+
                 // If -Version switch is specified
                 if (!string.IsNullOrEmpty(Version))
                 {
                     actions = await PackageManager.PreviewUpdatePackagesAsync(
                         new PackageIdentity(Id, PowerShellCmdletsUtility.GetNuGetVersionFromString(Version)),
-                        Projects,
+                        applicableProjects,
                         resolutionContext,
                         this,
                         PrimarySourceRepositories,
@@ -310,7 +364,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 {
                     actions = await PackageManager.PreviewUpdatePackagesAsync(
                         Id,
-                        Projects,
+                        applicableProjects,
                         resolutionContext,
                         this,
                         PrimarySourceRepositories,
@@ -325,7 +379,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 else
                 {
                     _packageCount = actions.Select(
-                        action => action.PackageIdentity.Id).Distinct().Count();
+                        action => action.PackageIdentity.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count();
                 }
 
                 await ExecuteActions(actions, sourceCacheContext);
@@ -417,7 +471,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Return dependecy behavior for Update-Package command.
+        /// Return dependency behavior for Update-Package command.
         /// </summary>
         /// <returns></returns>
         protected override DependencyBehavior GetDependencyBehavior()
@@ -457,7 +511,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         /// <summary>
         /// Determine if the update action should allow use of delisted packages
-        /// </summary>        
+        /// </summary>
         private bool ShouldAllowDelistedPackages()
         {
             // If a delisted package is already installed, it should be reinstallable too.

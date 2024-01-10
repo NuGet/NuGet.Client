@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
@@ -14,6 +15,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class VsCredentialProviderAdapterTests
     {
+        private Mock<IVsSolutionManager> _solutionManager;
+
+        public VsCredentialProviderAdapterTests()
+        {
+            _solutionManager = new Mock<IVsSolutionManager>();
+            _solutionManager.SetupGet(sm => sm.VsShutdownToken)
+                .Returns(CancellationToken.None);
+        }
+
         private class TestVsCredentialProvider : IVsCredentialProvider
         {
             private readonly ICredentials _testResponse;
@@ -35,7 +45,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var provider = new TestVsCredentialProvider(null);
-            var adapter = new VsCredentialProviderAdapter(provider);
+            var adapter = new VsCredentialProviderAdapter(provider, _solutionManager.Object);
 
             // Act
             var result = await adapter.GetAsync(
@@ -58,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Arrange
             var expected = new NetworkCredential("foo", "bar");
             var provider = new TestVsCredentialProvider(expected);
-            var adapter = new VsCredentialProviderAdapter(provider);
+            var adapter = new VsCredentialProviderAdapter(provider, _solutionManager.Object);
 
             // Act
             var result = await adapter.GetAsync(

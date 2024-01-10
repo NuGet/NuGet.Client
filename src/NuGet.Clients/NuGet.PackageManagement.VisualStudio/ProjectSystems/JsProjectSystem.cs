@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
-using EnvDTEProject = EnvDTE.Project;
 using EnvDTEProjectItems = EnvDTE.ProjectItems;
 using Task = System.Threading.Tasks.Task;
 
@@ -27,13 +25,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (String.IsNullOrEmpty(_projectName))
+                if (string.IsNullOrEmpty(_projectName))
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                            _projectName =VsProjectAdapter.ProjectName;
+                            _projectName = VsProjectAdapter.ProjectName;
                         });
                 }
                 return _projectName;
@@ -84,8 +82,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var folderPath = Path.GetDirectoryName(path);
             var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             // Add the file to project or folder
-            var container = await GetProjectItemsAsync(folderPath, createIfNotExists: true);
+            EnvDTEProjectItems container = await GetProjectItemsAsync(folderPath, createIfNotExists: true);
             if (container == null)
             {
                 throw new ArgumentException(

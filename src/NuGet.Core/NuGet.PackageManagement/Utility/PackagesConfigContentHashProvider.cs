@@ -36,6 +36,8 @@ namespace NuGet.PackageManagement
 
         private string GetNupkgPath(PackageIdentity packageIdentity, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var packagePath = _packagesFolder.GetInstalledPackageFilePath(packageIdentity);
             return packagePath;
         }

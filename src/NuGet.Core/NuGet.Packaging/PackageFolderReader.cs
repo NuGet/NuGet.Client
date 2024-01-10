@@ -150,7 +150,11 @@ namespace NuGet.Packaging
         /// </summary>
         private static bool IsFileInRoot(string path)
         {
+#if NETCOREAPP
+            return path.IndexOf('/', StringComparison.Ordinal) == -1;
+#else
             return path.IndexOf('/') == -1;
+#endif
         }
 
         /// <summary>
@@ -211,7 +215,7 @@ namespace NuGet.Packaging
                     targetPath = extractFile(sourceFile.FullName, targetPath, fileStream);
                     if (targetPath != null)
                     {
-                        File.SetLastWriteTimeUtc(targetPath, sourceFile.LastWriteTimeUtc);
+                        ZipArchiveExtensions.UpdateFileTime(targetPath, sourceFile.LastWriteTimeUtc);
                         filesCopied.Add(targetPath);
                     }
                 }
@@ -227,12 +231,12 @@ namespace NuGet.Packaging
 
         public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
         {
-            return Task.FromResult<PrimarySignature>(null);
+            return TaskResult.Null<PrimarySignature>();
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
         {
-            return Task.FromResult(false);
+            return TaskResult.False;
         }
 
         public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
@@ -249,7 +253,7 @@ namespace NuGet.Packaging
         {
             return false;
         }
-        
+
         public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
         {
             throw new NotImplementedException();

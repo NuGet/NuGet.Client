@@ -18,12 +18,13 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class FindPackagesByIdNupkgDownloaderTests
     {
         [Theory]
         [InlineData(HttpStatusCode.NoContent, 1)]
         [InlineData(HttpStatusCode.NotFound, 1)]
-        [InlineData(HttpStatusCode.InternalServerError, 3)]
+        [InlineData(HttpStatusCode.InternalServerError, EnhancedHttpRetryHelper.DefaultEnabled ? EnhancedHttpRetryHelper.DefaultRetryCount : 3)]
         public async Task CopyNupkgToStreamAsync_DoesNothingWithDestinationStreamWhenNupkgIsNotFoundAsync(
             HttpStatusCode statusCode,
             int expectedRequests)
@@ -55,7 +56,7 @@ namespace NuGet.Protocol.Tests
         [Theory]
         [InlineData(HttpStatusCode.NoContent, 1)]
         [InlineData(HttpStatusCode.NotFound, 1)]
-        [InlineData(HttpStatusCode.InternalServerError, 3)]
+        [InlineData(HttpStatusCode.InternalServerError, EnhancedHttpRetryHelper.DefaultEnabled ? EnhancedHttpRetryHelper.DefaultRetryCount : 3)]
         public async Task GetNuspecReaderFromNupkgAsync_ThrowsWhenNupkgIsNotFoundAsync(
             HttpStatusCode statusCode,
             int expectedRequests)
@@ -365,7 +366,7 @@ namespace NuGet.Protocol.Tests
 
                 RequestCount = 0;
 
-                Target = new FindPackagesByIdNupkgDownloader(HttpSource);                
+                Target = new FindPackagesByIdNupkgDownloader(HttpSource);
             }
 
             public byte[] ExpectedContent { get; }

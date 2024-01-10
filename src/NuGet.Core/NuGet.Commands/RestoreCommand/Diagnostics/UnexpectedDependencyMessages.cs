@@ -33,6 +33,10 @@ namespace NuGet.Commands
 
             // 1. Detect project dependency authoring issues in the current project.
             //    The user can fix these themselves.
+            var projectMissingVersions = GetProjectDependenciesMissingVersion(project);
+            ignoreIds.UnionWith(projectMissingVersions.Select(e => e.LibraryId));
+            await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingVersions));
+
             var projectMissingLowerBounds = GetProjectDependenciesMissingLowerBounds(project);
             ignoreIds.UnionWith(projectMissingLowerBounds.Select(e => e.LibraryId));
             await logger.LogMessagesAsync(DiagnosticUtility.MergeOnTargetGraph(projectMissingLowerBounds));
@@ -170,12 +174,28 @@ namespace NuGet.Commands
         }
 
         /// <summary>
+        /// Warn for project dependencies that do not have a version.
+        /// </summary>
+        internal static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingVersion(PackageSpec project)
+        {
+            return project.GetAllPackageDependencies()
+                    .Where(e => e.LibraryRange.VersionRange == null)
+                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                    .Select(e => RestoreLogMessage.CreateWarning(
+                       code: NuGetLogCode.NU1604,
+                       message: string.Format(CultureInfo.CurrentCulture, Strings.Warning_ProjectDependencyMissingVersion,
+                                              DiagnosticUtility.FormatDependency(e.Name, e.LibraryRange.VersionRange)),
+                       libraryId: e.Name,
+                       targetGraphs: GetDependencyTargetGraphs(project, e)));
+        }
+
+        /// <summary>
         /// Warn for project dependencies that do not include a lower bound on the version range.
         /// </summary>
         public static IEnumerable<RestoreLogMessage> GetProjectDependenciesMissingLowerBounds(PackageSpec project)
         {
             return project.GetAllPackageDependencies()
-                   .Where(e => HasMissingLowerBound(e.LibraryRange.VersionRange))
+                   .Where(e => e.LibraryRange.VersionRange != null && HasMissingLowerBound(e.LibraryRange.VersionRange))
                    .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
                    .Select(e => RestoreLogMessage.CreateWarning(
                        code: NuGetLogCode.NU1604,
@@ -210,11 +230,6 @@ namespace NuGet.Commands
         /// </summary>
         public static bool HasMissingLowerBound(VersionRange range)
         {
-            if (range == null)
-            {
-                return true;
-            }
-
             // Ignore floating
             if (range.IsFloating)
             {
@@ -237,7 +252,11 @@ namespace NuGet.Commands
 
                 foreach (var node in graph.Flattened)
                 {
-                    var dependencies = node.Data?.Dependencies ?? Enumerable.Empty<LibraryDependency>();
+                    List<LibraryDependency> dependencies = node.Data?.Dependencies;
+                    if (dependencies == null)
+                    {
+                        continue;
+                    }
 
                     foreach (var dependency in dependencies)
                     {

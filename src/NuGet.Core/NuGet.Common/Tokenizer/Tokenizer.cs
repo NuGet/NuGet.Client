@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -39,7 +39,7 @@ namespace NuGet.Common
         /// Gets the next token.
         /// </summary>
         /// <returns>The parsed token. Or null if no more tokens are available.</returns>
-        public Token Read()
+        public Token? Read()
         {
             if (_index >= _text.Length)
             {

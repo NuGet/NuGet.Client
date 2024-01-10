@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Tokenattributes;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Tokenattributes;
 
 namespace NuGet.Indexing
 {
@@ -54,7 +55,7 @@ namespace NuGet.Indexing
             {
                 if (prev != string.Empty)
                 {
-                    string shingle = string.Format("{0}{1}", prev, subTerm);
+                    string shingle = string.Format(CultureInfo.CurrentCulture, "{0}{1}", prev, subTerm);
 
                     if (shingle != term)
                     {

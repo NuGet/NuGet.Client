@@ -822,6 +822,88 @@ namespace NuGet.Configuration.Test
                     });
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void LoadPackageSources_ReadsSourcesWithNullAllowInsecureConnectionsFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: null);
+
+            settings.Setup(s => s.GetSection("packageSources"))
+                .Returns(new VirtualSettingSection("packageSources",
+                    sourceItem));
+
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
+
+            // Act
+            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+
+            // Assert
+            var loadedSource = values.Single();
+            Assert.Equal("Source", loadedSource.Name);
+            Assert.Equal("https://some-source.test", loadedSource.Source);
+            Assert.Equal(PackageSource.DefaultAllowInsecureConnections, loadedSource.AllowInsecureConnections);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void LoadPackageSources_ReadsSourcesWithInvalidAllowInsecureConnectionsFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: "invalidString");
+
+            settings.Setup(s => s.GetSection("packageSources"))
+                .Returns(new VirtualSettingSection("packageSources",
+                    sourceItem));
+
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
+
+            // Act
+            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+
+            // Assert
+            var loadedSource = values.Single();
+            Assert.Equal("Source", loadedSource.Name);
+            Assert.Equal("https://some-source.test", loadedSource.Source);
+            Assert.Equal(PackageSource.DefaultAllowInsecureConnections, loadedSource.AllowInsecureConnections);
+        }
+
+        [Theory]
+        [InlineData(true, "true")]
+        [InlineData(true, "TRUE")]
+        [InlineData(true, "false")]
+        [InlineData(false, "false")]
+        [InlineData(false, "fALSE")]
+        [InlineData(false, "true")]
+        public void LoadPackageSources_ReadsSourcesWithNotNullAllowInsecureConnectionsFromPackageSourceSections_LoadsValue(bool useStaticMethod, string allowInsecureConnections)
+        {
+            // Arrange
+            var settings = new Mock<ISettings>();
+            var sourceItem = new SourceItem("Source", "https://some-source.test", protocolVersion: null, allowInsecureConnections: allowInsecureConnections);
+
+            settings.Setup(s => s.GetSection("packageSources"))
+                .Returns(new VirtualSettingSection("packageSources",
+                    sourceItem));
+
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
+
+            // Act
+            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+
+            // Assert
+            var loadedSource = values.Single();
+            Assert.Equal("Source", loadedSource.Name);
+            Assert.Equal("https://some-source.test", loadedSource.Source);
+            Assert.Equal(bool.Parse(allowInsecureConnections), loadedSource.AllowInsecureConnections);
+        }
+
         [Fact]
         public void DisablePackageSourceAddEntryToSettings()
         {
@@ -1044,7 +1126,7 @@ namespace NuGet.Configuration.Test
                 var sources = new[]
                     {
                     new PackageSource("Source1", "Source1-Name"),
-                    new PackageSource("Source2", "Source2-Name") { ProtocolVersion = 3 }
+                    new PackageSource("Source2", "Source2-Name")
                };
                 // Act
                 packageSourceProvider.SavePackageSources(sources);
@@ -1052,7 +1134,7 @@ namespace NuGet.Configuration.Test
                 // Assert
                 var packageSourcesSection = settings.GetSection("packageSources");
                 packageSourcesSection.Should().NotBeNull();
-                packageSourcesSection.Items.Count.Should().Be(3);
+                packageSourcesSection.Items.Count.Should().Be(2);
                 packageSourcesSection.Items.Should().AllBeOfType<SourceItem>();
 
                 var children = packageSourcesSection.Items.Select(c => c as SourceItem).ToList();
@@ -1060,8 +1142,6 @@ namespace NuGet.Configuration.Test
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("Source1-Name");
                 children[1].ProtocolVersion.Should().BeNullOrEmpty();
-                children[2].Key.Should().Be("Source2-Name");
-                children[2].ProtocolVersion.Should().Be("3");
 
                 var disabledPackageSourcesSection = settings.GetSection("disabledPackageSources");
                 disabledPackageSourcesSection.Should().BeNull();
@@ -1494,7 +1574,7 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 ";
-              File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
 
                 var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
                 Directory.CreateDirectory(rootPath);
@@ -1630,7 +1710,6 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""a"" value=""https://a.test"" />
-        <add key=""b"" value=""https://b.test"" />
         <add key=""b"" value=""https://new.b.test"" protocolVersion=""3"" />
         <add key=""c"" value=""https://c.test"" />
     </packageSources>
@@ -1684,7 +1763,6 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""a"" value=""https://a.test"" />
-        <add key=""b"" value=""https://b.test"" />
         <add key=""b"" value=""https://newer.b.test"" protocolVersion=""3"" />
         <add key=""c"" value=""https://c.test"" />
     </packageSources>
@@ -1738,6 +1816,62 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void SavePackageSources_WhenDisablingASourceFromReadOnlyConfig_DisablesInDefaultUserWideConfigInstead()
+        {
+            using (var directory = TestDirectory.Create())
+            {
+                // Arrange
+                var additionalConfigContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""Contoso""
+         value = ""https://contoso.test"" />
+    </packageSources>
+</configuration>
+";
+
+                var machineWideContents =
+    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    </packageSources>
+</configuration>
+";
+
+                File.WriteAllText(Path.Combine(directory.Path, "machinewide.config"), machineWideContents);
+                var additionalConfigPath = Path.Combine(directory.Path, "TestingGlobalPath", "config", "contoso.nuget.config");
+                Directory.CreateDirectory(Path.GetDirectoryName(additionalConfigPath));
+                File.WriteAllText(additionalConfigPath, additionalConfigContents);
+
+                var machineWideSetting = new Settings(directory.Path, "machinewide.config", isMachineWide: true);
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(machineWideSetting);
+
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
+                    machineWideSettings: m.Object,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+
+                // Act
+                sources.Count.Should().Be(2);
+                sources[1].IsEnabled = false;
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var newSources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.False(newSources[1].IsEnabled);
+                Assert.Equal("Contoso", newSources[1].Name);
+
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(additionalConfigPath)).Should().Be(SettingsTestUtils.RemoveWhitespace(additionalConfigContents));
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -1758,7 +1892,7 @@ namespace NuGet.Configuration.Test
                 List<PackageSource> sources = LoadPackageSources(useStaticMethod, settings);
 
                 // Assert
-                Assert.Equal(1, sources.Count);
+                Assert.Equal(0, sources.Count);
             }
         }
 
@@ -2137,6 +2271,34 @@ namespace NuGet.Configuration.Test
             Assert.Equal(subscribeToEvent, eventRun);
         }
 
+        [Fact]
+        public void GetPackageSourceBySource_TwoSourcesWithSameUrl_ReturnsFirstSource()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            const string sourceUrl = "https://contoso.test/nuget/index.json";
+            const string contents = $@"<configuration>
+  <packageSources>
+    <add key=""s1"" value=""{sourceUrl}"" />
+    <add key=""s2"" value=""{sourceUrl}"" />
+  </packageSources>
+</configuration>
+";
+            var path = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            File.WriteAllText(path, contents);
+
+            Settings settings = new Settings(testDirectory.Path);
+            var machineDefaultSources = Array.Empty<PackageSource>();
+
+            // Act
+            PackageSourceProvider psp = new PackageSourceProvider(settings, machineDefaultSources);
+            PackageSource source = psp.GetPackageSourceBySource(sourceUrl);
+
+            // Assert
+            source.Name.Should().Be("s1");
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();
@@ -2197,7 +2359,7 @@ namespace NuGet.Configuration.Test
 
         private static void CreateSettingsFileInTestingGlobalDirectory(TestDirectory directory)
         {
-            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.config"));
+            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.Config"));
 
             settingsFile.Directory.Create();
 

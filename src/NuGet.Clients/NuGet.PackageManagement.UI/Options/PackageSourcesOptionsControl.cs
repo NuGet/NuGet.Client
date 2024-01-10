@@ -8,17 +8,29 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
-using NuGet.PackageManagement.UI;
-using NuGet.Protocol.Core.Types;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
+using StreamJsonRpc;
+using StreamJsonRpc.Protocol;
+using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     /// <summary>
     /// Represents the Tools - Options - Package Manager dialog
@@ -30,31 +42,60 @@ namespace NuGet.Options
     /// </remarks>
     public partial class PackageSourcesOptionsControl : UserControl
     {
-        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private BindingSource _packageSources;
         private BindingSource _machineWidepackageSources;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
         private bool _initialized;
+        private IReadOnlyList<PackageSourceContextInfo> _originalPackageSources;
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+        private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
-        public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-            : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
+        private static IVsImageService2 ImageService
         {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return (IVsImageService2)Package.GetGlobalService(typeof(SVsImageService));
+            }
         }
 
-        public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider, IServiceProvider serviceProvider)
+        public static Image WarningIcon
         {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                ImageAttributes attributes = new ImageAttributes
+                {
+                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                    ImageType = (uint)_UIImageType.IT_Bitmap,
+                    Format = (uint)_UIDataFormat.DF_WinForms,
+                    LogicalWidth = 16,
+                    LogicalHeight = 16,
+                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                };
+
+                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                return (Image)GelUtilities.GetObjectData(uIObj);
+            }
+        }
+
+        public PackageSourcesOptionsControl(IAsyncServiceProvider asyncServiceProvider)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             InitializeComponent();
 
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException("sourceRepositoryProvider");
-            }
+            _asyncServiceProvider = asyncServiceProvider;
 
-            _serviceProvider = serviceProvider;
-            _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             SetupEventHandlers();
 
             UpdateDPI();
+
+            HttpWarningIcon.Image = WarningIcon;
+            HttpWarning.Text = Resources.Warning_NewHTTPSource_VSOptions;
         }
 
         private void UpdateDPI()
@@ -71,16 +112,13 @@ namespace NuGet.Options
 
             addButton.ImageList = imgs;
             removeButton.ImageList = imgs;
-            MoveUpButton.ImageList = imgs;
-            MoveDownButton.ImageList = imgs;
         }
 
         private void SetupEventHandlers()
         {
+            Disposed += PackageSourcesOptionsControl_Disposed;
             NewPackageName.TextChanged += (o, e) => UpdateUI();
             NewPackageSource.TextChanged += (o, e) => UpdateUI();
-            MoveUpButton.Click += (o, e) => MoveSelectedItem(-1);
-            MoveDownButton.Click += (o, e) => MoveSelectedItem(1);
             NewPackageName.Focus();
             UpdateUI();
         }
@@ -91,16 +129,14 @@ namespace NuGet.Options
             // Never MUST both the listboxes be selected
             Debug.Assert(PackageSourcesListBox.SelectedItem == null || MachineWidePackageSourcesListBox.SelectedItem == null);
 
-            var selectedSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
-            var selectedMachineSource = (Configuration.PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
+            var selectedSource = (PackageSourceContextInfo)PackageSourcesListBox.SelectedItem;
+            var selectedMachineSource = (PackageSourceContextInfo)MachineWidePackageSourcesListBox.SelectedItem;
 
             if (selectedMachineSource != null)
             {
                 // This block corresponds to MachineWidePackageSourcesListBox
                 addButton.Enabled = false;
                 removeButton.Enabled = false;
-                MoveUpButton.Enabled = false;
-                MoveDownButton.Enabled = false;
                 BrowseButton.Enabled = false;
                 updateButton.Enabled = false;
 
@@ -108,10 +144,6 @@ namespace NuGet.Options
             }
             else
             {
-                // This block corresponds to PackageSourcesListBox
-                MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
-                MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
-
                 bool allowEditing = selectedSource != null;
 
                 BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
@@ -120,32 +152,19 @@ namespace NuGet.Options
                 // Always enable addButton for PackageSourceListBox
                 addButton.Enabled = true;
             }
+
+            // Show HttpWarning for the selected source if needed
+            if (selectedSource != null)
+            {
+                SetHttpWarningVisibilityForSelectSource(selectedSource);
+            }
+            else if (selectedMachineSource != null)
+            {
+                SetHttpWarningVisibilityForSelectSource(selectedMachineSource);
+            }
         }
 
-        private void MoveSelectedItem(int offset)
-        {
-            if (PackageSourcesListBox.SelectedItem == null)
-            {
-                return;
-            }
-
-            int oldIndex = PackageSourcesListBox.SelectedIndex;
-            int newIndex = oldIndex + offset;
-
-            if (newIndex < 0
-                || newIndex > PackageSourcesListBox.Items.Count - 1)
-            {
-                return;
-            }
-            var item = PackageSourcesListBox.SelectedItem;
-            _packageSources.Remove(item);
-            _packageSources.Insert(newIndex, item);
-
-            PackageSourcesListBox.SelectedIndex = newIndex;
-            UpdateUI();
-        }
-
-        internal void InitializeOnActivated()
+        internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -156,17 +175,29 @@ namespace NuGet.Options
 
                 _initialized = true;
 
+                IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
+                IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                _nugetSourcesService = await serviceBroker.GetProxyAsync<INuGetSourcesService>(
+                    NuGetServices.SourceProviderService,
+                    cancellationToken: cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                Assumes.NotNull(_nugetSourcesService);
+
                 // get packages sources
-                var allPackageSources = _packageSourceProvider.LoadPackageSources().ToList();
+                _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
+                // packageSources and machineWidePackageSources are deep cloned when created, no need to worry about re-querying for sources to diff changes
+                var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
                 var machineWidePackageSources = allPackageSources.Where(ps => ps.IsMachineWide).ToList();
-                //_activeSource = _packageSourceProvider.ActivePackageSource;
 
                 // bind to the package sources, excluding Aggregate
                 _packageSources = new BindingSource(packageSources.Select(ps => ps.Clone()).ToList(), null);
                 _packageSources.CurrentChanged += OnSelectedPackageSourceChanged;
                 PackageSourcesListBox.GotFocus += PackageSourcesListBox_GotFocus;
                 PackageSourcesListBox.DataSource = _packageSources;
+                ResetItemsCheckedState(PackageSourcesListBox, _packageSources);
 
                 if (machineWidePackageSources.Count > 0)
                 {
@@ -174,6 +205,7 @@ namespace NuGet.Options
                     _machineWidepackageSources.CurrentChanged += OnSelectedMachineWidePackageSourceChanged;
                     MachineWidePackageSourcesListBox.GotFocus += MachineWidePackageSourcesListBox_GotFocus;
                     MachineWidePackageSourcesListBox.DataSource = _machineWidepackageSources;
+                    ResetItemsCheckedState(MachineWidePackageSourcesListBox, _machineWidepackageSources);
                 }
                 else
                 {
@@ -204,6 +236,17 @@ namespace NuGet.Options
             }
         }
 
+        private void ResetItemsCheckedState(PackageSourceCheckedListBox checkedListBox, BindingSource bindingSource)
+        {
+            var list = (IList<PackageSourceContextInfo>)bindingSource.List;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var isEnabled = list[i].IsEnabled;
+                checkedListBox.SetItemChecked(i, isEnabled);
+            }
+        }
+
         private void MachineWidePackageSourcesListBox_GotFocus(object sender, EventArgs e)
         {
             if (MachineWidePackageSourcesListBox.SelectedItem == null)
@@ -227,54 +270,52 @@ namespace NuGet.Options
         /// Persist the package sources, which was add/removed via the Options page, to the VS Settings store.
         /// This gets called when users click OK button.
         /// </summary>
-        internal bool ApplyChangedSettings()
+        internal async Task<bool> ApplyChangedSettingsAsync(CancellationToken cancellationToken)
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
             // Only apply if nothing was updated or the update was successfull
             var result = TryUpdateSource();
-            if (result != TryUpdateSourceResults.NotUpdated
-                &&
-                result != TryUpdateSourceResults.Unchanged
-                &&
+            if (result != TryUpdateSourceResults.NotUpdated &&
+                result != TryUpdateSourceResults.Unchanged &&
                 result != TryUpdateSourceResults.Successful)
             {
                 return false;
             }
 
             // get package sources as ordered list
-            var packageSources = PackageSourcesListBox.Items.Cast<Configuration.PackageSource>().ToList();
-            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<Configuration.PackageSource>().ToList());
+            List<PackageSourceContextInfo> packageSources = PackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList();
+            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSourceContextInfo>().ToList());
 
             try
             {
-                var existingSources = _packageSourceProvider.LoadPackageSources().ToList();
-                if (SourcesChanged(existingSources, packageSources))
+                if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    _packageSourceProvider.SavePackageSources(packageSources);
+                    await _nugetSourcesService.SavePackageSourceContextInfosAsync(packageSources, cancellationToken);
                 }
             }
-            // Thrown during creating or saving NuGet.Config.
-            catch (NuGetConfigurationException ex)
-            {
-                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
-                return false;
-            }
-            // Thrown if no nuget.config found.
-            catch (InvalidOperationException ex)
-            {
-                MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
-                return false;
-            }
-            // Unknown exception.
             catch (Exception ex)
             {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
+                if (ex is RemoteInvocationException remoteException &&
+                    remoteException.DeserializedErrorData is CommonErrorData commonError)
+                {
+                    if (commonError.TypeName == typeof(NuGetConfigurationException).FullName || // Thrown during creating or saving NuGet.Config.
+                        commonError.TypeName == typeof(InvalidOperationException).FullName) // Thrown if no nuget.config found.
+                    {
+                        MessageHelper.ShowErrorMessage(ex.Message, Resources.ErrorDialogBoxTitle);
+                        return false;
+                    }
+                    else if (commonError.TypeName == typeof(UnauthorizedAccessException).FullName)
+                    {
+                        MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
+                        return false;
+                    }
+                }
+                else
+                {
+                    MessageHelper.ShowErrorMessage(Resources.ShowError_ApplySettingFailed, Resources.ErrorDialogBoxTitle);
+                }
+
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
                 return false;
             }
@@ -284,7 +325,7 @@ namespace NuGet.Options
         }
 
         // Returns true if there are no changes between existingSources and packageSources.
-        private static bool SourcesChanged(List<Configuration.PackageSource> existingSources, List<Configuration.PackageSource> packageSources)
+        private static bool SourcesChanged(IReadOnlyList<PackageSourceContextInfo> existingSources, IReadOnlyList<PackageSourceContextInfo> packageSources)
         {
             if (existingSources.Count != packageSources.Count)
             {
@@ -293,9 +334,8 @@ namespace NuGet.Options
 
             for (int i = 0; i < existingSources.Count; ++i)
             {
-                if (!existingSources[i].Equals(packageSources[i])
-                    ||
-                    existingSources[i].IsEnabled != packageSources[i].IsEnabled)
+                if (!existingSources[i].Equals(packageSources[i]) ||
+                     existingSources[i].IsEnabled != packageSources[i].IsEnabled)
                 {
                     return true;
                 }
@@ -312,6 +352,8 @@ namespace NuGet.Options
             // clear this flag so that we will set up the bindings again when the option page is activated next time
             _initialized = false;
 
+            _nugetSourcesService?.Dispose();
+            _nugetSourcesService = null;
             _packageSources = null;
             ClearNameSource();
             UpdateUI();
@@ -324,6 +366,10 @@ namespace NuGet.Options
                 return;
             }
             _packageSources.Remove(PackageSourcesListBox.SelectedItem);
+
+            // changing _packageSources appears to clear all the checked items, so now we have to reset all the checkbox states
+            ResetItemsCheckedState(PackageSourcesListBox, _packageSources);
+
             UpdateUI();
         }
 
@@ -336,19 +382,22 @@ namespace NuGet.Options
 
             _packageSources.Add(CreateNewPackageSource());
 
+            // changing _packageSources appears to clear all the checked items, so now we have to reset all the checkbox states
+            ResetItemsCheckedState(PackageSourcesListBox, _packageSources);
+
             // auto-select the newly-added item
             PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;
             UpdateUI();
         }
 
-        private Configuration.PackageSource CreateNewPackageSource()
+        private PackageSourceContextInfo CreateNewPackageSource()
         {
-            var sourcesList = (IEnumerable<Configuration.PackageSource>)_packageSources.List;
+            var sourcesList = (IEnumerable<PackageSourceContextInfo>)_packageSources.List;
             for (int i = 0; ; i++)
             {
                 var newName = i == 0 ? "Package source" : "Package source " + i;
-                var newSource = i == 0 ? "http://packagesource" : "http://packagesource" + i;
-                var packageSource = new Configuration.PackageSource(newSource, newName);
+                var newSource = i == 0 ? "https://packagesource" : "https://packagesource" + i;
+                var packageSource = new PackageSourceContextInfo(newSource, newName);
                 if (sourcesList.All(ps => !ps.Equals(packageSource)))
                 {
                     return packageSource;
@@ -370,14 +419,14 @@ namespace NuGet.Options
         {
             var name = NewPackageName.Text.Trim();
             var source = NewPackageSource.Text.Trim();
-            if (String.IsNullOrWhiteSpace(name)
-                && String.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(name)
+                && string.IsNullOrWhiteSpace(source))
             {
                 return TryUpdateSourceResults.NotUpdated;
             }
 
             // validate name
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_NameRequired, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageName);
@@ -385,7 +434,7 @@ namespace NuGet.Options
             }
 
             // validate source
-            if (String.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(source))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_SourceRequried, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageSource);
@@ -399,24 +448,22 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.InvalidSource;
             }
 
-            var selectedPackageSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
+            var selectedPackageSource = (PackageSourceContextInfo)PackageSourcesListBox.SelectedItem;
             if (selectedPackageSource == null)
             {
                 return TryUpdateSourceResults.NotUpdated;
             }
 
-            var newPackageSource = new Configuration.PackageSource(source, name, selectedPackageSource.IsEnabled);
-            if (selectedPackageSource.Equals(newPackageSource))
+            if (selectedPackageSource.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase) && selectedPackageSource.Source.Equals(source, StringComparison.OrdinalIgnoreCase))
             {
                 return TryUpdateSourceResults.Unchanged;
             }
 
-            var sourcesList = (IEnumerable<Configuration.PackageSource>)_packageSources.List;
+            var sourcesList = (IEnumerable<PackageSourceContextInfo>)_packageSources.List;
 
             // check to see if name has already been added
             // also make sure it's not the same as the aggregate source ('All')
-            bool hasName = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                 String.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
+            bool hasName = sourcesList.Any(ps => ps != selectedPackageSource && string.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
             if (hasName)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueName, Resources.ShowWarning_Title);
@@ -426,8 +473,8 @@ namespace NuGet.Options
 
             // check to see if source has already been added
             bool hasSource = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                   String.Equals(PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(source),
-                                                                 PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(ps.Source),
+                                                   string.Equals(PathValidator.GetCanonicalPath(source),
+                                                                 PathValidator.GetCanonicalPath(ps.Source),
                                                                  StringComparison.OrdinalIgnoreCase));
             if (hasSource)
             {
@@ -436,7 +483,11 @@ namespace NuGet.Options
                 return TryUpdateSourceResults.SourceConflicted;
             }
 
-            _packageSources[_packageSources.Position] = newPackageSource;
+            selectedPackageSource.Name = name;
+            selectedPackageSource.Source = source;
+            _packageSources.ResetCurrentItem();
+
+            SetHttpWarningVisibilityForSelectSource(selectedPackageSource);
 
             return TryUpdateSourceResults.Successful;
         }
@@ -449,8 +500,8 @@ namespace NuGet.Options
 
         private void ClearNameSource()
         {
-            NewPackageName.Text = String.Empty;
-            NewPackageSource.Text = String.Empty;
+            NewPackageName.Text = string.Empty;
+            NewPackageSource.Text = string.Empty;
             NewPackageName.Focus();
         }
 
@@ -461,7 +512,7 @@ namespace NuGet.Options
                 && currentListBox.SelectedItem != null
                 && e.ClickedItem == CopyPackageSourceStripMenuItem)
             {
-                CopySelectedItem((Configuration.PackageSource)currentListBox.SelectedItem);
+                CopySelectedItem((PackageSourceContextInfo)currentListBox.SelectedItem);
             }
         }
 
@@ -470,27 +521,27 @@ namespace NuGet.Options
             var currentListBox = (PackageSourceCheckedListBox)sender;
             if (e.KeyCode == Keys.C && e.Control)
             {
-                CopySelectedItem((Configuration.PackageSource)currentListBox.SelectedItem);
-                e.Handled = true;
-            }
-            else if (e.KeyCode == Keys.Space)
-            {
-                TogglePackageSourceEnabled(currentListBox.SelectedIndex, currentListBox);
+                CopySelectedItem((PackageSourceContextInfo)currentListBox.SelectedItem);
                 e.Handled = true;
             }
         }
 
-        private void TogglePackageSourceEnabled(int itemIndex, PackageSourceCheckedListBox currentListBox)
+        private void PackageSourcesListBox_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (itemIndex < 0 || itemIndex >= currentListBox.Items.Count)
+            var checkedListBox = sender as CheckedListBox;
+            if (checkedListBox == null)
             {
                 return;
             }
 
-            var item = (Configuration.PackageSource)currentListBox.Items[itemIndex];
-            item.IsEnabled = !item.IsEnabled;
+            if (e.Index < 0 || e.Index >= checkedListBox.Items.Count)
+            {
+                return;
+            }
 
-            currentListBox.Invalidate(GetCheckBoxRectangleForListBoxItem(currentListBox, itemIndex));
+            bool isEnabled = e.NewValue == CheckState.Checked;
+            var packageSource = (PackageSourceContextInfo)checkedListBox.Items[e.Index];
+            packageSource.IsEnabled = isEnabled;
         }
 
         private Rectangle GetCheckBoxRectangleForListBoxItem(PackageSourceCheckedListBox currentListBox, int itemIndex)
@@ -509,37 +560,10 @@ namespace NuGet.Options
             return checkBoxRectangle;
         }
 
-        private static void CopySelectedItem(Configuration.PackageSource selectedPackageSource)
+        private static void CopySelectedItem(PackageSourceContextInfo selectedPackageSource)
         {
             Clipboard.Clear();
             Clipboard.SetText(selectedPackageSource.Source);
-        }
-
-        private void PackageSourcesListBox_MouseUp(object sender, MouseEventArgs e)
-        {
-            var currentListBox = (PackageSourceCheckedListBox)sender;
-            if (e.Button == MouseButtons.Right)
-            {
-                int itemIndexToSelect = currentListBox.IndexFromPoint(e.Location);
-                if (itemIndexToSelect >= 0 && itemIndexToSelect < currentListBox.Items.Count)
-                {
-                    currentListBox.SelectedIndex = itemIndexToSelect;
-                }
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                var itemIndex = currentListBox.SelectedIndex;
-                if (itemIndex >= 0
-                    && itemIndex < currentListBox.Items.Count)
-                {
-                    var checkBoxRectangle = GetCheckBoxRectangleForListBoxItem(currentListBox, itemIndex);
-                    // if the mouse click position is inside the checkbox, toggle the IsEnabled property
-                    if (checkBoxRectangle.Contains(e.Location))
-                    {
-                        TogglePackageSourceEnabled(itemIndex, currentListBox);
-                    }
-                }
-            }
         }
 
         private void PackageSourcesListBox_MouseMove(object sender, MouseEventArgs e)
@@ -551,8 +575,8 @@ namespace NuGet.Options
                 && index < currentListBox.Items.Count
                 && e.Y <= currentListBox.PreferredHeight)
             {
-                var source = (Configuration.PackageSource)currentListBox.Items[index];
-                string newToolTip = !String.IsNullOrEmpty(source.Description) ?
+                var source = (PackageSourceContextInfo)currentListBox.Items[index];
+                string newToolTip = !string.IsNullOrEmpty(source.Description) ?
                     source.Description :
                     source.Source;
                 string currentToolTip = packageListToolTip.GetToolTip(currentListBox);
@@ -573,7 +597,7 @@ namespace NuGet.Options
             MachineWidePackageSourcesListBox.ClearSelected();
             UpdateUI();
 
-            UpdateTextBoxes((Configuration.PackageSource)_packageSources.Current);
+            UpdateTextBoxes((PackageSourceContextInfo)_packageSources.Current);
         }
 
         private void OnSelectedMachineWidePackageSourceChanged(object sender, EventArgs e)
@@ -581,10 +605,10 @@ namespace NuGet.Options
             PackageSourcesListBox.ClearSelected();
             UpdateUI();
 
-            UpdateTextBoxes((Configuration.PackageSource)_machineWidepackageSources.Current);
+            UpdateTextBoxes((PackageSourceContextInfo)_machineWidepackageSources.Current);
         }
 
-        private void UpdateTextBoxes(Configuration.PackageSource packageSource)
+        private void UpdateTextBoxes(PackageSourceContextInfo packageSource)
         {
             if (packageSource != null)
             {
@@ -593,21 +617,26 @@ namespace NuGet.Options
             }
             else
             {
-                NewPackageName.Text = String.Empty;
-                NewPackageSource.Text = String.Empty;
+                NewPackageName.Text = string.Empty;
+                NewPackageSource.Text = string.Empty;
             }
         }
 
-        private void OnBrowseButtonClicked(object sender, EventArgs e)
+        private void OnBrowseButtonClicked(object sender, EventArgs args)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnBrowseButtonClickedAsync).PostOnFailure(nameof(PackageSourcesOptionsControl), nameof(OnBrowseButtonClicked));
+        }
+
+        private async Task OnBrowseButtonClickedAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             const int MaxDirectoryLength = 1000;
 
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
             const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
-            var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
+            var uiShell = await _asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell2>();
             Assumes.Present(uiShell);
             var rgch = new char[MaxDirectoryLength + 1];
 
@@ -656,7 +685,7 @@ namespace NuGet.Options
                 return initialDir;
             }
 
-            var selectedItem = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
+            var selectedItem = (PackageSourceContextInfo)PackageSourcesListBox.SelectedItem;
             if (selectedItem != null)
             {
                 initialDir = selectedItem.Source;
@@ -670,11 +699,38 @@ namespace NuGet.Options
             return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         }
 
+        private void PackageSourcesOptionsControl_Disposed(object sender, EventArgs e)
+        {
+            Disposed -= PackageSourcesOptionsControl_Disposed;
+            _nugetSourcesService?.Dispose();
+            _nugetSourcesService = null;
+            _packageSources?.Dispose();
+            _machineWidepackageSources?.Dispose();
+        }
+
         private static bool IsPathRootedSafe(string path)
         {
             // Check to make sure path does not contain any invalid chars.
             // Otherwise, Path.IsPathRooted() will throw an ArgumentException.
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
+        }
+
+        private void SetHttpWarningVisibilityForSelectSource(PackageSourceContextInfo selectedSource)
+        {
+            var source = new PackageSource(selectedSource.Source, selectedSource.Name);
+            source.AllowInsecureConnections = selectedSource.AllowInsecureConnections;
+
+            // Warn if the selected source is http, and the AllowInsecureConnections for this source is set to false. 
+            if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
+            {
+                HttpWarning.Visible = true;
+                HttpWarningIcon.Visible = true;
+            }
+            else
+            {
+                HttpWarning.Visible = false;
+                HttpWarningIcon.Visible = false;
+            }
         }
     }
 

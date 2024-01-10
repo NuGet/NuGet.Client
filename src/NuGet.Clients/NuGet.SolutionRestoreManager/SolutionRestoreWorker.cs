@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +19,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -32,8 +35,9 @@ namespace NuGet.SolutionRestoreManager
         private const int IdleTimeoutMs = 400;
         private const int RequestQueueLimit = 150;
         private const int PromoteAttemptsLimit = 150;
-        private const int DelayAutoRestoreRetries = 50;
         private const int DelaySolutionLoadRetry = 100;
+        private const int MaxIdleWaitTimeMs = 30000;
+        private static TimeSpan BulkRestoreCoordinationTimeout = new(hours: 0, minutes: 5, seconds: 0);
 
         private readonly object _lockPendingRequestsObj = new object();
 
@@ -41,6 +45,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<INuGetLockService> _lockService;
         private readonly Lazy<Common.ILogger> _logger;
+        private readonly Lazy<IVulnerabilitiesNotificationService> _vulnerabilitiesFoundService;
         private readonly AsyncLazy<IComponentModel> _componentModel;
 
         private EnvDTE.SolutionEvents _solutionEvents;
@@ -50,6 +55,9 @@ namespace NuGet.SolutionRestoreManager
         private BackgroundRestoreOperation _pendingRestore;
         private Task<bool> _activeRestoreTask;
         private int _initialized;
+        private bool _isFirstRestore = true;
+        private DateTimeOffset _lastRestoreCompletedTime;
+        private RestoreOperationSource _lastRestoreOperationSource;
 
         private IVsSolution _vsSolution;
 
@@ -63,7 +71,10 @@ namespace NuGet.SolutionRestoreManager
 
         private Common.ILogger Logger => _logger.Value;
 
-        private Lazy<ErrorListTableDataSource> _errorListTableDataSource;
+        private Lazy<INuGetErrorList> _errorList;
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
+
+        private readonly Lazy<INuGetFeatureFlagService> _nugetFeatureFlagService;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -85,12 +96,18 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetLockService> lockService,
             [Import("VisualStudioActivityLogger")]
             Lazy<Common.ILogger> logger,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource)
+            Lazy<INuGetErrorList> errorList,
+            Lazy<IOutputConsoleProvider> outputConsoleProvider,
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
+            Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
                   logger,
-                  errorListTableDataSource)
+                  errorList,
+                  outputConsoleProvider,
+                  nugetFeatureFlagService,
+                  vulnerabilitiesFoundService)
         { }
 
         public SolutionRestoreWorker(
@@ -98,7 +115,10 @@ namespace NuGet.SolutionRestoreManager
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
             Lazy<Common.ILogger> logger,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource)
+            Lazy<INuGetErrorList> errorList,
+            Lazy<IOutputConsoleProvider> outputConsoleProvider,
+            Lazy<INuGetFeatureFlagService> nugetFeatureFlagService,
+            Lazy<IVulnerabilitiesNotificationService> vulnerabilitiesFoundService)
         {
             if (asyncServiceProvider == null)
             {
@@ -120,16 +140,34 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (errorListTableDataSource == null)
+            if (errorList == null)
             {
-                throw new ArgumentNullException(nameof(errorListTableDataSource));
+                throw new ArgumentNullException(nameof(errorList));
+            }
+
+            if (outputConsoleProvider == null)
+            {
+                throw new ArgumentNullException(nameof(outputConsoleProvider));
+            }
+
+            if (nugetFeatureFlagService == null)
+            {
+                throw new ArgumentNullException(nameof(nugetFeatureFlagService));
+            }
+
+            if (vulnerabilitiesFoundService == null)
+            {
+                throw new ArgumentNullException(nameof(vulnerabilitiesFoundService));
             }
 
             _asyncServiceProvider = asyncServiceProvider;
             _solutionManager = solutionManager;
             _lockService = lockService;
             _logger = logger;
-            _errorListTableDataSource = errorListTableDataSource;
+            _errorList = errorList;
+            _outputConsoleProvider = outputConsoleProvider;
+            _nugetFeatureFlagService = nugetFeatureFlagService;
+            _vulnerabilitiesFoundService = vulnerabilitiesFoundService;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
@@ -161,11 +199,7 @@ namespace NuGet.SolutionRestoreManager
 
                     _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
                     Assumes.Present(_vsSolution);
-#if VS15
-                    // these properties are specific to VS15 since they are use to attach to solution events
-                    // which is further used to start bg job runner to schedule auto restore
                     Advise(_vsSolution);
-#endif
                 });
 
                 // Signal the background job runner solution is loaded
@@ -208,9 +242,7 @@ namespace NuGet.SolutionRestoreManager
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     _solutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
-#if VS15
                     Unadvise();
-#endif
                 });
             }
         }
@@ -250,7 +282,7 @@ namespace NuGet.SolutionRestoreManager
                     () => new BlockingCollection<SolutionRestoreRequest>(RequestQueueLimit));
 
                 _pendingRestore = new BackgroundRestoreOperation();
-                _activeRestoreTask = Task.FromResult(true);
+                _activeRestoreTask = TaskResult.True;
                 _restoreJobContext = new SolutionRestoreJobContext();
 
                 // Set to signaled, restore is no longer busy
@@ -269,9 +301,9 @@ namespace NuGet.SolutionRestoreManager
             Reset();
 
             // Clear warnings/errors from nuget
-            if (_errorListTableDataSource.IsValueCreated)
+            if (_errorList.IsValueCreated)
             {
-                _errorListTableDataSource.Value.ClearNuGetEntries();
+                _errorList.Value.ClearNuGetEntries();
             }
         }
 
@@ -388,8 +420,17 @@ namespace NuGet.SolutionRestoreManager
                     using (var restoreOperation = new BackgroundRestoreOperation())
                     {
                         await PromoteTaskToActiveAsync(restoreOperation, token);
-
-                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, token);
+                        var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
+                        var restoreTrackingData = GetRestoreTrackingData(
+                            restoreReason: ImplicitRestoreReason.None,
+                            requestCount: 1,
+                            isBulkRestoreCoordinationEnabled: isBulkRestoreCoordinationEnabled,
+                            projectRestoreInfoSourcesCount: -1,
+                            bulkRestoreCoordinationCheckStartTime: default,
+                            projectsReadyCheckCount: 0,
+                            projectReadyTimings: new List<TimeSpan>(),
+                            request.ExplicitRestoreReason);
+                        var result = await ProcessRestoreRequestAsync(restoreOperation, request, restoreTrackingData, token);
 
                         return result;
                     }
@@ -400,6 +441,11 @@ namespace NuGet.SolutionRestoreManager
                 // Signal that restore has been completed.
                 _isCompleteEvent.Set();
             }
+        }
+
+        private async Task<bool> IsBulkRestoreCoordinationEnabledAsync()
+        {
+            return await _nugetFeatureFlagService.Value.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.BulkRestoreCoordination);
         }
 
         public async Task CleanCacheAsync()
@@ -418,7 +464,6 @@ namespace NuGet.SolutionRestoreManager
             await TaskScheduler.Default;
 
             var status = false;
-
             // Check if the solution is fully loaded
             while (!_solutionLoadedEvent.IsSet)
             {
@@ -438,6 +483,9 @@ namespace NuGet.SolutionRestoreManager
                 }
             }
 
+            ImplicitRestoreReason restoreReason = ImplicitRestoreReason.None;
+            var isBulkRestoreCoordinationEnabled = await IsBulkRestoreCoordinationEnabledAsync();
+            DateTime? bulkRestoreCoordinationCheckStartTime = default;
             // Loops until there are pending restore requests or it's get cancelled
             while (!token.IsCancellationRequested)
             {
@@ -466,9 +514,12 @@ namespace NuGet.SolutionRestoreManager
                         await PromoteTaskToActiveAsync(restoreOperation, token);
 
                         token.ThrowIfCancellationRequested();
-
-                        var retries = 0;
-
+                        DateTime lastNominationReceived = DateTime.UtcNow;
+                        int requestCount = 1;
+                        int projectsReadyCheckCount = 0;
+                        int projectRestoreInfoSourcesCount = -1;
+                        ExplicitRestoreReason explicitRestoreReason = request.ExplicitRestoreReason;
+                        List<TimeSpan> projectReadyTimings = null;
                         // Drains the queue
                         while (!_pendingRequests.Value.IsCompleted
                             && !token.IsCancellationRequested)
@@ -478,40 +529,98 @@ namespace NuGet.SolutionRestoreManager
                             // check if there are pending nominations
                             var isAllProjectsNominated = await _solutionManager.Value.IsAllProjectsNominatedAsync();
 
-                            if (!_pendingRequests.Value.TryTake(out next, IdleTimeoutMs, token))
+                            // Try to get a request without a timeout. We don't want to *block* the threadpool thread.
+                            if (!_pendingRequests.Value.TryTake(out next, millisecondsTimeout: 0, token))
                             {
                                 if (isAllProjectsNominated)
                                 {
-                                    // if we've got all the nominations then continue with the auto restore
-                                    break;
+                                    if (isBulkRestoreCoordinationEnabled)
+                                    {
+                                        var projectReadyCheckMeasurement = Stopwatch.StartNew();
+                                        if (bulkRestoreCoordinationCheckStartTime == default)
+                                        {
+                                            bulkRestoreCoordinationCheckStartTime = DateTime.UtcNow;
+                                        }
+                                        projectsReadyCheckCount++;
+                                        // If we are about to start restore, we should run through all the projects to ensure there isn't a pending nomination.
+                                        IReadOnlyList<object> restoreProjectInfoSources = _solutionManager.Value.GetAllProjectRestoreInfoSources();
+                                        projectRestoreInfoSourcesCount = restoreProjectInfoSources.Count;
+                                        var allProjectsReady = true;
+                                        var bulkCheckTimeout = false;
+                                        for (int i = 0; i < restoreProjectInfoSources.Count && !bulkCheckTimeout; i++)
+                                        {
+                                            var restoreInfoSource = (IVsProjectRestoreInfoSource)restoreProjectInfoSources[i];
+                                            if (restoreInfoSource.HasPendingNomination)
+                                            {
+                                                allProjectsReady = false;
+                                                TimeSpan timeoutTime = CalculateTimeoutTime(bulkRestoreCoordinationCheckStartTime.Value, DateTime.UtcNow, BulkRestoreCoordinationTimeout);
+                                                var timeoutTask = Task.Delay(timeoutTime, token);
+                                                var whenNominatedTask = restoreInfoSource.WhenNominated(token);
+
+                                                var result = await Task.WhenAny(whenNominatedTask, timeoutTask);
+                                                if (result == timeoutTask)
+                                                {
+                                                    bulkCheckTimeout = true;
+                                                }
+                                            }
+                                        }
+
+                                        projectReadyCheckMeasurement.Stop();
+                                        if (projectReadyTimings == null)
+                                        {
+                                            projectReadyTimings = new();
+                                        }
+                                        projectReadyTimings.Add(projectReadyCheckMeasurement.Elapsed);
+
+                                        if (allProjectsReady)
+                                        {
+                                            restoreReason = ImplicitRestoreReason.ProjectsReady;
+                                            break;
+                                        }
+                                        if (bulkCheckTimeout)
+                                        {
+                                            restoreReason = ImplicitRestoreReason.ProjectsReadyCheckTimeout;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        restoreReason = ImplicitRestoreReason.AllProjectsNominated;
+                                        break;
+                                    }
                                 }
-                            }
-
-                            // Upgrade request if necessary
-                            if (next != null && next.RestoreSource != request.RestoreSource)
-                            {
-                                // there could be requests of two types: Auto-Restore or Explicit
-                                // Explicit is always preferred.
-                                request = new SolutionRestoreRequest(
-                                    next.ForceRestore || request.ForceRestore,
-                                    RestoreOperationSource.Explicit);
-
-                                // we don't want to delay explicit solution restore request so just break at this time.
-                                break;
-                            }
-
-                            if (!isAllProjectsNominated)
-                            {
-                                if (retries >= DelayAutoRestoreRetries)
+                                else
                                 {
-                                    // we're still missing some nominations but don't delay it indefinitely and let auto restore fail.
-                                    // we wait until 20 secs for all the projects to be nominated at solution load.
+                                    if (!isBulkRestoreCoordinationEnabled)
+                                    {
+                                        // Break if we've waited for more than 30s without an actual nomination.
+                                        if (lastNominationReceived.AddMilliseconds(MaxIdleWaitTimeMs) < DateTime.UtcNow)
+                                        {
+                                            restoreReason = ImplicitRestoreReason.NominationsIdleTimeout;
+                                            break;
+                                        }
+                                    }
+                                    await Task.Delay(IdleTimeoutMs, token);
+                                }
+                            }
+                            else
+                            {
+                                requestCount++;
+                                lastNominationReceived = DateTime.UtcNow;
+                                // Upgrade request if necessary
+                                if (next != null && next.RestoreSource != request.RestoreSource)
+                                {
+                                    // there could be requests of two types: Auto-Restore or Explicit
+                                    // Explicit is always preferred.
+                                    request = new SolutionRestoreRequest(
+                                        next.ForceRestore || request.ForceRestore,
+                                        RestoreOperationSource.Explicit,
+                                        next.ExplicitRestoreReason);
+
+                                    // we don't want to delay explicit solution restore request so just break at this time.
+                                    restoreReason = ImplicitRestoreReason.None;
                                     break;
                                 }
-
-                                // if we're still expecting some nominations and also haven't reached our max timeout
-                                // then increase the retries count.
-                                retries++;
                             }
                         }
 
@@ -524,8 +633,18 @@ namespace NuGet.SolutionRestoreManager
 
                         token.ThrowIfCancellationRequested();
 
+                        Dictionary<string, object> restoreStartTrackingData = GetRestoreTrackingData(
+                            restoreReason,
+                            requestCount,
+                            isBulkRestoreCoordinationEnabled,
+                            projectRestoreInfoSourcesCount,
+                            bulkRestoreCoordinationCheckStartTime,
+                            projectsReadyCheckCount,
+                            projectReadyTimings,
+                            explicitRestoreReason);
+
                         // Runs restore job with scheduled request params
-                        status = await ProcessRestoreRequestAsync(restoreOperation, request, token);
+                        status = await ProcessRestoreRequestAsync(restoreOperation, request, restoreStartTrackingData, token);
 
                         // Repeats...
                     }
@@ -545,21 +664,77 @@ namespace NuGet.SolutionRestoreManager
             return status;
         }
 
+        /// <summary>
+        /// Calculates the timeout time.
+        /// </summary>
+        /// <param name="startTime">The start time from which to calculate</param>
+        /// <param name="currentTime">The current time</param>
+        /// <param name="timeoutTime">The timeout time</param>
+        /// <returns>The leftover timeout time, or 0.</returns>
+        internal static TimeSpan CalculateTimeoutTime(DateTime startTime, DateTime currentTime, TimeSpan timeoutTime)
+        {
+            TimeSpan leftoverTime = (startTime - currentTime) + timeoutTime;
+            if (leftoverTime.Ticks > 0)
+            {
+                return leftoverTime;
+            }
+            return new TimeSpan(ticks: 0);
+        }
+
+        private static Dictionary<string, object> GetRestoreTrackingData(ImplicitRestoreReason restoreReason, int requestCount, bool isBulkRestoreCoordinationEnabled, int projectRestoreInfoSourcesCount, DateTime? bulkRestoreCoordinationCheckStartTime, int projectsReadyCheckCount, List<TimeSpan> projectReadyTimings, ExplicitRestoreReason explicitRestoreReason)
+        {
+            double bulkRestoreCoordinationTotalTime = bulkRestoreCoordinationCheckStartTime == default ?
+                0.0 :
+                (DateTime.UtcNow - bulkRestoreCoordinationCheckStartTime.Value).TotalSeconds;
+
+            return new()
+            {
+                { RestoreTelemetryEvent.ImplicitRestoreReason, restoreReason },
+                { RestoreTelemetryEvent.RequestCount, requestCount },
+                { RestoreTelemetryEvent.IsBulkFileRestoreCoordinationEnabled, isBulkRestoreCoordinationEnabled },
+                { RestoreTelemetryEvent.ProjectRestoreInfoSourcesCount, projectRestoreInfoSourcesCount },
+                { RestoreTelemetryEvent.ProjectsReadyCheckTotalTime, bulkRestoreCoordinationTotalTime },
+                { RestoreTelemetryEvent.ProjectsReadyCheckCount, projectsReadyCheckCount },
+                { RestoreTelemetryEvent.ProjectReadyCheckTimings, TelemetryUtility.ToJsonArrayOfTimingsInSeconds(projectReadyTimings) },
+                { RestoreTelemetryEvent.ExplicitRestoreReason, explicitRestoreReason },
+            };
+        }
+
         private async Task<bool> ProcessRestoreRequestAsync(
             BackgroundRestoreOperation restoreOperation,
             SolutionRestoreRequest request,
+            Dictionary<string, object> restoreStartTrackingData,
             CancellationToken token)
         {
+            // if the request is implicit & this is the first restore, assume we are restoring due to a solution load.
+            var isSolutionLoadRestore = _isFirstRestore &&
+                request.RestoreSource == RestoreOperationSource.Implicit;
+            double timeSinceLastRestoreCompletedTime = _isFirstRestore ?
+                0.0 :
+                (DateTimeOffset.UtcNow - _lastRestoreCompletedTime).TotalSeconds;
+            string lastRestoreOperationSourcee = _isFirstRestore ?
+                "None" :
+                _lastRestoreOperationSource.ToString();
+
+            _isFirstRestore = false;
+            _lastRestoreOperationSource = request.RestoreSource;
+            restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.IsSolutionLoadRestore), isSolutionLoadRestore);
+            restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.TimeSinceLastRestoreCompleted), timeSinceLastRestoreCompletedTime);
+            restoreStartTrackingData.Add(nameof(RestoreTelemetryEvent.LastRestoreOperationSource), lastRestoreOperationSourcee);
+
             // Start the restore job in a separate task on a background thread
             // it will switch into main thread when necessary.
             var joinableTask = JoinableTaskFactory.RunAsync(
-                () => StartRestoreJobAsync(request, token));
+            () => StartRestoreJobAsync(request, restoreStartTrackingData, token));
 
             var continuation = joinableTask
                 .Task
-                .ContinueWith(t => restoreOperation.ContinuationAction(t, JoinableTaskFactory));
+                .ContinueWith(t => restoreOperation.ContinuationAction(t));
 
-            return await joinableTask;
+            bool restoreTask = await joinableTask;
+            _lastRestoreCompletedTime = DateTimeOffset.UtcNow;
+
+            return restoreTask;
         }
 
         private async Task PromoteTaskToActiveAsync(BackgroundRestoreOperation restoreOperation, CancellationToken token)
@@ -594,7 +769,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private async Task<bool> StartRestoreJobAsync(
-            SolutionRestoreRequest request, CancellationToken token)
+            SolutionRestoreRequest request, Dictionary<string, object> restoreStartTrackingData, CancellationToken token)
         {
             await TaskScheduler.Default;
 
@@ -603,21 +778,20 @@ namespace NuGet.SolutionRestoreManager
                 return await _lockService.Value.ExecuteNuGetOperationAsync(async () =>
                 {
                     var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
-
-                    using (var logger = componentModel.GetService<RestoreOperationLogger>())
+                    using (var logger = new RestoreOperationLogger(_outputConsoleProvider))
                     {
                         try
                         {
                             // Start logging
                             await logger.StartAsync(
-                                request.RestoreSource,
-                                _errorListTableDataSource,
-                                JoinableTaskFactory,
-                                jobCts);
+                            request.RestoreSource,
+                            _errorList,
+                            JoinableTaskFactory,
+                            jobCts);
 
                             // Run restore
                             var job = componentModel.GetService<ISolutionRestoreJob>();
-                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, restoreStartTrackingData, _vulnerabilitiesFoundService, jobCts.Token);
                         }
                         finally
                         {
@@ -647,7 +821,7 @@ namespace NuGet.SolutionRestoreManager
 
             public System.Runtime.CompilerServices.TaskAwaiter<bool> GetAwaiter() => Task.GetAwaiter();
 
-            public void ContinuationAction(Task<bool> targetTask, JoinableTaskFactory jtf)
+            public void ContinuationAction(Task<bool> targetTask)
             {
                 Assumes.True(targetTask.IsCompleted);
 
@@ -701,7 +875,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 // Inner code block of using clause may throw an unhandled exception.
                 // This'd result in leaving the active task in incomplete state.
-                // Hence the next restore operation would hang forever.
+                // Hence the next restore operation would stop responding forever.
                 // To resolve potential deadlock issue the unbound task is to be completed here.
                 if (!Task.IsCompleted && !Task.IsCanceled && !Task.IsFaulted)
                 {

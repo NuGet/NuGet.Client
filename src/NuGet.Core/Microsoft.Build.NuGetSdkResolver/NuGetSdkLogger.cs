@@ -2,25 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Tracing;
+using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using NuGet.Common;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-using INuGetLogger = NuGet.Common.ILogger;
+using ILogger = NuGet.Common.ILogger;
 
 namespace Microsoft.Build.NuGetSdkResolver
 {
     /// <summary>
-    /// An implementation of <see cref="T:NuGet.Common.ILogger" /> that logs messages to an <see cref="T:Microsoft.Build.Framework.SdkLogger" />.
+    /// An implementation of <see cref="ILogger" /> that logs messages to an <see cref="SdkLogger" />.
     /// </summary>
     /// <inheritdoc />
-    internal class NuGetSdkLogger : INuGetLogger
+    internal sealed class NuGetSdkLogger : ILogger
     {
         /// <summary>
         /// A collection of errors that have been logged.
         /// </summary>
-        private readonly ICollection<string> _errors;
+        private readonly List<string> _errors = new List<string>();
 
         /// <summary>
         /// A <see cref="SdkLogger"/> to forward events to.
@@ -30,53 +31,77 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <summary>
         /// A collection of warnings that have been logged.
         /// </summary>
-        private readonly ICollection<string> _warnings;
+        private readonly List<string> _warnings = new List<string>();
 
         /// <summary>
         /// Initializes a new instance of the NuGetLogger class.
         /// </summary>
         /// <param name="sdkLogger">A <see cref="SdkLogger"/> to forward events to.</param>
-        /// <param name="warnings">A <see cref="ICollection{String}"/> to add logged warnings to.</param>
-        /// <param name="errors">An <see cref="ICollection{String}"/> to add logged errors to.</param>
-        public NuGetSdkLogger(SdkLogger sdkLogger, ICollection<string> warnings, ICollection<string> errors)
+        /// <exception cref="ArgumentNullException"><paramref name="sdkLogger" /> is <see langword="null" />.</exception>
+        public NuGetSdkLogger(SdkLogger sdkLogger)
         {
             _sdkLogger = sdkLogger ?? throw new ArgumentNullException(nameof(sdkLogger));
-            _warnings = warnings ?? throw new ArgumentNullException(nameof(warnings));
-            _errors = errors ?? throw new ArgumentNullException(nameof(errors));
         }
 
+        /// <summary>
+        /// Gets a <see cref="IReadOnlyCollection{T}" /> of error messages that have been logged.
+        /// </summary>
+        public IReadOnlyCollection<string> Errors => _errors;
+
+        /// <summary>
+        /// Gets a <see cref="IReadOnlyCollection{T}" /> of warning messages that have been logged.
+        /// </summary>
+        public IReadOnlyCollection<string> Warnings => _warnings;
+
+        /// <inheritdoc cref="ILogger.Log(NuGet.Common.LogLevel, string)" />
         public void Log(LogLevel level, string data)
         {
+            EventLevel eventLevel = EventLevel.LogAlways;
+
             switch (level)
             {
                 case LogLevel.Debug:
                 case LogLevel.Verbose:
-                    // Detailed and Diagnostic verbosity in MSBuild shows high, normal, and low importance messages
+                    // Debug and Verbose verbosity in NuGet maps to a low importance message in MSBuild
                     _sdkLogger.LogMessage(data, MessageImportance.Low);
+
+                    eventLevel = EventLevel.Verbose;
                     break;
-                    
+
                 case LogLevel.Information:
-                    // Normal verbosity in MSBuild shows only high and normal importance messages
+                    // Information verbosity in NuGet maps to a normal importance message in MSBuild
                     _sdkLogger.LogMessage(data, MessageImportance.Normal);
+
+                    eventLevel = EventLevel.Informational;
                     break;
 
                 case LogLevel.Minimal:
-                    // Minimal verbosity in MSBuild shows only high importance messages
+                    // Minimal verbosity in NuGet maps to a high importance message in MSBuild
                     _sdkLogger.LogMessage(data, MessageImportance.High);
+
+                    eventLevel = EventLevel.LogAlways;
                     break;
-                    
+
                 case LogLevel.Warning:
                     _warnings.Add(data);
+
+                    eventLevel = EventLevel.Warning;
                     break;
 
                 case LogLevel.Error:
                     _errors.Add(data);
+
+                    eventLevel = EventLevel.Error;
                     break;
             }
+
+            if (NuGetEventSource.IsEnabled) TraceEvents.LogMessage(eventLevel, level, data);
         }
 
+        /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />
         public void Log(ILogMessage message) => Log(message.Level, message.Message);
 
+        /// <inheritdoc cref="ILogger.LogAsync(NuGet.Common.LogLevel, string)" />
         public Task LogAsync(LogLevel level, string data)
         {
             Log(level, data);
@@ -84,6 +109,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc cref="ILogger.LogAsync(ILogMessage)" />
         public Task LogAsync(ILogMessage message)
         {
             Log(message);
@@ -91,18 +117,42 @@ namespace Microsoft.Build.NuGetSdkResolver
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc cref="ILogger.LogDebug(string)" />
         public void LogDebug(string data) => Log(LogLevel.Debug, data);
 
+        /// <inheritdoc cref="ILogger.LogError(string)" />
         public void LogError(string data) => Log(LogLevel.Error, data);
 
+        /// <inheritdoc cref="ILogger.LogInformation(string)" />
         public void LogInformation(string data) => Log(LogLevel.Information, data);
 
+        /// <inheritdoc cref="ILogger.LogInformationSummary(string)" />
         public void LogInformationSummary(string data) => Log(LogLevel.Information, data);
 
+        /// <inheritdoc cref="ILogger.LogMinimal(string)" />
         public void LogMinimal(string data) => Log(LogLevel.Minimal, data);
 
+        /// <inheritdoc cref="ILogger.LogVerbose(string)" />
         public void LogVerbose(string data) => Log(LogLevel.Verbose, data);
 
+        /// <inheritdoc cref="ILogger.LogWarning(string)" />
         public void LogWarning(string data) => Log(LogLevel.Warning, data);
+
+        private static class TraceEvents
+        {
+            public static void LogMessage(EventLevel eventLevel, LogLevel level, string message)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Level = eventLevel,
+                    Keywords = NuGetEventSource.Keywords.Logging,
+                };
+
+                NuGetEventSource.Instance.Write("SdkResolver/LogMessage", eventOptions, new LogMessageEventData(level, message));
+            }
+
+            [EventData]
+            private record struct LogMessageEventData(LogLevel Level, string Message);
+        }
     }
 }

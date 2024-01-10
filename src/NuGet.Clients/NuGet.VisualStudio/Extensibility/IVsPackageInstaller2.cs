@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using EnvDTE;
 
@@ -14,8 +14,10 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs the latest version of a single package from the specified package source.
         /// </summary>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="source">
-        /// The package source to install the package from. This value can be <c>null</c>
+        /// The package source to install the package from. This value can be <see langword="null" />
         /// to indicate that the user's configured sources should be used. Otherwise,
         /// this should be the source path as a string. If the user has credentials
         /// configured for a source, this value must exactly match the configured source
@@ -32,7 +34,7 @@ namespace NuGet.VisualStudio
         /// during installation.
         /// </param>
         /// <exception cref="InvalidOperationException">
-        /// Thrown when <see paramref="includePrerelease"/> is <c>false</c> and no stable version
+        /// Thrown when <see paramref="includePrerelease"/> is <see langword="false" /> and no stable version
         /// of the package exists.
         /// </exception>
         void InstallLatestPackage(

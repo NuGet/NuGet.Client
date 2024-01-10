@@ -6,11 +6,13 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -20,6 +22,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using NuGetConsole.Implementation.Console;
 using NuGetConsole.Implementation.PowerConsole;
 using Task = System.Threading.Tasks.Task;
@@ -43,34 +46,9 @@ namespace NuGetConsole.Implementation
             get { return this.GetService<IComponentModel>(typeof(SComponentModel)); }
         }
 
-        private IProductUpdateService ProductUpdateService
-        {
-            get { return ComponentModel.GetService<IProductUpdateService>(); }
-        }
-
-        private IPackageRestoreManager PackageRestoreManager
-        {
-            get { return ComponentModel.GetService<IPackageRestoreManager>(); }
-        }
-
-        private IDeleteOnRestartManager DeleteOnRestartManager
-        {
-            get { return ComponentModel.GetService<IDeleteOnRestartManager>(); }
-        }
-
-        private ISolutionManager SolutionManager
-        {
-            get { return ComponentModel.GetService<ISolutionManager>(); }
-        }
-
         private PowerConsoleWindow PowerConsoleWindow
         {
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
-        }
-
-        private IVsUIShell VsUIShell
-        {
-            get { return this.GetService<IVsUIShell>(typeof(SVsUIShell)); }
         }
 
         private bool IsToolbarEnabled
@@ -78,9 +56,9 @@ namespace NuGetConsole.Implementation
             get
             {
                 return _wpfConsole != null &&
-                       _wpfConsole.Dispatcher.IsStartCompleted &&
-                       _wpfConsole.Host != null &&
-                       _wpfConsole.Host.IsCommandEnabled;
+                    _wpfConsole.Dispatcher.IsStartCompleted &&
+                    _wpfConsole.Host != null &&
+                    _wpfConsole.Host.IsCommandEnabled;
             }
         }
 
@@ -88,12 +66,10 @@ namespace NuGetConsole.Implementation
         /// Standard constructor for the tool window.
         /// </summary>
         public PowerConsoleToolWindow()
-            :
-                base(null)
+            : base(null)
         {
             Caption = Resources.ToolWindowTitle;
-            BitmapResourceID = 301;
-            BitmapIndex = 0;
+            BitmapImageMoniker = KnownMonikers.Console;
             ToolBar = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.idToolbar);
         }
 
@@ -135,10 +111,6 @@ namespace NuGetConsole.Implementation
         /// </summary>
         public bool IsLoaded { get; private set; }
 
-        [SuppressMessage(
-            "Microsoft.Design",
-            "CA1031:DoNotCatchGeneralExceptionTypes",
-            Justification = "We really don't want exceptions from the console to bring down VS")]
         public override void OnToolWindowCreated()
         {
             base.OnToolWindowCreated();
@@ -175,10 +147,8 @@ namespace NuGetConsole.Implementation
         {
             base.OnClose();
 
-            if (_wpfConsole != null)
-            {
-                _wpfConsole.Dispose();
-            }
+            _wpfConsole?.Dispose();
+            _consoleParentPane?.Dispose();
         }
 
         /// <summary>
@@ -214,6 +184,8 @@ namespace NuGetConsole.Implementation
         /// </summary>
         int IOleCommandTarget.QueryStatus(ref Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // examine buttons within our toolbar
             if (pguidCmdGroup == GuidList.guidNuGetCmdSet)
             {
@@ -267,6 +239,8 @@ namespace NuGetConsole.Implementation
         /// </summary>
         int IOleCommandTarget.Exec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var hr = OleCommandFilter.OLECMDERR_E_NOTSUPPORTED;
 
             if (VsTextView != null)
@@ -297,7 +271,7 @@ namespace NuGetConsole.Implementation
                 if (args.InValue != null
                     || args.OutValue == IntPtr.Zero)
                 {
-                    throw new ArgumentException("Invalid argument", "e");
+                    throw new ArgumentException("Invalid argument", nameof(e));
                 }
                 Marshal.GetNativeVariantForObject(PowerConsoleWindow.PackageSources, args.OutValue);
             }
@@ -337,7 +311,7 @@ namespace NuGetConsole.Implementation
                 if (args.InValue != null
                     || args.OutValue == IntPtr.Zero)
                 {
-                    throw new ArgumentException("Invalid argument", "e");
+                    throw new ArgumentException("Invalid argument", nameof(e));
                 }
 
                 // get project list here
@@ -495,7 +469,8 @@ namespace NuGetConsole.Implementation
                 {
                     if (WpfConsole.Dispatcher.IsStartCompleted)
                     {
-                        OnDispatcherStartCompleted();
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(OnDispatcherStartCompletedAsync);
+
                         // if the dispatcher was started before we reach here,
                         // it means the dispatcher has been in read-only mode (due to _startedWritingOutput = false).
                         // enable key input now.
@@ -503,7 +478,7 @@ namespace NuGetConsole.Implementation
                     }
                     else
                     {
-                        WpfConsole.Dispatcher.StartCompleted += (sender, args) => OnDispatcherStartCompleted();
+                        WpfConsole.Dispatcher.StartCompleted += OnDispatcherStartCompleted;
                         WpfConsole.Dispatcher.StartWaitingKey += OnDispatcherStartWaitingKey;
                         WpfConsole.Dispatcher.Start();
                     }
@@ -530,21 +505,25 @@ namespace NuGetConsole.Implementation
             ConsoleParentPane.NotifyInitializationCompleted();
         }
 
-        private void OnDispatcherStartCompleted()
+        private void OnDispatcherStartCompleted(object sender, EventArgs args)
+        {
+            WpfConsole.Dispatcher.StartCompleted -= OnDispatcherStartCompleted;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(OnDispatcherStartCompletedAsync)
+                .PostOnFailure(nameof(PowerConsoleToolWindow), nameof(OnDispatcherStartCompleted));
+        }
+
+        private async Task OnDispatcherStartCompletedAsync()
         {
             WpfConsole.Dispatcher.StartWaitingKey -= OnDispatcherStartWaitingKey;
 
             ConsoleParentPane.NotifyInitializationCompleted();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // force the UI to update the toolbar
-                VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
-            });
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
+            // force the UI to update the toolbar
+            IVsUIShell vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
+            vsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
         }
 
         private IWpfConsole _wpfConsole;
@@ -552,7 +531,6 @@ namespace NuGetConsole.Implementation
         /// <summary>
         /// Get the WpfConsole of the active host.
         /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         private IWpfConsole WpfConsole
         {
             get
@@ -656,11 +634,12 @@ namespace NuGetConsole.Implementation
             return false;
         }
 
-        public void StartDispatcher()
+        public async Task StartDispatcherAsync()
         {
+            // Called in tests.
             if (WpfConsole != null)
             {
-                WpfConsole.Dispatcher.Start();
+                await WpfConsole.Dispatcher.StartAsync();
             }
         }
 
@@ -705,7 +684,7 @@ namespace NuGetConsole.Implementation
                 {
                     _vsOutputConsole = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                     {
-                        var consoleProvider = await ServiceLocator.GetInstanceAsync<IOutputConsoleProvider>();
+                        var consoleProvider = await ServiceLocator.GetComponentModelServiceAsync<IOutputConsoleProvider>();
                         if (null != consoleProvider)
                         {
                             return await consoleProvider.CreatePackageManagerConsoleAsync();
@@ -725,7 +704,7 @@ namespace NuGetConsole.Implementation
             {
                 if (_consoleStatus == null)
                 {
-                    _consoleStatus = ServiceLocator.GetInstance<IConsoleStatus>();
+                    _consoleStatus = ServiceLocator.GetComponentModelService<IConsoleStatus>();
                     Debug.Assert(_consoleStatus != null);
                 }
 

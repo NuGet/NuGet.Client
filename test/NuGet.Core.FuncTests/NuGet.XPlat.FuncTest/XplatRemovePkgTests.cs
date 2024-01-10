@@ -59,7 +59,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Assert
                 mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p =>
-                    p.PackageDependency.Id == package &&
+                    p.PackageId == package &&
                     p.ProjectPath == projectPath),
                     It.IsAny<MSBuildAPIUtility>()));
 

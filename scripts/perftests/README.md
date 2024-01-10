@@ -22,4 +22,6 @@ The `PerformanceTestUtilities.ps1` script is a collection of utility functions t
 `RunPerformanceTests.ps1` allows you to execute the full test suite given a specific solution file, a NuGet Client and an output results file.
 `PerformanceTestRunner.ps1` will execute all the test cases added in the testCases folder with the `Test-*` pattern.
 
+Note that it's very important to initialize the script from a location that does not have a global.json in it's directory path. This can skew the results if you are dealing with SDK based projects.
+
 To run either the performance tests or the runner, run `Get-Help scriptName.ps1` and/or `Get-Help scriptName.ps1 -examples`

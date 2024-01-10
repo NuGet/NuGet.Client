@@ -100,6 +100,8 @@ namespace NuGet.Protocol
 
         public DateTimeOffset? Published { get; private set; }
 
+        public Uri ReadmeUrl { get; } = null; // The ReadmeUrl has not been added to the V2 feed.
+
         public Uri ReportAbuseUrl { get; private set; }
 
         public Uri PackageDetailsUrl { get; private set; }
@@ -129,7 +131,8 @@ namespace NuGet.Protocol
 
         public NuGetVersion Version { get; private set; }
 
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
+        /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => TaskResult.EmptyEnumerable<VersionInfo>();
 
         private static Uri GetUriSafe(string url)
         {
@@ -138,7 +141,11 @@ namespace NuGet.Protocol
             return uri;
         }
 
-        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
+        /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => TaskResult.Null<PackageDeprecationMetadata>();
+
+        /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; } = null; // Vulnerability metadata is not added to nuget.org's v2 feed.
 
         public bool IsListed { get; }
     }

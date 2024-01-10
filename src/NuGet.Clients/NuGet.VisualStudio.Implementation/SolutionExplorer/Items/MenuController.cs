@@ -36,6 +36,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         bool IContextMenuController.ShowContextMenu(IEnumerable<object> items, Point location)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             bool shouldShowMenu = items.All(item => item is IRelatableItem);
 
             if (shouldShowMenu)

@@ -99,6 +99,11 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
                 }
 
+                if (currentSetting.Origin != null && currentSetting.Origin.IsReadOnly)
+                {
+                    throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+                }
+
                 if (Children.Remove(currentSetting))
                 {
                     // Remove it from the appropriate config

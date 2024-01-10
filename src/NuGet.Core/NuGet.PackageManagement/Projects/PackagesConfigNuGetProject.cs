@@ -86,12 +86,12 @@ namespace NuGet.ProjectManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (nuGetProjectContext == null)
             {
-                throw new ArgumentNullException("nuGetProjectContext");
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
             var isDevelopmentDependency = await CheckDevelopmentDependencyAsync(downloadResourceResult, token);
@@ -185,12 +185,12 @@ namespace NuGet.ProjectManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (nuGetProjectContext == null)
             {
-                throw new ArgumentNullException("nuGetProjectContext");
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
             var installedPackagesList = GetInstalledPackagesList();
@@ -198,7 +198,7 @@ namespace NuGet.ProjectManagement
             if (packageReference == null)
             {
                 nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageDoesNotExisttInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
-                return Task.FromResult(false);
+                return TaskResult.False;
             }
 
             try
@@ -231,7 +231,7 @@ namespace NuGet.ProjectManagement
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
-            return Task.FromResult(true);
+            return TaskResult.True;
         }
 
         public override Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)

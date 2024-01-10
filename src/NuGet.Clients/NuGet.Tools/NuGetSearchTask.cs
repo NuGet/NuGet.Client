@@ -22,23 +22,23 @@ namespace NuGetVSExtension
         {
             if (provider == null)
             {
-                throw new ArgumentNullException("provider");
+                throw new ArgumentNullException(nameof(provider));
             }
             if (searchQuery == null)
             {
-                throw new ArgumentNullException("searchQuery");
+                throw new ArgumentNullException(nameof(searchQuery));
             }
             if (searchCallback == null)
             {
-                throw new ArgumentNullException("searchCallback");
+                throw new ArgumentNullException(nameof(searchCallback));
             }
             if (managePackageDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageDialogCommand));
             }
             if (managePackageForSolutionDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageForSolutionDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
             }
             _provider = provider;
             _searchCallback = searchCallback;

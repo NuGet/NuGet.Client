@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,6 +16,7 @@ namespace NuGet.Common
             ".jsproj",
             ".wixproj",
             ".nuproj",
+            ".nfproj",
         };
 
         public static HashSet<string> SupportedProjectExtensions
@@ -34,7 +35,7 @@ namespace NuGet.Common
             {
                 projectFile = candidates[0];
             }
-            
+
             return !String.IsNullOrEmpty(projectFile);
         }
 

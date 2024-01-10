@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,10 +25,6 @@ namespace NuGetConsole
             }
         }
 
-        [SuppressMessage(
-            "Microsoft.Performance",
-            "CA1811:AvoidUncalledPrivateCode",
-            Justification = "This file is shared between two projects. One project uses this method, the other don't.")]
         public static T GetService<T>(this IServiceProvider sp, Type serviceType)
             where T : class
         {

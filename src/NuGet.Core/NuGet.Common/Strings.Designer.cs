@@ -10,7 +10,6 @@
 
 namespace NuGet.Common {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace NuGet.Common {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -40,7 +39,7 @@ namespace NuGet.Common {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Common.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Common.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -58,15 +57,6 @@ namespace NuGet.Common {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An absolute path is required: &apos;{0}&apos;..
-        /// </summary>
-        internal static string AbsolutePathRequired {
-            get {
-                return ResourceManager.GetString("AbsolutePathRequired", resourceCulture);
             }
         }
         
@@ -89,15 +79,6 @@ namespace NuGet.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to create random file for dotnet add pkg command..
-        /// </summary>
-        internal static string Error_FailedToCreateRandomFile {
-            get {
-                return ResourceManager.GetString("Error_FailedToCreateRandomFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Required environment variable &apos;{0}&apos; is not set. Try setting &apos;{0}&apos; and running the operation again..
         /// </summary>
         internal static string MissingRequiredEnvVar {
@@ -116,20 +97,38 @@ namespace NuGet.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to At least one package folder path must be provided..
+        ///   Looks up a localized string similar to {0:0.##} hr.
         /// </summary>
-        internal static string NoPackageFoldersFound {
+        internal static string TimeUnits_Hour {
             get {
-                return ResourceManager.GetString("NoPackageFoldersFound", resourceCulture);
+                return ResourceManager.GetString("TimeUnits_Hour", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package folder not found: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to {0:0.##} ms.
         /// </summary>
-        internal static string PackageFolderNotFound {
+        internal static string TimeUnits_Millisecond {
             get {
-                return ResourceManager.GetString("PackageFolderNotFound", resourceCulture);
+                return ResourceManager.GetString("TimeUnits_Millisecond", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:0.##} min.
+        /// </summary>
+        internal static string TimeUnits_Minute {
+            get {
+                return ResourceManager.GetString("TimeUnits_Minute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0:0.##} sec.
+        /// </summary>
+        internal static string TimeUnits_Second {
+            get {
+                return ResourceManager.GetString("TimeUnits_Second", resourceCulture);
             }
         }
         
@@ -143,7 +142,16 @@ namespace NuGet.Common {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to obtain lock file access on &apos;{0}&apos; for operations on &apos;{1}&apos;. This may mean that a different user or administator is holding this lock and that this process does not have permission to access it. If no other process is currently performing an operation on this file it may mean that an earlier NuGet process crashed and left an inaccessible lock file, in this case removing the file &apos;{0}&apos; will allow NuGet to continue..
+        ///   Looks up a localized string similar to User is unable to set permission to 700 while creating {0}, errno={1}..
+        /// </summary>
+        internal static string UnableToSetNuGetTempFolderPermission {
+            get {
+                return ResourceManager.GetString("UnableToSetNuGetTempFolderPermission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to obtain lock file access on &apos;{0}&apos; for operations on &apos;{1}&apos;. This may mean that a different user or administrator is holding this lock and that this process does not have permission to access it. If no other process is currently performing an operation on this file it may mean that an earlier NuGet process crashed and left an inaccessible lock file, in this case removing the file &apos;{0}&apos; will allow NuGet to continue..
         /// </summary>
         internal static string UnauthorizedLockFail {
             get {

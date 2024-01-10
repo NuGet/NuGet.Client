@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -54,14 +55,14 @@ namespace NuGet.Configuration
 
         internal bool Update(SettingItem item)
         {
-            if (item == null || (Origin != null && Origin.IsMachineWide))
+            if (item == null || (Origin != null && Origin.IsReadOnly))
             {
                 return false;
             }
 
             if (TryGetChild(item, out var currentChild))
             {
-                if (currentChild.Origin != null && currentChild.Origin.IsMachineWide)
+                if (currentChild.Origin != null && currentChild.Origin.IsReadOnly)
                 {
                     return false;
                 }

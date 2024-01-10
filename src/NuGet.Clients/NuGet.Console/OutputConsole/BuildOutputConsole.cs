@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
 {
@@ -19,7 +21,8 @@ namespace NuGetConsole
         private static Guid BuildWindowPaneGuid = VSConstants.BuildOutput;
 
         private readonly IVsOutputWindow _vsOutputWindow;
-        private IVsOutputWindowPane _outputWindowPane;
+        private readonly AsyncLazy<IVsOutputWindowPane> _outputWindowPane;
+        private readonly AsyncLazy<OutputWindowTextWriter> _outputWindowTextWriter;
 
         public BuildOutputConsole(IVsOutputWindow vsOutputWindow)
         {
@@ -29,18 +32,36 @@ namespace NuGetConsole
             }
 
             _vsOutputWindow = vsOutputWindow;
+
+            _outputWindowPane = new AsyncLazy<IVsOutputWindowPane>(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _vsOutputWindow.GetPane(ref BuildWindowPaneGuid, out var outputWindowPane);
+                return outputWindowPane;
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
+
+            _outputWindowTextWriter = new AsyncLazy<OutputWindowTextWriter>(async () =>
+            {
+                var outputWindowPane = await _outputWindowPane.GetValueAsync();
+                if (outputWindowPane != null)
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    return new OutputWindowTextWriter(outputWindowPane);
+                }
+                else
+                {
+                    return null;
+                }
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public override async Task ActivateAsync()
         {
+            var outputWindowPane = await _outputWindowPane.GetValueAsync();
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            if (_outputWindowPane == null)
-            {
-                _vsOutputWindow.GetPane(ref BuildWindowPaneGuid, out _outputWindowPane);
-            }
-
-            _outputWindowPane?.Activate();
+            outputWindowPane?.Activate();
         }
 
         public override Task ClearAsync()
@@ -51,12 +72,8 @@ namespace NuGetConsole
 
         public override async Task WriteAsync(string text)
         {
-            if (_outputWindowPane != null)
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _outputWindowPane.OutputStringThreadSafe(text);
-            }
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter?.WriteAsync(text);
         }
     }
 }

@@ -35,12 +35,12 @@ function Test-TabExpansionForInstallPackageShowSuggestionsForProjectName {
 
     # Arrange
     $projectNames = @()
-    
+
     for ($i = 0; $i -lt 3; $i++) {
-        $project = New-ConsoleApplication 
+        $project = New-ConsoleApplication
         $projectNames = $projectNames + $project.Name
     }
-    
+
     $sortedProjectNames = $projectNames | Sort-Object
 
     # Act
@@ -60,11 +60,11 @@ function Test-TabExpansionForInstallPackageSortByDownloadCountDescending {
     # Assert
 
     $packages = $suggestions | % { Get-Package -Remote -Filter $_ } | Select-Object -First 1
-    
+
     $count = $packages.Count
     for ($i = 0; $i -lt $count-1; $i++) {
          Assert-True ($packages[$i].DownloadCount -ge $packages[$i+1].DownloadCount)
-    } 
+    }
 }
 
 # Tests for Uninstall-Package intellisense
@@ -87,12 +87,12 @@ function Test-TabExpansionForUninstallPackageShowSuggestionsForPackageId {
 function Test-TabExpansionForUninstallPackageShowSuggestionsForProjectNames {
     # Arrange
     $projectNames = @()
-    
+
     for ($i = 0; $i -lt 3; $i++) {
-        $project = New-ConsoleApplication 
+        $project = New-ConsoleApplication
         $projectNames = $projectNames + $project.Name
     }
-    
+
     $sortedProjectNames = $projectNames | Sort-Object
 
     # Act
@@ -155,7 +155,7 @@ function Test-TabExpansionForUpdatePackageWithVersionAndNoId {
     Install-Package 'NHibernate' -Project $project.Name -Version '2.1.2.4000'
 
     # Act
-    $suggestions = TabExpansion 'Update-Package -Version ' ''    
+    $suggestions = TabExpansion 'Update-Package -Version ' ''
 
     # Assert
     Assert-Null $suggestions
@@ -170,7 +170,7 @@ function Test-TabExpansionForUpdatePackageWithVersionOnlyShowsVersionsHigherThan
     $installedVersion = New-Object NuGet.Versioning.NuGetVersion("3.1.0.4000")
 
     # Act
-    $suggestions = TabExpansion 'Update-Package NHibernate -Version ' ''    
+    $suggestions = TabExpansion 'Update-Package NHibernate -Version ' ''
     $versions = $suggestions | %{ [NuGet.Versioning.NuGetVersion]::Parse($_) }
 
     # Assert
@@ -180,12 +180,12 @@ function Test-TabExpansionForUpdatePackageWithVersionOnlyShowsVersionsHigherThan
 function Test-TabExpansionForUpdatePackageShowSuggestionsForProjectNames {
     # Arrange
     $projectNames = @()
-    
+
     for ($i = 0; $i -lt 3; $i++) {
-        $project = New-ConsoleApplication 
+        $project = New-ConsoleApplication
         $projectNames = $projectNames + $project.Name
     }
-    
+
     $sortedProjectNames = $projectNames | Sort-Object
 
     # Act
@@ -201,7 +201,7 @@ function Test-TabExpansionForUpdatePackageShowSuggestionsForProjectNames {
 # Tests to make sure private functions & cmdlets do not show up in the intellisense
 
 function Test-TabExpansionDoNotSuggestFindPackage() {
-    
+
     # Act
     $suggestions = TabExpansion 'Find-Pac' 'Find-Pac'
 
@@ -210,7 +210,7 @@ function Test-TabExpansionDoNotSuggestFindPackage() {
 }
 
 function Test-TabExpansionDoNotSuggestGetProjectName() {
-    
+
     # Act
     $suggestions = TabExpansion 'GetProjectN' 'GetProjectN'
 
@@ -256,7 +256,7 @@ function Test-ComplexCustomTabExpansion {
         'John Doe' = 14
     }
 
-    Register-TabExpansion Foo @{ 
+    Register-TabExpansion Foo @{
         'Name' = { $ages.Keys }
         'Age' = { param($context) $ages[$context.Name] }
     }
@@ -282,7 +282,6 @@ function Test-TabExpansionForVersionForUninstallPackage {
     # Arrange
     $p = New-WebApplication
     $p | Install-Package elmah -Version 1.1
-    $p | Install-Package Moq
 
     # Act
     $suggestion = TabExpansion "Uninstall-Package elmah -Version "
@@ -308,16 +307,16 @@ function Test-TabExpansionForProjectsReturnsBothUniqueNamesAndSafeNames {
     # Assert
     Assert-AreEqual 4 $suggestions.Count
 
-    Assert-AreEqual 'Folder1\ProjectA' $suggestions[0] 
+    Assert-AreEqual 'Folder1\ProjectA' $suggestions[0]
     Assert-AreEqual 'Folder1\ProjectB'$suggestions[1]
-    Assert-AreEqual 'ProjectA' $suggestions[2] 
-    Assert-AreEqual 'ProjectB' $suggestions[3] 
-    
+    Assert-AreEqual 'ProjectA' $suggestions[2]
+    Assert-AreEqual 'ProjectB' $suggestions[3]
+
 }
 
-function Test-TabExpansionWorksWithOneProject { 
+function Test-TabExpansionWorksWithOneProject {
     # Arrange
-    $f = New-FSharpLibrary 'ProjectA'
+    $f = New-ClassLibrary 'ProjectA'
 
     # Act
     $suggestion = @(TabExpansion 'Get-Project -Name ')

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio.Implementation.Test
     public class PreinstalledRepositoryProviderTests : IDisposable
     {
         private readonly TestDirectory _testDirectory;
-
+        private const string LocalMachineRepoKey = "NuGetPackages";
         public PreinstalledRepositoryProviderTests()
         {
             _testDirectory = TestDirectory.Create();
@@ -27,8 +27,10 @@ namespace NuGet.VisualStudio.Implementation.Test
             _testDirectory.Dispose();
         }
 
-        [Fact]
-        public void AddFromRegistry_WithValidRegistryValue_Succeeds()
+        [Theory]
+        [InlineData(RegistryHive.CurrentUser, null)]
+        [InlineData(RegistryHive.LocalMachine, LocalMachineRepoKey)] // seems to always be in LocalMachine, but not positive which component is writing that key.
+        public void AddFromRegistry_WithValidRegistryValue_Succeeds(RegistryHive registryHive, string repoKeyName)
         {
             var srp = Mock.Of<ISourceRepositoryProvider>();
             Mock.Get(srp)
@@ -39,9 +41,9 @@ namespace NuGet.VisualStudio.Implementation.Test
             var provider = new PreinstalledRepositoryProvider(_ => { }, srp);
 
             // Act
-            using (var tc = new TestContext(_testDirectory.Path))
+            using (var tc = new TestContext(_testDirectory.Path, registryHive))
             {
-                provider.AddFromRegistry(tc.RepoKeyName, isPreUnzipped: true);
+                provider.AddFromRegistry(repoKeyName == null ? tc.RepoKeyName : repoKeyName, isPreUnzipped: true);
             }
 
             Assert.NotNull(provider.GetRepositories().Single());
@@ -60,7 +62,7 @@ namespace NuGet.VisualStudio.Implementation.Test
             string errorHandlerMessage = null;
             var provider = new PreinstalledRepositoryProvider(
                 registryKeyRoot: $"NuGetTest_{Guid.NewGuid()}",
-                errorHandler: errorMessage => { errorHandlerMessage = errorMessage; }, 
+                errorHandler: errorMessage => { errorHandlerMessage = errorMessage; },
                 provider: srp);
 
             // Act
@@ -77,8 +79,10 @@ namespace NuGet.VisualStudio.Implementation.Test
                 StringComparison.OrdinalIgnoreCase);
         }
 
-        [Fact]
-        public void AddFromRegistry_WithInvalidRegistryValue_Fails()
+        [Theory]
+        [InlineData(RegistryHive.CurrentUser)]
+        [InlineData(RegistryHive.LocalMachine)]
+        public void AddFromRegistry_WithInvalidRegistryValue_Fails(RegistryHive registryHive)
         {
             var srp = Mock.Of<ISourceRepositoryProvider>();
 
@@ -87,7 +91,7 @@ namespace NuGet.VisualStudio.Implementation.Test
                 errorMessage => { errorHandlerMessage = errorMessage; }, srp);
 
             // Act
-            using (var tc = new TestContext(string.Empty))
+            using (var tc = new TestContext(string.Empty, registryHive))
             {
                 var exception = Assert.Throws<InvalidOperationException>(() =>
                     provider.AddFromRegistry(tc.RepoKeyName, isPreUnzipped: true)
@@ -106,18 +110,29 @@ namespace NuGet.VisualStudio.Implementation.Test
         private class TestContext : IDisposable
         {
             private readonly RegistryKey _repoKey;
+            private readonly bool _writeKey;
             public string RepoKeyName { get; } = $"NuGetTest_{Guid.NewGuid()}";
 
-            public TestContext(string repositoryPath)
+            public TestContext(string repositoryPath, RegistryHive registryHive)
             {
-                _repoKey = Registry.CurrentUser.CreateSubKey(
-                    PreinstalledRepositoryProvider.DefaultRegistryKeyRoot);
-                _repoKey.SetValue(RepoKeyName, repositoryPath);
+                _writeKey = registryHive == RegistryHive.CurrentUser;
+
+                _repoKey = RegistryKey.OpenBaseKey(registryHive, RegistryView.Registry32).CreateSubKey(
+                    PreinstalledRepositoryProvider.DefaultRegistryKeyRoot, writable: _writeKey);
+
+                if (_writeKey)
+                {
+                    _repoKey.SetValue(RepoKeyName, repositoryPath);
+                }
             }
 
             public void Dispose()
             {
-                _repoKey.DeleteValue(RepoKeyName);
+                if (_writeKey)
+                {
+                    _repoKey.DeleteValue(RepoKeyName);
+                }
+
                 _repoKey.Dispose();
             }
 

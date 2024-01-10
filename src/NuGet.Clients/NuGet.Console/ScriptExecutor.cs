@@ -23,7 +23,7 @@ namespace NuGetConsole
     [Export(typeof(IScriptExecutor))]
     internal class ScriptExecutor : IScriptExecutor
     {
-        private ConcurrentDictionary<PackageIdentity, PackageInitPS1State> InitScriptExecutions
+        private ConcurrentDictionary<PackageIdentity, PackageInitPS1State> _initScriptExecutions
             = new ConcurrentDictionary<PackageIdentity, PackageInitPS1State>(PackageIdentityComparer.Default);
 
         private AsyncLazy<IHost> Host { get; }
@@ -48,7 +48,7 @@ namespace NuGetConsole
 
         public void Reset()
         {
-            InitScriptExecutions.Clear();
+            _initScriptExecutions.Clear();
         }
 
         public async Task<bool> ExecuteAsync(
@@ -120,7 +120,7 @@ namespace NuGetConsole
 
         public bool TryMarkVisited(PackageIdentity packageIdentity, PackageInitPS1State initPS1State)
         {
-            return InitScriptExecutions.TryAdd(packageIdentity, initPS1State);
+            return _initScriptExecutions.TryAdd(packageIdentity, initPS1State);
         }
 
         public async Task<bool> ExecuteInitScriptAsync(PackageIdentity identity)
@@ -140,7 +140,7 @@ namespace NuGetConsole
                     if (File.Exists(scriptPath))
                     {
                         // Init.ps1 is present and will be executed.
-                        InitScriptExecutions.TryUpdate(
+                        _initScriptExecutions.TryUpdate(
                             identity,
                             PackageInitPS1State.FoundAndExecuted,
                             PackageInitPS1State.NotFound);
@@ -156,19 +156,19 @@ namespace NuGetConsole
                 {
                     // Package is not restored. Do not cache the results.
                     PackageInitPS1State dummy;
-                    InitScriptExecutions.TryRemove(identity, out dummy);
+                    _initScriptExecutions.TryRemove(identity, out dummy);
                     result = false;
                 }
             }
             else
             {
                 // Key is already present. Simply access its value
-                result = (InitScriptExecutions[identity] == PackageInitPS1State.FoundAndExecuted);
+                result = (_initScriptExecutions[identity] == PackageInitPS1State.FoundAndExecuted);
             }
 
             return result;
         }
-        
+
         private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
         {
             var console = await OutputConsoleProvider.CreatePowerShellConsoleAsync();
@@ -191,7 +191,7 @@ namespace NuGetConsole
             var host = console.Host;
 
             // start the console 
-            console.Dispatcher.Start();
+            await console.Dispatcher.StartAsync();
 
             // gives the host a chance to do initialization works before dispatching commands to it
             // Host.Initialize calls powershell's pipeline.Invoke and blocks the calling thread

@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Management.Automation;
-using System.Threading.Tasks;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -47,7 +46,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 VsSolutionManager.EnsureSolutionIsLoaded();
                 var projects = NuGetUIThreadHelper.JoinableTaskFactory.Run(
-                    async() => (await VsSolutionManager.GetAllVsProjectAdaptersAsync()).Select(p => p.Project));
+                    async () => (await VsSolutionManager.GetAllVsProjectAdaptersAsync()).Select(p => p.Project));
 
                 WriteObject(projects, enumerateCollection: true);
             }

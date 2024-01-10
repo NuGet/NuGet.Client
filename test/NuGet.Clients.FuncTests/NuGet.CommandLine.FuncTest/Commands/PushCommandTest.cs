@@ -4,16 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Threading;
-using FluentAssertions;
 using NuGet.CommandLine.Test;
-using NuGet.Commands;
 using NuGet.Configuration;
-using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -68,9 +62,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
-                }    
+                }
                 // Assert
                 Assert.True(result.Success, $"{result.Output} {result.Errors}");
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
@@ -112,7 +105,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 1",
-                        waitForExit: true,
                         timeOutInMilliseconds: 20 * 1000); // 20 seconds
                 }
 
@@ -153,7 +145,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     //Run again so that it will be a duplicate push.
@@ -161,14 +152,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     result3 = CommandRunner.Run(
                        nuget,
                        packageDirectory,
                        $"push {sourcePath2} -Source {server.Uri}push -Timeout 110",
-                       waitForExit: true,
                        timeOutInMilliseconds: 120 * 1000); // 120 seconds
                 }
 
@@ -219,7 +208,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     //Run again so that it will be a duplicate push but use the option to skip duplicate packages.
@@ -227,7 +215,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     //Third run with a different package.
@@ -235,7 +222,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {sourcePath2} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
                 }
 
@@ -281,7 +267,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {snupkgToPush} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -317,7 +302,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {snupkgToPush} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -351,7 +335,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {nupkgToPush} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -385,7 +368,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {nupkgToPush} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -429,7 +411,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -470,7 +451,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {pushArgument} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -478,7 +458,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 string expectedFileNotFoundErrorMessage = string.Format(MESSAGE_FILE_DOES_NOT_EXIST, pushArgument);
 
-                Assert.True(result.Success, "Snupkg File did not exist but should not fail a nupkg push.");
+                Assert.True(result.Success, "Snupkg File did not exist but should not fail a nupkg push.\n\n" + result.AllOutput);
                 Assert.Contains(MESSAGE_PACKAGE_PUSHED, result.Output);
                 Assert.DoesNotContain(WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST, result.Errors);
                 Assert.DoesNotContain(NuGetConstants.SnupkgExtension, result.AllOutput); //Snupkgs should not be mentioned.
@@ -497,7 +477,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 var nuget = Util.GetNuGetExePath();
 
                 string packageId = "packageWithSnupkg";
-                
+
                 //Create nupkg in test directory.
                 string version = "1.1.0";
                 string nupkgFullPath = Util.CreateTestPackage(packageId, version, packageDirectory);
@@ -522,7 +502,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
 
                     //Second run with SkipDuplicate
@@ -530,7 +509,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110 -SkipDuplicate",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -592,8 +570,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     result = CommandRunner.Run(
                         nuget,
                         packageDirectory,
-                        $"push {wildcardPush} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
+                        $"push {wildcardPush} -Source {sourceName} -SymbolSource {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -612,7 +589,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         /// <summary>
-        /// When pushing *.Nupkg with SkipDuplicate, a 409 Conflict is ignored and the secondary symbols push proceeds.
+        /// When pushing *.Nupkg with SkipDuplicate, a 409 Conflict is ignored and the corresponding symbols push is skipped.
         /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByWildcard_FindsMatchingSnupkgs_SkipDuplicate()
@@ -657,7 +634,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110 -SkipDuplicate",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -666,15 +642,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 //Ignoring filename in File Not Found error since the error should not appear in any case.
                 string genericFileNotFoundError = WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST;
 
-                //Nupkg should be an ignored conflict, so its snupkg should push.
-                Assert.True(result.Success, "Expected to successfully push a snupkg with SkipDuplicate option when the nupkg is a duplicate.");
+                //Nupkg should be an ignored conflict, so its snupkg shouldn't push.
+                Assert.True(result.Success, "Expected to skip pushing a snupkg with SkipDuplicate option when the nupkg is a duplicate.\n\n" + result.AllOutput);
                 Assert.DoesNotContain(MESSAGE_RESPONSE_NO_SUCCESS, result.Errors); //nupkg duplicate
                 Assert.Contains(MESSAGE_EXISTING_PACKAGE, result.AllOutput);
                 Assert.DoesNotContain(MESSAGE_PACKAGE_PUSHED, result.AllOutput); //nothing is pushed since nupkg/snupkgs are all skipped duplicates
                 Assert.DoesNotContain(genericFileNotFoundError, result.Errors);
 
-                Assert.Contains(snupkgFileName, result.AllOutput); //first snupkg is attempted as push
-                Assert.Contains(snupkgFileName2, result.AllOutput); //second snupkg is attempted when first duplicate is skipped
+                Assert.DoesNotContain(snupkgFileName, result.AllOutput); //first snupkg is not attempted since nupkg was duplicate.
+                Assert.DoesNotContain(snupkgFileName2, result.AllOutput); //second snupkg is not attempted since nupkg was duplicate.
             }
         }
 
@@ -717,7 +693,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -780,7 +755,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110 -SkipDuplicate",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
                 // Assert
@@ -793,7 +767,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.DoesNotContain(MESSAGE_RESPONSE_NO_SUCCESS, result.Errors); //snupkg duplicate is ignored
                 Assert.DoesNotContain(MESSAGE_PACKAGE_PUSHED, result.Output); //snupkgFileName and snupkgFileName2 are not pushed (just skipped conflicts)
                 Assert.Contains(MESSAGE_EXISTING_PACKAGE, result.AllOutput);
-                
+
                 Assert.Contains(snupkgFileName, result.AllOutput); //first snupkg push is attempted
                 Assert.Contains(snupkgFileName2, result.AllOutput); //second snupkg push is attempted
 
@@ -833,14 +807,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
                         nuget,
                         packageDirectory,
                         $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
 
                     result2 = CommandRunner.Run(
                         nuget,
                         packageDirectory,
                         $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -SkipDuplicate -Verbosity detailed",
-                        waitForExit: true,
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
 
@@ -851,6 +823,33 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.True(result2.Success, "Expected a Duplicate response to be skipped resulting in a successful push.");
                 Assert.Contains("Conflict", result2.AllOutput);
             }
+        }
+
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerV3_WithSymbols_Warns()
+        {
+            // Arrange
+            using var packageDirectory = TestDirectory.Create();
+            var nuget = Util.GetNuGetExePath();
+            string snupkgFileName = "fileName.snupkg";
+            string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+            //Create snupkg in test directory.
+            WriteSnupkgFile(snupkgFullPath);
+
+            CommandRunnerResult result = null;
+            using var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName);
+
+            SetupMockServerAlwaysCreate(server);
+            // Act
+            result = CommandRunner.Run(
+                nuget,
+                packageDirectory,
+                $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
+                timeOutInMilliseconds: 120000); // 120 seconds
+
+            // Assert
+            Assert.True(result.Success, result.AllOutput);
+            Assert.Contains("WARNING: You are running the 'push' operation with an 'HTTP' source", result.AllOutput);
         }
 
         #region Helpers

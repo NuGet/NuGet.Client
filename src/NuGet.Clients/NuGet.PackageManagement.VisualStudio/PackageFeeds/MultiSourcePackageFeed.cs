@@ -12,6 +12,7 @@ using NuGet.Indexing;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -66,7 +67,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private class AggregatedContinuationToken : ContinuationToken
         {
-            public TelemetryState TelemetryState  { get; set; }
+            public TelemetryState TelemetryState { get; set; }
             public string SearchString { get; set; }
             public IDictionary<string, ContinuationToken> SourceSearchCursors { get; set; } = new Dictionary<string, ContinuationToken>();
         }
@@ -254,7 +255,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     .Where(kv => kv.Value.Exception != null)
                     .ToDictionary(
                         kv => kv.Key,
-                        kv => (Exception) kv.Value.Exception);
+                        kv => (Exception)kv.Value.Exception);
 
                 foreach (var item in exceptions)
                 {
@@ -288,7 +289,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static LoadingStatus GetLoadingStatus(TaskStatus taskStatus)
         {
-            switch(taskStatus)
+            switch (taskStatus)
             {
                 case TaskStatus.Canceled:
                     return LoadingStatus.Cancelled;
@@ -373,9 +374,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var errorMessage = ExceptionUtilities.DisplayMessage(task.Exception);
                 _logger.Log(
-                    ProjectManagement.MessageLevel.Error,
-                    $"[{state.ToString()}] {errorMessage}");
-            });
+                    new LogMessage(
+                        LogLevel.Error,
+                        $"[{state.ToString()}] {errorMessage}"));
+            }).PostOnFailure(nameof(MultiSourcePackageFeed));
         }
     }
 }

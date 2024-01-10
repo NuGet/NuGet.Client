@@ -7,7 +7,7 @@ using System.Linq;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     internal static class PackageServiceUtilities
     {

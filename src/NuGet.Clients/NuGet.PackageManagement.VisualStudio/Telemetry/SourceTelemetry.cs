@@ -65,6 +65,8 @@ namespace NuGet.PackageManagement.Telemetry
             var nugetOrg = HttpStyle.NotPresent;
             var vsOfflinePackages = false;
             var dotnetCuratedFeed = false;
+            var httpsV2 = 0;
+            var httpsV3 = 0;
 
             if (packageSources != null)
             {
@@ -80,7 +82,12 @@ namespace NuGet.PackageManagement.Telemetry
                                 // Http V3 feed
                                 httpV3++;
 
-                                if (TelemetryUtility.IsNuGetOrg(source))
+                                if (source.IsHttps)
+                                {
+                                    httpsV3++;
+                                }
+
+                                if (UriUtility.IsNuGetOrg(source.Source))
                                 {
                                     nugetOrg |= HttpStyle.YesV3;
                                 }
@@ -90,7 +97,12 @@ namespace NuGet.PackageManagement.Telemetry
                                 // Http V2 feed
                                 httpV2++;
 
-                                if (TelemetryUtility.IsNuGetOrg(source))
+                                if (source.IsHttps)
+                                {
+                                    httpsV2++;
+                                }
+
+                                if (UriUtility.IsNuGetOrg(source.Source))
                                 {
                                     if (source.Source.IndexOf(
                                         "api/v2/curated-feeds/microsoftdotnet",
@@ -128,15 +140,25 @@ namespace NuGet.PackageManagement.Telemetry
                 nugetOrg.ToString(),
                 vsOfflinePackages,
                 dotnetCuratedFeed,
-                protocolDiagnosticTotals);
+                protocolDiagnosticTotals,
+                httpsV2,
+                httpsV3);
         }
 
-        // NumLocalFeeds(c:\ or \\ or file:///)
-        // NumHTTPv2Feeds
-        // NumHTTPv3Feeds
-        // NuGetOrg: [NotPresent | YesV2 | YesV3]
-        // VsOfflinePackages: [true | false]
-        // DotnetCuratedFeed: [true | false]
+        /// <summary>
+        /// NumLocalFeeds(c:\ or \\ or file:///)
+        /// NumHTTPv2Feeds (includes HTTP and HTTPS)
+        /// NumHTTPv3Feeds (includes HTTP and HTTPS)
+        /// NuGetOrg: [NotPresent | YesV2 | YesV3]
+        /// VsOfflinePackages: [true | false]
+        /// DotnetCuratedFeed: [true | false]
+        /// ParentId
+        /// protocol.requests
+        /// protocol.bytes
+        /// protocol.duration
+        /// NumHTTPSv2Feeds
+        /// NumHTTPSv3Feeds
+        /// </summary>
         private class SourceSummaryTelemetryEvent : TelemetryEvent
         {
             public SourceSummaryTelemetryEvent(
@@ -148,12 +170,16 @@ namespace NuGet.PackageManagement.Telemetry
                 string nugetOrg,
                 bool vsOfflinePackages,
                 bool dotnetCuratedFeed,
-                PackageSourceTelemetry.Totals protocolDiagnosticTotals)
+                PackageSourceTelemetry.Totals protocolDiagnosticTotals,
+                int httpsV2,
+                int httpsV3)
                 : base(eventName)
             {
                 this["NumLocalFeeds"] = local;
                 this["NumHTTPv2Feeds"] = httpV2;
                 this["NumHTTPv3Feeds"] = httpV3;
+                this["NumHTTPSv2Feeds"] = httpsV2;
+                this["NumHTTPSv3Feeds"] = httpsV3;
                 this["NuGetOrg"] = nugetOrg;
                 this["VsOfflinePackages"] = vsOfflinePackages;
                 this["DotnetCuratedFeed"] = dotnetCuratedFeed;

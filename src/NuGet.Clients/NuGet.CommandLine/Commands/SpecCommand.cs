@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -37,7 +38,7 @@ namespace NuGet.CommandLine
         public override void ExecuteCommand()
         {
             string sampleProjectUrl = "http://project_url_here_or_delete_this_line/";
-            string sampleIconUrl = "http://icon_url_here_or_delete_this_line/";
+            string sampleIconFile = "icon.png";
             string sampleTags = "Tag1 Tag2";
             string sampleReleaseNotes = "Summary of changes made in this release of the package.";
             string sampleDescription = "Package description";
@@ -49,22 +50,34 @@ namespace NuGet.CommandLine
             string fileName = null;
             bool hasProjectFile = false;
 
-            if (!String.IsNullOrEmpty(AssemblyPath))
+            if (!string.IsNullOrEmpty(AssemblyPath))
             {
                 // Extract metadata from the assembly
                 string path = Path.Combine(CurrentDirectory, AssemblyPath);
-                AssemblyMetadata metadata = AssemblyMetadataExtractor.GetMetadata(path);
+                AssemblyMetadata metadata = new AssemblyMetadataExtractor(Console).GetMetadata(path);
                 manifest.Metadata.Id = metadata.Name;
-                manifest.Metadata.Version = Versioning.NuGetVersion.Parse(metadata.Version.ToString());
                 manifest.Metadata.Authors = new List<string>() { metadata.Company };
                 manifest.Metadata.Description = metadata.Description;
+
+                // using InformationalVersion if possible, fallback to Version otherwise
+                if (NuGetVersion.TryParse(metadata.InformationalVersion, out var informationalVersion))
+                {
+                    manifest.Metadata.Version = informationalVersion;
+                }
+                else
+                {
+                    Console.LogInformation(string.Format(
+                        CultureInfo.CurrentCulture, NuGetResources.InvalidAssemblyInformationalVersion,
+                        metadata.InformationalVersion, path, metadata.Version));
+                    manifest.Metadata.Version = NuGetVersion.Parse(metadata.Version);
+                }
             }
             else
             {
                 if (!ProjectHelper.TryGetProjectFile(CurrentDirectory, out projectFile))
                 {
                     manifest.Metadata.Id = Arguments.Any() ? Arguments[0] : "Package";
-                    manifest.Metadata.Version = Versioning.NuGetVersion.Parse("1.0.0");
+                    manifest.Metadata.Version = NuGetVersion.Parse("1.0.0");
                 }
                 else
                 {
@@ -73,7 +86,7 @@ namespace NuGet.CommandLine
                     manifest.Metadata.Id = "mydummyidhere123123123";
                     manifest.Metadata.Title = "$title$";
                     // This is replaced with `$version$` below.
-                    manifest.Metadata.Version = new Versioning.NuGetVersion("1.0.0");
+                    manifest.Metadata.Version = new NuGetVersion("1.0.0");
                     manifest.Metadata.Description = "$description$";
                     manifest.Metadata.Authors = new List<string>() { "$author$" };
                 }
@@ -83,10 +96,10 @@ namespace NuGet.CommandLine
             fileName = fileName ?? manifest.Metadata.Id;
 
             // If we're using a project file then we want the a minimal nuspec
-            if (String.IsNullOrEmpty(projectFile))
+            if (string.IsNullOrEmpty(projectFile))
             {
                 manifest.Metadata.Description = manifest.Metadata.Description ?? sampleDescription;
-                if (!manifest.Metadata.Authors.Any() || String.IsNullOrEmpty(manifest.Metadata.Authors.First()))
+                if (!manifest.Metadata.Authors.Any() || string.IsNullOrEmpty(manifest.Metadata.Authors.First()))
                 {
                     manifest.Metadata.Authors = new List<string>() { Environment.UserName };
                 }
@@ -96,8 +109,7 @@ namespace NuGet.CommandLine
             }
 
             manifest.Metadata.SetProjectUrl(sampleProjectUrl);
-            manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), new string[] {}, LicenseMetadata.CurrentVersion);
-            manifest.Metadata.SetIconUrl(sampleIconUrl);
+            manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), Array.Empty<string>(), LicenseMetadata.CurrentVersion);
             manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "$copyright$";
             manifest.Metadata.ReleaseNotes = sampleReleaseNotes;
@@ -124,7 +136,7 @@ namespace NuGet.CommandLine
                             content = content.Replace("<id>mydummyidhere123123123</id>", "<id>$id$</id>");
                             content = content.Replace("<version>1.0.0</version>", "<version>$version$</version>");
                         }
-                        File.WriteAllText(nuspecFile, RemoveSchemaNamespace(content));
+                        File.WriteAllText(nuspecFile, RemoveSchemaNamespace(AddCommentedIconAttribute(content, sampleIconFile)));
                     }
 
                     Console.WriteLine(LocalizedResourceManager.GetString("SpecCommandCreatedNuSpec"), nuspecFile);
@@ -152,6 +164,14 @@ namespace NuGet.CommandLine
         {
             // This seems to be the only way to clear out xml namespaces.
             return Regex.Replace(content, @"(xmlns:?[^=]*=[""][^""]*[""])", string.Empty, RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.CultureInvariant);
+        }
+
+        private static string AddCommentedIconAttribute(string content, string iconFile)
+        {
+            string sampleIconFile = string.Format(CultureInfo.CurrentCulture, "    <!-- <icon>{0}</icon> -->", iconFile);
+
+            return content
+                .Replace($"</license>{Environment.NewLine}", string.Format(CultureInfo.CurrentCulture, "</license>{0}{1}{2}", Environment.NewLine, sampleIconFile, Environment.NewLine));
         }
     }
 }

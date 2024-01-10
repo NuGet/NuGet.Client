@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.FileProviders;
+using Microsoft.Extensions.FileProviders;
 
 namespace NuGet.Commands
 {
@@ -59,11 +59,24 @@ namespace NuGet.Commands
             }
         }
 
+        private string _name;
         public string Name
         {
             get
             {
-                return PhysicalPath.Split('/').LastOrDefault();
+                if (_name == null)
+                {
+                    int lastSlashIndex = PhysicalPath.LastIndexOf('/');
+                    if (lastSlashIndex >= 0)
+                    {
+                        _name = PhysicalPath.Substring(lastSlashIndex + 1);
+                    }
+                    else
+                    {
+                        _name = PhysicalPath;
+                    }
+                }
+                return _name;
             }
         }
 

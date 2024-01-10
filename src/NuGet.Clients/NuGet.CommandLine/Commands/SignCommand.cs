@@ -90,7 +90,7 @@ namespace NuGet.CommandLine
 
             return new SignArgs()
             {
-                PackagePath = Arguments[0],
+                PackagePaths = new[] { Arguments[0] },
                 OutputDirectory = OutputDirectory,
                 CertificatePath = CertificatePath,
                 CertificateStoreName = storeName,
@@ -175,8 +175,8 @@ namespace NuGet.CommandLine
                 throw new ArgumentException(NuGetCommand.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificatePath) &&
-                ((!string.IsNullOrEmpty(CertificateFingerprint) ||
-                 !string.IsNullOrEmpty(CertificateSubjectName)) ||
+                (!string.IsNullOrEmpty(CertificateFingerprint) ||
+                 !string.IsNullOrEmpty(CertificateSubjectName) ||
                  !string.IsNullOrEmpty(CertificateStoreLocation) ||
                  !string.IsNullOrEmpty(CertificateStoreName)))
             {

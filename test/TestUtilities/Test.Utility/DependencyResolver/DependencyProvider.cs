@@ -26,6 +26,8 @@ namespace Test.Utility
 
         public PackageSource Source => new PackageSource("Test");
 
+        public SourceRepository SourceRepository => throw new NotImplementedException();
+
         public Task<IPackageDownloader> GetPackageDownloaderAsync(
             PackageIdentity packageIdentity,
             SourceCacheContext cacheContext,
@@ -35,7 +37,7 @@ namespace Test.Utility
             throw new NotImplementedException();
         }
 
-        public Task<LibraryIdentity> FindLibraryAsync(
+        public async Task<LibraryIdentity> FindLibraryAsync(
             LibraryRange libraryRange,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -44,7 +46,10 @@ namespace Test.Utility
         {
             var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
 
-            return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
+            // Yield the task to help uncovering concurrency issues in tests
+            await Task.Yield();
+
+            return packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version);
         }
 
         public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
@@ -52,7 +57,7 @@ namespace Test.Utility
             throw new NotImplementedException();
         }
 
-        public Task<LibraryDependencyInfo> GetDependenciesAsync(
+        public async Task<LibraryDependencyInfo> GetDependenciesAsync(
             LibraryIdentity match,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -60,12 +65,16 @@ namespace Test.Utility
             CancellationToken cancellationToken)
         {
             List<LibraryDependency> dependencies;
+
+            // Yield the task to help uncovering concurrency issues in tests
+            await Task.Yield();
+
             if (_graph.TryGetValue(match, out dependencies))
             {
-                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, dependencies));
+                return LibraryDependencyInfo.Create(match, targetFramework, dependencies);
             }
 
-            return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
+            return LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>());
         }
 
         public bool SupportsType(LibraryDependencyTarget libraryType)
@@ -142,19 +151,31 @@ namespace Test.Utility
                 return this;
             }
 
-            public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All, bool versionCentrallyManaged = false, LibraryDependencyReferenceType libraryDependencyReferenceType = LibraryDependencyReferenceType.Direct)
+            public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All, bool versionCentrallyManaged = false, LibraryDependencyReferenceType? libraryDependencyReferenceType = null, LibraryIncludeFlags? privateAssets = null)
             {
-                _dependencies.Add(new LibraryDependency
+                var libraryDependency = new LibraryDependency
                 {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = id,
-                        VersionRange = VersionRange.Parse(version),
-                        TypeConstraint = target
-                    },
+                    LibraryRange =
+                        new LibraryRange
+                        {
+                            Name = id,
+                            VersionRange = VersionRange.Parse(version),
+                            TypeConstraint = target
+                        },
                     VersionCentrallyManaged = versionCentrallyManaged,
-                    ReferenceType = libraryDependencyReferenceType,
-                });
+                };
+
+                if (privateAssets != null)
+                {
+                    libraryDependency.SuppressParent = privateAssets.Value;
+                }
+
+                if (libraryDependencyReferenceType != null)
+                {
+                    libraryDependency.ReferenceType = libraryDependencyReferenceType.Value;
+                }
+
+                _dependencies.Add(libraryDependency);
 
                 return this;
             }

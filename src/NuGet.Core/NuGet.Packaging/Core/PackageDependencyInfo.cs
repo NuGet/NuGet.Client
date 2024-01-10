@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NuGet.Versioning;
+
+#nullable enable
 
 namespace NuGet.Packaging.Core
 {
@@ -18,15 +20,17 @@ namespace NuGet.Packaging.Core
     /// </remarks>
     public class PackageDependencyInfo : PackageIdentity, IEquatable<PackageDependencyInfo>
     {
-        private readonly static PackageDependency[] EmptyDependencies = new PackageDependency[0];
-        private PackageDependency[] _dependencies;
+        /// <summary>
+        /// Package dependencies
+        /// </summary>
+        public IEnumerable<PackageDependency> Dependencies { get; }
 
         public PackageDependencyInfo(string id, NuGetVersion version)
             : this(id, version, null)
         {
         }
 
-        public PackageDependencyInfo(PackageIdentity identity, IEnumerable<PackageDependency> dependencies)
+        public PackageDependencyInfo(PackageIdentity identity, IEnumerable<PackageDependency>? dependencies)
             : this(identity.Id, identity.Version, dependencies)
         {
         }
@@ -37,26 +41,18 @@ namespace NuGet.Packaging.Core
         /// <param name="id">package name</param>
         /// <param name="version">package version</param>
         /// <param name="dependencies">package dependencies</param>
-        public PackageDependencyInfo(string id, NuGetVersion version, IEnumerable<PackageDependency> dependencies)
+        public PackageDependencyInfo(string id, NuGetVersion version, IEnumerable<PackageDependency>? dependencies)
             : base(id, version)
         {
-            _dependencies = dependencies?.ToArray() ?? EmptyDependencies;
+            Dependencies = dependencies?.ToArray() ?? Array.Empty<PackageDependency>();
         }
 
-        /// <summary>
-        /// Package dependencies
-        /// </summary>
-        public IEnumerable<PackageDependency> Dependencies
-        {
-            get { return _dependencies; }
-        }
-
-        public bool Equals(PackageDependencyInfo other)
+        public bool Equals(PackageDependencyInfo? other)
         {
             return PackageDependencyInfoComparer.Default.Equals(this, other);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var info = obj as PackageDependencyInfo;
 
@@ -85,7 +81,7 @@ namespace NuGet.Packaging.Core
         {
             if (Dependencies.Any())
             {
-                return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), String.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+                return string.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), string.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
             }
             else
             {

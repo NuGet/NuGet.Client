@@ -117,22 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Log_CheckingCompatibility" xml:space="preserve">
-    <value>Checking compatibility of packages on {0}.</value>
-  </data>
-  <data name="Log_CheckingPackageCompatibility" xml:space="preserve">
-    <value>Checking compatibility for {0} {1} with {2}.</value>
-  </data>
-  <data name="Log_FailedToResolveConflicts" xml:space="preserve">
-    <value>Failed to resolve conflicts for {0}.</value>
-  </data>
   <data name="Log_GeneratingMsBuildFile" xml:space="preserve">
     <value>Generating MSBuild file {0}.</value>
-  </data>
-  <data name="Log_InstallingPackage" xml:space="preserve">
-    <value>Installing {0} {1}.</value>
-    <comment>0 - package id
-1 - package version</comment>
   </data>
   <data name="Log_MergingRuntimes" xml:space="preserve">
     <value>Merging in runtimes defined in {0}.</value>
@@ -150,9 +136,6 @@
   <data name="Log_PackagesAndProjectsAreCompatible" xml:space="preserve">
     <value>All packages and projects are compatible with {0}.</value>
   </data>
-  <data name="Log_PackagesIncompatible" xml:space="preserve">
-    <value>One or more packages are incompatible with {0}.</value>
-  </data>
   <data name="Log_ProjectDoesNotSpecifyTargetFrameworks" xml:space="preserve">
     <value>The project {0} does not specify any target frameworks in {1}.</value>
   </data>
@@ -162,14 +145,8 @@
   <data name="Log_RestoringPackages" xml:space="preserve">
     <value>Restoring packages for {0}...</value>
   </data>
-  <data name="Log_RestoringPackagesForCompat" xml:space="preserve">
-    <value>Restoring packages for {0} to determine compatibility...</value>
-  </data>
   <data name="Log_ScanningForRuntimeJson" xml:space="preserve">
     <value>Scanning packages for runtime.json files...</value>
-  </data>
-  <data name="Log_SkippingRuntimeWalk" xml:space="preserve">
-    <value>Skipping runtime dependency walk, no runtimes defined in project.json.</value>
   </data>
   <data name="Log_UnresolvedDependency" xml:space="preserve">
     <value>Unable to resolve '{0}' for '{1}'.</value>
@@ -177,24 +154,12 @@
   <data name="Log_UnknownCompatibilityProfile" xml:space="preserve">
     <value>Unknown Compatibility Profile: {0}</value>
   </data>
-  <data name="Log_UsingSource" xml:space="preserve">
-    <value>Using source {0}.</value>
-  </data>
-  <data name="Warning_MultiTarget" xml:space="preserve">
-    <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
-  </data>
   <data name="Log_ResolverConflict" xml:space="preserve">
     <value>Unable to satisfy conflicting requests for '{0}': {1} Framework: {2}</value>
     <comment>0 - package id, 1 - comma delimited list of conflicts, 2 - framework</comment>
   </data>
   <data name="ResolverRequest_ToStringFormat" xml:space="preserve">
     <value>{0} (via {1})</value>
-  </data>
-  <data name="Log_LockFileMissingLibraryForTargetLibrary" xml:space="preserve">
-    <value>{0} {1} is specified in the Lock File target for {2} but is not present in the top-level Libraries list.</value>
-  </data>
-  <data name="Log_LockFileOutOfDate" xml:space="preserve">
-    <value>The lock file is out-of-date relative to the project file. Regenerating the lock file and re-locking.</value>
   </data>
   <data name="Log_DependencyBumpedUp" xml:space="preserve">
     <value>Dependency specified was {0} {1} but ended up with {2} {3}.</value>
@@ -246,9 +211,6 @@
   <data name="Log_Committing" xml:space="preserve">
     <value>Committing restore...</value>
   </data>
-  <data name="Log_FoundProjectRoot" xml:space="preserve">
-    <value>Found project root directory: {0}.</value>
-  </data>
   <data name="Log_RestoreComplete" xml:space="preserve">
     <value>Restored {0} (in {1}).</value>
     <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
@@ -263,9 +225,6 @@
   </data>
   <data name="Log_RunningParallelRestore" xml:space="preserve">
     <value>Running restore with {0} concurrent jobs.</value>
-  </data>
-  <data name="Log_UsingPackagesDirectory" xml:space="preserve">
-    <value>Using packages directory: {0}.</value>
   </data>
   <data name="Error_InvalidCommandLineInput" xml:space="preserve">
     <value>Invalid input '{0}'. The file type was not recognized.</value>
@@ -288,23 +247,11 @@
   <data name="InvalidSource" xml:space="preserve">
     <value>The specified source '{0}' is invalid. Provide a valid source.</value>
   </data>
-  <data name="Warning_PackageCommandIssueDescription" xml:space="preserve">
-    <value>Description: {0}</value>
-  </data>
-  <data name="Warning_PackageCommandIssueSolution" xml:space="preserve">
-    <value>Solution: {0}</value>
-  </data>
-  <data name="Warning_PackageCommandIssueTitle" xml:space="preserve">
-    <value>Issue: {0}</value>
-  </data>
   <data name="Error_PackageCommandNoFilesForLibPackage" xml:space="preserve">
     <value>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</value>
   </data>
   <data name="Error_PackageCommandNoFilesForSymbolsPackage" xml:space="preserve">
     <value>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</value>
-  </data>
-  <data name="Warning_PackageCommandPackageIssueSummary" xml:space="preserve">
-    <value>Issue found with package '{0}'.</value>
   </data>
   <data name="Error_CannotFindMsbuild" xml:space="preserve">
     <value>Cannot find version of msbuild.</value>
@@ -324,50 +271,11 @@
   <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>
-  <data name="AddFileToPackage" xml:space="preserve">
-    <value>Add file '{0}' to package as '{1}'</value>
-  </data>
-  <data name="BuildingProjectTargetingFramework" xml:space="preserve">
-    <value>Building project '{0}' for target framework '{1}'.</value>
-  </data>
-  <data name="Error_ProcessingNuspecFile" xml:space="preserve">
-    <value>Error occurred when processing file '{0}': {1}</value>
-  </data>
   <data name="FailedToBuildProject" xml:space="preserve">
     <value>Failed to build '{0}'.</value>
   </data>
   <data name="FileNotAddedToPackage" xml:space="preserve">
     <value>File '{0}' is not added because the package already contains file '{1}'</value>
-  </data>
-  <data name="PackageCommandFileFromDependencyIsChanged" xml:space="preserve">
-    <value>File from dependency is not changed. File '{0}' is not added.</value>
-  </data>
-  <data name="PackageCommandFileFromDependencyIsNotChanged" xml:space="preserve">
-    <value>File from dependency is not changed. File '{0}' is not added.</value>
-  </data>
-  <data name="PackagingFilesFromOutputPath" xml:space="preserve">
-    <value>Packing files from '{0}'.</value>
-  </data>
-  <data name="UnableToExtractAssemblyMetadata" xml:space="preserve">
-    <value>Unable to extract metadata from '{0}'.</value>
-  </data>
-  <data name="UnableToFindBuildOutput" xml:space="preserve">
-    <value>Unable to find '{0}'. Make sure the project has been built.</value>
-  </data>
-  <data name="UsingNuspecForMetadata" xml:space="preserve">
-    <value>Using '{0}' for metadata.</value>
-  </data>
-  <data name="UsingPackagesConfigForDependencies" xml:space="preserve">
-    <value>Found packages.config. Using packages listed as dependencies</value>
-  </data>
-  <data name="Warning_FileDoesNotExist" xml:space="preserve">
-    <value>'{0}' was included in the project but doesn't exist. Skipping...</value>
-  </data>
-  <data name="Warning_UnresolvedFilePath" xml:space="preserve">
-    <value>'{0}' was included in the project but the path could not be resolved. Skipping...</value>
-  </data>
-  <data name="Warning_UnspecifiedField" xml:space="preserve">
-    <value>{0} was not specified. Using '{1}'.</value>
   </data>
   <data name="Log_ProjectNotCompatibleWithFx" xml:space="preserve">
     <value>Project {0} is not compatible with {1}.</value>
@@ -393,24 +301,14 @@
   <data name="Log_ProjectNotCompatibleWithFx_NoSupports" xml:space="preserve">
     <value>Project {0} does not support any target frameworks.</value>
   </data>
-  <data name="Log_ProjectsIncompatible" xml:space="preserve">
-    <value>One or more projects are incompatible with {0}.</value>
-  </data>
   <data name="Error_InputFileNotSpecified" xml:space="preserve">
     <value>Specify a nuspec, project.json, or project file to use</value>
-  </data>
-  <data name="Error_BuildFailed" xml:space="preserve">
-    <value>Failed to build using '{0} {1}'.</value>
   </data>
   <data name="Error_PackFailed" xml:space="preserve">
     <value>Failed to build package. {0}</value>
   </data>
   <data name="Error_InvalidTargetFramework" xml:space="preserve">
     <value>Failed to build package because of an unsupported targetFramework value on '{0}'.</value>
-  </data>
-  <data name="Error_UnableToLocateRestoreTarget_Because" xml:space="preserve">
-    <value>Failed to find a project to restore in the folder '{0}'.</value>
-    <comment>{0} is the folder that could not be accessed. The underlying failure is available in the inner exception message.</comment>
   </data>
   <data name="Log_ConvertedPackageToOriginalCase" xml:space="preserve">
     <value>The package {0} was converted to original case in the packages directory.</value>
@@ -421,10 +319,6 @@
   </data>
   <data name="LocalsCommand_ClearFailed" xml:space="preserve">
     <value>Clearing local resources failed: Unable to delete one or more files.</value>
-  </data>
-  <data name="LocalsCommand_ClearingNuGetCache" xml:space="preserve">
-    <value>Clearing NuGet cache: {0}</value>
-    <comment>{0} : Cache path</comment>
   </data>
   <data name="LocalsCommand_ClearingNuGetGlobalPackagesFolder" xml:space="preserve">
     <value>Clearing NuGet global packages folder: {0}</value>
@@ -472,9 +366,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="MissingRequiredPropertyForProjectType" xml:space="preserve">
     <value>Missing required property '{0}' for project type '{1}'.</value>
   </data>
-  <data name="PersistDGFile" xml:space="preserve">
-    <value>Persisting restore input to '{0}'.</value>
-  </data>
   <data name="PropertyNotAllowed" xml:space="preserve">
     <value>Invalid input combination. Property '{0}' is not allowed.</value>
   </data>
@@ -486,9 +377,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="SpecValidationInvalidFramework" xml:space="preserve">
     <value>Invalid target framework '{0}'.</value>
-  </data>
-  <data name="SpecValidationMissingDependency" xml:space="preserve">
-    <value>Missing dependency on '{0}'.</value>
   </data>
   <data name="SpecValidationMissingProject" xml:space="preserve">
     <value>Missing project '{0}'.</value>
@@ -656,9 +544,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="SignCommandOutputPath" xml:space="preserve">
     <value>Signed package(s) output path:</value>
-  </data>
-  <data name="SignCommandInvalidCertEku" xml:space="preserve">
-    <value>The following certificate cannot be used for signing a package as it does not have Code Signing enhanced key usage:</value>
   </data>
   <data name="VerifyCommand_FinishedWithErrors" xml:space="preserve">
     <value>Finished with {0} errors and {1} warnings.</value>
@@ -884,8 +769,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
-    <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
-    <comment>0 - the version string that's not exact</comment>
+    <value>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</comment>
+  </data>
+  <data name="Error_PackageDownload_NoVersion" xml:space="preserve">
+    <value>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
   </data>
   <data name="Error_IncompatiblePackageType" xml:space="preserve">
     <value>The package {0} {1} has a package type {2} that is incompatible with this project.</value>
@@ -909,11 +798,13 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
     <value>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</value>
   </data>
-  <data name="Error_SourceProviderIsNull" xml:space="preserve">
-    <value>Property SourceProvider is null.</value>
+  <data name="Error_CentralPackageVersions_VersionOverrideDisabled" xml:space="preserve">
+    <value>The package reference {0} specifies a VersionOverride but the ability to override a centrally defined version is currently disabled.</value>
+    <comment>0 - The name of a package reference.</comment>
   </data>
-  <data name="SourcesCommandNameRequired" xml:space="preserve">
-    <value>The name specified cannot be empty. Provide a valid name.</value>
+  <data name="Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping" xml:space="preserve">
+    <value>There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}</value>
+    <comment>0 - The number of package sources, 1 - The URL of the package sources, comma separated.</comment>
   </data>
   <data name="SourcesCommandNoMatchingSourcesFound" xml:space="preserve">
     <value>Unable to find any package source(s) matching name: {0}.</value>
@@ -932,9 +823,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="SourcesCommandAllNameIsReserved" xml:space="preserve">
     <value>Package source name 'All' is a reserved name.</value>
-  </data>
-  <data name="SourcesCommandSourceRequired" xml:space="preserve">
-    <value>The source specified cannot be empty. Provide a valid source.</value>
   </data>
   <data name="SourcesCommandInvalidSource" xml:space="preserve">
     <value>The source specified is invalid. Provide a valid source.</value>
@@ -983,13 +871,10 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Could not update the client certificate: {0}</value>
     <comment>0 - reason</comment>
   </data>
-  <data name="Error_CouldNotRemoveClientCertificate" xml:space="preserve">
-    <value>Could not remove the client certificate: {0}</value>
-    <comment>0 - reason</comment>
-  </data>
-  <data name="Error_CouldNotListClientCertificates" xml:space="preserve">
-    <value>Could not list the client certificates: {0}</value>
-    <comment>0 - reason</comment>
+  <data name="Error_CouldNotUpdateMetadataLastAccessTime" xml:space="preserve">
+    <value>Updating last access time on file {0} failed with {1}</value>
+    <comment>0 - file path
+    1 - reason</comment>
   </data>
   <data name="Error_UnknownClientCertificatesStoreName" xml:space="preserve">
     <value>The source name '{0}' is not recognized.</value>
@@ -1098,8 +983,120 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Detected package downgrade: {0} from {1} to centrally defined {2}. Update the centrally managed package version to a higher version.</value>
     <comment>{0} is package id, {1} is the package version, {2} is the downgraded package version.</comment>
   </data>
-  <data name="CentralPackageVersionManagementInPreview" xml:space="preserve">
-    <value>The project {0} is using CentralPackageVersionManagement, a NuGet preview feature.</value>
-    <comment>{0} the project path.</comment>
+  <data name="Error_CentralPackageVersions_MissingPackageVersion" xml:space="preserve">
+    <value>The PackageReference items {0} do not have corresponding PackageVersion.</value>
+  </data>
+  <data name="Error_CentralPackageVersions_FloatingVersionsAreNotAllowed" xml:space="preserve">
+    <value>Centrally defined floating package versions are not allowed.</value>
+  </data>
+  <data name="SpecValidation_OriginalTargetFrameworksMustMatchAliases" xml:space="preserve">
+    <value>The original target frameworks value must match the aliases. Original target frameworks: {0}, aliases: {1}.</value>
+  </data>
+  <data name="Error_MultiplePackagePaths" xml:space="preserve">
+    <value>{0} contains more than one path</value>
+  </data>
+  <data name="Error_PlatformVersionNotPresent" xml:space="preserve">
+    <value>Platform version is not present for one or more target frameworks, even though they have specified a platform: {0}</value>
+    <comment>0 - comma-separated list of TFMs missing a platform version</comment>
+  </data>
+  <data name="Log_SkippingPackagesLockFileGeneration" xml:space="preserve">
+    <value>Skipping the lock file regeneration for '{0}'.</value>
+  </data>
+  <data name="Multiple_Nupkgs_Detected" xml:space="preserve">
+    <value>Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.</value>
+  </data>
+  <data name="VerifyCommand_NotSupported" xml:space="preserve">
+    <value>Package signature validation command is not supported on this platform.</value>
+  </data>
+  <data name="Log_SourceMappingEnabledNoMatchingPackageSources" xml:space="preserve">
+    <value>PackageSourceMapping is enabled, the following source(s) were not considered: {0}.</value>
+    <comment>Please do not localize `PackageSourceMapping`. 0 - package source names list.</comment>
+  </data>
+  <data name="SourceNotConsidered" xml:space="preserve">
+    <value>Versions from {0} were not considered</value>
+    <comment>0 - source name</comment>
+  </data>
+  <data name="Warning_ProjectDependencyMissingVersion" xml:space="preserve">
+    <value>Project dependency '{0}' does not specify a version. Include a version for the dependency to ensure consistent restore results.</value>
+    <comment>0 - package id</comment>
+  </data>
+  <data name="Error_NoClientAllowList" xml:space="preserve">
+    <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.</value>
+  </data>
+  <data name="Error_NoMatchingClientCertificate" xml:space="preserve">
+    <value>This package is signed but not by a trusted signer.</value>
+  </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server URI.</comment>
+  </data>
+  <data name="Warning_HttpServerUsage_MultipleSources" xml:space="preserve">
+    <value>You are running the '{0}' operation with 'HTTP' sources: {1}
+Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</comment>
+  </data>
+  <data name="WarningAsError" xml:space="preserve">
+    <value>Warning As Error: {0}</value>
+    <comment>{0} is a warning message</comment>
+  </data>
+  <data name="Vulnerability_Severity_Low" xml:space="preserve">
+    <value>low</value>
+    <comment>As in "This package has a low severity vulnerability"</comment>
+  </data>
+  <data name="Vulnerability_Severity_Moderate" xml:space="preserve">
+    <value>moderate</value>
+    <comment>As in "This package has a moderate severity vulnerability"</comment>
+  </data>
+  <data name="Vulnerability_Severity_High" xml:space="preserve">
+    <value>high</value>
+    <comment>As in "This package has a high severity vulnerability"</comment>
+  </data>
+  <data name="Vulnerability_Severity_Critical" xml:space="preserve">
+    <value>critical</value>
+    <comment>As in "This package has a critical severity vulnerability"</comment>
+  </data>
+  <data name="Vulnerability_Severity_unknown" xml:space="preserve">
+    <value>unknown</value>
+    <comment>As in "This package has a unknown severity vulnerability"</comment>
+  </data>
+  <data name="Warning_PackageWithKnownVulnerability" xml:space="preserve">
+    <value>Package '{0}' {1} has a known {2} severity vulnerability, {3}</value>
+    <comment>{0} - package id
+{1} - package version
+{2} - severity, for example low, moderate, high, or critical
+{3} - URL for more info on the known vulnerability</comment>
+  </data>
+  <data name="Error_InvalidNuGetAuditLevelValue" xml:space="preserve">
+    <value>Invalid NuGetAuditLevel value '{0}'. Valid values: {1}</value>
+    <comment>Don't translate 'NuGetAuditLevel'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "low, moderate, high, critical" (these should not be translated either)</comment>
+  </data>
+  <data name="Error_VulnerabilityDataFetch" xml:space="preserve">
+    <value>Error occurred while getting package vulnerability data: {0}</value>
+    <comment>{0} is an error message</comment>
+  </data>
+  <data name="Error_InvalidWindowsTargetPlatformMinVersion" xml:space="preserve">
+    <value>Invalid value for WindowsTargetPlatformMinVersion: {0}</value>
+    <comment>{0} is the value supplied </comment>
+  </data>
+  <data name="Error_InvalidNuGetAuditModeValue" xml:space="preserve">
+    <value>Invalid NuGetAuditMode value '{0}'. Valid values: {1}</value>
+    <comment>Don't translate 'NuGetAuditMode'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "direct, all"</comment>
+  </data>
+  <data name="Warning_NoVulnerabilityData" xml:space="preserve">
+    <value>NuGetAudit is enabled, but no package sources contain known vulnerability data.</value>
+    <comment>Do not translate NuGetAudit</comment>
+  </data>
+  <data name="Error_InvalidNuGetAuditValue" xml:space="preserve">
+    <value>Invalid NuGetAudit value '{0}'. Valid values: {1}</value>
+    <comment>Don't translate 'NuGetAudit'
+{0} - is the value from the customer's project file
+{1} is the list of valid values "true, false"</comment>
+  </data>
+  <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
+    <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
   </data>
 </root>

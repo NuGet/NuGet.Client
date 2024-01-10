@@ -45,9 +45,11 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    listArgs.Logger.LogWarning(string.Format(listArgs.ListCommandListNotSupported, packageSource.Source));
+                    listArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, listArgs.ListCommandListNotSupported, packageSource.Source));
                 }
             }
+
+            WarnForHTTPSources(listArgs);
 
             var allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
@@ -60,6 +62,42 @@ namespace NuGet.Commands
             }
             ComparePackageSearchMetadata comparer = new ComparePackageSearchMetadata();
             await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
+        }
+
+        private static void WarnForHTTPSources(ListArgs listArgs)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in listArgs.ListEndpoints)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    listArgs.Logger.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage,
+                        "list",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    listArgs.Logger.LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage_MultipleSources,
+                        "list",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
+            }
         }
 
         private class ComparePackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>

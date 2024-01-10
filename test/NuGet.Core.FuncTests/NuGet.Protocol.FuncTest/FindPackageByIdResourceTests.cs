@@ -1,12 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.FuncTest.Helpers;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.FuncTest
@@ -166,6 +172,47 @@ namespace NuGet.Protocol.FuncTest
                 // Assert
                 Assert.Single(packages);
                 Assert.Equal("1.0", packages.Single().ToString());
+            }
+        }
+
+        [Fact]
+        public async Task CopyNupkgToStreamAsync_TimeoutOnFirstAttempt_FileSizeCorrectAfterRetry()
+        {
+            // Arrange
+
+            // First create a mock package source with a package we can download
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            var packages = new List<string>();
+
+            const string packageId = "packageId";
+            const string packageVersionString = "1.0.0";
+            FileInfo packageFileInfo = TestPackagesGroupedByFolder.GetLargePackage(testDirectory, packageId, packageVersionString);
+            packages.Add(packageFileInfo.FullName);
+
+            // Make sure it's the package source that times out every second nupkg download attempt
+            NupkgDownloadTimeoutHttpClientHandler timeoutHandler = new NupkgDownloadTimeoutHttpClientHandler(packages);
+            var source = MockSourceRepository.Create(timeoutHandler);
+
+            // Now arrange the NuGet Client SDK experience
+            var protocolResource = await source.GetResourceAsync<FindPackageByIdResource>();
+
+            using (var destination = new MemoryStream())
+            {
+                var scc = new SourceCacheContext()
+                {
+                    DirectDownload = true,
+                    NoCache = true
+                };
+                NuGetVersion packageVersion = NuGetVersion.Parse(packageVersionString);
+
+                // Act
+                var result = await protocolResource.CopyNupkgToStreamAsync(packageId, packageVersion, destination, scc, NullLogger.Instance, CancellationToken.None);
+
+                // Assert
+                Assert.True(result);
+                Assert.Equal(1, timeoutHandler.FailedDownloads);
+                Assert.Equal(packageFileInfo.Length, destination.Length);
             }
         }
     }

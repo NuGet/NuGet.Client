@@ -9,14 +9,13 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 using static NuGet.Test.Utility.TestPackagesCore;
 
 namespace NuGet.ProjectModel.Test
 {
-    // This project can output the Class library as a NuGet Package.
-    // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
     public class LockFileFormatTests
     {
         // Verify the value of locked has no impact on the parsed lock file
@@ -243,6 +242,44 @@ namespace NuGet.ProjectModel.Test
             Assert.Empty(netPlatDepGroup.Dependencies);
         }
 
+        [Theory]
+        [InlineData("1.0.0", "1.0.0")]
+        [InlineData("1.0.0-beta", "1.0.0-beta")]
+        [InlineData("1.0.0-*", "1.0.0")]
+        [InlineData("1.0.*", "1.0.0")]
+        [InlineData("(1.0.*, )", "(1.0.0, )")]
+        public void Test_WritePackageDependencyWithLegacyString(string version, string expectedVersion)
+        {
+            var package = new PackageDependency("a", VersionRange.Parse(version));
+
+            using var writer = new JTokenWriter();
+
+            JsonUtility.WritePackageDependencyWithLegacyString(writer, package);
+
+            JToken actual = ((JProperty)writer.Token).Value;
+
+            Assert.Equal(expectedVersion, actual);
+        }
+
+        [Theory]
+        [InlineData("1.0.0", "[1.0.0, )")]
+        [InlineData("1.0.0-beta", "[1.0.0-beta, )")]
+        [InlineData("1.0.0-*", "[1.0.0-*, )")]
+        [InlineData("1.0.*", "[1.0.*, )")]
+        [InlineData("(1.0.*, )", "(1.0.*, )")]
+        public void Test_WritePackageDependency(string version, string expectedVersion)
+        {
+            var package = new PackageDependency("a", VersionRange.Parse(version));
+
+            using var writer = new JTokenWriter();
+
+            JsonUtility.WritePackageDependency(writer, package);
+
+            JToken actual = ((JProperty)writer.Token).Value;
+
+            Assert.Equal(expectedVersion, actual);
+        }
+
         [Fact]
         public void LockFileFormat_WritesLockFile()
         {
@@ -363,6 +400,269 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void Render_LockFileWithPackageFolder_WritesPackageFolder()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 2,
+  ""targets"": {},
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {},
+  ""packageFolders"": {
+    ""a"": {}
+  }
+}";
+
+            var lockFile = new LockFile
+            {
+                Version = 2,
+                PackageFolders = new List<LockFileItem>
+                {
+                    new("a")
+                }
+            };
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            string actual = lockFileFormat.Render(lockFile);
+
+            // Assert
+            JObject expected = JObject.Parse(lockFileContent);
+            JObject output = JObject.Parse(actual);
+
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void Render_LockFileWithLibrary_WritesLibrary()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 2,
+  ""targets"": {},
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""servicable"": true,
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""path"": ""foo"",
+      ""msbuildProject"": ""bar"",
+      ""hasTools"": true
+    }
+  },
+  ""projectFileDependencyGroups"": {}
+}";
+
+            var lockFile = new LockFile
+            {
+                Version = 2,
+                Libraries = new List<LockFileLibrary>
+                {
+                    new()
+                    {
+                        Name = "System.Runtime",
+                        Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                        Type = LibraryType.Package,
+                        Sha512 = "sup3rs3cur3",
+                        IsServiceable = true,
+                        Path = "foo",
+                        MSBuildProject = "bar",
+                        HasTools = true
+                    }
+                }
+            };
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            string actual = lockFileFormat.Render(lockFile);
+
+            // Assert
+            JObject expected = JObject.Parse(lockFileContent);
+            JObject output = JObject.Parse(actual);
+
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void Render_LockFileWithTarget_WritesTarget()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    ""net6.0"": {
+      ""Microsoft.AspNetCore.JsonPatch/6.0.4"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Microsoft.CSharp"": ""4.7.0"",
+          ""Newtonsoft.Json"": ""13.0.1""
+        },
+        ""frameworkAssemblies"": [
+          ""System.Configuration""
+        ],
+        ""compile"": {
+          ""lib/net6.0/Microsoft.AspNetCore.JsonPatch.dll"": {}
+        },
+        ""runtime"": {
+          ""lib/net6.0/Microsoft.AspNetCore.JsonPatch.dll"": {}
+        },
+        ""resource"": {
+          ""lib/net45/cs/FSharp.Core.resources.dll"": {
+            ""locale"": ""cs""
+          }
+        },
+        ""contentFiles"": {
+          ""baz"": {
+            ""copyToOutput"": false
+          },
+          ""foo"": {
+            ""copyToOutput"": true,
+            ""outputPath"": ""bar""
+          }
+        }
+      },
+      ""Project10/1.0.0"": {
+        ""type"": ""project"",
+        ""framework"": "".NETCoreApp,Version=v6.0""
+      },
+      ""Microsoft.Extensions.ApiDescription.Server/3.0.0"": {
+        ""type"": ""package"",
+         ""build"": {
+          ""build/Microsoft.Extensions.ApiDescription.Server.props"": {},
+          ""build/Microsoft.Extensions.ApiDescription.Server.targets"": {}
+        },
+        ""buildMultiTargeting"": {
+          ""buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.props"": {},
+          ""buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets"": {}
+        }        
+      },
+       ""runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0"": {
+        ""type"": ""package"",
+        ""runtimeTargets"": {
+          ""runtimes/debian.8-x64/native/System.Security.Cryptography.Native.OpenSsl.so"": {
+            ""assetType"": ""native"",
+            ""rid"": ""debian.8-x64""
+          }
+        }
+      }
+    }
+  },
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {}
+}";
+
+            var lockFile = new LockFile
+            {
+                Version = 3,
+                Targets = new List<LockFileTarget>
+                {
+                    new()
+                    {
+                        TargetFramework = FrameworkConstants.CommonFrameworks.Net60,
+                        Libraries = new List<LockFileTargetLibrary>
+                        {
+                            new()
+                            {
+                                Name = "Microsoft.AspNetCore.JsonPatch",
+                                Version = NuGetVersion.Parse("6.0.4"),
+                                Type = LibraryType.Package,
+                                Dependencies = new List<PackageDependency>
+                                {
+                                    new("Microsoft.CSharp", new VersionRange(NuGetVersion.Parse("4.7.0"))),
+                                    new("Newtonsoft.Json", new VersionRange(NuGetVersion.Parse("13.0.1"))),
+                                },
+                                CompileTimeAssemblies = new List<LockFileItem>()
+                                {
+                                    new("lib/net6.0/Microsoft.AspNetCore.JsonPatch.dll")
+                                },
+                                FrameworkAssemblies = new List<string>
+                                {
+                                    "System.Configuration"
+                                },
+                                RuntimeAssemblies = new List<LockFileItem>
+                                {
+                                    new("lib/net6.0/Microsoft.AspNetCore.JsonPatch.dll")
+                                },
+                                ResourceAssemblies = new List<LockFileItem>
+                                {
+                                    new("lib/net45/cs/FSharp.Core.resources.dll")
+                                    {
+                                        Properties =
+                                        {
+                                            ["locale"] = "cs"
+                                        }
+                                    }
+                                },
+                                ContentFiles = new List<LockFileContentFile>
+                                {
+                                    new("foo")
+                                    {
+                                        OutputPath = "bar",
+                                        CopyToOutput = true
+                                    },
+                                    new("baz")
+                                    {
+                                        CopyToOutput = false
+                                    }
+                                }
+                            },
+                            new()
+                            {
+                                Name = "Project10",
+                                Version = NuGetVersion.Parse("1.0.0"),
+                                Type = "project",
+                                Framework = ".NETCoreApp,Version=v6.0",
+                            },
+                            new()
+                            {
+                                Name = "Microsoft.Extensions.ApiDescription.Server",
+                                Version = NuGetVersion.Parse("3.0.0"),
+                                Type = "package",
+                                Build = new List<LockFileItem>
+                                {
+                                    new("build/Microsoft.Extensions.ApiDescription.Server.props"),
+                                    new("build/Microsoft.Extensions.ApiDescription.Server.targets"),
+                                },
+                                BuildMultiTargeting = new List<LockFileItem>()
+                                {
+                                    new("buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.props"),
+                                    new("buildMultiTargeting/Microsoft.Extensions.ApiDescription.Server.targets")
+                                }
+                            },
+                            new()
+                            {
+                                Name = "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl",
+                                Version = NuGetVersion.Parse("4.3.0"),
+                                Type = "package",
+                                RuntimeTargets = new List<LockFileRuntimeTarget>
+                                {
+                                    new("runtimes/debian.8-x64/native/System.Security.Cryptography.Native.OpenSsl.so")
+                                    {
+                                        AssetType = "native",
+                                        Runtime = "debian.8-x64"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            string actual = lockFileFormat.Render(lockFile);
+
+            // Assert
+            JObject expected = JObject.Parse(lockFileContent);
+            JObject output = JObject.Parse(actual);
+
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
         public void LockFileFormat_ReadsPackageSpec()
         {
             // Arrange
@@ -380,16 +680,18 @@ namespace NuGet.ProjectModel.Test
       ""outputPath"": ""X:\\ProjectPath\\obj\\"",
       ""projectStyle"": ""PackageReference"",
       ""originalTargetFrameworks"": [
-        ""netcoreapp1.0""
+        ""netcoreapp10""
       ],
       ""frameworks"": {
         ""netcoreapp1.0"": {
+          ""targetAlias"": ""netcoreapp10"",
           ""projectReferences"": {}
         }
       }
     },
     ""frameworks"": {
       ""netcoreapp1.0"": {
+        ""targetAlias"": ""netcoreapp10"",
         ""dependencies"": {
          ""Microsoft.NET.Sdk"": {
                 ""suppressParent"": ""All"",
@@ -414,6 +716,7 @@ namespace NuGet.ProjectModel.Test
                     new TargetFrameworkInformation
                     {
                         FrameworkName = FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                        TargetAlias = "netcoreapp10",
                         Dependencies = new[]
                         {
                             new LibraryDependency
@@ -447,10 +750,13 @@ namespace NuGet.ProjectModel.Test
                         ProjectPath = @"X:\ProjectPath\ProjectPath.csproj",
                         OutputPath = @"X:\ProjectPath\obj\",
                         ProjectStyle = ProjectStyle.PackageReference,
-                        OriginalTargetFrameworks = new[] { "netcoreapp1.0" },
+                        OriginalTargetFrameworks = new[] { "netcoreapp10" },
                         TargetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>
                         {
                             new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("netcoreapp1.0"))
+                            {
+                                TargetAlias = "netcoreapp10",
+                            }
                         }
                     }
                 }
@@ -1922,10 +2228,7 @@ namespace NuGet.ProjectModel.Test
                 ""Newtonsoft.Json"": {
                             ""include"": ""Compile, Native, BuildTransitive"",
                             ""suppressParent"": ""All"",
-                            ""target"": ""Package"",
-                            ""version"": ""[12.0.3, )"",
-                            ""autoReferenced"": true,
-                            ""versionCentrallyManaged"": true              
+                            ""version"": ""[12.0.3, )""           
                         }
                     }
                 }
@@ -1970,7 +2273,6 @@ namespace NuGet.ProjectModel.Test
 
             var newtonSoftDependency = new LibraryDependency(
                         libraryRange: new LibraryRange("Newtonsoft.Json", VersionRange.Parse("[12.0.3, )"), LibraryDependencyTarget.Package),
-                        type: LibraryDependencyType.Default,
                         includeType: LibraryIncludeFlags.Compile | LibraryIncludeFlags.BuildTransitive | LibraryIncludeFlags.Native,
                         suppressParent: LibraryIncludeFlags.All,
                         noWarn: new List<NuGetLogCode>(),
@@ -1978,7 +2280,8 @@ namespace NuGet.ProjectModel.Test
                         generatePathProperty: false,
                         versionCentrallyManaged: false,
                         LibraryDependencyReferenceType.Direct,
-                        aliases: null);
+                        aliases: null,
+                        versionOverride: null);
             newtonSoftDependency.VersionCentrallyManaged = true;
 
             lockFile.CentralTransitiveDependencyGroups

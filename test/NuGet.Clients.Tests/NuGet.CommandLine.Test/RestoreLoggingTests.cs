@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -147,32 +148,26 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var netcoreapp1 = FrameworkConstants.CommonFrameworks.NetCoreApp10;
-
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    netcoreapp1);
-
-                var packageX = new SimpleTestPackageContext("x", "1.0.0");          
-
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
-                projectA.AddPackageToAllFrameworks(packageX);                
 
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-                
                 File.Delete(Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
 
-                // Act                
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var logger = new TestLogger();
+                // Set-up command.
+                var request = ProjectTestHelpers.CreateRestoreRequest(
+                        pathContext,
+                        logger,
+                        ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageX.Id));
+                var command = new NuGet.Commands.RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
 
                 // Assert
-                r.Success.Should().BeFalse();                
-                r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+                result.Success.Should().BeFalse(because: logger.ShowMessages());
+                result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU5037);
+                logger.ShowMessages().Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
             }
         }
 
@@ -322,7 +317,7 @@ namespace NuGet.CommandLine.Test
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("b");
                 log.Level.Should().Be(LogLevel.Error);
-                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.TargetGraphs.Should().BeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
                 log.Message.Should().Be("Project b is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Project b supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
             }
         }
@@ -364,7 +359,7 @@ namespace NuGet.CommandLine.Test
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("x");
                 log.Level.Should().Be(LogLevel.Error);
-                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.TargetGraphs.Should().BeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
                 log.Message.Should().Be("Package x 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package x 1.0.0 supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
             }
         }
@@ -2128,6 +2123,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("NU1004");
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                logCodes.Should().Contain(NuGetLogCode.NU1004);
             }
         }
     }

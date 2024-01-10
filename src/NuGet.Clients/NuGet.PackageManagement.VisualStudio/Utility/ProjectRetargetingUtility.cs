@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -43,7 +44,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (installedRefs != null && installedRefs.Any())
             {
                 var targetFramework = project.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-                return GetPackagesToBeReinstalled(targetFramework, installedRefs);
+                return await GetPackagesToBeReinstalledAsync(targetFramework, installedRefs);
             }
 
             return new List<PackageIdentity>();
@@ -55,21 +56,23 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="projectFramework">Current target framework of the project</param>
         /// <param name="packageReferences">List of package references in the project from which packages to be reinstalled are determined</param>
         /// <returns>List of package identities to be reinstalled</returns>
-        public static List<PackageIdentity> GetPackagesToBeReinstalled(NuGetFramework projectFramework, IEnumerable<Packaging.PackageReference> packageReferences)
+        public static async Task<List<PackageIdentity>> GetPackagesToBeReinstalledAsync(NuGetFramework projectFramework, IEnumerable<Packaging.PackageReference> packageReferences)
         {
             Debug.Assert(projectFramework != null);
             Debug.Assert(packageReferences != null);
 
             var packagesToBeReinstalled = new List<PackageIdentity>();
-            var sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            var solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
-            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
-            var deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            var sourceRepositoryProvider = await ServiceLocator.GetComponentModelServiceAsync<ISourceRepositoryProvider>();
+            var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<ISolutionManager>();
+            var settings = await ServiceLocator.GetComponentModelServiceAsync<Configuration.ISettings>();
+            var deleteOnRestartManager = await ServiceLocator.GetComponentModelServiceAsync<IDeleteOnRestartManager>();
+            var restoreProgressReporter = await ServiceLocator.GetComponentModelServiceAsync<IRestoreProgressReporter>();
             var packageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
                 settings,
                 solutionManager,
-                deleteOnRestartManager);
+                deleteOnRestartManager,
+                restoreProgressReporter);
 
             foreach (var packageReference in packageReferences)
             {
@@ -194,7 +197,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 var projectFullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
-                var packagesConfigFullPath = Path.Combine(projectFullPath ?? String.Empty, ProjectManagement.Constants.PackageReferenceFile);
+                var packagesConfigFullPath = Path.Combine(projectFullPath ?? string.Empty, ProjectManagement.Constants.PackageReferenceFile);
 
                 // Create new file or overwrite existing file
                 if (File.Exists(packagesConfigFullPath))
@@ -228,7 +231,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var projectFullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
-            var packagesConfigFullPath = Path.Combine(projectFullPath ?? String.Empty, NuGet.ProjectManagement.Constants.PackageReferenceFile);
+            var packagesConfigFullPath = Path.Combine(projectFullPath ?? string.Empty, NuGet.ProjectManagement.Constants.PackageReferenceFile);
 
             if (File.Exists(packagesConfigFullPath))
             {
@@ -256,9 +259,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Determines if NuGet is used in the project. Currently, it is determined by checking if packages.config is part of the project
         /// </summary>
         /// <param name="project">The project which is checked to see if NuGet is used in it</param>
-        public static bool IsNuGetInUse(Project project)
+        public static async Task<bool> IsNuGetInUseAsync(Project project)
         {
-            return EnvDTEProjectUtility.IsSupported(project) && File.Exists(EnvDTEProjectInfoUtility.GetPackagesConfigFullPath(project));
+            return await EnvDTEProjectUtility.IsSupportedAsync(project) && File.Exists(await project.GetPackagesConfigFullPathAsync());
         }
     }
 }

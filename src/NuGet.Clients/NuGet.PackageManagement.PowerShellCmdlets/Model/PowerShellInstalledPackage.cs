@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -26,8 +26,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// </summary>
         internal static List<PowerShellInstalledPackage> GetPowerShellPackageView(
             Dictionary<NuGetProject, IEnumerable<PackageReference>> dictionary,
-            ISolutionManager SolutionManager,
-            Configuration.ISettings settings)
+            ISettings settings)
         {
             var views = new List<PowerShellInstalledPackage>();
 

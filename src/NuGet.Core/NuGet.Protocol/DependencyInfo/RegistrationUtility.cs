@@ -3,14 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Extensions;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -70,7 +69,7 @@ namespace NuGet.Protocol
                 var lower = NuGetVersion.Parse(item["lower"].ToString());
                 var upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (IsItemRangeRequired(range, lower, upper))
+                if (range.DoesRangeSatisfy(lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))
@@ -102,21 +101,6 @@ namespace NuGet.Protocol
             await Task.WhenAll(rangeTasks.ToArray());
 
             return rangeTasks.Select((t) => t.Result);
-        }
-
-        private static bool IsItemRangeRequired(VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
-        {
-            var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
-                maxVersion: catalogItemUpper, includeMaxVersion: true);
-
-            if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
-            {
-                return catalogItemVersionRange.Satisfies(dependencyRange.MinVersion) || catalogItemVersionRange.Satisfies(dependencyRange.MaxVersion);
-            }
-            else
-            {
-                return dependencyRange.Satisfies(catalogItemLower) || dependencyRange.Satisfies(catalogItemUpper);
-            }
         }
     }
 }

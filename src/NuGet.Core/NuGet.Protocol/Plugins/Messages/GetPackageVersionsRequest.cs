@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,9 +29,9 @@ namespace NuGet.Protocol.Plugins
         /// <param name="packageSourceRepository">The package source repository location.</param>
         /// <param name="packageId">The package ID.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="packageSourceRepository" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="packageId" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         [JsonConstructor]
         public GetPackageVersionsRequest(
             string packageSourceRepository,

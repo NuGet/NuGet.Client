@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-    public class NuGetProjectUpgradeUtility
+    public static class NuGetProjectUpgradeUtility
     {
         private static readonly HashSet<string> UpgradeableProjectTypes =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -75,26 +76,28 @@ namespace NuGet.PackageManagement.VisualStudio
                 envDTEProject = vsmsBuildNuGetProjectSystem.VsProjectAdapter.Project;
             }
 
-            if (!EnvDTEProjectUtility.IsSupported(envDTEProject))
+            if (!await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
             {
                 return false;
             }
 
-            return IsProjectPackageReferenceCompatible(envDTEProject);
+            return await IsProjectPackageReferenceCompatibleAsync(envDTEProject);
         }
 
         private static async Task<NuGetProject> GetNuGetProject(Project envDTEProject)
         {
-            var solutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
+            var solutionManager = await ServiceLocator.GetComponentModelServiceAsync<IVsSolutionManager>();
 
-            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(envDTEProject);
+            var projectSafeName = await envDTEProject.GetCustomUniqueNameAsync();
             var nuGetProject = await solutionManager.GetNuGetProjectAsync(projectSafeName);
             return nuGetProject;
         }
 
-        private static bool IsProjectPackageReferenceCompatible(Project project)
+        private static async Task<bool> IsProjectPackageReferenceCompatibleAsync(Project project)
         {
-            var projectGuids = VsHierarchyUtility.GetProjectTypeGuids(project);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var projectGuids = await project.GetProjectTypeGuidsAsync();
 
             if (projectGuids.Any(t => UnupgradeableProjectTypes.Contains(t)))
             {
@@ -103,11 +106,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Project is supported language, and not an unsupported type
             return UpgradeableProjectTypes.Contains(project.Kind) &&
-                   projectGuids.All(projectTypeGuid => !SupportedProjectTypes.IsUnsupported(projectTypeGuid));
+                   projectGuids.All(projectTypeGuid => !ProjectType.IsUnsupported(projectTypeGuid));
         }
 
         public static bool IsPackagesConfigSelected(IVsMonitorSelection vsMonitorSelection)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var selectedFileName = GetSelectedFileName(vsMonitorSelection);
             return !string.IsNullOrEmpty(selectedFileName) && Path.GetFileName(selectedFileName).Equals("packages.config", StringComparison.OrdinalIgnoreCase);
         }

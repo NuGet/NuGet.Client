@@ -13,7 +13,6 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -89,11 +88,11 @@ namespace NuGet.PackageManagement
         /// <param name="cancellationToken">A cancellation token.</param>.
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="nuGetProject" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="resourceResult" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task EnsurePackageCompatibilityAsync(
@@ -150,7 +149,7 @@ namespace NuGet.PackageManagement
             // type that is one of the recognized package types.
             var packageTypes = nuspecReader.GetPackageTypes();
             var identityString = $"{packageIdentity.Id} {packageIdentity.Version.ToNormalizedString()}";
-            
+
             if (packageTypes.Count > 1)
             {
                 throw new PackagingException(string.Format(
@@ -173,14 +172,6 @@ namespace NuGet.PackageManagement
                     packageType == PackageType.Dependency) // A package explicitly stated as a dependency.
                 {
                     // These types are always acceptable.
-                }
-                else if (nuGetProject is ProjectKNuGetProjectBase &&
-                         packageType == PackageType.DotnetCliTool)
-                {
-                    // ProjectKNuGetProjectBase projects are .NET Core (both "dotnet" and "dnx").
-                    // .NET CLI tools are support for "dotnet" projects. The projects eventually
-                    // call into INuGetPackageManager, which is not implemented by NuGet. This code
-                    // will make the decision of how to install the .NET CLI tool package.
                 }
                 else
                 {

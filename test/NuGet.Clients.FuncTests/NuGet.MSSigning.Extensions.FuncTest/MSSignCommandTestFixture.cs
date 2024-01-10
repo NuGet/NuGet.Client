@@ -6,7 +6,7 @@ using System.Configuration;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using NuGet.CommandLine.Test;
+using NuGet.Packaging.Signing;
 using Test.Utility.Signing;
 
 namespace NuGet.MSSigning.Extensions.FuncTest.Commands
@@ -22,15 +22,14 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
 
         private string _nugetExePath;
         private Lazy<Task<SigningTestServer>> _testServer;
-        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
+        private Lazy<Task<CertificateAuthority>> _defaultTrustedTimestampingRootCertificateAuthority;
         private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
-
 
         public MSSignCommandTestFixture()
         {
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
-            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampingRootCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedTimestampingRootCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
         }
@@ -46,7 +45,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithPrivateKey = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithPrivateKey = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator)
+                        .WithPrivateKeyAndTrust(StoreName.Root);
                 }
 
                 return _trustedTestCertWithPrivateKey;
@@ -64,7 +64,8 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithoutPrivateKey = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithoutPrivateKey = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator)
+                        .WithTrust();
                 }
 
                 return _trustedTestCertWithoutPrivateKey;
@@ -86,27 +87,24 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        public async Task<CertificateAuthority> GetDefaultTrustedCertificateAuthorityAsync()
-        {
-            return await _defaultTrustedCertificateAuthority.Value;
-        }
-
         public async Task<TimestampService> GetDefaultTrustedTimestampServiceAsync()
         {
             return await _defaultTrustedTimestampService.Value;
         }
 
-        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        private async Task<CertificateAuthority> CreateDefaultTrustedTimestampingRootCertificateAuthorityAsync()
         {
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
             _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
+                X509StorePurpose.Timestamping,
                 StoreName.Root,
-                StoreLocation.LocalMachine);
+                storeLocation);
 
             var ca = intermediateCa;
 
@@ -124,7 +122,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
         private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
         {
             var testServer = await _testServer.Value;
-            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var ca = await _defaultTrustedTimestampingRootCertificateAuthority.Value;
             var timestampService = TimestampService.Create(ca);
 
             _responders.Add(testServer.RegisterResponder(timestampService));

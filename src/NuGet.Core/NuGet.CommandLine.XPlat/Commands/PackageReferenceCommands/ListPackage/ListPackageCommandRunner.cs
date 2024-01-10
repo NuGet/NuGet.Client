@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
+using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -19,197 +20,211 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class ListPackageCommandRunner : IListPackageCommandRunner
+    internal class ListPackageCommandRunner : IListPackageCommandRunner
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
+        private const int GenericSuccessExitCode = 0;
+        private const int GenericFailureExitCode = 1;
+        private Dictionary<PackageSource, SourceRepository> _sourceRepositoryCache;
 
-        internal static readonly Func<InstalledPackageReference, Task<bool>> TopLevelPackagesFilterForOutdated =
-            p => Task.FromResult(
-                !p.AutoReference && (p.LatestPackageMetadata == null
-                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
-        internal static readonly Func<InstalledPackageReference, Task<bool>> TransitivePackagesFilterForOutdated =
-            p => Task.FromResult(
-                p.LatestPackageMetadata == null
-                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
-
-        internal static readonly Func<InstalledPackageReference, Task<bool>> TopLevelPackagesFilterForDeprecated =
-            async p => await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null;
-        internal static readonly Func<InstalledPackageReference, Task<bool>> TransitivePackagesFilterForDeprecated =
-            async p => await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null;
-
-        public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
+        public ListPackageCommandRunner()
         {
+            _sourceRepositoryCache = new Dictionary<PackageSource, SourceRepository>();
+        }
+
+        public async Task<int> ExecuteCommandAsync(ListPackageArgs listPackageArgs)
+        {
+            IReportRenderer reportRenderer = listPackageArgs.Renderer;
+            (int exitCode, ListPackageReportModel reportModel) = await GetReportDataAsync(listPackageArgs);
+            reportRenderer.Render(reportModel);
+            return exitCode;
+        }
+
+        internal async Task<(int, ListPackageReportModel)> GetReportDataAsync(ListPackageArgs listPackageArgs)
+        {
+            // It's important not to print anything to console from below methods and sub method calls, because it'll affect both json/console outputs.
+            var listPackageReportModel = new ListPackageReportModel(listPackageArgs);
             if (!File.Exists(listPackageArgs.Path))
             {
-                Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                listPackageArgs.Renderer.AddProblem(problemType: ProblemType.Error,
+                    text: string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
                         listPackageArgs.Path));
-                return;
+                return (GenericFailureExitCode, listPackageReportModel);
             }
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
-            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln") ?
+            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln", PathUtility.GetStringComparisonBasedOnOS()) ?
                            MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)) :
                            new List<string>(new string[] { listPackageArgs.Path });
 
-            var autoReferenceFound = false;
-            var deprecatedFound = false;
+            MSBuildAPIUtility msBuild = listPackageReportModel.MSBuildAPIUtility;
 
-            var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
-
-            //Print sources
-            if (listPackageArgs.IncludeOutdated || listPackageArgs.IncludeDeprecated)
+            foreach (string projectPath in projectsPaths)
             {
-                Console.WriteLine();
-                Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
-                ProjectPackagesPrintUtility.PrintSources(listPackageArgs.PackageSources);
-                Console.WriteLine();
+                await GetProjectMetadataAsync(projectPath, listPackageReportModel, msBuild, listPackageArgs);
             }
 
-            foreach (var projectPath in projectsPaths)
+            // if there is any error then return failure code.
+            int exitCode = (
+                listPackageArgs.Renderer.GetProblems().Any(p => p.ProblemType == ProblemType.Error)
+                || listPackageReportModel.Projects.Where(p => p.ProjectProblems != null).SelectMany(p => p.ProjectProblems).Any(p => p.ProblemType == ProblemType.Error))
+                ? GenericFailureExitCode : GenericSuccessExitCode;
+
+            return (exitCode, listPackageReportModel);
+        }
+
+        private async Task GetProjectMetadataAsync(
+            string projectPath,
+            ListPackageReportModel listPackageReportModel,
+            MSBuildAPIUtility msBuild,
+            ListPackageArgs listPackageArgs)
+        {
+            //Open project to evaluate properties for the assets
+            //file and the name of the project
+            Project project = MSBuildAPIUtility.GetProject(projectPath);
+            var projectName = project.GetPropertyValue(ProjectName);
+            ListPackageProjectModel projectModel = listPackageReportModel.CreateProjectReportData(projectPath: projectPath, projectName);
+
+            if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
             {
-                //Open project to evaluate properties for the assets
-                //file and the name of the project
-                var project = MSBuildAPIUtility.GetProject(projectPath);
+                projectModel.AddProjectInformation(problemType: ProblemType.Error,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_NotPRProject, projectPath));
+                return;
+            }
 
-                if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
+            var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
+
+            if (!File.Exists(assetsPath))
+            {
+                projectModel.AddProjectInformation(ProblemType.Error,
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_AssetsFileNotFound, projectPath));
+            }
+            else
+            {
+                var lockFileFormat = new LockFileFormat();
+                LockFile assetsFile = lockFileFormat.Read(assetsPath);
+
+                // Assets file validation
+                if (assetsFile.PackageSpec != null &&
+                    assetsFile.Targets != null &&
+                    assetsFile.Targets.Count != 0)
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_NotPRProject,
-                        projectPath));
-                    Console.WriteLine();
-                    continue;
-                }
+                    // Get all the packages that are referenced in a project
+                    List<FrameworkPackages> frameworks;
+                    try
+                    {
+                        frameworks = msBuild.GetResolvedVersions(project, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        projectModel.AddProjectInformation(ProblemType.Error, ex.Message);
+                        return;
+                    }
 
-                var projectName = project.GetPropertyValue(ProjectName);
+                    if (frameworks.Count > 0)
+                    {
+                        if (listPackageArgs.ReportType != ReportType.Default)  // generic list package is offline -- no server lookups
+                        {
+                            PopulateSourceRepositoryCache(listPackageArgs);
+                            WarnForHttpSources(listPackageArgs, projectModel);
+                            var metadata = await GetPackageMetadataAsync(frameworks, listPackageArgs);
+                            await UpdatePackagesWithSourceMetadata(frameworks, metadata, listPackageArgs);
+                        }
 
-                var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
-
-                // If the file was not found, print an error message and continue to next project
-                if (!File.Exists(assetsPath))
-                {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_AssetsFileNotFound,
-                        projectPath));
-                    Console.WriteLine();
+                        bool printPackages = FilterPackages(frameworks, listPackageArgs);
+                        printPackages = printPackages || ReportType.Default == listPackageArgs.ReportType;
+                        if (printPackages)
+                        {
+                            var hasAutoReference = false;
+                            List<ListPackageReportFrameworkPackage> projectFrameworkPackages = ProjectPackagesPrintUtility.GetPackagesMetadata(frameworks, listPackageArgs, ref hasAutoReference);
+                            projectModel.TargetFrameworkPackages = projectFrameworkPackages;
+                            projectModel.AutoReferenceFound = hasAutoReference;
+                        }
+                        else
+                        {
+                            projectModel.TargetFrameworkPackages = new List<ListPackageReportFrameworkPackage>();
+                        }
+                    }
                 }
                 else
                 {
-                    var lockFileFormat = new LockFileFormat();
-                    var assetsFile = lockFileFormat.Read(assetsPath);
+                    projectModel.AddProjectInformation(ProblemType.Error,
+                        string.Format(CultureInfo.CurrentCulture, Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
+                }
 
-                    // Assets file validation
-                    if (assetsFile.PackageSpec != null &&
-                        assetsFile.Targets != null &&
-                        assetsFile.Targets.Count != 0)
+                // Unload project
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+            }
+        }
+
+        private static void WarnForHttpSources(ListPackageArgs listPackageArgs, ListPackageProjectModel projectModel)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in listPackageArgs.PackageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    if (httpPackageSources == null)
                     {
-                        // Get all the packages that are referenced in a project
-                        var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
-
-                        // If packages equals null, it means something wrong happened
-                        // with reading the packages and it was handled and message printed
-                        // in MSBuildAPIUtility function, but we need to move to the next project
-                        if (packages != null)
-                        {
-                            // No packages means that no package references at all were found 
-                            if (!packages.Any())
-                            {
-                                Console.WriteLine(string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
-                            }
-                            else
-                            {
-                                var printPackages = true;
-
-                                // Handle --outdated
-                                if (listPackageArgs.IncludeOutdated)
-                                {
-                                    await AddLatestVersionsAsync(packages, listPackageArgs);
-
-                                    printPackages = await FilterOutdatedPackagesAsync(packages);
-
-                                    // If after filtering, all packages were found up to date, inform the user
-                                    // and do not print anything
-                                    if (!printPackages)
-                                    {
-                                        Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
-                                    }
-                                }
-                                // Handle --deprecated
-                                else if (listPackageArgs.IncludeDeprecated)
-                                {
-                                    await GetDeprecationInfoAsync(packages, listPackageArgs);
-
-                                    printPackages = await FilterDeprecatedPackagesAsync(packages);
-
-                                    // If after filtering, no packages were found to be deprecated, inform the user
-                                    // and do not print anything
-                                    if (!printPackages)
-                                    {
-                                        Console.WriteLine(string.Format(Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
-                                    }
-                                }
-
-                                // Make sure print is still needed, which may be changed in case
-                                // outdated filtered all packages out
-                                if (printPackages)
-                                {
-                                    var printPackagesResult = await ProjectPackagesPrintUtility.PrintPackagesAsync(
-                                        packages,
-                                        projectName,
-                                        listPackageArgs.IncludeTransitive,
-                                        listPackageArgs.IncludeOutdated,
-                                        listPackageArgs.IncludeDeprecated);
-
-                                    autoReferenceFound = autoReferenceFound || printPackagesResult.AutoReferenceFound;
-                                    deprecatedFound = deprecatedFound || printPackagesResult.DeprecatedFound;
-                                }
-                            }
-                        }
+                        httpPackageSources = new();
                     }
-                    else
-                    {
-                        Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
-                    }
-
-                    // Unload project
-                    ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+                    httpPackageSources.Add(packageSource);
                 }
             }
 
-            // If any auto-references were found, a line is printed
-            // explaining what (A) means
-            if (autoReferenceFound)
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
             {
-                Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+                if (httpPackageSources.Count == 1)
+                {
+                    projectModel.AddProjectInformation(
+                        ProblemType.Warning,
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage,
+                        "list package",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    projectModel.AddProjectInformation(
+                        ProblemType.Warning,
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_HttpServerUsage_MultipleSources,
+                        "list package",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
             }
 
-            // If any deprecated packages were found as part of the --outdated command,
-            // a line is printed explaining what (D) means.
-            if (listPackageArgs.IncludeOutdated && deprecatedFound)
+        }
+
+        public static bool FilterPackages(IEnumerable<FrameworkPackages> packages, ListPackageArgs listPackageArgs)
+        {
+            switch (listPackageArgs.ReportType)
             {
-                Console.WriteLine(Strings.ListPkg_DeprecatedPkgDescription);
+                case ReportType.Default: break; // No filtering in this case
+                case ReportType.Outdated:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.TopLevelPackagesFilterForOutdated,
+                        ListPackageHelper.TransitivePackagesFilterForOutdated);
+                    break;
+                case ReportType.Deprecated:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForDeprecated,
+                        ListPackageHelper.PackagesFilterForDeprecated);
+                    break;
+                case ReportType.Vulnerable:
+                    FilterPackages(
+                        packages,
+                        ListPackageHelper.PackagesFilterForVulnerable,
+                        ListPackageHelper.PackagesFilterForVulnerable);
+                    break;
             }
-        }
 
-        private static async Task<bool> FilterOutdatedPackagesAsync(IEnumerable<FrameworkPackages> packages)
-        {
-            await FilterPackagesAsync(
-                packages,
-                TopLevelPackagesFilterForOutdated,
-                TransitivePackagesFilterForOutdated);
-
-            return packages.Any(p => p.TopLevelPackages.Any());
-        }
-
-        private static async Task<bool> FilterDeprecatedPackagesAsync(IEnumerable<FrameworkPackages> packages)
-        {
-            await FilterPackagesAsync(
-                packages,
-                TopLevelPackagesFilterForDeprecated,
-                TransitivePackagesFilterForDeprecated);
-
-            return packages.Any(p => p.TopLevelPackages.Any());
+            return packages.Any(p => p.TopLevelPackages.Any() ||
+                                     listPackageArgs.IncludeTransitive && p.TransitivePackages.Any());
         }
 
         /// <summary>
@@ -218,29 +233,29 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages">The <see cref="FrameworkPackages"/> to filter.</param>
         /// <param name="topLevelPackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TopLevelPackages"/>.</param>
         /// <param name="transitivePackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TransitivePackages"/>.</param>
-        private static async Task FilterPackagesAsync(
+        private static void FilterPackages(
             IEnumerable<FrameworkPackages> packages,
-            Func<InstalledPackageReference, Task<bool>> topLevelPackagesFilter,
-            Func<InstalledPackageReference, Task<bool>> transitivePackagesFilter)
+            Func<InstalledPackageReference, bool> topLevelPackagesFilter,
+            Func<InstalledPackageReference, bool> transitivePackagesFilter)
         {
             foreach (var frameworkPackages in packages)
             {
-                frameworkPackages.TopLevelPackages = await GetInstalledPackageReferencesWithFilterAsync(
+                frameworkPackages.TopLevelPackages = GetInstalledPackageReferencesWithFilter(
                     frameworkPackages.TopLevelPackages, topLevelPackagesFilter);
 
-                frameworkPackages.TransitivePackages = await GetInstalledPackageReferencesWithFilterAsync(
+                frameworkPackages.TransitivePackages = GetInstalledPackageReferencesWithFilter(
                     frameworkPackages.TransitivePackages, transitivePackagesFilter);
             }
         }
 
-        private static async Task<IEnumerable<InstalledPackageReference>> GetInstalledPackageReferencesWithFilterAsync(
+        private static IEnumerable<InstalledPackageReference> GetInstalledPackageReferencesWithFilter(
             IEnumerable<InstalledPackageReference> references,
-            Func<InstalledPackageReference, Task<bool>> filter)
+            Func<InstalledPackageReference, bool> filter)
         {
             var filteredReferences = new List<InstalledPackageReference>();
             foreach (var reference in references)
             {
-                if (await filter(reference))
+                if (filter(reference))
                 {
                     filteredReferences.Add(reference);
                 }
@@ -250,255 +265,216 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Fetches the latest versions for all of the packages that are
-        /// to be listed
+        /// Get package metadata from all sources
         /// </summary>
-        /// <param name="packages">The packages found in a project</param>
-        /// <param name="listPackageArgs">List args for the token and source provider</param>
-        /// <returns>A data structure like packages, but includes the latest versions</returns>
-        private async Task AddLatestVersionsAsync(
-            IEnumerable<FrameworkPackages> packages,
+        /// <param name="targetFrameworks">A <see cref="FrameworkPackages"/> per project target framework</param>
+        /// <param name="listPackageArgs">List command args</param>
+        /// <returns>A dictionary where the key is the package id, and the value is a list of <see cref="IPackageSearchMetadata"/>.</returns>
+        private async Task<Dictionary<string, List<IPackageSearchMetadata>>> GetPackageMetadataAsync(
+            List<FrameworkPackages> targetFrameworks,
             ListPackageArgs listPackageArgs)
         {
-            //Unique Dictionary for packages and list of latest versions to handle different sources
-            var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
-            AddPackagesToDict(packages, packagesVersionsDict);
+            List<string> allPackages = GetAllPackageIdentifiers(targetFrameworks, listPackageArgs.IncludeTransitive);
+            var packageMetadataById = new Dictionary<string, List<IPackageSearchMetadata>>(capacity: allPackages.Count);
 
-            //Prepare requests for each of the packages
-            var providers = Repository.Provider.GetCoreV3();
-            var getLatestVersionsRequests = new List<Task>();
-            foreach (var package in packagesVersionsDict)
+            int maxParallel = listPackageArgs.PackageSources.Any(s => s.IsHttp)
+                ? 8 // Try to be nice to HTTP package sources
+                : (Environment.ProcessorCount / listPackageArgs.PackageSources.Count) + 1;
+
+            await ThrottledForEachAsync(allPackages,
+                async (packageId, cancellationToken) => await GetPackageVersionsAsync(packageId, listPackageArgs, cancellationToken),
+                packageMetadata => packageMetadataById[packageMetadata.Key] = packageMetadata.Value,
+                maxParallel,
+                listPackageArgs.CancellationToken);
+
+            return packageMetadataById;
+
+            static List<string> GetAllPackageIdentifiers(List<FrameworkPackages> frameworks, bool includeTransitive)
             {
-                getLatestVersionsRequests.AddRange(
-                    PrepareLatestVersionsRequests(
-                        package.Key,
-                        listPackageArgs,
-                        providers,
-                        packagesVersionsDict));
-            }
-
-            // Make requests in parallel.
-            await RequestNuGetResourcesInParallelAsync(getLatestVersionsRequests);
-
-            //Save latest versions within the InstalledPackageReference
-            await GetVersionsFromDictAsync(packages, packagesVersionsDict, listPackageArgs);
-        }
-
-        /// <summary>
-        /// Fetches deprecation info for all of the packages found in a project.
-        /// </summary>
-        /// <param name="packages">The packages found in a project.</param>
-        /// <param name="listPackageArgs">List args for the token and source provider</param>
-        private async Task GetDeprecationInfoAsync(
-            IEnumerable<FrameworkPackages> packages,
-            ListPackageArgs listPackageArgs)
-        {
-            // Unique dictionary for packages and list of versions to handle different sources
-            var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
-            AddPackagesToDict(packages, packagesVersionsDict);
-
-            // Clone and filter package versions to avoid duplicate requests
-            // and to avoid collection being enumerated to be modified.
-            var distinctPackageVersionsDict = GetUniqueResolvedPackages(packages);
-
-            // Prepare requests for each of the packages
-            var providers = Repository.Provider.GetCoreV3();
-            var resourceRequestTasks = new List<Task>();
-            foreach (var packageIdAndVersions in distinctPackageVersionsDict)
-            {
-                foreach (var packageVersion in packageIdAndVersions.Value)
+                IEnumerable<InstalledPackageReference> intermediateEnumerable = frameworks.SelectMany(f => f.TopLevelPackages);
+                if (includeTransitive)
                 {
-                    resourceRequestTasks.AddRange(
-                        PrepareCurrentVersionsRequests(
-                            packageIdAndVersions.Key,
-                            packageVersion,
-                            listPackageArgs,
-                            providers,
-                            packagesVersionsDict));
+                    intermediateEnumerable = intermediateEnumerable.Concat(frameworks.SelectMany(f => f.TransitivePackages));
                 }
+                List<string> allPackages = intermediateEnumerable.Select(p => p.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                return allPackages;
             }
-
-            // Make requests in parallel.
-            await RequestNuGetResourcesInParallelAsync(resourceRequestTasks);
-
-            // Save resolved versions within the InstalledPackageReference
-            await GetVersionsFromDictAsync(packages, packagesVersionsDict, listPackageArgs);
         }
 
-        /// <summary>
-        /// Handles concurrency and throttling for a list of tasks that request NuGet resources.
-        /// </summary>
-        /// <param name="resourceRequestTasks"></param>
-        /// <returns></returns>
-        private static async Task RequestNuGetResourcesInParallelAsync(IReadOnlyList<Task> resourceRequestTasks)
+        /// <summary>Run a throttled iteration of a list that performs async work, with a "single threaded" collection of results.</summary>
+        /// <remarks>
+        /// <para>The continuation delegate is called sequentially, so results can be safely added to non-synchronized collections.</para>
+        /// <para>If any task factory invocation throws, or any task faults, the cancellation token will be triggered and the iteration will end early.</para>
+        /// </remarks>
+        /// <typeparam name="TItem">The item type for the input list</typeparam>
+        /// <typeparam name="TResult">The result type of the async work</typeparam>
+        /// <param name="items">The input list to iterate</param>
+        /// <param name="taskFactory">Delegate to start async work.</param>
+        /// <param name="continuation">Delegate with result of async work. Will not be called concurrently.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <param name="maxParallel">The maximum number of tasks to allow running in parallel.</param>
+        /// <returns>A task that can be awaited to wait for completion of the iteration.</returns>
+        private async Task ThrottledForEachAsync<TItem, TResult>(
+            IList<TItem> items,
+            Func<TItem, CancellationToken, Task<TResult>> taskFactory,
+            Action<TResult> continuation,
+            int maxParallel,
+            CancellationToken cancellationToken)
         {
-            // Handling concurrency and throttling variables
-            var maxTasks = Environment.ProcessorCount;
-            var contactSourcesRunningTasks = new List<Task>();
+            int taskCount = Math.Min(items.Count, maxParallel);
+            var tasks = new Task<TResult>[taskCount];
 
-            // Make the calls to the sources
-            foreach (var requestTask in resourceRequestTasks)
+            using CancellationTokenSource faultCancelationTokenSource =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            try
             {
-                contactSourcesRunningTasks.Add(Task.Run(() => requestTask));
-
-                // Throttle if needed
-                if (maxTasks <= contactSourcesRunningTasks.Count)
+                // ramp up throttling (fill task array)
+                int itemIndex;
+                for (itemIndex = 0; itemIndex < taskCount; itemIndex++)
                 {
-                    var finishedTask = await Task.WhenAny(contactSourcesRunningTasks);
-                    contactSourcesRunningTasks.Remove(finishedTask);
+                    tasks[itemIndex] = taskFactory(items[itemIndex], faultCancelationTokenSource.Token);
                 }
-            }
 
-            await Task.WhenAll(contactSourcesRunningTasks);
-        }
-
-        /// <summary>
-        /// Adding the packages to a unique set to avoid attempting
-        /// to get the latest versions for the same package multiple
-        /// times
-        /// </summary>
-        /// <param name="packages"> Packages found in the project </param>
-        /// <param name="packagesVersionsDict"> An empty dictionary to be filled with packages </param>
-        private void AddPackagesToDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
-        {
-            foreach (var frameworkPackages in packages)
-            {
-                foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
+                // throttling steady state (max parallel tasks running, more input items waiting to queue)
+                while (itemIndex < items.Count)
                 {
-                    if (!packagesVersionsDict.ContainsKey(topLevelPackage.Name))
+                    _ = await Task.WhenAny(tasks);
+                    for (int i = 0; i < tasks.Length; i++)
                     {
-                        packagesVersionsDict.Add(topLevelPackage.Name, new List<IPackageSearchMetadata>());
-                    }
-                }
-
-                foreach (var transitivePackage in frameworkPackages.TransitivePackages)
-                {
-                    if (!packagesVersionsDict.ContainsKey(transitivePackage.Name))
-                    {
-                        packagesVersionsDict.Add(transitivePackage.Name, new List<IPackageSearchMetadata>());
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns the unique resolved packages to avoid duplicates.
-        /// </summary>
-        /// <param name="packages">Packages found in the project</param>
-        private static IDictionary<string, IList<NuGetVersion>> GetUniqueResolvedPackages(IEnumerable<FrameworkPackages> packages)
-        {
-            var results = new Dictionary<string, IList<NuGetVersion>>();
-
-            foreach (var frameworkPackages in packages)
-            {
-                foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
-                {
-                    if (!results.ContainsKey(topLevelPackage.Name))
-                    {
-                        results.Add(topLevelPackage.Name, new List<NuGetVersion>
+                        if (tasks[i].IsCompleted)
                         {
-                            topLevelPackage.ResolvedPackageMetadata.Identity.Version
-                        });
-                    }
-                    else
-                    {
-                        var versions = results[topLevelPackage.Name];
+                            TResult result = await tasks[i];
+                            continuation(result);
 
-                        if (!versions.Contains(topLevelPackage.ResolvedPackageMetadata.Identity.Version))
-                        {
-                            versions.Add(topLevelPackage.ResolvedPackageMetadata.Identity.Version);
+                            tasks[i] = taskFactory(items[itemIndex++], faultCancelationTokenSource.Token);
+                            break;
                         }
                     }
                 }
 
-                foreach (var transitivePackage in frameworkPackages.TransitivePackages)
+                // ramp down throttling (no more inputs waiting to start, just need to wait for last tasks to finish)
+                await Task.WhenAll(tasks);
+                for (int i = 0; i < tasks.Length; i++)
                 {
-                    if (!results.ContainsKey(transitivePackage.Name))
-                    {
-                        results.Add(transitivePackage.Name, new List<NuGetVersion>
-                        {
-                            transitivePackage.ResolvedPackageMetadata.Identity.Version
-                        });
-                    }
-                    else
-                    {
-                        var versions = results[transitivePackage.Name];
-
-                        if (!versions.Contains(transitivePackage.ResolvedPackageMetadata.Identity.Version))
-                        {
-                            versions.Add(transitivePackage.ResolvedPackageMetadata.Identity.Version);
-                        }
-                    }
+                    TResult result = await tasks[i];
+                    continuation(result);
                 }
             }
+            catch
+            {
+                // Don't leave un-awaited tasks. Request cancellation, then wait for tasks to finish.
+                faultCancelationTokenSource.Cancel();
 
-            return results;
+                // Make sure none of the tasks are null (factory exception during ramp-up)
+                for (int i = 0; i < tasks.Length; i++)
+                {
+                    if (tasks[i] is null)
+                    {
+                        tasks[i] = Task.FromResult(default(TResult));
+                    }
+                }
+
+                await Task.WhenAll(tasks);
+                throw;
+            }
+            finally
+            {
+                faultCancelationTokenSource.Cancel();
+            }
+        }
+
+        /// <summary>
+        /// Pre-populate _sourceRepositoryCache so source repository can be reused between different calls.
+        /// </summary>
+        /// <param name="listPackageArgs">List args for the token and source provider</param>
+        private void PopulateSourceRepositoryCache(ListPackageArgs listPackageArgs)
+        {
+            IEnumerable<Lazy<INuGetResourceProvider>> providers = Repository.Provider.GetCoreV3();
+            IEnumerable<PackageSource> sources = listPackageArgs.PackageSources;
+            foreach (PackageSource source in sources)
+            {
+                SourceRepository sourceRepository = Repository.CreateSource(providers, source, FeedType.Undefined);
+                _sourceRepositoryCache[source] = sourceRepository;
+            }
         }
 
         /// <summary>
         /// Get last versions for every package from the unique packages
         /// </summary>
-        /// <param name="packages"> Project packages to get filled with latest versions </param>
-        /// <param name="packagesVersionsDict"> Unique packages that are mapped to latest versions
-        /// from different sources </param>
+        /// <param name="frameworks"> List of <see cref="FrameworkPackages"/>.</param>
+        /// <param name="packageMetadata">Package metadata from package sources</param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
-        private async Task GetVersionsFromDictAsync(
-            IEnumerable<FrameworkPackages> packages,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
+        internal async Task UpdatePackagesWithSourceMetadata(
+            List<FrameworkPackages> frameworks,
+            Dictionary<string, List<IPackageSearchMetadata>> packageMetadata,
             ListPackageArgs listPackageArgs)
         {
-            foreach (var frameworkPackages in packages)
+            foreach (var frameworkPackages in frameworks)
             {
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
-                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-
-                    if (!listPackageArgs.IncludeDeprecated && matchingPackage.Value.Count > 0)
+                    if (packageMetadata.TryGetValue(topLevelPackage.Name, out List<IPackageSearchMetadata> matchingPackage))
                     {
-                        var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
+                        // Get latest metadata *only* if this is a report requiring "outdated" metadata
+                        if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Count > 0)
+                        {
+                            var latestVersion = matchingPackage.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
 
-                        topLevelPackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
-                        topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
-                    }
+                            if (latestVersion is not null)
+                            {
+                                topLevelPackage.LatestPackageMetadata = matchingPackage.First(p => p.Identity.Version == latestVersion);
+                                topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
+                            }
+                            else // no latest version available with the given constraints
+                            {
+                                topLevelPackage.LatestPackageMetadata = null;
+                                topLevelPackage.UpdateLevel = UpdateLevel.NoUpdate;
+                            }
+                        }
 
-                    var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
-                        matchingPackage.Value.Select(async v => new { SearchMetadata = v, DeprecationMetadata = await v.GetDeprecationMetadataAsync() }));
+                        var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
+                            matchingPackage.Select(async v => new { SearchMetadata = v, DeprecationMetadata = await v.GetDeprecationMetadataAsync() }));
 
-                    // Update resolved version with deprecated information returned by the server.
-                    var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
-                        .Where(v => v.SearchMetadata.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
-                        .FirstOrDefault();
+                        // Update resolved version with additional metadata information returned by the server.
+                        var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
+                            .Where(v => v.SearchMetadata.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version &&
+                                    (v.DeprecationMetadata != null || v.SearchMetadata?.Vulnerabilities != null))
+                            .FirstOrDefault();
 
-                    if (resolvedVersionFromServer != null)
-                    {
-                        topLevelPackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
+                        if (resolvedVersionFromServer != null)
+                        {
+                            topLevelPackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
+                        }
                     }
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
-                    var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-
-                    if (!listPackageArgs.IncludeDeprecated && matchingPackage.Value.Count > 0)
+                    if (packageMetadata.TryGetValue(transitivePackage.Name, out List<IPackageSearchMetadata> matchingPackage))
                     {
-                        var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
+                        // Get latest metadata *only* if this is a report requiring "outdated" metadata
+                        if (listPackageArgs.ReportType == ReportType.Outdated && matchingPackage.Count > 0)
+                        {
+                            var latestVersion = matchingPackage.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
 
-                        transitivePackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
-                        transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
-                    }
+                            transitivePackage.LatestPackageMetadata = matchingPackage.First(p => p.Identity.Version == latestVersion);
+                            transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
+                        }
 
-                    var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
-                        matchingPackage.Value.Select(async v => new { SearchMetadata = v, DeprecationMetadata = await v.GetDeprecationMetadataAsync() }));
+                        var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
+                            matchingPackage.Select(async v => new { SearchMetadata = v, DeprecationMetadata = await v.GetDeprecationMetadataAsync() }));
 
-                    // Update resolved version with deprecated information returned by the server.
-                    var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
-                        .Where(v => v.SearchMetadata.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
-                        .FirstOrDefault();
+                        // Update resolved version with additional metadata information returned by the server.
+                        var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
+                            .Where(v => v.SearchMetadata.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version &&
+                                    (v.DeprecationMetadata != null || v.SearchMetadata?.Vulnerabilities != null))
+                            .FirstOrDefault();
 
-                    if (resolvedVersionFromServer != null)
-                    {
-                        transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
+                        if (resolvedVersionFromServer != null)
+                        {
+                            transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
+                        }
                     }
                 }
             }
@@ -536,23 +512,24 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="package">The package to get the latest version for</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
-        private IList<Task> PrepareLatestVersionsRequests(
+        private async Task<KeyValuePair<string, List<IPackageSearchMetadata>>> GetPackageVersionsAsync(
             string package,
             ListPackageArgs listPackageArgs,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
+            CancellationToken cancellationToken)
         {
-            var latestVersionsRequests = new List<Task>();
+            var results = new List<IPackageSearchMetadata>();
             var sources = listPackageArgs.PackageSources;
-            foreach (var packageSource in sources)
-            {
-                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, packagesVersionsDict));
-            }
-            return latestVersionsRequests;
+
+            await ThrottledForEachAsync(sources,
+                async (source, innerCancellationToken) => await GetLatestVersionPerSourceAsync(source, listPackageArgs, package, innerCancellationToken),
+                continuation: results.AddRange,
+                maxParallel: listPackageArgs.PackageSources.Count,
+                cancellationToken);
+
+            return new KeyValuePair<string, List<IPackageSearchMetadata>>(package, results);
         }
 
         /// <summary>
@@ -562,7 +539,6 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageId">The package ID to get the current version metadata for</param>
         /// <param name="requestedVersion">The version of the requested package</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all current versions for packages from all sources</returns>
@@ -570,7 +546,6 @@ namespace NuGet.CommandLine.XPlat
             string packageId,
             NuGetVersion requestedVersion,
             ListPackageArgs listPackageArgs,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
             var requests = new List<Task>();
@@ -584,7 +559,6 @@ namespace NuGet.CommandLine.XPlat
                         listPackageArgs,
                         packageId,
                         requestedVersion,
-                        providers,
                         packagesVersionsDict));
             }
 
@@ -597,25 +571,29 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageSource">The source to look for packages at</param>
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="package">Package to look for updates for</param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated package with the highest version at a single source</returns>
-        private async Task GetLatestVersionPerSourceAsync(
+        private async Task<IEnumerable<IPackageSearchMetadata>> GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             string package,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
+            CancellationToken cancellationToken)
         {
-            var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
+            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
+            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
-            var packages = (await packageMetadataResource.GetMetadataAsync(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            using var sourceCacheContext = new SourceCacheContext();
+            IEnumerable<IPackageSearchMetadata> packages =
+                await packageMetadataResource.GetMetadataAsync(
+                    package,
+                    includePrerelease: listPackageArgs.Prerelease,
+                    includeUnlisted: false,
+                    sourceCacheContext: sourceCacheContext,
+                    log: listPackageArgs.Logger,
+                    token: listPackageArgs.CancellationToken);
 
-            var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
-            latestVersionsForPackage.AddRange(packages);
-
+            return packages;
         }
 
         /// <summary>
@@ -625,7 +603,6 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
         /// <param name="packageId">Package to look for</param>
         /// <param name="requestedVersion">Requested package version</param>
-        /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>An updated package with the resolved version metadata from a single source</returns>
@@ -634,19 +611,19 @@ namespace NuGet.CommandLine.XPlat
             ListPackageArgs listPackageArgs,
             string packageId,
             NuGetVersion requestedVersion,
-            IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
-            var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
+            SourceRepository sourceRepository = _sourceRepositoryCache[packageSource];
             var packageMetadataResource = await sourceRepository
                 .GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
+            using var sourceCacheContext = new SourceCacheContext();
             var packages = await packageMetadataResource.GetMetadataAsync(
                 packageId,
                 includePrerelease: true,
                 includeUnlisted: true, // Include unlisted because deprecated packages may be unlisted.
-                sourceCacheContext: new SourceCacheContext(),
-                log: NullLogger.Instance,
+                sourceCacheContext: sourceCacheContext,
+                log: listPackageArgs.Logger,
                 token: listPackageArgs.CancellationToken);
 
             var resolvedVersionsForPackage = packagesVersionsDict

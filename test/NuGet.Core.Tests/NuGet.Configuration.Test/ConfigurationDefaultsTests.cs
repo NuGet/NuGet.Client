@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -220,6 +221,52 @@ namespace NuGet.Configuration
             }
         }
 
+        [Fact]
+        public void GetDefaultPackageSources_LocalizatedPackagesourceKeys_ConsideredDiffererent()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            {
+                var configurationDefaultsContent = @"
+<configuration>
+    <packageSources>
+        <add key='encyclopaedia' value='http://contoso.com/packages1/' />
+        <add key='encyclopædia' value='http://contoso.com/packages2/' />
+    </packageSources>
+</configuration>";
+
+                var config = @"
+<configuration>
+    <packageSources>
+        <add key='v2' value='http://www.nuget.org/api/v2/' />
+    </packageSources>
+</configuration>";
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory, "NuGet.Config"), config);
+                var settings = Settings.LoadSettings(mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadUserWideSettings: false,
+                    useTestingGlobalPath: false);
+                ConfigurationDefaults ConfigurationDefaults = GetConfigurationDefaults(configurationDefaultsContent, mockBaseDirectory);
+
+                List<PackageSource> defaultSources = ConfigurationDefaults.DefaultPackageSources.ToList();
+                var packageSourceProvider = new PackageSourceProvider(settings, ConfigurationDefaults.DefaultPackageSources);
+
+                // Act
+                List<PackageSource> packageSources = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Assert
+                Assert.Equal(3, packageSources.Count());
+                Assert.Equal(2, defaultSources.Count());
+                Assert.Equal("v2", packageSources[0].Name);
+                Assert.Equal("encyclopaedia", packageSources[1].Name);
+                Assert.Equal("encyclopaedia", defaultSources[0].Name);
+                Assert.Equal("encyclopædia", packageSources[2].Name);
+                Assert.Equal("encyclopædia", defaultSources[1].Name);
+            }
+        }
+
         public void GetDefaultSameNamePackageSourcesFromSourceProvider()
         {
             // Arrange
@@ -344,7 +391,7 @@ namespace NuGet.Configuration
         private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent, TestDirectory mockBaseDirectory)
         {
             var configurationDefaultsPath = "NuGetDefaults.config";
-      
+
             File.WriteAllText(Path.Combine(mockBaseDirectory, configurationDefaultsPath), configurationDefaultsContent);
             return new ConfigurationDefaults(mockBaseDirectory, configurationDefaultsPath);
         }

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 #endif
@@ -20,10 +20,11 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public class X509SignatureProvider : ISignatureProvider
     {
+#if IS_SIGNING_SUPPORTED
         // Occurs when SignedCms.ComputeSignature cannot read the certificate private key
         // "Invalid provider type specified." (INVALID_PROVIDER_TYPE)
         private const int INVALID_PROVIDER_TYPE_HRESULT = unchecked((int)0x80090014);
-
+#endif
         private readonly ITimestampProvider _timestampProvider;
 
         public X509SignatureProvider(ITimestampProvider timestampProvider)
@@ -97,7 +98,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             var cmsSigner = SigningUtility.CreateCmsSigner(request, logger);
@@ -136,7 +137,12 @@ namespace NuGet.Packaging.Signing
 
             try
             {
+#if IS_DESKTOP
                 cms.ComputeSignature(cmsSigner);
+#else
+                // In .NET Framework, this parameter is not used and a PIN prompt is always shown. In .NET Core, the silent flag needs to be set to false to show a PIN prompt.
+                cms.ComputeSignature(cmsSigner, silent: false);
+#endif
             }
             catch (CryptographicException ex) when (ex.HResult == INVALID_PROVIDER_TYPE_HRESULT)
             {
@@ -152,11 +158,11 @@ namespace NuGet.Packaging.Signing
 
         private static PrimarySignature CreateRepositoryCountersignature(CmsSigner cmsSigner, PrimarySignature primarySignature, CngKey privateKey)
         {
-            using (var primarySignatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
+            using (ICms primarySignatureCms = CmsFactory.Create(primarySignature.GetBytes()))
             {
-                primarySignatureNativeCms.AddCountersignature(cmsSigner, privateKey);
+                primarySignatureCms.AddCountersignature(cmsSigner, privateKey);
 
-                var bytes = primarySignatureNativeCms.Encode();
+                var bytes = primarySignatureCms.Encode();
                 var updatedCms = new SignedCms();
 
                 updatedCms.Decode(bytes);

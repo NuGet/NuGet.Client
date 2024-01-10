@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -34,22 +33,40 @@ namespace NuGet.Commands
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
         private bool _isFallbackFolderSource;
+        private bool _useLegacyAssetTargetFallbackBehavior;
 
-        private readonly ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>> _dependencyInfoCache
-            = new ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>>();
+        private readonly Dictionary<LibraryRangeCacheKey, Task<LibraryDependencyInfo>> _dependencyInfoCache
+            = new Dictionary<LibraryRangeCacheKey, Task<LibraryDependencyInfo>>();
 
-        private readonly ConcurrentDictionary<LibraryRange, AsyncLazy<LibraryIdentity>> _libraryMatchCache
-            = new ConcurrentDictionary<LibraryRange, AsyncLazy<LibraryIdentity>>();
+        private readonly Dictionary<LibraryRange, Task<LibraryIdentity>> _libraryMatchCache
+            = new Dictionary<LibraryRange, Task<LibraryIdentity>>();
 
-        // Limiting concurrent requests to limit the amount of files open at a time on Mac OSX
-        // the default is 256 which is easy to hit if we don't limit concurrency
-        private readonly static SemaphoreSlim _throttle =
-            RuntimeEnvironmentHelper.IsMacOSX
-                ? new SemaphoreSlim(ConcurrencyLimit, ConcurrencyLimit)
+        // Limiting concurrent requests to limit the amount of files open at a time.
+        private readonly static SemaphoreSlim _throttle = GetThrottleSemaphoreSlim(EnvironmentVariableWrapper.Instance);
+        internal static SemaphoreSlim GetThrottleSemaphoreSlim(IEnvironmentVariableReader env)
+        {
+            // Determine default concurrency limit based on operating system constraints.
+            int concurrencyLimit = 0;
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                // Limit concurrent requests on Mac OSX to limit the amount of files
+                // open at a time, since the default limit is 256.
+                concurrencyLimit = 16;
+            }
+            // Allow user to override concurrency limit via environment variable.
+            var variableValue = env.GetEnvironmentVariable("NUGET_CONCURRENCY_LIMIT");
+            if (!string.IsNullOrEmpty(variableValue))
+            {
+                if (int.TryParse(variableValue, out int parsedValue))
+                {
+                    concurrencyLimit = parsedValue;
+                }
+            }
+            // Construct throttle semaphore if requested.
+            return concurrencyLimit > 0
+                ? new SemaphoreSlim(concurrencyLimit, concurrencyLimit)
                 : null;
-
-        // In order to avoid too many open files error, set concurrent requests number to 16 on Mac
-        private const int ConcurrencyLimit = 16;
+        }
 
         /// <summary>
         /// Initializes a new <see cref="SourceRepositoryDependencyProvider" /> class.
@@ -57,12 +74,12 @@ namespace NuGet.Commands
         /// <param name="sourceRepository">A source repository.</param>
         /// <param name="logger">A logger.</param>
         /// <param name="cacheContext">A source cache context.</param>
-        /// <param name="ignoreFailedSources"><c>true</c> to ignore failed sources; otherwise <c>false</c>.</param>
-        /// <param name="ignoreWarning"><c>true</c> to ignore warnings; otherwise <c>false</c>.</param>
+        /// <param name="ignoreFailedSources"><see langword="true" /> to ignore failed sources; otherwise <see langword="false" />.</param>
+        /// <param name="ignoreWarning"><see langword="true" /> to ignore warnings; otherwise <see langword="false" />.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> is <see langword="null" />.</exception>
         public SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
             ILogger logger,
@@ -79,44 +96,49 @@ namespace NuGet.Commands
         /// <param name="sourceRepository">A source repository.</param>
         /// <param name="logger">A logger.</param>
         /// <param name="cacheContext">A source cache context.</param>
-        /// <param name="ignoreFailedSources"><c>true</c> to ignore failed sources; otherwise <c>false</c>.</param>
-        /// <param name="ignoreWarning"><c>true</c> to ignore warnings; otherwise <c>false</c>.</param>
+        /// <param name="ignoreFailedSources"><see langword="true" /> to ignore failed sources; otherwise <see langword="false" />.</param>
+        /// <param name="ignoreWarning"><see langword="true" /> to ignore warnings; otherwise <see langword="false" />.</param>
         /// <param name="fileCache">Optional nuspec/file cache.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <see langword="null" />.</exception>
         public SourceRepositoryDependencyProvider(
-        SourceRepository sourceRepository,
-        ILogger logger,
-        SourceCacheContext cacheContext,
-        bool ignoreFailedSources,
-        bool ignoreWarning,
-        LocalPackageFileCache fileCache,
-        bool isFallbackFolderSource)
+            SourceRepository sourceRepository,
+            ILogger logger,
+            SourceCacheContext cacheContext,
+            bool ignoreFailedSources,
+            bool ignoreWarning,
+            LocalPackageFileCache fileCache,
+            bool isFallbackFolderSource) :
+            this(sourceRepository,
+                logger,
+                cacheContext,
+                ignoreFailedSources,
+                ignoreWarning,
+                fileCache,
+                isFallbackFolderSource,
+                environmentVariableReader: EnvironmentVariableWrapper.Instance)
         {
-            if (sourceRepository == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepository));
-            }
+        }
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (cacheContext == null)
-            {
-                throw new ArgumentNullException(nameof(cacheContext));
-            }
-
-            _sourceRepository = sourceRepository;
-            _logger = logger;
-            _cacheContext = cacheContext;
+        internal SourceRepositoryDependencyProvider(
+            SourceRepository sourceRepository,
+            ILogger logger,
+            SourceCacheContext cacheContext,
+            bool ignoreFailedSources,
+            bool ignoreWarning,
+            LocalPackageFileCache fileCache,
+            bool isFallbackFolderSource,
+            IEnvironmentVariableReader environmentVariableReader)
+        {
+            _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _cacheContext = cacheContext ?? throw new ArgumentNullException(nameof(cacheContext));
             _ignoreFailedSources = ignoreFailedSources;
             _ignoreWarning = ignoreWarning;
             _packageFileCache = fileCache;
             _isFallbackFolderSource = isFallbackFolderSource;
+            _useLegacyAssetTargetFallbackBehavior = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable("NUGET_USE_LEGACY_ASSET_TARGET_FALLBACK_DEPENDENCY_RESOLUTION"));
         }
 
         /// <summary>
@@ -127,8 +149,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Gets the package source.
         /// </summary>
-        /// <remarks>Optional. This will be <c>null</c> for project providers.</remarks>
+        /// <remarks>Optional. This will be <see langword="null" /> for project providers.</remarks>
         public PackageSource Source => _sourceRepository.PackageSource;
+
+        public SourceRepository SourceRepository => _sourceRepository;
 
         /// <summary>
         /// Asynchronously discovers all versions of a package from a source and selects the best match.
@@ -143,13 +167,13 @@ namespace NuGet.Commands
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="LibraryIdentity" />
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="libraryRange" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="targetFramework" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task<LibraryIdentity> FindLibraryAsync(
@@ -166,7 +190,7 @@ namespace NuGet.Commands
 
             if (targetFramework == null)
             {
-                throw new ArgumentNullException(nameof(targetFramework)); 
+                throw new ArgumentNullException(nameof(targetFramework));
             }
 
             if (cacheContext == null)
@@ -180,22 +204,51 @@ namespace NuGet.Commands
             }
 
             cancellationToken.ThrowIfCancellationRequested();
+            Task<LibraryIdentity> result = FindLibraryIdentityAsync(libraryRange, cacheContext);
 
-            AsyncLazy<LibraryIdentity> result = null;
-
-            var action = new AsyncLazy<LibraryIdentity>(async () =>
-                await FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken));
-
-            if (cacheContext.RefreshMemoryCache)
+            try
             {
-                result = _libraryMatchCache.AddOrUpdate(libraryRange, action, (k, v) => action);
+                return await result;
             }
-            else
+            catch (FatalProtocolException e)
             {
-                result = _libraryMatchCache.GetOrAdd(libraryRange, action);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, libraryRange.Name, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, libraryRange.Name, e);
+                    throw;
+                }
             }
+            return null;
 
-            return await result;
+            Task<LibraryIdentity> FindLibraryIdentityAsync(LibraryRange libraryRange, SourceCacheContext cacheContext)
+            {
+                Task<LibraryIdentity> result;
+                if (cacheContext.RefreshMemoryCache)
+                {
+                    lock (_libraryMatchCache)
+                    {
+                        result = Task.Run(() => FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken), cancellationToken);
+                        _libraryMatchCache[libraryRange] = result;
+                    }
+                }
+                else
+                {
+                    lock (_libraryMatchCache)
+                    {
+                        if (!_libraryMatchCache.TryGetValue(libraryRange, out result))
+                        {
+                            result = Task.Run(() => FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken), cancellationToken);
+                            _libraryMatchCache[libraryRange] = result;
+                        }
+                    }
+                }
+
+                return result;
+            }
         }
 
         private async Task<LibraryIdentity> FindLibraryCoreAsync(
@@ -204,45 +257,58 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                await EnsureResource();
+            await EnsureResource();
 
-                if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
+            if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
+            {
+                // first check if the exact min version exist then simply return that
+                bool versionExists = false;
+                try
                 {
-                    // first check if the exact min version exist then simply return that
-                    if (await _findPackagesByIdResource.DoesPackageExistAsync(
-                        libraryRange.Name, libraryRange.VersionRange.MinVersion, cacheContext, logger, cancellationToken))
+                    if (_throttle != null)
                     {
-                        return new LibraryIdentity
-                        {
-                            Name = libraryRange.Name,
-                            Version = libraryRange.VersionRange.MinVersion,
-                            Type = LibraryType.Package
-                        };
+                        await _throttle.WaitAsync(cancellationToken);
                     }
+
+                    versionExists = await _findPackagesByIdResource.DoesPackageExistAsync(
+                        libraryRange.Name,
+                        libraryRange.VersionRange.MinVersion,
+                        cacheContext,
+                        logger,
+                        cancellationToken);
+                }
+                finally
+                {
+                    _throttle?.Release();
                 }
 
-                // Discover all versions from the feed
-                var packageVersions = await GetAllVersionsAsync(libraryRange.Name, cacheContext, logger, cancellationToken);
-
-                // Select the best match
-                var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
-
-                if(packageVersion != null)
+                if (versionExists)
                 {
                     return new LibraryIdentity
                     {
                         Name = libraryRange.Name,
-                        Version = packageVersion,
+                        Version = libraryRange.VersionRange.MinVersion,
                         Type = LibraryType.Package
                     };
                 }
             }
-            catch(FatalProtocolException e) when(_ignoreFailedSources)
+
+            // Discover all versions from the feed
+            var packageVersions = await GetAllVersionsInternalAsync(libraryRange.Name, cacheContext, logger, false, cancellationToken);
+
+            // Select the best match
+            var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
+
+            if (packageVersion != null)
             {
-                await LogWarningAsync(libraryRange.Name, e);
+                return new LibraryIdentity
+                {
+                    Name = libraryRange.Name,
+                    Version = packageVersion,
+                    Type = LibraryType.Package
+                };
             }
+
             return null;
         }
 
@@ -258,16 +324,16 @@ namespace NuGet.Commands
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="LibraryDependencyInfo" />
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="libraryIdentity" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="targetFramework" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public async Task<LibraryDependencyInfo> GetDependenciesAsync(
+        public Task<LibraryDependencyInfo> GetDependenciesAsync(
             LibraryIdentity libraryIdentity,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -296,23 +362,32 @@ namespace NuGet.Commands
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            AsyncLazy<LibraryDependencyInfo> result = null;
-
-            var action = new AsyncLazy<LibraryDependencyInfo>(async () =>
-                await GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken));
+            Task<LibraryDependencyInfo> result;
 
             var key = new LibraryRangeCacheKey(libraryIdentity, targetFramework);
 
             if (cacheContext.RefreshMemoryCache)
             {
-                result = _dependencyInfoCache.AddOrUpdate(key, action, (k, v) => action);
+                lock (_dependencyInfoCache)
+                {
+                    result = GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken);
+                    _dependencyInfoCache[key] = result;
+
+                }
             }
             else
             {
-                result = _dependencyInfoCache.GetOrAdd(key, action);
+                lock (_dependencyInfoCache)
+                {
+                    if (!_dependencyInfoCache.TryGetValue(key, out result))
+                    {
+                        result = GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken);
+                        _dependencyInfoCache[key] = result;
+                    }
+                }
             }
 
-            return await result;
+            return result;
         }
 
         private async Task<LibraryDependencyInfo> GetDependenciesCoreAsync(
@@ -327,9 +402,9 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
-                if(_throttle != null)
+                if (_throttle != null)
                 {
-                    await _throttle.WaitAsync();
+                    await _throttle.WaitAsync(cancellationToken);
                 }
 
                 // Read package info, this will download the package if needed.
@@ -340,9 +415,17 @@ namespace NuGet.Commands
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources && !(e is InvalidCacheProtocolException))
+            catch (FatalProtocolException e) when (e is not InvalidCacheProtocolException)
             {
-                await LogWarningAsync(match.Name, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, match.Name, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, match.Name, e);
+                    throw;
+                }
             }
             finally
             {
@@ -362,9 +445,9 @@ namespace NuGet.Commands
                     packageInfo.PackageIdentity.Version,
                     match.Type);
 
-                var dependencies = GetDependencies(packageInfo, targetFramework);
+                IEnumerable<LibraryDependency> dependencyGroup = GetDependencies(packageInfo, targetFramework);
 
-                return LibraryDependencyInfo.Create(originalIdentity, targetFramework, dependencies);
+                return LibraryDependencyInfo.Create(originalIdentity, targetFramework, dependencies: dependencyGroup);
             }
         }
 
@@ -379,11 +462,11 @@ namespace NuGet.Commands
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="IPackageDownloader" />
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task<IPackageDownloader> GetPackageDownloaderAsync(
@@ -413,9 +496,9 @@ namespace NuGet.Commands
             {
                 await EnsureResource();
 
-                if(_throttle != null)
+                if (_throttle != null)
                 {
-                    await _throttle.WaitAsync();
+                    await _throttle.WaitAsync(cancellationToken);
                 }
 
                 cancellationToken.ThrowIfCancellationRequested();
@@ -429,9 +512,16 @@ namespace NuGet.Commands
                 packageDownloader.SetThrottle(_throttle);
                 packageDownloader.SetExceptionHandler(async exception =>
                 {
-                    if (exception is FatalProtocolException e && _ignoreFailedSources)
+                    if (exception is FatalProtocolException e)
                     {
-                        await LogWarningAsync(packageIdentity.Id, e); 
+                        if (_ignoreFailedSources)
+                        {
+                            await LogWarningAsync(logger, packageIdentity.Id, e);
+                        }
+                        else
+                        {
+                            await LogErrorAsync(logger, packageIdentity.Id, e);
+                        }
                         return true;
                     }
 
@@ -440,9 +530,17 @@ namespace NuGet.Commands
 
                 return packageDownloader;
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e)
             {
-                await LogWarningAsync(packageIdentity.Id, e);
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, packageIdentity.Id, e);
+                }
+                else
+                {
+                    await LogErrorAsync(logger, packageIdentity.Id, e);
+                    throw;
+                }
             }
             finally
             {
@@ -465,12 +563,45 @@ namespace NuGet.Commands
                 targetFramework,
                 item => item.TargetFramework);
 
+            if (dependencyGroup == null && DeconstructFallbackFrameworks(targetFramework) is DualCompatibilityFramework dualCompatibilityFramework)
+            {
+                dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups, dualCompatibilityFramework.SecondaryFramework, item => item.TargetFramework);
+            }
+
+            if (!_useLegacyAssetTargetFallbackBehavior)
+            {
+                // FrameworkReducer.GetNearest does not consider ATF since it is used for more than just compat
+
+                if (dependencyGroup == null &&
+                    targetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+                {
+                    dependencyGroup = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
+                        assetTargetFallbackFramework.AsFallbackFramework(),
+                        item => item.TargetFramework);
+                }
+            }
+
             if (dependencyGroup != null)
             {
                 return dependencyGroup.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec).ToArray();
             }
 
             return Enumerable.Empty<LibraryDependency>();
+        }
+
+        private static NuGetFramework DeconstructFallbackFrameworks(NuGetFramework nuGetFramework)
+        {
+            if (nuGetFramework is AssetTargetFallbackFramework assetTargetFallbackFramework)
+            {
+                return assetTargetFallbackFramework.RootFramework;
+            }
+
+            if (nuGetFramework is FallbackFramework fallbackFramework)
+            {
+                return fallbackFramework;
+            }
+
+            return nuGetFramework;
         }
 
         private async Task EnsureResource()
@@ -522,41 +653,86 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            IEnumerable<NuGetVersion> packageVersions = null;
+            return await GetAllVersionsInternalAsync(id, cacheContext, logger, catchAndLogExceptions: true, cancellationToken: cancellationToken);
+        }
+
+        internal async Task<IEnumerable<NuGetVersion>> GetAllVersionsInternalAsync(
+            string id,
+            SourceCacheContext cacheContext,
+            ILogger logger,
+            bool catchAndLogExceptions,
+            CancellationToken cancellationToken)
+        {
             try
             {
                 if (_throttle != null)
                 {
-                    await _throttle.WaitAsync();
+                    await _throttle.WaitAsync(cancellationToken);
                 }
-                if(_findPackagesByIdResource == null)
+                if (_findPackagesByIdResource == null)
                 {
                     return null;
                 }
-                packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(
+                return await _findPackagesByIdResource.GetAllVersionsAsync(
                     id,
                     cacheContext,
                     logger,
                     cancellationToken);
             }
-            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            catch (FatalProtocolException e) when (catchAndLogExceptions)
             {
-                await LogWarningAsync(id, e);
-                return null;
+                if (_ignoreFailedSources)
+                {
+                    await LogWarningAsync(logger, id, e);
+                    return null;
+                }
+                else
+                {
+                    await LogErrorAsync(logger, id, e);
+                    throw;
+                }
             }
             finally
             {
                 _throttle?.Release();
             }
-
-            return packageVersions;
         }
 
-        private async Task LogWarningAsync(string id, FatalProtocolException e)
+        private async Task LogWarningAsync(ILogger logger, string id, FatalProtocolException e)
         {
-            if(!_ignoreWarning)
+            if (!_ignoreWarning)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+                await logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1801, e.Message, id));
+            }
+        }
+
+        private async Task LogErrorAsync(ILogger logger, string id, FatalProtocolException e)
+        {
+            if (!_ignoreWarning)
+            {
+                // Sometimes, there's a better root cause for a source failures we log that instead of NU1301.
+                // We only do this for errors, and not warnings.
+                var unwrappedLogMessage = UnwrapToLogMessage(e);
+                if (unwrappedLogMessage != null)
+                {
+                    await logger.LogAsync(unwrappedLogMessage);
+                }
+                else
+                {
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, e.Message, id));
+                }
+            }
+
+            static ILogMessage UnwrapToLogMessage(Exception e)
+            {
+                var currentException = ExceptionUtilities.Unwrap(e);
+                while ((currentException is FatalProtocolException || currentException is not ILogMessageException) && currentException != null)
+                {
+                    currentException = currentException.InnerException;
+                }
+                var logMessageException = currentException as ILogMessageException;
+
+                return logMessageException?.AsLogMessage();
             }
         }
     }

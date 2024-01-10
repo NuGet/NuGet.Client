@@ -14,7 +14,6 @@ namespace NuGetConsole.Implementation.PowerConsole
     [Name("PowerConsoleCompletion")]
     internal class CompletionSourceProvider : ICompletionSourceProvider
     {
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         public IWpfConsoleService WpfConsoleService { get; set; }
 

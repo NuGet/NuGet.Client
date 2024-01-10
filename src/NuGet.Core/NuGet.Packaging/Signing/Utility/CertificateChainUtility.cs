@@ -23,9 +23,9 @@ namespace NuGet.Packaging.Signing
         /// <returns>A certificate chain.</returns>
         /// <remarks>This is intended to be used only during signing and timestamping operations,
         /// not verification.</remarks>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="extraStore" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="extraStore" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="certificateType" /> is undefined.</exception>
         public static IX509CertificateChain GetCertificateChain(
             X509Certificate2 certificate,
@@ -53,9 +53,10 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentException(Strings.InvalidArgument, nameof(certificateType));
             }
 
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = certificateType == CertificateType.Signature
+                ? X509ChainHolder.CreateForCodeSigning() : X509ChainHolder.CreateForTimestamping())
             {
-                var chain = chainHolder.Chain;
+                IX509Chain chain = chainHolder.Chain2;
 
                 SetCertBuildChainPolicy(
                     chain.ChainPolicy,
@@ -65,9 +66,9 @@ namespace NuGet.Packaging.Signing
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
 
-                if (chain.Build(certificate))
+                if (BuildWithPolicy(chain, certificate))
                 {
-                    return GetCertificateChain(chain);
+                    return GetCertificateChain(chain.PrivateReference);
                 }
 
                 X509ChainStatusFlags errorStatusFlags;
@@ -78,16 +79,18 @@ namespace NuGet.Packaging.Signing
                 var fatalStatuses = new List<X509ChainStatus>();
                 var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;
 
+                LogAdditionalContext(chain, logger);
+
                 foreach (var chainStatus in chain.ChainStatus)
                 {
                     if ((chainStatus.Status & errorStatusFlags) != 0)
                     {
                         fatalStatuses.Add(chainStatus);
-                        logger.Log(LogMessage.CreateError(logCode, chainStatus.StatusInformation?.Trim()));
+                        logger.Log(LogMessage.CreateError(logCode, $"{chainStatus.Status}: {chainStatus.StatusInformation?.Trim()}"));
                     }
                     else if ((chainStatus.Status & warningStatusFlags) != 0)
                     {
-                        logger.Log(LogMessage.CreateWarning(logCode, chainStatus.StatusInformation?.Trim()));
+                        logger.Log(LogMessage.CreateWarning(logCode, $"{chainStatus.Status}: {chainStatus.StatusInformation?.Trim()}"));
                     }
                 }
 
@@ -101,7 +104,7 @@ namespace NuGet.Packaging.Signing
                     throw new SignatureException(logCode, Strings.CertificateChainValidationFailed);
                 }
 
-                return GetCertificateChain(chain);
+                return GetCertificateChain(chain.PrivateReference);
             }
         }
 
@@ -177,19 +180,36 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        internal static bool BuildCertificateChain(X509Chain chain, X509Certificate2 certificate, out X509ChainStatus[] status)
+        internal static bool BuildCertificateChain(IX509Chain chain, X509Certificate2 certificate, out X509ChainStatus[] status)
         {
             if (certificate == null)
             {
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            var buildSuccess = chain.Build(certificate);
+            bool buildSuccess = BuildWithPolicy(chain, certificate);
             status = new X509ChainStatus[chain.ChainStatus.Length];
-            chain.ChainStatus.CopyTo(status, 0);
+            chain.ChainStatus.CopyTo(status, index: 0);
 
             // Check if time is not in the future
             return buildSuccess && !CertificateUtility.IsCertificateValidityPeriodInTheFuture(certificate);
+        }
+
+        internal static bool BuildWithPolicy(IX509Chain chain, X509Certificate2 certificate)
+        {
+            if (chain is null)
+            {
+                throw new ArgumentNullException(nameof(chain));
+            }
+
+            if (certificate is null)
+            {
+                throw new ArgumentNullException(nameof(certificate));
+            }
+
+            IX509ChainBuildPolicy policy = X509ChainBuildPolicyFactory.Create(EnvironmentVariableWrapper.Instance);
+
+            return policy.Build(chain, certificate);
         }
 
         // Ignore some chain status flags to special case them
@@ -212,13 +232,13 @@ namespace NuGet.Packaging.Signing
             return chainStatus.Any();
         }
 
-        internal static bool TryGetStatusMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IEnumerable<string> messages)
+        internal static bool TryGetStatusAndMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IEnumerable<string> statusAndMessages)
         {
-            messages = null;
+            statusAndMessages = null;
 
             if (ChainStatusListIncludesStatus(chainStatuses, status, out var chainStatus))
             {
-                messages = GetMessagesFromChainStatuses(chainStatus);
+                statusAndMessages = GetStatusAndMessagesFromChainStatuses(chainStatus);
 
                 return true;
             }
@@ -226,13 +246,23 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        internal static IEnumerable<string> GetMessagesFromChainStatuses(IEnumerable<X509ChainStatus> chainStatuses)
+        internal static IEnumerable<string> GetStatusAndMessagesFromChainStatuses(IEnumerable<X509ChainStatus> chainStatuses)
         {
             return chainStatuses
-                .Select(x => x.StatusInformation?.Trim())
-                .Where(x => !string.IsNullOrEmpty(x))
+                .Where(x => !string.IsNullOrEmpty(x.StatusInformation?.Trim()))
+                .Select(x => $"{x.Status}: {x.StatusInformation?.Trim()}")
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(x => x, StringComparer.Ordinal);
+        }
+
+        private static void LogAdditionalContext(IX509Chain chain, ILogger logger)
+        {
+            ILogMessage additionalContext = chain.AdditionalContext;
+
+            if (additionalContext is not null)
+            {
+                logger.Log(additionalContext);
+            }
         }
     }
 }

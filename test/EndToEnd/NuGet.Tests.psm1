@@ -22,7 +22,7 @@ if ((Test-Path $nugetExePath) -eq $False)
 {
     Write-Host -BackgroundColor Yellow -ForegroundColor Black 'nuget.exe cannot be found at' $nugetExePath
     Write-Host "Downloading nuget.exe"
-    wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExePath
+    Invoke-WebRequest https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExePath
 }
 
 # Enable NuGet Test Mode
@@ -92,18 +92,6 @@ Register-TabExpansion 'Run-Test' @{
     }
 }
 
-function Rearrange-Tests {
-    param($tests)
-
-    # Tracked by issue: https://github.com/NuGet/Home/issues/2387
-    # And, the commit is linked to the issue
-    # TODO: PackageRestore tests should be fixed and enabled or deleted
-    # They were only ever running on Dev10.
-    $tests = $tests | ? {!($_.Name -like 'Test-PackageRestore*') }
-
-    $tests
-}
-
 function Run-Test {
     [CmdletBinding(DefaultParameterSetName="Test")]
     param(
@@ -169,7 +157,8 @@ function Run-Test {
         }
     }
     else {
-        Get-ChildItem $testPath -Exclude $Exclude | %{
+        $ExcludeList = $Exclude -split ","
+        Get-ChildItem $testPath -Exclude $ExcludeList | %{
         . $_.FullName
         }
     }
@@ -178,7 +167,6 @@ function Run-Test {
     if(!$test) {
         # Get all of the the tests functions
         $tests = Get-ChildItem function:\Test-*
-        $tests = Rearrange-Tests $tests
     }
     else {
         $tests = @(Get-ChildItem "function:\Test-$Test")

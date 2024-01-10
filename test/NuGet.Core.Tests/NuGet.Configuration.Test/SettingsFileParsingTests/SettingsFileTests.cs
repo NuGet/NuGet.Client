@@ -276,13 +276,48 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
+                ex.Message.Should().Be(Resources.CannotUpdateMachineWide);
+
+                settingsFile.SaveToDisk();
+
+                var section = settingsFile.GetSection("Section");
+                section.Items.Count.Should().Be(1);
+
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                updatedFileHash.Should().BeEquivalentTo(configFileHash);
+            }
+        }
+
+        [Fact]
+        public void SettingsFile_AddOrUpdate_WithReadOnlySettings_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: false, isReadOnly: true);
+
+                // Act
+                var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 settingsFile.SaveToDisk();
 
@@ -533,7 +568,7 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act & Assert
                 var section = settingsFile.GetSection("Section");
@@ -547,6 +582,48 @@ namespace NuGet.Configuration.Test
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
                 ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
+
+                settingsFile.SaveToDisk();
+
+                var section1 = settingsFile.GetSection("Section");
+                section1.Items.Count.Should().Be(1);
+
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                updatedFileHash.Should().BeEquivalentTo(configFileHash);
+            }
+        }
+
+        [Fact]
+        public void SettingsFile_Remove_WithReadOnlySettings_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: false, isReadOnly: true);
+
+                // Act & Assert
+                var section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+
+                var item = section.GetFirstItemWithAttribute<AddItem>("key", "key0");
+                item.Should().NotBeNull();
+                item.Value.Should().Be("value0");
+
+                var ex = Record.Exception(() => settingsFile.Remove("Section", item));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 settingsFile.SaveToDisk();
 
@@ -593,7 +670,7 @@ namespace NuGet.Configuration.Test
                 section.Should().BeNull();
             }
         }
-        
+
 
         [Fact]
         public void SettingsFile_Remove_WithValidSectionAndKey_DeletesTheEntry()
@@ -966,6 +1043,34 @@ namespace NuGet.Configuration.Test
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();
+            }
+        }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, true)]
+        public void SettingsFile_Constructor_MachineWideConfigsAreReadOnly(bool isMachineWide, bool isReadOnlyInput, bool expected)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                // Set-up and Act
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: isMachineWide, isReadOnly: isReadOnlyInput);
+
+                // Assert
+                settingsFile.IsReadOnly.Should().Be(expected);
+                settingsFile.IsMachineWide.Should().Be(isMachineWide);
             }
         }
     }

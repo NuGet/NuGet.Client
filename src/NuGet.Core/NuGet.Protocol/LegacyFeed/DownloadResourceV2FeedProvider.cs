@@ -4,8 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Protocol.Core.Types;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -31,11 +32,14 @@ namespace NuGet.Protocol.Tests
             var repo = StaticHttpHandler.CreateSource(sourceName, Repository.Provider.GetCoreV3(), responses);
             var resource = await repo.GetResourceAsync<AutoCompleteResource>();
 
+            var logger = new TestLogger();
+
             // Act
-            var result = resource.IdStartsWith("newt", true, NullLogger.Instance, CancellationToken.None);
+            var result = resource.IdStartsWith("newt", true, logger, CancellationToken.None);
 
             // Assert
             Assert.Equal(10, result.Result.Count());
+            Assert.NotEqual(0, logger.Messages.Count);
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
 using Xunit;
-using System.Diagnostics;
 
 namespace NuGet.Credentials.Test
 {
@@ -26,7 +26,8 @@ namespace NuGet.Credentials.Test
                 mockLogger.Object,
                 @"c:\path\plugin.exe",
                 10,
-                verbosity) { CallBase = true };
+                verbosity)
+            { CallBase = true };
 
             mockProvider
                 .Setup(x => x.Execute(It.IsAny<ProcessStartInfo>(), It.IsAny<CancellationToken>(), out testStdOut))
@@ -218,7 +219,7 @@ namespace NuGet.Credentials.Test
         {
             // Arrange
             var mockProvider = CreateMockProvider(
-                testStatusCode: (int)PluginCredentialResponseExitCode.Failure, 
+                testStatusCode: (int)PluginCredentialResponseExitCode.Failure,
                 testStdOut: @"{""Message"":""Extra message.""}");
             var uri = new Uri("http://host/");
             var proxy = null as IWebProxy;
@@ -228,14 +229,14 @@ namespace NuGet.Credentials.Test
             var nonInteractive = true;
 
             // Act & Assert
-            var exception =  await Record.ExceptionAsync(async () => await mockProvider.Object.GetAsync(
-                uri,
-                proxy,
-                type,
-                message,
-                isRetry,
-                nonInteractive,
-                CancellationToken.None));
+            var exception = await Record.ExceptionAsync(async () => await mockProvider.Object.GetAsync(
+               uri,
+               proxy,
+               type,
+               message,
+               isRetry,
+               nonInteractive,
+               CancellationToken.None));
 
             Assert.IsAssignableFrom<PluginException>(exception);
             Assert.Contains(
@@ -482,11 +483,12 @@ namespace NuGet.Credentials.Test
                 mockLogger.Object,
                 @"c:\path\plugin.exe",
                 10,
-                "Detailed") { CallBase = true };
+                "Detailed")
+            { CallBase = true };
             var stdout1 = @"{""Message"":""Unexpected Parameter""}";
             var stdout2 = @"{""username"":""u1"", ""password"":""p1"", ""Message"":""""}";
             mockProvider.Setup(x => x.Execute(
-                    It.Is<ProcessStartInfo>(p=>p.Arguments.Contains("-verbosity")),
+                    It.Is<ProcessStartInfo>(p => p.Arguments.Contains("-verbosity")),
                     It.IsAny<CancellationToken>(),
                     out stdout1))
                 .Returns((int)-1)

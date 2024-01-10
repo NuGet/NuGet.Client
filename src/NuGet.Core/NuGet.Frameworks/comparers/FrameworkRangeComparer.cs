@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,18 +7,18 @@ using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FrameworkRangeComparer : IEqualityComparer<FrameworkRange>
+    public class FrameworkRangeComparer : IEqualityComparer<FrameworkRange>
     {
+#pragma warning disable CS0618 // Type or member is obsolete
+        public static FrameworkRangeComparer Instance { get; } = new();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        [Obsolete("Use singleton FrameworkRangeComparer.Instance instead")]
         public FrameworkRangeComparer()
         {
         }
 
-        public bool Equals(FrameworkRange x, FrameworkRange y)
+        public bool Equals(FrameworkRange? x, FrameworkRange? y)
         {
             if (ReferenceEquals(x, y))
             {

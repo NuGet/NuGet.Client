@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,15 +24,15 @@ namespace NuGetVSExtension
         {
             if (menuCommandService == null)
             {
-                throw new ArgumentNullException("menuCommandService");
+                throw new ArgumentNullException(nameof(menuCommandService));
             }
             if (managePackageDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageDialogCommand));
             }
             if (managePackageForSolutionDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageForSolutionDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
             }
 
             _menuCommandService = menuCommandService;

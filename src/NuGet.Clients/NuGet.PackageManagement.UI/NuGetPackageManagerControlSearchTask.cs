@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -29,9 +32,23 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCacheForUpdates: true, pSearchCallback: _searchCallback, searchTask: this);
-                SetStatus(VsSearchTaskStatus.Completed);
-            });
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _packageManagerControl._loadCts, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
+
+                try
+                {
+                    await _packageManagerControl.SearchPackagesAndRefreshUpdateCountAsync(searchText: _searchQuery.SearchString, useCachedPackageMetadata: true, pSearchCallback: _searchCallback, searchTask: this);
+                    SetStatus(VsSearchTaskStatus.Completed);
+                }
+                catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
+                {
+                    // Expected
+                }
+            }).PostOnFailure(nameof(NuGetPackageManagerControlSearchTask));
         }
 
         public uint Id { get; private set; }

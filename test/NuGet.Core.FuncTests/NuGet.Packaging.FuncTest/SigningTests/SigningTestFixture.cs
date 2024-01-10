@@ -11,6 +11,8 @@ using Test.Utility.Signing;
 
 namespace NuGet.Packaging.FuncTest
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     /// <summary>
     /// Used to bootstrap functional tests for signing.
     /// </summary>
@@ -106,8 +108,10 @@ namespace NuGet.Packaging.FuncTest
                         var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
                         var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
 
-                        var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
-                        var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                        var testCertificate1 = new TestCertificate(X509StorePurpose.CodeSigning) { Cert = certificate1 }
+                            .WithTrust();
+                        var testCertificate2 = new TestCertificate(X509StorePurpose.CodeSigning) { Cert = certificate2 }
+                            .WithTrust();
 
                         _trustedTestCertificateWithReissuedCertificate = new[]
                         {
@@ -127,7 +131,9 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (_untrustedTestCert == null)
                 {
-                    _untrustedTestCert = TestCertificate.Generate(SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert);
+                    _untrustedTestCert = TestCertificate.Generate(
+                        X509StorePurpose.CodeSigning,
+                        SigningTestUtility.CertificateModificationGeneratorForCodeSigningEkuCert);
                 }
 
                 return _untrustedTestCert;
@@ -173,7 +179,7 @@ namespace NuGet.Packaging.FuncTest
         {
             Action<TestCertificateGenerator> actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatWillExpireSoon(SoonDuration);
 
-            return TestCertificate.Generate(actionGenerator);
+            return TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator);
         }
 
         public async Task<ISigningTestServer> GetSigningTestServerAsync()
@@ -197,11 +203,13 @@ namespace NuGet.Packaging.FuncTest
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
+                new X509StorePurpose[] { X509StorePurpose.CodeSigning, X509StorePurpose.Timestamping },
                 StoreName.Root,
-                StoreLocation.LocalMachine);
+                storeLocation);
 
             var ca = intermediateCa;
 

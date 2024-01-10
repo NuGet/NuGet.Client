@@ -1,27 +1,28 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Shared
 {
     /// <summary>
     /// Hash code creator, based on the original NuGet hash code combiner/ASP hash code combiner implementations
     /// </summary>
-    internal struct HashCodeCombiner
+    internal ref struct HashCodeCombiner
     {
         // seed from String.GetHashCode()
         private const long Seed = 0x1505L;
 
-        private bool _initialized;
-        private long _combinedHash;
+        private long _combinedHash = Seed;
 
-        internal int CombinedHash
+        public HashCodeCombiner()
         {
-            get { return _combinedHash.GetHashCode(); }
         }
+
+        internal int CombinedHash => _combinedHash.GetHashCode();
 
         private void AddHashCode(int i)
         {
@@ -30,54 +31,72 @@ namespace NuGet.Shared
 
         internal void AddObject(int i)
         {
-            CheckInitialized();
             AddHashCode(i);
         }
 
-        internal void AddObject<TValue>(TValue o, IEqualityComparer<TValue> comparer)
+        internal void AddObject(bool b)
         {
-            CheckInitialized();
+            AddHashCode(b ? 1 : 0);
+        }
+
+        internal void AddObject<T>(T? o, IEqualityComparer<T> comparer)
+            where T : class
+        {
             if (o != null)
             {
                 AddHashCode(comparer.GetHashCode(o));
             }
         }
 
-        internal void AddObject<T>(T o)
+        internal void AddObject<T>(T? o)
+            where T : class
         {
-            CheckInitialized();
             if (o != null)
             {
                 AddHashCode(o.GetHashCode());
             }
         }
 
-        internal void AddStringIgnoreCase(string s)
+        // Optimization: for value types, we can avoid boxing "o" by skipping the null check
+        internal void AddStruct<T>(T? o)
+            where T : struct
         {
-            CheckInitialized();
+            if (o.HasValue)
+            {
+                AddHashCode(o.GetHashCode());
+            }
+        }
+
+        // Optimization: for value types, we can avoid boxing "o" by skipping the null check
+        internal void AddStruct<T>(T o)
+            where T : struct
+        {
+            AddHashCode(o.GetHashCode());
+        }
+
+        internal void AddStringIgnoreCase(string? s)
+        {
             if (s != null)
             {
                 AddHashCode(StringComparer.OrdinalIgnoreCase.GetHashCode(s));
             }
         }
 
-        internal void AddSequence<T>(IEnumerable<T> sequence)
+        internal void AddSequence<T>(IEnumerable<T>? sequence) where T : notnull
         {
             if (sequence != null)
             {
-                CheckInitialized();
-                foreach (var item in sequence)
+                foreach (var item in sequence.NoAllocEnumerate())
                 {
                     AddHashCode(item.GetHashCode());
                 }
             }
         }
 
-        internal void AddSequence<T>(T[] array)
+        internal void AddSequence<T>(T[]? array) where T : notnull
         {
             if (array != null)
             {
-                CheckInitialized();
                 foreach (var item in array)
                 {
                     AddHashCode(item.GetHashCode());
@@ -85,11 +104,21 @@ namespace NuGet.Shared
             }
         }
 
-        internal void AddSequence<T>(IList<T> list)
+        internal void AddSequence<T>(IList<T>? list) where T : notnull
         {
             if (list != null)
             {
-                CheckInitialized();
+                foreach (var item in list.NoAllocEnumerate())
+                {
+                    AddHashCode(item.GetHashCode());
+                }
+            }
+        }
+
+        internal void AddSequence<T>(IReadOnlyList<T>? list) where T : notnull
+        {
+            if (list != null)
+            {
                 var count = list.Count;
                 for (var i = 0; i < count; i++)
                 {
@@ -98,30 +127,61 @@ namespace NuGet.Shared
             }
         }
 
-#if !NET40
-        internal void AddSequence<T>(IReadOnlyList<T> list)
+        internal void AddUnorderedSequence<T>(IEnumerable<T>? list) where T : notnull
         {
             if (list != null)
             {
-                CheckInitialized();
-                var count = list.Count;
-                for (var i = 0; i < count; i++)
+                int count = 0;
+                int hashCode = 0;
+                foreach (var item in list.NoAllocEnumerate())
                 {
-                    AddHashCode(list[i].GetHashCode());
+                    // XOR is commutative -- the order of operations doesn't matter
+                    hashCode ^= item.GetHashCode();
+                    count++;
                 }
+                AddHashCode(hashCode);
+                AddHashCode(count);
             }
         }
-#endif
-        internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
+
+        internal void AddUnorderedSequence<T>(IEnumerable<T>? list, IEqualityComparer<T> comparer) where T : notnull
+        {
+            if (list != null)
+            {
+                int count = 0;
+                int hashCode = 0;
+                foreach (var item in list.NoAllocEnumerate())
+                {
+                    // XOR is commutative -- the order of operations doesn't matter
+                    hashCode ^= comparer.GetHashCode(item);
+                    count++;
+                }
+                AddHashCode(hashCode);
+                AddHashCode(count);
+            }
+        }
+
+        internal void AddDictionary<TKey, TValue>(IEnumerable<KeyValuePair<TKey, TValue>>? dictionary)
+            where TKey : notnull
+            where TValue : notnull
         {
             if (dictionary != null)
             {
-                CheckInitialized();
-                foreach (var pair in dictionary.OrderBy(x => x.Key))
+                int count = 0;
+                int dictionaryHash = 0;
+
+                foreach (var pair in dictionary.NoAllocEnumerate())
                 {
-                    AddHashCode(pair.Key.GetHashCode());
-                    AddHashCode(pair.Value.GetHashCode());
+                    int keyHash = pair.Key.GetHashCode();
+                    int valHash = pair.Value.GetHashCode();
+                    int pairHash = ((keyHash << 5) + keyHash) ^ valHash;
+
+                    // XOR is commutative -- the order of operations doesn't matter
+                    dictionaryHash ^= pairHash;
+                    count++;
                 }
+
+                AddHashCode(dictionaryHash + count);
             }
         }
 
@@ -129,9 +189,10 @@ namespace NuGet.Shared
         /// Create a unique hash code for the given set of items
         /// </summary>
         internal static int GetHashCode<T1, T2>(T1 o1, T2 o2)
+            where T1 : notnull
+            where T2 : notnull
         {
             var combiner = new HashCodeCombiner();
-            combiner.CheckInitialized();
 
             combiner.AddHashCode(o1.GetHashCode());
             combiner.AddHashCode(o2.GetHashCode());
@@ -143,24 +204,17 @@ namespace NuGet.Shared
         /// Create a unique hash code for the given set of items
         /// </summary>
         internal static int GetHashCode<T1, T2, T3>(T1 o1, T2 o2, T3 o3)
+            where T1 : notnull
+            where T2 : notnull
+            where T3 : notnull
         {
             var combiner = new HashCodeCombiner();
-            combiner.CheckInitialized();
 
             combiner.AddHashCode(o1.GetHashCode());
             combiner.AddHashCode(o2.GetHashCode());
             combiner.AddHashCode(o3.GetHashCode());
 
             return combiner.CombinedHash;
-        }
-
-        private void CheckInitialized()
-        {
-            if (!_initialized)
-            {
-                _combinedHash = Seed;
-                _initialized = true;
-            }
         }
     }
 }

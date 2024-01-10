@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 // ZIP specification: http://www.pkware.com/documents/casestudies/APPNOTE.TXT
 
@@ -11,7 +13,7 @@ namespace NuGet.Packaging.Signing
 {
     internal sealed class EndOfCentralDirectoryRecord
     {
-        internal const uint Signature = 0x06054b50;
+        private static readonly IReadOnlyList<byte> Signature = new byte[4] { 0x50, 0x4b, 0x05, 0x06 };
 
         internal ushort NumberOfThisDisk { get; private set; }
         internal ushort NumberOfTheDiskWithTheStartOfTheCentralDirectory { get; private set; }
@@ -49,12 +51,11 @@ namespace NuGet.Packaging.Signing
 
         private static void SeekToEndOfCentralDirectoryRecord(BinaryReader reader)
         {
-            var byteSignature = BitConverter.GetBytes(Signature);
             var length = reader.BaseStream.Length;
 
-            if (length < byteSignature.Length)
+            if (length < Signature.Count)
             {
-                ThrowByteSignatureNotFoundException(byteSignature);
+                ThrowByteSignatureNotFoundException(Signature);
             }
 
             const int DefaultBufferSize = 4096;
@@ -73,11 +74,11 @@ namespace NuGet.Packaging.Signing
 
                 for (var i = buffer.Length - 1; i >= 0; --i)
                 {
-                    if (buffer[i] == byteSignature[byteSignature.Length - matchingByteCount - 1])
+                    if (buffer[i] == Signature[Signature.Count - matchingByteCount - 1])
                     {
                         ++matchingByteCount;
 
-                        if (matchingByteCount == byteSignature.Length)
+                        if (matchingByteCount == Signature.Count)
                         {
                             reader.BaseStream.Position = position + i;
 
@@ -98,15 +99,19 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            ThrowByteSignatureNotFoundException(byteSignature);
+            ThrowByteSignatureNotFoundException(Signature);
         }
 
-        private static void ThrowByteSignatureNotFoundException(byte[] signature)
+        private static void ThrowByteSignatureNotFoundException(IReadOnlyList<byte> signature)
         {
             throw new InvalidDataException(
                 string.Format(CultureInfo.CurrentCulture,
                 Strings.ErrorByteSignatureNotFound,
-                BitConverter.ToString(signature).Replace("-", "")));
+#if NETCOREAPP
+                BitConverter.ToString(signature.ToArray()).Replace("-", "", StringComparison.Ordinal)));
+#else
+                BitConverter.ToString(signature.ToArray()).Replace("-", "")));
+#endif
         }
     }
 }

@@ -19,7 +19,7 @@ namespace NuGet.Packaging {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -57,6 +57,15 @@ namespace NuGet.Packaging {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An absolute URI is required..
+        /// </summary>
+        internal static string AnAbsoluteUriIsRequired {
+            get {
+                return ResourceManager.GetString("AnAbsoluteUriIsRequired", resourceCulture);
             }
         }
         
@@ -156,6 +165,51 @@ namespace NuGet.Packaging {
         internal static string CertUtilityMultipleCertificatesHeader {
             get {
                 return ResourceManager.GetString("CertUtilityMultipleCertificatesHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the default trust store selected by .NET for code signing..
+        /// </summary>
+        internal static string ChainBuilding_UsingDefaultTrustStoreForCodeSigning {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingDefaultTrustStoreForCodeSigning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the default trust store selected by .NET for timestamping..
+        /// </summary>
+        internal static string ChainBuilding_UsingDefaultTrustStoreForTimestamping {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingDefaultTrustStoreForTimestamping", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the fallback certificate bundle at &apos;{0}&apos;..
+        /// </summary>
+        internal static string ChainBuilding_UsingFallbackCertificateBundle {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingFallbackCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will not have any trusted roots. Chain building will fail with an untrusted status..
+        /// </summary>
+        internal static string ChainBuilding_UsingNoCertificateBundle {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingNoCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to X.509 certificate chain validation will use the system certificate bundle at &apos;{0}&apos;..
+        /// </summary>
+        internal static string ChainBuilding_UsingSystemCertificateBundle {
+            get {
+                return ResourceManager.GetString("ChainBuilding_UsingSystemCertificateBundle", resourceCulture);
             }
         }
         
@@ -327,15 +381,6 @@ namespace NuGet.Packaging {
         internal static string ErrorByteSignatureNotFound {
             get {
                 return ResourceManager.GetString("ErrorByteSignatureNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Byte signature too big to seek in current stream position..
-        /// </summary>
-        internal static string ErrorByteSignatureTooBig {
-            get {
-                return ResourceManager.GetString("ErrorByteSignatureTooBig", resourceCulture);
             }
         }
         
@@ -556,6 +601,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HTTP or HTTPS is required..
+        /// </summary>
+        internal static string HttpOrHttpsIsRequired {
+            get {
+                return ResourceManager.GetString("HttpOrHttpsIsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The argument is invalid..
         /// </summary>
         internal static string InvalidArgument {
@@ -624,15 +678,6 @@ namespace NuGet.Packaging {
         internal static string InvalidPackageNupkg {
             get {
                 return ResourceManager.GetString("InvalidPackageNupkg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package {0} signature is invalid..
-        /// </summary>
-        internal static string InvalidPackageSignature {
-            get {
-                return ResourceManager.GetString("InvalidPackageSignature", resourceCulture);
             }
         }
         
@@ -727,11 +772,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing {0} {1}..
+        ///   Looks up a localized string similar to Invalid X.509 store purpose..
         /// </summary>
-        internal static string Log_InstallingPackage {
+        internal static string InvalidX509StorePurpose {
             get {
-                return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
+                return ResourceManager.GetString("InvalidX509StorePurpose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed {0} {1} from {2} to {3} with content hash {4}..
+        /// </summary>
+        internal static string Log_InstalledPackage {
+            get {
+                return ResourceManager.GetString("Log_InstalledPackage", resourceCulture);
             }
         }
         
@@ -772,6 +826,51 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Some dependency group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromDependencyGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromDependencyGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some reference assembly group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some framework assembly reference TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromFrameworkAssemblyReferences {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromFrameworkAssemblyReferences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some included files are included under TFMs which are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromIncludedFiles {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromIncludedFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some reference group TFMs are missing a platform version: {0}.
+        /// </summary>
+        internal static string MissingTargetPlatformVersionsFromReferenceGroups {
+            get {
+                return ResourceManager.GetString("MissingTargetPlatformVersionsFromReferenceGroups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Multiple {0} attributes are not allowed..
         /// </summary>
         internal static string MultipleAttributesDisallowed {
@@ -799,15 +898,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nuspec file contains multiple package types. Zero or one package type nodes are allowed..
-        /// </summary>
-        internal static string MultiplePackageTypes {
-            get {
-                return ResourceManager.GetString("MultiplePackageTypes", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; must contain an absolute path &apos;{1}&apos;..
         /// </summary>
         internal static string MustContainAbsolutePath {
@@ -831,15 +921,6 @@ namespace NuGet.Packaging {
         internal static string NoRepositoryCountersignature {
             get {
                 return ResourceManager.GetString("NoRepositoryCountersignature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The license expression &apos;{0}&apos; cannot be parsed succesfully..
-        /// </summary>
-        internal static string NuGetLicense_InvalidLicenseExpression {
-            get {
-                return ResourceManager.GetString("NuGetLicense_InvalidLicenseExpression", resourceCulture);
             }
         }
         
@@ -1006,7 +1087,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget-package-owners: {0}.
+        ///   Looks up a localized string similar to Owners: {0}.
         /// </summary>
         internal static string NuGetPackageOwners {
             get {
@@ -1033,7 +1114,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget-v3-service-index-url: {0}.
+        ///   Looks up a localized string similar to Service index: {0}.
         /// </summary>
         internal static string NuGetV3ServiceIndexUrl {
             get {
@@ -1132,6 +1213,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Arguments {0} and {1} were out of bounds for the array..
         /// </summary>
         internal static string RangeOutOfBoundsForArray {
@@ -1222,16 +1312,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid general purpose bit flags. Expected &apos;{0}&apos;, actual &apos;{1}&apos;..
-        /// </summary>
-        internal static string SignatureInvalidGeneralPurposeBits {
-            get {
-                return ResourceManager.GetString("SignatureInvalidGeneralPurposeBits", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The package integrity check failed..
+        ///   Looks up a localized string similar to The package integrity check failed. The package has changed since it was signed. Try clearing the local http-cache and run nuget operation again..
         /// </summary>
         internal static string SignaturePackageIntegrityFailure {
             get {
@@ -1438,15 +1519,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The signing-certificate-v2 attribute does not have exactly one attribute value..
-        /// </summary>
-        internal static string SigningCertificateV2NotExactlyOneAttributeValue {
-            get {
-                return ResourceManager.GetString("SigningCertificateV2NotExactlyOneAttributeValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The signing-certificate-v2 attribute uses an unsupported hash algorithm..
         /// </summary>
         internal static string SigningCertificateV2UnsupportedHashAlgorithm {
@@ -1528,15 +1600,6 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The timestamp service&apos;s certificate has a valid time in the future: {0}.
-        /// </summary>
-        internal static string TimestampCertificateInvalid {
-            get {
-                return ResourceManager.GetString("TimestampCertificateInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The timestamp certificate has an unsupported signature algorithm ({0}). The following algorithms are supported: {1}..
         /// </summary>
         internal static string TimestampCertificateUnsupportedSignatureAlgorithm {
@@ -1564,11 +1627,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Timestamp service&apos;s response does not meet the NuGet package signature specification: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to The timestamp service responded with HTTP status code &apos;{0}&apos; (&apos;{1}&apos;)..
         /// </summary>
-        internal static string TimestampResponseExceptionGeneral {
+        internal static string TimestampServiceRespondedError {
             get {
-                return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
+                return ResourceManager.GetString("TimestampServiceRespondedError", resourceCulture);
             }
         }
         
@@ -1663,6 +1726,32 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The following X.509 root certificate is untrusted because it is not present in the certificate bundle at {0}.  For more information, see documentation for NU3042.
+        ///    Subject:  {1}
+        ///    Fingerprint (SHA-256):  {2}
+        ///    Certificate (PEM):
+        ///{3}.
+        /// </summary>
+        internal static string UntrustedRoot_WithCertificateBundle {
+            get {
+                return ResourceManager.GetString("UntrustedRoot_WithCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following X.509 root certificate is untrusted because no certificate bundle was found.  For more information, see documentation for NU3042.
+        ///    Subject:  {0}
+        ///    Fingerprint (SHA-256):  {1}
+        ///    Certificate (PEM):
+        ///{2}.
+        /// </summary>
+        internal static string UntrustedRoot_WithoutCertificateBundle {
+            get {
+                return ResourceManager.GetString("UntrustedRoot_WithoutCertificateBundle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Verifying the {0} with certificate: {1}.
         /// </summary>
         internal static string VerificationCertDisplay {
@@ -1713,6 +1802,15 @@ namespace NuGet.Packaging {
         internal static string VerifyChainBuildingIssue {
             get {
                 return ResourceManager.GetString("VerifyChainBuildingIssue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s signing certificate is not trusted by the trust provider..
+        /// </summary>
+        internal static string VerifyChainBuildingIssue_UntrustedRoot {
+            get {
+                return ResourceManager.GetString("VerifyChainBuildingIssue_UntrustedRoot", resourceCulture);
             }
         }
         
@@ -1875,6 +1973,33 @@ namespace NuGet.Packaging {
         internal static string VerifyError_TimestampVerifyChainBuildingIssue {
             get {
                 return ResourceManager.GetString("VerifyError_TimestampVerifyChainBuildingIssue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The {0}&apos;s timestamping certificate is not trusted by the trust provider..
+        /// </summary>
+        internal static string VerifyTimestampChainBuildingIssue_UntrustedRoot {
+            get {
+                return ResourceManager.GetString("VerifyTimestampChainBuildingIssue_UntrustedRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; changed from &apos;{1}&apos; to &apos;{2}&apos;.
+        /// </summary>
+        internal static string ZipFileLastWriteTimeStampModifiedMessage {
+            get {
+                return ResourceManager.GetString("ZipFileLastWriteTimeStampModifiedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The zip format supports a limited date range. The following files are outside the supported range:.
+        /// </summary>
+        internal static string ZipFileTimeStampModifiedWarning {
+            get {
+                return ResourceManager.GetString("ZipFileTimeStampModifiedWarning", resourceCulture);
             }
         }
     }

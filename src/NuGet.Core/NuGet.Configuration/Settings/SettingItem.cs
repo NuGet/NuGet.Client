@@ -51,6 +51,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (Origin != null && Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (setting.GetType() != GetType())
             {
                 throw new InvalidOperationException(Resources.CannotUpdateDifferentItems);

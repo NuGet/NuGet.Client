@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
+using System.Collections.Concurrent;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
-    /// Sliding in time error threshold evaluator. 
+    /// Sliding in time error threshold evaluator.
     /// Verifies the number of fatal errors within last hour not bigger than reasonable threshold.
-    /// Not thread-safe as all value converter calls happen in main UI thread.
     /// </summary>
     internal class ErrorFloodGate
     {
@@ -17,13 +16,13 @@ namespace NuGet.PackageManagement.UI
         private const int MinFailuresCount = 5;
         private const int SecondsInOneTick = 5;
         private readonly DateTimeOffset _origin = DateTimeOffset.Now;
-        private readonly Queue<int> _attempts = new Queue<int>();
-        private readonly Queue<int> _failures = new Queue<int>();
+        private readonly ConcurrentQueue<int> _attempts = new ConcurrentQueue<int>();
+        private readonly ConcurrentQueue<int> _failures = new ConcurrentQueue<int>();
 
         private DateTimeOffset _lastEvaluate = DateTimeOffset.Now;
-        private bool _isOpen = false;
+        private bool _hasTooManyNetworkErrors = false;
 
-        public bool IsOpen
+        public bool HasTooManyNetworkErrors
         {
             get
             {
@@ -36,18 +35,35 @@ namespace NuGet.PackageManagement.UI
 
                     var attemptsCount = _attempts.Count;
                     var failuresCount = _failures.Count;
-                    _isOpen = attemptsCount > 0 && failuresCount > MinFailuresCount && ((double)failuresCount / attemptsCount) > StopLoadingThreshold;
+                    _hasTooManyNetworkErrors = attemptsCount > 0 && failuresCount > MinFailuresCount && ((double)failuresCount / attemptsCount) > StopLoadingThreshold;
                     _lastEvaluate = DateTimeOffset.Now;
                 }
-                return _isOpen;
+                return _hasTooManyNetworkErrors;
             }
         }
 
-        private static void ExpireOlderValues(Queue<int> q, int expirationOffsetInTicks)
+        private static void ExpireOlderValues(ConcurrentQueue<int> q, int expirationOffsetInTicks)
         {
-            while (q.Count > 0 && q.Peek() < expirationOffsetInTicks)
+            lock (q) //locking for TryPeek and TryDequeue
             {
-                q.Dequeue();
+                while (q.Count > 0)
+                {
+                    int result;
+                    bool peekSucceeded = q.TryPeek(out result);
+                    if (!peekSucceeded)
+                    {
+                        continue;
+                    }
+
+                    if (result < expirationOffsetInTicks)
+                    {
+                        q.TryDequeue(out result);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
             }
         }
 
@@ -57,7 +73,7 @@ namespace NuGet.PackageManagement.UI
             _attempts.Enqueue(ticks);
         }
 
-        public void ReportError()
+        public void ReportBadNetworkError()
         {
             int ticks = GetTicks(_origin);
             _failures.Enqueue(ticks);

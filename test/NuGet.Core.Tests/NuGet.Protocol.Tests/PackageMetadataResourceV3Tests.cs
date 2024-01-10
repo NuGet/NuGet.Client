@@ -4,17 +4,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PackageMetadataResourceV3Tests
     {
         [Fact]
@@ -225,6 +229,78 @@ namespace NuGet.Protocol.Tests
 
                 Assert.Equal(errorCount, result.LicenseMetadata.WarningsAndErrors.Count);
                 Assert.Contains(errorMessage, result.LicenseMetadata.WarningsAndErrors[0]);
+            }
+        }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NotFoundHandleNullStream()
+        {
+            // Arrange
+            var notExistPackage = "NotExistPackage";
+            var package = new PackageIdentity(notExistPackage, NuGetVersion.Parse("1.0.0"));
+            var source = "http://testsource.com/v3/index.json";
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                {
+                    source,
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new TestContent(JsonData.IndexWithoutFlatContainer)
+                    })
+                },
+                {
+                    $"https://api.nuget.org/v3/registration0/{notExistPackage.ToLowerInvariant()}/index.json",
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
+                }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            //Act
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var metadata = await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+
+                //Assert
+                Assert.Null(metadata);
+            }
+        }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_NoContentHandleNullStream()
+        {
+            // Arrange
+            var noContentPackage = "NoContentPackage";
+            var package = new PackageIdentity(noContentPackage, NuGetVersion.Parse("1.0.0"));
+            var source = "http://testsource.com/v3/index.json";
+
+            var responses = new Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>
+            {
+                {
+                    source,
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new TestContent(JsonData.IndexWithoutFlatContainer)
+                    })
+                },
+                {
+                    $"https://api.nuget.org/v3/registration0/{noContentPackage.ToLowerInvariant()}/index.json",
+                    _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent))
+                }
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>();
+
+            //Act
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                var metadata = await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
+
+                //Assert
+                Assert.Null(metadata);
             }
         }
     }

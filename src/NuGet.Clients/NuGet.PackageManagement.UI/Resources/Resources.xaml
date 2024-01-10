@@ -3,12 +3,13 @@
   x:ClassModifier="internal"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+  xmlns:vsui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0">
   <nuget:StyleKeyConverter
     x:Key="StyleKeyConverter" />
 
-  <nuget:IconUrlToVisibilityConverter
-    x:Key="IconUrlToVisibilityConverter" />
   <nuget:NuGetFrameworkToStringConverter
     x:Key="NuGetFrameworkToStringConverter" />
   <nuget:NuGetFrameworkToVisibilityConverter
@@ -29,14 +30,14 @@
   <nuget:BooleanToGridRowHeightConverter
     Inverted="True"
     x:Key="InvertedBooleanToGridRowHeightConverter"/>
-  <nuget:BooleanToVisibilityConverter
+  <BooleanToVisibilityConverter
     x:Key="BooleanToVisibilityConverter" />
-  <nuget:BooleanToVisibilityConverter
-    Inverted="True"
-    x:Key="InvertedBooleanToVisibilityConverter" />
-  <nuget:BooleanToVisibilityConverter
-    NonVisualState="Hidden"
-    x:Key="NonVisualStateHiddenBooleanToVisibilityConverter" />
+  <vsui:BooleanToCustomVisibilityConverter
+    x:Key="NegatedBooleanToVisibilityConverter"
+    VisibilityIfTrue="Collapsed"
+    VisibilityIfFalse="Visible" />
+  <vsui:BooleanToHiddenVisibilityConverter
+    x:Key="BooleanToHiddenVisibilityConverter" />
   <nuget:DownloadCountToVisibilityConverter
     x:Key="DownloadCountToVisibilityConverter" />
   <nuget:FontSizeConverter
@@ -51,14 +52,16 @@
     x:Key="ProjectAndSolutionViewHeightConverter" />
   <nuget:ProjectAndSolutionViewMinHeightConverter
     x:Key="ProjectAndSolutionViewMinHeightConverter"/>
-  <nuget:IconUrlToImageCacheConverter
-    x:Key="IconUrlToImageCacheConverter"/>
   <nuget:RadioBoolToIntConverter
     x:Key="RadioBoolToIntConverter" />
   <nuget:SubstractionConverter
     x:Key="SubstractionConverter" />
   <nuget:AdditionConverter
     x:Key="AdditionConverter" />
+  <nuget:IntToVulnerabilitySeverityConverter
+    x:Key="IntToVulnerabilitySeverityConverter" />
+  <ui:BrushToColorConverter
+    x:Key="BrushToColorConverter" />
 
   <!-- Default styles -->
   <Style x:Key="ControlsFocusVisualStyle" TargetType="{x:Type Control}">
@@ -68,8 +71,25 @@
         <ControlTemplate>
           <Rectangle x:Name="ControlFocusVisualRectangle"
             Stroke="{TemplateBinding Foreground}"
-            StrokeThickness="1"  
-            StrokeDashArray="1 2"  
+            StrokeThickness="1"
+            StrokeDashArray="1 2"
+            SnapsToDevicePixels="true"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style x:Key="GridSplitterFocusVisualStyle" TargetType="{x:Type Control}">
+    <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.GridSplitterFocusBrushKey}}"/>
+    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate>
+          <Rectangle x:Name="GridSplitterFocusVisualRectangle"
+            Fill="{TemplateBinding Background}"
+            Stroke="{TemplateBinding Foreground}"
+            StrokeThickness="1"
+            StrokeDashArray="1 2"
             SnapsToDevicePixels="true"/>
         </ControlTemplate>
       </Setter.Value>
@@ -142,20 +162,20 @@
   </Style>
 
   <Style x:Key="{x:Type GridSplitter}" TargetType="{x:Type GridSplitter}" BasedOn="{StaticResource {x:Type GridSplitter}}">
+    <Setter Property="FocusVisualStyle" Value="{StaticResource GridSplitterFocusVisualStyle}"/>
+  </Style>
+
+  <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ComboBoxStyleKey}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
 
-  <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Static nuget:Styles.ThemedComboStyleKey}}">
+  <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ComboBoxItemStyleKey}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
 
-  <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
-    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
-  </Style>
+  <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ScrollBarStyleKey}}"/>
 
-  <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static nuget:Styles.ScrollBarStyleKey}}"/>
-
-  <Style x:Key="{x:Type ScrollViewer}" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Static nuget:Styles.ScrollViewerStyleKey}}"/>
+  <Style x:Key="{x:Type ScrollViewer}" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ScrollViewerStyleKey}}"/>
 
   <Style x:Key="TooltipStyle" TargetType="{x:Type TextBlock}">
     <Setter Property="TextWrapping" Value="Wrap" />
@@ -166,7 +186,8 @@
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}" />
   </Style>
 
-  <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+  <Style x:Key="{x:Type CheckBox}" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.CheckBoxStyleKey}}" />
+  <Style x:Key="CheckBoxSelectorAware" TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
     <Setter Property="FocusVisualStyle" Value="{DynamicResource ControlsFocusVisualStyle}"/>
     <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
     <Setter Property="Template">
@@ -179,13 +200,23 @@
             </Grid.ColumnDefinitions>
             <Grid SnapsToDevicePixels="true" Width="16" Height="16" HorizontalAlignment="Left" VerticalAlignment="Top">
               <Border
-                x:Name="CheckMarkBorder" 
-                Background="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}" 
-                BorderBrush="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}" 
-                BorderThickness="1"/>
+                x:Name="CheckMarkBorder"
+                Background="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
+                BorderThickness="1">
+                <Border.Style>
+                  <Style TargetType="{x:Type Border}">
+                    <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
+              </Border>
               <Path
-                x:Name="CheckMark" 
-                Data="M 6.22,11.02 C6.22,11.02 2.50,7.24 2.50,7.24 2.50,7.24 4.05,5.71 4.05,5.71 4.05,5.71 5.97,7.65 5.97,7.65 5.97,7.65 10.52,1.38 10.52,1.38 10.52,1.38 13.19,1.38 13.19,1.38 13.19,1.38 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 z" 
+                x:Name="CheckMark"
+                Data="M 6.22,11.02 C6.22,11.02 2.50,7.24 2.50,7.24 2.50,7.24 4.05,5.71 4.05,5.71 4.05,5.71 5.97,7.65 5.97,7.65 5.97,7.65 10.52,1.38 10.52,1.38 10.52,1.38 13.19,1.38 13.19,1.38 13.19,1.38 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 6.22,11.02 z"
                 Stretch="Uniform" Margin="3,1,2,2" Visibility="Collapsed" Width="9" Height="8"
                 Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"/>
             </Grid>
@@ -194,6 +225,7 @@
               Grid.Column="1"
               Focusable="False"
               Margin="{TemplateBinding Padding}"
+              RecognizesAccessKey="True"
               SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
@@ -229,6 +261,8 @@
     </Setter>
   </Style>
 
+  <Style x:Key="{x:Type RadioButton}" TargetType="{x:Type RadioButton}" BasedOn="{StaticResource {x:Static vs:VsResourceKeys.ThemedDialogRadioButtonStyleKey}}" />
+
   <Style x:Key="ExpanderRightHeaderStyle" TargetType="{x:Type ToggleButton}">
     <Setter Property="Template">
       <Setter.Value>
@@ -249,21 +283,21 @@
                     </TransformGroup.Children>
                   </TransformGroup>
                 </Grid.LayoutTransform>
-                <Ellipse 
-                    x:Name="circle" 
+                <Ellipse
+                    x:Name="circle"
                     Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                    HorizontalAlignment="Center" 
-                    Height="19" 
+                    HorizontalAlignment="Center"
+                    Height="19"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                     VerticalAlignment="Center"
                     Width="19"/>
-                <Path 
+                <Path
                     x:Name="arrow"
-                    Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                    Data="M 1,1.5 L 4.5,5 L 8,1.5"
                     HorizontalAlignment="Center"
                     SnapsToDevicePixels="false"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                    StrokeThickness="2" 
+                    StrokeThickness="2"
                     VerticalAlignment="Center"/>
               </Grid>
               <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Top"/>
@@ -310,21 +344,21 @@
                     </TransformGroup.Children>
                   </TransformGroup>
                 </Grid.LayoutTransform>
-                <Ellipse 
-                    x:Name="circle" 
+                <Ellipse
+                    x:Name="circle"
                     Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                    HorizontalAlignment="Center" 
-                    Height="19" 
+                    HorizontalAlignment="Center"
+                    Height="19"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                     VerticalAlignment="Center"
                     Width="19"/>
-                <Path 
+                <Path
                     x:Name="arrow"
-                    Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                    Data="M 1,1.5 L 4.5,5 L 8,1.5"
                     HorizontalAlignment="Center"
                     SnapsToDevicePixels="false"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                    StrokeThickness="2" 
+                    StrokeThickness="2"
                     VerticalAlignment="Center"/>
               </Grid>
               <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
@@ -371,21 +405,21 @@
                     </TransformGroup.Children>
                   </TransformGroup>
                 </Grid.LayoutTransform>
-                <Ellipse 
-                    x:Name="circle" 
+                <Ellipse
+                    x:Name="circle"
                     Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                    HorizontalAlignment="Center" 
-                    Height="19" 
+                    HorizontalAlignment="Center"
+                    Height="19"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                     VerticalAlignment="Center"
                     Width="19"/>
-                <Path 
+                <Path
                     x:Name="arrow"
-                    Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                    Data="M 1,1.5 L 4.5,5 L 8,1.5"
                     HorizontalAlignment="Center"
                     SnapsToDevicePixels="false"
                     Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                    StrokeThickness="2" 
+                    StrokeThickness="2"
                     VerticalAlignment="Center"/>
               </Grid>
               <ContentPresenter HorizontalAlignment="Center" Margin="0,4,0,0" Grid.Row="1" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Top"/>
@@ -422,21 +456,21 @@
                 <ColumnDefinition Width="19"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Ellipse 
-                  x:Name="circle" 
+              <Ellipse
+                  x:Name="circle"
                   Fill="{DynamicResource {x:Static nuget:Brushes.CheckBoxBackgroundBrushKey}}"
-                  HorizontalAlignment="Center" 
-                  Height="19" 
+                  HorizontalAlignment="Center"
+                  Height="19"
                   Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxBorderBrushKey}}"
                   VerticalAlignment="Center"
                   Width="19"/>
-              <Path 
+              <Path
                   x:Name="arrow"
-                  Data="M 1,1.5 L 4.5,5 L 8,1.5" 
+                  Data="M 1,1.5 L 4.5,5 L 8,1.5"
                   HorizontalAlignment="Center"
                   SnapsToDevicePixels="false"
                   Stroke="{DynamicResource {x:Static nuget:Brushes.CheckBoxGlyphBrushKey}}"
-                  StrokeThickness="2" 
+                  StrokeThickness="2"
                   VerticalAlignment="Center"/>
               <ContentPresenter Grid.Column="1" HorizontalAlignment="Left" Margin="4,0,0,0" RecognizesAccessKey="True" SnapsToDevicePixels="True" VerticalAlignment="Center"/>
             </Grid>
@@ -474,15 +508,15 @@
         <ControlTemplate TargetType="{x:Type Expander}">
           <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" CornerRadius="3" SnapsToDevicePixels="true">
             <DockPanel>
-              <ToggleButton 
+              <ToggleButton
                   x:Name="HeaderSite"
                   ContentTemplate="{TemplateBinding HeaderTemplate}"
                   ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}"
-                  Content="{TemplateBinding Header}" 
-                  DockPanel.Dock="Top" 
+                  Content="{TemplateBinding Header}"
+                  DockPanel.Dock="Top"
                   Foreground="{TemplateBinding Foreground}"
-                  FontWeight="{TemplateBinding FontWeight}" 
-                  FocusVisualStyle="{StaticResource ControlsFocusVisualStyle}" 
+                  FontWeight="{TemplateBinding FontWeight}"
+                  FocusVisualStyle="{StaticResource ControlsFocusVisualStyle}"
                   FontStyle="{TemplateBinding FontStyle}"
                   FontStretch="{TemplateBinding FontStretch}"
                   FontSize="{TemplateBinding FontSize}"
@@ -490,17 +524,17 @@
                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                   IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                   Margin="1"
-                  MinWidth="0" 
+                  MinWidth="0"
                   MinHeight="0"
                   Padding="{TemplateBinding Padding}"
                   Style="{StaticResource ExpanderDownHeaderStyle}"
                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
-              <ContentPresenter 
+              <ContentPresenter
                   x:Name="ExpandSite"
-                  DockPanel.Dock="Bottom" 
+                  DockPanel.Dock="Bottom"
                   Focusable="false"
                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                  Margin="{TemplateBinding Padding}" 
+                  Margin="{TemplateBinding Padding}"
                   Visibility="Collapsed"
                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
             </DockPanel>
@@ -533,52 +567,6 @@
     </Setter>
   </Style>
 
-  <Style TargetType="{x:Type ComboBoxItem}" x:Key="ComboBoxItemStyle">
-    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
-    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
-    <Setter Property="Template">
-      <Setter.Value>
-        <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-          <Border x:Name="Bd"
-                    SnapsToDevicePixels="true"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    Padding="{TemplateBinding Padding}">
-            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-          </Border>
-          <ControlTemplate.Triggers>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="IsMouseOver" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static nuget:Brushes.ContentMouseOverBrushKey}}" />
-              <Setter Property="TextBlock.Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ContentMouseOverTextBrushKey}}" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="False" />
-                <Condition Property="IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static nuget:Brushes.ContentInactiveSelectedBrushKey}}" />
-              <Setter Property="TextBlock.Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ContentInactiveSelectedTextBrushKey}}" />
-            </MultiTrigger>
-            <MultiTrigger>
-              <MultiTrigger.Conditions>
-                <Condition Property="Selector.IsSelectionActive" Value="True" />
-                <Condition Property="IsSelected" Value="True" />
-              </MultiTrigger.Conditions>
-              <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}" />
-              <Setter Property="TextBlock.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}" />
-            </MultiTrigger>
-          </ControlTemplate.Triggers>
-        </ControlTemplate>
-      </Setter.Value>
-    </Setter>
-  </Style>
-
   <!-- In order to create a TextBlock like element, but with selectable text use:
     <TextBox Style="{DynamicResource SelectableTextBlockStyle}" />
 
@@ -600,7 +588,7 @@
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type TextBox}">
-              <TextBlock Text="{TemplateBinding Text}" 
+              <TextBlock Text="{TemplateBinding Text}"
                              Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
                              Background="{TemplateBinding Background}"
                              FontSize="{TemplateBinding FontSize}"
@@ -619,9 +607,10 @@
 
   <Style
     TargetType="{x:Type Hyperlink}"
-    x:Key="HyperlinkStyle">
+    x:Key="HyperlinkStyleNoUri">
     <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextKey}}" />
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+
     <Style.Triggers>
       <Trigger
         Property="IsMouseOver"
@@ -638,7 +627,23 @@
           Property="TextBlock.TextDecorations"
           Value="{x:Null}" />
       </Trigger>
+    </Style.Triggers>
+  </Style>
 
+  <Style
+    TargetType="{x:Type Hyperlink}"
+    x:Key="HyperlinkStyleNoUriDeprecation">
+    <Setter Property="Foreground" Value="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBlock}}, Path=Foreground}" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
+    <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+  </Style>
+
+  <Style
+    TargetType="{x:Type Hyperlink}"
+    x:Key="HyperlinkStyle"
+    BasedOn="{StaticResource HyperlinkStyleNoUri}">
+
+    <Style.Triggers>
       <Trigger
         Property="NavigateUri"
         Value="{x:Null}">
@@ -686,22 +691,6 @@
     <Setter Property="HorizontalAlignment" Value="Center" />
     <Setter Property="Height" Value="32" />
     <Setter Property="Width" Value="32" />
-    <Setter Property="Source">
-      <Setter.Value>
-        <MultiBinding
-          Converter="{StaticResource IconUrlToImageCacheConverter}"
-          ConverterParameter="{x:Static nuget:Images.DefaultPackageIcon}"
-          TargetNullValue="{x:Static nuget:Images.DefaultPackageIcon}"
-          FallbackValue="{x:Static nuget:Images.DefaultPackageIcon}">
-          <Binding
-            Path="DataContext.IconUrl"
-            RelativeSource="{RelativeSource Self}" />
-          <Binding
-            Path="DataContext.PackageReader"
-            RelativeSource="{RelativeSource Self}" />
-        </MultiBinding>
-      </Setter.Value>
-    </Setter>
-    <EventSetter Event="ImageFailed" Handler="PackageIconImage_ImageFailed"/>
+    <Setter Property="Source" Value="{Binding Path='DataContext.IconBitmap',RelativeSource='{RelativeSource Self}'}" />
   </Style>
 </ResourceDictionary>

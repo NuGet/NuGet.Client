@@ -37,7 +37,7 @@ namespace NuGet.Commands
         /// <returns></returns>
         public void ExecuteCommand(LocalsArgs localsArgs)
         {
-            if (((localsArgs.Arguments.Count() < 1) || string.IsNullOrWhiteSpace(localsArgs.Arguments[0]))
+            if (((localsArgs.Arguments.Count == 0) || string.IsNullOrWhiteSpace(localsArgs.Arguments[0]))
                 || (localsArgs.Clear && localsArgs.List) || (!localsArgs.Clear && !localsArgs.List))
             {
                 // Using both -clear and -list command options, or neither one of them, is not supported.

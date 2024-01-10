@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Diagnostics;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (targetType == typeof(Visibility))
             {
-                var downloadCount = value as int?;
+                long? downloadCount = value as long?;
                 if (downloadCount >= 0)
                 {
                     return Visibility.Visible;

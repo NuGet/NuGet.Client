@@ -1,28 +1,40 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Sdk.TestFramework;
+using Microsoft.VisualStudio.Threading;
 using Moq;
-using NuGet.PackageManagement.VisualStudio;
-using NuGet.Protocol;
+using NuGet.PackageManagement.UI.Utility;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
+    [Collection(MockedVS.Collection)]
     public class PackageManagerListItemsTest
     {
-
         [Fact]
         public async Task PackagePrefixReservation_FromOneSource()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
-            var uiContext = Mock.Of<INuGetUIContext>();
-            Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
+            var uiContext = new Mock<INuGetUIContext>();
+            var searchService = Mock.Of<INuGetSearchService>();
+            var packageFileService = Mock.Of<INuGetPackageFileService>();
+
+            uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
+
+            uiContext.Setup(x => x.ServiceBroker)
+                .Returns(Mock.Of<IServiceBroker>());
 
             // Arrange
             var responses = new Dictionary<string, string>
@@ -35,48 +47,56 @@ namespace NuGet.PackageManagement.UI.Test
             };
 
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
-            var repositories = new List<SourceRepository>
+
+            var context = new PackageLoadContext(isSolution: false, uiContext.Object);
+
+            var loader = await PackageItemLoader.CreateAsync(
+                Mock.Of<IServiceBroker>(),
+                context,
+                new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(repo.PackageSource) },
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                searchService,
+                packageFileService,
+                "EntityFramework",
+                includePrerelease: false);
+
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
-                repo
+                Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                PrefixReserved = true
             };
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
-
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
-
-            var loaded = new List<PackageItemListViewModel>();
-            foreach (var page in Enumerable.Range(0, 5))
+            var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
             {
-                await loader.LoadNextAsync(null, CancellationToken.None);
-                while (loader.State.LoadingStatus == LoadingStatus.Loading)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    await loader.UpdateStateAsync(null, CancellationToken.None);
-                }
+                PackageSearchMetadataContextInfo.Create(packageSearchMetadata)
+            };
 
-                var items = loader.GetCurrent();
-                loaded.AddRange(items);
+            var searchResult = new SearchResultContextInfo(
+                packageSearchMetadataContextInfo,
+                new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } },
+                hasMoreItems: false);
 
-                if (loader.State.LoadingStatus != LoadingStatus.Ready)
-                {
-                    break;
-                }
-            }
+            await loader.UpdateStateAndReportAsync(searchResult, progress: null, CancellationToken.None);
+            var items = loader.GetCurrent();
 
             // Resource only has one item
-            var item = loaded.First();
+            var item = items.First();
             Assert.True(item.PrefixReserved);
         }
 
         [Fact]
         public async Task PackagePrefixReservation_FromMultiSource()
         {
-            var solutionManager = Mock.Of<IVsSolutionManager>();
-            var uiContext = Mock.Of<INuGetUIContext>();
-            Mock.Get(uiContext)
-                .Setup(x => x.SolutionManager)
+            var solutionManager = Mock.Of<INuGetSolutionManagerService>();
+            var uiContext = new Mock<INuGetUIContext>();
+            var searchService = Mock.Of<INuGetSearchService>();
+            var packageFileService = Mock.Of<INuGetPackageFileService>();
+
+            uiContext.Setup(x => x.SolutionManagerService)
                 .Returns(solutionManager);
+
+            uiContext.Setup(x => x.ServiceBroker)
+                .Returns(Mock.Of<IServiceBroker>());
 
             // Arrange
             var responses = new Dictionary<string, string>
@@ -92,38 +112,44 @@ namespace NuGet.PackageManagement.UI.Test
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
             var repo1 = StaticHttpHandler.CreateSource("http://othersource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
-            var repositories = new List<SourceRepository>
+            var context = new PackageLoadContext(isSolution: false, uiContext.Object);
+
+            var loader = await PackageItemLoader.CreateAsync(
+                Mock.Of<IServiceBroker>(),
+                context,
+                new List<PackageSourceContextInfo>
+                {
+                    PackageSourceContextInfo.Create(repo.PackageSource),
+                    PackageSourceContextInfo.Create(repo1.PackageSource)
+                },
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                searchService,
+                packageFileService,
+                "EntityFramework",
+                includePrerelease: false);
+
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
-                repo,
-                repo1
+                Identity = new PackageIdentity("NuGet.org", new NuGetVersion("1.0")),
+                PrefixReserved = true
             };
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
-
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
-            var loader = new PackageItemLoader(context, packageFeed, "EntityFramework", false);
-
-            var loaded = new List<PackageItemListViewModel>();
-            foreach (var page in Enumerable.Range(0, 5))
+            var packageSearchMetadataContextInfo = new List<PackageSearchMetadataContextInfo>()
             {
-                await loader.LoadNextAsync(null, CancellationToken.None);
-                while (loader.State.LoadingStatus == LoadingStatus.Loading)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(1));
-                    await loader.UpdateStateAsync(null, CancellationToken.None);
-                }
+                PackageSearchMetadataContextInfo.Create(packageSearchMetadata)
+            };
 
-                var items = loader.GetCurrent();
-                loaded.AddRange(items);
+            var searchResult = new SearchResultContextInfo(
+                packageSearchMetadataContextInfo,
+                new Dictionary<string, LoadingStatus> { { "Completed", LoadingStatus.Ready } },
+                hasMoreItems: false);
 
-                if (loader.State.LoadingStatus != LoadingStatus.Ready)
-                {
-                    break;
-                }
-            }
+            await loader.UpdateStateAndReportAsync(searchResult, progress: null, CancellationToken.None);
+            var items = loader.GetCurrent();
 
             // Resource only has one item
-            var item = loaded.First();
+            var item = items.First();
+            // Assert that a multisource always has prefixreserved set to false
             Assert.False(item.PrefixReserved);
         }
     }

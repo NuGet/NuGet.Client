@@ -227,7 +227,7 @@ namespace NuGet.CommandLine.Test
             CultureInfo startingCulture = Thread.CurrentThread.CurrentCulture;
 
             // Change culture to Ukrainian (any culture with comma and period swapped compared to english in floating point)
-            Thread.CurrentThread.CurrentCulture 
+            Thread.CurrentThread.CurrentCulture
                 = CultureInfo.GetCultureInfo("uk-UA");
 
             using (var vsPath = TestDirectory.Create())
@@ -314,7 +314,7 @@ namespace NuGet.CommandLine.Test
                 var msBuild160ExePath = Path.Combine(msBuild160BinPath, "msbuild.exe").ToString();
 
                 File.WriteAllText(msBuild160ExePath, "foo 16.0");
-                
+
                 var newPathValue = new StringBuilder();
                 newPathValue.Append('\"');
                 newPathValue.Append(msBuild160BinPath);
@@ -331,6 +331,74 @@ namespace NuGet.CommandLine.Test
                 Assert.NotNull(msBuildPath);
                 Assert.Equal(msBuild160ExePath, msBuildPath);
             }
+        }
+
+        [SkipMonoTheory] // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+        [InlineData("arm64", true)]
+        [InlineData("amd64", true)]
+        [InlineData("ARM64", true)]
+        [InlineData("random", false)]
+        public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Succeeds(string architecutre, bool isArchitectureSpecificPath)
+        {
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
+                var msBuildExeNonArchitecturePath = Path.Combine(msBuildNonArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeNonArchitecturePath, "foo");
+
+                var msBuildArchitectureDir = Directory.CreateDirectory(Path.Combine(msBuildNonArchitectureDir.FullName, architecutre));
+                var msBuildExeArchitecturePath = Path.Combine(msBuildArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeArchitecturePath, "foo");
+
+                // Act;
+                var msBuildPath = MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath);
+
+                // Assert
+                if (isArchitectureSpecificPath)
+                {
+                    Assert.Equal(msBuildNonArchitectureDir.FullName, msBuildPath);
+                }
+                else
+                {
+                    Assert.Equal(msBuildArchitectureDir.FullName, msBuildPath);
+                }
+            }
+        }
+
+        [SkipMono] // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+        public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Throws()
+        {
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
+                var msBuildArchitectureDir = Directory.CreateDirectory(Path.Combine(msBuildNonArchitectureDir.FullName, "arm64"));
+                var msBuildExeArchitecturePath = Path.Combine(msBuildArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeArchitecturePath, "foo");
+
+                // Act & Assert
+                CommandException exception = Assert.Throws<CommandException>(
+                    () => MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath));
+
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotFindNonArchitectureSpecificMsbuild)),
+                    msBuildArchitectureDir.FullName),
+                    exception.Message);
+            }
+        }
+
+        [Fact]
+        public void CombinePathWithVerboseError_CombinesPaths()
+        {
+            var paths = new[] { "C:\\", "directory/", "\\folder", "file.txt" };
+            Assert.Equal(Path.Combine(paths), MsBuildUtility.CombinePathWithVerboseError(paths));
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void CombinePathWithVerboseError_IllegalCharacters_MessageContainsBadPath()
+        {
+            const string badPath = @"C:\bad:>dir";
+            var exception = Assert.Throws<ArgumentException>(() => MsBuildUtility.CombinePathWithVerboseError(badPath, "file.txt"));
+            Assert.Contains(badPath, exception.Message);
         }
 
         public static class ToolsetDataSource

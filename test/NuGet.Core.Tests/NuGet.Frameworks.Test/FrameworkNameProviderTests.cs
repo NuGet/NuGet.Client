@@ -121,7 +121,7 @@ namespace NuGet.Test
             // Arrange
             var mappingsA = new Mock<IFrameworkMappings>();
             var mappingsB = new Mock<IFrameworkMappings>();
-            mappingsA.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { Windows });
+            mappingsA.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { FrameworkConstants.FrameworkIdentifiers.Windows });
             mappingsB.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { NetCore });
 
             var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
@@ -146,10 +146,9 @@ namespace NuGet.Test
             var provider = DefaultFrameworkNameProvider.Instance;
 
             NuGetFramework input = new NuGetFramework("Windows", new Version(8, 0));
-            IEnumerable<NuGetFramework> frameworks = null;
-            provider.TryGetEquivalentFrameworks(input, out frameworks);
+            provider.TryGetEquivalentFrameworks(input, out IEnumerable<NuGetFramework>? frameworks);
 
-            var set = new HashSet<NuGetFramework>(frameworks, NuGetFramework.Comparer);
+            var set = new HashSet<NuGetFramework>(frameworks!, NuGetFramework.Comparer);
 
             Assert.False(set.Contains(input));
         }
@@ -160,11 +159,10 @@ namespace NuGet.Test
             var provider = DefaultFrameworkNameProvider.Instance;
 
             NuGetFramework input = new NuGetFramework("Windows", new Version(8, 0));
-            IEnumerable<NuGetFramework> frameworks = null;
-            provider.TryGetEquivalentFrameworks(input, out frameworks);
+            provider.TryGetEquivalentFrameworks(input, out IEnumerable<NuGetFramework>? frameworks);
 
             var results = frameworks
-                .OrderBy(f => f, new NuGetFrameworkSorter())
+                .OrderBy(f => f, NuGetFrameworkSorter.Instance)
                 .Select(f => f.GetShortFolderName())
                 .ToArray();
 
@@ -182,8 +180,7 @@ namespace NuGet.Test
             var provider = DefaultFrameworkNameProvider.Instance;
 
             NuGetFramework input = new NuGetFramework("MyFramework", new Version(9, 0));
-            IEnumerable<NuGetFramework> frameworks = null;
-            bool found = provider.TryGetEquivalentFrameworks(input, out frameworks);
+            bool found = provider.TryGetEquivalentFrameworks(input, out _);
 
             Assert.False(found);
         }
@@ -195,8 +192,7 @@ namespace NuGet.Test
         {
             var provider = DefaultFrameworkNameProvider.Instance;
 
-            string identifier = null;
-            bool found = provider.TryGetIdentifier(input, out identifier);
+            bool found = provider.TryGetIdentifier(input, out _);
 
             Assert.False(found);
         }
@@ -209,8 +205,7 @@ namespace NuGet.Test
         {
             var provider = DefaultFrameworkNameProvider.Instance;
 
-            string identifier = null;
-            provider.TryGetIdentifier(input, out identifier);
+            provider.TryGetIdentifier(input, out string? identifier);
 
             Assert.Equal(expected, identifier);
         }
@@ -221,7 +216,7 @@ namespace NuGet.Test
             // Arrange
             var target = DefaultFrameworkNameProvider.Instance;
             var input = "net45+win8+net-cf+net46";
-            IEnumerable<NuGetFramework> frameworks;
+            IEnumerable<NuGetFramework>? frameworks;
 
             // Act & Assert
             var actual = Assert.Throws<ArgumentException>(
@@ -230,31 +225,99 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("", "")]
-        [InlineData("1", "1")]
-        [InlineData("10", "1")]
-        [InlineData("100", "1")]
-        [InlineData("101", "101")]
-        [InlineData("1010", "101")]
-        [InlineData("1001", "1001")]
-        [InlineData("1.0", "1")]
-        [InlineData("1.0.0", "1")]
-        [InlineData("1.0.1", "101")]
-        [InlineData("1.0.1.0", "101")]
-        [InlineData("1.0.0.1", "1001")]
-        [InlineData("10.0", "10.0")]
-        [InlineData("10.1", "10.1")]
-        [InlineData("10.1.0.1", "10.1.0.1")]
-        [InlineData("1.1.10", "1.1.10")]
-        [InlineData("1.10.1", "1.10.1")]
-        public void FrameworkNameProvider_VersionRoundTrip(string versionString, string expected)
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData("\t")]
+        [InlineData("Hello")]
+        public void TryGetVersion_Failures(string? versionString)
+        {
+            Assert.False(DefaultFrameworkNameProvider.Instance.TryGetVersion(versionString!, out Version? version));
+            Assert.Null(version);
+        }
+
+        [Fact]
+        public void GetVersionString_Null()
+        {
+            Assert.Equal(
+                string.Empty,
+                DefaultFrameworkNameProvider.Instance.GetVersionString(NetCoreApp, null!));
+        }
+
+        [Fact]
+        public void GetVersionString_Zero()
+        {
+            Assert.Equal(
+                string.Empty,
+                DefaultFrameworkNameProvider.Instance.GetVersionString(NetCoreApp, new Version(0, 0, 0, 0)));
+            Assert.Equal(
+                string.Empty,
+                DefaultFrameworkNameProvider.Instance.GetVersionString(NetCoreApp, new Version(0, 0, 0)));
+            Assert.Equal(
+                string.Empty,
+                DefaultFrameworkNameProvider.Instance.GetVersionString(NetCoreApp, new Version(0, 0)));
+        }
+
+        [Theory]
+        // NetCoreApp requires a minimum of two parts, and require decimal points
+        [InlineData(NetCoreApp, "1", "1.0")]
+        [InlineData(NetCoreApp, "10", "1.0")]
+        [InlineData(NetCoreApp, "100", "1.0")]
+        [InlineData(NetCoreApp, "101", "1.0.1")]
+        [InlineData(NetCoreApp, "1010", "1.0.1")]
+        [InlineData(NetCoreApp, "1001", "1.0.0.1")]
+        [InlineData(NetCoreApp, "1.0", "1.0")]
+        [InlineData(NetCoreApp, "1.0.0", "1.0")]
+        [InlineData(NetCoreApp, "1.0.1", "1.0.1")]
+        [InlineData(NetCoreApp, "1.0.1.0", "1.0.1")]
+        [InlineData(NetCoreApp, "1.0.0.1", "1.0.0.1")]
+        [InlineData(NetCoreApp, "10.0", "10.0")]
+        [InlineData(NetCoreApp, "10.1", "10.1")]
+        [InlineData(NetCoreApp, "10.1.0.1", "10.1.0.1")]
+        [InlineData(NetCoreApp, "1.1.10", "1.1.10")]
+        [InlineData(NetCoreApp, "1.10.1", "1.10.1")]
+        // AspNetCore has no special requirements
+        [InlineData(AspNetCore, "1", "10")]
+        [InlineData(AspNetCore, "10", "10")]
+        [InlineData(AspNetCore, "100", "10")]
+        [InlineData(AspNetCore, "101", "101")]
+        [InlineData(AspNetCore, "1010", "101")]
+        [InlineData(AspNetCore, "1001", "1001")]
+        [InlineData(AspNetCore, "1.0", "10")]
+        [InlineData(AspNetCore, "1.0.0", "10")]
+        [InlineData(AspNetCore, "1.0.1", "101")]
+        [InlineData(AspNetCore, "1.0.1.0", "101")]
+        [InlineData(AspNetCore, "1.0.0.1", "1001")]
+        [InlineData(AspNetCore, "10.0", "10.0")]
+        [InlineData(AspNetCore, "10.1", "10.1")]
+        [InlineData(AspNetCore, "10.1.0.1", "10.1.0.1")]
+        [InlineData(AspNetCore, "1.1.10", "1.1.10")]
+        [InlineData(AspNetCore, "1.10.1", "1.10.1")]
+        // WindowsPhone supports single digit versions
+        [InlineData(WindowsPhone, "1", "1")]
+        [InlineData(WindowsPhone, "10", "1")]
+        [InlineData(WindowsPhone, "100", "1")]
+        [InlineData(WindowsPhone, "101", "101")]
+        [InlineData(WindowsPhone, "1010", "101")]
+        [InlineData(WindowsPhone, "1001", "1001")]
+        [InlineData(WindowsPhone, "1.0", "1")]
+        [InlineData(WindowsPhone, "1.0.0", "1")]
+        [InlineData(WindowsPhone, "1.0.1", "101")]
+        [InlineData(WindowsPhone, "1.0.1.0", "101")]
+        [InlineData(WindowsPhone, "1.0.0.1", "1001")]
+        [InlineData(WindowsPhone, "10.0", "10.0")]
+        [InlineData(WindowsPhone, "10.1", "10.1")]
+        [InlineData(WindowsPhone, "10.1.0.1", "10.1.0.1")]
+        [InlineData(WindowsPhone, "1.1.10", "1.1.10")]
+        [InlineData(WindowsPhone, "1.10.1", "1.10.1")]
+        public void FrameworkNameProvider_VersionRoundTrip(string framework, string versionString, string expected)
         {
             var provider = DefaultFrameworkNameProvider.Instance;
 
-            Version version = null;
-            provider.TryGetVersion(versionString, out version);
+            Assert.True(provider.TryGetVersion(versionString, out Version? version));
+            Assert.NotNull(version);
 
-            string actual = provider.GetVersionString("Windows", version);
+            string actual = provider.GetVersionString(framework, version);
 
             Assert.Equal(expected, actual);
         }

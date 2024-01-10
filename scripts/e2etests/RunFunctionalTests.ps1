@@ -10,23 +10,27 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$FuncTestRoot,
     [Parameter(Mandatory=$true)]
-    [string]$RunCounter,
-    [Parameter(Mandatory=$true)]
-	[ValidateSet("16.0")]
-    [string]$VSVersion)
+    [string]$RunCounter)
+
+. "$PSScriptRoot\Utils.ps1"
+. "$PSScriptRoot\VSUtils.ps1"
+. "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
+
+if ($env:CI -eq "true")
+{
+    $VSInstance = Get-LatestVSInstance
+} else {
+    $VSInstance = Get-LatestVSInstance -VersionRange (Get-VisualStudioVersionRangeFromConfig)
+}
 
 trap
 {
     Write-Host "RunFunctionalTests.ps1 threw an exception: " -ForegroundColor Red
     Write-Error ($_.Exception | Format-List -Force | Out-String) -ErrorAction Continue
     Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Continue
-    KillRunningInstancesOfVS
+    KillRunningInstancesOfVS $VsInstance
     exit 1
 }
-
-. "$PSScriptRoot\Utils.ps1"
-. "$PSScriptRoot\VSUtils.ps1"
-. "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"
 
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
 
@@ -37,23 +41,15 @@ Write-Host 'Before starting the functional tests, force delete all the Results.h
 
 CleanTempFolder
 
-$result = LaunchVSAndWaitForDTE -VSVersion $VSVersion -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
-if ($result -eq $true) {
+
+$dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50
+if (-not $dte2) {
     Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
-    $result = LaunchVSAndWaitForDTE -VSVersion $VSVersion -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50 -ActivityLogFullPath $env:ActivityLogFullPath
-    if ($result -eq $false) {
+    $dte2 = LaunchVSAndWaitForDTE -VSInstance $VSInstance -DTEReadyPollFrequencyInSecs 6 -NumberOfPolls 50 -ActivityLogFullPath $env:ActivityLogFullPath
+    if (-not $dte2) {
         Write-Error "Could not obtain DTE after waiting $NumberOfPolls * $DTEReadyPollFrequencyInSecs = " $NumberOfPolls * $DTEReadyPollFrequencyInSecs " secs"
         exit 1
     }
-}
-
-$dte2 = GetDTE2 $VSVersion
-
-if (!$dte2)
-{
-    Write-Error 'DTE could not be obtained'
-    KillRunningInstancesOfVS
-    exit 1
 }
 
 Write-Host "Launching the Package Manager Console inside VS and waiting for $PMCLaunchWaitTimeInSecs seconds"
@@ -80,7 +76,7 @@ ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: 
 Write-Host "Starting functional tests with command '$PMCCommand'"
 RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
 
-KillRunningInstancesOfVS
+KillRunningInstancesOfVS $VSInstance
 
 
 

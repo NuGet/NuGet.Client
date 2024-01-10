@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using NuGet.Shared;
 using NuGet.Versioning;
 
@@ -13,6 +14,7 @@ namespace NuGet.LibraryModel
         {
         }
 
+        [SetsRequiredMembers]
         public LibraryIdentity(string name, NuGetVersion version, LibraryType type)
         {
             Name = name;
@@ -20,18 +22,18 @@ namespace NuGet.LibraryModel
             Type = type;
         }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public NuGetVersion Version { get; set; }
+        public required NuGetVersion Version { get; set; }
 
-        public LibraryType Type { get; set; }
+        public required LibraryType Type { get; set; }
 
         public override string ToString()
         {
             return Type + "/" + Name + " " + Version;
         }
 
-        public bool Equals(LibraryIdentity other)
+        public bool Equals(LibraryIdentity? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -47,7 +49,7 @@ namespace NuGet.LibraryModel
                     && string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as LibraryIdentity);
         }
@@ -58,17 +60,17 @@ namespace NuGet.LibraryModel
 
             combiner.AddStringIgnoreCase(Name);
             combiner.AddObject(Version);
-            combiner.AddObject(Type);
+            combiner.AddStruct(Type);
 
             return combiner.CombinedHash;
         }
 
-        public static bool operator ==(LibraryIdentity left, LibraryIdentity right)
+        public static bool operator ==(LibraryIdentity? left, LibraryIdentity? right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(LibraryIdentity left, LibraryIdentity right)
+        public static bool operator !=(LibraryIdentity? left, LibraryIdentity? right)
         {
             return !Equals(left, right);
         }
@@ -86,8 +88,10 @@ namespace NuGet.LibraryModel
             };
         }
 
-        public int CompareTo(LibraryIdentity other)
+        public int CompareTo(LibraryIdentity? other)
         {
+            if (other is null) return 1;
+
             var compare = string.Compare(Type, other.Type, StringComparison.OrdinalIgnoreCase);
             if (compare != 0)
             {

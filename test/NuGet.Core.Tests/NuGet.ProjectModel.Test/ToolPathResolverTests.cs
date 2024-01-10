@@ -50,7 +50,7 @@ namespace NuGet.ProjectModel.Test
                 "netstandard1.3");
             // Act
 
-            var actual  = target.GetToolDirectoryPath("packagea", NuGetVersion.Parse("3.1.4-beta"), NuGetFramework.Parse("netstandard1.3"));
+            var actual = target.GetToolDirectoryPath("packagea", NuGetVersion.Parse("3.1.4-beta"), NuGetFramework.Parse("netstandard1.3"));
 
             // Assert
             Assert.Equal(expected, actual);

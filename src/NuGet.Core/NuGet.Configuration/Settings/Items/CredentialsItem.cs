@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -18,7 +19,8 @@ namespace NuGet.Configuration
     public sealed class CredentialsItem : SettingItem
     {
         private string _elementName;
-        public override string ElementName {
+        public override string ElementName
+        {
             get => XmlConvert.DecodeName(_elementName);
             protected set
             {
@@ -211,7 +213,7 @@ namespace NuGet.Configuration
                 newSetting.SetOrigin(Origin);
             }
 
-            foreach(var attr in Attributes)
+            foreach (var attr in Attributes)
             {
                 newSetting.AddAttribute(attr.Key, attr.Value);
             }

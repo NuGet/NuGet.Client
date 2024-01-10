@@ -4,13 +4,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.XPlat.FuncTest
 {
     public class XPlatMsbuildTestFixture : IDisposable
     {
-        private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
+        private readonly string _dotnetCli = TestFileSystemUtility.GetDotnetCli();
 
         public XPlatMsbuildTestFixture()
         {

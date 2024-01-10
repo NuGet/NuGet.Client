@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -567,10 +568,35 @@ namespace NuGet.Protocol.Tests
             }
         }
 
+        [Fact]
+        public async Task HttpFileSystemBasedFindPackageByIdResource_EnhancedHttpRetrySettings()
+        {
+            const int testTryCount = 7;
+            TestEnvironmentVariableReader testEnvironmentVariableReader = new TestEnvironmentVariableReader(
+            new Dictionary<string, string>()
+            {
+                [EnhancedHttpRetryHelper.IsEnabledEnvironmentVariableName] = bool.TrueString,
+                [EnhancedHttpRetryHelper.RetryCountEnvironmentVariableName] = testTryCount.ToString(),
+                [EnhancedHttpRetryHelper.DelayInMillisecondsEnvironmentVariableName] = "0"
+            });
+            using (var test = await HttpFileSystemBasedFindPackageByIdResourceTest.CreateAsync(testEnvironmentVariableReader))
+            {
+                var exception = await Assert.ThrowsAsync<FatalProtocolException>(
+                    () => test.Resource.GetPackageDownloaderAsync(
+                        new PackageIdentity(id: "socketexception", version: NuGetVersion.Parse("1.2.3")),
+                        test.SourceCacheContext,
+                        NullLogger.Instance,
+                        CancellationToken.None));
+                // THe only features that really turn on are the extra retries (the exception here just ensures the new codepath gets covered)
+                // So we'll make sure that the number of tries seen matches the number above.
+                Assert.Equal(HttpFileSystemBasedFindPackageByIdResourceTest.SocketExceptionCallsMade, testTryCount);
+            }
+        }
+
         private static HttpSource CreateDummyHttpSource()
         {
             var packageSource = new PackageSource("https://unit.test");
-            Task<HttpHandlerResource> messageHandlerFactory() => Task.FromResult<HttpHandlerResource>(null);
+            Task<HttpHandlerResource> messageHandlerFactory() => TaskResult.Null<HttpHandlerResource>();
 
             return new HttpSource(packageSource, messageHandlerFactory, Mock.Of<IThrottle>());
         }
@@ -584,6 +610,8 @@ namespace NuGet.Protocol.Tests
             internal HttpFileSystemBasedFindPackageByIdResource Resource { get; }
             internal SourceCacheContext SourceCacheContext { get; }
             internal TestDirectory TestDirectory { get; }
+
+            internal static int SocketExceptionCallsMade = 0;
 
             private HttpFileSystemBasedFindPackageByIdResourceTest(
                 HttpFileSystemBasedFindPackageByIdResource resource,
@@ -610,7 +638,7 @@ namespace NuGet.Protocol.Tests
                 GC.SuppressFinalize(this);
             }
 
-            internal static async Task<HttpFileSystemBasedFindPackageByIdResourceTest> CreateAsync()
+            internal static async Task<HttpFileSystemBasedFindPackageByIdResourceTest> CreateAsync(TestEnvironmentVariableReader testEnvironmentVariableReader = null)
             {
                 var packageIdentity = new PackageIdentity(id: "DeepEqual", version: NuGetVersion.Parse("1.4.0"));
                 var testDirectory = TestDirectory.Create();
@@ -640,14 +668,23 @@ namespace NuGet.Protocol.Tests
                     {
                         $"{packageSource.Source}/a/index.json",
                         request => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound))
-                    }
+                    },
+                    {
+                        $"{packageSource.Source}/socketexception/index.json",
+                        request =>
+                        {
+                            SocketExceptionCallsMade += 1;
+                            throw new Exception("Oh this isn't going well", new IOException("This is what TCP hang-ups look like", new SocketException(123)));
+                        }
+                    },
                 };
 
                 var baseUris = new List<Uri>() { packageSource.SourceUri };
                 var httpSource = new TestHttpSource(packageSource, responses);
                 var resource = new HttpFileSystemBasedFindPackageByIdResource(
                     baseUris,
-                    httpSource);
+                    httpSource,
+                    testEnvironmentVariableReader != null ? testEnvironmentVariableReader : EnvironmentVariableWrapper.Instance);
 
                 return new HttpFileSystemBasedFindPackageByIdResourceTest(
                     resource,

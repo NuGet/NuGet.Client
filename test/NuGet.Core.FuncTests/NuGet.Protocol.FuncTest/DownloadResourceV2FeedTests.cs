@@ -89,7 +89,7 @@ namespace NuGet.Protocol.FuncTest
                 packagesFolder,
                 NullLogger.Instance,
                 CancellationToken.None))
-            { 
+            {
                 // Assert
                 Assert.NotNull(actual);
                 Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);

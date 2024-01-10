@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel.Test.Builders
@@ -12,6 +14,7 @@ namespace NuGet.ProjectModel.Test.Builders
         private NuGetVersion _resolvedVersion = new NuGetVersion(1, 0, 0);
         private PackageDependencyType _type = PackageDependencyType.Direct;
         private string _contentHash = "ABC";
+        private IList<PackageDependency> _dependencies = new List<PackageDependency>();
 
         public LockFileDependencyBuilder WithId(string id)
         {
@@ -43,15 +46,32 @@ namespace NuGet.ProjectModel.Test.Builders
             return this;
         }
 
+        public LockFileDependencyBuilder WithDependency(PackageDependency dependency)
+        {
+            _dependencies.Add(dependency);
+            return this;
+        }
+
         public LockFileDependency Build()
         {
+            if (_type == PackageDependencyType.Project)
+            {
+                return new LockFileDependency()
+                {
+                    Id = _id,
+                    RequestedVersion = _requestedVersion,
+                    Type = _type,
+                    Dependencies = _dependencies,
+                };
+            }
             return new LockFileDependency()
             {
                 Id = _id,
                 RequestedVersion = _requestedVersion,
                 ResolvedVersion = _resolvedVersion,
                 Type = _type,
-                ContentHash = _contentHash
+                ContentHash = _contentHash,
+                Dependencies = _dependencies,
             };
         }
     }

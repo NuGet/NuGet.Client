@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -11,7 +12,7 @@ namespace NuGet.Protocol
 {
     public static class HttpRequestMessageExtensions
     {
-        private static readonly string NuGetConfigurationKey = "NuGet_Configuration";
+        private const string NuGetConfigurationKey = "NuGet_Configuration";
 
         /// <summary>
         /// Clones an <see cref="HttpRequestMessage" /> request.
@@ -33,11 +34,18 @@ namespace NuGet.Protocol
                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
 
+#if NET5_0_OR_GREATER
+            var clonedOptions = (IDictionary<string, object>)clone.Options;
+            foreach (var option in request.Options)
+            {
+                clonedOptions.Add(option.Key, option.Value);
+            }
+#else
             foreach (var property in request.Properties)
             {
                 clone.Properties.Add(property);
             }
-
+#endif
             return clone;
         }
 
@@ -110,13 +118,22 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(configuration));
             }
 
+#if NET5_0_OR_GREATER
+            request.Options.Set(new HttpRequestOptionsKey<HttpRequestMessageConfiguration>(NuGetConfigurationKey), configuration);
+#else
             request.Properties[NuGetConfigurationKey] = configuration;
+#endif
         }
 
         private static T GetProperty<T>(this HttpRequestMessage request, string key)
         {
+
+#if NET5_0_OR_GREATER
+            if (request.Options.TryGetValue<T>(new HttpRequestOptionsKey<T>(key), out T result))
+#else
             object result;
             if (request.Properties.TryGetValue(key, out result) && result is T)
+#endif
             {
                 return (T)result;
             }

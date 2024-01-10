@@ -16,7 +16,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
@@ -28,6 +31,8 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
+using NuGetConsole.Host.PowerShell;
 using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -47,6 +52,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly IRestoreProgressReporter _nuGetProgressReporter;
         private Guid _operationId;
 
         protected int _packageCount;
@@ -67,14 +73,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected NuGetPowerShellBaseCommand()
         {
-            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
-            ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
-            VsSolutionManager = ServiceLocator.GetInstance<IVsSolutionManager>();
-            DTE = ServiceLocator.GetInstance<DTE>();
-            SourceControlManagerProvider = ServiceLocator.GetInstance<ISourceControlManagerProvider>();
-            _commonOperations = ServiceLocator.GetInstance<ICommonOperations>();
-            PackageRestoreManager = ServiceLocator.GetInstance<IPackageRestoreManager>();
-            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
+            _sourceRepositoryProvider = componentModel.GetService<ISourceRepositoryProvider>();
+            ConfigSettings = componentModel.GetService<ISettings>();
+            VsSolutionManager = componentModel.GetService<IVsSolutionManager>();
+            SourceControlManagerProvider = componentModel.GetService<ISourceControlManagerProvider>();
+            _commonOperations = componentModel.GetService<ICommonOperations>();
+            PackageRestoreManager = componentModel.GetService<IPackageRestoreManager>();
+            _deleteOnRestartManager = componentModel.GetService<IDeleteOnRestartManager>();
+            _nuGetProgressReporter = componentModel.GetService<IRestoreProgressReporter>();
+            DTE = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ServiceLocator.GetGlobalServiceAsync<SDTE, DTE>());
 
             var logger = new LoggerAdapter(this);
             PackageExtractionContext = new PackageExtractionContext(
@@ -106,7 +114,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     _sourceRepositoryProvider,
                     ConfigSettings,
                     VsSolutionManager,
-                    _deleteOnRestartManager);
+                    _deleteOnRestartManager,
+                    _nuGetProgressReporter);
             }
         }
 
@@ -214,6 +223,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             stopWatch.Start();
             try
             {
+                // Record NuGetCmdlet executed
+                NuGetPowerShellUsage.RaiseNuGetCmdletExecutedEvent();
+
                 ProcessRecordCore();
             }
             catch (Exception ex)
@@ -245,7 +257,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task CheckMissingPackagesAsync()
         {
-            var solutionDirectory = VsSolutionManager.SolutionDirectory;
+            var solutionDirectory = await VsSolutionManager.GetSolutionDirectoryAsync();
 
             var packages = await PackageRestoreManager.GetPackagesInSolutionAsync(solutionDirectory, CancellationToken.None);
             if (packages.Any(p => p.IsMissing))
@@ -793,7 +805,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             var notFoundException =
                 new ItemNotFoundException(
-                    String.Format(
+                    string.Format(
                         CultureInfo.CurrentCulture,
                         Resources.Cmdlet_ProjectNotFound, projectName));
 
@@ -831,7 +843,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         [SuppressMessage("Microsoft.Usage", "CA2201:DoNotRaiseReservedExceptionTypes", Justification = "This exception is passed to PowerShell. We really don't care about the type of exception here.")]
         protected void WriteError(string message)
         {
-            if (!String.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message))
             {
                 WriteError(new Exception(message));
             }
@@ -1043,7 +1055,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (path != null)
                 {
                     string command = "& " + PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
-                    LogCore(MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
+                    LogCore(MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }

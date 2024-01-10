@@ -20,6 +20,11 @@ namespace NuGet.Build.Tasks.Console.Test
         {
         }
 
+        public MockMSBuildProject(TestDirectory directory, IDictionary<string, string> properties, IDictionary<string, string> globalProperties)
+            : this(Path.Combine(directory, "ProjectA.csproj"), properties, new Dictionary<string, IList<IMSBuildItem>>(), globalProperties)
+        {
+        }
+
         public MockMSBuildProject(string fullPath)
             : this(fullPath, properties: null)
         {
@@ -30,12 +35,22 @@ namespace NuGet.Build.Tasks.Console.Test
         {
         }
 
+        public MockMSBuildProject(IDictionary<string, string> properties, IDictionary<string, string> globalProperties)
+            : this("ProjectA", properties, new Dictionary<string, IList<IMSBuildItem>>(), globalProperties)
+        {
+        }
+
         public MockMSBuildProject(string fullPath, IDictionary<string, string> properties)
             : this(fullPath, properties, items: null)
         {
         }
 
         public MockMSBuildProject(string fullPath, IDictionary<string, string> properties, IDictionary<string, IList<IMSBuildItem>> items)
+            : this(fullPath, properties, items, new Dictionary<string, string>())
+        {
+        }
+
+        public MockMSBuildProject(string fullPath, IDictionary<string, string> properties, IDictionary<string, IList<IMSBuildItem>> items, IDictionary<string, string> globalProperties)
             : base(Path.GetFileName(fullPath), properties ?? new Dictionary<string, string>())
         {
             Items = items ?? new Dictionary<string, IList<IMSBuildItem>>();
@@ -43,6 +58,8 @@ namespace NuGet.Build.Tasks.Console.Test
             Directory = Path.GetDirectoryName(fullPath);
 
             FullPath = fullPath;
+
+            GlobalProperties = globalProperties;
         }
 
         public string Directory { get; }
@@ -51,9 +68,17 @@ namespace NuGet.Build.Tasks.Console.Test
 
         public IDictionary<string, IList<IMSBuildItem>> Items { get; set; }
 
+        public IDictionary<string, string> GlobalProperties { get; set; }
+
         public IEnumerable<IMSBuildItem> GetItems(string name)
         {
             return Items.TryGetValue(name, out var items) ? items : null;
+        }
+
+        public string GetGlobalProperty(string property)
+        {
+            GlobalProperties.TryGetValue(property, out string value);
+            return value;
         }
     }
 }

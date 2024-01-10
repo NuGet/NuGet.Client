@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,12 +9,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Contains the standard portable framework mappings
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
+    public class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
     {
 
         private static readonly Lazy<KeyValuePair<int, NuGetFramework[]>[]> ProfileFrameworksLazy = new Lazy<KeyValuePair<int, NuGetFramework[]>[]>(() =>

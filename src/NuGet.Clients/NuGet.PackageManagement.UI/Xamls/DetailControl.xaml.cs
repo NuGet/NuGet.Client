@@ -2,21 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
-    // The DataContext of this control is DetailControlModel, i.e. either
-    // PackageSolutionDetailControlModel or PackageDetailControlModel.
+    /// <summary>
+    /// The DataContext of this control is <see cref="DetailControlModel" />, i.e. either
+    /// <see cref="PackageSolutionDetailControlModel" /> or <see cref="PackageDetailControlModel"/>
+    /// </summary>
     public partial class DetailControl : UserControl
     {
-        private PackageManagerControl _control;
+        public PackageManagerControl Control { get; set; }
 
         public DetailControl()
         {
@@ -26,17 +32,53 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageSolutionDetailControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            _root.Visibility = DataContext is DetailControlModel ? Visibility.Visible : Visibility.Collapsed;
+            var dataContext = DataContext as DetailControlModel;
+
+            if (dataContext == null)
+            {
+                _root.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            _root.Visibility = Visibility.Visible;
+
+            if (dataContext.IsSolution)
+            {
+                _solutionView.InstallButtonClicked += SolutionInstallButtonClicked;
+                _solutionView.UninstallButtonClicked += SolutionUninstallButtonClicked;
+
+                _projectView.InstallButtonClicked -= ProjectInstallButtonClicked;
+                _projectView.UninstallButtonClicked -= ProjectUninstallButtonClicked;
+            }
+            else
+            {
+                _projectView.InstallButtonClicked += ProjectInstallButtonClicked;
+                _projectView.UninstallButtonClicked += ProjectUninstallButtonClicked;
+
+                _solutionView.InstallButtonClicked -= SolutionInstallButtonClicked;
+                _solutionView.UninstallButtonClicked -= SolutionUninstallButtonClicked;
+            }
         }
 
-        private void ExecuteOpenLicenseLink(object sender, ExecutedRoutedEventArgs e)
+        /// <summary>
+        /// Handles Hyperlink controls inside this DetailControl class associated with
+        /// <see cref="PackageManagerControlCommands.OpenExternalLink" />
+        /// </summary>
+        /// <param name="sender">A Hyperlink control</param>
+        /// <param name="e">Command arguments</param>
+        private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
             var hyperlink = e.OriginalSource as Hyperlink;
-            if (hyperlink != null
-                && hyperlink.NavigateUri != null)
+            if (hyperlink != null && hyperlink.NavigateUri != null)
             {
                 Control.Model.UIController.LaunchExternalLink(hyperlink.NavigateUri);
                 e.Handled = true;
+
+                if (e.Parameter is not null and HyperlinkType hyperlinkType)
+                {
+                    var evt = NavigatedTelemetryEvent.CreateWithExternalLink(hyperlinkType, UIUtility.ToContractsItemFilter(Control.ActiveFilter), Control.Model.IsSolution);
+                    TelemetryActivity.EmitTelemetryEvent(evt);
+                }
             }
         }
 
@@ -54,8 +96,12 @@ namespace NuGet.PackageManagement.UI
                 // because the code is async, it's possible that the DataContext has been changed
                 // once execution reaches here and thus 'model' could be null.
                 var model = DataContext as DetailControlModel;
-                model?.Refresh();
-            });
+
+                if (model != null)
+                {
+                    await model.RefreshAsync(CancellationToken.None);
+                }
+            }).PostOnFailure(nameof(DetailControl));
         }
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
@@ -64,9 +110,15 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null && model.SelectedVersion != null)
             {
+                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
+
                 var userAction = UserAction.CreateInstallAction(
-                model.Id,
-                model.SelectedVersion.Version);
+                    packageId: model.Id,
+                    model.SelectedVersion.Version,
+                    Control.Model.IsSolution,
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
+                    model.SelectedVersion.Range,
+                    sourceMappingSourceName);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -78,7 +130,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, Control.Model.IsSolution, UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }
@@ -89,9 +141,14 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null && model.SelectedVersion != null)
             {
+                var sourceMappingSourceName = PackageSourceMappingUtility.GetNewSourceMappingSourceName(Control.Model.UIController.UIContext.PackageSourceMapping, Control.Model.UIController.ActivePackageSourceMoniker);
+
                 var userAction = UserAction.CreateInstallAction(
-                    model.Id,
-                    model.SelectedVersion.Version);
+                    packageId: model.Id,
+                    model.SelectedVersion.Version,
+                    Control.Model.IsSolution,
+                    UIUtility.ToContractsItemFilter(Control._topPanel.Filter),
+                    sourceMappingSourceName);
 
                 ExecuteUserAction(userAction, NuGetActionType.Install);
             }
@@ -103,7 +160,7 @@ namespace NuGet.PackageManagement.UI
 
             if (model != null)
             {
-                var userAction = UserAction.CreateUnInstallAction(model.Id);
+                var userAction = UserAction.CreateUnInstallAction(model.Id, Control.Model.IsSolution, UIUtility.ToContractsItemFilter(Control._topPanel.Filter));
                 ExecuteUserAction(userAction, NuGetActionType.Uninstall);
             }
         }
@@ -113,7 +170,7 @@ namespace NuGet.PackageManagement.UI
             Control.ExecuteAction(
                 () =>
                 {
-                    return Control.Model.Context.UIActionEngine.PerformActionAsync(
+                    return Control.Model.Context.UIActionEngine.PerformInstallOrUninstallAsync(
                         Control.Model.UIController,
                         action,
                         CancellationToken.None);
@@ -135,27 +192,17 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.RecommendedCount = model.RecommendedCount;
                     nugetUi.RecommendPackages = model.RecommendPackages;
                     nugetUi.RecommenderVersion = model.RecommenderVersion;
-                });
-        }
-
-        public PackageManagerControl Control
-        {
-            get => _control;
-
-            set
-            {
-                if (_control == null)
-                {
-                    // register with the UI controller the first time we get the control model
-                    var controller = value.Model.UIController as NuGetUI;
-                    if (controller != null)
+                    if (model is PackageDetailControlModel packageModel && packageModel.PackageLevel == PackageLevel.Transitive)
                     {
-                        controller.DetailControl = this;
+                        nugetUi.TransitiveVulnerablePackagesCount = model.IsPackageVulnerable ? 1 : 0;
+                        nugetUi.TransitiveVulnerablePackagesMaxSeverities = new List<int>() { model.PackageVulnerabilityMaxSeverity };
                     }
-                }
-
-                _control = value;
-            }
+                    else
+                    {
+                        nugetUi.TopLevelVulnerablePackagesCount = model.IsPackageVulnerable ? 1 : 0;
+                        nugetUi.TopLevelVulnerablePackagesMaxSeverities = new List<int>() { model.PackageVulnerabilityMaxSeverity };
+                    }
+                });
         }
     }
 }

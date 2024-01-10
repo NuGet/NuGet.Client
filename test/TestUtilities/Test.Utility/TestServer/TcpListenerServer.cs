@@ -24,7 +24,7 @@ namespace NuGet.Test.Server
 
                 case TestServerMode.SlowResponseBody:
                     startServer = StartSlowResponseBody;
-                    break;                    
+                    break;
 
                 default:
                     throw new InvalidOperationException($"The mode {Mode} is not supported by this server.");
@@ -54,7 +54,7 @@ namespace NuGet.Test.Server
         }
 
         public TestServerMode Mode { get; set; } = TestServerMode.ServerProtocolViolation;
-        public TimeSpan SleepDuration { get; set; } = TimeSpan.FromSeconds(110); 
+        public TimeSpan SleepDuration { get; set; } = TimeSpan.FromSeconds(110);
 
         private async Task StartSlowResponseBody(TcpListener tcpListener, CancellationToken token)
         {
@@ -69,7 +69,7 @@ namespace NuGet.Test.Server
                     while (!string.IsNullOrEmpty(reader.ReadLine()))
                     {
                     }
-                    
+
                     string contentBefore = @"{""a"": 1, ";
                     string contentAfter = @"""b"": 2}";
 
@@ -80,7 +80,7 @@ namespace NuGet.Test.Server
                     writer.WriteLine();
                     writer.Write(contentBefore);
                     writer.Flush();
-                    await Task.Delay(SleepDuration);
+                    await Task.Delay(SleepDuration, token);
                     writer.Write(contentAfter);
                 }
             }

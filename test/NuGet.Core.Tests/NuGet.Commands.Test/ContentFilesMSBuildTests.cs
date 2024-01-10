@@ -17,6 +17,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ContentFilesMSBuildTests
     {
         [Fact]
@@ -71,7 +72,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(result.Success, logger.ShowErrors());
-                Assert.Equal(0, itemGroups.Length);
+                Assert.Equal(1, itemGroups.Length); // The SourceRoot is the only expected item group.
             }
         }
 
@@ -131,9 +132,9 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(result.Success, logger.ShowErrors());
-                Assert.Equal(1, itemGroups.Length);
-                Assert.EndsWith("x.txt", Path.GetFileName(itemGroups[0].Elements().Single().Attribute(XName.Get("Include")).Value));
-                Assert.Equal(expected.Trim(), itemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal(2, itemGroups.Length); // SourceRoot is the first item group.
+                Assert.EndsWith("x.txt", Path.GetFileName(itemGroups[1].Elements().Single().Attribute(XName.Get("Include")).Value));
+                Assert.Equal(expected.Trim(), itemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 

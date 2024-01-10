@@ -55,10 +55,6 @@ namespace NuGet.PackageManagement.Utility
                     var projectUri = new Uri(msbuildProject.MSBuildProjectPath);
                     var lockFileUri = new Uri(lockFileName);
                     var lockFileRelativePath = projectUri.MakeRelativeUri(lockFileUri).OriginalString;
-                    if (Path.DirectorySeparatorChar != '/')
-                    {
-                        lockFileRelativePath.Replace('/', Path.DirectorySeparatorChar);
-                    }
                     msbuildProject.ProjectSystem.AddExistingFile(lockFileRelativePath);
                 }
             }
@@ -67,7 +63,7 @@ namespace NuGet.PackageManagement.Utility
         internal static string GetPackagesLockFilePath(MSBuildNuGetProject msbuildProject)
         {
             var directory = (string)msbuildProject.Metadata["FullPath"];
-            var msbuildProperty = msbuildProject?.ProjectSystem?.GetPropertyValue("NuGetLockFilePath");
+            var msbuildProperty = msbuildProject.ProjectSystem?.GetPropertyValue("NuGetLockFilePath");
             var projectName = (string)msbuildProject.Metadata["UniqueName"];
 
             return GetPackagesLockFilePath(directory, msbuildProperty, projectName);
@@ -292,7 +288,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!File.Exists(pcFile))
             {
-                throw new FileNotFoundException(string.Format(Strings.Error_FileDoesNotExist, pcFile), pcFile);
+                throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileDoesNotExist, pcFile), pcFile);
             }
             if (projectTfm == null)
             {
@@ -304,7 +300,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!Directory.Exists(packagesFolderPath))
             {
-                throw new DirectoryNotFoundException(string.Format(Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
+                throw new DirectoryNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
             }
 
             var lockFile = new PackagesLockFile();

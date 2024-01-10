@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,15 +13,15 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using NuGet.Packaging.Signing;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
-using NuGet.Resolver;
+using NuGet.Packaging.Signing;
+using NuGet.ProjectManagement;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,9 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
-using NuGet.Test.Utility;
 using NuGet.Common;
+using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.Core.FuncTest
 {
@@ -75,7 +75,7 @@ namespace NuGet.Core.FuncTest
         public async Task ConcurrencyUtilities_LockStress()
         {
             // Arrange
-            using(var testDirectory = TestDirectory.Create())
+            using (var testDirectory = TestDirectory.Create())
             {
                 // This is the path that uniquely identifies the system-wide mutex.
                 var path = Path.Combine(testDirectory, "ConcurrencyUtilities_LockStress_Verification");
@@ -140,16 +140,17 @@ namespace NuGet.Core.FuncTest
             var action1Sem = new ManualResetEventSlim();
             var action2Sem = new ManualResetEventSlim();
 
-            Func<CancellationToken, Task<bool>> action1 = (ct) => {
+            Func<CancellationToken, Task<bool>> action1 = (ct) =>
+            {
                 action1HitSem.Set();
                 action1Sem.Wait();
-                return Task.FromResult(true);
+                return TaskResult.True;
             };
 
             Func<CancellationToken, Task<bool>> action2 = (ct) =>
             {
                 action2Sem.Set();
-                return Task.FromResult(true);
+                return TaskResult.True;
             };
 
             // Act
@@ -191,16 +192,17 @@ namespace NuGet.Core.FuncTest
             var action1Sem = new ManualResetEventSlim();
             var action2Sem = new ManualResetEventSlim();
 
-            Func<CancellationToken, Task<bool>> action1 = (ct) => {
+            Func<CancellationToken, Task<bool>> action1 = (ct) =>
+            {
                 action1HitSem.Set();
                 action1Sem.Wait();
-                return Task.FromResult(true);
+                return TaskResult.True;
             };
 
             Func<CancellationToken, Task<bool>> action2 = (ct) =>
             {
                 action2Sem.Set();
-                return Task.FromResult(true);
+                return TaskResult.True;
             };
 
             // Act

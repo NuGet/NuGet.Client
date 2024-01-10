@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,13 +11,15 @@ namespace NuGet.Test.Utility
 {
     public static class TestFileSystemUtility
     {
-        private static readonly Lazy<string> _root = new Lazy<string>(() => GetRootDirectory());
-        private static readonly Lazy<bool> _skipCleanUp = new Lazy<bool>(() => SkipCleanUp());
+        private static readonly Lazy<string> RootDirectoryLazy = new Lazy<string>(() => GetRootDirectory());
+        private static readonly Lazy<bool> SkipCleanupLazy = new Lazy<bool>(() => SkipCleanUp());
+        private const string DotnetCliBinary = "dotnet";
+        private const string DotnetCliExe = "dotnet.exe";
 
         /// <summary>
         /// Root test folder where temporary test outputs should go.
         /// </summary>
-        public static string NuGetTestFolder => _root.Value;
+        public static string NuGetTestFolder => RootDirectoryLazy.Value;
 
         private static bool SkipCleanUp()
         {
@@ -33,65 +36,137 @@ namespace NuGet.Test.Utility
 
         private static string GetRootDirectory()
         {
-            var repoRoot = GetRepositoryRoot();
+            string repoRoot = GetRepositoryRoot();
 
-            // Default for tests outside of the repo
-            var path = Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
+            DirectoryInfo root;
 
-            if (repoRoot != null)
+            if (repoRoot == null)
             {
-                path = Path.Combine(repoRoot, ".test");
-                Directory.CreateDirectory(path);
-                path = Path.Combine(path, "work");
+                // Use a folder under %TEMP% if the repository root can't be determined
+                root = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "NuGetTestFolder"));
+            }
+            else
+            {
+                DirectoryInfo testDirectory = Directory.CreateDirectory(Path.Combine(repoRoot, ".test"));
+
+                try
+                {
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.props"), "<Project />");
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.targets"), "<Project />");
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.rsp"), string.Empty);
+                    File.WriteAllText(
+                        Path.Combine(testDirectory.FullName, "Directory.Packages.props"),
+                        @"<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>");
+                }
+                catch (Exception)
+                {
+                    // Ignored
+                }
+
+                root = testDirectory.CreateSubdirectory("work");
             }
 
-            Directory.CreateDirectory(path);
-            return path;
+            return root.FullName;
         }
 
         private static string GetRepositoryRoot()
         {
-            var assemblyPath = new FileInfo(typeof(TestFileSystemUtility).GetTypeInfo().Assembly.Location);
-            var currentDir = assemblyPath.Directory;
-
-            var repoRoot = GetRepositoryRoot(currentDir);
-
-            if (repoRoot == null)
-            {
-                // Try walking up from the current directory, the test assembly
-                // is sometimes put in a temp location
-                repoRoot = GetRepositoryRoot(new DirectoryInfo(Directory.GetCurrentDirectory()));
-            }
-
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_TEST_WORK_PATH")))
+            // First, check if an override is specified
+            string testWorkPathOverride = Environment.GetEnvironmentVariable("NUGET_TEST_WORK_PATH");
+            if (!string.IsNullOrEmpty(testWorkPathOverride))
             {
                 // Override if set
-                repoRoot = new DirectoryInfo(Environment.GetEnvironmentVariable("NUGET_TEST_WORK_PATH"));
+                return new DirectoryInfo(testWorkPathOverride).FullName;
             }
+
+            // Second, check next to this assembly
+            var assemblyFileInfo = new FileInfo(typeof(TestFileSystemUtility).GetTypeInfo().Assembly.Location);
+
+            DirectoryInfo repoRoot = GetRepositoryRootFromStartingDirectory(assemblyFileInfo.Directory);
+
+            if (repoRoot != null)
+            {
+                return repoRoot.FullName;
+            }
+
+            // Finally, try walking up from the current directory since the test assembly is sometimes
+            // placed in a temp location due to shadow copy functionality in test runners like xunit
+            repoRoot = GetRepositoryRootFromStartingDirectory(new DirectoryInfo(Directory.GetCurrentDirectory()));
 
             return repoRoot?.FullName;
         }
 
-        private static DirectoryInfo GetRepositoryRoot(DirectoryInfo currentDir)
+        /// <summary>
+        /// Walks up the specified directory looking for NuGet.sln.
+        /// </summary>
+        /// <param name="startingDirectory">The <see cref="DirectoryInfo" /> to use as a starting directory.</param>
+        /// <returns>A <see cref="DirectoryInfo" /> representing the root of the respository if one is found, otherwise <see langword="null" />.</returns>
+        private static DirectoryInfo GetRepositoryRootFromStartingDirectory(DirectoryInfo startingDirectory)
         {
+            DirectoryInfo currentDir = startingDirectory;
+
             while (currentDir != null)
             {
-                if (currentDir.GetFiles().Any(e => e.Name.Equals("NuGet.sln", StringComparison.OrdinalIgnoreCase)))
+                string candidatePath = Path.Combine(currentDir.FullName, "NuGet.sln");
+
+                if (File.Exists(candidatePath))
                 {
                     // We have found the repo root.
-                    break;
+                    return currentDir;
                 }
 
                 currentDir = currentDir.Parent;
             }
 
-            return currentDir;
+            return null;
+        }
+
+        public static string GetDotnetCli()
+        {
+            var cliDirName = "cli";
+            var dir = TestFileSystemUtility.ParentDirectoryLookup()
+                .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, cliDirName)));
+            if (dir != null)
+            {
+                var dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliExe);
+                if (File.Exists(dotnetCli))
+                {
+                    return dotnetCli;
+                }
+
+                dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliBinary);
+                if (File.Exists(dotnetCli))
+                {
+                    return dotnetCli;
+                }
+            }
+
+            return null;
+        }
+
+        public static string GetArtifactsDirectoryInRepo()
+        {
+            var repositoryRootDir = ParentDirectoryLookup()
+                .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, "artifacts")));
+
+            return Path.Combine(repositoryRootDir?.FullName, "artifacts");
+        }
+
+        public static string GetNuGetExeDirectoryInRepo()
+        {
+            var ArtifactDir = GetArtifactsDirectoryInRepo();
+
+            return Path.Combine(ArtifactDir, "VS15");
         }
 
         public static bool DeleteRandomTestFolder(string randomTestPath)
         {
             // Avoid cleaning up test folders if 
-            if (!_skipCleanUp.Value && Directory.Exists(randomTestPath))
+            if (!SkipCleanupLazy.Value && Directory.Exists(randomTestPath))
             {
                 AssertNotTempPath(randomTestPath);
 
@@ -145,6 +220,18 @@ namespace NuGet.Test.Utility
             {
                 OldPath = oldPath
             };
+        }
+
+        public static IEnumerable<DirectoryInfo> ParentDirectoryLookup()
+        {
+            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (currentDirInfo != null)
+            {
+                yield return currentDirInfo;
+                currentDirInfo = currentDirInfo.Parent;
+            }
+
+            yield break;
         }
     }
 }

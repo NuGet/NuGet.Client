@@ -14,12 +14,19 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
-    public sealed class MSBuildProjectSystem 
+    public sealed class MSBuildProjectSystem
         : MSBuildUser
         , IMSBuildProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
-        
+
+        private const string TargetFrameworksProperty = "TargetFrameworks";
+        private const string TargetFrameworkProperty = "TargetFramework";
+        private const string TargetFrameworkMonikerProperty = "TargetFrameworkMoniker";
+        private const string TargetPlatformIdentifierProperty = "TargetPlatformIdentifier";
+        private const string TargetPlatformVersionProperty = "TargetPlatformVersion";
+        private const string TargetPlatformMinVersionProperty = "TargetPlatformMinVersion";
+
         public MSBuildProjectSystem(
             string msbuildDirectory,
             string projectFullPath,
@@ -60,12 +67,12 @@ namespace NuGet.Common
                 {
                     var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
                         projectFilePath: ProjectFileFullPath,
-                        targetFrameworks: GetPropertyValue("TargetFrameworks"),
-                        targetFramework: GetPropertyValue("TargetFramework"),
-                        targetFrameworkMoniker: GetPropertyValue("TargetFrameworkMoniker"),
-                        targetPlatformIdentifier: GetPropertyValue("TargetPlatformIdentifier"),
-                        targetPlatformVersion: GetPropertyValue("TargetPlatformVersion"),
-                        targetPlatformMinVersion: GetPropertyValue("TargetPlatformMinVersion"));
+                        targetFrameworks: GetPropertyValue(TargetFrameworksProperty),
+                        targetFramework: GetPropertyValue(TargetFrameworkProperty),
+                        targetFrameworkMoniker: GetPropertyValue(TargetFrameworkMonikerProperty),
+                        targetPlatformIdentifier: GetPropertyValue(TargetPlatformIdentifierProperty),
+                        targetPlatformVersion: GetPropertyValue(TargetPlatformVersionProperty),
+                        targetPlatformMinVersion: GetPropertyValue(TargetPlatformMinVersionProperty));
 
                     // Parse the framework of the project or return unsupported.
                     var frameworks = MSBuildProjectFrameworkUtility.GetProjectFrameworks(frameworkStrings).ToArray();
@@ -104,7 +111,7 @@ namespace NuGet.Common
         public Task AddFrameworkReferenceAsync(string name, string packageId)
         {
             // No-op
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void AddImport(string targetFullPath, ImportLocation location)
@@ -175,13 +182,13 @@ namespace NuGet.Common
                 new[] { new KeyValuePair<string, string>("HintPath", relativePath),
                         new KeyValuePair<string, string>("Private", "True")});
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task BeginProcessingAsync()
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void RegisterProcessedFiles(IEnumerable<string> files)
@@ -192,7 +199,7 @@ namespace NuGet.Common
         public Task EndProcessingAsync()
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void DeleteDirectory(string path, bool recursive)
@@ -258,7 +265,7 @@ namespace NuGet.Common
 
         public Task<bool> ReferenceExistsAsync(string name)
         {
-            return Task.FromResult(GetReference(name) != null);
+            return TaskResult.Boolean(GetReference(name) != null);
         }
 
         public void RemoveFile(string path)
@@ -312,7 +319,7 @@ namespace NuGet.Common
                 Project.RemoveItem(assemblyReference);
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public string ResolvePath(string path)
@@ -431,7 +438,7 @@ namespace NuGet.Common
                 dynamic globalProjectCollection = _projectCollectionType
                     .GetProperty("GlobalProjectCollection")
                     .GetMethod
-                    .Invoke(null, new object[] { });
+                    .Invoke(null, Array.Empty<object>());
                 var loadedProjects = globalProjectCollection.GetLoadedProjects(projectFile);
                 if (loadedProjects.Count > 0)
                 {

@@ -43,8 +43,20 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.IconUrl)]
         public Uri IconUrl { get; private set; }
 
+        private PackageIdentity _packageIdentity = null;
+
         [JsonIgnore]
-        public PackageIdentity Identity => new PackageIdentity(PackageId, Version);
+        public PackageIdentity Identity
+        {
+            get
+            {
+                if (_packageIdentity == null)
+                {
+                    _packageIdentity = new PackageIdentity(PackageId, Version);
+                }
+                return _packageIdentity;
+            }
+        }
 
         [JsonProperty(PropertyName = JsonProperties.LicenseUrl)]
         [JsonConverter(typeof(SafeUriConverter))]
@@ -63,6 +75,10 @@ namespace NuGet.Protocol
 
         [JsonProperty(PropertyName = JsonProperties.Published)]
         public DateTimeOffset? Published { get; private set; }
+
+        [JsonProperty(PropertyName = JsonProperties.ReadmeUrl)]
+        [JsonConverter(typeof(SafeUriConverter))]
+        public Uri ReadmeUrl { get; private set; }
 
         [JsonIgnore]
         public Uri ReportAbuseUrl { get; set; }
@@ -124,7 +140,7 @@ namespace NuGet.Protocol
 
                 var trimmedLicenseExpression = LicenseExpression.Trim();
 
-                System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
+                _ = System.Version.TryParse(LicenseExpressionVersion, out var effectiveVersion);
                 effectiveVersion = effectiveVersion ?? LicenseMetadata.EmptyVersion;
 
                 List<string> errors = null;
@@ -157,7 +173,7 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    // We can't parse it, add an error 
+                    // We can't parse it, add an error
                     if (errors == null)
                     {
                         errors = new List<string>();
@@ -194,17 +210,20 @@ namespace NuGet.Protocol
             return invalidLicenseIdentifiers;
         }
 
+        /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult<IEnumerable<VersionInfo>>(ParsedVersions);
 
         [JsonProperty(PropertyName = JsonProperties.Listed)]
         public bool IsListed { get; private set; } = true;
 
-        /// <summary>
-        /// If deprecated, contains deprecation information for this package; otherwise <c>null</c>.
-        /// </summary>
         [JsonProperty(PropertyName = JsonProperties.Deprecation)]
         public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
 
+        /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
+
+        /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
+        [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
     }
 }

@@ -12,11 +12,13 @@ using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Tests;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PluginResourceProviderTests
     {
         private const string _sourceUri = "https://unit.test";

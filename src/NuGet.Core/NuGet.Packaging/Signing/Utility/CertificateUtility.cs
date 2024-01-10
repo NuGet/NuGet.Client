@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class CertificateUtility
     {
-        private const int _limit = 10;
+        private const int ChainDepthLimit = 10;
 
         /// <summary>
         /// Converts a X509Certificate2 to a human friendly string of the following format -
@@ -33,13 +33,37 @@ namespace NuGet.Packaging.Signing
             return certStringBuilder.ToString();
         }
 
+        /// <summary>
+        /// Converts a X509Certificate2 to a collection of log messages for various verbosity levels -
+        /// Subject Name: CN=name
+        /// SHA1 hash: hash
+        /// Issued by: CN=issuer
+        /// Valid from: issue date time to expiry date time in local time
+        /// </summary>
+        /// <param name="cert">X509Certificate2 to be converted to string.</param>
+        /// <param name="fingerprintAlgorithm">Algorithm used to calculate certificate fingerprint</param>
+        /// <returns>string representation of the X509Certificate2.</returns>
+        internal static IReadOnlyList<SignatureLog> X509Certificate2ToLogMessages(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm, string indentation = "  ")
+        {
+            var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
+            var issues = new List<SignatureLog>();
+
+            issues.Add(SignatureLog.MinimalLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}"));
+            issues.Add(SignatureLog.InformationLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}"));
+            issues.Add(SignatureLog.MinimalLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), certificateFingerprint)}"));
+            issues.Add(SignatureLog.InformationLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}"));
+            issues.Add(SignatureLog.MinimalLog($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}"));
+
+            return issues;
+        }
+
         private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, string indentation)
         {
             var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
 
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(),certificateFingerprint)}");
+            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(), certificateFingerprint)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
             certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
         }
@@ -67,16 +91,16 @@ namespace NuGet.Packaging.Signing
 
             collectionStringBuilder.AppendLine(Strings.CertUtilityMultipleCertificatesHeader);
 
-            for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
+            for (var i = 0; i < Math.Min(ChainDepthLimit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
                 X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: "  ");
                 collectionStringBuilder.AppendLine();
             }
 
-            if (certCollection.Count > _limit)
+            if (certCollection.Count > ChainDepthLimit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - _limit));
+                collectionStringBuilder.AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityMultipleCertificatesFooter, certCollection.Count - ChainDepthLimit));
             }
 
             return collectionStringBuilder.ToString();
@@ -90,16 +114,15 @@ namespace NuGet.Packaging.Signing
 
             var chainElementsCount = chain.ChainElements.Count;
             // Start in 1 to omit main certificate (only build the chain)
-            for (var i = 1; i < Math.Min(_limit, chainElementsCount); i++)
+            for (var i = 1; i < Math.Min(ChainDepthLimit, chainElementsCount); i++)
             {
                 X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, fingerprintAlgorithm, indentation);
-                collectionStringBuilder.AppendLine();
                 indentation += indentationLevel;
             }
 
-            if (chainElementsCount > _limit)
+            if (chainElementsCount > ChainDepthLimit)
             {
-                collectionStringBuilder.AppendLine(string.Format(Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - _limit));
+                collectionStringBuilder.AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityMultipleCertificatesFooter, chainElementsCount - ChainDepthLimit));
             }
 
             return collectionStringBuilder.ToString();
@@ -124,15 +147,15 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        /// <summary> 
-        /// Validates the public key requirements for a certificate 
-        /// </summary> 
-        /// <param name="certificate">Certificate to validate</param> 
-        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns> 
+        /// <summary>
+        /// Validates the public key requirements for a certificate
+        /// </summary>
+        /// <param name="certificate">Certificate to validate</param>
+        /// <returns>True if the certificate's public key is valid within NuGet signature requirements</returns>
         public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
         {
-            // Check if the public key is RSA with a valid keysize 
-            var RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
+            // Check if the public key is RSA with a valid keysize
+            System.Security.Cryptography.RSA RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
 
             if (RSAPublicKey != null)
             {
@@ -162,7 +185,7 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var extension in certificate.Extensions)
             {
-                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage))
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage, StringComparison.Ordinal))
                 {
                     var ekuExtension = (X509EnhancedKeyUsageExtension)extension;
 
@@ -195,7 +218,7 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var extension in certificate.Extensions)
             {
-                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage))
+                if (string.Equals(extension.Oid.Value, Oids.EnhancedKeyUsage, StringComparison.Ordinal))
                 {
                     var ekuExtension = (X509EnhancedKeyUsageExtension)extension;
 
@@ -263,7 +286,11 @@ namespace NuGet.Packaging.Signing
             }
 
             var certificateFingerprint = GetHash(certificate, hashAlgorithm);
+#if NETCOREAPP
+            return BitConverter.ToString(certificateFingerprint).Replace("-", "", StringComparison.Ordinal);
+#else
             return BitConverter.ToString(certificateFingerprint).Replace("-", "");
+#endif
         }
 
         /// <summary>
@@ -275,8 +302,8 @@ namespace NuGet.Packaging.Signing
         /// additional information (e.g.:  the issuer's certificate).  This method is not a guaranteed offline
         /// check.</remarks>
         /// <param name="certificate">The certificate to check.</param>
-        /// <returns><c>true</c> if the certificate is self-issued; otherwise, <c>false</c>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <c>null</c>.</exception>
+        /// <returns><see langword="true" /> if the certificate is self-issued; otherwise, <see langword="false" />.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="certificate" /> is <see langword="null" />.</exception>
         public static bool IsSelfIssued(X509Certificate2 certificate)
         {
             if (certificate == null)
@@ -284,9 +311,9 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
             {
-                var chain = chainHolder.Chain;
+                IX509Chain chain = chainHolder.Chain2;
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
                 chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority |
@@ -294,7 +321,7 @@ namespace NuGet.Packaging.Signing
                     X509VerificationFlags.IgnoreCertificateAuthorityRevocationUnknown |
                     X509VerificationFlags.IgnoreEndRevocationUnknown;
 
-                chain.Build(certificate);
+                CertificateChainUtility.BuildWithPolicy(chain, certificate);
 
                 if (chain.ChainElements.Count != 1)
                 {
@@ -325,7 +352,11 @@ namespace NuGet.Packaging.Signing
                     if (reader.HasTag(keyIdentifierTag))
                     {
                         var keyIdentifier = reader.ReadValue(keyIdentifierTag);
+#if NETCOREAPP
+                        var akiKeyIdentifier = BitConverter.ToString(keyIdentifier).Replace("-", "", StringComparison.Ordinal);
+#else
                         var akiKeyIdentifier = BitConverter.ToString(keyIdentifier).Replace("-", "");
+#endif
 
                         return string.Equals(skiExtension.SubjectKeyIdentifier, akiKeyIdentifier, StringComparison.OrdinalIgnoreCase);
                     }

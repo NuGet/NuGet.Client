@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return 0;
             }
-            return System.Convert.ToDouble(values[0]) + System.Convert.ToDouble(values[1]) + System.Convert.ToDouble(values[2]);
+            return System.Convert.ToDouble(values[0], culture) + System.Convert.ToDouble(values[1], culture) + System.Convert.ToDouble(values[2], culture);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

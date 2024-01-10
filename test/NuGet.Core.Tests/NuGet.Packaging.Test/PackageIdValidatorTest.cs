@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -37,7 +38,8 @@ namespace NuGet.Packaging.Test
             string packageId = null;
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentException(() => PackageIdValidator.IsValidPackageId(packageId), "packageId");
+            Assert.Throws<ArgumentNullException>(paramName: "packageId",
+                testCode: () => PackageIdValidator.IsValidPackageId(packageId));
         }
 
         [Fact]
@@ -149,6 +151,32 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             string packageId = ".tools";
+
+            // Act
+            bool isValid = PackageIdValidator.IsValidPackageId(packageId);
+
+            // Assert
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void IsValidPackageId_PackageIdWithTwoUnderscores_Success()
+        {
+            // Arrange
+            string packageId = "Hello__World";
+
+            // Act
+            bool isValid = PackageIdValidator.IsValidPackageId(packageId);
+
+            // Assert
+            Assert.True(isValid);
+        }
+
+        [Fact]
+        public void IsValidPackageId_LongPackageIdWithUnMatchedCharAtTheEnd_Fails()
+        {
+            // Arrange
+            string packageId = string.Concat(new string('_', 100), "!");
 
             // Act
             bool isValid = PackageIdValidator.IsValidPackageId(packageId);

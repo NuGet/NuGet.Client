@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Tests.Plugins.Helpers;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -581,6 +583,154 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(1, packages.Count);
                 Assert.Equal("myPackage", package.Identity.Id);
                 Assert.Equal("1.0.0-alpha.1.2+5", package.Identity.Version.ToFullString());
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageSearch_SearchAsync_WithCancellationToken_ImmediatelyThrowsAsync()
+        {
+            using (var root = TestDirectory.Create())
+            {
+                // Arrange
+                var localResource = new FindLocalPackagesResourceV2(root);
+                LocalPackageSearchResource resource = new LocalPackageSearchResource(localResource);
+
+                // Act & Assert
+                await Assert.ThrowsAsync<TaskCanceledException>(
+                    async () => await resource.SearchAsync("", null, 0, 1, NullLogger.Instance, new CancellationToken(canceled: true)));
+            }
+        }
+
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/11650")]
+        public async Task LocalPackageSearch_SearchAsync_SlowLocalRepository_WithCancellationToken_ThrowsAsync()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Arrange
+            using CancellationTokenSource cts = new();
+            var slowLocalRepository = new DelayedFindLocalPackagesResourceV2(pathContext.PackageSource, 2000);
+
+            // Act
+            Task delayTask = Task.Delay(TimeSpan.FromMilliseconds(200), cts.Token);
+            LocalPackageSearchResource slowResource = new LocalPackageSearchResource(slowLocalRepository);
+            Task searchTask = slowResource.SearchAsync(searchTerm: "", filters: null, skip: 0, take: 1, log: NullLogger.Instance, token: cts.Token);
+
+            // Assert
+            // To simulate real world scenario I added delayed cancellation logic check in DelayedFindLocalPackagesResourceV2 localRepository.
+            // We're expecting delay Task finish before search Task since 2000 > 200.
+            Task completed = await Task.WhenAny(searchTask, delayTask);
+            if (completed != delayTask)
+            {
+                // Search task completed before shorter delay Task which is unexpected.
+                throw new TimeoutException();
+            }
+            // Trigger cancellation after 200 milsec.
+            cts.Cancel();
+            // During execution of long search task cancellation is triggered from localRepository.
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                async () => await searchTask);
+        }
+
+        [Theory]
+        [InlineData(SearchFilterType.IsAbsoluteLatestVersion, true, "2.0.0-alpha.1.2+5")]
+        [InlineData(SearchFilterType.IsLatestVersion, false, "1.0.0")]
+        public async Task LocalPackageSearchResource_SearchWithFilter_OnlyLatestVersionMatch(SearchFilterType searchFilter, bool includePrerelease, string expectedVersion)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                string workingPath = pathContext.WorkingDirectory;
+                var testLogger = new TestLogger();
+                string repositoryPath = Path.Combine(workingPath, "mypackages");
+                string packageId = "myPackage";
+                var packageA = new SimpleTestPackageContext(packageId, "2.0.0-alpha.1.2+5");
+                var packageA2 = new SimpleTestPackageContext(packageId, "1.0.0");
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA,
+                    packageA2
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageContexts);
+
+                FindLocalPackagesResourceV2 localResource = new FindLocalPackagesResourceV2(repositoryPath);
+                LocalPackageSearchResource resource = new LocalPackageSearchResource(localResource);
+
+                var filter = new SearchFilter(includePrerelease: includePrerelease, filter: searchFilter);
+
+                // Act
+                var matchingPackages = (await resource.SearchAsync(
+                        packageId,
+                        filter,
+                        skip: 0,
+                        take: 30,
+                        log: testLogger,
+                        token: CancellationToken.None))
+                        .OrderBy(p => p.Identity)
+                        .ToList();
+
+                var matchPackage = matchingPackages.First();
+
+                // Assert
+                Assert.Equal(1, matchingPackages.Count);
+                Assert.Equal(packageId, matchPackage.Identity.Id);
+                Assert.Equal(expectedVersion, matchPackage.Identity.Version.ToFullString());
+                Assert.Equal(0, testLogger.Warnings);
+                Assert.Equal(0, testLogger.Errors);
+            }
+        }
+
+        [Theory]
+        [InlineData(false, new[] { "1.0.0", "1.1.0" })]
+        [InlineData(true, new[] { "1.0.0", "1.1.0", "2.0.0-alpha.1.2+5" })]
+        public async Task LocalPackageSearchResource_SearchNoFilter_AllversionsMatch(bool includePrerelease, string[] expected)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                string workingPath = pathContext.WorkingDirectory;
+                var testLogger = new TestLogger();
+                string repositoryPath = Path.Combine(workingPath, "mypackages");
+                string packageId = "myPackage";
+                var packageA1 = new SimpleTestPackageContext(packageId, "1.0.0");
+                var packageA2 = new SimpleTestPackageContext(packageId, "1.1.0");
+                var packageA3 = new SimpleTestPackageContext(packageId, "2.0.0-alpha.1.2+5");
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA1,
+                    packageA2,
+                    packageA3
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(workingPath, packageContexts);
+
+                var localResource = new FindLocalPackagesResourceV2(workingPath);
+                var resource = new LocalPackageSearchResource(localResource);
+
+                // Mimic setup for AllVersions request
+                var filter = new SearchFilter(includePrerelease: includePrerelease, filter: null)
+                {
+                    OrderBy = SearchOrderBy.Id
+                };
+
+                // Act
+                var matchingPackages = (await resource.SearchAsync(
+                        packageId,
+                        filter,
+                        skip: 0,
+                        take: 30,
+                        log: testLogger,
+                        token: CancellationToken.None))
+                        .OrderBy(p => p.Identity)
+                        .ToList();
+
+                // Assert
+                Assert.Equal(true, matchingPackages.All(p => p.Identity.Id == packageId));
+                Assert.Equal(expected, matchingPackages.Select(p => p.Identity.Version.ToFullString()).ToArray());
+                Assert.Equal(0, testLogger.Warnings);
+                Assert.Equal(0, testLogger.Errors);
             }
         }
     }

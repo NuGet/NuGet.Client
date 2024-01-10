@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Versioning;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging
 {
@@ -32,7 +33,19 @@ namespace NuGet.Packaging
             get;
         }
 
+        /// <summary>
+        /// FrameworkName object representing this package file's target framework. Deprecated. Must be null on net5.0 and greater.
+        /// </summary>
+        [Obsolete("Use NuGetFramework instead. This property will be null for any frameworks net5.0 or above.")]
         FrameworkName TargetFramework
+        {
+            get;
+        }
+
+        /// <summary>
+        /// NuGetFramework object representing this package file's target framework. Use this instead of TargetFramework.
+        /// </summary>
+        NuGetFramework NuGetFramework
         {
             get;
         }

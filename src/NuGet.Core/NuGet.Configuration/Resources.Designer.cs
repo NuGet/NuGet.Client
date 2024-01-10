@@ -19,7 +19,7 @@ namespace NuGet.Configuration {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -57,6 +57,15 @@ namespace NuGet.Configuration {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argument cannot be null, empty, or whitespace only..
+        /// </summary>
+        internal static string Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly", resourceCulture);
             }
         }
         
@@ -115,16 +124,16 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot update the origin of a setting..
+        ///   Looks up a localized string similar to Unable to update setting since it is in an uneditable config file..
         /// </summary>
-        internal static string CannotUpdateOrigin {
+        internal static string CannotUpdateReadOnlyConfig {
             get {
-                return ResourceManager.GetString("CannotUpdateOrigin", resourceCulture);
+                return ResourceManager.GetString("CannotUpdateReadOnlyConfig", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are several client certificate configurations associated to same package source(s): {0}.
+        ///   Looks up a localized string similar to There are multiple client certificate configurations associated with the same package source(s): {0}.
         /// </summary>
         internal static string ClientCertificateDuplicateConfiguration {
             get {
@@ -138,6 +147,15 @@ namespace NuGet.Configuration {
         internal static string CredentialsItemMustHaveUsernamePassword {
             get {
                 return ResourceManager.GetString("CredentialsItemMustHaveUsernamePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}.
+        /// </summary>
+        internal static string Error_DuplicatePackageSource {
+            get {
+                return ResourceManager.GetString("Error_DuplicatePackageSource", resourceCulture);
             }
         }
         
@@ -156,6 +174,24 @@ namespace NuGet.Configuration {
         internal static string Error_InvalidAttribute {
             get {
                 return ResourceManager.GetString("Error_InvalidAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; must have at least one package pattern..
+        /// </summary>
+        internal static string Error_ItemNeedsAtLeastOnePackagePattern {
+            get {
+                return ResourceManager.GetString("Error_ItemNeedsAtLeastOnePackagePattern", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; must have at least one package pattern. Path: &apos;{1}&apos;.
+        /// </summary>
+        internal static string Error_ItemNeedsAtLeastOnePackagePatternWithPath {
+            get {
+                return ResourceManager.GetString("Error_ItemNeedsAtLeastOnePackagePatternWithPath", resourceCulture);
             }
         }
         
@@ -196,16 +232,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are no writable config files..
-        /// </summary>
-        internal static string Error_NoWritableConfig {
-            get {
-                return ResourceManager.GetString("Error_NoWritableConfig", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Certificate for &apos;{0}&apos; package source was not found in &apos;{1}.{2}&apos; storage by &apos;{3}&apos; criteria with &apos;{4}&apos; value..
+        ///   Looks up a localized string similar to Certificate for the package source &apos;{0}&apos; was not found in &apos;{1}.{2}&apos; storage by &apos;{3}&apos; criteria with &apos;{4}&apos; value..
         /// </summary>
         internal static string Error_StoreCertCertificateNotFound {
             get {
@@ -214,7 +241,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to It is denied to use password and clearTextPassword at the same time..
+        ///   Looks up a localized string similar to Password and ClearTextPassword cannot be used at the same time..
         /// </summary>
         internal static string FileCertItemPasswordAndClearTextPasswordAtSameTime {
             get {
@@ -223,7 +250,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to From file client certificate configuration password for &apos;{0}&apos; package source cannot be decrypted.
+        ///   Looks up a localized string similar to Client certificate configuration password for the package source &apos;{0}&apos; cannot be decrypted.
         /// </summary>
         internal static string FileCertItemPasswordCannotBeDecrypted {
             get {
@@ -232,7 +259,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fileCert path attribute points on non existing file..
+        ///   Looks up a localized string similar to A fileCert path specified a file that does not exist..
         /// </summary>
         internal static string FileCertItemPathFileNotExist {
             get {
@@ -241,7 +268,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fileCert item path not set..
+        ///   Looks up a localized string similar to A fileCert item path was not set..
         /// </summary>
         internal static string FileCertItemPathFileNotSet {
             get {
@@ -331,29 +358,11 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package source does not belong to the collection of available sources..
-        /// </summary>
-        internal static string PackageSource_Invalid {
-            get {
-                return ResourceManager.GetString("PackageSource_Invalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to {0} cannot be null or empty..
         /// </summary>
         internal static string PropertyCannotBeNullOrEmpty {
             get {
                 return ResourceManager.GetString("PropertyCannotBeNullOrEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Environment variable &apos;{0}&apos; must contain an absolute path, the full path of &apos;{1}&apos; cannot be determined..
-        /// </summary>
-        internal static string RelativeEnvVarPath {
-            get {
-                return ResourceManager.GetString("RelativeEnvVarPath", resourceCulture);
             }
         }
         
@@ -390,6 +399,15 @@ namespace NuGet.Configuration {
         internal static string ShowError_CannotHaveChildren {
             get {
                 return ResourceManager.GetString("ShowError_CannotHaveChildren", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot update package sources, config file contains a duplicated key &apos;{0}&apos; in the disabled package sources section. Path: &apos;{1}&apos;.
+        /// </summary>
+        internal static string ShowError_ConfigDuplicateDisabledSources {
+            get {
+                return ResourceManager.GetString("ShowError_ConfigDuplicateDisabledSources", resourceCulture);
             }
         }
         

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,8 @@ namespace NuGet.Configuration
     /// </summary>
     public class WebProxy : IWebProxy
     {
-        private IReadOnlyList<string> _bypassList = new string[] { };
+        private IReadOnlyList<string> _bypassList = Array.Empty<string>();
+
         private Regex[] _regExBypassList; // can be null
 
         public WebProxy(string proxyAddress)
@@ -50,7 +51,8 @@ namespace NuGet.Configuration
             }
             set
             {
-                _bypassList = value ?? new string[] { };
+                _bypassList = value ?? Array.Empty<string>();
+
                 UpdateRegExList();
             }
         }
@@ -95,7 +97,7 @@ namespace NuGet.Configuration
                 return null;
             }
 
-            if (address.IndexOf("://") == -1)
+            if (address.IndexOf("://", StringComparison.Ordinal) == -1)
             {
                 address = "http://" + address;
             }

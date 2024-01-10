@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -125,7 +125,7 @@ internal class EnumerableAsync<T> : IEnumerableAsync<T>
     private readonly bool _allVersions;
 
 
-    public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable,bool allVersions, ILogger logger, CancellationToken token)
+    public EnumerableAsync(IV2FeedParser feedParser, string searchTerm, SearchFilter filter, int skip, int take, bool isSearchAvailable, bool allVersions, ILogger logger, CancellationToken token)
     {
         _feedParser = feedParser;
         _searchTerm = searchTerm;
@@ -140,7 +140,7 @@ internal class EnumerableAsync<T> : IEnumerableAsync<T>
 
     public IEnumeratorAsync<T> GetEnumeratorAsync()
     {
-        return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take, _isSearchAvailable,_allVersions, _logger, _token);
+        return (IEnumeratorAsync<T>)new EnumeratorAsync(_feedParser, _searchTerm, _filter, _skip, _take, _isSearchAvailable, _allVersions, _logger, _token);
     }
 }
 
@@ -194,8 +194,8 @@ internal class EnumeratorAsync : IEnumeratorAsync<IPackageSearchMetadata>
                 ? await _feedParser.GetSearchPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token)
                 : await _feedParser.GetPackagesPageAsync(_searchTerm, _filter, _skip, _take, _logger, _token);
 
-            
-            var results = _allVersions?
+
+            var results = _allVersions ?
                 _currentPage.Items.GroupBy(p => p.Id)
                  .Select(group => group.OrderByDescending(p => p.Version)).SelectMany(pg => pg)
                  .Select(

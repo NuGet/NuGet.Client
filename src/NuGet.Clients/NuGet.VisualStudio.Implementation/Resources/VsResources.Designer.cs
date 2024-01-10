@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio.Implementation.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class VsResources {
@@ -178,15 +178,6 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; does not support PackageReference..
-        /// </summary>
-        internal static string Error_InvalidPackageRefProjectCast {
-            get {
-                return ResourceManager.GetString("Error_InvalidPackageRefProjectCast", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Project {0} does not exist in the project system cache..
         /// </summary>
         internal static string Error_ProjectNotInCache {
@@ -210,15 +201,6 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         internal static string InvalidNuGetVersionString {
             get {
                 return ResourceManager.GetString("InvalidNuGetVersionString", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package list contains invalid or duplicate entries..
-        /// </summary>
-        internal static string InvalidPackageList {
-            get {
-                return ResourceManager.GetString("InvalidPackageList", resourceCulture);
             }
         }
         
@@ -273,6 +255,69 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         internal static string PackageAssemblyPathDisplayName {
             get {
                 return ResourceManager.GetString("PackageAssemblyPathDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Build File.
+        /// </summary>
+        internal static string PackageBuildFileBrowseObjectClassName {
+            get {
+                return ResourceManager.GetString("PackageBuildFileBrowseObjectClassName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Build Files.
+        /// </summary>
+        internal static string PackageBuildFileGroupName {
+            get {
+                return ResourceManager.GetString("PackageBuildFileGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The build file&apos;s name..
+        /// </summary>
+        internal static string PackageBuildFileNameDescription {
+            get {
+                return ResourceManager.GetString("PackageBuildFileNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string PackageBuildFileNameDisplayName {
+            get {
+                return ResourceManager.GetString("PackageBuildFileNameDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The build file&apos;s path..
+        /// </summary>
+        internal static string PackageBuildFilePathDescription {
+            get {
+                return ResourceManager.GetString("PackageBuildFilePathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path.
+        /// </summary>
+        internal static string PackageBuildFilePathDisplayName {
+            get {
+                return ResourceManager.GetString("PackageBuildFilePathDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Build Files (Multi-targeting).
+        /// </summary>
+        internal static string PackageBuildMultiTargetingFileGroupName {
+            get {
+                return ResourceManager.GetString("PackageBuildMultiTargetingFileGroupName", resourceCulture);
             }
         }
         
@@ -408,6 +453,42 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         internal static string PackageContentFilesGroupName {
             get {
                 return ResourceManager.GetString("PackageContentFilesGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Document.
+        /// </summary>
+        internal static string PackageDocumentBrowseObjectClassName {
+            get {
+                return ResourceManager.GetString("PackageDocumentBrowseObjectClassName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Documents.
+        /// </summary>
+        internal static string PackageDocumentGroupName {
+            get {
+                return ResourceManager.GetString("PackageDocumentGroupName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The document&apos;s path..
+        /// </summary>
+        internal static string PackageDocumentPathDescription {
+            get {
+                return ResourceManager.GetString("PackageDocumentPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path.
+        /// </summary>
+        internal static string PackageDocumentPathDisplayName {
+            get {
+                return ResourceManager.GetString("PackageDocumentPathDisplayName", resourceCulture);
             }
         }
         
@@ -597,6 +678,15 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         internal static string ProjectReferenceNameDisplayName {
             get {
                 return ResourceManager.GetString("ProjectReferenceNameDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
             }
         }
         

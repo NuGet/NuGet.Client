@@ -3,12 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
+using NuGet.Commands;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -17,6 +26,10 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
+using StreamJsonRpc;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -25,16 +38,16 @@ namespace NuGet.PackageManagement.UI
         public const string LogEntrySource = "NuGet Package Manager";
 
         private readonly NuGetUIProjectContext _projectContext;
+        private PackageManagerControl _packageManagerControl;
+        private string _selectedPackageId;
 
-        public NuGetUI(
+        private NuGetUI(
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
-            INuGetUIContext context,
             INuGetUILogger logger)
         {
             CommonOperations = commonOperations;
             _projectContext = projectContext;
-            UIContext = context;
             UILogger = logger;
 
             // set default values of properties
@@ -42,16 +55,92 @@ namespace NuGet.PackageManagement.UI
             DependencyBehavior = DependencyBehavior.Lowest;
             RemoveDependencies = false;
             ForceRemove = false;
-            Projects = Enumerable.Empty<NuGetProject>();
+            Projects = Enumerable.Empty<IProjectContextInfo>();
             DisplayPreviewWindow = true;
             DisplayDeprecatedFrameworkWindow = true;
         }
 
-        public bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects)
+        // For testing purposes only.
+        internal NuGetUI(
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
+            INuGetUILogger logger,
+            INuGetUIContext uiContext,
+            IPackageManagerControlViewModel packageManagerControlViewModel)
+            : this(commonOperations, projectContext, logger)
+        {
+            UIContext = uiContext;
+            PackageManagerControlViewModel = packageManagerControlViewModel;
+        }
+
+        public static async Task<NuGetUI> CreateAsync(
+            IServiceBroker serviceBroker,
+            ICommonOperations commonOperations,
+            NuGetUIProjectContext projectContext,
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            ISettings settings,
+            IVsSolutionManager solutionManager,
+            IPackageRestoreManager packageRestoreManager,
+            IOptionsPageActivator optionsPageActivator,
+            IUserSettingsManager userSettingsManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+            SolutionUserOptions solutionUserOptions,
+            INuGetLockService lockService,
+            INuGetUILogger logger,
+            IRestoreProgressReporter restoreProgressReporter,
+            CancellationToken cancellationToken,
+            params IProjectContextInfo[] projects)
+        {
+            Assumes.NotNull(serviceBroker);
+            Assumes.NotNull(commonOperations);
+            Assumes.NotNull(projectContext);
+            Assumes.NotNull(sourceRepositoryProvider);
+            Assumes.NotNull(settings);
+            Assumes.NotNull(solutionManager);
+            Assumes.NotNull(packageRestoreManager);
+            Assumes.NotNull(optionsPageActivator);
+            Assumes.NotNull(userSettingsManager);
+            Assumes.NotNull(deleteOnRestartManager);
+            Assumes.NotNull(solutionUserOptions);
+            Assumes.NotNull(lockService);
+            Assumes.NotNull(restoreProgressReporter);
+            Assumes.NotNull(logger);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var nuGetUi = new NuGetUI(
+                commonOperations,
+                projectContext,
+                logger);
+
+            nuGetUi.UIContext = await NuGetUIContext.CreateAsync(
+                serviceBroker,
+                sourceRepositoryProvider,
+                settings,
+                solutionManager,
+                packageRestoreManager,
+                optionsPageActivator,
+                solutionUserOptions,
+                deleteOnRestartManager,
+                lockService,
+                restoreProgressReporter,
+                cancellationToken);
+
+            nuGetUi.UIContext.Projects = projects;
+
+            return nuGetUi;
+        }
+
+        public async Task<bool> WarnAboutDotnetDeprecationAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken)
         {
             var result = false;
 
-            InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(projects); });
+            DeprecatedFrameworkModel dataContext = await DotnetDeprecatedPrompt.GetDeprecatedFrameworkModelAsync(
+                UIContext.ServiceBroker,
+                projects,
+                cancellationToken);
+
+            InvokeOnUIThread(() => { result = WarnAboutDotnetDeprecationImpl(dataContext); });
 
             return result;
         }
@@ -70,11 +159,11 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
-        private bool WarnAboutDotnetDeprecationImpl(IEnumerable<NuGetProject> projects)
+        private bool WarnAboutDotnetDeprecationImpl(DeprecatedFrameworkModel dataContext)
         {
             var window = new DeprecatedFrameworkWindow(UIContext)
             {
-                DataContext = DotnetDeprecatedPrompt.GetDeprecatedFrameworkModel(projects)
+                DataContext = dataContext
             };
 
             var dialogResult = window.ShowModal();
@@ -98,13 +187,8 @@ namespace NuGet.PackageManagement.UI
                 DataContext = packages
             };
 
-            using (NuGetEventTrigger.TriggerEventBeginEnd(
-                NuGetEvent.LicenseWindowBegin,
-                NuGetEvent.LicenseWindowEnd))
-            {
-                var dialogResult = licenseWindow.ShowModal();
-                return dialogResult ?? false;
-            }
+            var dialogResult = licenseWindow.ShowModal();
+            return dialogResult ?? false;
         }
 
         public bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat)
@@ -124,18 +208,34 @@ namespace NuGet.PackageManagement.UI
             return dialogResult ?? false;
         }
 
-        public async System.Threading.Tasks.Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects)
+        public async Task UpgradeProjectsToPackageReferenceAsync(IEnumerable<IProjectContextInfo> msBuildProjects)
         {
-            var projects = Projects.ToList();
-
-            foreach (var project in msBuildProjects)
+            if (msBuildProjects == null)
             {
-                var newProject = await UIContext.SolutionManager.UpgradeProjectToPackageReferenceAsync(project);
+                throw new ArgumentNullException(nameof(msBuildProjects));
+            }
 
-                if (newProject != null)
+            List<IProjectContextInfo> projects = Projects.ToList();
+
+            IServiceBroker serviceBroker = UIContext.ServiceBroker;
+
+            using (INuGetProjectUpgraderService projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
+                NuGetServices.ProjectUpgraderService,
+                cancellationToken: CancellationToken.None))
+            {
+                Assumes.NotNull(projectUpgrader);
+
+                foreach (IProjectContextInfo project in msBuildProjects)
                 {
-                    projects.Remove(project);
-                    projects.Add(newProject);
+                    IProjectContextInfo newProject = await projectUpgrader.UpgradeProjectToPackageReferenceAsync(
+                        project.ProjectId,
+                        CancellationToken.None);
+
+                    if (newProject != null)
+                    {
+                        projects.Remove(project);
+                        projects.Add(newProject);
+                    }
                 }
             }
 
@@ -147,16 +247,64 @@ namespace NuGet.PackageManagement.UI
             UIUtility.LaunchExternalLink(url);
         }
 
+        public void LaunchNuGetOptionsDialog(PackageSourceMappingActionViewModel packageSourceMappingActionViewModel)
+        {
+            LaunchNuGetOptionsDialog(OptionsPage.PackageSourceMapping);
+
+            if (packageSourceMappingActionViewModel == null)
+            {
+                return;
+            }
+
+            bool isPackageSourceMappingEnabled = packageSourceMappingActionViewModel.IsPackageSourceMappingEnabled;
+            bool isPackageMapped = packageSourceMappingActionViewModel._isPackageMapped; // Read from cache to avoid recalculating.
+            PackageSourceMappingStatus packageSourceMappingStatus;
+            if (!isPackageSourceMappingEnabled)
+            {
+                packageSourceMappingStatus = PackageSourceMappingStatus.Disabled;
+            }
+            else
+            {
+                packageSourceMappingStatus = isPackageMapped ? PackageSourceMappingStatus.Mapped : PackageSourceMappingStatus.NotMapped;
+            }
+
+            var evt = NavigatedTelemetryEvent.CreateWithPMUIConfigurePackageSourceMapping(
+                UIUtility.ToContractsItemFilter(PackageManagerControlViewModel.ActiveFilter),
+                PackageManagerControlViewModel.IsSolution,
+                packageSourceMappingStatus);
+            TelemetryActivity.EmitTelemetryEvent(evt);
+        }
+
         public void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen)
         {
             if (UIContext?.OptionsPageActivator != null)
             {
-                InvokeOnUIThread(() => { UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
+                InvokeOnUIThread(() =>
+                {
+                    if (optionsPageToOpen == OptionsPage.PackageSourceMapping)
+                    {
+                        SetSelectedPackageInNuGetUIOptionsContextService();
+                    }
+
+                    UIContext.OptionsPageActivator.ActivatePage(optionsPageToOpen, null);
+                });
             }
             else
             {
                 MessageBox.Show("Options dialog is not available in the standalone UI");
             }
+        }
+
+        private void SetSelectedPackageInNuGetUIOptionsContextService()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+#pragma warning disable ISB001 // Dispose of proxies
+                IComponentModel componentModelMapping = await ServiceLocator.GetComponentModelAsync();
+                var nuGetUIOptionsContext = componentModelMapping.GetService<INuGetUIOptionsContext>();
+                nuGetUIOptionsContext.SelectedPackageId = SelectedPackageId;
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+            }).PostOnFailure(nameof(NuGetUI), nameof(LaunchNuGetOptionsDialog));
         }
 
         public bool PromptForPreviewAcceptance(IEnumerable<PreviewResult> actions)
@@ -194,55 +342,34 @@ namespace NuGet.PackageManagement.UI
 
         public ICommonOperations CommonOperations { get; }
 
-        public INuGetUIContext UIContext { get; }
+        public INuGetUIContext UIContext { get; private set; }
 
         public INuGetUILogger UILogger { get; }
 
         public INuGetProjectContext ProjectContext => _projectContext;
 
-        public IEnumerable<NuGetProject> Projects
-        {
-            set;
-            get;
-        }
+        public IEnumerable<IProjectContextInfo> Projects { get; set; }
 
-        public bool DisplayPreviewWindow
-        {
-            set;
-            get;
-        }
+        public bool DisplayPreviewWindow { get; set; }
 
-        public bool DisplayDeprecatedFrameworkWindow
-        {
-            set;
-            get;
-        }
+        public bool DisplayDeprecatedFrameworkWindow { get; set; }
 
-        public FileConflictAction FileConflictAction
-        {
-            set;
-            get;
-        }
+        public FileConflictAction FileConflictAction { get; set; }
 
-        public DependencyBehavior DependencyBehavior
-        {
-            set;
-            get;
-        }
+        public DependencyBehavior DependencyBehavior { get; set; }
 
-        public bool RemoveDependencies
-        {
-            set;
-            get;
-        }
+        public bool RemoveDependencies { get; set; }
 
-        public bool ForceRemove
-        {
-            set;
-            get;
-        }
+        public bool ForceRemove { get; set; }
 
-        public PackageIdentity SelectedPackage { get; set; }
+        public string SelectedPackageId
+        {
+            get => _selectedPackageId;
+            set
+            {
+                _selectedPackageId = value;
+            }
+        }
 
         public int SelectedIndex { get; set; }
 
@@ -252,23 +379,35 @@ namespace NuGet.PackageManagement.UI
 
         public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
 
-        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
-        {
-            UIContext.SolutionManager.OnActionsExecuted(actions);
-        }
+        public int TopLevelVulnerablePackagesCount { get; set; }
 
-        public IEnumerable<SourceRepository> ActiveSources
+        public IEnumerable<int> TopLevelVulnerablePackagesMaxSeverities { get; set; }
+
+        public int TransitiveVulnerablePackagesCount { get; set; }
+
+        public IEnumerable<int> TransitiveVulnerablePackagesMaxSeverities { get; set; }
+
+        public PackageSourceMoniker ActivePackageSourceMoniker
         {
             get
             {
-                IEnumerable<SourceRepository> sources = null;
-
-                if (PackageManagerControl != null)
+                if (PackageManagerControl is null)
                 {
-                    InvokeOnUIThread(() => { sources = PackageManagerControl.ActiveSources; });
+                    return null;
                 }
 
-                return sources;
+                PackageSourceMoniker source = null;
+
+                if (!ThreadHelper.CheckAccess())
+                {
+                    InvokeOnUIThread(() => { source = PackageManagerControl.SelectedSource; });
+                }
+                else
+                {
+                    source = PackageManagerControl.SelectedSource;
+                }
+
+                return source;
             }
         }
 
@@ -287,15 +426,15 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal PackageManagerControl PackageManagerControl { get; set; }
+        public IPackageManagerControlViewModel PackageManagerControlViewModel { get; private set; }
 
-        private DetailControl _detailControl;
-
-        internal DetailControl DetailControl
+        internal PackageManagerControl PackageManagerControl
         {
+            get => _packageManagerControl;
             set
             {
-                _detailControl = value;
+                _packageManagerControl = value;
+                PackageManagerControlViewModel = value;
             }
         }
 
@@ -310,36 +449,45 @@ namespace NuGet.PackageManagement.UI
 
         public void ShowError(Exception ex)
         {
-            var signException = ex as SignatureException;
-
-            if (signException != null)
+            if (ex is RemoteInvocationException remoteException
+                && remoteException.DeserializedErrorData is RemoteError remoteError)
             {
-                ProcessSignatureIssues(signException);
+                ShowError(remoteError);
             }
             else
             {
-                if (ex is NuGetResolverConstraintException ||
-                    ex is PackageAlreadyInstalledException ||
-                    ex is MinClientVersionException ||
-                    ex is FrameworkException ||
-                    ex is NuGetProtocolException ||
-                    ex is PackagingException ||
-                    ex is InvalidOperationException ||
-                    ex is PackageReferenceRollbackException)
-                {
-                    // for exceptions that are known to be normal error cases, just
-                    // display the message.
-                    ProjectContext.Log(MessageLevel.Info, ExceptionUtilities.DisplayMessage(ex, indent: true));
+                ProjectContext.Log(MessageLevel.Error, ex.ToString());
 
-                    // write to activity log
-                    var activityLogMessage = string.Format(CultureInfo.CurrentCulture, ex.ToString());
-                    ActivityLog.LogError(LogEntrySource, activityLogMessage);
+                UILogger.ReportError(new LogMessage(LogLevel.Error, ExceptionUtilities.DisplayMessage(ex, indent: false)));
+            }
+        }
+
+        private void ShowError(RemoteError error)
+        {
+            if (error.TypeName == typeof(SignatureException).FullName)
+            {
+                ProcessSignatureIssues(error);
+            }
+            else
+            {
+                if (error.TypeName == typeof(NuGetResolverConstraintException).FullName
+                    || error.TypeName == typeof(PackageAlreadyInstalledException).FullName
+                    || error.TypeName == typeof(MinClientVersionException).FullName
+                    || error.TypeName == typeof(FrameworkException).FullName
+                    || error.TypeName == typeof(NuGetProtocolException).FullName
+                    || error.TypeName == typeof(PackagingException).FullName
+                    || error.TypeName == typeof(InvalidOperationException).FullName
+                    || error.TypeName == typeof(PackageReferenceRollbackException).FullName)
+                {
+                    ProjectContext.Log(MessageLevel.Info, error.ProjectContextLogMessage);
+
+                    ActivityLog.LogError(LogEntrySource, error.ActivityLogMessage);
 
                     // Log additional messages to the error list to provide context on why the rollback failed
-                    var rollbackException = ex as PackageReferenceRollbackException;
-                    if (rollbackException != null)
+                    if (error.LogMessages != null
+                        && error.TypeName == typeof(PackageReferenceRollbackException).FullName)
                     {
-                        foreach (var message in rollbackException.LogMessages)
+                        foreach (ILogMessage message in error.LogMessages)
                         {
                             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
                             {
@@ -350,32 +498,41 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    ProjectContext.Log(MessageLevel.Error, ex.ToString());
+                    ProjectContext.Log(MessageLevel.Error, error.ProjectContextLogMessage);
                 }
 
-                UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
+                UILogger.ReportError(error.LogMessage);
             }
         }
 
-        private void ProcessSignatureIssues(SignatureException ex)
+        public void Dispose()
         {
-            if (!string.IsNullOrEmpty(ex.Message))
+            UIContext.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
+
+        private void ProcessSignatureIssues(RemoteError error)
+        {
+            if (!string.IsNullOrEmpty(error.LogMessage.Message))
             {
-                UILogger.ReportError(ex.AsLogMessage());
-                ProjectContext.Log(ex.AsLogMessage());
+                UILogger.ReportError(error.LogMessage);
+                ProjectContext.Log(error.LogMessage);
             }
 
-            foreach (var result in ex.Results)
+            if (error.LogMessages is null)
             {
-                var errorList = result.GetErrorIssues().ToList();
-                var warningList = result.GetWarningIssues().ToList();
+                return;
+            }
 
-                errorList.ForEach(p => UILogger.ReportError(p));
-                warningList.ForEach(p => UILogger.ReportError(p));
+            var errorList = error.LogMessages.Where(message => message.Level == LogLevel.Error).ToList();
+            var warningList = error.LogMessages.Where(message => message.Level == LogLevel.Warning).ToList();
 
-                errorList.ForEach(p => ProjectContext.Log(p));
-                warningList.ForEach(p => ProjectContext.Log(p));
-            }            
+            errorList.ForEach(p => UILogger.ReportError(p));
+            warningList.ForEach(p => UILogger.ReportError(p));
+
+            errorList.ForEach(p => ProjectContext.Log(p));
+            warningList.ForEach(p => ProjectContext.Log(p));
         }
     }
 }

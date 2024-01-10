@@ -12,6 +12,8 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -68,7 +70,7 @@ namespace NuGet.SolutionRestoreManager
 
             _serviceProvider = serviceProvider;
 
-            var commandService = await serviceProvider.GetServiceAsync<IMenuCommandService>();
+            var commandService = await serviceProvider.GetServiceAsync<IMenuCommandService, IMenuCommandService>(throwOnFailure: false);
 
             var menuCommandId = new CommandID(CommandSet, CommandId);
             var menuItem = new OleMenuCommand(
@@ -76,7 +78,7 @@ namespace NuGet.SolutionRestoreManager
 
             commandService.AddCommand(menuItem);
 
-            _vsMonitorSelection = await serviceProvider.GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
+            _vsMonitorSelection = await serviceProvider.GetServiceAsync<IVsMonitorSelection, IVsMonitorSelection>();
             Assumes.Present(_vsMonitorSelection);
 
             // get the solution not building and not debugging cookie
@@ -118,7 +120,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 _restoreTask = NuGetUIThreadHelper.JoinableTaskFactory
                     .RunAsync(() => SolutionRestoreWorker.Value.ScheduleRestoreAsync(
-                        SolutionRestoreRequest.ByMenu(),
+                        SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.RestoreSolutionPackages),
                         CancellationToken.None))
                     .Task;
             }

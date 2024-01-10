@@ -18,11 +18,12 @@ namespace NuGet.Commands
         private readonly Lazy<LockFile> _lockFileLazy;
 
         public NoOpRestoreResult(bool success, string lockFilePath, Lazy<LockFile> lockFileLazy, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
-            base(success : success, restoreGraphs : null, compatibilityCheckResults : new List<CompatibilityCheckResult>() , 
-                msbuildFiles : null, lockFile : null, previousLockFile : null, lockFilePath: lockFilePath,
-                cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, dependencyGraphSpecFilePath: null, dependencyGraphSpec: null, projectStyle: projectStyle, elapsedTime: elapsedTime)
+            base(success: success, restoreGraphs: null, compatibilityCheckResults: new List<CompatibilityCheckResult>(),
+                msbuildFiles: null, lockFile: null, previousLockFile: null, lockFilePath: lockFilePath,
+                cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath: null, packagesLockFile: null, dependencyGraphSpecFilePath: null, dependencyGraphSpec: null, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
             _lockFileLazy = lockFileLazy ?? throw new ArgumentNullException(nameof(lockFileLazy));
+            LogMessages = cacheFile?.LogMessages ?? new List<IAssetsLogMessage>();
         }
 
         public override LockFile LockFile => _lockFileLazy.Value;

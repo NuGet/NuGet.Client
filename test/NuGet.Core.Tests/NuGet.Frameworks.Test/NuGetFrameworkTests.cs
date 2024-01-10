@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using FluentAssertions;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -14,6 +16,11 @@ namespace NuGet.Test
         [InlineData("net45", "net45")]
         [InlineData("net5.0", "net5.0")]
         [InlineData("net50", "net5.0")]
+        [InlineData("netcoreapp5.0", "net5.0")]
+        [InlineData("netcoreapp5.0-windows", "net5.0-windows")]
+        [InlineData("netcoreapp5.0-windows10.0", "net5.0-windows10.0")]
+        [InlineData("net5.0-windows7.0", "net5.0-windows7.0")]
+        [InlineData("net5.0-android11.0", "net5.0-android11.0")]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8")]
         [InlineData("portable-net45+win8+xamarin.ios", "portable-net45+win8")]
         [InlineData("portable-net45+win8", "portable-net45+win8")]
@@ -33,7 +40,7 @@ namespace NuGet.Test
         [InlineData("portable-monoandroid+xamarin.ios+xamarin.watchos+monotouch+win8+net45", "portable-net45+win8")]
         [InlineData("portable-win8+net45+monoandroid+monotouch+xamarin.ios+xamarin.tvos", "portable-net45+win8")]
         [InlineData("portable-monoandroid+xamarin.ios+xamarin.tvos+monotouch+win8+net45", "portable-net45+win8")]
-        public void NuGetFramework_ShortName(string input, string expected)
+        public void NuGetFramework_ShortFolderName(string input, string expected)
         {
             var fw = NuGetFramework.Parse(input);
 
@@ -43,7 +50,7 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net5.0", "net5.0")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0")]
         [InlineData("net452", ".NETFramework,Version=v4.5.2")]
         [InlineData("netcoreapp3.1", ".NETCoreApp,Version=v3.1")]
         public void NuGetFramework_GetDotNetFrameworkName(string input, string expected)
@@ -53,6 +60,20 @@ namespace NuGet.Test
             string result = fw.GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
 
             Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("net48", ".NETFramework,Version=v4.8", "")]
+        [InlineData("netstandard2.1", ".NETStandard,Version=v2.1", "")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0", "")]
+        [InlineData("net5.0-windows7.0", ".NETCoreApp,Version=v5.0", "windows,Version=7.0")]
+        [InlineData("portable-net45+win8", ".NETPortable,Version=v0.0,Profile=Profile7", "")]
+        public void NuGetFramework_TargetFrameworkMoniker_TargetPlatformMoniker(string input, string expectedTfm, string expectedTpm)
+        {
+            var framework = NuGetFramework.Parse(input);
+
+            Assert.Equal(expectedTfm, framework.DotNetFrameworkName);
+            Assert.Equal(expectedTpm, framework.DotNetPlatformName);
         }
 
         public static TheoryData EqualsFrameworkData
@@ -113,8 +134,8 @@ namespace NuGet.Test
         public void EqualityOperator_ReturnTrueIfBothFrameworksAreNull()
         {
             // Arrange
-            NuGetFramework framework1 = null;
-            NuGetFramework framework2 = null;
+            NuGetFramework? framework1 = null;
+            NuGetFramework? framework2 = null;
 
             // Act and Assert
             Assert.True(framework1 == framework2);
@@ -138,8 +159,8 @@ namespace NuGet.Test
         public void InequalityOperator_ReturnFalseIfBothFrameworksAreNull()
         {
             // Arrange
-            NuGetFramework framework1 = null;
-            NuGetFramework framework2 = null;
+            NuGetFramework? framework1 = null;
+            NuGetFramework? framework2 = null;
 
             // Act and Assert
             Assert.False(framework1 != framework2);
@@ -196,7 +217,7 @@ namespace NuGet.Test
         {
             // Arrange
             var framework1 = NuGetFramework.Parse(frameworkName);
-            NuGetFramework framework2 = null;
+            NuGetFramework? framework2 = null;
 
             // Act and Assert
             Assert.False(framework1 == framework2);
@@ -222,7 +243,7 @@ namespace NuGet.Test
         {
             // Arrange
             var framework1 = NuGetFramework.Parse(frameworkName);
-            NuGetFramework framework2 = null;
+            NuGetFramework? framework2 = null;
 
             // Act and Assert
             Assert.True(framework1 != framework2);
@@ -357,6 +378,41 @@ namespace NuGet.Test
                 "Invalid portable frameworks 'net45+net-cf+win8'. " +
                 "A hyphen may not be in any of the portable framework names.",
                 ex.Message);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp5.0")]
+        [InlineData("net45")]
+        [InlineData("net5.0-windows10.0.16000.1")]
+        public void NuGetFramework_WithCopyConstructor_CreatesEquivalentFrameworks(string frameworkName)
+        {
+            var originalFramework = NuGetFramework.Parse(frameworkName);
+
+            var copiedFramework = new NuGetFramework(originalFramework);
+
+            Assert.Equal(originalFramework, copiedFramework);
+        }
+
+        [Fact]
+        public void NuGetFramework_Stuff()
+        {
+            var leftSide = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
+            var rightSide = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
+
+            leftSide.Should().Be(rightSide);
+            leftSide.Should().Be(rightSide);
+            leftSide.GetHashCode().Should().Be(rightSide.GetHashCode(), because: "Equivalent objects should have the same hash code.");
+            leftSide.GetHashCode().Should().Be(rightSide.GetHashCode(), because: "Equivalent objects should have the same hash code.");
+
+            var frameworks = new List<NuGetFramework> { leftSide, rightSide };
+
+            var distinctFrameworksWithComparer = frameworks.Distinct(NuGetFrameworkFullComparer.Instance).ToArray();
+            var distinctFrameworksWithoutComparer = frameworks.Distinct().ToArray();
+
+            distinctFrameworksWithComparer.Should().HaveCount(1);
+            distinctFrameworksWithoutComparer.Should().HaveCount(1);
+
+
         }
     }
 }

@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
@@ -19,7 +21,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignatureUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class SignatureUtilityTests
     {
         private readonly CertificatesFixture _fixture;
 
@@ -245,6 +248,59 @@ namespace NuGet.Packaging.Test
                     Assert.True(hasRepoCountersignature);
                 }
             }
+        }
+
+        [Fact]
+        public void LogAdditionalContext_WhenChainIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => SignatureUtility.LogAdditionalContext(chain: null, new List<SignatureLog>()));
+
+            Assert.Equal("chain", exception.ParamName);
+        }
+
+        [Fact]
+        public void LogAdditionalContext_WhenIssuesIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => SignatureUtility.LogAdditionalContext(Mock.Of<IX509Chain>(), issues: null));
+
+            Assert.Equal("issues", exception.ParamName);
+        }
+
+        [Fact]
+        public void LogAdditionalContext_WhenChainAdditionalContextIsNull_DoesNotLog()
+        {
+            Mock<IX509Chain> chain = new(MockBehavior.Strict);
+
+            chain.SetupGet(x => x.AdditionalContext)
+                .Returns((ILogMessage)null);
+
+            List<SignatureLog> issues = new();
+
+            SignatureUtility.LogAdditionalContext(chain.Object, issues);
+
+            Assert.Empty(issues);
+        }
+
+        [Fact]
+        public void LogAdditionalContext_WhenChainAdditionalContextIsNotNull_Logs()
+        {
+            Mock<IX509Chain> chain = new(MockBehavior.Strict);
+            LogMessage logMessage = LogMessage.CreateWarning(NuGetLogCode.NU3042, "abc");
+
+            chain.SetupGet(x => x.AdditionalContext)
+                .Returns(logMessage);
+
+            List<SignatureLog> issues = new();
+
+            SignatureUtility.LogAdditionalContext(chain.Object, issues);
+
+            SignatureLog signatureLog = Assert.Single(issues);
+
+            Assert.Equal(LogLevel.Warning, signatureLog.Level);
+            Assert.Equal(logMessage.Code, signatureLog.Code);
+            Assert.Equal(logMessage.Message, signatureLog.Message);
         }
 
         private static PrimarySignature GeneratePrimarySignatureWithNoCertificates(PrimarySignature signature)

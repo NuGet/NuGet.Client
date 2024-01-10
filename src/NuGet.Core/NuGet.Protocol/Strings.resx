@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ActionExecutor_RollingBack" xml:space="preserve">
-    <value>Install failed. Rolling back...</value>
-  </data>
-  <data name="ActionResolver_UnsupportedAction" xml:space="preserve">
-    <value>Unrecognized Package Action '{0}'.</value>
-  </data>
-  <data name="ActionResolver_UnsupportedDependencyBehavior" xml:space="preserve">
-    <value>Unsupported Dependency Behavior '{0}'.</value>
-  </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
@@ -143,12 +134,6 @@
   </data>
   <data name="DeleteCommandDeletingPackage" xml:space="preserve">
     <value>Deleting {0} {1} from the {2}.</value>
-  </data>
-  <data name="DownloadActionHandler_InvalidDownloadUrl" xml:space="preserve">
-    <value>The download URL for {0} '{1}' is invalid.</value>
-  </data>
-  <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
-    <value>No download URL could be found for {0}.</value>
   </data>
   <data name="Http_Timeout" xml:space="preserve">
     <value>The HTTP request to '{0} {1}' has timed out after {2}ms.</value>
@@ -189,32 +174,14 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="NoApiKeyFound" xml:space="preserve">
     <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
   </data>
-  <data name="NuGetRepository_CannotCreateAggregateRepo" xml:space="preserve">
-    <value>Cannot create a NuGet Repository from the Aggregate Source</value>
-  </data>
-  <data name="NuGetServiceProvider_ServiceNotSupported" xml:space="preserve">
-    <value>The {0} service is not supported by this object.</value>
-  </data>
   <data name="OneOrMoreUrisMustBeSpecified" xml:space="preserve">
     <value>One or more URIs must be specified.</value>
-  </data>
-  <data name="PackageActionDescriptionWrapper_UnrecognizedAction" xml:space="preserve">
-    <value>Unrecognized Package Action '{0}'.</value>
-  </data>
-  <data name="ProjectInstallationTarget_ProjectIsNotTargetted" xml:space="preserve">
-    <value>The project '{0}' is not one of the projects targetted by this object.</value>
   </data>
   <data name="Protocol_BadSource" xml:space="preserve">
     <value>Failed to retrieve metadata from source '{0}'.</value>
   </data>
-  <data name="Protocol_IndexMissingResourcesNode" xml:space="preserve">
-    <value>Service index document is missing the 'resources' property.</value>
-  </data>
   <data name="Protocol_MalformedMetadataError" xml:space="preserve">
     <value>Metadata could not be loaded from the source '{0}'.</value>
-  </data>
-  <data name="Protocol_MissingRegistrationBase" xml:space="preserve">
-    <value>The source does not have a Registration Base Url defined!</value>
   </data>
   <data name="Protocol_MissingSearchService" xml:space="preserve">
     <value>The source does not have a Search service!</value>
@@ -237,12 +204,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="PackageServerEndpoint_NotSupported" xml:space="preserve">
     <value>ERROR: This version of nuget.exe does not support updating packages to package source '{0}'.</value>
   </data>
-  <data name="RequiredFeatureUnsupportedException_DefaultMessageWithFeature" xml:space="preserve">
-    <value>The '{0}' installation feature was required by a package but is not supported on the current host.</value>
-  </data>
-  <data name="RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature" xml:space="preserve">
-    <value>The installation host does not support a feature required by this package.</value>
-  </data>
   <data name="UnableToFindFile" xml:space="preserve">
     <value>File does not exist ({0}).</value>
   </data>
@@ -255,9 +216,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="Log_InvalidCacheEntry" xml:space="preserve">
     <value>An invalid cache entry was found for URL '{0}' and will be replaced.</value>
   </data>
-  <data name="Protocol_FlatContainerIndexVersionsNotArray" xml:space="preserve">
-    <value>The 'versions' property at '{0}' must be an array.</value>
-  </data>
   <data name="Protocol_InvalidJsonObject" xml:space="preserve">
     <value>The content at '{0}' is not a valid JSON object.</value>
   </data>
@@ -269,9 +227,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Log_RetryingServiceIndex" xml:space="preserve">
     <value>Retrying service index request for source '{0}'.</value>
-  </data>
-  <data name="Protocol_InvalidServiceIndex" xml:space="preserve">
-    <value>The source does not have the 'version' property at '{0}'.</value>
   </data>
   <data name="Protocol_InvalidXml" xml:space="preserve">
     <value>The content at '{0}' is not valid XML.</value>
@@ -357,12 +312,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
     <value>Failed to validate the file '{0}'.</value>
     <comment>{0} is the file path.</comment>
   </data>
-  <data name="v2sourceDescription" xml:space="preserve">
-    <value>API v2 (legacy)</value>
-  </data>
-  <data name="v3sourceDescription" xml:space="preserve">
-    <value>API v3</value>
-  </data>
   <data name="Plugin_ConnectionAlreadyStarted" xml:space="preserve">
     <value>A connection has already been started.</value>
   </data>
@@ -373,9 +322,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Plugin_HandshakeFailed" xml:space="preserve">
     <value>The plugin handshake failed.</value>
-  </data>
-  <data name="Plugin_IllegalMessageWhileHandshaking" xml:space="preserve">
-    <value>An illegal message type was received during handshake.</value>
   </data>
   <data name="Plugin_ProtocolVersionNotSupportedOnError" xml:space="preserve">
     <value>A protocol version is not supported on error.</value>
@@ -411,11 +357,6 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="Plugin_NotConnected" xml:space="preserve">
     <value>A plugin is not connected.</value>
-  </data>
-  <data name="Plugin_FailedToQueryPluginOperationsClaims" xml:space="preserve">
-    <value>A failure occurred while attempting to query plugin operation claims for the plugin at '{0}'.  Exception:  {1}</value>
-    <comment>{0} is a file system path
-{1} is the message from a caught exception</comment>
   </data>
   <data name="Plugin_FileNotFound" xml:space="preserve">
     <value>A plugin was not found at path '{0}'.</value>
@@ -536,5 +477,57 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="StringCannotBeNullOrEmpty" xml:space="preserve">
     <value>String argument '{0}' cannot be null or empty</value>
+  </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
+  </data>
+  <data name="Http_ResponseLogWithRetryAfter" xml:space="preserve">
+    <value>{0} {1} {2}ms (retry after: {3}s)</value>
+    <comment>Parameters in order: non-localizable HTTP status, non-localizable HTTP request URI, request duration in milliseconds, retry after duration in milliseconds
+The "ms" should be localized to the abbreviation for milliseconds.
+The "s" should be localized to the abbreviation for seconds.</comment>
+  </data>
+  <data name="VulnerabilityPage_CouldNotLoad" xml:space="preserve">
+    <value>Package source '{0}' vulnerability data index '{1}' could not be loaded. This indicates a problem with the JSON file contents returned from the server.</value>
+    <comment>{0} - package source name (for example "nuget.org")
+{1} - URL where no data was loaded from</comment>
+  </data>
+  <data name="VulnerabilityPage_HasNoName" xml:space="preserve">
+    <value>Vulnerability page index {0} does not contain a name (Source: '{1}')</value>
+    <comment>{0} - an index number
+{1} - the package source name</comment>
+  </data>
+  <data name="VulnerabilityPage_NameHasInvalidCharacters" xml:space="preserve">
+    <value>Vulnerability page index {0} contains invalid characters (Source: '{1}')</value>
+    <comment>{0} - an index number
+{1} - package source name</comment>
+  </data>
+  <data name="VulnerabilityPage_NameNotUnique" xml:space="preserve">
+    <value>Vulnerability page name '{0}' is not unique. Only using the first (Source: '{1}')</value>
+    <comment>{0} - file name
+{1} - package source name</comment>
+  </data>
+  <data name="VulnerabilityPage_NameTooLong" xml:space="preserve">
+    <value>Vulnerability page index {0} name is longer than {1} characters (Source: '{2}')</value>
+    <comment>{0} - an index number
+{1} - number representing the max length allowed
+{2} - the package source name</comment>
+  </data>
+  <data name="VulnerabilityPage_NoUrl" xml:space="preserve">
+    <value>Vulnerability page '{0}' does not contain a URL (Source: '{1}')</value>
+    <comment>{0} - name of file
+{1} - package source name</comment>
+  </data>
+  <data name="VulnerabilityPage_UrlNotHttp" xml:space="preserve">
+    <value>Vulnerability page '{0}' contains URL that is not http(s) (Source: '{1}')</value>
+    <comment>{0} - name of file
+{1} - package source name</comment>
+  </data>
+  <data name="Vulnerability_TooManyPages" xml:space="preserve">
+    <value>Package source '{0}' has {1} vulnerability data pages. Using the first {2}.</value>
+    <comment>{0} - package source name
+{1} - number of vulerabilitiy files reported
+{2} - max count allowed</comment>
   </data>
 </root>

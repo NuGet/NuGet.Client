@@ -7,13 +7,16 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ClientCertificatesTests
     {
-        [Fact]
+        // Skip: https://github.com/NuGet/Home/issues/9684
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void EnsurePackageSourceClientCertificatesForwardedToV3HttpClientHandler()
         {
             // Arrange

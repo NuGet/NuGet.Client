@@ -306,7 +306,7 @@ function Test-PackageWithIncompatibleAssembliesRollsInstallBack {
     $p = New-WebApplication
 
     # Act & Assert
-    Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.5', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
+    Assert-Throws { Install-Package BingMapAppSDK -Project $p.Name -Source $context.RepositoryPath } "Could not install package 'BingMapAppSDK 1.0.1011.1716'. You are trying to install this package into a project that targets '.NETFramework,Version=v4.7.2', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author."
     Assert-Null (Get-ProjectPackage $p BingMapAppSDK 1.0.1011.1716)
     Assert-Null (Get-SolutionPackage BingMapAppSDK 1.0.1011.1716)
 }
@@ -428,37 +428,6 @@ function Test-InstallPackageWithWebConfigDebugChanges {
     Assert-AreEqual "Data Source=ReleaseSQLServer;Initial Catalog=MyReleaseDB;Integrated Security=True" $addNode.connectionString
 }
 
-function Test-FSharpSimpleInstallWithContentFiles {
-    param(
-        $context
-    )
-
-    # Arrange
-    $p = New-FSharpLibrary
-
-    # Act
-    Install-Package jquery -Version 1.5 -Project $p.Name -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p jquery
-    Assert-SolutionPackage jquery
-    Assert-NotNull (Get-ProjectItem $p Scripts\jquery-1.5.js)
-    Assert-NotNull (Get-ProjectItem $p Scripts\jquery-1.5.min.js)
-}
-
-function Test-FSharpSimpleWithAssemblyReference {
-    # Arrange
-    $p = New-FSharpLibrary
-
-    # Act
-    Install-Package Antlr -Project $p.Name -Source $context.RepositoryPath
-
-    # Assert
-    Assert-Package $p Antlr
-    Assert-SolutionPackage Antlr
-    Assert-Reference $p Runtime
-}
-
 function Test-WebsiteInstallPackageWithRootNamespace {
     param(
         $context
@@ -489,15 +458,17 @@ function Test-AddBindingRedirectToWebsiteWithNonExistingOutputPath {
 }
 
 function Test-InstallCanPipeToFSharpProjects {
+    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
+    param($context)
     # Arrange
     $p = New-FSharpLibrary
+    Build-Solution # wait for project nomination
 
     # Act
     $p | Install-Package elmah -Version 1.1 -source $context.RepositoryPath
 
     # Assert
-    Assert-Package $p elmah
-    Assert-SolutionPackage elmah
+    Assert-NetCorePackageInLockFile $p elmah 1.1
 }
 
 function Test-PipingMultipleProjectsToInstall {
@@ -629,13 +600,11 @@ function Test-InstallPackageWithGacReferencesIntoMultipleProjectTypes {
     # Arrange
     $a = New-ClassLibrary
     $b = New-WebSite
-    $c = New-FSharpLibrary
-    $projects = @($a, $b, $c)
+    $projects = @($a, $b)
 
     # Act
     $a | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
     $b | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
-    $c | Install-Package PackageWithGacReferences -Source $context.RepositoryRoot
 
     # Assert
     $projects | %{ Assert-Reference $_ System.Web }
@@ -682,15 +651,11 @@ function Test-InstallPackageWithNonExistentFrameworkReferences {
 }
 
 function Test-InstallPackageWithFrameworkFacadeReference {
-    param(
-        $context
-    )
+    [SkipTest("https://github.com/NuGet/Home/issues/11221")]
+    param($context)
 
     # Arrange
     $p = New-ClassLibrary
-
-    # Change it to v4.5.1
-    $p.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5.1"
 
     Install-Package PackageWithFrameworkFacadeReference -Source $context.RepositoryRoot
 
@@ -730,6 +695,7 @@ function Test-InstallPackageWorksWithProjectsHavingSameNames {
 }
 
 function Test-SimpleBindingRedirects {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
@@ -756,6 +722,7 @@ function Test-SimpleBindingRedirects {
 # Tests that when there are multip config files, the binding redirects will
 # be added to the right file.
 function Test-SimpleBindingRedirectsMultipleConfigs {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
@@ -780,6 +747,9 @@ function Test-SimpleBindingRedirectsMultipleConfigs {
 }
 
 function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     # Arrange
     $a = New-ClassLibrary
 
@@ -800,14 +770,15 @@ function Test-SimpleBindingRedirectsClassLibraryUpdatePackage {
 }
 
 function Test-SimpleBindingRedirectsClassLibraryReference {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
     # Arrange
     $a = New-WebApplication
     $b = New-WebSite
-    $d = New-ClassLibrary
-    $e = New-ClassLibrary
+    $d = New-ClassLibraryNET46
+    $e = New-ClassLibraryNET46
 
     Add-ProjectReference $a $d
     Add-ProjectReference $b $e
@@ -832,13 +803,13 @@ function Test-SimpleBindingRedirectsClassLibraryReference {
 }
 
 function Test-SimpleBindingRedirectsIndirectReference {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
-    $b = New-ClassLibrary
-    $c = New-ClassLibrary
+    $b = New-ClassLibraryNET46
+    $c = New-ClassLibraryNET46
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
@@ -857,9 +828,8 @@ function Test-SimpleBindingRedirectsIndirectReference {
 
 function Test-SimpleBindingRedirectsNonWeb {
     [SkipTest('https://github.com/NuGet/Home/issues/8402')]
-    param(
-        $context
-    )
+    param($context)
+
     # Arrange
     $a = New-ConsoleApplication
     $b = New-WPFApplication
@@ -878,13 +848,13 @@ function Test-SimpleBindingRedirectsNonWeb {
 }
 
 function Test-BindingRedirectComplex {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     Add-ProjectReference $a $b
     Add-ProjectReference $b $c
@@ -903,6 +873,7 @@ function Test-BindingRedirectComplex {
 }
 
 function Test-SimpleBindingRedirectsWebsite {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
@@ -920,11 +891,11 @@ function Test-SimpleBindingRedirectsWebsite {
 
 
 function Test-BindingRedirectInstallLargeProject {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     $numProjects = 25
-    $projects = 0..$numProjects | %{ New-ClassLibrary $_ }
+    $projects = 0..$numProjects | %{ New-ClassLibraryNET46 $_ }
     $p = New-WebApplication
 
     for($i = 0; $i -lt $numProjects; $i++) {
@@ -939,13 +910,13 @@ function Test-BindingRedirectInstallLargeProject {
 }
 
 function Test-BindingRedirectDuplicateReferences {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     ($a, $b) | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
 
@@ -964,13 +935,13 @@ function Test-BindingRedirectDuplicateReferences {
 }
 
 function Test-BindingRedirectClassLibraryWithDifferentDependents {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     ($a, $b) | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
 
@@ -989,13 +960,13 @@ function Test-BindingRedirectClassLibraryWithDifferentDependents {
 }
 
 function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocations {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
+
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
     $aPath = ls (Get-SolutionDir) -Recurse -Filter A.dll
@@ -1019,6 +990,7 @@ function Test-BindingRedirectProjectsThatReferenceSameAssemblyFromDifferentLocat
 }
 
 function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
@@ -1041,14 +1013,13 @@ function Test-BindingRedirectsMixNonStrongNameAndStrongNameAssemblies {
 }
 
 function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembly {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
 
     # Arrange
     $a = New-WebApplication
     $b = New-ConsoleApplication
-    $c = New-ClassLibrary
+    $c = New-ClassLibraryNET46
 
     $a | Install-Package A -Source $context.RepositoryPath -IgnoreDependencies
     $b | Install-Package A -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
@@ -2448,65 +2419,41 @@ function Test-InstallMetadataPackageAddPackageToProject
 
 function Test-FrameworkAssemblyReferenceShouldNotHaveBindingRedirect
 {
-    # This test uses a particular profile which is available only in VS 2012.
-    if ((Get-VSVersion) -ne "11.0")
-    {
-        return
-    }
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
 
     # Arrange
     $p1 = New-ConsoleApplication -ProjectName Hello
 
-    # Change it to v4.5
-    $p1.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5"
-
-    # after project retargetting, the $p1 reference is no longer valid. Needs to find it again.
-
-    $p1 = Get-Project -Name Hello
-
     Assert-NotNull $p1
 
-    # Profile104 is net45+sl4+wp7.5+win8
-    $p2 = New-PortableLibrary -Profile "Profile104"
-
-    Assert-NotNull $p2
-
-    Add-ProjectReference $p1 $p2
-
     # Act
-    @($p1, $p2) | Install-Package Microsoft.Net.Http -version 2.2.3-beta -pre
+    # NuGet.Protocol.dll 5.11.0 has a reference to System.Net.Http 4.2.0.0
+    $p1 | Install-Package NuGet.Protocol -version 5.11.0
+    # Microsoft.Extensions.Http.dll has a reference to System.Net.Http 4.0.0.0
+    $p1 | Install-Package Microsoft.Extensions.Http -version 5.0.0
 
     # Assert
-    Assert-BindingRedirect $p1 app.config System.Net.Http.Primitives '0.0.0.0-4.2.3.0' '4.2.3.0'
-    Assert-NoBindingRedirect $p1 app.config System.Runtime '0.0.0.0-1.5.11.0' '1.5.11.0'
+    Write-Host "Checking System.Runtime.CompilerServices.Unsafe"
+    Assert-BindingRedirect $p1 app.config System.Runtime.CompilerServices.Unsafe '0.0.0.0-5.0.0.0' '5.0.0.0'
+    Write-Host "Checking System.Net.Http"
+    Assert-NoBindingRedirect $p1 app.config System.Net.Http '0.0.0.0-5.2.0.0' '5.2.0.0'
 }
 
 function Test-NonFrameworkAssemblyReferenceShouldHaveABindingRedirect
 {
-    # This test uses a particular profile which is available only in VS 2012.
-    if ((Get-VSVersion) -eq "10.0" -or (Get-VSVersion) -eq "12.0")
-    {
-        return
-    }
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
+    param($context)
 
     # Arrange
     $p = New-ConsoleApplication -ProjectName Hello
 
-    # Change it to v4.5
-    $p.Properties.Item("TargetFrameworkMoniker").Value = ".NETFramework,Version=v4.5"
-
-    # after project retargetting, the $p reference is no longer valid. Need to find it again
-
-    $p = Get-Project -Name Hello
-
-    Assert-NotNull $p
-
     # Act
-    $p | Install-Package Microsoft.AspNet.Mvc -Version 4.0.30506
-    $p | Update-Package Microsoft.AspNet.Razor
+    $p | Install-Package NuGet.Protocol -Version 5.10.0
+    $p | Update-Package Newtonsoft.Json -Version 13.0.1
 
     # Assert
-    Assert-BindingRedirect $p app.config System.Web.Razor '0.0.0.0-3.0.0.0' '3.0.0.0'
+    Assert-BindingRedirect $p app.config Newtonsoft.Json '0.0.0.0-13.0.0.0' '13.0.0.0'
 }
 
 function Test-SpecifyDifferentVersionThenServerVersion
@@ -2809,6 +2756,7 @@ function Test-InstallPackageWithoutDependencyVersion
 # Install-Package works.
 function Test-InstallPackagesConfigOnline
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/12249')]
     param($context)
 
     # Arrange
@@ -2984,4 +2932,24 @@ function Test-InstallPackageWithRootNamespaceInPPFile {
     $path = (Get-ProjectItemPath $p foo.cs)
     $content = [System.IO.File]::ReadAllText($path)
     Assert-True ($content.Contains("namespace testProject"))
+}
+
+function RemoveDirectory {
+    param($dir)
+
+    $iteration = 0
+    while ($iteration++ -lt 10)
+    {
+        if (Test-Path $dir)
+        {
+            # because -Recurse parameter in Remove-Item has a known issue so using Get-ChildItem to
+            # first delete all the children and then delete the folder.
+            Get-ChildItem $dir -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            break;
+        }
+    }
 }

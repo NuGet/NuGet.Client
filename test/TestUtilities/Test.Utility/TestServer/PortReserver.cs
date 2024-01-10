@@ -25,14 +25,33 @@ namespace NuGet.Test.Server
         private static ConcurrentDictionary<string, bool> PortLock = new ConcurrentDictionary<string, bool>();
         private readonly int _basePort;
 
-        public PortReserver(int basePort = 50231)
+        /// <summary>
+        /// Initializes an instance of PortReserver.
+        /// </summary>
+        /// <param name="basePort">The base port for all request URL's. Defaults to system chosen available port,
+        /// at or below `65535`.</param>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        public PortReserver(int? basePort = null)
         {
-            if (basePort <= 0)
+            if (basePort is null)
+            {
+                // Port 0 means find an available port on the system.
+                var tcpListener = new TcpListener(IPAddress.Loopback, port: 0);
+                tcpListener.Start();
+                basePort = ((IPEndPoint)tcpListener.LocalEndpoint).Port;
+                tcpListener.Stop();
+            }
+            else if (basePort <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(basePort), "The base port must be greater than zero.");
             }
-            
-            _basePort = basePort;
+
+            if (!basePort.HasValue)
+            {
+                throw new InvalidOperationException("Unable to find a port");
+            }
+
+            _basePort = basePort.Value;
         }
 
         public async Task<T> ExecuteAsync<T>(

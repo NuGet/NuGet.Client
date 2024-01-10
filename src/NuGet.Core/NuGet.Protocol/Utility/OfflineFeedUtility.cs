@@ -87,7 +87,11 @@ namespace NuGet.Protocol.Core.Types
             }
 
             var invalidPathChars = Path.GetInvalidPathChars();
+#if NETCOREAPP
+            if (invalidPathChars.Any(p => path.Contains(p, StringComparison.Ordinal)))
+#else
             if (invalidPathChars.Any(p => path.Contains(p)))
+#endif
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Path_Invalid,
@@ -144,100 +148,101 @@ namespace NuGet.Protocol.Core.Types
             var source = offlineFeedAddContext.Source;
             var logger = offlineFeedAddContext.Logger;
 
-            using (var packageStream = File.OpenRead(packagePath))
+            using var packageStream = File.OpenRead(packagePath);
+            try
             {
-                try
+                var packageIdentity = default(PackageIdentity);
+                using var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true);
+
+                packageIdentity = packageReader.GetIdentity();
+
+
+                bool isValidPackage;
+                if (PackageExists(packageIdentity, source, out isValidPackage))
                 {
-                    var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true);
-                    var packageIdentity = packageReader.GetIdentity();
-
-                    bool isValidPackage;
-                    if (PackageExists(packageIdentity, source, out isValidPackage))
+                    // Package already exists. Verify if it is valid
+                    if (isValidPackage)
                     {
-                        // Package already exists. Verify if it is valid
-                        if (isValidPackage)
-                        {
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.AddPackage_PackageAlreadyExists,
-                                packageIdentity, 
-                                source);
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.AddPackage_PackageAlreadyExists,
+                            packageIdentity,
+                            source);
 
-                            if (offlineFeedAddContext.ThrowIfPackageExists)
-                            {
-                                throw new ArgumentException(message);
-                            }
-                            else
-                            {
-                                logger.LogMinimal(message);
-                            }
+                        if (offlineFeedAddContext.ThrowIfPackageExists)
+                        {
+                            throw new ArgumentException(message);
                         }
                         else
                         {
-                            var message = string.Format(CultureInfo.CurrentCulture,
-                                Strings.AddPackage_ExistingPackageInvalid, 
-                                packageIdentity, 
-                                source);
-
-                            if (offlineFeedAddContext.ThrowIfPackageExistsAndInvalid)
-                            {
-                                throw new ArgumentException(message);
-                            }
-                            else
-                            {
-                                logger.LogWarning(message);
-                            }
+                            logger.LogMinimal(message);
                         }
                     }
                     else
                     {
-                        var versionFolderPathResolver = new VersionFolderPathResolver(source);
-
-                        using (var packageDownloader = new LocalPackageArchiveDownloader(
-                            source: null,
-                            packageFilePath: packagePath,
-                            packageIdentity: packageIdentity,
-                            logger: logger))
-                        {
-                            // Set Empty parentId here.
-                            await PackageExtractor.InstallFromSourceAsync(
-                                packageIdentity,
-                                packageDownloader,
-                                versionFolderPathResolver,
-                                offlineFeedAddContext.ExtractionContext,
-                                token,
-                                parentId: Guid.Empty);
-                        }
-
-                        var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.AddPackage_SuccessfullyAdded,
-                            packagePath,
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                            Strings.AddPackage_ExistingPackageInvalid,
+                            packageIdentity,
                             source);
 
-                        logger.LogMinimal(message);
+                        if (offlineFeedAddContext.ThrowIfPackageExistsAndInvalid)
+                        {
+                            throw new ArgumentException(message);
+                        }
+                        else
+                        {
+                            logger.LogWarning(message);
+                        }
                     }
                 }
-                // Mono will throw ArchiveException when package is invalid.
-                // Reading Nuspec in invalid package on Mono will get PackagingException 
-                catch (Exception ex) when( ex is InvalidDataException
-                                        || (RuntimeEnvironmentHelper.IsMono
-                                        && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException") 
-                                        || ex is PackagingException)))
+                else
                 {
+                    var versionFolderPathResolver = new VersionFolderPathResolver(source);
+
+                    using var packageDownloader = new LocalPackageArchiveDownloader(
+                        source: null,
+                        packageFilePath: packagePath,
+                        packageIdentity: packageIdentity,
+                        logger: logger);
+
+                    // Set Empty parentId here.
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageIdentity,
+                        packageDownloader,
+                        versionFolderPathResolver,
+                        offlineFeedAddContext.ExtractionContext,
+                        token,
+                        parentId: Guid.Empty);
+
+
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.NupkgPath_Invalid,
-                        packagePath);
+                        Strings.AddPackage_SuccessfullyAdded,
+                        packagePath,
+                        source);
 
-                    if (offlineFeedAddContext.ThrowIfSourcePackageIsInvalid)
-                    {
-                        throw new ArgumentException(message);
-                    }
-                    else
-                    {
-                        logger.LogWarning(message);
-                    }
+                    logger.LogMinimal(message);
+                }
+            }
+            // Mono will throw ArchiveException when package is invalid.
+            // Reading Nuspec in invalid package on Mono will get PackagingException 
+            catch (Exception ex) when (ex is InvalidDataException
+                                    || (RuntimeEnvironmentHelper.IsMono
+                                    && (ex.GetType().FullName.Equals("SharpCompress.Common.ArchiveException", StringComparison.Ordinal)
+                                    || ex is PackagingException)))
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.NupkgPath_Invalid,
+                    packagePath);
+
+                if (offlineFeedAddContext.ThrowIfSourcePackageIsInvalid)
+                {
+                    throw new ArgumentException(message);
+                }
+                else
+                {
+                    logger.LogWarning(message);
                 }
             }
         }
@@ -245,14 +250,10 @@ namespace NuGet.Protocol.Core.Types
         private static string GetHash(string nupkgFilePath)
         {
             string packageHash;
-            using (var nupkgStream
-                = File.Open(nupkgFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                using (var sha512 = SHA512.Create())
-                {
-                    packageHash = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
-                }
-            }
+            using var nupkgStream = File.Open(nupkgFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var sha512 = SHA512.Create();
+
+            packageHash = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
 
             return packageHash;
         }

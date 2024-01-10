@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
@@ -20,7 +21,9 @@ namespace NuGet.SolutionRestoreManager.Test
             string targetFrameworkMoniker,
             IEnumerable<IVsReferenceItem> packageReferences,
             IEnumerable<IVsReferenceItem> projectReferences,
-            IEnumerable<IVsProjectProperty> projectProperties)
+            IEnumerable<IVsProjectProperty> projectProperties,
+            string originalTargetFramework = null,
+            bool addTargetFrameworkProperties = true)
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
             {
@@ -45,7 +48,10 @@ namespace NuGet.SolutionRestoreManager.Test
             TargetFrameworkMoniker = targetFrameworkMoniker;
             PackageReferences = new VsReferenceItems(packageReferences);
             ProjectReferences = new VsReferenceItems(projectReferences);
-            Properties = new VsProjectProperties(projectProperties);
+            Properties =
+                addTargetFrameworkProperties
+                ? new VsProjectProperties(ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(targetFrameworkMoniker, originalTargetFramework).Concat(projectProperties))
+                : new VsProjectProperties(projectProperties);
         }
     }
 }

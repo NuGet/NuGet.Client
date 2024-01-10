@@ -16,5 +16,6 @@ namespace NuGet.ProjectManagement
         public const string NoWarn = nameof(NoWarn);
         public const string GeneratePathProperty = nameof(GeneratePathProperty);
         public const string Aliases = nameof(Aliases);
+        public const string VersionOverride = nameof(VersionOverride);
     }
 }

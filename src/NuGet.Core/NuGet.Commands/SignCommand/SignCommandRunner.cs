@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,38 +24,58 @@ namespace NuGet.Commands
         public async Task<int> ExecuteCommandAsync(SignArgs signArgs)
         {
             // resolve path into multiple packages if needed.
-            var packagesToSign = LocalFolderUtility.ResolvePackageFromPath(signArgs.PackagePath);
-            LocalFolderUtility.EnsurePackageFileExists(signArgs.PackagePath, packagesToSign);
-
-            var cert = await GetCertificateAsync(signArgs);
-
-            signArgs.Logger.LogInformation(Environment.NewLine);
-            signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
-            signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
-
-            if (!string.IsNullOrEmpty(signArgs.Timestamper))
+            IEnumerable<string> packagesToSign = signArgs.PackagePaths.SelectMany(packagePath =>
             {
-                signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
-                signArgs.Logger.LogInformation(signArgs.Timestamper);
+                IEnumerable<string> packages = LocalFolderUtility.ResolvePackageFromPath(packagePath);
+                LocalFolderUtility.EnsurePackageFileExists(packagePath, packages);
+                return packages;
+            });
+
+            var success = true;
+
+            X509Certificate2 cert = null;
+            try
+            {
+                cert = await GetCertificateAsync(signArgs);
+            }
+            catch (Exception e)
+            {
+                success = false;
+                ExceptionUtilities.LogException(e, signArgs.Logger);
             }
 
-            if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
+            if (success)
             {
-                signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
-                signArgs.Logger.LogInformation(signArgs.OutputDirectory);
+                signArgs.Logger.LogInformation(Environment.NewLine);
+                signArgs.Logger.LogInformation(Strings.SignCommandDisplayCertificate);
+                signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2ToString(cert, HashAlgorithmName.SHA256));
+
+                if (!string.IsNullOrEmpty(signArgs.Timestamper))
+                {
+                    signArgs.Logger.LogInformation(Strings.SignCommandDisplayTimestamper);
+                    signArgs.Logger.LogInformation(signArgs.Timestamper);
+                }
+
+                if (!string.IsNullOrEmpty(signArgs.OutputDirectory))
+                {
+                    signArgs.Logger.LogInformation(Strings.SignCommandOutputPath);
+                    signArgs.Logger.LogInformation(signArgs.OutputDirectory);
+                }
+
+                using (var signRequest = new AuthorSignPackageRequest(cert, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm))
+                {
+                    return await ExecuteCommandAsync(
+                        packagesToSign,
+                        signRequest,
+                        signArgs.Timestamper,
+                        signArgs.Logger,
+                        signArgs.OutputDirectory,
+                        signArgs.Overwrite,
+                        signArgs.Token);
+                }
             }
 
-            using (var signRequest = new AuthorSignPackageRequest(cert, signArgs.SignatureHashAlgorithm, signArgs.TimestampHashAlgorithm))
-            {
-                return await ExecuteCommandAsync(
-                    packagesToSign,
-                    signRequest,
-                    signArgs.Timestamper,
-                    signArgs.Logger,
-                    signArgs.OutputDirectory,
-                    signArgs.Overwrite,
-                    signArgs.Token);
-            }
+            return success ? 0 : 1;
         }
 
         public async Task<int> ExecuteCommandAsync(
@@ -177,7 +199,7 @@ namespace NuGet.Commands
                     signArgs.Logger.LogInformation(CertificateUtility.X509Certificate2CollectionToString(matchingCertCollection, HashAlgorithmName.SHA256));
                     throw new SignCommandException(
                         LogMessage.CreateError(NuGetLogCode.NU3001,
-                        string.Format(Strings.SignCommandMultipleCertException,
+                        string.Format(CultureInfo.CurrentCulture, Strings.SignCommandMultipleCertException,
                         nameof(SignArgs.CertificateFingerprint))));
                 }
                 else
@@ -195,7 +217,7 @@ namespace NuGet.Commands
 
                 throw new SignCommandException(
                     LogMessage.CreateError(NuGetLogCode.NU3001,
-                    string.Format(Strings.SignCommandMultipleCertException,
+                    string.Format(CultureInfo.CurrentCulture, Strings.SignCommandMultipleCertException,
                     nameof(SignArgs.CertificateFingerprint))));
 #endif
             }

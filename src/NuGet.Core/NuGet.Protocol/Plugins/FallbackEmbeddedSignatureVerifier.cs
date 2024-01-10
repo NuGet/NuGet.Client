@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Plugins
         /// Checks if a file has a valid embedded signature.
         /// </summary>
         /// <param name="filePath">The path of a file to be checked.</param>
-        /// <returns><c>true</c> if the file has a valid signature; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the file has a valid signature; otherwise, <see langword="false" />.</returns>
         /// <exception cref="PlatformNotSupportedException">Thrown always.</exception>
         public override bool IsValid(string filePath)
         {

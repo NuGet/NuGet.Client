@@ -15,7 +15,8 @@ namespace NuGet.Protocol.Tests
         private static readonly VersionRangeConverter _converter = new VersionRangeConverter();
         private static readonly VersionRange _strictVersionRange = new VersionRange(
             minVersion: new NuGetVersion(1, 0, 0),
-            maxVersion: new NuGetVersion(1, 0, 0));
+            maxVersion: new NuGetVersion(1, 0, 0),
+            includeMinVersion: false);
 
         [Fact]
         public void CanConvert_ReturnsTrueForVersionRangeType()
@@ -74,7 +75,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void WriteJson_WritesWildCardVersionRangeToString()
         {
-            var versionRange = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: "*");
+            var versionRange = VersionRange.Parse("*");
 
             using (var stringWriter = new StringWriter())
             using (var jsonWriter = new JsonTextWriter(stringWriter))

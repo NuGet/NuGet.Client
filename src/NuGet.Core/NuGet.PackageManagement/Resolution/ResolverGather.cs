@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System.Globalization;
 
 namespace NuGet.PackageManagement
 {
@@ -31,6 +31,7 @@ namespace NuGet.PackageManagement
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
         private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
+        private readonly bool _isSourceMappingConfigured;
 
         private ResolverGather(GatherContext context)
         {
@@ -42,6 +43,7 @@ namespace NuGet.PackageManagement
             _workerTasks = new List<Task<GatherResult>>(_maxDegreeOfParallelism);
 
             _cache = _context.ResolutionContext?.GatherCache;
+            _isSourceMappingConfigured = _context.PackageSourceMapping?.IsEnabled == true;
         }
 
         /// <summary>
@@ -121,7 +123,7 @@ namespace NuGet.PackageManagement
 
             // walk the dependency graph both upwards and downwards for the new package
             // this is done in multiple passes to find the complete closure when
-            // new dependecies are found
+            // new dependencies are found
             while (true)
             {
                 token.ThrowIfCancellationRequested();
@@ -134,7 +136,7 @@ namespace NuGet.PackageManagement
 
                 // Get a unique list of packages
                 // Results are ordered by their request order. If the same version of package
-                // exists in multiple sources the hashset will contain the package from the 
+                // exists in multiple sources the hashset will contain the package from the
                 // source where it was requested from first.
                 var currentResults = new HashSet<SourcePackageDependencyInfo>(
                     currentItems.OrderBy(item => item.Request.Order)
@@ -179,7 +181,7 @@ namespace NuGet.PackageManagement
                 // We are done when the queue is empty, and the number of finished requests matches the total request count
                 if (_gatherRequests.Count < 1 && _workerTasks.Count < 1)
                 {
-                    _context.Log.LogDebug(string.Format("Total number of results gathered : {0}", _results.Count));
+                    _context.Log.LogDebug(string.Format(CultureInfo.CurrentCulture, "Total number of results gathered : {0}", _results.Count));
                     break;
                 }
             }
@@ -221,7 +223,7 @@ namespace NuGet.PackageManagement
                             }
                         }
 
-                        string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
+                        string message = String.Format(CultureInfo.CurrentCulture, Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
                         throw new InvalidOperationException(message);
                     }
                 }
@@ -229,12 +231,12 @@ namespace NuGet.PackageManagement
             // calculate total time taken to gather all packages as well as with each source
             stopWatch.Stop();
             _context.Log.LogMinimal(
-                string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
+                string.Format(CultureInfo.CurrentCulture, Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
             _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");
-            foreach (var key in _timeTaken.Keys)
+            foreach ((var key, var time) in _timeTaken)
             {
                 _context.Log.LogDebug(
-                    string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
+                    string.Format(CultureInfo.CurrentCulture, "{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(time)));
             }
             return combinedResults;
         }
@@ -248,7 +250,7 @@ namespace NuGet.PackageManagement
         {
             // Start new tasks and process the work at least once
             // Continuing looping under the number of tasks has gone
-            // below the limit. While we are at the limit there is no 
+            // below the limit. While we are at the limit there is no
             // need to queue up additional work.
             do
             {
@@ -407,7 +409,7 @@ namespace NuGet.PackageManagement
             if (_cache != null && cacheResult.HasEntry)
             {
                 // Use cached packages
-                _context.Log.LogDebug(string.Format("Package {0} from source {1} gathered from cache.", request.Package.Id, request.Source.Source.PackageSource.Name));
+                _context.Log.LogDebug(string.Format(CultureInfo.CurrentCulture, "Package {0} from source {1} gathered from cache.", request.Package.Id, request.Source.Source.PackageSource.Name));
                 packages.AddRange(cacheResult.Packages);
             }
             else
@@ -457,19 +459,19 @@ namespace NuGet.PackageManagement
                 {
                     if (!ex.CancellationToken.IsCancellationRequested)
                     {
-                        string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
+                        string message = String.Format(CultureInfo.CurrentCulture, Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
                         throw new InvalidOperationException(message, ex);
                     }
                 }
                 catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException || ex is TaskCanceledException)
                 {
-                    string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
+                    string message = String.Format(CultureInfo.CurrentCulture, Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
                     throw new InvalidOperationException(message, ex);
                 }
 
                 // it maintain each source total time taken so far
                 stopWatch.Stop();
-                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Source, stopWatch.Elapsed, (k,v) => stopWatch.Elapsed + v);
+                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Source, stopWatch.Elapsed, (k, v) => stopWatch.Elapsed + v);
             }
 
             return new GatherResult(request, packages);
@@ -492,7 +494,7 @@ namespace NuGet.PackageManagement
 
             try
             {
-                // Call the dependecy info resource
+                // Call the dependency info resource
                 if (version == null)
                 {
                     // find all versions of a package
@@ -533,13 +535,42 @@ namespace NuGet.PackageManagement
 
         private void QueueWork(IReadOnlyList<SourceResource> sources, PackageIdentity package, bool ignoreExceptions, bool isInstalledPackage)
         {
+            IReadOnlyList<string> configuredPackageSources = null;
+
+            if (_isSourceMappingConfigured)
+            {
+
+                configuredPackageSources = _context.PackageSourceMapping.GetConfiguredPackageSources(package.Id);
+
+                if (configuredPackageSources.Count > 0)
+                {
+                    var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                    _context.Log.LogDebug(StringFormatter.Log_PackageSourceMappingMatchFound((package.Id), packageSourcesAtPrefix));
+                }
+                else
+                {
+                    _context.Log.LogDebug(StringFormatter.Log_PackageSourceMappingNoMatchFound((package.Id)));
+                }
+            }
+
             // No-op if the id has already been searched for
-            // Exact versions are not added to the list since we may need to search for the full 
+            // Exact versions are not added to the list since we may need to search for the full
             // set of packages for that id later if it becomes part of the closure later.
             if (package.HasVersion || _idsSearched.Add(package.Id))
             {
-                foreach (var source in sources)
+                foreach (SourceResource source in sources)
                 {
+                    if (_isSourceMappingConfigured)
+                    {
+                        if (configuredPackageSources == null ||
+                            configuredPackageSources.Count == 0 ||
+                            !configuredPackageSources.Contains(source.Source.PackageSource.Name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            // This package's id prefix is not defined in current package source, let's skip.
+                            continue;
+                        }
+                    }
+
                     // Keep track of the order in which these were made
                     var requestId = GetNextRequestId();
 
@@ -595,7 +626,7 @@ namespace NuGet.PackageManagement
                     {
                         var resource = await depResources[source];
 
-                        if (source != null && !_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                        if (!_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
                         {
                             _primaryResources.Add(new SourceResource(source, resource));
                         }
@@ -612,7 +643,7 @@ namespace NuGet.PackageManagement
                         //var resource = await depResources[source];
                         var resource = depResources[source];
 
-                        if (source != null && !_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                        if (!_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
                         {
                             currentSource = source.PackageSource.Source;
                             _allResources.Add(new SourceResource(source, resource.Result));
@@ -627,7 +658,7 @@ namespace NuGet.PackageManagement
             catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException ||
                                        ex is InvalidOperationException || ex is TaskCanceledException || ex is AggregateException)
             {
-                string message = String.Format(Strings.ExceptionWhenTryingToAddSource, ex.GetType().ToString(), currentSource);
+                string message = String.Format(CultureInfo.CurrentCulture, Strings.ExceptionWhenTryingToAddSource, ex.GetType().ToString(), currentSource);
                 throw new InvalidOperationException(message, ex);
             }
 

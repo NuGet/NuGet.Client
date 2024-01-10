@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,10 +8,12 @@ namespace NuGet.Protocol
 {
     public class HttpSourceResult : IDisposable
     {
+        private bool _disposed;
+
         public Stream Stream { get; private set; }
         public HttpSourceResultStatus Status { get; }
         public string CacheFile { get; }
-        
+
         public HttpSourceResult(HttpSourceResultStatus status)
         {
             Status = status;
@@ -28,11 +30,27 @@ namespace NuGet.Protocol
 
         public void Dispose()
         {
-            if (Stream != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                Stream.Dispose();
-                Stream = null;
+                return;
             }
+
+            if (disposing)
+            {
+                if (Stream != null)
+                {
+                    Stream.Dispose();
+                    Stream = null;
+                }
+            }
+
+            _disposed = true;
         }
     }
 }

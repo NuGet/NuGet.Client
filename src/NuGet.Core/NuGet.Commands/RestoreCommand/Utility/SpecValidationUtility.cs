@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -161,7 +163,8 @@ namespace NuGet.Commands
             }
 
             // Duplicate frameworks may not exist
-            if (frameworks.Length != frameworks.Distinct().Count())
+            // Change in ATF should *not* affect our duplicate check, so we use the full framework comparer.
+            if (frameworks.Length != frameworks.Distinct(NuGetFrameworkFullComparer.Instance).Count())
             {
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
@@ -211,6 +214,23 @@ namespace NuGet.Commands
                     ProjectStyle.PackageReference.ToString());
 
                 throw RestoreSpecException.Create(message, files);
+            }
+
+            //OriginalTargetFrameworks must match the aliases.
+            if (spec.RestoreMetadata.TargetFrameworks.Count > 1)
+            {
+                var aliases = spec.TargetFrameworks.Select(e => e.TargetAlias);
+
+                if (!EqualityUtility.OrderedEquals(aliases, spec.RestoreMetadata.OriginalTargetFrameworks, e => e, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase))
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.SpecValidation_OriginalTargetFrameworksMustMatchAliases,
+                        string.Join(";", spec.RestoreMetadata.OriginalTargetFrameworks),
+                        string.Join(";", aliases)
+                        );
+                    throw RestoreSpecException.Create(message, files);
+                }
             }
         }
 

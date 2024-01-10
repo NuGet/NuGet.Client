@@ -5,8 +5,8 @@
 
 using System;
 using System.ComponentModel;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
-using Microsoft.VisualStudio.ProjectSystem.VS;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
@@ -52,7 +52,6 @@ namespace NuGet.VisualStudio.SolutionExplorer
             _ => throw new InvalidEnumArgumentException(nameof(GroupType), (int)GroupType, typeof(PackageAssemblyGroupType))
         };
 
-        public override ImageMoniker IconMoniker => ManagedImageMonikers.ReferenceGroup;
-
+        public override ImageMoniker IconMoniker => KnownMonikers.ReferenceGroup;
     }
 }

@@ -10,6 +10,7 @@ using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
+    [UseCulture("")] // Fix tests failing on systems with non-English locales
     public class JsonTextReaderExtensionsTests
     {
         [Fact]
@@ -258,7 +259,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.True(test.Reader.Read());
                 Assert.Equal(JsonToken.PropertyName, test.Reader.TokenType);
 
-                Assert.Throws< InvalidCastException>(() => test.Reader.ReadNextTokenAsString());
+                Assert.Throws<InvalidCastException>(() => test.Reader.ReadNextTokenAsString());
             }
         }
 

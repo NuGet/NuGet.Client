@@ -83,8 +83,8 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("{}", typeof(ArgumentNullException))]
         [InlineData("{\"ResponseCode\":\"Success\"}", typeof(ArgumentNullException))]
         [InlineData("{\"ResponseCode\":\"Success\",\"ServiceIndex\":null}", typeof(ArgumentNullException))]
-        [InlineData("{\"ResponseCode\":\"Success\",\"ServiceIndex\":\"a\"}", typeof(InvalidCastException))]
-        [InlineData("{\"ResponseCode\":\"Success\",\"ServiceIndex\":1}", typeof(InvalidCastException))]
+        [InlineData("{\"ResponseCode\":\"Success\",\"ServiceIndex\":\"a\"}", typeof(JsonSerializationException))]
+        [InlineData("{\"ResponseCode\":\"Success\",\"ServiceIndex\":1}", typeof(JsonSerializationException))]
         public void JsonDeserialization_ThrowsForInvalidServiceIndex(string json, Type exceptionType)
         {
             var exception = Assert.Throws(

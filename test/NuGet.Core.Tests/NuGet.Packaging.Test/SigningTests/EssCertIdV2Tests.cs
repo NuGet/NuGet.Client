@@ -20,7 +20,8 @@ using EssCertIdV2 = NuGet.Packaging.Signing.EssCertIdV2;
 
 namespace NuGet.Packaging.Test
 {
-    public class EssCertIdV2Tests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class EssCertIdV2Tests
     {
         private readonly CertificatesFixture _fixture;
 
@@ -168,7 +169,7 @@ namespace NuGet.Packaging.Test
             SigningTestUtility.VerifyByteArrays(bcIssuerSerial.Serial.Value.ToByteArray(), essCertIdV2.IssuerSerial.SerialNumber);
         }
 
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void Read_WithValidInput_ReturnsEssCertId()
         {

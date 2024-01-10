@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -15,7 +14,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Contains Package specific properties for Warnings.
     /// </summary>
-    public class PackageSpecificWarningProperties : IEquatable <PackageSpecificWarningProperties>
+    public class PackageSpecificWarningProperties : IEquatable<PackageSpecificWarningProperties>
     {
 
         /// <summary>
@@ -59,7 +58,7 @@ namespace NuGet.Commands
         /// <param name="packageSpec">PackageSpec containing the Dependencies with WarningProperties</param>
         /// <param name="framework">NuGetFramework for which the properties should be assessed.</param>
         /// <returns>PackageSpecific WarningProperties extracted from a PackageSpec for a specific NuGetFramework</returns>
-        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(PackageSpec packageSpec, 
+        public static PackageSpecificWarningProperties CreatePackageSpecificWarningProperties(PackageSpec packageSpec,
             NuGetFramework framework)
         {
             // NuGetLogCode -> LibraryId -> Set of Frameworks.
@@ -71,7 +70,7 @@ namespace NuGet.Commands
             }
 
             var targetFrameworkInformation = packageSpec.GetTargetFramework(framework);
-            
+
             foreach (var dependency in targetFrameworkInformation.Dependencies)
             {
                 warningProperties.AddRangeOfCodes(dependency.NoWarn, dependency.Name, framework);
@@ -88,24 +87,21 @@ namespace NuGet.Commands
         /// <param name="framework">Target graph for which no warning should be thrown.</param>
         public void Add(NuGetLogCode code, string libraryId, NuGetFramework framework)
         {
-            if (Properties == null)
+            Properties ??= new Dictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>>();
+
+            if (!Properties.TryGetValue(code, out IDictionary<string, ISet<NuGetFramework>> frameworksByLibraryId))
             {
-                Properties = new Dictionary<NuGetLogCode, IDictionary<string, ISet<NuGetFramework>>>();
+                frameworksByLibraryId = new Dictionary<string, ISet<NuGetFramework>>(StringComparer.OrdinalIgnoreCase);
+                Properties.Add(code, frameworksByLibraryId);
             }
 
-            if (!Properties.ContainsKey(code))
+            if (!frameworksByLibraryId.TryGetValue(libraryId, out ISet<NuGetFramework> frameworks))
             {
-                Properties.Add(code, new Dictionary<string, ISet<NuGetFramework>>(StringComparer.OrdinalIgnoreCase));
+                frameworks = new HashSet<NuGetFramework>(NuGetFrameworkFullComparer.Instance);
+                frameworksByLibraryId[libraryId] = frameworks;
             }
 
-            if (Properties[code].ContainsKey(libraryId))
-            {
-                Properties[code][libraryId].Add(framework);
-            }
-            else
-            {
-                Properties[code].Add(libraryId, new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer()) { framework });
-            }
+            frameworks.Add(framework);
         }
 
         /// <summary>

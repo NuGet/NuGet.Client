@@ -113,7 +113,7 @@ namespace NuGet.Configuration
                 combiner.AddObject(PasswordText);
                 combiner.AddObject(IsPasswordClearText);
 
-                return combiner.GetHashCode();
+                return combiner.CombinedHash;
             });
         }
 
@@ -155,7 +155,7 @@ namespace NuGet.Configuration
 
             try
             {
-                var passwordText = storePasswordInClearText ? password: EncryptionUtility.EncryptString(password);
+                var passwordText = storePasswordInClearText ? password : EncryptionUtility.EncryptString(password);
                 return new PackageSourceCredential(
                     source,
                     username,

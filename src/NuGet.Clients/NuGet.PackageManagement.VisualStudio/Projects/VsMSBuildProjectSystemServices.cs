@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -13,8 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Implements project services in terms of <see cref="VsMSBuildProjectSystem"/>
     /// </summary>
     internal class VsMSBuildProjectSystemServices
-        : GlobalProjectServiceProvider
-        , INuGetProjectServices
+        : INuGetProjectServices
         , IProjectSystemCapabilities
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
@@ -23,7 +21,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region INuGetProjectServices
 
-        public IProjectBuildProperties BuildProperties => _vsProjectAdapter.BuildProperties;
+        [Obsolete]
+        public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
 
         public IProjectSystemCapabilities Capabilities => this;
 
@@ -41,7 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return _threadingService.ExecuteSynchronously(async () =>
+                return _threadingService.JoinableTaskFactory.Run(async () =>
                 {
                     await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
                     return _vsProjectAdapter.Project.Object is VSLangProj150.VSProject4;
@@ -49,23 +48,36 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public bool NominatesOnSolutionLoad => false;
+
         public VsMSBuildProjectSystemServices(
             IVsProjectAdapter vsProjectAdapter,
             VsMSBuildProjectSystem vsProjectSystem,
-            IComponentModel componentModel)
-            : base(componentModel)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.Present(vsProjectSystem);
+            Assumes.Present(threadingService);
+            Assumes.Present(scriptExecutor);
 
             _vsProjectAdapter = vsProjectAdapter;
             _vsProjectSystem = vsProjectSystem;
+            _threadingService = threadingService;
 
-            _threadingService = GetGlobalService<IVsProjectThreadingService>();
-            Assumes.Present(_threadingService);
-
-            ReferencesReader = new VsCoreProjectSystemReferenceReader(vsProjectAdapter, this);
-            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, this);
+            if (vsProjectSystem is NativeProjectSystem)
+            {
+                ReferencesReader = new NativeProjectSystemReferencesReader(vsProjectAdapter, _threadingService);
+            }
+            else if (vsProjectSystem is CpsProjectSystem)
+            {
+                ReferencesReader = new CpsProjectSystemReferenceReader(vsProjectAdapter, _threadingService);
+            }
+            else
+            {
+                ReferencesReader = new VsCoreProjectSystemReferenceReader(vsProjectAdapter, _threadingService);
+            }
+            ScriptService = new VsProjectScriptHostService(vsProjectAdapter, scriptExecutor);
         }
     }
 }

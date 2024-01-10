@@ -13,10 +13,9 @@ namespace NuGet.Packaging.Rules
     internal class UnrecognizedScriptFileRule : IPackageRule
     {
         private const string ScriptExtension = ".ps1";
-        private static readonly string ToolsDirectory = PackagingConstants.Folders.Tools;
 
         public string MessageFormat { get; }
-        
+
         public UnrecognizedScriptFileRule(string messageFormat)
         {
             MessageFormat = messageFormat;

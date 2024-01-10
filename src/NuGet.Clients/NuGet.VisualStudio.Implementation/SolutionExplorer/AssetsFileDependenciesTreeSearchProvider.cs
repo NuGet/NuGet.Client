@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Composition;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
@@ -27,11 +28,15 @@ namespace NuGet.VisualStudio.SolutionExplorer
     [Export(typeof(IDependenciesTreeSearchProvider))]
     internal sealed class AssetsFileDependenciesTreeSearchProvider : IDependenciesTreeSearchProvider
     {
+        private readonly FileOpener _fileOpener;
         private readonly IFileIconProvider _fileIconProvider;
 
         [ImportingConstructor]
-        public AssetsFileDependenciesTreeSearchProvider(IFileIconProvider fileIconProvider)
+        public AssetsFileDependenciesTreeSearchProvider(
+            FileOpener fileOpener,
+            IFileIconProvider fileIconProvider)
         {
+            _fileOpener = fileOpener;
             _fileIconProvider = fileIconProvider;
         }
 
@@ -56,7 +61,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
             AssetsFileDependenciesSnapshot snapshot = (await dataSource.Value.GetLatestVersionAsync<AssetsFileDependenciesSnapshot>(dataSourceRegistry, cancellationToken: context.CancellationToken)).Value;
 
-            if (!(context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is IActiveConfigurationGroupService3 activeConfigurationGroupService))
+            if (context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is not IActiveConfigurationGroupService3 activeConfigurationGroupService)
             {
                 return;
             }
@@ -65,7 +70,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
             foreach ((_, AssetsFileTarget target) in snapshot.DataByTarget)
             {
-                ConfiguredProject? configuredProject = await FindConfiguredProjectAsync(target.TargetFrameworkMoniker);
+                ConfiguredProject? configuredProject = await FindConfiguredProjectAsync(target.TargetAlias);
 
                 if (configuredProject == null)
                 {
@@ -95,13 +100,16 @@ namespace NuGet.VisualStudio.SolutionExplorer
                     SearchAssemblies(library, library.CompileTimeAssemblies, PackageAssemblyGroupType.CompileTime);
                     SearchAssemblies(library, library.FrameworkAssemblies, PackageAssemblyGroupType.Framework);
                     SearchContentFiles(library);
+                    SearchBuildFiles(library, library.BuildFiles, PackageBuildFileGroupType.Build);
+                    SearchBuildFiles(library, library.BuildMultiTargetingFiles, PackageBuildFileGroupType.BuildMultiTargeting);
+                    SearchDocuments(library);
                 }
 
                 SearchLogMessages();
 
                 continue;
 
-                async Task<ConfiguredProject?> FindConfiguredProjectAsync(string tfm)
+                async Task<ConfiguredProject?> FindConfiguredProjectAsync(string targetAlias)
                 {
                     foreach (ConfiguredProject configuredProject in configuredProjects)
                     {
@@ -114,18 +122,27 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
                         if (subscriptionUpdate.CurrentState.TryGetValue(NuGetRestoreRule.SchemaName, out IProjectRuleSnapshot nuGetRestoreSnapshot) &&
                             nuGetRestoreSnapshot.Properties.TryGetValue(NuGetRestoreRule.NuGetTargetMonikerProperty, out string nuGetTargetMoniker) &&
-                            StringComparer.OrdinalIgnoreCase.Equals(nuGetTargetMoniker, tfm))
+                            StringComparer.OrdinalIgnoreCase.Equals(nuGetTargetMoniker, targetAlias))
                         {
-                            // Assets file 'target' string matches the configure project's NuGetTargetMoniker property value
+                            // Assets file 'target' string matches the configured project's NuGetTargetMoniker property value
                             return configuredProject;
                         }
 
-                        if (subscriptionUpdate.CurrentState.TryGetValue(ConfigurationGeneralRule.SchemaName, out IProjectRuleSnapshot configurationGeneralSnapshot) &&
-                                 configurationGeneralSnapshot.Properties.TryGetValue(ConfigurationGeneralRule.TargetFrameworkMonikerProperty, out string targetFrameworkMoniker) &&
-                                 StringComparer.OrdinalIgnoreCase.Equals(targetFrameworkMoniker, tfm))
+                        if (subscriptionUpdate.CurrentState.TryGetValue(ConfigurationGeneralRule.SchemaName, out IProjectRuleSnapshot configurationGeneralSnapshot))
                         {
-                            // Assets file 'target' string matches the configure project's TargetFrameworkMoniker property value
-                            return configuredProject;
+                            if (configurationGeneralSnapshot.Properties.TryGetValue(ConfigurationGeneralRule.TargetFrameworkMonikerProperty, out string targetFrameworkMoniker) &&
+                                StringComparer.OrdinalIgnoreCase.Equals(targetFrameworkMoniker, targetAlias))
+                            {
+                                // Assets file 'target' string matches the configured project's TargetFrameworkMoniker property value
+                                return configuredProject;
+                            }
+
+                            if (configurationGeneralSnapshot.Properties.TryGetValue(ConfigurationGeneralRule.TargetFrameworkProperty, out string targetFramework) &&
+                                StringComparer.OrdinalIgnoreCase.Equals(targetFramework, targetAlias))
+                            {
+                                // Assets file 'target' string matches the configured project's TargetFramework property value
+                                return configuredProject;
+                            }
                         }
                     }
 
@@ -155,6 +172,17 @@ namespace NuGet.VisualStudio.SolutionExplorer
                     }
                 }
 
+                void SearchBuildFiles(AssetsFileTargetLibrary library, ImmutableArray<string> buildFiles, PackageBuildFileGroupType groupType)
+                {
+                    foreach (string buildFile in buildFiles)
+                    {
+                        if (targetContext.IsMatch(Path.GetFileName(buildFile)))
+                        {
+                            targetContext.SubmitResult(new PackageBuildFileItem(target, library, buildFile, groupType, _fileOpener));
+                        }
+                    }
+                }
+
                 IRelatableItem CreateLibraryItem(AssetsFileTargetLibrary library)
                 {
                     return library.Type switch
@@ -177,12 +205,23 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
                     DiagnosticItem? CreateLogItem(AssetsFileLogMessage log)
                     {
-                        if (target.LibraryByName.TryGetValue(log.LibraryName, out AssetsFileTargetLibrary library))
+                        if (target.LibraryByName.TryGetValue(log.LibraryName, out AssetsFileTargetLibrary? library))
                         {
                             return new DiagnosticItem(target, library, log);
                         }
 
                         return null;
+                    }
+                }
+
+                void SearchDocuments(AssetsFileTargetLibrary library)
+                {
+                    foreach (string path in library.DocumentationFiles)
+                    {
+                        if (targetContext.IsMatch(path))
+                        {
+                            targetContext.SubmitResult(new PackageDocumentItem(target, library, path, _fileOpener, _fileIconProvider));
+                        }
                     }
                 }
             }

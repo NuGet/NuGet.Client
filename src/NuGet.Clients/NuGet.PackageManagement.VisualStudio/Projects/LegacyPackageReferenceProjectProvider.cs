@@ -3,18 +3,15 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using VSLangProj150;
-using ProjectSystem = Microsoft.VisualStudio.ProjectSystem;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 
@@ -22,44 +19,36 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(INuGetProjectProvider))]
     [Name(nameof(LegacyPackageReferenceProjectProvider))]
-    [Order(After = nameof(NetCorePackageReferenceProjectProvider))]
+    [Order(After = nameof(CpsPackageReferenceProjectProvider))]
     public sealed class LegacyPackageReferenceProjectProvider : INuGetProjectProvider
     {
         private static readonly string PackageReference = ProjectStyle.PackageReference.ToString();
 
-        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService;
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly AsyncLazy<IComponentModel> _componentModel;
+        private readonly Lazy<IScriptExecutor> _scriptExecutor;
 
         public RuntimeTypeHandle ProjectType => typeof(LegacyPackageReferenceProject).TypeHandle;
 
         [ImportingConstructor]
         public LegacyPackageReferenceProjectProvider(
-            Lazy<IDeferredProjectWorkspaceService> workspaceService,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
             : this(AsyncServiceProvider.GlobalProvider,
-                   workspaceService,
-                   threadingService)
+                   threadingService,
+                   scriptExecutor)
         { }
 
         public LegacyPackageReferenceProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
-            Lazy<IDeferredProjectWorkspaceService> workspaceService,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsServiceProvider);
-            Assumes.Present(workspaceService);
             Assumes.Present(threadingService);
+            Assumes.Present(scriptExecutor);
 
-            _workspaceService = workspaceService;
             _threadingService = threadingService;
-
-            _componentModel = new AsyncLazy<IComponentModel>(
-                async () =>
-                {
-                    return await vsServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
-                },
-                _threadingService.JoinableTaskFactory);
+            _scriptExecutor = scriptExecutor;
         }
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
@@ -68,8 +57,6 @@ namespace NuGet.PackageManagement.VisualStudio
             bool forceProjectType)
         {
             Assumes.Present(vsProjectAdapter);
-
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectServices = await TryCreateProjectServicesAsync(
                 vsProjectAdapter,
@@ -80,11 +67,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
+            NuGetFramework targetFramework = await vsProjectAdapter.GetTargetFrameworkAsync();
+
             return new LegacyPackageReferenceProject(
                 vsProjectAdapter,
                 vsProjectAdapter.ProjectId,
                 projectServices,
-                _threadingService);
+                _threadingService,
+                targetFramework);
         }
 
         /// <summary>
@@ -93,73 +83,31 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<INuGetProjectServices> TryCreateProjectServicesAsync(
             IVsProjectAdapter vsProjectAdapter, bool forceCreate)
         {
-            var componentModel = await _componentModel.GetValueAsync();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var vsProject4 = vsProjectAdapter.Project.Object as VSProject4;
+
+            // A legacy CSProj must cast to VSProject4 to manipulate package references
+            if (vsProject4 == null)
+            {
+                return null;
+            }
 
             // Check for RestoreProjectStyle property
-            var restoreProjectStyle = await vsProjectAdapter.BuildProperties.GetPropertyValueAsync(
+            var restoreProjectStyle = vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(
                 ProjectBuildProperties.RestoreProjectStyle);
 
-            if (vsProjectAdapter.IsDeferred)
+            // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
+            // project has atleast one package dependency defined as PackageReference
+            if (forceCreate
+                || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
+                || (vsProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
             {
-                if (!forceCreate &&
-                    !PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (!await ProjectHasPackageReferencesAsync(vsProjectAdapter))
-                    {
-                        return null;
-                    }
-                }
-
-                return new DeferredProjectServicesProxy(
-                    vsProjectAdapter,
-                    new DeferredProjectCapabilities { SupportsPackageReferences = true },
-                    () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
-                    componentModel);
-            }
-            else
-            {
-                var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
-
-                // A legacy CSProj must cast to VSProject4 to manipulate package references
-                if (asVSProject4 == null)
-                {
-                    return null;
-                }
-
-                // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
-                // project has atleast one package dependency defined as PackageReference
-                if (forceCreate
-                    || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
-                    || (asVSProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
-                {
-                    return CreateCoreProjectSystemServices(vsProjectAdapter, componentModel);
-                }
+                var nominatesOnSolutionLoad = await vsProjectAdapter.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences);
+                return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, _threadingService, vsProject4, nominatesOnSolutionLoad, _scriptExecutor);
             }
 
             return null;
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-        private async Task<bool> ProjectHasPackageReferencesAsync(IVsProjectAdapter vsProjectAdapter)
-        {
-            var buildProjectDataService = await _workspaceService.Value.GetMSBuildProjectDataServiceAsync(
-                vsProjectAdapter.FullProjectPath);
-            Assumes.Present(buildProjectDataService);
-
-            var referenceItems = await buildProjectDataService.GetProjectItems(
-                ProjectItems.PackageReference, CancellationToken.None);
-            if (referenceItems == null || referenceItems.Count == 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private INuGetProjectServices CreateCoreProjectSystemServices(
-                IVsProjectAdapter vsProjectAdapter, IComponentModel componentModel)
-        {
-            return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, componentModel);
         }
     }
 }

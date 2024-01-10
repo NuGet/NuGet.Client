@@ -7,9 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -24,30 +22,26 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class ProjectJsonProjectProvider : INuGetProjectProvider
     {
         private readonly IVsProjectThreadingService _threadingService;
-        private readonly AsyncLazy<IComponentModel> _componentModel;
+        private readonly Lazy<IScriptExecutor> _scriptExecutor;
 
         public RuntimeTypeHandle ProjectType => typeof(VsProjectJsonNuGetProject).TypeHandle;
 
         [ImportingConstructor]
-        public ProjectJsonProjectProvider(IVsProjectThreadingService threadingService)
-            : this(AsyncServiceProvider.GlobalProvider, threadingService)
+        public ProjectJsonProjectProvider(IVsProjectThreadingService threadingService, Lazy<IScriptExecutor> scriptExecutor)
+            : this(AsyncServiceProvider.GlobalProvider, threadingService, scriptExecutor)
         { }
 
         public ProjectJsonProjectProvider(
             IAsyncServiceProvider vsServiceProvider,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            Lazy<IScriptExecutor> scriptExecutor)
         {
             Assumes.Present(vsServiceProvider);
             Assumes.Present(threadingService);
+            Assumes.Present(scriptExecutor);
 
             _threadingService = threadingService;
-
-            _componentModel = new AsyncLazy<IComponentModel>(
-                async () =>
-                {
-                    return await vsServiceProvider.GetServiceAsync<SComponentModel, IComponentModel>();
-                },
-                _threadingService.JoinableTaskFactory);
+            _scriptExecutor = scriptExecutor;
         }
 
         public async Task<NuGetProject> TryCreateNuGetProjectAsync(
@@ -94,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (File.Exists(projectJsonPath))
                 {
-                    var projectServices = await CreateProjectServicesAsync(vsProjectAdapter);
+                    var projectServices = new VsCoreProjectSystemServices(vsProjectAdapter, _threadingService, _scriptExecutor);
 
                     return new VsProjectJsonNuGetProject(
                         projectJsonPath,
@@ -105,24 +99,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return null;
-        }
-
-        private async Task<INuGetProjectServices> CreateProjectServicesAsync(IVsProjectAdapter vsProjectAdapter)
-        {
-            var componentModel = await _componentModel.GetValueAsync();
-
-            if (vsProjectAdapter.IsDeferred)
-            {
-                return new DeferredProjectServicesProxy(
-                    vsProjectAdapter,
-                    new DeferredProjectCapabilities { SupportsPackageReferences = false },
-                    () => new VsCoreProjectSystemServices(vsProjectAdapter, componentModel),
-                    componentModel);
-            }
-            else
-            {
-                return new VsCoreProjectSystemServices(vsProjectAdapter, componentModel);
-            }
         }
     }
 }

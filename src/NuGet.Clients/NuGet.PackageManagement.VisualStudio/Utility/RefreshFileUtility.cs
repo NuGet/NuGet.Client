@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using NuGet.ProjectManagement;
 using NuGet.Common;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -26,12 +26,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (projectSystem == null)
             {
-                throw new ArgumentNullException("projectSystem");
+                throw new ArgumentNullException(nameof(projectSystem));
             }
 
             if (assemblyPath == null)
             {
-                throw new ArgumentNullException("assemblyPath");
+                throw new ArgumentNullException(nameof(assemblyPath));
             }
 
             string refreshFilePath = CreateRefreshFilePath(assemblyPath);
@@ -106,11 +106,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Resolve all .refresh files from the website's bin directory. Once resolved, verify the path exists on disk and that they look like an assembly reference. 
             return from file in FileSystemUtility.GetFiles(root, "bin", "*" + RefreshFileExtension, recursive: false)
-                let resolvedPath = SafeResolveRefreshPath(root, file)
-                where resolvedPath != null &&
-                      FileSystemUtility.FileExists(root, resolvedPath) &&
-                      ProjectManagement.Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
-                select resolvedPath;
+                   let resolvedPath = SafeResolveRefreshPath(root, file)
+                   where resolvedPath != null &&
+                         FileSystemUtility.FileExists(root, resolvedPath) &&
+                         ProjectManagement.Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(resolvedPath))
+                   select resolvedPath;
         }
 
 

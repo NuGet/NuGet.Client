@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Newtonsoft.Json.Linq;
 
 namespace NuGet.Protocol.Plugins
@@ -29,7 +30,7 @@ namespace NuGet.Protocol.Plugins
             var message = new JObject(
                 new JProperty("process ID", _processId),
                 new JProperty("process name", _processName),
-                new JProperty("process start time", _processStartTime.ToString("O")));
+                new JProperty("process start time", _processStartTime.ToString("O", CultureInfo.CurrentCulture)));
 
             return ToString("process", message);
         }

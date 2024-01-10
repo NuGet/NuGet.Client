@@ -61,7 +61,7 @@ namespace NuGet.Protocol
                     filter,
                     skip,
                     take,
-                    Common.NullLogger.Instance,
+                    log,
                     cancellationToken);
             }
             else
@@ -75,7 +75,7 @@ namespace NuGet.Protocol
 
             var searchResults = searchResultMetadata
                 .Select(m => m.WithVersions(() => GetVersions(m, filter)))
-                .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) m))
+                .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m))
                 .ToArray();
 
             return searchResults;
@@ -83,19 +83,19 @@ namespace NuGet.Protocol
 
         private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
         {
-            var versions = metadata.ParsedVersions;
-
-            // TODO: in v2, we only have download count for all versions, not per version.
-            // To be consistent, in v3, we also use total download count for now.
-            var totalDownloadCount = versions.Select(v => v.DownloadCount).Sum();
-            versions = versions
-                .Select(v => v.Version)
-                .Where(v => filter.IncludePrerelease || !v.IsPrerelease)
-                .Concat(new[] { metadata.Version })
-                .Distinct()
-                .Select(v => new VersionInfo(v, totalDownloadCount))
-                .ToArray();
-
+            var uniqueVersions = new HashSet<Versioning.NuGetVersion>();
+            var versions = new List<VersionInfo>();
+            foreach (var ver in metadata.ParsedVersions)
+            {
+                if ((filter.IncludePrerelease || !ver.Version.IsPrerelease) && uniqueVersions.Add(ver.Version))
+                {
+                    versions.Add(new VersionInfo(ver.Version, ver.DownloadCount));
+                }
+            }
+            if (uniqueVersions.Add(metadata.Version))
+            {
+                versions.Add(new VersionInfo(metadata.Version, metadata.DownloadCount));
+            }
             return versions;
         }
 
@@ -108,6 +108,8 @@ namespace NuGet.Protocol
                     Common.ILogger log,
                     CancellationToken cancellationToken)
         {
+            log.LogVerbose($"Found {_searchEndpoints.Length} search endpoints.");
+
             for (var i = 0; i < _searchEndpoints.Length; i++)
             {
                 var endpoint = _searchEndpoints[i];
@@ -116,9 +118,9 @@ namespace NuGet.Protocol
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
                 var queryString =
                     "q=" + searchTerm +
-                    "&skip=" + skip.ToString() +
-                    "&take=" + take.ToString() +
-                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+                    "&skip=" + skip.ToString(CultureInfo.CurrentCulture) +
+                    "&take=" + take.ToString(CultureInfo.CurrentCulture) +
+                    "&prerelease=" + filters.IncludePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant();
 
                 if (filters.IncludeDelisted)
                 {
@@ -131,7 +133,7 @@ namespace NuGet.Protocol
                     var frameworks =
                         string.Join("&",
                             filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString()));
+                                fx => "supportedFramework=" + fx.ToString(CultureInfo.InvariantCulture)));
                     queryString += "&" + frameworks;
                 }
 
@@ -151,6 +153,8 @@ namespace NuGet.Protocol
                 var searchResult = default(T);
                 try
                 {
+                    log.LogVerbose($"Querying {queryUrl.Uri}");
+
                     searchResult = await getResultAsync(queryUrl.Uri);
                 }
                 catch (OperationCanceledException)
@@ -222,7 +226,7 @@ namespace NuGet.Protocol
                 (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
                     new HttpSourceRequest(uri, Common.NullLogger.Instance),
                     s => ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
-                    log,
+                    Common.NullLogger.Instance,
                     cancellationToken),
                 searchTerm,
                 filters,
@@ -252,7 +256,11 @@ namespace NuGet.Protocol
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
             _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
 
+#if NETCOREAPP2_0_OR_GREATER
+            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync(token))
+#else
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
+#endif
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {

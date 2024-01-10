@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if IS_SIGNING_SUPPORTED
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
 using System.Security.Cryptography.Pkcs;
-#endif
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing.DerEncoding;
@@ -16,6 +16,8 @@ namespace NuGet.Packaging.Signing
 {
     public static class SignatureUtility
     {
+        private const int SHA1HashLength = 20;
+
         private enum SigningCertificateRequirement
         {
             NoRequirement,
@@ -23,13 +25,12 @@ namespace NuGet.Packaging.Signing
             EitherOrBoth
         }
 
-#if IS_DESKTOP
         /// <summary>
         /// Gets certificates in the certificate chain for the primary signature.
         /// </summary>
         /// <param name="primarySignature">The primary signature.</param>
         /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <see langword="null" />.</exception>
         /// <remarks>
         /// WARNING:  This method does not perform revocation, trust, or certificate validity checking.
         /// </remarks>
@@ -54,8 +55,8 @@ namespace NuGet.Packaging.Signing
         /// <param name="primarySignature">The primary signature.</param>
         /// <param name="repositoryCountersignature">The repository countersignature.</param>
         /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="repositoryCountersignature" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="repositoryCountersignature" /> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="repositoryCountersignature" /> is
         /// unrelated to <paramref name="primarySignature" />.</exception>
         /// <remarks>
@@ -144,6 +145,7 @@ namespace NuGet.Packaging.Signing
                 isIssuerSerialRequired,
                 errors,
                 signingSpecifications,
+                CertificateType.Signature,
                 includeChain);
         }
 
@@ -152,7 +154,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="primarySignature">The primary signature.</param>
         /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <see langword="null" />.</exception>
         /// <exception cref="SignatureException">Thrown if <paramref name="primarySignature" /> does not have a valid
         /// timestamp.</exception>
         /// <remarks>
@@ -186,8 +188,8 @@ namespace NuGet.Packaging.Signing
         /// <param name="primarySignature">The primary signature.</param>
         /// <param name="repositoryCountersignature">The repository countersignature.</param>
         /// <returns>A non-empty, read-only list of X.509 certificates ordered from signing certificate to root.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="repositoryCountersignature" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="primarySignature" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="repositoryCountersignature" /> is <see langword="null" />.</exception>
         /// <exception cref="SignatureException">Thrown if <paramref name="repositoryCountersignature" /> does not have a valid
         /// timestamp.</exception>
         /// <remarks>
@@ -258,6 +260,7 @@ namespace NuGet.Packaging.Signing
                 isIssuerSerialRequired,
                 errors,
                 signingSpecifications,
+                CertificateType.Signature,
                 includeChain);
         }
 
@@ -285,6 +288,31 @@ namespace NuGet.Packaging.Signing
             }
 
             return false;
+        }
+
+        internal static void LogAdditionalContext(IX509Chain chain, List<SignatureLog> issues)
+        {
+            if (chain is null)
+            {
+                throw new ArgumentNullException(nameof(chain));
+            }
+
+            if (issues is null)
+            {
+                throw new ArgumentNullException(nameof(issues));
+            }
+
+            ILogMessage logMessage = chain.AdditionalContext;
+
+            if (logMessage is not null)
+            {
+                SignatureLog issue = SignatureLog.Issue(
+                    fatal: false,
+                    logMessage.Code,
+                    logMessage.Message);
+
+                issues.Add(issue);
+            }
         }
 
         internal static IX509CertificateChain GetTimestampCertificates(
@@ -326,6 +354,7 @@ namespace NuGet.Packaging.Signing
                 isIssuerSerialRequired,
                 errors,
                 signingSpecifications,
+                CertificateType.Timestamp,
                 includeChain);
         }
 
@@ -336,6 +365,7 @@ namespace NuGet.Packaging.Signing
             bool isIssuerSerialRequired,
             Errors errors,
             SigningSpecifications signingSpecifications,
+            CertificateType certificateType,
             bool includeChain)
         {
             if (signedCms == null)
@@ -522,7 +552,11 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            var certificates = GetCertificateChain(signerInfo.Certificate, signedCms.Certificates, includeChain);
+            IX509CertificateChain certificates = GetCertificateChain(
+                signerInfo.Certificate,
+                signedCms.Certificates,
+                certificateType,
+                includeChain);
 
             if (certificates == null || certificates.Count == 0)
             {
@@ -581,14 +615,7 @@ namespace NuGet.Packaging.Signing
                 }
             }
 
-            byte[] actualHash;
-
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
-            {
-                actualHash = hashAlgorithm.ComputeHash(certificate.RawData);
-            }
-
-            return essCertId.CertificateHash.SequenceEqual(actualHash);
+            return essCertId.CertificateHash.Length == SHA1HashLength;
         }
 
         private static bool AreGeneralNamesEqual(IssuerSerial issuerSerial, X509Certificate2 certificate)
@@ -617,6 +644,7 @@ namespace NuGet.Packaging.Signing
         private static IX509CertificateChain GetCertificateChain(
             X509Certificate2 certificate,
             X509Certificate2Collection extraStore,
+            CertificateType certificateType,
             bool includeCertificatesAfterSigningCertificate)
         {
             if (!includeCertificatesAfterSigningCertificate)
@@ -624,15 +652,16 @@ namespace NuGet.Packaging.Signing
                 return new X509CertificateChain() { certificate };
             }
 
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = certificateType == CertificateType.Signature
+                ? X509ChainHolder.CreateForCodeSigning() : X509ChainHolder.CreateForTimestamping())
             {
-                var chain = chainHolder.Chain;
+                IX509Chain chain = chainHolder.Chain2;
 
                 chain.ChainPolicy.ExtraStore.AddRange(extraStore);
 
                 chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
 
-                chain.Build(certificate);
+                CertificateChainUtility.BuildWithPolicy(chain, certificate);
 
                 if (chain.ChainStatus.Any(chainStatus =>
                     chainStatus.Status.HasFlag(X509ChainStatusFlags.Cyclic) ||
@@ -642,7 +671,7 @@ namespace NuGet.Packaging.Signing
                     return null;
                 }
 
-                return CertificateChainUtility.GetCertificateChain(chain);
+                return CertificateChainUtility.GetCertificateChain(chain.PrivateReference);
             }
         }
 
@@ -678,6 +707,6 @@ namespace NuGet.Packaging.Signing
                 ChainBuildingFailed = chainBuildingFailed;
             }
         }
-#endif
     }
 }
+#endif

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using NuGet.Frameworks;
 using Xunit;
 
@@ -226,14 +227,20 @@ namespace NuGet.Test
         [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
         [InlineData("netcoreapp2.0", ".NetCoreApp,Version=v2.0")]
         [InlineData("netcoreapp3.0", ".NetCoreApp,Version=v3.0")]
+        [InlineData("net5.0", "netcoreapp5.0")]
+        [InlineData("net5.0-windows", "netcoreapp5.0-windows")]
+        [InlineData("net5.0-windows10.0", "netcoreapp5.0-windows10.0")]
         [InlineData("net5.0-android", "net5.0-android")]
         [InlineData("net5.0-android", "net5.0-android0.0")]
+        [InlineData("net5.0-android10.0", "net5.0-android10")]
         [InlineData("net5.0-ios14.0", "net5.0-ios14.0")]
         [InlineData("net5.0-macos10.0", "net5.0-macos10.0")]
         [InlineData("net5.0-watchos1.0", "net5.0-watchos1.0")]
         [InlineData("net5.0-tvos1.0", "net5.0-tvos1.0")]
         [InlineData("net5.0-windows10.0", "net5.0-windows10.0")]
         [InlineData("net5.0-macos10.15.2.3", "net5.0-macos10.15.2.3")]
+        [InlineData("netnano1.0", "netnano1.0")]
+        [InlineData("netnano1.0", ".NETnanoFramework,Version=v1.0")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -248,54 +255,55 @@ namespace NuGet.Test
 
         [Theory]
         // Net5.0 ERA
-        [InlineData("net5.0", "net5.0")]
-        [InlineData("net10.1.2.3", "net10.1.2.3")]
-        [InlineData("netcoreapp5.0", "net5.0")]
-        [InlineData("net5.0-android", "net5.0-android")]
-        [InlineData("net5.0-ios14.0", "net5.0-ios14.0")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0", "")]
+        [InlineData("net10.1.2.3", ".NETCoreApp,Version=v10.1.2.3", "")]
+        [InlineData("net5.0-android", ".NETCoreApp,Version=v5.0", "android,Version=0.0")]
+        [InlineData("net5.0-ios14.0", ".NETCoreApp,Version=v5.0", "ios,Version=14.0")]
 
         // Pre-Net5.0 ERA
-        [InlineData("net45", ".NETFramework,Version=v4.5")]
-        [InlineData("net20", ".NETFramework,Version=v2.0")]
-        [InlineData("net40", ".NETFramework,Version=v4.0")]
-        [InlineData("net35", ".NETFramework,Version=v3.5")]
-        [InlineData("net40-full", ".NETFramework,Version=v4.0")]
-        [InlineData("net40-client", ".NETFramework,Version=v4.0,Profile=Client")]
-        [InlineData("net", ".NETFramework,Version=v0.0")]
-        [InlineData("net45-cf", ".NETFramework,Version=v4.5,Profile=CompactFramework")]
-        [InlineData("uap10.0", "UAP,Version=v10.0")]
-        [InlineData("dotnet", ".NETPlatform,Version=v5.0")]
-        [InlineData("dotnet5", ".NETPlatform,Version=v5.0")]
-        [InlineData("dotnet50", ".NETPlatform,Version=v5.0")]
-        [InlineData("dotnet10", ".NETPlatform,Version=v1.0")]
-        [InlineData("dotnet5.1", ".NETPlatform,Version=v5.1")]
-        [InlineData("dotnet5.2", ".NETPlatform,Version=v5.2")]
-        [InlineData("dotnet5.3", ".NETPlatform,Version=v5.3")]
-        [InlineData("dotnet5.4", ".NETPlatform,Version=v5.4")]
-        [InlineData("dotnet5.5", ".NETPlatform,Version=v5.5")]
-        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
-        [InlineData("netstandard1.1", ".NETStandard,Version=v1.1")]
-        [InlineData("netstandard1.2", ".NETStandard,Version=v1.2")]
-        [InlineData("netstandard1.3", ".NETStandard,Version=v1.3")]
-        [InlineData("netstandard1.4", ".NETStandard,Version=v1.4")]
-        [InlineData("netstandard1.5", ".NETStandard,Version=v1.5")]
-        [InlineData("netstandardapp", ".NETStandardApp,Version=v0.0")]
-        [InlineData("netstandardapp0.0", ".NETStandardApp,Version=v0.0")]
-        [InlineData("netstandardapp1", ".NETStandardApp,Version=v1.0")]
-        [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
-        [InlineData("netstandardapp2", ".NETStandardApp,Version=v2.0")]
-        [InlineData("netstandardapp2.1", ".NETStandardApp,Version=v2.1")]
-        [InlineData("netcoreapp", ".NETCoreApp,Version=v0.0")]
-        [InlineData("netcoreapp0.0", ".NETCoreApp,Version=v0.0")]
-        [InlineData("netcoreapp1", ".NETCoreApp,Version=v1.0")]
-        [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
-        [InlineData("netcoreapp2", ".NETCoreApp,Version=v2.0")]
-        [InlineData("netcoreapp3", ".NETCoreApp,Version=v3.0")]
-        public void NuGetFramework_Basic(string folderName, string fullName)
+        [InlineData("net45", ".NETFramework,Version=v4.5", "")]
+        [InlineData("net20", ".NETFramework,Version=v2.0", "")]
+        [InlineData("net40", ".NETFramework,Version=v4.0", "")]
+        [InlineData("net35", ".NETFramework,Version=v3.5", "")]
+        [InlineData("net40-full", ".NETFramework,Version=v4.0", "")]
+        [InlineData("net40-client", ".NETFramework,Version=v4.0,Profile=Client", "")]
+        [InlineData("net", ".NETFramework,Version=v0.0", "")]
+        [InlineData("net45-cf", ".NETFramework,Version=v4.5,Profile=CompactFramework", "")]
+        [InlineData("uap10.0", "UAP,Version=v10.0", "")]
+        [InlineData("dotnet", ".NETPlatform,Version=v5.0", "")]
+        [InlineData("dotnet5", ".NETPlatform,Version=v5.0", "")]
+        [InlineData("dotnet50", ".NETPlatform,Version=v5.0", "")]
+        [InlineData("dotnet10", ".NETPlatform,Version=v1.0", "")]
+        [InlineData("dotnet5.1", ".NETPlatform,Version=v5.1", "")]
+        [InlineData("dotnet5.2", ".NETPlatform,Version=v5.2", "")]
+        [InlineData("dotnet5.3", ".NETPlatform,Version=v5.3", "")]
+        [InlineData("dotnet5.4", ".NETPlatform,Version=v5.4", "")]
+        [InlineData("dotnet5.5", ".NETPlatform,Version=v5.5", "")]
+        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0", "")]
+        [InlineData("netstandard1.1", ".NETStandard,Version=v1.1", "")]
+        [InlineData("netstandard1.2", ".NETStandard,Version=v1.2", "")]
+        [InlineData("netstandard1.3", ".NETStandard,Version=v1.3", "")]
+        [InlineData("netstandard1.4", ".NETStandard,Version=v1.4", "")]
+        [InlineData("netstandard1.5", ".NETStandard,Version=v1.5", "")]
+        [InlineData("netstandardapp", ".NETStandardApp,Version=v0.0", "")]
+        [InlineData("netstandardapp0.0", ".NETStandardApp,Version=v0.0", "")]
+        [InlineData("netstandardapp1", ".NETStandardApp,Version=v1.0", "")]
+        [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5", "")]
+        [InlineData("netstandardapp2", ".NETStandardApp,Version=v2.0", "")]
+        [InlineData("netstandardapp2.1", ".NETStandardApp,Version=v2.1", "")]
+        [InlineData("netcoreapp", ".NETCoreApp,Version=v0.0", "")]
+        [InlineData("netcoreapp0.0", ".NETCoreApp,Version=v0.0", "")]
+        [InlineData("netcoreapp1", ".NETCoreApp,Version=v1.0", "")]
+        [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5", "")]
+        [InlineData("netcoreapp2", ".NETCoreApp,Version=v2.0", "")]
+        [InlineData("netcoreapp3", ".NETCoreApp,Version=v3.0", "")]
+        [InlineData("netnano1.0", ".NETnanoFramework,Version=v1.0", "")]
+        public void NuGetFramework_Basic(string folderName, string frameworkMoniker, string platformMoniker)
         {
-            string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;
+            NuGetFramework output = NuGetFramework.Parse(folderName);
 
-            Assert.Equal(fullName, output);
+            Assert.Equal(frameworkMoniker, output.DotNetFrameworkName);
+            Assert.Equal(platformMoniker, output.DotNetPlatformName);
         }
 
         [Theory]
@@ -411,6 +419,17 @@ namespace NuGet.Test
         [InlineData("netcoreapp31", "netcoreapp31")]
         [InlineData("net5.0", "net5.0")]
         [InlineData("net50", "net5.0")]
+        [InlineData("net5.0", "netcoreapp5.0")]
+        [InlineData("net5.0", "netcoreapp50")]
+        [InlineData("net6.0", "net60")]
+        [InlineData("net6.0", "netcoreapp6.0")]
+        [InlineData("net6.0", "netcoreapp60")]
+        [InlineData("net7.0", "net70")]
+        [InlineData("net7.0", "netcoreapp7.0")]
+        [InlineData("net7.0", "netcoreapp70")]
+        [InlineData("net8.0", "net80")]
+        [InlineData("net8.0", "netcoreapp8.0")]
+        [InlineData("net8.0", "netcoreapp80")]
         public void NuGetFramework_TryParseCommonFramework_ParsesCommonFrameworks(string frameworkString1, string frameworkString2)
         {
             var framework1 = NuGetFramework.Parse(frameworkString1);
@@ -418,6 +437,26 @@ namespace NuGet.Test
 
             // Compare the object references
             Assert.Same(framework1, framework2);
+        }
+
+        public static IEnumerable<object[]> NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data()
+        {
+            yield return new object[] { "net472", FrameworkConstants.CommonFrameworks.Net472 };
+            yield return new object[] { "net5.0", FrameworkConstants.CommonFrameworks.Net50 };
+            yield return new object[] { "net6.0", FrameworkConstants.CommonFrameworks.Net60 };
+            yield return new object[] { "net7.0", FrameworkConstants.CommonFrameworks.Net70 };
+            yield return new object[] { "net8.0", FrameworkConstants.CommonFrameworks.Net80 };
+        }
+
+        [Theory]
+        [MemberData(nameof(NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance_Data))]
+        public void NuGetFramework_Parse_CommonFramework_ReturnsStaticInstance(string frameworkString, NuGetFramework frameworkObject)
+        {
+            // Act
+            NuGetFramework parsedFramework = NuGetFramework.Parse(frameworkString);
+
+            // Assert
+            Assert.Same(frameworkObject, parsedFramework);
         }
     }
 }

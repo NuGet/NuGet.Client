@@ -6,16 +6,19 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Etw;
+using NuGet.VisualStudio.Telemetry;
 
-namespace NuGet.VisualStudio
+namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     [Export(typeof(IVsPackageSourceProvider))]
     public class VsPackageSourceProvider : IVsPackageSourceProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
+        private readonly INuGetTelemetryProvider _telemetryProvider;
 
         [ImportingConstructor]
-        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider)
+        public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider, INuGetTelemetryProvider telemetryProvider)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -23,15 +26,25 @@ namespace NuGet.VisualStudio
             }
 
             _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
+            _telemetryProvider = telemetryProvider;
+
             _packageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
         }
 
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
         {
-            var sources = new List<KeyValuePair<string, string>>();
+            const string eventName = nameof(IVsPackageSourceProvider) + "." + nameof(GetSources);
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName,
+                new
+                {
+                    IncludeUnOfficial = includeUnOfficial,
+                    IncludeDisabled = includeDisabled
+                });
 
             try
             {
+                var sources = new List<KeyValuePair<string, string>>();
+
                 foreach (var source in _packageSourceProvider.LoadPackageSources())
                 {
                     if ((IsOfficial(source) || includeUnOfficial)
@@ -42,23 +55,44 @@ namespace NuGet.VisualStudio
                         sources.Add(pair);
                     }
                 }
+
+                return sources;
             }
             catch (Exception ex) when (!IsExpected(ex))
             {
+                _telemetryProvider.PostFault(ex, typeof(VsPackageSourceProvider).FullName);
                 throw new InvalidOperationException(ex.Message, ex);
             }
-
-            return sources;
         }
 
-        public event EventHandler SourcesChanged;
+        private event EventHandler _sourcesChanged;
+        const string SourcesChangedEventName = nameof(IVsPackageSourceProvider) + "." + nameof(SourcesChanged);
+        public event EventHandler SourcesChanged
+        {
+            add
+            {
+                NuGetETW.ExtensibilityEventSource.Write(SourcesChangedEventName, NuGetETW.AddEventOptions);
+                _sourcesChanged += value;
+            }
+            remove
+            {
+                NuGetETW.ExtensibilityEventSource.Write(SourcesChangedEventName, NuGetETW.RemoveEventOptions);
+                _sourcesChanged -= value;
+            }
+        }
 
         private void PackageSourcesChanged(object sender, EventArgs e)
         {
-            if (SourcesChanged != null)
+            if (_sourcesChanged != null)
             {
                 // No information is given in the event args, callers must re-request GetSources
-                SourcesChanged(this, new EventArgs());
+                var eventArgs = new EventArgs();
+                var delegates = _sourcesChanged.GetInvocationList();
+                for (int i = 0; i < delegates.Length; i++)
+                {
+                    var handler = (EventHandler)delegates[i];
+                    handler(this, eventArgs);
+                }
             }
         }
 

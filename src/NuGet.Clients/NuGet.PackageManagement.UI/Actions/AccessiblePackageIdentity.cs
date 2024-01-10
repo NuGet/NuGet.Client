@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
             : base(id.Id, id.Version)
         {
             AutomationName = string.Format(
-               CultureInfo.CurrentUICulture,
+               CultureInfo.CurrentCulture,
                Resources.Accessibility_PackageIdentity,
                Id,
                Version.ToNormalizedString());

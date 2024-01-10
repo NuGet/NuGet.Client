@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Configuration;
 
 namespace NuGet.Build.Tasks
 {
@@ -12,7 +12,7 @@ namespace NuGet.Build.Tasks
     /// This class contains the logic for the settings using during restore. 
     /// It contains methods with the settings precedence logic as well.
     /// </summary>
-    public class RestoreSettingsUtils
+    public static class RestoreSettingsUtils
     {
         public static readonly string Clear = nameof(Clear);
 

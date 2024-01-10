@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,69 +21,40 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly PackageSearchMetadataCache _cachedUpdates;
-        private readonly Common.ILogger _logger;
-        private readonly NuGetProject[] _projects;
+        private readonly IProjectContextInfo[] _projects;
+        private readonly IServiceBroker _serviceBroker;
 
         public UpdatePackageFeed(
+            IServiceBroker serviceBroker,
             IEnumerable<PackageCollectionItem> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            NuGetProject[] projects,
-            PackageSearchMetadataCache optionalCachedUpdates,
-            Common.ILogger logger)
+            IProjectContextInfo[] projects)
         {
-            if (installedPackages == null)
-            {
-                throw new ArgumentNullException(nameof(installedPackages));
-            }
+            Assumes.NotNull(serviceBroker);
+            Assumes.NotNull(installedPackages);
+            Assumes.NotNull(metadataProvider);
+            Assumes.NotNull(projects);
 
+            _serviceBroker = serviceBroker;
             _installedPackages = installedPackages;
-
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-
             _metadataProvider = metadataProvider;
-
-            if (projects == null)
-            {
-                throw new ArgumentNullException(nameof(projects));
-            }
-
             _projects = projects;
-
-            _cachedUpdates = optionalCachedUpdates;
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            _logger = logger;
         }
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
+            var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var packagesWithUpdates = (_cachedUpdates?.IncludePrerelease == searchToken.SearchFilter.IncludePrerelease)
-                ?
-                    GetPackagesFromCache(searchToken.SearchString)
-                :
-                    await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
+            IEnumerable<IPackageSearchMetadata> packagesWithUpdates = await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
 
-            var items = packagesWithUpdates
+            IPackageSearchMetadata[] items = packagesWithUpdates
                 .Skip(searchToken.StartIndex)
                 .ToArray();
 
-            var result = SearchResult.FromItems(items);
+            SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(items);
 
-            var loadingStatus = items.Length == 0
+            LoadingStatus loadingStatus = items.Length == 0
                 ? LoadingStatus.NoItemsFound
                 : LoadingStatus.NoMoreItems;
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
@@ -90,11 +63,6 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             return result;
-        }
-
-        private IEnumerable<IPackageSearchMetadata> GetPackagesFromCache(string searchText)
-        {
-            return _cachedUpdates.Packages.Where(p => p.Identity.Id.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1);
         }
 
         public async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesWithUpdatesAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)
@@ -118,19 +86,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Traverse all projects and determine packages with updates
             var packagesWithUpdates = new List<IPackageSearchMetadata>();
-            foreach(var project in _projects)
+            foreach (var project in _projects)
             {
-                var installed = await project.GetInstalledPackagesAsync(cancellationToken);
+                var installed = await project.GetInstalledPackagesAsync(_serviceBroker, cancellationToken);
                 foreach (var installedPackage in installed)
                 {
-                    var installedVersion = installedPackage.PackageIdentity.Version;
+                    var installedVersion = installedPackage.Identity.Version;
                     var allowedVersions = installedPackage.AllowedVersions ?? VersionRange.All;
 
                     // filter packages based on current package identity
                     var allPackages = prefetchedPackages
                         .Where(p => StringComparer.OrdinalIgnoreCase.Equals(
                             p.Identity.Id,
-                            installedPackage.PackageIdentity.Id))
+                            installedPackage.Identity.Id))
                         .ToArray();
 
                     // and allowed versions

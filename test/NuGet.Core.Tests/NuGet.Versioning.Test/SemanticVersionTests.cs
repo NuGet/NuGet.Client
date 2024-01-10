@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
@@ -21,11 +21,12 @@ namespace NuGet.Versioning.Test
         public void ParseSemanticVersionStrict(string versionString)
         {
             // Act
-            SemanticVersion semVer = null;
-            SemanticVersion.TryParse(versionString, out semVer);
+            SemanticVersion? semVer;
+            var successful = SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
-            Assert.Equal<string>(versionString, semVer.ToFullString());
+            Assert.True(successful);
+            Assert.Equal<string>(versionString, semVer!.ToFullString());
             Assert.Equal<string>(semVer.ToNormalizedString(), semVer.ToString());
         }
 
@@ -37,15 +38,15 @@ namespace NuGet.Versioning.Test
         public void SemanticVersionStrictEquality(string versionString)
         {
             // Act
-            SemanticVersion main = null;
+            SemanticVersion? main;
             SemanticVersion.TryParse("1.2.3", out main);
 
-            SemanticVersion semVer = null;
+            SemanticVersion? semVer;
             SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
-            Assert.True(main.Equals(semVer));
-            Assert.True(semVer.Equals(main));
+            Assert.True(main!.Equals(semVer));
+            Assert.True(semVer!.Equals(main));
 
             Assert.True(main.GetHashCode() == semVer.GetHashCode());
         }
@@ -58,15 +59,15 @@ namespace NuGet.Versioning.Test
         public void SemanticVersionStrictEqualityPreRelease(string versionString)
         {
             // Act
-            SemanticVersion main = null;
+            SemanticVersion? main;
             SemanticVersion.TryParse("1.2.3-alpha", out main);
 
-            SemanticVersion semVer = null;
+            SemanticVersion? semVer;
             SemanticVersion.TryParse(versionString, out semVer);
 
             // Assert
-            Assert.True(main.Equals(semVer));
-            Assert.True(semVer.Equals(main));
+            Assert.True(main!.Equals(semVer));
+            Assert.True(semVer!.Equals(main));
 
             Assert.True(main.GetHashCode() == semVer.GetHashCode());
         }
@@ -89,13 +90,45 @@ namespace NuGet.Versioning.Test
         [InlineData("1.2.3-A.00.B")]
         public void TryParseStrictReturnsFalseIfVersionIsNotStrictSemVer(string version)
         {
-            // Act 
-            SemanticVersion semanticVersion;
+            // Act
+            SemanticVersion? semanticVersion;
             var result = SemanticVersion.TryParse(version, out semanticVersion);
 
             // Assert
             Assert.False(result);
             Assert.Null(semanticVersion);
+        }
+
+        [Fact]
+        public void ToString_ClassExtendingSemanticVersion_ReturnsDefaultFormat()
+        {
+            ExtendedSemanticVersion target = new(1, 2, 3);
+
+            string result = target.ToString();
+
+            Assert.Equal("1.2.3", result);
+        }
+
+        [Fact]
+        public void Metadata_NoNullableWarning_After_HasMetadata_checked()
+        {
+            // Arrange
+            SemanticVersion target = new(1, 2, 3);
+
+            // Act
+            // should not result in a compiler warning CS8602: Dereference of a possibly null reference.
+            string result = target.HasMetadata ? target.Metadata.Substring(1) : "no-metadata";
+
+            // Assert
+            Assert.Equal("no-metadata", result);
+        }
+
+        private class ExtendedSemanticVersion : SemanticVersion
+        {
+            public ExtendedSemanticVersion(int major, int minor, int patch)
+                : base(major, minor, patch)
+            {
+            }
         }
     }
 }

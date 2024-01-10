@@ -50,6 +50,6 @@ namespace NuGet.PackageManagement.UI
         public string SortPropertyName { get; set; }
 
         // The sort direction of the project list in the solution package manager
-        public ListSortDirection SortDirection {get; set ;} 
+        public ListSortDirection SortDirection { get; set; }
     }
 }

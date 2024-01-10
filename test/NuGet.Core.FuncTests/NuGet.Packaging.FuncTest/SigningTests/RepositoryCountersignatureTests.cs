@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -140,7 +140,6 @@ namespace NuGet.Packaging.FuncTest
             {
                 v3ServiceIndexUrl = v3ServiceIndexUrl ?? new Uri("https://test.test");
 
-                var packageContext = new SimpleTestPackageContext();
                 var test = await CreateWithoutRepositoryCountersignatureAsync(certificate);
                 var request = new RepositorySignPackageRequest(
                     new X509Certificate2(certificate),

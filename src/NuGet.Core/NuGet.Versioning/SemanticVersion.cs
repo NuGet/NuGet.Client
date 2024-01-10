@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace NuGet.Versioning
@@ -10,12 +12,12 @@ namespace NuGet.Versioning
     /// <summary>
     /// A strict SemVer implementation
     /// </summary>
+    [TypeConverter(typeof(SemanticVersionConverter))]
     public partial class SemanticVersion
     {
         // store as array to avoid enumerator allocations
-        internal readonly string[] _releaseLabels;
-        internal readonly string _metadata;
-        internal readonly Version _version;
+        internal readonly string[]? _releaseLabels;
+        internal readonly string? _metadata;
 
         /// <summary>
         /// Creates a SemanticVersion from an existing SemanticVersion
@@ -44,7 +46,7 @@ namespace NuGet.Versioning
         /// <param name="minor">x.Y.z</param>
         /// <param name="patch">x.y.Z</param>
         /// <param name="releaseLabel">Prerelease label</param>
-        public SemanticVersion(int major, int minor, int patch, string releaseLabel)
+        public SemanticVersion(int major, int minor, int patch, string? releaseLabel)
             : this(major, minor, patch, ParseReleaseLabels(releaseLabel), null)
         {
         }
@@ -57,7 +59,7 @@ namespace NuGet.Versioning
         /// <param name="patch">x.y.Z</param>
         /// <param name="releaseLabel">Prerelease label</param>
         /// <param name="metadata">Build metadata</param>
-        public SemanticVersion(int major, int minor, int patch, string releaseLabel, string metadata)
+        public SemanticVersion(int major, int minor, int patch, string? releaseLabel, string? metadata)
             : this(major, minor, patch, ParseReleaseLabels(releaseLabel), metadata)
         {
         }
@@ -70,7 +72,7 @@ namespace NuGet.Versioning
         /// <param name="patch">x.y.Z</param>
         /// <param name="releaseLabels">Release labels that have been split by the dot separator</param>
         /// <param name="metadata">Build metadata</param>
-        public SemanticVersion(int major, int minor, int patch, IEnumerable<string> releaseLabels, string metadata)
+        public SemanticVersion(int major, int minor, int patch, IEnumerable<string>? releaseLabels, string? metadata)
             : this(new Version(major, minor, patch, 0), releaseLabels, metadata)
         {
         }
@@ -81,7 +83,7 @@ namespace NuGet.Versioning
         /// <param name="version">Version</param>
         /// <param name="releaseLabel">Full release label</param>
         /// <param name="metadata">Build metadata</param>
-        protected SemanticVersion(Version version, string releaseLabel = null, string metadata = null)
+        protected SemanticVersion(Version version, string? releaseLabel = null, string? metadata = null)
             : this(version, ParseReleaseLabels(releaseLabel), metadata)
         {
         }
@@ -95,7 +97,7 @@ namespace NuGet.Versioning
         /// <param name="revision">x.y.z.R</param>
         /// <param name="releaseLabel">Prerelease label</param>
         /// <param name="metadata">Build metadata</param>
-        protected SemanticVersion(int major, int minor, int patch, int revision, string releaseLabel, string metadata)
+        protected SemanticVersion(int major, int minor, int patch, int revision, string? releaseLabel, string? metadata)
             : this(major, minor, patch, revision, ParseReleaseLabels(releaseLabel), metadata)
         {
         }
@@ -109,7 +111,7 @@ namespace NuGet.Versioning
         /// <param name="revision"></param>
         /// <param name="releaseLabels"></param>
         /// <param name="metadata"></param>
-        protected SemanticVersion(int major, int minor, int patch, int revision, IEnumerable<string> releaseLabels, string metadata)
+        protected SemanticVersion(int major, int minor, int patch, int revision, IEnumerable<string>? releaseLabels, string? metadata)
             : this(new Version(major, minor, patch, revision), releaseLabels, metadata)
         {
         }
@@ -120,14 +122,18 @@ namespace NuGet.Versioning
         /// <param name="version">Version</param>
         /// <param name="releaseLabels">Release labels</param>
         /// <param name="metadata">Build metadata</param>
-        protected SemanticVersion(Version version, IEnumerable<string> releaseLabels, string metadata)
+        protected SemanticVersion(Version version, IEnumerable<string>? releaseLabels, string? metadata)
         {
             if (version == null)
             {
                 throw new ArgumentNullException(nameof(version));
             }
 
-            _version = NormalizeVersionValue(version);
+            var normalizedVersion = NormalizeVersionValue(version);
+            Major = normalizedVersion.Major;
+            Minor = normalizedVersion.Minor;
+            Patch = normalizedVersion.Build;
+
             _metadata = metadata;
 
             if (releaseLabels != null)
@@ -156,26 +162,17 @@ namespace NuGet.Versioning
         /// <summary>
         /// Major version X (X.y.z)
         /// </summary>
-        public int Major
-        {
-            get { return _version.Major; }
-        }
+        public int Major { get; }
 
         /// <summary>
         /// Minor version Y (x.Y.z)
         /// </summary>
-        public int Minor
-        {
-            get { return _version.Minor; }
-        }
+        public int Minor { get; }
 
         /// <summary>
         /// Patch version Z (x.y.Z)
         /// </summary>
-        public int Patch
-        {
-            get { return _version.Build; }
-        }
+        public int Patch { get; }
 
         /// <summary>
         /// A collection of pre-release labels attached to the version.
@@ -235,6 +232,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// True if metadata exists for the version.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Metadata))]
         public virtual bool HasMetadata
         {
             get { return !string.IsNullOrEmpty(Metadata); }
@@ -243,7 +241,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Build metadata attached to the version.
         /// </summary>
-        public virtual string Metadata
+        public virtual string? Metadata
         {
             get { return _metadata; }
         }

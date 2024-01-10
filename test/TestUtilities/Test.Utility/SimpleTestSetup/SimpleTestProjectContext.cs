@@ -13,7 +13,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -36,7 +35,7 @@ namespace NuGet.Test.Utility
 
             ProjectName = projectName;
             ProjectPath = Path.Combine(solutionRoot, projectName, $"{projectName}{ProjectExt}");
-            OutputPath = Path.Combine(solutionRoot, projectName, "obj");
+            ProjectExtensionsPath = Path.Combine(solutionRoot, projectName, "obj");
             Type = type;
         }
 
@@ -62,7 +61,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// MSBuildProjectExtensionsPath
         /// </summary>
-        public string OutputPath { get; set; }
+        public string ProjectExtensionsPath { get; set; }
 
         /// <summary>
         /// Additional MSBuild properties
@@ -73,11 +72,6 @@ namespace NuGet.Test.Utility
         /// Target frameworks containing dependencies.
         /// </summary>
         public List<SimpleTestProjectFrameworkContext> Frameworks { get; set; } = new List<SimpleTestProjectFrameworkContext>();
-
-        /// <summary>
-        /// Original Target framework strings.
-        /// </summary>
-        public List<string> OriginalFrameworkStrings { get; set; } = new List<string>();
 
         /// <summary>
         /// Project type
@@ -136,7 +130,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, "project.assets.json");
+                        return Path.Combine(ProjectExtensionsPath, "project.assets.json");
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), "project.lock.json");
@@ -154,7 +148,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, NoOpRestoreUtilities.NoOpCacheFileName);
+                        return Path.Combine(ProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName);
 
                     default:
                         return null;
@@ -187,7 +181,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
+                        return Path.Combine(ProjectExtensionsPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.targets");
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.targets");
@@ -205,7 +199,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
+                        return Path.Combine(ProjectExtensionsPath, $"{Path.GetFileName(ProjectPath)}.nuget.g.props");
 
                     case ProjectStyle.ProjectJson:
                         return Path.Combine(Path.GetDirectoryName(ProjectPath), $"{Path.GetFileNameWithoutExtension(ProjectPath)}.nuget.props");
@@ -216,16 +210,25 @@ namespace NuGet.Test.Utility
             }
         }
 
+        private LockFile _assetsFileCache = null;
+        private DateTime _assetsFileLastModified = DateTime.MinValue;
+
         public LockFile AssetsFile
         {
             get
             {
                 var path = AssetsFileOutputPath;
-
                 if (File.Exists(path))
                 {
-                    var format = new LockFileFormat();
-                    return format.Read(path);
+                    var lastWriteTime = File.GetLastWriteTimeUtc(path);
+                    if (_assetsFileLastModified < lastWriteTime)
+                    {
+                        var format = new LockFileFormat();
+                        _assetsFileCache = format.Read(path);
+                        _assetsFileLastModified = lastWriteTime;
+                    }
+
+                    return _assetsFileCache;
                 }
 
                 return null;
@@ -237,8 +240,11 @@ namespace NuGet.Test.Utility
             get
             {
                 var _packageSpec = new PackageSpec(Frameworks
-                    .Select(f => new TargetFrameworkInformation() { FrameworkName = f.Framework,
-                        Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToList()
+                    .Select(f => new TargetFrameworkInformation()
+                    {
+                        FrameworkName = f.Framework,
+                        Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToList(),
+                        TargetAlias = f.TargetAlias,
                     }).ToList());
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
                 _packageSpec.Name = ProjectName;
@@ -247,8 +253,8 @@ namespace NuGet.Test.Utility
                 _packageSpec.RestoreMetadata.ProjectName = ProjectName;
                 _packageSpec.RestoreMetadata.ProjectPath = ProjectPath;
                 _packageSpec.RestoreMetadata.ProjectStyle = Type;
-                _packageSpec.RestoreMetadata.OutputPath = OutputPath;
-                _packageSpec.RestoreMetadata.OriginalTargetFrameworks = OriginalFrameworkStrings;
+                _packageSpec.RestoreMetadata.OutputPath = ProjectExtensionsPath;
+                _packageSpec.RestoreMetadata.OriginalTargetFrameworks = _packageSpec.TargetFrameworks.Select(e => e.TargetAlias).ToList();
                 _packageSpec.RestoreMetadata.TargetFrameworks = Frameworks
                     .Select(f => new ProjectRestoreMetadataFrameworkInfo(f.Framework))
                     .ToList();
@@ -381,15 +387,18 @@ namespace NuGet.Test.Utility
             return context;
         }
 
-        public static SimpleTestProjectContext CreateNETCoreWithSDK(
+        public static SimpleTestProjectContext CreateNETCore(
             string projectName,
             string solutionRoot,
-            bool isToolingVersion15,
-            params NuGetFramework[] frameworks)
+            params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
-            context.Frameworks.AddRange(frameworks.Select(e => new SimpleTestProjectFrameworkContext(e)));
-            context.ToolingVersion15 = isToolingVersion15;
+            context.Frameworks.AddRange(frameworks.Select(e =>
+            {
+                var frameworkContext = new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(e));
+                frameworkContext.TargetAlias = e;
+                return frameworkContext;
+            }));
             context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
         }
@@ -400,8 +409,7 @@ namespace NuGet.Test.Utility
             params string[] frameworks)
         {
             var context = new SimpleTestProjectContext(projectName, ProjectStyle.PackageReference, solutionRoot);
-            context.OriginalFrameworkStrings.AddRange(frameworks);
-            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f))));
+            context.Frameworks.AddRange(frameworks.Select(f => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(f)) { TargetAlias = f }));
             context.ToolingVersion15 = true;
             context.Properties.Add("RestoreProjectStyle", "PackageReference");
             return context;
@@ -444,7 +452,7 @@ namespace NuGet.Test.Utility
             if (SetMSBuildProjectExtensionsPath)
             {
                 var propertyGroup = new XElement(ns + "PropertyGroup");
-                propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", OutputPath));
+                propertyGroup.Add(new XElement(ns + "MSBuildProjectExtensionsPath", ProjectExtensionsPath));
                 xml.Root.AddFirst(propertyGroup);
             }
 
@@ -478,8 +486,7 @@ namespace NuGet.Test.Utility
 
                     ProjectFileUtils.AddProperties(xml, new Dictionary<string, string>()
                     {
-                        { tfPropName, OriginalFrameworkStrings.Count != 0 ? string.Join(";", OriginalFrameworkStrings): 
-                        string.Join(";", Frameworks.Select(f => f.Framework.GetShortFolderName())) },
+                        { tfPropName, string.Join(";", Frameworks.Select(f => f.TargetAlias)) },
                     });
                 }
 
@@ -489,8 +496,26 @@ namespace NuGet.Test.Utility
 
                 foreach (var frameworkInfo in Frameworks)
                 {
+                    // Add TFM properties
+                    var tfmProps = new Dictionary<string, string>(frameworkInfo.Properties);
+
+                    if (!(Type == ProjectStyle.PackageReference && ToolingVersion15))
+                    {
+                        tfmProps.Add("TargetFrameworkIdentifier", frameworkInfo.Framework.Framework);
+                        tfmProps.Add("TargetFrameworkVersion", $"v{NormalizeVersionString(frameworkInfo.Framework.Version)}");
+                        tfmProps.Add("_TargetFrameworkVersionWithoutV", NormalizeVersionString(frameworkInfo.Framework.Version));
+                        tfmProps.Add("TargetFrameworkMoniker", $"{frameworkInfo.Framework.Framework}, Version={NormalizeVersionString(frameworkInfo.Framework.Version)}");
+
+                        if (frameworkInfo.Framework.HasPlatform)
+                        {
+                            tfmProps.Add("TargetPlatformIdentifier", frameworkInfo.Framework.Platform);
+                            tfmProps.Add("TargetPlatformVersion", NormalizeVersionString(frameworkInfo.Framework.PlatformVersion));
+                            tfmProps.Add("TargetPlatformMoniker", $"{frameworkInfo.Framework.Platform}, Version={NormalizeVersionString(frameworkInfo.Framework.PlatformVersion)}");
+                        }
+                    }
+
                     // Add properties with a TFM condition
-                    ProjectFileUtils.AddProperties(xml, frameworkInfo.Properties, $" '$(TargetFramework)' == '{frameworkInfo.Framework.GetShortFolderName()}' ");
+                    ProjectFileUtils.AddProperties(xml, tfmProps, $" '$(TargetFramework)' == '{frameworkInfo.TargetAlias}' ");
 
                     foreach (var package in frameworkInfo.PackageReferences)
                     {
@@ -512,7 +537,7 @@ namespace NuGet.Test.Utility
                         var attributes = new Dictionary<string, string>();
 
                         // To support CPVM scenarios the Version can be null
-                        // In these cases do not write any version 
+                        // In these cases do not write any version
                         if (package.Version != null)
                         {
                             if (ToolingVersion15)
@@ -523,6 +548,10 @@ namespace NuGet.Test.Utility
                             {
                                 props.Add("Version", package.Version.ToString());
                             }
+                        }
+                        if (!string.IsNullOrEmpty(package.VersionOverride))
+                        {
+                            props.Add("VersionOverride", package.VersionOverride);
                         }
 
                         if (!string.IsNullOrEmpty(package.Include))
@@ -698,6 +727,19 @@ namespace NuGet.Test.Utility
             }
 
             return xml;
+        }
+
+        private static string NormalizeVersionString(Version version)
+        {
+            if (version.Build != 0)
+            {
+                return version.ToString(4);
+            }
+            if (version.Revision != 0)
+            {
+                return version.ToString(3);
+            }
+            return version.ToString(2);
         }
 
         public override bool Equals(object obj)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace NuGet.CommandLine
                 "NuGet",
                 "CredentialProviders");
 
-        private static readonly string CredentialProviderPattern = "CredentialProvider*.exe";
+        private const string CredentialProviderPattern = "CredentialProvider*.exe";
 
         public readonly static string ExtensionsEnvar = "NUGET_EXTENSIONS_PATH";
         public readonly static string CredentialProvidersEnvar = "NUGET_CREDENTIALPROVIDERS_PATH";

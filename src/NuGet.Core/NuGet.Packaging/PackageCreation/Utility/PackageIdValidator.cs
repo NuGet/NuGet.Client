@@ -10,14 +10,20 @@ namespace NuGet.Packaging
 {
     public static class PackageIdValidator
     {
+        /// <summary>
+        /// Max allowed length for package Id.
+        /// In case update this value please update in src\NuGet.Core\NuGet.Configuration\PackageSourceMapping\PackageSourceMapping.cs too.
+        /// </summary>
         public const int MaxPackageIdLength = 100;
-        private static readonly Regex IdRegex = new Regex(@"^\w+([_.-]\w+)*$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
+        private static readonly Regex IdRegex = new Regex(pattern: @"^\w+([.-]\w+)*$",
+            options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
+            matchTimeout: TimeSpan.FromSeconds(10));
 
         public static bool IsValidPackageId(string packageId)
         {
             if (packageId == null)
             {
-                throw new ArgumentException(nameof(packageId));
+                throw new ArgumentNullException(nameof(packageId));
             }
             return IdRegex.IsMatch(packageId);
         }

@@ -117,35 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnotherNuGetProjectWithSameNameExistsInSolution" xml:space="preserve">
-    <value>Another NuGetProject with the same name '{0}' exists in solution</value>
-  </data>
   <data name="AttemptingToGatherDependencyInfo" xml:space="preserve">
     <value>Attempting to gather dependency information for package '{0}' with respect to project '{1}', targeting '{2}'</value>
   </data>
   <data name="AttemptingToResolveDependencies" xml:space="preserve">
     <value>Attempting to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
   </data>
-  <data name="InstalledPackage" xml:space="preserve">
-    <value>Installed package '{0}' to project</value>
-  </data>
-  <data name="InstallingPackage" xml:space="preserve">
-    <value>Installing package '{0}' to project</value>
-  </data>
-  <data name="InvalidNullSettingsOperation" xml:space="preserve">
-    <value>'{0}' cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to '%AppData%\NuGet\NuGet.config'</value>
-  </data>
-  <data name="MultiplePackageInstallOrUpdateHasToBeAnUpdate" xml:space="preserve">
-    <value>When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest</value>
-  </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
     <value>No latest version found for '{0}' for the given source repositories and resolution context</value>
-  </data>
-  <data name="NoNuGetProjectWithSpecifiedName" xml:space="preserve">
-    <value>No NuGetProject is available with specified name '{0}'</value>
-  </data>
-  <data name="NuGetProjectDoesNotHaveName" xml:space="preserve">
-    <value>NuGetProject does not have 'Name' set in metadata. It should be set and it should be unique</value>
   </data>
   <data name="PackageCouldNotBeInstalled" xml:space="preserve">
     <value>Package '{0}' could not be installed</value>
@@ -207,9 +186,6 @@
   <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
     <value>Attempting to resolve dependencies for multiple packages.</value>
   </data>
-  <data name="OneOrMorePackagesNotFound" xml:space="preserve">
-    <value>One or more packages not found</value>
-  </data>
   <data name="ResolvingActionsToInstallOrUpdateMultiplePackages" xml:space="preserve">
     <value>Resolving actions install multiple packages</value>
   </data>
@@ -240,23 +216,11 @@
   <data name="DownloadStreamNotAvailable" xml:space="preserve">
     <value>Package stream for '{0}' cannot be found at '{1}'.</value>
   </data>
-  <data name="BuildIntegratedPackageRestoreSucceeded" xml:space="preserve">
-    <value>Package restore completed successfully for '{0}'.</value>
-  </data>
-  <data name="BuildIntegratedPackageRestoreStarted" xml:space="preserve">
-    <value>Restoring packages for '{0}'.</value>
-  </data>
-  <data name="BuildIntegratedPackageRestoreFailed" xml:space="preserve">
-    <value>Package restore failed for '{0}'.</value>
-  </data>
   <data name="SuccessfullyInstalled" xml:space="preserve">
     <value>Successfully installed '{0}' to {1}</value>
   </data>
   <data name="SuccessfullyUninstalled" xml:space="preserve">
     <value>Successfully uninstalled '{0}' from {1}</value>
-  </data>
-  <data name="UnsupportedPackageFeature" xml:space="preserve">
-    <value>Package '{0}' uses features that are not supported by the current version of NuGet. To upgrade NuGet, see https://docs.nuget.org/consume/installing-nuget</value>
   </data>
   <data name="ResolutionSuccessfulNoAction" xml:space="preserve">
     <value>Resolution was successful but resulted in no action</value>
@@ -311,29 +275,6 @@
     <comment>{0} is the package constraint.
 {1} is the 'packages.config'</comment>
   </data>
-  <data name="UnknownSourceWithId" xml:space="preserve">
-    <value>Unable to find package '{0}' at source '{1}'. Source not found.</value>
-    <comment>Used to fix the accuracy of the error message
-{0} is package id
-{1} is source path</comment>
-  </data>
-  <data name="UnknownSourceType" xml:space="preserve">
-    <value>Unsupported type of source '{0}'. Please provide an HTTP or local source.</value>
-    <comment>{0} is the input source.</comment>
-  </data>
-  <data name="ExceptionType" xml:space="preserve">
-    <value>Exception Type</value>
-    <comment>Used to identify the type of exception thrown</comment>
-  </data>
-  <data name="Exception_PackageNotFound" xml:space="preserve">
-    <value>Unable to find package '{0}' at source '{1}'.</value>
-    <comment>{0} - package id
-{1} - source string specified by the user</comment>
-  </data>
-  <data name="UnknownSource" xml:space="preserve">
-    <value>Source '{0}' not found. Please provide an HTTP or local source.</value>
-    <comment>{0} is the source</comment>
-  </data>
   <data name="NoPackageUpdates" xml:space="preserve">
     <value>No package updates are available from the current package source for project '{0}'.</value>
   </data>
@@ -343,17 +284,11 @@
   <data name="AddedPackageToFolderFromSource" xml:space="preserve">
     <value>Added package '{0}' to folder '{1}' from source '{2}'</value>
   </data>
-  <data name="AddedPackageToMSBuildProject" xml:space="preserve">
-    <value>Added package '{0}' to project '{1}'</value>
-  </data>
   <data name="AddedPackageToPackagesConfig" xml:space="preserve">
     <value>Added package '{0}' to '{1}'</value>
   </data>
   <data name="AddingPackageToFolder" xml:space="preserve">
     <value>Adding package '{0}' to folder '{1}'</value>
-  </data>
-  <data name="AddingPackageToMSBuildProject" xml:space="preserve">
-    <value>Adding package '{0}' to project '{1}'</value>
   </data>
   <data name="AddingPackageWithOnlyDependencies" xml:space="preserve">
     <value>Adding package '{0}', which only has dependencies, to project '{1}'.</value>
@@ -363,12 +298,6 @@
   </data>
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
-  </data>
-  <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
-    <value>Value must be greater than or equal to {0}</value>
-  </data>
-  <data name="ContentFilesShouldNotBeTargetFrameworkSpecific" xml:space="preserve">
-    <value>Content files should not be target framework specific, whereas, '{0}' is</value>
   </data>
   <data name="Debug_AddedFile" xml:space="preserve">
     <value>Added file '{0}'.</value>
@@ -391,21 +320,6 @@
   <data name="Debug_TargetFrameworkInfoPrefix" xml:space="preserve">
     <value>For adding package '{0}' to project '{1}' that targets '{2}'.</value>
   </data>
-  <data name="Debug_TargetFrameworkInfo_AssemblyReferences" xml:space="preserve">
-    <value>Assembly references</value>
-  </data>
-  <data name="Debug_TargetFrameworkInfo_BuildFiles" xml:space="preserve">
-    <value>Build files</value>
-  </data>
-  <data name="Debug_TargetFrameworkInfo_ContentFiles" xml:space="preserve">
-    <value>Content files</value>
-  </data>
-  <data name="Debug_TargetFrameworkInfo_NotFrameworkSpecific" xml:space="preserve">
-    <value>(not framework-specific)</value>
-  </data>
-  <data name="Debug_TargetFrameworkInfo_PowershellScripts" xml:space="preserve">
-    <value>&gt;&gt; PowerShell scripts are being executed from '{0}'{1}</value>
-  </data>
   <data name="DependencyDoesNotHaveValidVersion" xml:space="preserve">
     <value>Dependency '{0}' has invalid version specification.</value>
   </data>
@@ -423,9 +337,6 @@
   </data>
   <data name="InvalidProjectName" xml:space="preserve">
     <value>Unable to determine the project name for '{0}'.</value>
-  </data>
-  <data name="NoFolderSpecificToTargetFxFound" xml:space="preserve">
-    <value>Invalid!! Could not find a folder under artifact type '{0}', so cannot request for artifacts specific to target framework '{1}'</value>
   </data>
   <data name="PackageAlreadyExistsInFolder" xml:space="preserve">
     <value>Package '{0}' already exists in folder '{1}'</value>
@@ -454,23 +365,11 @@
   <data name="RemovedPackageFromFolder" xml:space="preserve">
     <value>Removed package '{0}' from folder '{1}'</value>
   </data>
-  <data name="RemovedPackageFromMSBuildProject" xml:space="preserve">
-    <value>Removed package '{0}' from project '{1}'</value>
-  </data>
   <data name="RemovedPackageFromPackagesConfig" xml:space="preserve">
     <value>Removed package '{0}' from '{1}'</value>
   </data>
   <data name="RemovingPackageFromFolder" xml:space="preserve">
     <value>Removing package '{0}' from folder '{1}'</value>
-  </data>
-  <data name="RemovingPackageFromMSBuildProject" xml:space="preserve">
-    <value>Removing package '{0}' from project '{1}'</value>
-  </data>
-  <data name="SolutionDirectoryMustBeRooted" xml:space="preserve">
-    <value>Solution directory '{0}' must be a rooted path.</value>
-  </data>
-  <data name="TokenHasNoValue" xml:space="preserve">
-    <value>The replacement token '{0}' has no value</value>
   </data>
   <data name="UnableToFindCompatibleItems" xml:space="preserve">
     <value>Could not install package '{0}'. You are trying to install this package into a project that targets '{1}', but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author.</value>
@@ -509,5 +408,39 @@
   <data name="Error_FileDoesNotExist" xml:space="preserve">
     <value>File {0} does not exist.</value>
     <comment>{0} is the filename.</comment>
+  </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
+  <data name="UnableToFindPathInLookupOrList" xml:space="preserve">
+    <value>Either should have value in {0} for {1} or {2} &amp; {3}.</value>
+    <comment>0 - Lookup table
+1 - Project Path
+2 - Package ID
+3 - Package Sources</comment>
+  </data>
+  <data name="PackageSourceMappingPatternMatchFound" xml:space="preserve">
+    <value>Package source mapping matches found for package ID '{0}' are: '{1}'</value>
+    <comment>{0} - package id
+{1} - sources ids</comment>
+  </data>
+  <data name="PackageSourceMappingPatternNoMatchFound" xml:space="preserve">
+    <value>Package source mapping match not found for package ID '{0}'</value>
+    <comment>{0} - package id</comment>
+  </data>
+  <data name="Warning_HttpServerUsage" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
+  </data>
+  <data name="Error_VulnerabilityDataFetch" xml:space="preserve">
+    <value>Error occurred while getting package vulnerability data: {0}</value>
+  </data>
+  <data name="Warning_PackageWithKnownVulnerability" xml:space="preserve">
+    <value>Package '{0}' {1} has a known {2} severity vulnerability, {3}</value>
+    <comment>{0} - package id
+{1} - package version
+{2} - severity, for example low, moderate, high, or critical
+{3} - URL for more info on the known vulnerability</comment>
   </data>
 </root>

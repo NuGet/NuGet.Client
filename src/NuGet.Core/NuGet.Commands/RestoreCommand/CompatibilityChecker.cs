@@ -82,7 +82,6 @@ namespace NuGet.Commands
             // Verify framework assets also as part of runtime assets validation.
             foreach (var node in graph.Flattened)
             {
-                await _log.LogAsync(LogLevel.Debug, string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
                 // Check project compatibility
                 if (node.Key.Type == LibraryType.Project)
                 {
@@ -165,7 +164,7 @@ namespace NuGet.Commands
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
                 var targetLibrary = compatibilityData.TargetLibrary;
-                if (_validateRuntimeAssets  && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
+                if (_validateRuntimeAssets && !string.IsNullOrEmpty(graph.RuntimeIdentifier))
                 {
                     // Skip runtime checks for packages that have runtime references excluded,
                     // this allows compile only packages that do not have runtimes for the 
@@ -249,7 +248,7 @@ namespace NuGet.Commands
             return RestoreLogMessage.CreateError(logCode, issue.Format(), issue.Package.Id, graph.TargetGraphName);
         }
 
-        private static List<NuGetFramework> GetPackageFrameworks(
+        private static IEnumerable<NuGetFramework> GetPackageFrameworks(
             CompatibilityData compatibilityData,
             RestoreTargetGraph graph)
         {
@@ -267,9 +266,12 @@ namespace NuGet.Commands
                 graph.Conventions.Patterns.ContentFiles
             };
 
+            List<ContentItemGroup> itemGroups = new();
             foreach (var pattern in patterns)
             {
-                foreach (var group in contentItems.FindItemGroups(pattern))
+                itemGroups.Clear();
+                contentItems.PopulateItemGroups(pattern, itemGroups);
+                foreach (var group in itemGroups)
                 {
                     // lib/net45/subfolder/a.dll will be returned as a group with zero items since sub
                     // folders are not allowed. Completely empty groups are not compatible, a group with
@@ -290,7 +292,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return available.ToList();
+            return available;
         }
 
         private static List<NuGetFramework> GetProjectFrameworks(Library localLibrary)
@@ -356,10 +358,11 @@ namespace NuGet.Commands
             var contentItems = new ContentItemCollection();
             contentItems.Load(compatibilityData.Files);
 
-
+            List<ContentItemGroup> itemGroups = new List<ContentItemGroup>();
             if (compatibilityData.TargetLibrary.PackageType.Contains(PackageType.DotnetTool))
             {
-                foreach (var group in contentItems.FindItemGroups(graph.Conventions.Patterns.ToolsAssemblies))
+                contentItems.PopulateItemGroups(graph.Conventions.Patterns.ToolsAssemblies, itemGroups);
+                foreach (var group in itemGroups)
                 {
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out var ridObj);
                     group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out var tfmObj);
@@ -368,7 +371,7 @@ namespace NuGet.Commands
                     var rid = ridObj as string;
                     if (tfm?.IsSpecificFramework == true)
                     {
-                        available.Add(new FrameworkRuntimePair(tfm,rid));
+                        available.Add(new FrameworkRuntimePair(tfm, rid));
                     }
                 }
             }
@@ -452,20 +455,35 @@ namespace NuGet.Commands
         {
             // Use data from the current lock file if it exists.
             LockFileTargetLibrary targetLibrary = null;
-            var target = _lockFile.Targets.FirstOrDefault(t => Equals(t.TargetFramework, graph.Framework) && string.Equals(t.RuntimeIdentifier, graph.RuntimeIdentifier, StringComparison.Ordinal));
-            if (target != null)
+
+            for (int i = 0; i < _lockFile.Targets.Count; ++i)
             {
-                targetLibrary = target.Libraries
-                    .FirstOrDefault(t => t.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && t.Version.Equals(libraryId.Version));
+                var target = _lockFile.Targets[i];
+                if (Equals(target.TargetFramework, graph.Framework) && string.Equals(target.RuntimeIdentifier, graph.RuntimeIdentifier, StringComparison.Ordinal))
+                {
+                    for (int j = 0; j < target.Libraries.Count; ++j)
+                    {
+                        var library = target.Libraries[j];
+                        if (library.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && library.Version.Equals(libraryId.Version))
+                        {
+                            targetLibrary = library;
+                            break;
+                        }
+                    }
+
+                    break;
+                }
             }
 
             IEnumerable<string> files = null;
-            var lockFileLibrary = _lockFile.Libraries
-                .FirstOrDefault(l => l.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && l.Version.Equals(libraryId.Version));
-
-            if (lockFileLibrary != null)
+            for (var i = 0; i < _lockFile.Libraries.Count; i++)
             {
-                files = lockFileLibrary.Files;
+                LockFileLibrary library = _lockFile.Libraries[i];
+                if (library.Name.Equals(libraryId.Name, StringComparison.OrdinalIgnoreCase) && library.Version.Equals(libraryId.Version))
+                {
+                    files = library.Files;
+                    break;
+                }
             }
 
             if (files == null || targetLibrary == null)

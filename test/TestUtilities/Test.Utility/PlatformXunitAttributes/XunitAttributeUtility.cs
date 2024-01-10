@@ -5,7 +5,7 @@ using NuGet.Common;
 
 namespace NuGet.Test.Utility
 {
-    public  static class XunitAttributeUtility
+    public static class XunitAttributeUtility
     {
         public static string GetFileExistsInDirSkipMessageOrNull(bool allowSkipOnCI, string directory, params string[] paths)
         {

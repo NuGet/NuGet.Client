@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using NuGet.Protocol.Core.Types;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NuGet.Indexing
 {
@@ -21,34 +21,32 @@ namespace NuGet.Indexing
 
         public IDictionary<string, long> Rank(string queryString, IEnumerable<IPackageSearchMetadata> entries)
         {
-            using (var directory = new RAMDirectory())
-            {
-                AddToIndex(directory, entries);
+            using var directory = new RAMDirectory();
 
-                var searcher = new IndexSearcher(directory);
-                var query = NuGetQuery.MakeQuery(queryString);
-                var topDocs = searcher.Search(query, entries.Count());
+            AddToIndex(directory, entries);
 
-                var ranking = topDocs.ScoreDocs
-                    .Select(d => searcher.Doc(d.Doc))
-                    .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length).Reverse(), (doc, rank) => new { doc, rank })
-                    .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank);
+            using var searcher = new IndexSearcher(directory);
 
-                return ranking;
-            }
+            var query = NuGetQuery.MakeQuery(queryString);
+            var topDocs = searcher.Search(query, entries.Count());
+
+            var ranking = topDocs.ScoreDocs
+                .Select(d => searcher.Doc(d.Doc))
+                .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length).Reverse(), (doc, rank) => new { doc, rank })
+                .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank);
+
+            return ranking;
         }
 
         private static void AddToIndex(Directory directory, IEnumerable<IPackageSearchMetadata> entries)
         {
-            var packageAnalyzer = new PackageAnalyzer();
-            using (var writer = new IndexWriter(directory, packageAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED))
+            using var packageAnalyzer = new PackageAnalyzer();
+            using var writer = new IndexWriter(directory, packageAnalyzer, IndexWriter.MaxFieldLength.UNLIMITED);
+            foreach (var document in entries.Select(CreateDocument))
             {
-                foreach (var document in entries.Select(CreateDocument))
-                {
-                    writer.AddDocument(document);
-                }
-                writer.Commit();
+                writer.AddDocument(document);
             }
+            writer.Commit();
         }
 
         private static Document CreateDocument(IPackageSearchMetadata item)

@@ -3,7 +3,7 @@
 
   <!-- Special project import for dotnet source build
   The dotnet source-build Repo API overrides *PackageVersion properties with versions that were built before.
-  Those paackages are injected in this props file
+  Those packages are injected in this props file
   See: https://github.com/dotnet/source-build/blob/master/Documentation/auto-dependency-flow/api.md#-pdotnetpackageversionpropspathpath
   -->
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -11,39 +11,63 @@
   <!-- Version -->
   <PropertyGroup>
     <!-- **  Change for each new version -->
-    <!-- when changing any of the NuGetVersion props below, also update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs -->
-    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
-    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">7</MinorNuGetVersion>
+    <!-- when changing any of the NuGetVersion props below, run tools-local\ship-public-apis -->
+    <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">6</MajorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">9</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
-    
-    <!-- ** Change for each new preview/rtm -->
+
+    <!-- ** Change for each new preview/rc -->
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.3</ReleaseLabel>
-    
-    <!-- ** Increment each insertion, set to zero after incrementing Major/Minor or Patch version -->
-    <!-- We need to update this netcoreassembly build number with EVERY insertion into VS to workaround any breaking api
-    changes we might have made. -->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">3</NetCoreAssemblyBuildNumber>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.1</ReleaseLabel>
 
     <IsEscrowMode>false</IsEscrowMode>
 
-    <!-- Visual Studio Insertion Logic -->    
+    <!-- Visual Studio Insertion Logic -->
     <VsTargetMajorVersion>$([MSBuild]::Add(11, $(MajorNuGetVersion)))</VsTargetMajorVersion>
-    <VsTargetBranch>master</VsTargetBranch>
+    <VsTargetBranch>main</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
+    <VsTargetChannelForTests>int.$(VsTargetBranch)</VsTargetChannelForTests>
+
+    <!-- NuGet SDK VS package Semantic Version -->
+    <NuGetSdkVsSemanticVersion>$(VsTargetMajorVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</NuGetSdkVsSemanticVersion>
+
+    <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
+  </PropertyGroup>
 
-    <!-- .NET Core SDK Insertion Logic -->    
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">3.1</CliBranchForTesting>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</SdkTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' != ''">$(OverrideToolsetTargetBranches)</ToolsetTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">master</ToolsetTargetBranches>
+ <PropertyGroup Condition=" '$(PreReleaseVersion)' == '' ">
+    <PreReleaseVersion>32767</PreReleaseVersion>
+  </PropertyGroup>
+
+  <!--Setting the Pre-release/Build meta-data from CI if Version is set-->
+  <PropertyGroup Condition="'$(BuildNumber)' != ''">
+    <PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
+  </PropertyGroup>
+
+  <!--Setting the product information for Beta builds-->
+  <Choose>
+    <!-- If we aren't excluding the build number, use the release label and the build number. -->
+    <When Condition="'$(BuildRTM)' != 'true' AND '$(PreReleaseVersion)' != '' AND '$(PreReleaseVersion)' != '0' ">
+      <PropertyGroup>
+        <PreReleaseInformationVersion>-$(ReleaseLabel).$(PreReleaseVersion)</PreReleaseInformationVersion>
+      </PropertyGroup>
+    </When>
+    <!-- If we are excluding the build number, show the release label unless we are RTM. -->
+    <When Condition="'$(ReleaseLabel)' != 'rtm' AND '$(ReleaseLabel)' != 'svc' AND '$(ReleaseLabel)' != 'rc' ">
+      <PropertyGroup>
+        <PreReleaseInformationVersion>-$(ReleaseLabel)</PreReleaseInformationVersion>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <PropertyGroup Condition=" '$(Version)' == '' ">
+    <Version>$(SemanticVersion)$(PreReleaseInformationVersion)</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(NuGetVsVersion)' == '' ">
+    <NuGetVsVersion>$(NuGetSdkVsSemanticVersion)$(PreReleaseInformationVersion)</NuGetVsVersion>
   </PropertyGroup>
 
   <!-- Config -->
@@ -63,7 +87,7 @@
     <Description>NuGet client library.</Description>
     <Copyright>&#169; Microsoft Corporation. All rights reserved.</Copyright>
     <Serviceable>true</Serviceable>
-    <PackageIconUrl>https://raw.githubusercontent.com/NuGet/Media/master/Images/MainLogo/256x256/nuget_256.png</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -74,8 +98,14 @@
   <Target Name="GetSemanticVersion">
     <Message Text="$(SemanticVersion)" Importance="High"/>
   </Target>
+  <Target Name="GetNuGetSdkVsSemanticVersion">
+    <Message Text="$(NuGetSdkVsSemanticVersion)" Importance="High"/>
+  </Target>
   <Target Name="GetVsTargetMajorVersion">
     <Message Text="$(VsTargetMajorVersion)" Importance="High"/>
+  </Target>
+  <Target Name="GetNuGetVsVersion">
+    <Message Text="$(NuGetVsVersion)" Importance="High"/>
   </Target>
   <Target Name="GetVsTargetBranch">
     <Message Text="$(VsTargetBranch)" Importance="High"/>
@@ -83,16 +113,7 @@
   <Target Name="GetVsTargetChannel">
     <Message Text="$(VsTargetChannel)" Importance="High"/>
   </Target>
-  <Target Name="GetCliTargetBranches">
-    <Message Text="$(CliTargetBranches)" Importance="High"/>
-  </Target>
-  <Target Name="GetSdkTargetBranches">
-    <Message Text="$(SdkTargetBranches)" Importance="High"/>
-  </Target>
-  <Target Name="GetToolsetTargetBranches">
-    <Message Text="$(ToolsetTargetBranches)" Importance="High"/>
-  </Target>
-  <Target Name="GetCliBranchForTesting">
-      <Message Text="$(CliBranchForTesting)" Importance="High"/>
+  <Target Name="GetVsTargetChannelForTests">
+    <Message Text="$(VsTargetChannelForTests)" Importance="High"/>
   </Target>
 </Project>

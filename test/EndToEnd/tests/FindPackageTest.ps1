@@ -63,7 +63,10 @@ function Test-FindPackageByIdAndPrereleaseVersion {
 }
 
 function Test-FindPackageByIdExactMatch {
-    # Act 
+    [SkipTest('https://github.com/NuGet/Home/issues/10066')]
+    param()
+
+   # Act 
     $packages = Find-Package TestPackage.OverwriteTest -ExactMatch
     
     # Assert 

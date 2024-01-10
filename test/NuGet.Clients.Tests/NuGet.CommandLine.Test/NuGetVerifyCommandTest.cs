@@ -28,12 +28,11 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     packageDirectory,
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(_failureCode, result.Item1);
-                Assert.Contains("Verification type not supported.", result.Item3);
+                Assert.Equal(_failureCode, result.ExitCode);
+                Assert.Contains("Verification type not supported.", result.Errors);
             }
         }
 
@@ -49,12 +48,20 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     packageDirectory,
-                    string.Join(" ", args),
-                    true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(_failureCode, result.Item1);
-                Assert.Contains("File does not exist", result.Item3);
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(_failureCode == result.ExitCode, result.AllOutput);
+                    Assert.False(result.Success);
+                    Assert.Contains("Package signature validation command is not supported on this platform.", result.AllOutput);
+                }
+                else
+                {
+                    Assert.Equal(_failureCode, result.ExitCode);
+                    Assert.Contains("File does not exist", result.Errors);
+                }
             }
         }
 
@@ -74,14 +81,13 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetExe,
                     packageFile.Directory.FullName,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
                     Assert.True(_failureCode == result.ExitCode, result.AllOutput);
                     Assert.False(result.Success);
-                    Assert.Contains("NU3004: The package is not signed.", result.AllOutput);
+                    Assert.Contains("Package signature validation command is not supported on this platform.", result.AllOutput);
                 }
                 else
                 {

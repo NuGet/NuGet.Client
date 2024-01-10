@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
@@ -16,140 +15,105 @@ namespace NuGet.Test.Utility
         // Item1 of the returned tuple is the exit code. Item2 is the standard output, and Item3
         // is the error output.
         public static CommandRunnerResult Run(
-            string process,
+            string filename,
             string workingDirectory,
             string arguments,
-            bool waitForExit,
             int timeOutInMilliseconds = 60000,
             Action<StreamWriter> inputAction = null,
-            bool shareProcessObject = false,
             IDictionary<string, string> environmentVariables = null)
         {
-            var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
+            var output = new StringBuilder();
+            var error = new StringBuilder();
+
+            using var process = new Process
             {
-                WorkingDirectory = Path.GetFullPath(workingDirectory),
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = inputAction != null
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo(Path.GetFullPath(filename), arguments)
+                {
+                    WorkingDirectory = Path.GetFullPath(workingDirectory),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = inputAction != null
+                }
             };
 
-#if !IS_CORECLR
-            psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
-#else
-            psi.Environment["NuGetTestModeEnabled"] = "True";
-#endif
+            process.StartInfo.Environment["NuGetTestModeEnabled"] = bool.TrueString;
 
             if (environmentVariables != null)
             {
                 foreach (var pair in environmentVariables)
                 {
-#if !IS_CORECLR
-                    psi.EnvironmentVariables[pair.Key] = pair.Value;
-#else
-                    psi.Environment[pair.Key] = pair.Value;
-#endif
+                    process.StartInfo.EnvironmentVariables[pair.Key] = pair.Value;
                 }
             }
 
-            int exitCode = 1;
-
-            var output = new StringBuilder();
-            var errors = new StringBuilder();
-
-            Process p = null;
-
-            try
+            process.OutputDataReceived += (_, args) =>
             {
-                p = new Process();
-
-                p.StartInfo = psi;
-                p.Start();
-
-                var outputTask = ConsumeStreamReaderAsync(p.StandardOutput, output);
-                var errorTask = ConsumeStreamReaderAsync(p.StandardError, errors);
-
-                inputAction?.Invoke(p.StandardInput);
-
-                if (waitForExit)
+                if (args.Data != null)
                 {
-#if DEBUG
-                    var processExited = true;
-                    p.WaitForExit();
-#else
-                    var processExited = p.WaitForExit(timeOutInMilliseconds);
-#endif
-                    if (!processExited)
+                    output.AppendLine(args.Data);
+                }
+            };
+
+            process.ErrorDataReceived += (_, args) =>
+            {
+                if (args.Data != null)
+                {
+                    error.AppendLine(args.Data);
+                }
+            };
+
+            process.Start();
+
+            inputAction?.Invoke(process.StandardInput);
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            bool processExited = process.WaitForExit(timeOutInMilliseconds);
+
+            if (processExited)
+            {
+                process.WaitForExit();
+
+                return new CommandRunnerResult(process, process.ExitCode, output.ToString(), error.ToString());
+            }
+
+            Kill(process);
+
+            throw new TimeoutException($"{process.StartInfo.FileName} {process.StartInfo.Arguments} timed out after {TimeSpan.FromMilliseconds(timeOutInMilliseconds).TotalSeconds:N0} seconds:{Environment.NewLine}Output:{output}{Environment.NewLine}Error:{error}");
+
+            void Kill(Process process)
+            {
+                try
+                {
+                    process.Kill();
+                }
+                catch (InvalidOperationException)
+                {
+                }
+                catch (Win32Exception)
+                {
+                }
+
+                try
+                {
+                    if (!process.HasExited)
                     {
-                        Kill(p);
-                        WaitForExit(p);
-
-                        var processName = Path.GetFileName(process);
-
-                        throw new TimeoutException($"{processName} timed out: " + psi.Arguments);
-                    }
-
-                    if (processExited)
-                    {
-                        Task.WaitAll(outputTask, errorTask);
-                        exitCode = p.ExitCode;
+                        process.WaitForExit();
                     }
                 }
-            }
-            finally
-            {
-                if (!shareProcessObject)
+                catch (InvalidOperationException)
                 {
-                    p.Dispose();
                 }
-            }
-
-            return new CommandRunnerResult(p, exitCode, output.ToString(), errors.ToString());
-        }
-
-        private static async Task ConsumeStreamReaderAsync(StreamReader reader, StringBuilder lines)
-        {
-            await Task.Yield();
-
-            string line;
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                lines.AppendLine(line);
-            }
-        }
-
-        private static void Kill(Process process)
-        {
-            try
-            {
-                process.Kill();
-            }
-            catch (InvalidOperationException)
-            {
-            }
-            catch (Win32Exception)
-            {
-            }
-        }
-
-        private static void WaitForExit(Process process)
-        {
-            try
-            {
-                if (!process.HasExited)
+                catch (Win32Exception)
                 {
-                    process.WaitForExit();
                 }
-            }
-            catch (InvalidOperationException)
-            {
-            }
-            catch (Win32Exception)
-            {
-            }
-            catch (SystemException)
-            {
+                catch (SystemException)
+                {
+                }
             }
         }
     }

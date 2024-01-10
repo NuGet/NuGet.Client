@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
@@ -12,7 +13,7 @@ namespace NuGet.XPlat.FuncTest
 {
     public class XPlatLocalsTests
     {
-        private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli();
+        private static readonly string DotnetCli = TestFileSystemUtility.GetDotnetCli();
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
         [Theory]
@@ -38,8 +39,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -l plugins-cache")]
         public static void Locals_List_Succeeds(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -59,7 +60,6 @@ namespace NuGet.XPlat.FuncTest
                       DotnetCli,
                       Directory.GetCurrentDirectory(),
                       $"{XplatDll} {args}",
-                      waitForExit: true,
                     environmentVariables: new Dictionary<string, string>
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
@@ -95,8 +95,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals plugins-cache -c")]
         public static void Locals_Clear_Succeeds(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
@@ -105,7 +105,8 @@ namespace NuGet.XPlat.FuncTest
                 var mockHttpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"http-cache"));
                 var mockTmpDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"temp"));
                 var mockPluginsCacheDirectory = Directory.CreateDirectory(Path.Combine(mockBaseDirectory.Path, @"plugins-cache"));
-                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName, @"NuGetScratch"));
+                var mockTmpCacheDirectory = Directory.CreateDirectory(Path.Combine(mockTmpDirectory.FullName,
+                    RuntimeEnvironmentHelper.IsLinux ? "NuGetScratch" + Environment.UserName : "NuGetScratch"));
 
                 DotnetCliUtil.CreateTestFiles(mockGlobalPackagesDirectory.FullName);
                 DotnetCliUtil.CreateTestFiles(mockHttpCacheDirectory.FullName);
@@ -116,10 +117,9 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var result = CommandRunner.Run(
-                      DotnetCli,
-                      Directory.GetCurrentDirectory(),
-                      $"{XplatDll} {args}",
-                      waitForExit: true,
+                    DotnetCli,
+                    Directory.GetCurrentDirectory(),
+                    $"{XplatDll} {args}",
                     environmentVariables: new Dictionary<string, string>
                     {
                         { "NUGET_PACKAGES", mockGlobalPackagesDirectory.FullName },
@@ -152,7 +152,7 @@ namespace NuGet.XPlat.FuncTest
                     // Http cache and Temp cahce should be untouched
                     DotnetCliUtil.VerifyNoClear(mockHttpCacheDirectory.FullName);
                     DotnetCliUtil.VerifyNoClear(mockTmpCacheDirectory.FullName);
-                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);                    
+                    DotnetCliUtil.VerifyNoClear(mockPluginsCacheDirectory.FullName);
 
                     // Assert clear message
                     DotnetCliUtil.VerifyResultSuccess(result, "Clearing NuGet global packages folder:");
@@ -209,8 +209,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c")]
         public static void Locals_Success_InvalidArguments_HelpMessage(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
             var expectedResult = string.Concat("error: No Cache Type was specified.",
@@ -223,8 +223,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -237,8 +236,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals -c unknownResource")]
         public static void Locals_Success_InvalidResourceName_HelpMessage(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
             var expectedResult = string.Concat("error: An invalid local resource name was provided. " +
@@ -248,8 +247,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -262,8 +260,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals --c")]
         public static void Locals_Success_InvalidFlags_HelpMessage(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
             var expectedResult = string.Concat("Specify --help for a list of available options and commands.",
@@ -273,8 +271,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -288,8 +285,8 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("locals plugins-cache")]
         public static void Locals_Success_NoFlags_HelpMessage(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
             var expectedResult = string.Concat("error: Please specify an operation i.e. --list or --clear.",
@@ -302,8 +299,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);
@@ -323,8 +319,8 @@ namespace NuGet.XPlat.FuncTest
 
         public static void Locals_Success_BothFlags_HelpMessage(string args)
         {
-            Assert.NotNull(DotnetCli);
-            Assert.NotNull(XplatDll);
+            DotnetCli.Should().NotBeNull(because: "Could not locate the dotnet CLI");
+            XplatDll.Should().NotBeNull(because: "Could not locate the Xplat dll");
 
             // Arrange
             var expectedResult = string.Concat("error: Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.",
@@ -337,8 +333,7 @@ namespace NuGet.XPlat.FuncTest
             var result = CommandRunner.Run(
               DotnetCli,
               Directory.GetCurrentDirectory(),
-              $"{XplatDll} {args}",
-              waitForExit: true);
+              $"{XplatDll} {args}");
 
             // Assert
             DotnetCliUtil.VerifyResultFailure(result, expectedResult);

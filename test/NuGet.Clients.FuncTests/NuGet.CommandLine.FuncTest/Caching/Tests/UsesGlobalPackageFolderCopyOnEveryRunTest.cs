@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Test.Caching
             // A different version of the same package is available on the source.
             context.CurrentPackageAPath = context.PackageAVersionBPath;
             context.IsPackageAAvailable = true;
-            
+
             return command.PrepareArguments(context, context.PackageIdentityA);
         }
 
@@ -30,7 +30,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             validations.Add(
                 CachingValidationType.CommandSucceeded,
-                result.Item1 == 0);
+                result.ExitCode == 0);
 
 
             validations.Add(CachingValidationType.RestoreNoOp, result.AllOutput.Contains("No further actions are required to complete the restore"));

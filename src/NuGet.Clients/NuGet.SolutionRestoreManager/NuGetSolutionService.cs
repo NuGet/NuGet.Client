@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -27,15 +29,15 @@ namespace NuGet.SolutionRestoreManager
         {
             cancellationToken.ThrowIfCancellationRequested();
             await _initializer.InitializeAsync(cancellationToken);
-            await SolutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), cancellationToken);
+            await SolutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.RestoreSolutionPackages), cancellationToken);
         }
 
         private async Task InitializeAsync()
         {
-            var componentModel = await ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
+            var componentModel = await ServiceLocator.GetComponentModelAsync();
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }
-        
+
     }
 }

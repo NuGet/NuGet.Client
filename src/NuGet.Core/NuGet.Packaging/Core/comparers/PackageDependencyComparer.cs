@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Shared;
 using NuGet.Versioning;
 
@@ -22,7 +21,7 @@ namespace NuGet.Packaging.Core
         {
             if (versionRangeComparer == null)
             {
-                throw new ArgumentNullException("versionRangeComparer");
+                throw new ArgumentNullException(nameof(versionRangeComparer));
             }
 
             _versionRangeComparer = versionRangeComparer;
@@ -82,21 +81,11 @@ namespace NuGet.Packaging.Core
             if (obj.VersionRange != null
                 && !obj.VersionRange.Equals(VersionRange.All))
             {
-                combiner.AddObject(_versionRangeComparer.GetHashCode(obj.VersionRange));
+                combiner.AddObject(obj.VersionRange, _versionRangeComparer);
             }
 
-            foreach (var include in obj.Include.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(include.ToLowerInvariant());
-            }
-
-            // separate the lists
-            combiner.AddObject(8);
-
-            foreach (var exclude in obj.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(exclude.ToLowerInvariant());
-            }
+            combiner.AddUnorderedSequence(obj.Include, StringComparer.InvariantCultureIgnoreCase);
+            combiner.AddUnorderedSequence(obj.Exclude, StringComparer.InvariantCultureIgnoreCase);
 
             return combiner.CombinedHash;
         }

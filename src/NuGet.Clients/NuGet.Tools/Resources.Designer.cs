@@ -19,7 +19,7 @@ namespace NuGetVSExtension {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,101 +61,11 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not get the account manager, unable to check the keychain..
-        /// </summary>
-        internal static string AccountProvider_FailedToLoadAccountManager {
-            get {
-                return ResourceManager.GetString("AccountProvider_FailedToLoadAccountManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not get the account provider, unable to check the keychain..
-        /// </summary>
-        internal static string AccountProvider_FailedToLoadVSOAccountProvider {
-            get {
-                return ResourceManager.GetString("AccountProvider_FailedToLoadVSOAccountProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No valid credentials found for VSO account..
-        /// </summary>
-        internal static string AccountProvider_NoValidCrededentialsFound {
-            get {
-                return ResourceManager.GetString("AccountProvider_NoValidCrededentialsFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to authenticate without prompting user..
-        /// </summary>
-        internal static string AccountProvider_TriedToShowUIOnNonInteractive {
-            get {
-                return ResourceManager.GetString("AccountProvider_TriedToShowUIOnNonInteractive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Can not create tool window..
         /// </summary>
         internal static string CanNotCreateWindow {
             get {
                 return ResourceManager.GetString("CanNotCreateWindow", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The default credentials credential provider failed to load..
-        /// </summary>
-        internal static string CredentialProviderFailed_DefaultCredentialsCredentialProvider {
-            get {
-                return ResourceManager.GetString("CredentialProviderFailed_DefaultCredentialsCredentialProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to load credential provider from assembly {0}..
-        /// </summary>
-        internal static string CredentialProviderFailed_ImportedProvider {
-            get {
-                return ResourceManager.GetString("CredentialProviderFailed_ImportedProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The legacy NuGet credential provider failed to load..
-        /// </summary>
-        internal static string CredentialProviderFailed_LegacyCredentialProvider {
-            get {
-                return ResourceManager.GetString("CredentialProviderFailed_LegacyCredentialProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The Visual Studio or VSTS account provider failed to load..
-        /// </summary>
-        internal static string CredentialProviderFailed_VisualStudioAccountProvider {
-            get {
-                return ResourceManager.GetString("CredentialProviderFailed_VisualStudioAccountProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The Visual Studio credential provider failed to load..
-        /// </summary>
-        internal static string CredentialProviderFailed_VisualStudioCredentialProvider {
-            get {
-                return ResourceManager.GetString("CredentialProviderFailed_VisualStudioCredentialProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet Package Manager.
-        /// </summary>
-        internal static string DialogTitle {
-            get {
-                return ResourceManager.GetString("DialogTitle", resourceCulture);
             }
         }
         
@@ -174,33 +84,6 @@ namespace NuGetVSExtension {
         internal static string ErrorDialogBoxTitle {
             get {
                 return ResourceManager.GetString("ErrorDialogBoxTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ========== Finished ==========.
-        /// </summary>
-        internal static string Finished {
-            get {
-                return ResourceManager.GetString("Finished", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Manage NuGet Packages for &amp;Solution....
-        /// </summary>
-        internal static string ManagePackageForSolutionLabel {
-            get {
-                return ResourceManager.GetString("ManagePackageForSolutionLabel", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Manage &amp;NuGet Packages....
-        /// </summary>
-        internal static string ManagePackageLabel {
-            get {
-                return ResourceManager.GetString("ManagePackageLabel", resourceCulture);
             }
         }
         
@@ -277,38 +160,11 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}.
-        /// </summary>
-        internal static string ProjectUpgradeAndRetargetErrorMessage {
-            get {
-                return ResourceManager.GetString("ProjectUpgradeAndRetargetErrorMessage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Credential provider gave an invalid response..
-        /// </summary>
-        internal static string ProviderException_MalformedResponse {
-            get {
-                return ResourceManager.GetString("ProviderException_MalformedResponse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
         /// </summary>
         internal static string SolutionIsNotSaved {
             get {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Solution is not saved. Please save your solution and re-open solution before managing NuGet packages..
-        /// </summary>
-        internal static string SolutionIsNotSavedPromptReopen {
-            get {
-                return ResourceManager.GetString("SolutionIsNotSavedPromptReopen", resourceCulture);
             }
         }
     }

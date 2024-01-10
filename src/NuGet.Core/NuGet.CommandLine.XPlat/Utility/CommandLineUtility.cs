@@ -3,16 +3,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using NuGet.Commands;
+using System.Globalization;
+using System.Linq;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 
 namespace NuGet.CommandLine.XPlat
 {
     /// <summary>
     /// This class holds common commandline helper methods.
     /// </summary>
-    public static class CommandLineUtility
+    internal static class CommandLineUtility
     {
         /// <summary>
         /// Helper method to join across multiple values of a commandline option.
@@ -35,6 +36,32 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return result.ToArray();
+        }
+
+        /// <summary>
+        /// Parses a command line argument's value to a supported hash algorithm and validates it is supported in the given specification
+        /// </summary>
+        /// <param name="optionValue">Value entered by the user in the given command line argument</param>
+        /// <param name="optionName">Name of the command line argument</param>
+        /// <param name="spec">Signing specification to validate parsed hash algorithm</param>
+        /// <returns>Supported hash algorithm</returns>
+        internal static HashAlgorithmName ParseAndValidateHashAlgorithm(string optionValue, string optionName, SigningSpecifications spec)
+        {
+            HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA256;
+
+            if (!string.IsNullOrEmpty(optionValue))
+            {
+                hashAlgorithm = CryptoHashUtility.GetHashAlgorithmName(optionValue);
+            }
+
+            if (hashAlgorithm == HashAlgorithmName.Unknown || !spec.AllowedHashAlgorithms.Contains(hashAlgorithm))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Err_InvalidValue,
+                    optionName, string.Join(",", spec.AllowedHashAlgorithms)));
+            }
+
+            return hashAlgorithm;
         }
     }
 }

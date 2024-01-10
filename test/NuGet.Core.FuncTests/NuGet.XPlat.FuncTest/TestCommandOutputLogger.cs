@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ using NuGet.Test.Utility;
 
 namespace NuGet.XPlat.FuncTest
 {
-    public class TestCommandOutputLogger : CommandOutputLogger
+    internal class TestCommandOutputLogger : CommandOutputLogger
     {
         private readonly bool _observeLogLevel;
 
@@ -23,7 +23,7 @@ namespace NuGet.XPlat.FuncTest
 
         protected override void LogInternal(LogLevel logLevel, string message)
         {
-            if (_observeLogLevel && logLevel < LogLevel)
+            if (_observeLogLevel && logLevel < VerbosityLevel)
             {
                 return;
             }

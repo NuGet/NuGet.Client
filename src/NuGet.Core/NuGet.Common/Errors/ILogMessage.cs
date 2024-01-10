@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,7 +31,7 @@ namespace NuGet.Common
         /// <summary>
         /// Indicates the project for which the error was thrown.
         /// </summary>
-        string ProjectPath { get; set; }
+        string? ProjectPath { get; set; }
 
         /// <summary>
         /// Indicates the date time at which the error occurred.

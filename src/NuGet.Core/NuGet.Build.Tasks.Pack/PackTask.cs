@@ -8,6 +8,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using ILogger = NuGet.Common.ILogger;
+using PackageSpecificWarningProperties = NuGet.Commands.PackCommand.PackageSpecificWarningProperties;
 
 namespace NuGet.Build.Tasks.Pack
 {
@@ -69,9 +70,11 @@ namespace NuGet.Build.Tasks.Pack
         public string NoWarn { get; set; }
         public string TreatWarningsAsErrors { get; set; }
         public string WarningsAsErrors { get; set; }
+        public string WarningsNotAsErrors { get; set; }
         public string PackageLicenseExpression { get; set; }
         public string PackageLicenseFile { get; set; }
         public string PackageLicenseExpressionVersion { get; set; }
+        public string Readme { get; set; }
         public bool Deterministic { get; set; }
         public string PackageIcon { get; set; }
         public ILogger Logger => new MSBuildLogger(Log);
@@ -107,25 +110,13 @@ namespace NuGet.Build.Tasks.Pack
                 var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_PACK_TASK");
                 if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
-#if IS_CORECLR
-                    Console.WriteLine("Waiting for debugger to attach.");
-                    Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-
-                    while (!Debugger.IsAttached)
-                    {
-                        System.Threading.Thread.Sleep(100);
-                    }
-                    Debugger.Break();
-#else
-            Debugger.Launch();
-#endif
+                    Debugger.Launch();
                 }
 #endif
 
                 var request = GetRequest();
                 var logic = PackTaskLogic;
                 PackageBuilder packageBuilder = null;
-                var packArgs = logic.GetPackArgs(request);
 
                 // If packing using a Nuspec file, we don't need to build a PackageBuilder here
                 // as the package builder is built by reading the manifest file later in the code path.
@@ -134,6 +125,8 @@ namespace NuGet.Build.Tasks.Pack
                 {
                     packageBuilder = logic.GetPackageBuilder(request);
                 }
+
+                PackArgs packArgs = logic.GetPackArgs(request);
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
 
                 return logic.BuildPackage(packRunner);
@@ -210,9 +203,11 @@ namespace NuGet.Build.Tasks.Pack
                 TreatWarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(TreatWarningsAsErrors),
                 NoWarn = MSBuildStringUtility.TrimAndGetNullForEmpty(NoWarn),
                 WarningsAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsAsErrors),
+                WarningsNotAsErrors = MSBuildStringUtility.TrimAndGetNullForEmpty(WarningsNotAsErrors),
                 PackageLicenseExpression = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpression),
                 PackageLicenseFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseFile),
                 PackageLicenseExpressionVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpressionVersion),
+                Readme = MSBuildStringUtility.TrimAndGetNullForEmpty(Readme),
                 Deterministic = Deterministic,
                 PackageIcon = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageIcon),
             };

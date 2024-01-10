@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
-using NuGet.Configuration;
 
 namespace NuGet.Resolver.Test
 {
@@ -496,7 +496,7 @@ namespace NuGet.Resolver.Test
                 targets,
                 sourceRepository,
                 Enumerable.Empty<PackageSource>(),
-				Common.NullLogger.Instance);
+                Common.NullLogger.Instance);
 
             var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
@@ -616,7 +616,7 @@ namespace NuGet.Resolver.Test
             sourceRepository.Add(packageB11);
 
             var packageC2 =
-                CreatePackage("C", "2.0",  new Dictionary<string, string>
+                CreatePackage("C", "2.0", new Dictionary<string, string>
                     {
                         { "D", "[2.0, 3.0)" }
                     });
@@ -804,7 +804,7 @@ namespace NuGet.Resolver.Test
             var a100 = new ResolverPackage("a", new NuGetVersion(1, 0, 0),
                 new NuGet.Packaging.Core.PackageDependency[]
                     {
-                        new NuGet.Packaging.Core.PackageDependency("b", 
+                        new NuGet.Packaging.Core.PackageDependency("b",
                             new VersionRange(new NuGetVersion(1, 0, 0), true, new NuGetVersion(5, 0, 0), true))
                     },
                 true,
@@ -962,7 +962,7 @@ namespace NuGet.Resolver.Test
                 targets,
                 availablePackages,
                 Enumerable.Empty<PackageSource>(),
-				Common.NullLogger.Instance);
+                Common.NullLogger.Instance);
         }
     }
 }

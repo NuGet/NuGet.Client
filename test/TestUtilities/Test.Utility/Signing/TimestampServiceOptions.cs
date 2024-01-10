@@ -20,6 +20,7 @@ namespace Test.Utility.Signing
         public DateTimeOffset? IssuedCertificateNotAfter { get; set; }
         public DateTimeOffset? GeneralizedTime { get; set; }
         public SigningCertificateUsage SigningCertificateUsage { get; set; }
+        public byte[] SigningCertificateV1Hash { get; set; }
 
         public TimestampServiceOptions()
         {

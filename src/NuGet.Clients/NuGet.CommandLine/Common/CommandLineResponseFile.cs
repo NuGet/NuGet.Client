@@ -1,6 +1,7 @@
 #if IS_DESKTOP
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -64,19 +65,19 @@ namespace NuGet.Common
 
                 if (!File.Exists(responseFilePath))
                 {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist")), arg);
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("Error_ResponseFileDoesNotExist")), arg);
                 }
 
                 var fileInfo = new FileInfo(responseFilePath);
                 if (fileInfo.Length == 0)
                 {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileNullOrEmpty"), arg));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("Error_ResponseFileNullOrEmpty"), arg));
                 }
 
                 const int TwoMegaBytesLength = 2048000;
                 if (fileInfo.Length > TwoMegaBytesLength)
                 {
-                    throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileTooLarge"), arg, TwoMegaBytesLength / 1000000));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("Error_ResponseFileTooLarge"), arg, TwoMegaBytesLength / 1000000));
                 }
 
                 var responseFileContents = File.ReadAllText(responseFilePath);
@@ -93,7 +94,7 @@ namespace NuGet.Common
 
                         if (parseArgsResponseFileRecursionDepth > MaxRecursionDepth)
                         {
-                            throw new ArgumentException(string.Format(LocalizedResourceManager.GetString("Error_ResponseFileMaxRecursionDepth"), MaxRecursionDepth));
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("Error_ResponseFileMaxRecursionDepth"), MaxRecursionDepth));
                         }
 
                         parseArgsResponseFileRecursionDepth++;

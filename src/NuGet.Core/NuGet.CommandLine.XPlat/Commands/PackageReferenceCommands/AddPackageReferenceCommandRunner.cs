@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -15,19 +16,20 @@ using NuGet.Credentials;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class AddPackageReferenceCommandRunner : IPackageReferenceCommandRunner
+    internal class AddPackageReferenceCommandRunner : IPackageReferenceCommandRunner
     {
         public async Task<int> ExecuteCommand(PackageReferenceArgs packageReferenceArgs, MSBuildAPIUtility msBuild)
         {
             packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Info_AddPkgAddingReference,
-                packageReferenceArgs.PackageDependency.Id,
+                packageReferenceArgs.PackageId,
                 packageReferenceArgs.ProjectPath));
 
             if (packageReferenceArgs.NoRestore)
@@ -35,15 +37,27 @@ namespace NuGet.CommandLine.XPlat
                 packageReferenceArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.Warn_AddPkgWithoutRestore));
 
+                VersionRange versionRange = default;
+                if (packageReferenceArgs.NoVersion)
+                {
+                    versionRange = packageReferenceArgs.Prerelease ?
+                                        VersionRange.Parse("*-*") :
+                                        VersionRange.Parse("*");
+                }
+                else
+                {
+                    versionRange = VersionRange.Parse(packageReferenceArgs.PackageVersion);
+                }
+
                 var libraryDependency = new LibraryDependency
                 {
                     LibraryRange = new LibraryRange(
-                        name: packageReferenceArgs.PackageDependency.Id,
-                        versionRange: packageReferenceArgs.PackageDependency.VersionRange,
+                        name: packageReferenceArgs.PackageId,
+                        versionRange: versionRange,
                         typeConstraint: LibraryDependencyTarget.Package)
                 };
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
                 return 0;
             }
 
@@ -63,7 +77,7 @@ namespace NuGet.CommandLine.XPlat
 
             var matchingPackageSpecs = dgSpec
                 .Projects
-                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference && 
+                .Where(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference &&
                 PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFullPath(p.RestoreMetadata.ProjectPath), projectFullPath))
                 .ToArray();
 
@@ -73,7 +87,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_UnsupportedProject,
-                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.PackageId,
                     packageReferenceArgs.ProjectPath));
             }
 
@@ -86,29 +100,78 @@ namespace NuGet.CommandLine.XPlat
                     .Select(f => NuGetFramework.Parse(f));
             }
 
-
             var originalPackageSpec = matchingPackageSpecs.FirstOrDefault();
+
+            // Check if the project files are correct for CPM
+            if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled && !msBuild.AreCentralVersionRequirementsSatisfied(packageReferenceArgs, originalPackageSpec))
+            {
+                return 1;
+            }
+
+            // 2. Determine the version
+
+            // Setup the Credential Service before making any potential http calls.
+            DefaultCredentialServiceUtility.SetupDefaultCredentialService(packageReferenceArgs.Logger, !packageReferenceArgs.Interactive);
+
+            if (packageReferenceArgs.Sources?.Any() == true)
+            {
+                // Convert relative path to absolute path if there is any
+                List<string> sources = new List<string>();
+
+                foreach (string source in packageReferenceArgs.Sources)
+                {
+                    sources.Add(UriUtility.GetAbsolutePath(Environment.CurrentDirectory, source));
+                }
+
+                originalPackageSpec.RestoreMetadata.Sources =
+                                    sources.Where(ns => !string.IsNullOrEmpty(ns))
+                                    .Select(ns => new PackageSource(ns))
+                                    .ToList();
+            }
+
+            PackageDependency packageDependency = default;
+            if (packageReferenceArgs.NoVersion)
+            {
+                var latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, packageReferenceArgs.Prerelease);
+
+                if (latestVersion == null)
+                {
+                    if (!packageReferenceArgs.Prerelease)
+                    {
+                        latestVersion = await GetLatestVersionAsync(originalPackageSpec, packageReferenceArgs.PackageId, packageReferenceArgs.Logger, !packageReferenceArgs.Prerelease);
+                        if (latestVersion != null)
+                        {
+                            throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.PrereleaseVersionsAvailable, latestVersion));
+                        }
+                    }
+                    throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Error_NoVersionsAvailable, packageReferenceArgs.PackageId));
+                }
+
+                packageDependency = new PackageDependency(packageReferenceArgs.PackageId, new VersionRange(minVersion: latestVersion, includeMinVersion: true));
+            }
+            else
+            {
+                packageDependency = new PackageDependency(packageReferenceArgs.PackageId, VersionRange.Parse(packageReferenceArgs.PackageVersion));
+            }
 
             // Create a copy to avoid modifying the original spec which may be shared.
             var updatedPackageSpec = originalPackageSpec.Clone();
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
                 // If user specified frameworks then just use them to add the dependency
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, 
-                    packageReferenceArgs.PackageDependency,
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec,
+                    packageDependency,
                     userSpecifiedFrameworks);
             }
             else
             {
-                // If the user has not specified a framework, then just add it to all frameworks
-                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageReferenceArgs.PackageDependency, updatedPackageSpec.TargetFrameworks.Select(e => e.FrameworkName));
+                PackageSpecOperations.AddOrUpdateDependency(updatedPackageSpec, packageDependency);
             }
-
 
             var updatedDgSpec = dgSpec.WithReplacedSpec(updatedPackageSpec).WithoutRestores();
             updatedDgSpec.AddRestore(updatedPackageSpec.RestoreMetadata.ProjectUniqueName);
 
-            // 2. Run Restore Preview
+            // 3. Run Restore Preview
             packageReferenceArgs.Logger.LogDebug("Running Restore preview");
 
             var restorePreviewResult = await PreviewAddPackageReferenceAsync(packageReferenceArgs,
@@ -116,52 +179,52 @@ namespace NuGet.CommandLine.XPlat
 
             packageReferenceArgs.Logger.LogDebug("Restore Review completed");
 
-            // 3. Process Restore Result
+            // 4. Process Restore Result
             var compatibleFrameworks = new HashSet<NuGetFramework>(
                 restorePreviewResult
                 .Result
                 .CompatibilityCheckResults
                 .Where(t => t.Success)
-                .Select(t => t.Graph.Framework), new NuGetFrameworkFullComparer());
+                .Select(t => t.Graph.Framework), NuGetFrameworkFullComparer.Instance);
 
             if (packageReferenceArgs.Frameworks?.Any() == true)
             {
                 // If the user has specified frameworks then we intersect that with the compatible frameworks.
                 var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
-                    userSpecifiedFrameworks, 
-                    new NuGetFrameworkFullComparer());
+                    userSpecifiedFrameworks,
+                    NuGetFrameworkFullComparer.Instance);
 
                 compatibleFrameworks.IntersectWith(userSpecifiedFrameworkSet);
             }
 
-            // 4. Write to Project
+            // 5. Write to Project
             if (compatibleFrameworks.Count == 0)
             {
                 // Package is compatible with none of the project TFMs
                 // Do not add a package reference, throw appropriate error
                 packageReferenceArgs.Logger.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_AddPkgIncompatibleWithAllFrameworks,
-                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.PackageId,
                     packageReferenceArgs.Frameworks?.Any() == true ? Strings.AddPkg_UserSpecified : Strings.AddPkg_All,
                     packageReferenceArgs.ProjectPath));
 
                 return 1;
             }
             // Ignore the graphs with RID
-            else if (compatibleFrameworks.Count == 
+            else if (compatibleFrameworks.Count ==
                 restorePreviewResult.Result.CompatibilityCheckResults.Where(r => string.IsNullOrEmpty(r.Graph.RuntimeIdentifier)).Count())
             {
                 // Package is compatible with all the project TFMs
                 // Add an unconditional package reference to the project
                 packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Info_AddPkgCompatibleWithAllFrameworks,
-                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.PackageId,
                     packageReferenceArgs.ProjectPath));
 
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
-                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs, restorePreviewResult, userSpecifiedFrameworks);
+                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
 
-                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency);
+                msBuild.AddPackageReference(packageReferenceArgs.ProjectPath, libraryDependency, packageReferenceArgs.NoVersion);
             }
             else
             {
@@ -169,47 +232,58 @@ namespace NuGet.CommandLine.XPlat
                 // Add conditional package references to the project for the compatible TFMs
                 packageReferenceArgs.Logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Info_AddPkgCompatibleWithSubsetFrameworks,
-                    packageReferenceArgs.PackageDependency.Id,
+                    packageReferenceArgs.PackageId,
                     packageReferenceArgs.ProjectPath));
 
-                var compatibleOriginalFrameworks = originalPackageSpec.RestoreMetadata
-                    .OriginalTargetFrameworks
-                    .Where(s => compatibleFrameworks.Contains(NuGetFramework.Parse(s)));
+                var compatibleOriginalFrameworks = compatibleFrameworks
+                    .Select(e => GetAliasForFramework(originalPackageSpec, e))
+                    .Where(originalFramework => originalFramework != null);
 
                 // generate a library dependency with all the metadata like Include, Exlude and SuppressParent
-                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs, restorePreviewResult, userSpecifiedFrameworks);
+                var libraryDependency = GenerateLibraryDependency(updatedPackageSpec, packageReferenceArgs, restorePreviewResult, userSpecifiedFrameworks, packageDependency);
 
                 msBuild.AddPackageReferencePerTFM(packageReferenceArgs.ProjectPath,
                     libraryDependency,
-                    compatibleOriginalFrameworks);
+                    compatibleOriginalFrameworks,
+                    packageReferenceArgs.NoVersion);
             }
 
-            // 5. Commit restore result
+            // 6. Commit restore result
             await RestoreRunner.CommitAsync(restorePreviewResult, CancellationToken.None);
 
             return 0;
+        }
+
+        private static string GetAliasForFramework(PackageSpec spec, NuGetFramework framework)
+        {
+            return spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
+        }
+
+        public static async Task<NuGetVersion> GetLatestVersionAsync(PackageSpec originalPackageSpec, string packageId, ILogger logger, bool prerelease)
+        {
+            IList<PackageSource> sources = AddPackageCommandUtility.EvaluateSources(originalPackageSpec.RestoreMetadata.Sources, originalPackageSpec.RestoreMetadata.ConfigFilePaths);
+
+            return await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packageId, prerelease);
         }
 
         private static LibraryDependency GenerateLibraryDependency(
             PackageSpec project,
             PackageReferenceArgs packageReferenceArgs,
             RestoreResultPair restorePreviewResult,
-            IEnumerable<NuGetFramework> UserSpecifiedFrameworks)
+            IEnumerable<NuGetFramework> userSpecifiedFrameworks,
+            PackageDependency packageDependency)
         {
             // get the package resolved version from restore preview result
-            var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs, UserSpecifiedFrameworks);
+            var resolvedVersion = GetPackageVersionFromRestoreResult(restorePreviewResult, packageReferenceArgs, userSpecifiedFrameworks);
 
-            // calculate correct package version to write in project file
-            var version = packageReferenceArgs.PackageDependency.VersionRange;
-
-            // If the user did not specify a version then write the exact resolved version
-            if (packageReferenceArgs.NoVersion)
-            {
-                version = new VersionRange(resolvedVersion);
-            }
+            // correct package version to write in project file
+            var version = packageDependency.VersionRange;
 
             // update default packages path if user specified custom package directory
             var packagesPath = project.RestoreMetadata.PackagesPath;
+
+            // get if the project is onboarded to CPM
+            var isCentralPackageManagementEnabled = project.RestoreMetadata.CentralPackageVersionsEnabled;
 
             if (!string.IsNullOrEmpty(packageReferenceArgs.PackageDirectory))
             {
@@ -220,9 +294,9 @@ namespace NuGet.CommandLine.XPlat
             var pathResolver = new FallbackPackagePathResolver(
                 packagesPath,
                 project.RestoreMetadata.FallbackFolders);
-            var info = pathResolver.GetPackageInfo(packageReferenceArgs.PackageDependency.Id, resolvedVersion);
-            var packageDirectory = info?.PathResolver.GetInstallPath(packageReferenceArgs.PackageDependency.Id, resolvedVersion);
-            var nuspecFile = info?.PathResolver.GetManifestFileName(packageReferenceArgs.PackageDependency.Id, resolvedVersion);
+            var info = pathResolver.GetPackageInfo(packageReferenceArgs.PackageId, resolvedVersion);
+            var packageDirectory = info?.PathResolver.GetInstallPath(packageReferenceArgs.PackageId, resolvedVersion);
+            var nuspecFile = info?.PathResolver.GetManifestFileName(packageReferenceArgs.PackageId, resolvedVersion);
 
             var nuspecFilePath = Path.GetFullPath(Path.Combine(packageDirectory, nuspecFile));
 
@@ -236,7 +310,7 @@ namespace NuGet.CommandLine.XPlat
                         StringComparer.Ordinal))
                 {
                     var dependency = frameworkInfo.Dependencies.First(
-                        dep => dep.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
+                        dep => dep.Name.Equals(packageReferenceArgs.PackageId, StringComparison.OrdinalIgnoreCase));
 
                     // if suppressParent and IncludeType aren't set by user, then only update those as per dev dependency
                     if (dependency?.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent &&
@@ -249,6 +323,7 @@ namespace NuGet.CommandLine.XPlat
                     if (dependency != null)
                     {
                         dependency.LibraryRange.VersionRange = version;
+                        dependency.VersionCentrallyManaged = isCentralPackageManagementEnabled;
                         return dependency;
                     }
                 }
@@ -257,9 +332,10 @@ namespace NuGet.CommandLine.XPlat
             return new LibraryDependency
             {
                 LibraryRange = new LibraryRange(
-                    name: packageReferenceArgs.PackageDependency.Id,
+                    name: packageReferenceArgs.PackageId,
                     versionRange: version,
-                    typeConstraint: LibraryDependencyTarget.Package)
+                    typeConstraint: LibraryDependencyTarget.Package),
+                VersionCentrallyManaged = isCentralPackageManagementEnabled
             };
         }
 
@@ -289,15 +365,12 @@ namespace NuGet.CommandLine.XPlat
                     Log = packageReferenceArgs.Logger,
                     MachineWideSettings = new XPlatMachineWideSetting(),
                     GlobalPackagesFolder = packageReferenceArgs.PackageDirectory,
-                    PreLoadedRequestProviders = providers,
-                    Sources = packageReferenceArgs.Sources?.ToList()                    
+                    PreLoadedRequestProviders = providers
+                    // Sources : No need to pass it, because SourceRepositories contains the already built SourceRepository objects
                 };
 
                 // Generate Restore Requests. There will always be 1 request here since we are restoring for 1 project.
                 var restoreRequests = await RestoreRunner.GetRequests(restoreContext);
-
-                //Setup the Credential Service
-                DefaultCredentialServiceUtility.SetupDefaultCredentialService(restoreContext.Log, !packageReferenceArgs.Interactive);
 
                 // Run restore without commit. This will always return 1 Result pair since we are restoring for 1 request.
                 var restoreResult = await RestoreRunner.RunWithoutCommit(restoreRequests, restoreContext);
@@ -331,8 +404,8 @@ namespace NuGet.CommandLine.XPlat
             {
                 // If the user specified frameworks then we get the flattened graphs  only from the compatible frameworks.
                 var userSpecifiedFrameworkSet = new HashSet<NuGetFramework>(
-                    UserSpecifiedFrameworks, 
-                    new NuGetFrameworkFullComparer());
+                    UserSpecifiedFrameworks,
+                    NuGetFrameworkFullComparer.Instance);
 
                 restoreGraphs = restoreGraphs
                     .Where(r => userSpecifiedFrameworkSet.Contains(r.Framework));
@@ -343,7 +416,7 @@ namespace NuGet.CommandLine.XPlat
                 var matchingPackageEntries = restoreGraph
                     .Flattened
                     .Select(p => p)
-                    .Where(p => p.Key.Name.Equals(packageReferenceArgs.PackageDependency.Id, StringComparison.OrdinalIgnoreCase));
+                    .Where(p => p.Key.Name.Equals(packageReferenceArgs.PackageId, StringComparison.OrdinalIgnoreCase));
 
                 if (matchingPackageEntries.Any())
                 {

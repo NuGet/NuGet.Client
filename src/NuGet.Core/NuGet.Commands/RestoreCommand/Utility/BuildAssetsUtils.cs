@@ -16,18 +16,18 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Versioning;
-using XmlUtility = NuGet.Common.XmlUtility;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.Commands
 {
     public static class BuildAssetsUtils
     {
         private static readonly XNamespace Namespace = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
-        internal static readonly string CrossTargetingCondition = "'$(TargetFramework)' == ''";
-        internal static readonly string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
-        internal static readonly string LanguageCondition = "'$(Language)' == '{0}'";
-        internal static readonly string NegativeLanguageCondition = "'$(Language)' != '{0}'";
-        internal static readonly string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
+        internal const string CrossTargetingCondition = "'$(TargetFramework)' == ''";
+        internal const string TargetFrameworkCondition = "'$(TargetFramework)' == '{0}'";
+        internal const string LanguageCondition = "'$(Language)' == '{0}'";
+        internal const string NegativeLanguageCondition = "'$(Language)' != '{0}'";
+        internal const string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
         public const string TargetsExtension = ".targets";
         public const string PropsExtension = ".props";
 
@@ -138,7 +138,7 @@ namespace NuGet.Commands
             // For project.json not all files are written out. Find the first one
             // or if no files exist skip this.
             var firstImport = files.Where(file => file.Content != null)
-                .OrderByDescending(file => file.Path.EndsWith(PropsExtension) ? 1 : 0)
+                .OrderByDescending(file => file.Path.EndsWith(PropsExtension, StringComparison.Ordinal) ? 1 : 0)
                 .FirstOrDefault();
 
             if (firstImport != null)
@@ -154,6 +154,7 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Apply standard properties in a property group.
+        /// Additionally add a SourceRoot item to point to the package folders.
         /// </summary>
         public static void AddNuGetProperties(
             XDocument doc,
@@ -163,16 +164,20 @@ namespace NuGet.Commands
             string assetsFilePath,
             bool success)
         {
+
             doc.Root.AddFirst(
                 new XElement(Namespace + "PropertyGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
-                            GenerateProperty("RestoreSuccess", success.ToString()),
+                            GenerateProperty("RestoreSuccess", success.ToString(CultureInfo.CurrentCulture)),
                             GenerateProperty("RestoreTool", "NuGet"),
                             GenerateProperty("ProjectAssetsFile", assetsFilePath),
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
                             GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
                             GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
-                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
+                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
+                new XElement(Namespace + "ItemGroup",
+                            new XAttribute("Condition", $" {ExcludeAllCondition} "),
+                            packageFolders.Select(e => GenerateItem("SourceRoot", PathUtility.EnsureTrailingSlash(e)))));
         }
 
         /// <summary>
@@ -185,9 +190,7 @@ namespace NuGet.Commands
 
                 new XElement(Namespace + "Project",
                     new XAttribute("ToolsVersion", "14.0"),
-                    new XAttribute("xmlns", Namespace.NamespaceName),
-                    new XElement(Namespace + "PropertyGroup",
-                        new XElement(Namespace + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"))));
+                    new XAttribute("xmlns", Namespace.NamespaceName)));
 
             return doc;
         }
@@ -197,6 +200,11 @@ namespace NuGet.Commands
             return new XElement(Namespace + propertyName,
                             new XAttribute("Condition", $" '$({propertyName})' == '' "),
                             content);
+        }
+
+        internal static XElement GenerateItem(string itemName, string path)
+        {
+            return new XElement(Namespace + itemName, new XAttribute("Include", path));
         }
 
         public static XElement GenerateImport(string path)
@@ -213,7 +221,8 @@ namespace NuGet.Commands
                                 new XAttribute("Condition", $"Exists('{path}')"),
                                 new XElement(Namespace + "NuGetPackageId", packageId),
                                 new XElement(Namespace + "NuGetPackageVersion", packageVersion),
-                                new XElement(Namespace + "NuGetItemType", item.BuildAction));
+                                new XElement(Namespace + "NuGetItemType", item.BuildAction),
+                                new XElement(Namespace + "Pack", false));
 
             var privateFlag = false;
 
@@ -240,7 +249,7 @@ namespace NuGet.Commands
                 }
             }
 
-            entry.Add(new XElement(Namespace + "Private", privateFlag.ToString()));
+            entry.Add(new XElement(Namespace + "Private", privateFlag.ToString(CultureInfo.CurrentCulture)));
 
             // Remove contentFile/lang/tfm/ from start of the path
             var linkPath = string.Join(string.Empty + Path.DirectorySeparatorChar,
@@ -363,26 +372,6 @@ namespace NuGet.Commands
             return result;
         }
 
-        [Obsolete("This method looks at the RestoreRequest. It is expected that the PackageSpec contains all the relevant information the RestoreRequest would. Use GetMSBuildFilePath(PackageSpec project, string extension) instead.")]
-        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
-        {
-            string path;
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference)
-            {
-                // PackageReference style projects
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g{extension}");
-            }
-            else
-            {
-                // Project.json style projects
-                var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
-            }
-            return path;
-        }
-
         public static string GetMSBuildFilePath(PackageSpec project, string extension)
         {
             string path;
@@ -459,10 +448,10 @@ namespace NuGet.Commands
 
             foreach (var ridlessTarget in ridlessTargets)
             {
-                // There could be multiple string matches from the MSBuild project.
-                var frameworkConditions = GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework)
-                    .Select(match => string.Format(CultureInfo.InvariantCulture, TargetFrameworkCondition, match))
-                    .ToArray();
+                var frameworkConditions = string.Format(
+                        CultureInfo.InvariantCulture,
+                        TargetFrameworkCondition,
+                        GetMatchingFrameworkStrings(project, ridlessTarget.TargetFramework));
 
                 // Find matching target in the original target graphs.
                 var targetGraph = targetGraphs.FirstOrDefault(e =>
@@ -525,12 +514,13 @@ namespace NuGet.Commands
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
 
                 // Create an empty PropertyGroup for package properties
-                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? frameworkConditions : Enumerable.Empty<string>());
+                var packagePathsPropertyGroup = MSBuildRestoreItemGroup.Create("PropertyGroup", Enumerable.Empty<XElement>(), 1000, isMultiTargeting ? new string[] { frameworkConditions } : Enumerable.Empty<string>());
 
                 var projectGraph = targetGraph.Graphs.FirstOrDefault();
 
                 // Packages with GeneratePathProperty=true
-                var packageIdsToCreatePropertiesFor = new HashSet<string>(projectGraph.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name), StringComparer.OrdinalIgnoreCase);
+                var packages = projectGraph?.Item.Data.Dependencies.Where(i => i.GeneratePathProperty).Select(i => i.Name);
+                var packageIdsToCreatePropertiesFor = packages != null ? new HashSet<string>(packages, StringComparer.OrdinalIgnoreCase) : Enumerable.Empty<string>();
 
                 var localPackages = sortedPackages.Select(e => e.Value);
 
@@ -687,7 +677,7 @@ namespace NuGet.Commands
                                     rootName: MSBuildRestoreItemGroup.ItemGroup,
                                     position: 1,
                                     conditions: GetLanguageConditions(group.Key, allLanguages),
-                                    items: group.Where(e => !e.Item2.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder)
+                                    items: group.Where(e => !e.Item2.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, StringComparison.Ordinal)
                                                             && !e.Item2.Path.EndsWith(".pp", StringComparison.OrdinalIgnoreCase)) // Skip .pp files
                                                 .Select(e => GenerateContentFilesItem(e.Item3, e.Item2, packageId, packageVersion))))
                                 .Where(group => group.Items.Count > 0);
@@ -732,32 +722,37 @@ namespace NuGet.Commands
 
         private static IEnumerable<LockFileItem> WithExtension(this IList<LockFileItem> items, string extension)
         {
-            if (items == null)
+            if (items == null || items.Count == 0)
             {
                 return Enumerable.Empty<LockFileItem>();
             }
 
-            return items.Where(c => extension.Equals(Path.GetExtension(c.Path), StringComparison.OrdinalIgnoreCase));
+            return FilterExtensions(items, extension);
+
+            static IEnumerable<LockFileItem> FilterExtensions(IList<LockFileItem> items, string extension)
+            {
+                for (int i = 0; i < items.Count; ++i)
+                {
+                    var item = items[i];
+                    if (extension.Equals(Path.GetExtension(item.Path), StringComparison.OrdinalIgnoreCase))
+                    {
+                        yield return item;
+                    }
+                }
+            }
         }
 
-        private static HashSet<string> GetMatchingFrameworkStrings(PackageSpec spec, NuGetFramework framework)
+        private static string GetMatchingFrameworkStrings(PackageSpec spec, NuGetFramework framework)
         {
-            // Ignore case since msbuild does
-            var matches = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (spec.RestoreMetadata != null)
-            {
-                matches.UnionWith(spec.RestoreMetadata.OriginalTargetFrameworks
-                    .Where(s => framework.Equals(NuGetFramework.Parse(s))));
-            }
+            var frameworkString = spec.TargetFrameworks.Where(e => e.FrameworkName.Equals(framework)).FirstOrDefault()?.TargetAlias;
 
             // If there were no matches, use the generated name
-            if (matches.Count < 1)
+            if (string.IsNullOrEmpty(frameworkString))
             {
-                matches.Add(framework.GetShortFolderName());
+                return framework.GetShortFolderName();
             }
 
-            return matches;
+            return frameworkString;
         }
 
         private static HashSet<PackageDependencyInfo> ConvertToPackageDependencyInfo(
@@ -767,9 +762,9 @@ namespace NuGet.Commands
 
             foreach (var item in items)
             {
-                var dependencies =
-                    item.Data?.Dependencies?.Select(
-                        dependency => new PackageDependency(dependency.Name, VersionRange.All));
+                IEnumerable<PackageDependency> dependencies = item.Data?.Dependencies?
+                    .Where(i => i.ReferenceType == LibraryDependencyReferenceType.Direct) // Ignore transitively pinned dependencies
+                    .Select(dependency => new PackageDependency(dependency.Name, VersionRange.All));
 
                 result.Add(new PackageDependencyInfo(item.Key.Name, item.Key.Version, dependencies));
             }
@@ -779,7 +774,11 @@ namespace NuGet.Commands
 
         private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
         {
+#if NETCOREAPP
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal)}", localPackageInfo.ExpandedPath);
+#else
             return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
+#endif
         }
     }
 }

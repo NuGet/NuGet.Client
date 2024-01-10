@@ -7,7 +7,7 @@ using NuGet.Common;
 
 namespace NuGet.Build.Tasks.Pack
 {
-    public class IsPackableFalseWarningTask : Task
+    public class IsPackableFalseWarningTask : Microsoft.Build.Utilities.Task
     {
         public ILogger Logger => new MSBuildLogger(Log);
         public override bool Execute()

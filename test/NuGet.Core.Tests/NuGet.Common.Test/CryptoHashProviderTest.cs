@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,6 +43,7 @@ namespace NuGet.Common.Test
         }
 
         [Theory]
+        [UseCulture("en-US")] // We are asserting exception messages in English
         [InlineData("md5")]
         [InlineData("MD5")]
         [InlineData("SHA1")]
@@ -54,10 +55,14 @@ namespace NuGet.Common.Test
             Assert.NotNull(ex);
             var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
             Assert.Equal("hashAlgorithm", tex.ParamName);
-            var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            Assert.Equal(2, lines.Length);
-            Assert.Equal(String.Format("Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.", hashAlgorithm), lines[0]);
-            Assert.True(lines[1].EndsWith("hashAlgorithm"));
+            var expectedMessage = string.Format("Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.", hashAlgorithm);
+            Assert.Contains(expectedMessage, ex.Message);
+            //Remove the expected message from the exception message, the rest part should have param info.
+            //Background of this change: System.ArgumentException(string message, string paramName) used to generate two lines of message before, but changed to generate one line
+            //in PR: https://github.com/dotnet/coreclr/pull/25185/files#diff-0365d5690376ef849bf908dfc225b8e8
+            var paramPart = ex.Message.Substring(ex.Message.IndexOf(expectedMessage) + expectedMessage.Length);
+            Assert.Contains("Parameter", paramPart);
+            Assert.Contains("hashAlgorithm", paramPart);
         }
 
         [Theory]

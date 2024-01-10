@@ -7,7 +7,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -15,7 +17,7 @@ namespace NuGet.Commands.Test
     public class PackCommandRunnerTests
     {
         [Fact]
-        public void BuildPackage_WithDefaultExcludes_ExcludesDefaultExcludes()
+        public void RunPackageBuild_WithDefaultExcludes_ExcludesDefaultExcludes()
         {
             using (var test = DefaultExclusionsTest.Create())
             {
@@ -43,6 +45,44 @@ namespace NuGet.Commands.Test
                         Assert.Equal(1, package.Entries.Count(entry => entry.Name == expectedEntryName));
                     }
                 }
+            }
+        }
+
+        [Fact]
+        public void RunPackageBuild_WithGenerateNugetPackageFalse_ReturnsTrue()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var args = new PackArgs()
+                {
+                    CurrentDirectory = testDirectory.Path,
+                    Logger = NullLogger.Instance,
+                    PackTargetArgs = new MSBuildPackTargetArgs()
+                    {
+                        NuspecOutputPath = Path.Combine(testDirectory.Path, "obj", "Debug"),
+                        ContentFiles = new Dictionary<string, IEnumerable<ContentMetadata>>()
+                    },
+                    Path = string.Empty,
+                    Exclude = Array.Empty<string>()
+                };
+                var packageBuilder = new PackageBuilder()
+                {
+                    Id = "test",
+                    Version = new NuGetVersion(1, 0, 0),
+                    Description = "Testing PackCommandRunner.GenerateNugetPackage = false"
+                };
+                packageBuilder.Authors.Add("tester");
+
+                var runner = new PackCommandRunner(args, MSBuildProjectFactory.ProjectCreator, packageBuilder);
+                runner.GenerateNugetPackage = false;
+
+                // Act
+                var actual = runner.RunPackageBuild();
+
+                // Assert
+                Assert.True(actual, "PackCommandRunner.RunPackageBuild was not successful");
+                var expectedNuspecPath = Path.Combine(args.PackTargetArgs.NuspecOutputPath, "test.1.0.0.nuspec");
+                Assert.True(File.Exists(expectedNuspecPath), "nuspec file does not exist");
             }
         }
 

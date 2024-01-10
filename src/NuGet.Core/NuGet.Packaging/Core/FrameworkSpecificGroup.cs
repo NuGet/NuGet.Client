@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,7 +37,7 @@ namespace NuGet.Packaging
 
             _targetFramework = targetFramework;
 
-            HasEmptyFolder = items.Any(item => item.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, 
+            HasEmptyFolder = items.Any(item => item.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder,
                 StringComparison.Ordinal));
 
             // Remove empty folder markers here
@@ -101,14 +101,7 @@ namespace NuGet.Packaging
             var combiner = new HashCodeCombiner();
 
             combiner.AddObject(TargetFramework);
-
-            if (Items != null)
-            {
-                foreach (var hash in Items.Select(e => e.GetHashCode()).OrderBy(e => e))
-                {
-                    combiner.AddObject(hash);
-                }
-            }
+            combiner.AddUnorderedSequence(Items, StringComparer.Ordinal);
 
             return combiner.CombinedHash;
         }

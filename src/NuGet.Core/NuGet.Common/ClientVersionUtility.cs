@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 
 namespace NuGet.Common
@@ -9,7 +10,7 @@ namespace NuGet.Common
     public static class ClientVersionUtility
     {
         // Cache the value since it cannot change
-        private static string _clientVersion;
+        private static string? _clientVersion;
 
         /// <summary>
         /// Find the current NuGet client version from the assembly info as a string.
@@ -36,7 +37,7 @@ namespace NuGet.Common
                     var versionAttr = assembly.GetCustomAttribute<AssemblyVersionAttribute>();
                     if (versionAttr != null)
                     {
-                        version = versionAttr.Version.ToString();
+                        version = versionAttr.Version.ToString(CultureInfo.CurrentCulture);
                     }
                 }
 

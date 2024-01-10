@@ -13,7 +13,6 @@ namespace NuGetConsole.Implementation.PowerConsole
     [ContentType(PowerConsoleWindow.ContentType)]
     internal class ClassifierProvider : IClassifierProvider
     {
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         public IWpfConsoleService WpfConsoleService { get; set; }
 

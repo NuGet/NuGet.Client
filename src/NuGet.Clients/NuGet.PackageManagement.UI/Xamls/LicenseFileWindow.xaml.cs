@@ -16,13 +16,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for LicenseFileWindow.xaml
     /// </summary>
-    public partial class LicenseFileWindow : VsDialogWindow
+    public partial class LicenseFileWindow : DialogWindow
     {
         public LicenseFileWindow()
         {

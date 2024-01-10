@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
@@ -22,8 +23,30 @@ using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
 {
+    using IPackageFile = NuGet.Packaging.IPackageFile;
+
     public static class SimpleTestPackageUtility
     {
+        public static async Task CreateFullPackagesAsync(string repositoryDir, IDictionary<string, IEnumerable<string>> packages)
+        {
+            if (packages == null)
+            {
+                throw new ArgumentNullException(nameof(packages));
+            }
+            if (repositoryDir == null)
+            {
+                throw new ArgumentNullException(nameof(repositoryDir));
+            }
+
+            foreach (KeyValuePair<string, IEnumerable<string>> package in packages)
+            {
+                foreach (string pkgVersion in package.Value)
+                {
+                    await CreateFullPackageAsync(repositoryDir, package.Key, pkgVersion);
+                }
+            }
+        }
+
         /// <summary>
         /// Creates a net45 package containing lib, build, native, tools, and contentFiles
         /// </summary>
@@ -175,41 +198,39 @@ namespace NuGet.Test.Utility
                         .Add(new XAttribute(XName.Get("minClientVersion"), packageContext.MinClientVersion));
                 }
 
-                var dependencies = packageContext.Dependencies.Select(e =>
-                    new PackageDependency(
-                        e.Id,
-                        VersionRange.Parse(e.Version),
-                        string.IsNullOrEmpty(e.Include)
-                            ? new List<string>()
-                            : e.Include.Split(',').ToList(),
-                        string.IsNullOrEmpty(e.Exclude)
-                            ? new List<string>()
-                            : e.Exclude.Split(',').ToList()));
+                List<(string, List<PackageDependency>)> dependenciesPerFramework = GetPackageDependencies(packageContext);
 
-                if (dependencies.Any())
+                if (dependenciesPerFramework.Any())
                 {
                     var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
-
                     var dependenciesNode = new XElement(XName.Get("dependencies"));
-                    var groupNode = new XElement(XName.Get("group"));
-                    dependenciesNode.Add(groupNode);
-                    metadata.Add(dependenciesNode);
 
-                    foreach (var dependency in dependencies)
+                    foreach (var deps in dependenciesPerFramework)
                     {
-                        var node = new XElement(XName.Get("dependency"));
-                        groupNode.Add(node);
-                        node.Add(new XAttribute(XName.Get("id"), dependency.Id));
-                        node.Add(new XAttribute(XName.Get("version"), dependency.VersionRange.ToNormalizedString()));
-
-                        if (dependency.Include.Count > 0)
+                        var groupNode = new XElement(XName.Get("group"));
+                        if (!string.IsNullOrEmpty(deps.Item1))
                         {
-                            node.Add(new XAttribute(XName.Get("include"), string.Join(",", dependency.Include)));
+                            groupNode.SetAttributeValue("targetFramework", deps.Item1);
                         }
+                        dependenciesNode.Add(groupNode);
+                        metadata.Add(dependenciesNode);
 
-                        if (dependency.Exclude.Count > 0)
+                        foreach (var dependency in deps.Item2)
                         {
-                            node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
+                            var node = new XElement(XName.Get("dependency"));
+                            groupNode.Add(node);
+                            node.Add(new XAttribute(XName.Get("id"), dependency.Id));
+                            node.Add(new XAttribute(XName.Get("version"), dependency.VersionRange.ToNormalizedString()));
+
+                            if (dependency.Include.Count > 0)
+                            {
+                                node.Add(new XAttribute(XName.Get("include"), string.Join(",", dependency.Include)));
+                            }
+
+                            if (dependency.Exclude.Count > 0)
+                            {
+                                node.Add(new XAttribute(XName.Get("exclude"), string.Join(",", dependency.Exclude)));
+                            }
                         }
                     }
                 }
@@ -219,7 +240,7 @@ namespace NuGet.Test.Utility
                     var metadata = xml.Element(XName.Get("package")).Element(XName.Get("metadata"));
                     var frameworkReferencesNode = new XElement(XName.Get("frameworkReferences"));
 
-                    foreach(var kvp in packageContext.FrameworkReferences)
+                    foreach (var kvp in packageContext.FrameworkReferences)
                     {
                         var groupNode = new XElement(XName.Get("group"));
                         groupNode.SetAttributeValue("targetFramework", kvp.Key.GetFrameworkString());
@@ -260,11 +281,11 @@ namespace NuGet.Test.Utility
             if (isUsingTempStream)
             {
                 using (tempStream)
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
 #endif
                 {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
                     using (var request = GetPrimarySignRequest(packageContext))
                     {
                         await AddSignatureToPackageAsync(packageContext, signPackage, request, testLogger);
@@ -289,7 +310,45 @@ namespace NuGet.Test.Utility
             stream.Position = 0;
         }
 
-#if IS_DESKTOP
+        private static List<(string, List<PackageDependency>)> GetPackageDependencies(SimpleTestPackageContext package)
+        {
+            if (package.PerFrameworkDependencies.Count > 0 && package.Dependencies.Count > 0)
+            {
+                throw new ArgumentException("A package context can't have dependencies with and without a group. Please use only one.");
+            }
+            var packageDependencies = new List<(string, List<PackageDependency>)>();
+
+            if (package.PerFrameworkDependencies.Count > 0)
+            {
+                foreach (var dependencies in package.PerFrameworkDependencies)
+                {
+                    packageDependencies.Add((dependencies.Key.GetFrameworkString(), GetPackageDependencyList(dependencies.Value)));
+                }
+            }
+
+            if (package.Dependencies.Count > 0)
+            {
+                packageDependencies.Add((string.Empty, GetPackageDependencyList(package.Dependencies)));
+            }
+
+            return packageDependencies;
+        }
+
+        private static List<PackageDependency> GetPackageDependencyList(List<SimpleTestPackageContext> packages)
+        {
+            return packages.Select(e =>
+                new PackageDependency(
+                    e.Id,
+                    VersionRange.Parse(e.Version),
+                    string.IsNullOrEmpty(e.Include)
+                        ? new List<string>()
+                        : e.Include.Split(',').ToList(),
+                    string.IsNullOrEmpty(e.Exclude)
+                        ? new List<string>()
+                        : e.Exclude.Split(',').ToList())).ToList();
+        }
+
+#if IS_SIGNING_SUPPORTED
         private static SignPackageRequest GetPrimarySignRequest(SimpleTestPackageContext packageContext)
         {
             if (packageContext.V3ServiceIndexUrl != null)
@@ -465,6 +524,16 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public static async Task CreateFolderFeedV3WithNupkgMetadataAsync(string root, string nupkgMetadataSource, params SimpleTestPackageContext[] contexts)
+        {
+            using var tempRoot = TestDirectory.Create();
+            await CreatePackagesAsync(tempRoot, contexts);
+
+            var saveMode = PackageSaveMode.Nupkg | PackageSaveMode.Nuspec;
+
+            await CreateFolderFeedV3Async(root, nupkgMetadataSource, saveMode, Directory.GetFiles(tempRoot));
+        }
+
         /// <summary>
         /// Create a v3 folder of nupkgs
         /// </summary>
@@ -478,10 +547,15 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public static async Task CreateFolderFeedV3Async(string root, PackageSaveMode saveMode, params string[] nupkgPaths)
+        {
+            await CreateFolderFeedV3Async(root, nupkgMetadataSource: null, saveMode, nupkgPaths);
+        }
+
         /// <summary>
         /// Create a v3 folder of nupkgs
         /// </summary>
-        public static async Task CreateFolderFeedV3Async(string root, PackageSaveMode saveMode, params string[] nupkgPaths)
+        public static async Task CreateFolderFeedV3Async(string root, string nupkgMetadataSource, PackageSaveMode saveMode, params string[] nupkgPaths)
         {
             var pathResolver = new VersionFolderPathResolver(root);
 
@@ -499,7 +573,7 @@ namespace NuGet.Test.Utility
                     using (var fileStream = File.OpenRead(file))
                     {
                         await PackageExtractor.InstallFromSourceAsync(
-                            null,
+                            source: nupkgMetadataSource,
                             identity,
                             (stream) => fileStream.CopyToAsync(stream, 4096, CancellationToken.None),
                             new VersionFolderPathResolver(root),
@@ -514,8 +588,13 @@ namespace NuGet.Test.Utility
             }
         }
 
+        public static async Task CreateFolderFeedV3WithNupkgMetadataAsync(string root, string nupkgMetadataSource, PackageSaveMode saveMode, params string[] nupkgPaths)
+        {
+            await CreateFolderFeedV3Async(root, nupkgMetadataSource, saveMode, nupkgPaths);
+        }
+
         /// <summary>
-        /// Create a packagets.config folder of nupkgs
+        /// Create a packages.config folder of nupkgs
         /// </summary>
         public static async Task CreateFolderFeedPackagesConfigAsync(string root, params PackageIdentity[] packages)
         {
@@ -525,7 +604,7 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
-        /// Create a packagets.config folder of nupkgs
+        /// Create a packages.config folder of nupkgs
         /// </summary>
         public static async Task CreateFolderFeedPackagesConfigAsync(string root, params SimpleTestPackageContext[] contexts)
         {
@@ -538,7 +617,7 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
-        /// Create a packagets.config folder of nupkgs
+        /// Create a packages.config folder of nupkgs
         /// </summary>
         public static async Task CreateFolderFeedPackagesConfigAsync(string root, params string[] nupkgPaths)
         {
@@ -573,7 +652,7 @@ namespace NuGet.Test.Utility
         {
             foreach (var package in packages)
             {
-                var builder = new Packaging.PackageBuilder()
+                var builder = new PackageBuilder()
                 {
                     Id = package.Id,
                     Version = NuGetVersion.Parse(package.Version),
@@ -601,7 +680,8 @@ namespace NuGet.Test.Utility
         /// <param name="nupkgPath">Path to package file</param>
         public static Task DeleteNuspecFileFromPackageAsync(string nupkgPath)
         {
-            return Task.Run(() => {
+            return Task.Run(() =>
+            {
                 using (FileStream zipToOpen = new FileStream(nupkgPath, FileMode.Open))
                 {
                     using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update))
@@ -622,9 +702,16 @@ namespace NuGet.Test.Utility
             };
 
             string effectivePath;
-            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(name, out effectivePath);
             file.EffectivePath = effectivePath;
-            file.TargetFramework = fx;
+            if (fx != null)
+            {
+                file.NuGetFramework = fx;
+                if (fx.Version.Major < 5)
+                {
+                    file.TargetFramework = new FrameworkName(fx.DotNetFrameworkName);
+                }
+            }
 
             return file;
         }
@@ -638,6 +725,8 @@ namespace NuGet.Test.Utility
             public string Path { get; set; }
 
             public FrameworkName TargetFramework { get; set; }
+
+            public NuGetFramework NuGetFramework { get; set; }
 
             public MemoryStream Stream { get; set; }
 

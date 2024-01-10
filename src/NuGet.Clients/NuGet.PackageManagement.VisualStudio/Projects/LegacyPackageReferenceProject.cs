@@ -3,23 +3,26 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.PackageManagement.VisualStudio.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
@@ -30,20 +33,21 @@ namespace NuGet.PackageManagement.VisualStudio
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a legacy CSProj with package references.
     /// </summary>
-    public sealed class LegacyPackageReferenceProject : BuildIntegratedNuGetProject
+    public sealed class LegacyPackageReferenceProject : PackageReferenceProject<Dictionary<string, ProjectInstalledPackage>, KeyValuePair<string, ProjectInstalledPackage>>
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
 
-        private string _projectName;
-        private string _projectUniqueName;
-        private string _projectFullPath;
+        public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
             IVsProjectAdapter vsProjectAdapter,
             string projectId,
             INuGetProjectServices projectServices,
             IVsProjectThreadingService threadingService)
+            : base(vsProjectAdapter.ProjectName,
+                vsProjectAdapter.UniqueName,
+                vsProjectAdapter.FullProjectPath)
         {
             Assumes.Present(vsProjectAdapter);
             Assumes.NotNullOrEmpty(projectId);
@@ -53,46 +57,46 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapter = vsProjectAdapter;
             _threadingService = threadingService;
 
-            _projectName = _vsProjectAdapter.ProjectName;
-            _projectUniqueName = _vsProjectAdapter.UniqueName;
-            _projectFullPath = _vsProjectAdapter.FullProjectPath;
-
             ProjectStyle = ProjectStyle.PackageReference;
 
-            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, _projectName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, _projectUniqueName);
-            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, _projectFullPath);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.Name, ProjectName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, ProjectUniqueName);
+            InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, ProjectFullPath);
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectId);
 
             ProjectServices = projectServices;
         }
 
-        #region BuildIntegratedNuGetProject
-
-        public override string ProjectName => _projectName;
-
-        public override async Task<string> GetAssetsFilePathAsync()
+        public LegacyPackageReferenceProject(
+            IVsProjectAdapter vsProjectAdapter,
+            string projectId,
+            INuGetProjectServices projectServices,
+            IVsProjectThreadingService threadingService,
+            NuGetFramework targetFramework)
+            : this(vsProjectAdapter,
+                projectId,
+                projectServices,
+                threadingService)
         {
-            return await GetAssetsFilePathAsync(shouldThrow: true);
+            Assumes.NotNull(targetFramework);
+            TargetFramework = targetFramework;
         }
+
+        #region BuildIntegratedNuGetProject
 
         public override async Task<string> GetCacheFilePathAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: GetMSBuildProjectExtensionsPath());
+            return GetCacheFilePath(await GetMSBuildProjectExtensionsPathAsync());
         }
 
-        public override async Task<string> GetAssetsFilePathOrNullAsync()
+        private static string GetCacheFilePath(string msbuildProjectExtensionsPath)
         {
-            return await GetAssetsFilePathAsync(shouldThrow: false);
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: msbuildProjectExtensionsPath);
         }
 
-        private async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
+        protected override async Task<string> GetAssetsFilePathAsync(bool shouldThrow)
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var msbuildProjectExtensionsPath = GetMSBuildProjectExtensionsPath(shouldThrow);
-
+            var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync(shouldThrow);
             if (msbuildProjectExtensionsPath == null)
             {
                 return null;
@@ -105,13 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region IDependencyGraphProject
 
-        public override string MSBuildProjectPath => _projectFullPath;
-
-        public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
-        {
-            var (dgSpec, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
-            return dgSpec;
-        }
+        public override string MSBuildProjectPath => ProjectFullPath;
 
         public override async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
@@ -122,17 +120,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (packageSpec == null)
                 {
                     throw new InvalidOperationException(
-                        string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
+                        string.Format(CultureInfo.CurrentCulture, Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
                 }
-                context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
+                context?.PackageSpecCache.Add(ProjectFullPath, packageSpec);
             }
 
             return (new[] { packageSpec }, null);
-        }
-
-        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
-        {
-            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
@@ -167,12 +160,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         #region NuGetProject
 
-        public override async Task<IEnumerable<PackageReference>> GetInstalledPackagesAsync(CancellationToken token)
-        {
-            // Settings are not needed for this purpose, this only finds the installed packages
-            return GetPackageReferences(await GetPackageSpecAsync(NullSettings.Instance));
-        }
-
         public override async Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,
@@ -201,7 +188,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             EnvDTEProjectUtility.EnsureCheckedOutIfExists(_vsProjectAdapter.Project, _vsProjectAdapter.ProjectDirectory, filePath);
 
-            var isFileExistsInProject = await EnvDTEProjectUtility.ContainsFile(_vsProjectAdapter.Project, filePath);
+            var isFileExistsInProject = await EnvDTEProjectUtility.ContainsFileAsync(_vsProjectAdapter.Project, filePath);
 
             if (!isFileExistsInProject)
             {
@@ -211,51 +198,57 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddProjectItemAsync(string filePath)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             var folderPath = Path.GetDirectoryName(filePath);
             var fullPath = filePath;
 
-            if (filePath.Contains(_vsProjectAdapter.ProjectDirectory))
+            string projectDirectory = _vsProjectAdapter.ProjectDirectory;
+            if (filePath.Contains(projectDirectory))
             {
                 // folderPath should always be relative to ProjectDirectory so if filePath already contains
                 // ProjectDirectory then get a relative path and construct folderPath to get the appropriate
                 // ProjectItems from dte where you have to add this file.
-                var relativeLockFilePath = FileSystemUtility.GetRelativePath(_vsProjectAdapter.ProjectDirectory, filePath);
+                var relativeLockFilePath = FileSystemUtility.GetRelativePath(projectDirectory, filePath);
                 folderPath = Path.GetDirectoryName(relativeLockFilePath);
             }
             else
             {
                 // get the fullPath wrt ProjectDirectory
-                fullPath = FileSystemUtility.GetFullPath(_vsProjectAdapter.ProjectDirectory, filePath);
+                fullPath = FileSystemUtility.GetFullPath(projectDirectory, filePath);
             }
 
             var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists: true);
 
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             container.AddFromFileCopy(fullPath);
         }
 
-        public override async Task<bool> UninstallPackageAsync(
+        public override Task<bool> UninstallPackageAsync(
             PackageIdentity packageIdentity, INuGetProjectContext _, CancellationToken token)
         {
-            await ProjectServices.References.RemovePackageReferenceAsync(packageIdentity.Id);
+            return UninstallPackageAsync(packageIdentity.Id);
+        }
 
+        private async Task<bool> UninstallPackageAsync(string id)
+        {
+            await ProjectServices.References.RemovePackageReferenceAsync(id);
             return true;
         }
 
         #endregion
 
-        private string GetMSBuildProjectExtensionsPath(bool shouldThrow = true)
+        private async Task<string> GetMSBuildProjectExtensionsPathAsync(bool shouldThrow = true)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var msbuildProjectExtensionsPath = _vsProjectAdapter.MSBuildProjectExtensionsPath;
+            var msbuildProjectExtensionsPath = _vsProjectAdapter.GetMSBuildProjectExtensionsPath();
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
                 if (shouldThrow)
                 {
                     throw new InvalidDataException(string.Format(
+                        CultureInfo.CurrentCulture,
                         Strings.MSBuildPropertyNotFound,
                         ProjectBuildProperties.MSBuildProjectExtensionsPath,
                         _vsProjectAdapter.ProjectDirectory));
@@ -267,25 +260,37 @@ namespace NuGet.PackageManagement.VisualStudio
             return msbuildProjectExtensionsPath;
         }
 
+        private static string GetPropertySafe(IVsProjectBuildProperties projectBuildProperties, string propertyName)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var value = projectBuildProperties.GetPropertyValueWithDteFallback(propertyName);
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+            return value;
+        }
+
         private string GetPackagesPath(ISettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var packagePath = _vsProjectAdapter.RestorePackagesPath;
+            var packagePath = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesPath);
 
-            if (string.IsNullOrEmpty(packagePath))
+            if (string.IsNullOrWhiteSpace(packagePath))
             {
                 return SettingsUtility.GetGlobalPackagesFolder(settings);
             }
 
-            return UriUtility.GetAbsolutePathFromFile(_projectFullPath, packagePath);
+            return UriUtility.GetAbsolutePathFromFile(ProjectFullPath, packagePath);
         }
 
-        private IList<PackageSource> GetSources(ISettings settings, bool shouldThrow = true)
+        private IList<PackageSource> GetSources(ISettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var sources = MSBuildStringUtility.Split(_vsProjectAdapter.RestoreSources).AsEnumerable();
+            var sources = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreSources)).AsEnumerable();
 
             if (ShouldReadFromSettings(sources))
             {
@@ -297,16 +302,16 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add additional sources
-            sources = sources.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectSources));
+            sources = sources.Concat(MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreAdditionalProjectSources)));
 
-            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(_projectFullPath, e))).ToList();
+            return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e))).ToList();
         }
 
-        private IList<string> GetFallbackFolders(ISettings settings, bool shouldThrow = true)
+        private IList<string> GetFallbackFolders(ISettings settings)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var fallbackFolders = MSBuildStringUtility.Split(_vsProjectAdapter.RestoreFallbackFolders).AsEnumerable();
+            var fallbackFolders = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreFallbackFolders)).AsEnumerable();
 
             if (ShouldReadFromSettings(fallbackFolders))
             {
@@ -318,9 +323,9 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add additional fallback folders
-            fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(_vsProjectAdapter.RestoreAdditionalProjectFallbackFolders));
+            fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders)));
 
-            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(_projectFullPath, e)).ToList();
+            return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e)).ToList();
         }
 
         private static bool ShouldReadFromSettings(IEnumerable<string> values)
@@ -333,35 +338,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return settings.GetConfigFilePaths();
         }
 
-        private static PackageReference[] GetPackageReferences(PackageSpec packageSpec)
-        {
-            var frameworkSorter = new NuGetFrameworkSorter();
-
-            return packageSpec
-                .TargetFrameworks
-                .SelectMany(f => GetPackageReferences(f.Dependencies, f.FrameworkName))
-                .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, frameworkSorter).First())
-                .ToArray();
-        }
-
-        private static IEnumerable<PackageReference> GetPackageReferences(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework)
-        {
-            return libraries
-                .Where(l => l.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package)
-                .Select(l => ToPackageReference(l, targetFramework));
-        }
-
-        private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
-        {
-            // The VersionRange can be null when the PackageReference items are for a project opted in the central package version management.
-            var identity = new PackageIdentity(
-                library.LibraryRange.Name,
-                library.LibraryRange.VersionRange?.MinVersion);
-
-            return new PackageReference(identity, targetFramework);
-        }
-
         /// <summary>
         /// Emulates a JSON deserialization from project.json to PackageSpec in a post-project.json world
         /// </summary>
@@ -371,7 +347,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectReferences = await ProjectServices
                 .ReferencesReader
-                .GetProjectReferencesAsync(Common.NullLogger.Instance, CancellationToken.None);
+                .GetProjectReferencesAsync(NullLogger.Instance, CancellationToken.None);
 
             var targetFramework = await _vsProjectAdapter.GetTargetFrameworkAsync();
 
@@ -380,11 +356,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GetPackageReferencesAsync(targetFramework, CancellationToken.None))
                 .ToList();
 
-            var packageTargetFallback = MSBuildStringUtility.Split(_vsProjectAdapter.PackageTargetFallback)
+            var packageTargetFallback = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.PackageTargetFallback))
                 .Select(NuGetFramework.Parse)
                 .ToList();
 
-            var assetTargetFallback = MSBuildStringUtility.Split(_vsProjectAdapter.AssetTargetFallback)
+            var assetTargetFallback = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.AssetTargetFallback))
                 .Select(NuGetFramework.Parse)
                 .ToList();
 
@@ -394,42 +370,72 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dependencies = packageReferences,
             };
 
-            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+            bool isCpvmEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.ManagePackageVersionsCentrally));
             if (isCpvmEnabled)
             {
+                // Add the central version information and merge the information to the package reference dependencies
                 projectTfi.CentralPackageVersions.AddRange(await GetCentralPackageVersionsAsync());
+                LibraryDependency.ApplyCentralVersionInformation(projectTfi.Dependencies, projectTfi.CentralPackageVersions);
             }
 
             // Apply fallback settings
             AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
 
             // Build up runtime information.
-            var runtimes = await _vsProjectAdapter.GetRuntimeIdentifiersAsync();
-            var supports = await _vsProjectAdapter.GetRuntimeSupportsAsync();
+
+            var runtimes = GetRuntimeIdentifiers(
+                GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifier),
+                GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifiers));
+            var supports = GetRuntimeSupports(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeSupports));
             var runtimeGraph = new RuntimeGraph(runtimes, supports);
 
             // In legacy CSProj, we only have one target framework per project
             var tfis = new TargetFrameworkInformation[] { projectTfi };
 
-            var projectName = _projectName ?? _projectUniqueName;
+            var projectName = ProjectName ?? ProjectUniqueName;
 
+            string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.PackageId);
+
+            if (!string.IsNullOrWhiteSpace(specifiedPackageId))
+            {
+                projectName = specifiedPackageId;
+            }
+            else
+            {
+                string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.AssemblyName);
+
+                if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
+                {
+                    projectName = specifiedAssemblyName;
+                }
+            }
+
+            string enableAudit = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit);
+            string auditLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel);
+            string auditMode = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditMode);
+            RestoreAuditProperties auditProperties = !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel)
+                ? new RestoreAuditProperties()
+                {
+                    EnableAudit = enableAudit,
+                    AuditLevel = auditLevel,
+                    AuditMode = auditMode,
+                }
+                : null;
+
+            var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();
             return new PackageSpec(tfis)
             {
                 Name = projectName,
                 Version = new NuGetVersion(_vsProjectAdapter.Version),
-                Authors = new string[] { },
-                Owners = new string[] { },
-                Tags = new string[] { },
-                ContentFiles = new string[] { },
-                FilePath = _projectFullPath,
+                FilePath = ProjectFullPath,
                 RuntimeGraph = runtimeGraph,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
                     ProjectStyle = ProjectStyle.PackageReference,
-                    OutputPath = GetMSBuildProjectExtensionsPath(),
-                    ProjectPath = _projectFullPath,
+                    OutputPath = msbuildProjectExtensionsPath,
+                    ProjectPath = ProjectFullPath,
                     ProjectName = projectName,
-                    ProjectUniqueName = _projectFullPath,
+                    ProjectUniqueName = ProjectFullPath,
                     OriginalTargetFrameworks = tfis
                         .Select(tfi => tfi.FrameworkName.GetShortFolderName())
                         .ToList(),
@@ -441,22 +447,91 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                     },
                     SkipContentFileWrite = true,
-                    CacheFilePath = await GetCacheFilePathAsync(),
+                    CacheFilePath = GetCacheFilePath(msbuildProjectExtensionsPath),
                     PackagesPath = GetPackagesPath(settings),
                     Sources = GetSources(settings),
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
                     ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
-                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors,
-                        noWarn: _vsProjectAdapter.NoWarn,
-                        warningsAsErrors: _vsProjectAdapter.WarningsAsErrors),
+                        treatWarningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.TreatWarningsAsErrors),
+                        noWarn: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NoWarn),
+                        warningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsAsErrors),
+                        warningsNotAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsNotAsErrors)),
                     RestoreLockProperties = new RestoreLockProperties(
-                        await _vsProjectAdapter.GetRestorePackagesWithLockFileAsync(),
-                        await _vsProjectAdapter.GetNuGetLockFilePathAsync(),
-                        await _vsProjectAdapter.IsRestoreLockedAsync()),
-                    CentralPackageVersionsEnabled = isCpvmEnabled
+                        GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesWithLockFile),
+                        GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NuGetLockFilePath),
+                        MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreLockedMode))),
+                    CentralPackageVersionsEnabled = isCpvmEnabled,
+                    CentralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled).EqualsFalse(),
+                    CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
+                    CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled)),
+                    RestoreAuditProperties = auditProperties,
                 }
             };
+        }
+
+        internal static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(string unparsedRuntimeIdentifer, string unparsedRuntimeIdentifers)
+        {
+            var runtimes = Enumerable.Empty<string>();
+
+            if (unparsedRuntimeIdentifer != null)
+            {
+                runtimes = runtimes.Concat(new[] { unparsedRuntimeIdentifer });
+            }
+
+            if (unparsedRuntimeIdentifers != null)
+            {
+                runtimes = runtimes.Concat(unparsedRuntimeIdentifers.Split(';'));
+            }
+
+            runtimes = runtimes
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.Ordinal)
+                .Where(x => !string.IsNullOrEmpty(x));
+
+            return runtimes
+                .Select(runtime => new RuntimeDescription(runtime));
+        }
+
+        internal static IEnumerable<CompatibilityProfile> GetRuntimeSupports(string unparsedRuntimeSupports)
+        {
+            if (unparsedRuntimeSupports == null)
+            {
+                return Enumerable.Empty<CompatibilityProfile>();
+            }
+
+            return unparsedRuntimeSupports
+                .Split(';')
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Select(support => new CompatibilityProfile(support));
+        }
+
+        /// <inheritdoc/>
+        protected override Task<PackageSpec> GetPackageSpecAsync(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            return GetPackageSpecAsync(NullSettings.Instance);
+        }
+
+        protected override IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages)
+        {
+            return GetPackageReferences(libraries, targetFramework, installedPackages, targets);
+        }
+
+        protected override IReadOnlyList<PackageReference> ResolvedTransitivePackagesList(NuGetFramework targetFramework, IList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        {
+            return GetTransitivePackageReferences(targetFramework, installedPackages, transitivePackages, targets);
+        }
+
+        /// <inheritdoc/>
+        protected override Dictionary<string, ProjectInstalledPackage> GetCollectionCopy(Dictionary<string, ProjectInstalledPackage> collection) => new(collection);
+
+        public override Task<bool> UninstallPackageAsync(string packageId, BuildIntegratedInstallationContext _, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(packageId)) throw new ArgumentException(string.Format(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
+            return UninstallPackageAsync(packageId);
         }
     }
 }

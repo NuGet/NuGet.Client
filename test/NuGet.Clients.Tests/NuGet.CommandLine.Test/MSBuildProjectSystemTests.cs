@@ -3,17 +3,28 @@
 
 using System;
 using System.IO;
+using System.Security;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
     public class MSBuildProjectSystemTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public MSBuildProjectSystemTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         private class TestInfo : IDisposable
         {
             private readonly TestDirectory _projectDirectory;
@@ -22,10 +33,16 @@ namespace NuGet.CommandLine.Test
 
             public MSBuildProjectSystem MSBuildProjectSystem { get; }
 
-            public TestInfo(string projectFileContent, string projectName = "proj1")
+            public TestInfo(ITestOutputHelper testOutputHelper, string projectFileContent, string projectName = "proj1")
             {
+                var console = new Mock<IConsole>();
+
+                console.Setup(c => c.WriteLine(It.IsAny<string>(), It.IsAny<object[]>())).Callback<string, object[]>((format, args) => testOutputHelper.WriteLine(format, args));
+
+                console.SetupGet(c => c.Verbosity).Returns(Verbosity.Detailed);
+
                 _projectDirectory = TestDirectory.Create();
-                _msBuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
+                _msBuildDirectory = MsBuildUtility.GetMsBuildToolset(null, console.Object).Path;
                 _nuGetProjectContext = new TestNuGetProjectContext();
 
                 var projectFilePath = Path.Combine(_projectDirectory, projectName + ".csproj");
@@ -46,7 +63,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var projectFileContent = Util.CreateProjFileContent();
-            using (var testInfo = new TestInfo(projectFileContent))
+            using (var testInfo = new TestInfo(_testOutputHelper, projectFileContent))
             {
                 var expectedContent = "one two three";
                 using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(expectedContent)))
@@ -75,7 +92,7 @@ namespace NuGet.CommandLine.Test
                 references: null,
                 contentFiles: new[] { "a.js" });
 
-            using (var testInfo = new TestInfo(projectFileContent))
+            using (var testInfo = new TestInfo(_testOutputHelper, projectFileContent))
             {
                 var path = Path.Combine(testInfo.MSBuildProjectSystem.ProjectFullPath, "a.js");
                 var expectedContent = "one two three";
@@ -102,7 +119,7 @@ namespace NuGet.CommandLine.Test
                 references: null,
                 contentFiles: new[] { "a.js" });
 
-            using (var testInfo = new TestInfo(projectFileContent))
+            using (var testInfo = new TestInfo(_testOutputHelper, projectFileContent))
             {
                 var path = Path.Combine(testInfo.MSBuildProjectSystem.ProjectFullPath, "a.js");
                 var expectedContent = "one two three";
@@ -134,7 +151,7 @@ namespace NuGet.CommandLine.Test
   </Target>
 </Project>";
 
-            using (var testInfo = new TestInfo(projectFileContent))
+            using (var testInfo = new TestInfo(_testOutputHelper, projectFileContent))
             {
                 var targetFullPath = Path.Combine(testInfo.MSBuildProjectSystem.ProjectFullPath, import);
 
@@ -164,7 +181,7 @@ namespace NuGet.CommandLine.Test
   </Target>
 </Project>";
 
-            using (var testInfo = new TestInfo(projectFileContent))
+            using (var testInfo = new TestInfo(_testOutputHelper, projectFileContent))
             {
                 var targetFullPath = Path.Combine(testInfo.MSBuildProjectSystem.ProjectFullPath, import);
 

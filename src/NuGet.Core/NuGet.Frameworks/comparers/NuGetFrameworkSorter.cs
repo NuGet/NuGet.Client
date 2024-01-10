@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,18 +11,18 @@ namespace NuGet.Frameworks
     /// The order is not particularly useful here beyond making things deterministic
     /// since it compares completely different frameworks.
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class NuGetFrameworkSorter : IComparer<NuGetFramework>
+    public class NuGetFrameworkSorter : IComparer<NuGetFramework>
     {
+#pragma warning disable CS0618 // Type or member is obsolete
+        public static NuGetFrameworkSorter Instance { get; } = new();
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        [Obsolete("Use Instance singleton instead")]
         public NuGetFrameworkSorter()
         {
         }
 
-        public int Compare(NuGetFramework x, NuGetFramework y)
+        public int Compare(NuGetFramework? x, NuGetFramework? y)
         {
             if (ReferenceEquals(x, y))
             {
@@ -81,6 +81,20 @@ namespace NuGet.Frameworks
             }
 
             result = StringComparer.OrdinalIgnoreCase.Compare(x.Profile, y.Profile);
+
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = StringComparer.OrdinalIgnoreCase.Compare(x.Platform, y.Platform);
+
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = x.PlatformVersion.CompareTo(y.PlatformVersion);
 
             if (result != 0)
             {

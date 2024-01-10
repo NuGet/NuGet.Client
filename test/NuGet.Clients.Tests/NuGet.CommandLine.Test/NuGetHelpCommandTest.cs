@@ -8,33 +8,39 @@ namespace NuGet.CommandLine.Test
     public class NuGetHelpCommandTest
     {
         [Theory]
+        [InlineData("add")]
+        [InlineData("client-certs")]
         [InlineData("config")]
         [InlineData("delete")]
+        [InlineData("help")]
+        [InlineData("init")]
         [InlineData("install")]
         [InlineData("list")]
+        [InlineData("locals")]
         [InlineData("pack")]
         [InlineData("push")]
         [InlineData("restore")]
+        [InlineData("search")]
         [InlineData("setApiKey")]
+        [InlineData("sign")]
         [InlineData("sources")]
         [InlineData("spec")]
+        [InlineData("trusted-signers")]
         [InlineData("update")]
-        [InlineData("init")]
-        [InlineData("add")]
+        [InlineData("verify")]
         public void HelpCommand_HelpMessage(string command)
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
-                "help " + command,
-                waitForExit: true);
+                "help " + command);
 
             // Assert
-            Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+            Assert.True(0 == r.ExitCode, r.Output + Environment.NewLine + r.Errors);
         }
 
         // Tests that -ConfigFile is not included in the help message
@@ -42,24 +48,40 @@ namespace NuGet.CommandLine.Test
         public void HelpCommand_SpecCommand()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
+            string nugetexe = Util.GetNuGetExePath();
 
             // Act
-            var r = CommandRunner.Run(
+            CommandRunnerResult r = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
-                "help spec",
-                waitForExit: true);
+                "help spec");
 
             // Assert
-            Assert.Equal(0, r.Item1);
-            Assert.DoesNotContain("-ConfigFile", r.Item2, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal(0, r.ExitCode);
+            Assert.DoesNotContain("-ConfigFile", r.Output, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
         public void HelpCommand_Failure_InvalidArguments()
         {
-            Util.TestCommandInvalidArguments("help aCommand otherCommand");
+            Util.TestCommandInvalidArguments("help aCommand otherCommand -ForceEnglishOutput");
+        }
+
+        [Fact]
+        public void HelpCommand_Help_ContainsLocalizedOption()
+        {
+            // Arrange
+            string nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            CommandRunnerResult r = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                "help help -ForceEnglishOutput");
+
+            // Assert
+            Assert.Equal(0, r.ExitCode);
+            Assert.Contains("Show command help and usage information.", r.Output);
         }
     }
 }

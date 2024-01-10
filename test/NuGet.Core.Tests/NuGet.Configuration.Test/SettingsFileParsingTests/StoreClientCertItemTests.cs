@@ -65,7 +65,7 @@ namespace NuGet.Configuration.Test
         [InlineData("root", StoreName.Root)]
         [InlineData("trustedPeople", StoreName.TrustedPeople)]
         [InlineData("trustedPublisher", StoreName.TrustedPublisher)]
-        public void StoreClientCert_StoreName_ParsedCorrectly(string stringValue, object value)
+        public void StoreClientCert_StoreName_ParsedCorrectly(string stringValue, StoreName value)
         {
             // Arrange
             var config = $@"
@@ -104,7 +104,7 @@ namespace NuGet.Configuration.Test
         [Theory]
         [InlineData("currentUser", StoreLocation.CurrentUser)]
         [InlineData("localMachine", StoreLocation.LocalMachine)]
-        public void StoreClientCert_StoreLocation_ParsedCorrectly(string stringValue, object value)
+        public void StoreClientCert_StoreLocation_ParsedCorrectly(string stringValue, StoreLocation value)
         {
             // Arrange
             var config = $@"
@@ -156,7 +156,7 @@ namespace NuGet.Configuration.Test
         [InlineData("extension", X509FindType.FindByExtension)]
         [InlineData("keyUsage", X509FindType.FindByKeyUsage)]
         [InlineData("subjectKeyIdentifier", X509FindType.FindBySubjectKeyIdentifier)]
-        public void StoreClientCert_FindBy_ParsedCorrectly(string stringValue, object value)
+        public void StoreClientCert_FindBy_ParsedCorrectly(string stringValue, X509FindType value)
         {
             // Arrange
             var config = $@"

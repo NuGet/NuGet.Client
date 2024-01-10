@@ -51,6 +51,9 @@ project.json text
 *.sql   text
 *.vb    text
 
+# Unix artifacts
+*.sh text eol=lf
+
 # Visual Studio artifacts
 *.csproj text eol=crlf
 *.dbproj text eol=crlf
@@ -64,7 +67,8 @@ project.json text
 *.vcxproj text eol=crlf
 
 # Denote all files that are truly binary and should not be modified.
-*.jpg  	binary
-*.png 	binary
 *.gif 	binary
+*.jpg  	binary
+*.pem   binary
+*.png 	binary
 *.zip   binary

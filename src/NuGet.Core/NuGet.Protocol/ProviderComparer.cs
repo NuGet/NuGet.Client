@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,9 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     internal class ProviderComparer : IComparer<INuGetResourceProvider>
     {
-        public ProviderComparer()
+        public static ProviderComparer Instance { get; } = new();
+
+        private ProviderComparer()
         {
         }
 

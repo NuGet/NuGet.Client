@@ -221,7 +221,7 @@ namespace NuGet.Commands.Test
 
             var logs = UnexpectedDependencyMessages.GetMissingLowerBounds(targetGraphs, ignore).ToList();
 
-            logs.Select(e => e.Message).ShouldBeEquivalentTo(new[]
+            logs.Select(e => e.Message).Should().BeEquivalentTo(new[]
             {
                 "x 9.0.0 does not provide an inclusive lower bound for dependency b (<= 5.0.0). An approximate best match of b 2.0.0 was resolved.",
                 "y 8.0.0 does not provide an inclusive lower bound for dependency b (> 1.0.0 && <= 6.0.0). An approximate best match of b 3.0.0 was resolved."
@@ -457,7 +457,7 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetBumpedUpDependencies(indexedGraphs, project, ignore).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1601);
-            log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
+            log.TargetGraphs.Should().BeEquivalentTo(new[] { "net46/win10" });
             log.Message.Should().Be("Dependency specified was x (>= 1.0.0) but ended up with X 2.0.0.");
         }
 
@@ -496,7 +496,7 @@ namespace NuGet.Commands.Test
 
             var log = UnexpectedDependencyMessages.GetMissingLowerBounds(targetGraphs, ignore).Single();
 
-            log.TargetGraphs.ShouldBeEquivalentTo(new[] { "net46/win10" });
+            log.TargetGraphs.Should().BeEquivalentTo(new[] { "net46/win10" });
             log.Code.Should().Be(NuGetLogCode.NU1602);
         }
 
@@ -514,10 +514,10 @@ namespace NuGet.Commands.Test
 
             var logs = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project);
 
-            logs.Select(e => e.Code).ShouldAllBeEquivalentTo(NuGetLogCode.NU1604);
-            logs.Select(e => e.Level).ShouldAllBeEquivalentTo(LogLevel.Warning);
+            logs.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1604);
+            logs.Select(e => e.Level).Should().AllBeEquivalentTo(LogLevel.Warning);
             logs.Select(e => e.Message)
-                .ShouldBeEquivalentTo(new[]
+                .Should().BeEquivalentTo(new[]
                 {
                     "Project dependency x (< 2.0.0) does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.",
                     "Project dependency y (< 3.0.0) does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results."
@@ -581,7 +581,7 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1604);
-            log.TargetGraphs.ShouldBeEquivalentTo(new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName, NuGetFramework.Parse("net46").DotNetFrameworkName });
+            log.TargetGraphs.Should().BeEquivalentTo(new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName, NuGetFramework.Parse("net46").DotNetFrameworkName });
         }
 
         [Fact]
@@ -600,13 +600,13 @@ namespace NuGet.Commands.Test
             var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1604);
-            log.TargetGraphs.ShouldBeEquivalentTo(
+            log.TargetGraphs.Should().BeEquivalentTo(
                 new[] { NuGetFramework.Parse("netstandard2.0").DotNetFrameworkName },
                 "net46 contains a valid range that should be filtered out");
         }
 
         [Fact]
-        public void GivenAProjectWithADependencyOnAPackageWithANullRanageVerifyWarningMessage()
+        public void GivenAProjectWithADependencyOnAPackageWithANullRangeVerifyWarningMessage()
         {
             var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", null, LibraryDependencyTarget.Package));
             var project = new PackageSpec(tfi)
@@ -614,10 +614,10 @@ namespace NuGet.Commands.Test
                 Name = "proj"
             };
 
-            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingLowerBounds(project).Single();
+            var log = UnexpectedDependencyMessages.GetProjectDependenciesMissingVersion(project).Single();
 
             log.Code.Should().Be(NuGetLogCode.NU1604);
-            log.Message.Should().Be("Project dependency x does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results.");
+            log.Message.Should().Be("Project dependency 'x' does not specify a version. Include a version for the dependency to ensure consistent restore results.");
         }
 
         [Fact]
@@ -881,6 +881,41 @@ namespace NuGet.Commands.Test
         public void GivenTheAllRangeVerifyLowerBoundMissingIsTrue()
         {
             UnexpectedDependencyMessages.HasMissingLowerBound(VersionRange.All).Should().BeTrue();
+        }
+
+        [Fact]
+        public async Task GivenAProjectHasPackageWithEmptyVersionRangeLogNullVersionWarning()
+        {
+            var testLogger = new TestLogger();
+            var tfi = GetTFI(NuGetFramework.Parse("net46"), new LibraryRange("x", null, LibraryDependencyTarget.Package));
+            var project = new PackageSpec(tfi)
+            {
+                Name = "proj"
+            };
+            var flattened = new HashSet<GraphItem<RemoteResolveResult>>
+            {
+                new GraphItem<RemoteResolveResult>(new LibraryIdentity("X", NuGetVersion.Parse("2.0.0"), LibraryType.Package))
+            };
+            var targetGraph = new Mock<IRestoreTargetGraph>();
+            targetGraph.SetupGet(e => e.Flattened).Returns(flattened);
+            targetGraph.SetupGet(e => e.TargetGraphName).Returns("net46/win10");
+            targetGraph.SetupGet(e => e.Framework).Returns(NuGetFramework.Parse("net46"));
+            var parent = new LibraryIdentity("z", NuGetVersion.Parse("9.0.0"), LibraryType.Package);
+            var child = new LibraryIdentity("x", NuGetVersion.Parse("2.5.0"), LibraryType.Package);
+            var dependency = new ResolvedDependencyKey(parent, null, child);
+            var dependencySet = new HashSet<ResolvedDependencyKey>() { dependency };
+            targetGraph.SetupGet(e => e.ResolvedDependencies).Returns(dependencySet);
+            var targetGraphs = new[] { targetGraph.Object };
+
+            await UnexpectedDependencyMessages.LogAsync(targetGraphs, project, testLogger);
+
+            testLogger.LogMessages.Select(e => e.Code).Should().Contain(NuGetLogCode.NU1604);
+            testLogger.LogMessages.Where(e => e.Code == NuGetLogCode.NU1604).Should().HaveCount(1);
+            testLogger.LogMessages.Where(e => e.Code == NuGetLogCode.NU1604).Select(e => e.Message)
+                .First().Should().Be("Project dependency 'x' does not specify a version. Include a version for the dependency to ensure consistent restore results.");
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1601);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1602);
+            testLogger.LogMessages.Select(e => e.Code).Should().NotContain(NuGetLogCode.NU1603);
         }
 
         private static List<LibraryDependency> GetDependencyList(LibraryRange range)

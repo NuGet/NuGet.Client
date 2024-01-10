@@ -51,7 +51,10 @@ namespace NuGet.Packaging.Xml
             }
             if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
-                elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                if (metadata.EmitRequireLicenseAcceptance)
+                {
+                    elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                }
                 var licenseUrlToWrite = metadata.LicenseUrl?.ToString();
                 if (metadata.LicenseMetadata != null)
                 {
@@ -66,8 +69,8 @@ namespace NuGet.Packaging.Xml
                     }
                 }
                 AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
-
                 AddElementIfNotNull(elem, ns, "icon", metadata.Icon);
+                AddElementIfNotNull(elem, ns, "readme", metadata.Readme);
             }
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);

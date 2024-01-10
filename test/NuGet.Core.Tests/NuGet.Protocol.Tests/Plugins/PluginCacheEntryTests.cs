@@ -12,6 +12,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests.Plugins
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class PluginCacheEntryTests
     {
         [Fact]
@@ -36,6 +37,7 @@ namespace NuGet.Protocol.Tests.Plugins
                 var entry = new PluginCacheEntry(testDirectory.Path, pluginPath, url);
                 entry.LoadFromFile();
 
+                // This is the length of two truncated hashes and two "\" and ".dat", so it's 40 * 2 + 6 = 86
                 Assert.Equal(86, entry.CacheFileName.Length - testDirectory.Path.Length);
                 // This makes it about as long as http cache which is more important.
                 // The http cache is 40 + 1 + [1,32] + packageName

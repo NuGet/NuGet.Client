@@ -1,27 +1,15 @@
-﻿<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-  
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <SkipShared>true</SkipShared>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>GenerateLicenseList</AssemblyName>
     <Description>A utility for updating the NuGet license list from the SPDX source.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.Runtime.Loader" />
     <PackageReference Include="Microsoft.CodeAnalysis" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
-
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
-
-  <!-- There are some conflicts that are impossible to resolve because of missing package versions-->
-  <ItemGroup Condition=" '$(SkipCentralPackageVersions)' != 'true' ">
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.0.0" />
-  </ItemGroup>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

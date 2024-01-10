@@ -16,7 +16,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class SignedPackageArchiveUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class SignedPackageArchiveUtilityTests
     {
         private static readonly byte[] _signatureFileName = Encoding.ASCII.GetBytes(SigningSpecifications.V1.SignaturePath);
         private readonly CertificatesFixture _fixture;
@@ -257,7 +258,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task RemoveRepositorySignaturesAsync_WithNullInput_Throws()
         {
@@ -542,7 +543,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private sealed class RemoveTest : IDisposable
         {
             private bool _isDisposed;

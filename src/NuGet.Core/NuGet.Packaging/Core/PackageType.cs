@@ -48,7 +48,7 @@ namespace NuGet.Packaging.Core
             {
                 return true;
             }
-            
+
             if (((object)a == null) || ((object)b == null))
             {
                 return false;

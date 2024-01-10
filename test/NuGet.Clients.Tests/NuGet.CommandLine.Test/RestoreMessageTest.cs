@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
@@ -93,18 +93,18 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
                 // Assert
                 Assert.NotNull(lockFileObj);
                 Assert.Equal(1, lockFileObj.LogMessages.Count());
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", 
-                    lockFileObj.LogMessages.First().Message, 
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0",
+                    lockFileObj.LogMessages.First().Message,
                     StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0", 
-                    output, 
+                Assert.Contains("Detected package downgrade: i from 9.0.0 to 1.0.0",
+                    output,
                     StringComparison.OrdinalIgnoreCase);
             }
         }
@@ -132,18 +132,18 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
                 var reader = new LockFileFormat();
                 var lockFileObj = reader.Read(projectA.AssetsFileOutputPath);
 
                 // Assert
                 Assert.NotNull(lockFileObj);
                 Assert.Equal(1, lockFileObj.LogMessages.Count());
-                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source", 
-                    lockFileObj.LogMessages.First().Message, 
+                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source",
+                    lockFileObj.LogMessages.First().Message,
                     StringComparison.OrdinalIgnoreCase);
-                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source", 
-                    output, 
+                Assert.Contains("Unable to find package b. No packages exist with this id in source(s): source",
+                    output,
                     StringComparison.OrdinalIgnoreCase);
             }
         }
@@ -176,7 +176,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var r = Util.Restore(pathContext, projectA.ProjectPath, expectedExitCode: 1);
-                var output = r.Item2 + " " + r.Item3;
+                var output = r.Output + " " + r.Errors;
 
                 // Assert
                 Assert.Contains("NU1401", output, StringComparison.OrdinalIgnoreCase);

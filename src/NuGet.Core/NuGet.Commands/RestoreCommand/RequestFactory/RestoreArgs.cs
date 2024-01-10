@@ -12,7 +12,6 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -28,7 +27,7 @@ namespace NuGet.Commands
 
         public bool DisableParallel { get; set; }
 
-        public bool AllowNoOp {get; set;}
+        public bool AllowNoOp { get; set; }
 
         public HashSet<string> Runtimes { get; set; } = new HashSet<string>(StringComparer.Ordinal);
 
@@ -39,7 +38,7 @@ namespace NuGet.Commands
         public SourceCacheContext CacheContext { get; set; }
 
         public ILogger Log { get; set; }
-        
+
         /// <summary>
         /// Sources to use for restore. This is not used if SourceRepositories contains the 
         /// already built SourceRepository objects.
@@ -71,6 +70,8 @@ namespace NuGet.Commands
         /// </summary>
         public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
 
+        public IRestoreProgressReporter ProgressReporter { get; set; }
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);
@@ -86,7 +87,7 @@ namespace NuGet.Commands
                 return _settingsCache.GetOrAdd(projectDirectory, (dir) =>
                 {
                     return Settings.LoadDefaultSettings(dir,
-                        configFileName : null,
+                        configFileName: null,
                         machineWideSettings: MachineWideSettings);
                 });
             }
@@ -133,7 +134,7 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(settings));
             }
             var values = settings.GetConfigRoots();
-            if(dgSpecSources != null)
+            if (dgSpecSources != null)
             {
                 values.AddRange(dgSpecSources.Select(e => e.Source));
             }
@@ -150,7 +151,7 @@ namespace NuGet.Commands
 #pragma warning restore CS0618 // Type or member is obsolete
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
             var sourceObjects = new Dictionary<string, PackageSource>();
-            for(var i = 0; i < dgSpecSources.Count; i++)
+            for (var i = 0; i < dgSpecSources.Count; i++)
             {
                 sourceObjects[dgSpecSources[i].Source] = dgSpecSources[i];
             }
@@ -164,7 +165,7 @@ namespace NuGet.Commands
                     sourceObjects[sourceUri] = new PackageSource(sourceUri);
                 }
             }
-            
+
             // Use PackageSource objects from the provider when possible (since those will have credentials from nuget.config)
             foreach (var source in packageSourcesFromProvider)
             {
@@ -196,7 +197,8 @@ namespace NuGet.Commands
                 request.LockFilePath = ProjectJsonPathUtilities.GetLockFilePath(request.Project.FilePath);
             }
 
-            if (request.Project.RestoreMetadata?.CacheFilePath == null) {
+            if (request.Project.RestoreMetadata?.CacheFilePath == null)
+            {
                 request.Project.RestoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetCacheFilePath(request);
             }
 

@@ -71,7 +71,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            _content.Value = string.Join(OwnersListSeparator.ToString(), Content);
+            _content.Value = string.Join(OwnersListSeparator.ToString(CultureInfo.CurrentCulture), Content);
 
             var element = new XElement(ElementName, _content.AsXNode());
 
@@ -116,7 +116,7 @@ namespace NuGet.Configuration
                 XElementUtility.RemoveIndented(_content.Node);
                 Content = owners.Content;
 
-                _content = new SettingText(string.Join(OwnersListSeparator.ToString(), Content));
+                _content = new SettingText(string.Join(OwnersListSeparator.ToString(CultureInfo.CurrentCulture), Content));
 
                 if (Origin != null)
                 {

@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Signing
             return Task.FromResult(VerifyAllowList(package, signature, settings));
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private PackageVerificationResult VerifyAllowList(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var treatIssuesAsErrors = !settings.AllowUntrusted;
@@ -118,7 +118,7 @@ namespace NuGet.Packaging.Signing
                                         return true;
                                     }
                                 }
-                                else 
+                                else
                                 {
                                     return true;
                                 }
@@ -164,7 +164,7 @@ namespace NuGet.Packaging.Signing
                 fingerprintString = CertificateUtility.GetHashString(signature.SignerInfo.Certificate, fingerprintAlgorithm);
                 CertificateFingerprintLookUp[fingerprintAlgorithm] = fingerprintString;
             }
-            
+
             return fingerprintString;
         }
 

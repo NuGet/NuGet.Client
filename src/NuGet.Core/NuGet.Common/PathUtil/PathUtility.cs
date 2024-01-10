@@ -15,9 +15,13 @@ namespace NuGet.Common
         private static readonly Lazy<bool> _isFileSystemCaseInsensitive = new Lazy<bool>(CheckIfFileSystemIsCaseInsensitive);
 
         /// <summary>
-        /// Returns OrdinalIgnoreCase windows and mac. Ordinal for linux.
+        /// Returns OrdinalIgnoreCase Windows and Mac. Ordinal for Linux. (Do not use with package paths)
         /// </summary>
         /// <returns></returns>
+        /// <remarks>
+        /// This method should not be used with package paths.
+        /// Package paths are always case sensitive, using this with package paths leads to bugs like https://github.com/NuGet/Home/issues/9817.
+        /// </remarks>
         public static StringComparer GetStringComparerBasedOnOS()
         {
             if (IsFileSystemCaseInsensitive)
@@ -29,9 +33,13 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Returns OrdinalIgnoreCase windows and mac. Ordinal for linux.
+        /// Returns OrdinalIgnoreCase Windows and Mac. Ordinal for Linux. (Do not use with package paths)
         /// </summary>
         /// <returns></returns>
+        /// <remarks>
+        /// This method should not be used with package paths.
+        /// Package paths are always case sensitive, using this with package paths leads to bugs like https://github.com/NuGet/Home/issues/9817.
+        /// </remarks>
         public static StringComparison GetStringComparisonBasedOnOS()
         {
             if (IsFileSystemCaseInsensitive)
@@ -78,7 +86,12 @@ namespace NuGet.Common
             }
 
             // Leave the path unchanged.
+#pragma warning disable CS8603 // Possible null reference return.
+            // It would be a breaking change to remove the path != null in the if statement above, but a lot of
+            // existing code doesn't check the return code for nulls. So, we'll annotate as not accepting null
+            // but leave the code, and we can reconsider once every project has nullable checks enabled.
             return path;
+#pragma warning restore CS8603 // Possible null reference return.
         }
 
         public static string EnsureTrailingSlash(string path)
@@ -95,7 +108,7 @@ namespace NuGet.Common
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // if the path is empty, we want to return the original string instead of a single trailing character.
@@ -108,7 +121,7 @@ namespace NuGet.Common
             // In that case we replace this path separator.
             else if (HasTrailingDirectorySeparator(path))
             {
-                return path.Substring(0, path.Length - 1) +  trailingCharacter;
+                return path.Substring(0, path.Length - 1) + trailingCharacter;
             }
 
             return path + trailingCharacter;
@@ -130,7 +143,7 @@ namespace NuGet.Common
             return candidate.StartsWith(dir, StringComparison.OrdinalIgnoreCase);
         }
 
-        public static bool HasTrailingDirectorySeparator(string path)
+        public static bool HasTrailingDirectorySeparator(string? path)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -138,7 +151,7 @@ namespace NuGet.Common
             }
             else
             {
-                return IsDirectorySeparatorChar(path[path.Length - 1]);
+                return IsDirectorySeparatorChar(path![path.Length - 1]);
             }
         }
 
@@ -155,10 +168,14 @@ namespace NuGet.Common
                 return ch == Path.DirectorySeparatorChar;
             }
         }
-        
+
         public static void EnsureParentDirectory(string filePath)
         {
-            string directory = Path.GetDirectoryName(filePath);
+            string? directory = Path.GetDirectoryName(filePath);
+            if (directory is null)
+            {
+                throw new ArgumentException(paramName: filePath, message: "Path.GetDirectoryName(filePath) returned null");
+            }
             if (!Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -229,30 +246,35 @@ namespace NuGet.Common
                 ++index;
             }
 
-            var path = "";
-
             // check if path2 ends with a non-directory separator and if path1 has the same non-directory at the end
             if (len1 + 1 == len2 && !string.IsNullOrEmpty(path1Segments[index]) &&
                 string.Equals(path1Segments[index], path2Segments[index], compare))
             {
-                return path;
+                return string.Empty;
             }
 
+            var path = StringBuilderPool.Shared.Rent(256);
+
+            const string twoDots = "..";
             for (var i = index; len1 > i; ++i)
             {
-                path += ".." + separator;
+                path.Append(twoDots);
+                path.Append(separator);
             }
+
             for (var i = index; len2 - 1 > i; ++i)
             {
-                path += path2Segments[i] + separator;
+                path.Append(path2Segments[i]);
+                path.Append(separator);
             }
+
             // if path2 doesn't end with an empty string it means it ended with a non-directory name, so we add it back
             if (!string.IsNullOrEmpty(path2Segments[len2 - 1]))
             {
-                path += path2Segments[len2 - 1];
+                path.Append(path2Segments[len2 - 1]);
             }
 
-            return path;
+            return StringBuilderPool.Shared.ToStringAndReturn(path);
         }
 
         public static string GetAbsolutePath(string basePath, string relativePath)
@@ -274,7 +296,12 @@ namespace NuGet.Common
         public static string GetDirectoryName(string path)
         {
             path = path.TrimEnd(Path.DirectorySeparatorChar);
-            return path.Substring(Path.GetDirectoryName(path).Length).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string? fullDirectoryPath = Path.GetDirectoryName(path);
+            if (fullDirectoryPath is null)
+            {
+                throw new ArgumentException(paramName: nameof(path), message: "Path.GetDirectoryName(path) returned null");
+            }
+            return path.Substring(fullDirectoryPath.Length).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
         public static string GetPathWithBackSlashes(string path)
@@ -311,7 +338,7 @@ namespace NuGet.Common
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // The and [ the ] characters are interpreted as wildcard delimiters. Escape them first.
@@ -333,12 +360,12 @@ namespace NuGet.Common
             if (maxWidth < 6)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Argument_Must_Be_GreaterThanOrEqualTo, 6);
-                throw new ArgumentOutOfRangeException("maxWidth", message);
+                throw new ArgumentOutOfRangeException(nameof(maxWidth), message);
             }
 
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (path.Length <= maxWidth)
@@ -353,6 +380,10 @@ namespace NuGet.Common
             folder = Path.DirectorySeparatorChar + folder + Path.DirectorySeparatorChar;
 
             var root = Path.GetPathRoot(path);
+            if (root is null)
+            {
+                throw new ArgumentException(paramName: nameof(path), message: "Path.GetPathRoot(path) returned null");
+            }
             var remainingWidth = maxWidth - root.Length - 3; // 3 = length(ellipsis)
 
             // is the directory name too big? 
@@ -377,11 +408,11 @@ namespace NuGet.Common
         {
             if (basePath == null)
             {
-                throw new ArgumentNullException("basePath");
+                throw new ArgumentNullException(nameof(basePath));
             }
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             basePath = basePath.TrimEnd(Path.DirectorySeparatorChar);
             return path.StartsWith(basePath, StringComparison.OrdinalIgnoreCase);
@@ -397,7 +428,7 @@ namespace NuGet.Common
             return path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
-        public static ZipArchiveEntry GetEntry(ZipArchive archive, string path)
+        public static ZipArchiveEntry? GetEntry(ZipArchive archive, string path)
         {
             return archive.Entries.SingleOrDefault(
                     z => string.Equals(
@@ -429,43 +460,39 @@ namespace NuGet.Common
                 var isCaseInsensitive = true;
                 foreach (var path in listOfPathsToCheck)
                 {
-                    bool ignore;
-                    var result = CheckCaseSenstivityRecursivelyTillDirectoryExists(path, out ignore);
-                    if (!ignore)
+                    string? firstParentDirectory = GetFirstParentDirectoryThatExists(path);
+                    if (firstParentDirectory is not null)
                     {
-                        isCaseInsensitive &= result;
+                        isCaseInsensitive &= CheckIfFileSystemIsCaseInsensitive(firstParentDirectory);
                     }
                 }
                 return isCaseInsensitive;
             }
         }
 
-        private static bool CheckCaseSenstivityRecursivelyTillDirectoryExists(string path, out bool ignoreResult)
+        private static string? GetFirstParentDirectoryThatExists(string path)
         {
-            var parentDirectoryFound = true;
-            path = Path.GetFullPath(path);
-            ignoreResult = true;
-            while (true)
+            string? parentDirectory = Path.GetFullPath(path);
+            while (parentDirectory != null)
             {
-                if (path.Length <= 1)
+                if (Directory.Exists(parentDirectory))
                 {
-                    ignoreResult = true;
-                    parentDirectoryFound = false;
-                    break;
+                    return parentDirectory;
                 }
-                if (Directory.Exists(path))
+                else
                 {
-                    ignoreResult = false;
-                    break;
+                    parentDirectory = Path.GetDirectoryName(parentDirectory);
                 }
-                path = Path.GetDirectoryName(path);
             }
 
-            if (parentDirectoryFound)
-            {
-                return Directory.Exists(path.ToLowerInvariant()) && Directory.Exists(path.ToUpperInvariant());
-            }
-            return false;
+            return null;
+        }
+
+        private static bool CheckIfFileSystemIsCaseInsensitive(string path)
+        {
+#pragma warning disable CA1308 // Normalize strings to uppercase
+            return Directory.Exists(path.ToLowerInvariant()) && Directory.Exists(path.ToUpperInvariant());
+#pragma warning restore CA1308 // Normalize strings to uppercase
         }
 
         public static string StripLeadingDirectorySeparators(string filename)
@@ -473,7 +500,7 @@ namespace NuGet.Common
             filename = GetPathWithForwardSlashes(filename);
             var currentDirectoryPath = $"./";
 
-            if (filename.StartsWith(currentDirectoryPath))
+            if (filename.StartsWith(currentDirectoryPath, PathUtility.GetStringComparisonBasedOnOS()))
             {
                 filename = filename.Substring(currentDirectoryPath.Length);
             }

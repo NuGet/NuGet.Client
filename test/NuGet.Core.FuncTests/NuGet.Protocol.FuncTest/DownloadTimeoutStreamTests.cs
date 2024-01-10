@@ -89,7 +89,7 @@ namespace NuGet.Core.FuncTest
             await VerifyFailureOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
         }
 
-       
+
         public async Task VerifyFailureOnReadAsync(Func<Stream, Task<string>> readAsync)
         {
             // Arrange

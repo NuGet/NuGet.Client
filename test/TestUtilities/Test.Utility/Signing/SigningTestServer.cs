@@ -14,14 +14,14 @@ namespace Test.Utility.Signing
     public sealed class SigningTestServer : ISigningTestServer, IDisposable
     {
         private readonly ConcurrentDictionary<string, IHttpResponder> _responders = new ConcurrentDictionary<string, IHttpResponder>();
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private readonly HttpListener _listener;
         private bool _isDisposed;
 #endif
 
         public Uri Url { get; }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private SigningTestServer(HttpListener listener, Uri url)
         {
             _listener = listener;
@@ -31,7 +31,7 @@ namespace Test.Utility.Signing
 
         public void Dispose()
         {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             if (!_isDisposed)
             {
                 _listener.Stop();
@@ -56,7 +56,7 @@ namespace Test.Utility.Signing
 
         public static Task<SigningTestServer> CreateAsync()
         {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             var portReserver = new PortReserver();
 
             return portReserver.ExecuteAsync(
@@ -73,7 +73,7 @@ namespace Test.Utility.Signing
 
                     using (var taskStartedEvent = new ManualResetEventSlim())
                     {
-                        Task.Factory.StartNew(() => server.HandleRequest(taskStartedEvent, token));
+                        Task.Factory.StartNew(() => server.HandleRequest(taskStartedEvent, token), token);
 
                         taskStartedEvent.Wait(token);
                     }
@@ -87,14 +87,16 @@ namespace Test.Utility.Signing
 #endif
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static string GetBaseAbsolutePath(Uri url)
         {
             var path = url.PathAndQuery;
 
             return path.Substring(0, path.IndexOf('/', 1) + 1);
         }
+#endif
 
+#if IS_SIGNING_SUPPORTED
         private void HandleRequest(ManualResetEventSlim mutex, CancellationToken cancellationToken)
         {
             mutex.Set();
@@ -133,7 +135,9 @@ namespace Test.Utility.Signing
                     if (ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_HANDLE ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_FUNCTION ||
-                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_MONO)
+                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_UNIX ||
+                        RuntimeEnvironmentHelper.IsLinux && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_UNIX ||
+                        RuntimeEnvironmentHelper.IsMacOSX && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_UNIX)
                     {
                         return;
                     }

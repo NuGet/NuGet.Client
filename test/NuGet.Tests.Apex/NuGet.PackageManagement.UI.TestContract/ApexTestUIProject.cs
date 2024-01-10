@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI.TestContract
             _packageManagerControl = packageManagerControl ?? throw new ArgumentNullException(nameof(packageManagerControl));
         }
 
-        public IEnumerable<PackageItemListViewModel> PackageItems
+        public IEnumerable<PackageItemViewModel> PackageItems
         {
             get
             {
@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI.TestContract
             }
         }
 
-        public PackageItemListViewModel SelectedPackage
+        public PackageItemViewModel SelectedPackage
         {
             get
             {
@@ -50,6 +50,14 @@ namespace NuGet.PackageManagement.UI.TestContract
             }
         }
 
+        public PackageSourceMoniker SelectedSource
+        {
+            get
+            {
+                return UIInvoke(() => _packageManagerControl.SelectedSource);
+            }
+        }
+
         public bool IsSolution { get => _packageManagerControl._detailModel.IsSolution; }
 
         public void Search(string searchText)
@@ -57,19 +65,54 @@ namespace NuGet.PackageManagement.UI.TestContract
             UIInvoke(() => _packageManagerControl.Search(searchText));
         }
 
+        public bool VerifyFirstPackageOnTab(string tabName, string packageId, string packageVersion = null)
+        {
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            if (result is null)
+            {
+                return false;
+            }
+
+            if (tabName == "Browse")
+            {
+                return result.Id == packageId;
+            }
+            else
+            {
+                return result.Id == packageId && result.Version == NuGetVersion.Parse(packageVersion);
+            }
+        }
+
+        public bool VerifyVulnerablePackageOnTopOfInstalledTab()
+        {
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            return result?.IsPackageVulnerable == true;
+        }
+
+        public bool VerifyDeprecatedPackageOnTopOfInstalledTab()
+        {
+            var result = UIInvoke(() => _packageManagerControl.PackageList.PackageItems.FirstOrDefault());
+            return result?.IsPackageDeprecated == true;
+        }
+
+        public List<PackageItemViewModel> GetPackageItemsOnInstalledTab()
+        {
+            return _packageManagerControl.PackageList.PackageItems.ToList();
+        }
+
         public void InstallPackage(string packageId, string version)
         {
-            UIInvoke(() => _packageManagerControl.InstallPackage(packageId, NuGetVersion.Parse(version)));
+            UIInvoke(() => _packageManagerControl.InstallPackage(packageId, NuGetVersion.Parse(version), null));
         }
 
         public void UninstallPackage(string packageId)
         {
-            UIInvoke(() => _packageManagerControl.UninstallPackage(packageId));
+            UIInvoke(() => _packageManagerControl.UninstallPackage(packageId, null));
         }
 
         public void UpdatePackage(List<PackageIdentity> packages)
         {
-            UIInvoke(() => _packageManagerControl.UpdatePackage(packages));
+            UIInvoke(() => _packageManagerControl.UpdatePackage(packages, null));
         }
 
         public bool WaitForActionComplete(Action action, TimeSpan timeout)
@@ -124,6 +167,24 @@ namespace NuGet.PackageManagement.UI.TestContract
                 _packageManagerControl.PackageList.LoadItemsCompleted -= eventHandler;
             }
         }
+
+        /// <summary>
+        /// Used for package source mapping Apex tests which require All option in package sources.
+        /// </summary>
+        public void SetPackageSourceOptionToAll() => UIInvoke(() =>
+        {
+            // First one is always 'All' option
+            _packageManagerControl.SelectedSource = _packageManagerControl.PackageSources.First();
+        });
+
+        /// <summary>
+        /// Used for package source mapping Apex tests which require a specific package source to be selected.
+        /// </summary>
+        public void SetPackageSourceOptionToSource(string sourceName) => UIInvoke(() =>
+        {
+            _packageManagerControl.SelectedSource = _packageManagerControl.PackageSources.Single(
+                p => StringComparer.OrdinalIgnoreCase.Equals(p.SourceName, sourceName));
+        });
 
         private void UIInvoke(Action action)
         {

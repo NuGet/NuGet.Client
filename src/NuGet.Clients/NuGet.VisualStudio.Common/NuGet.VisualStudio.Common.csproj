@@ -1,56 +1,12 @@
-﻿<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
-    <NoWarn>$(NoWarn);NU5104</NoWarn>
     <Description>NuGet's Visual Studio common types and interfaces used for both Package Manager UI, Package Manager Console, restore and install functionalities.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Build">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
-    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" />
-    <PackageReference Include="Microsoft.VisualStudio.Editor" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" />
-    <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" />
-    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="VSLangProj" />
-    <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="EnvDTE80" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" />
-  </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
@@ -59,7 +15,18 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Framework" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj" />
+    <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Resources.Designer.cs">
@@ -74,8 +41,4 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

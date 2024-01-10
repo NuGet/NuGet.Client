@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,7 +16,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(IPackageSearchMetadata serverData, PackageDeprecationMetadata deprecationMetadata, long? downloadCount)
+        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, long? downloadCount)
         {
             Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
@@ -28,6 +27,7 @@ namespace NuGet.PackageManagement.UI
             IconUrl = serverData.IconUrl;
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
+            ReadmeUrl = serverData.ReadmeUrl;
             ReportAbuseUrl = serverData.ReportAbuseUrl;
             // Some server implementations send down an array with an empty string, which ends up as an empty string.
             // In PM UI, we want Tags to work like most other properties from the server (Authors/Owners), and be null, if there is no value.
@@ -48,7 +48,8 @@ namespace NuGet.PackageManagement.UI
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
             DeprecationMetadata = deprecationMetadata;
-            _localMetadata = serverData as LocalPackageSearchMetadata;
+            Vulnerabilities = serverData.Vulnerabilities;
+            PackagePath = serverData.PackagePath;
 
             // Determine the package details URL and text.
             PackageDetailsUrl = null;
@@ -70,8 +71,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private readonly LocalPackageSearchMetadata _localMetadata;
-
         public string Id { get; set; }
 
         public NuGetVersion Version { get; set; }
@@ -89,6 +88,8 @@ namespace NuGet.PackageManagement.UI
         public Uri LicenseUrl { get; set; }
 
         public Uri ProjectUrl { get; set; }
+
+        public Uri ReadmeUrl { get; set; }
 
         public Uri ReportAbuseUrl { get; set; }
 
@@ -108,19 +109,14 @@ namespace NuGet.PackageManagement.UI
 
         public LicenseMetadata LicenseMetadata { get; set; }
 
-        public PackageDeprecationMetadata DeprecationMetadata { get; set; }
+        public PackageDeprecationMetadataContextInfo DeprecationMetadata { get; set; }
+
+        public IEnumerable<PackageVulnerabilityMetadataContextInfo> Vulnerabilities { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 
         private static readonly IReadOnlyList<PackageDependencySetMetadata> NoDependenciesPlaceholder = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(dependencyGroup: null) };
 
-        public string LoadFileAsText(string path)
-        {
-            if (_localMetadata != null)
-            {
-                return _localMetadata.LoadFileAsText(path);
-            }
-            return null;
-        }
+        public string PackagePath { get; set; }
     }
 }

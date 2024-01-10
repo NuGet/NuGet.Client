@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Diagnostics;
@@ -24,7 +24,7 @@ namespace NuGet.Packaging.FuncTest
 
         public SigningUtilityTests(SigningTestFixture fixture)
         {
-             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [CIOnlyFact]

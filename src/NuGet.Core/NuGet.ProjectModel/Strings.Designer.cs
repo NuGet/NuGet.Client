@@ -10,7 +10,6 @@
 
 namespace NuGet.ProjectModel {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace NuGet.ProjectModel {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -40,7 +39,7 @@ namespace NuGet.ProjectModel {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.ProjectModel.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.ProjectModel.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -134,15 +133,6 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to resolve tool &apos;&apos;..
-        /// </summary>
-        internal static string MissingToolName {
-            get {
-                return ResourceManager.GetString("MissingToolName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package dependencies must specify a version range..
         /// </summary>
         internal static string MissingVersionOnDependency {
@@ -157,6 +147,159 @@ namespace NuGet.ProjectModel {
         internal static string MissingVersionOnTool {
             get {
                 return ResourceManager.GetString("MissingVersionOnTool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        internal static string None {
+            get {
+                return ResourceManager.GetString("None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Central package management file(s) doesn&apos;t contain version range for {0} package which is specified as CentralTransitive dependency in the lock file..
+        /// </summary>
+        internal static string PackagesLockFile_CentralPackageVersionRemoved {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_CentralPackageVersionRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version specified in the packages.lock.json file is incompatible. Current tooling supports version {0} and previous formats..
+        /// </summary>
+        internal static string PackagesLockFile_IncompatibleLockFileVersion {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_IncompatibleLockFileVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project target frameworks are different than the lock file&apos;s target frameworks. Lock file target frameworks: {0}. Project target frameworks {1}..
+        /// </summary>
+        internal static string PackagesLockFile_MismatchedTargetFrameworks {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_MismatchedTargetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project target framework {0} was not found in the lock file..
+        /// </summary>
+        internal static string PackagesLockFile_NewTargetFramework {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_NewTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A new package reference was found {0} for the project target framework {1}..
+        /// </summary>
+        internal static string PackagesLockFile_PackageReferenceAdded {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_PackageReferenceAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package references have changed for {0}. Lock file&apos;s package references: {1}, project&apos;s package references: {2}..
+        /// </summary>
+        internal static string PackagesLockFile_PackageReferencesHaveChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_PackageReferencesHaveChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package reference {0} version has changed from {1} to {2}..
+        /// </summary>
+        internal static string PackagesLockFile_PackageReferenceVersionChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_PackageReferenceVersionChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A new project reference to {0} was found for {1} target framework..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectReferenceAdded {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectReferenceAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project references {0} whose dependencies has changed..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectReferenceDependenciesHasChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectReferenceDependenciesHasChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project {0} has no compatible target framework. .
+        /// </summary>
+        internal static string PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project reference {0} has changed. Current dependencies: {1} lock file&apos;s dependencies: {2}..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectReferencesHasChange {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectReferencesHasChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitive dependency {0} moved to be centraly managed invalidated the lock file..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectTransitiveDependencyChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectTransitiveDependencyChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mistmatch between the requestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file. Lock file version {0}, central package management version {1}..
+        /// </summary>
+        internal static string PackagesLockFile_ProjectTransitiveDependencyVersionChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_ProjectTransitiveDependencyVersionChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restore metadata is mising the required target frameworks list. Please file a bug with repro steps on NuGet/Home if seen..
+        /// </summary>
+        internal static string PackagesLockFile_RestoreMetadataMissingTfms {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_RestoreMetadataMissingTfms", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The project&apos;s runtime identifiers have changed from. Project&apos;s runtime identifiers: {0}, lock file&apos;s runtime identifiers {1}..
+        /// </summary>
+        internal static string PackagesLockFile_RuntimeIdentifiersChanged {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_RuntimeIdentifiersChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to load package spec for {0} project..
+        /// </summary>
+        internal static string PackagesLockFile_UnableToLoadPackagespec {
+            get {
+                return ResourceManager.GetString("PackagesLockFile_UnableToLoadPackagespec", resourceCulture);
             }
         }
     }

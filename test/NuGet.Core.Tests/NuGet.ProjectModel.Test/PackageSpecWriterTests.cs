@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -12,6 +13,7 @@ using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -218,6 +220,10 @@ namespace NuGet.ProjectModel.Test
       ""warnAsError"": [
         ""NU1500"",
         ""NU1501""
+      ],
+      ""warnNotAsError"": [
+        ""NU1801"",
+        ""NU1802""
       ]
     }
   }
@@ -263,7 +269,7 @@ namespace NuGet.ProjectModel.Test
         public void Write_SerializesMembersAsJsonWithoutRestoreSettings()
         {
             // Arrange && Act
-            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJsonWithoutRestoreSettings.json", typeof(PackageSpecWriterTests));
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.PackageSpecWriter_Write_SerializesMembersAsJson.json", typeof(PackageSpecWriterTests));
             var packageSpec = CreatePackageSpec(withRestoreSettings: false);
             var actualJson = GetJsonString(packageSpec);
 
@@ -284,12 +290,17 @@ namespace NuGet.ProjectModel.Test
   ""warnAsError"": [
     ""NU1500"",
     ""NU1501""
+  ],
+  ""warnNotAsError"": [
+    ""NU1801"",
+    ""NU1802""
   ]
 }";
             var allWarningsAsErrors = true;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1801, NuGetLogCode.NU1802 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -311,12 +322,17 @@ namespace NuGet.ProjectModel.Test
   ""warnAsError"": [
     ""NU1500"",
     ""NU1501""
+  ],
+  ""warnNotAsError"": [
+    ""NU1802"",
+    ""NU1803""
   ]
 }";
             var allWarningsAsErrors = false;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1802, NuGetLogCode.NU1803 };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -340,7 +356,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var warningsAsErrors = new HashSet<NuGetLogCode> { };
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -357,7 +374,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = false;
             var warningsAsErrors = new HashSet<NuGetLogCode> { };
             var noWarn = new HashSet<NuGetLogCode> { };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"];
@@ -380,7 +398,8 @@ namespace NuGet.ProjectModel.Test
             var allWarningsAsErrors = true;
             var warningsAsErrors = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1501 };
             var noWarn = new HashSet<NuGetLogCode> { };
-            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>() { };
+            var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors, warningsNotAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
             var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
@@ -625,6 +644,142 @@ namespace NuGet.ProjectModel.Test
             VerifyJsonPackageSpecRoundTrip(json);
         }
 
+        [Fact]
+        public void RoundTripTargetFrameworkAliases()
+        {
+            var json = @"{  
+                        ""restore"": {
+                        ""projectUniqueName"": ""projectUniqueName"",
+                        ""projectName"": ""projectName"",
+                        ""projectPath"": ""projectPath"",
+                        ""projectJsonPath"": ""projectJsonPath"",
+                        ""packagesPath"": ""packagesPath"",
+                        ""outputPath"": ""outputPath"",
+                        ""projectStyle"": ""PackageReference"",
+                        ""frameworks"": {
+                          ""net45"": {
+                            ""targetAlias"" : ""minNetVersion"",
+                            ""projectReferences"": {}
+                          }
+                        }
+                      },
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""targetAlias"" : ""minNetVersion"",
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""aliases"": ""yay""
+                            }
+                        }
+                    }
+                }
+            }";
+            // Arrange
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void Write_WithAssetTargetFallbackAndDualCompatibilityFramework_RoundTrips()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net5.0"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""imports"": [
+                           ""net472"",
+                           ""net471""
+                        ],
+                        ""assetTargetFallback"" : true,
+                        ""secondaryFramework"" : ""native""
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void Write_RestoreAuditProperties_RoundTrips()
+        {
+            // Arrange
+            var json = @"{
+                  ""restore"": {
+                    ""projectUniqueName"": ""projectUniqueName"",
+                    ""restoreAuditProperties"": {
+                        ""enableAudit"": ""true"",
+                        ""auditLevel"": ""moderate"",
+                        ""auditMode"": ""all""
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void RestoreMetadataWithMacros_RoundTrips()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""C:\\users\\me\\source\\code\\project.csproj"",
+    ""projectName"": ""project"",
+    ""projectPath"": ""C:\\users\\me\\source\\code\\project.csproj"",
+    ""projectJsonPath"": ""C:\\users\\me\\source\\code\\project.json"",
+    ""packagesPath"": ""$(User).nuget\\packages"",
+    ""outputPath"": ""C:\\users\\me\\source\\code\\obj"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""fallbackFolders"": [
+        ""C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"",
+        ""$(User)fallbackFolder""
+
+
+    ],
+    ""configFilePaths"": [
+        ""$(User)source\\code\\NuGet.Config"",
+        ""$(User)AppData\\Roaming\\NuGet\\NuGet.Config"",
+        ""C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"",
+        ""C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config""
+    ]
+  }
+}";
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+                {
+                    { MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS, "true" }
+            });
+
+            // Act
+            var actual = PackageSpecTestUtility.RoundTripJson(json, environmentReader);
+
+            // Assert
+
+            var metadata = actual.RestoreMetadata;
+            var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+            Assert.NotNull(metadata);
+            metadata.PackagesPath.Should().Be(@$"{userSettingsDirectory}.nuget\packages");
+
+            metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}source\code\NuGet.Config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config");
+            metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}AppData\Roaming\NuGet\NuGet.Config");
+
+            metadata.FallbackFolders.Should().Contain(@"C:\Program Files\dotnet\sdk\NuGetFallbackFolder");
+            metadata.FallbackFolders.Should().Contain(@$"{userSettingsDirectory}fallbackFolder");
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             JObject jObject = packageSpec.ToJObject();
@@ -664,19 +819,18 @@ namespace NuGet.ProjectModel.Test
 
             var packageSpec = new PackageSpec()
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 Authors = unsortedArray,
                 BuildOptions = new BuildOptions() { OutputName = "outputName" },
                 ContentFiles = new List<string>(unsortedArray),
                 Copyright = "copyright",
                 Dependencies = new List<LibraryDependency>() { libraryDependency, libraryDependencyWithNoWarnGlobal },
                 Description = "description",
-                FilePath = "filePath",
                 HasVersionSnapshot = true,
                 IconUrl = "iconUrl",
                 IsDefaultVersion = false,
                 Language = "language",
                 LicenseUrl = "licenseUrl",
-                Name = "name",
                 Owners = unsortedArray,
                 PackOptions = new PackOptions()
                 {
@@ -691,6 +845,11 @@ namespace NuGet.ProjectModel.Test
                 ProjectUrl = "projectUrl",
                 ReleaseNotes = "releaseNotes",
                 RequireLicenseAcceptance = true,
+                Summary = "summary",
+                Tags = unsortedArray,
+#pragma warning restore CS0612 // Type or member is obsolete
+                Name = "name",
+                FilePath = "filePath",
                 RestoreMetadata = new ProjectRestoreMetadata()
                 {
                     CrossTargeting = true,
@@ -714,8 +873,6 @@ namespace NuGet.ProjectModel.Test
                             new ProjectRestoreMetadataFrameworkInfo(nugetFramework)
                         }
                 },
-                Summary = "summary",
-                Tags = unsortedArray,
                 Title = "title",
                 Version = new NuGetVersion("1.2.3")
             };
@@ -730,9 +887,11 @@ namespace NuGet.ProjectModel.Test
                 packageSpec.RestoreMetadata.ProjectWideWarningProperties = warningProperties;
             }
 
+#pragma warning disable CS0612 // Type or member is obsolete
             packageSpec.PackInclude.Add("b", "d");
             packageSpec.PackInclude.Add("a", "e");
             packageSpec.PackInclude.Add("c", "f");
+#pragma warning restore CS0612 // Type or member is obsolete
 
             var runtimeDependencySet = new RuntimeDependencySet("id", new[]
             {
@@ -749,9 +908,11 @@ namespace NuGet.ProjectModel.Test
 
             packageSpec.RuntimeGraph = new RuntimeGraph(runtimes, compatibilityProfiles);
 
+#pragma warning disable CS0612 // Type or member is obsolete
             packageSpec.Scripts.Add("b", unsortedArray);
             packageSpec.Scripts.Add("a", unsortedArray);
             packageSpec.Scripts.Add("c", unsortedArray);
+#pragma warning restore CS0612 // Type or member is obsolete
 
             packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation()
             {

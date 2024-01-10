@@ -155,7 +155,7 @@ namespace NuGet.Protocol
         {
             if (string.IsNullOrEmpty(id))
             {
-                throw new ArgumentException(nameof(id));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(id));
             }
 
             if (log == null)
@@ -436,7 +436,7 @@ namespace NuGet.Protocol
             var results = new List<V2FeedPackageInfo>();
             var uris = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
+            var uri = string.Format(CultureInfo.InvariantCulture, "{0}{1}", _baseAddress, relativeUri);
             uris.Add(uri);
 
             // page
@@ -638,19 +638,17 @@ namespace NuGet.Protocol
 
         internal static async Task<XDocument> LoadXmlAsync(Stream stream, CancellationToken token)
         {
-            using (var memStream = await stream.AsSeekableStreamAsync(token))
+            using var memStream = await stream.AsSeekableStreamAsync(token);
+            using var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
             {
-                var xmlReader = XmlReader.Create(memStream, new XmlReaderSettings()
-                {
-                    CloseInput = true,
-                    IgnoreWhitespace = true,
-                    IgnoreComments = true,
-                    IgnoreProcessingInstructions = true,
-                    DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
-                });
+                CloseInput = true,
+                IgnoreWhitespace = true,
+                IgnoreComments = true,
+                IgnoreProcessingInstructions = true,
+                DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
+            });
 
-                return XDocument.Load(xmlReader, LoadOptions.None);
-            }
+            return XDocument.Load(xmlReader, LoadOptions.None);
         }
     }
 }

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -5,20 +8,39 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using NuGet.Common;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
-    using Packaging;
-    using Versioning;
-
-    public static class AssemblyMetadataExtractor
+    internal sealed class AssemblyMetadataExtractor
     {
-        private static T CreateInstance<T>(this AppDomain domain)
+        private readonly ILogger _logger;
+
+        public AssemblyMetadataExtractor(ILogger logger) => _logger = logger ?? NullLogger.Instance;
+
+        private static T CreateInstance<T>(AppDomain domain)
         {
-            return (T)domain.CreateInstanceFromAndUnwrap(Assembly.GetExecutingAssembly().Location, typeof(T).FullName);
+            string assemblyLocation = typeof(AssemblyMetadataExtractor).Assembly.Location;
+
+            try
+            {
+                return (T)domain.CreateInstanceFromAndUnwrap(assemblyLocation, typeof(T).FullName);
+            }
+            catch (FileLoadException flex) when (UriUtility.GetLocalPath(flex.FileName).Equals(assemblyLocation, StringComparison.Ordinal))
+            {
+                // Reflection loading error for sandboxed assembly
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    LocalizedResourceManager.GetString("Error_NuGetExeNeedsToBeUnblockedAfterDownloading"),
+                    UriUtility.GetLocalPath(flex.FileName));
+                throw new PackagingException(NuGetLogCode.NU5133, exceptionMessage, flex);
+            }
         }
 
-        public static AssemblyMetadata GetMetadata(string assemblyPath)
+        public AssemblyMetadata GetMetadata(string assemblyPath)
         {
             var setup = new AppDomainSetup
             {
@@ -28,8 +50,8 @@ namespace NuGet.CommandLine
             AppDomain domain = AppDomain.CreateDomain("metadata", AppDomain.CurrentDomain.Evidence, setup);
             try
             {
-                var extractor = domain.CreateInstance<MetadataExtractor>();
-                return extractor.GetMetadata(assemblyPath);
+                var extractor = CreateInstance<MetadataExtractor>(domain);
+                return extractor.GetAssemblyMetadata(assemblyPath);
             }
             finally
             {
@@ -37,13 +59,26 @@ namespace NuGet.CommandLine
             }
         }
 
-        public static void ExtractMetadata(PackageBuilder builder, string assemblyPath)
+        public void ExtractMetadata(PackageBuilder builder, string assemblyPath)
         {
             AssemblyMetadata assemblyMetadata = GetMetadata(assemblyPath);
-            builder.Version = NuGetVersion.Parse(assemblyMetadata.Version);
             builder.Title = assemblyMetadata.Title;
             builder.Description = assemblyMetadata.Description;
             builder.Copyright = assemblyMetadata.Copyright;
+
+            // using InformationalVersion if possible, fallback to Version otherwise
+            if (NuGetVersion.TryParse(assemblyMetadata.InformationalVersion, out var informationalVersion))
+            {
+                builder.Version = informationalVersion;
+            }
+            else
+            {
+                _logger.LogInformation(string.Format(
+                    CultureInfo.CurrentCulture, NuGetResources.InvalidAssemblyInformationalVersion,
+                    assemblyMetadata.InformationalVersion, assemblyPath, assemblyMetadata.Version));
+
+                builder.Version = NuGetVersion.Parse(assemblyMetadata.Version);
+            }
 
             if (!builder.Authors.Any())
             {
@@ -51,7 +86,7 @@ namespace NuGet.CommandLine
                 {
                     builder.Authors.AddRange(assemblyMetadata.Properties["authors"].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
                 }
-                else if (!String.IsNullOrEmpty(assemblyMetadata.Company))
+                else if (!string.IsNullOrEmpty(assemblyMetadata.Company))
                 {
                     builder.Authors.Add(assemblyMetadata.Company);
                 }
@@ -76,10 +111,8 @@ namespace NuGet.CommandLine
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "It's constructed using CreateInstanceAndUnwrap in another app domain")]
         private sealed class MetadataExtractor : MarshalByRefObject
         {
-
             private class AssemblyResolver
             {
                 private readonly string _lookupPath;
@@ -93,14 +126,14 @@ namespace NuGet.CommandLine
                 {
                     var name = new AssemblyName(AppDomain.CurrentDomain.ApplyPolicy(args.Name));
                     var assemblyPath = Path.Combine(_lookupPath, name.Name + ".dll");
-                    return File.Exists(assemblyPath) ? 
+                    return File.Exists(assemblyPath) ?
                         Assembly.ReflectionOnlyLoadFrom(assemblyPath) : // load from same folder as parent assembly
                         Assembly.ReflectionOnlyLoad(name.FullName);     // load from GAC
                 }
             }
 
             [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "It's a marshal by ref object used to collection information in another app domain")]
-            public AssemblyMetadata GetMetadata(string path)
+            public AssemblyMetadata GetAssemblyMetadata(string path)
             {
                 var resolver = new AssemblyResolver(path);
                 AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += resolver.ReflectionOnlyAssemblyResolve;
@@ -112,24 +145,18 @@ namespace NuGet.CommandLine
 
                     var attributes = CustomAttributeData.GetCustomAttributes(assembly);
 
-                    NuGetVersion version;
-                    string assemblyInformationalVersion = GetAttributeValueOrDefault<AssemblyInformationalVersionAttribute>(attributes);
-                    if (!NuGetVersion.TryParse(assemblyInformationalVersion, out version))
-                    {
-                        if (string.IsNullOrEmpty(assemblyInformationalVersion))
-                        {
-                            version = NuGetVersion.Parse(assemblyName.Version.ToString());
-                        }
-                        else
-                        {
-                            throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Error_AssemblyInformationalVersion, assemblyInformationalVersion, path));
-                        }
-                    }
+                    // We should not try to parse the version and eventually throw here: this leads to incorrect errors when, later on, ProjectFactory is trying to retrieve Authors and Description
+                    // Best to parse the version into a NuGetVersion later.
+                    // We should also not decide here whether to use informationalVersion or assembly version. Let's let consumers decide.
+                    var version = assemblyName.Version.ToString();
+                    var informationalVersion = GetAttributeValueOrDefault<AssemblyInformationalVersionAttribute>(attributes);
+                    informationalVersion = string.IsNullOrEmpty(informationalVersion) ? version : informationalVersion;
 
                     return new AssemblyMetadata(GetProperties(attributes))
                     {
                         Name = assemblyName.Name,
-                        Version = version.ToFullString(),
+                        Version = version,
+                        InformationalVersion = informationalVersion,
                         Title = GetAttributeValueOrDefault<AssemblyTitleAttribute>(attributes),
                         Company = GetAttributeValueOrDefault<AssemblyCompanyAttribute>(attributes),
                         Description = GetAttributeValueOrDefault<AssemblyDescriptionAttribute>(attributes),
@@ -160,7 +187,7 @@ namespace NuGet.CommandLine
                     string key = attribute.ConstructorArguments[0].Value.ToString();
                     string value = attribute.ConstructorArguments[1].Value.ToString();
                     // Return the value only if it isn't null or empty so that we can use ?? to fall back
-                    if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(value))
+                    if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
                     {
                         properties[key] = value;
                     }
@@ -177,7 +204,7 @@ namespace NuGet.CommandLine
                     {
                         string value = attribute.ConstructorArguments[0].Value.ToString();
                         // Return the value only if it isn't null or empty so that we can use ?? to fall back
-                        if (!String.IsNullOrEmpty(value))
+                        if (!string.IsNullOrEmpty(value))
                         {
                             return value;
                         }

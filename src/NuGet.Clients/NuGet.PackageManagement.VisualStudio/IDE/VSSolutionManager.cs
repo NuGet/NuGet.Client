@@ -26,20 +26,23 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Task = System.Threading.Tasks.Task;
+using NuGet.VisualStudio.Common.Telemetry.PowerShell;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(ISolutionManager))]
     [Export(typeof(IVsSolutionManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents
+    public sealed class VSSolutionManager : IVsSolutionManager, IVsSelectionEvents, IVsSolutionEvents, IDisposable
     {
         private static readonly INuGetProjectContext EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
-        private static readonly string VSNuGetClientName = "NuGet VS VSIX";
+        private const string VSNuGetClientName = "NuGet VS VSIX";
 
         private readonly INuGetLockService _initLock;
+        private readonly ReentrantSemaphore _semaphoreLock = ReentrantSemaphore.Create(1, NuGetUIThreadHelper.JoinableTaskFactory.Context, ReentrantSemaphore.ReentrancyMode.Freeform);
 
         private SolutionEvents _solutionEvents;
         private CommandEvents _solutionSaveEvent;
@@ -47,17 +50,24 @@ namespace NuGet.PackageManagement.VisualStudio
         private IVsMonitorSelection _vsMonitorSelection;
         private uint _solutionLoadedUICookie;
         private IVsSolution _vsSolution;
+        private uint _selectionEventsCookie;
+        private uint _solutionEventsCookie;
 
         private readonly IAsyncServiceProvider _asyncServiceProvider;
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly NuGetProjectFactory _projectSystemFactory;
         private readonly ICredentialServiceProvider _credentialServiceProvider;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
-        private readonly Common.ILogger _logger;
+        private readonly ILogger _logger;
         private readonly Lazy<ISettings> _settings;
+        private readonly INuGetFeatureFlagService _featureFlagService;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<DTE> _dte;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution> _asyncVSSolution;
 
         private bool _initialized;
         private bool _cacheInitialized;
+        private bool _isSolutionOpen;
+        private string _solutionDirectory;
 
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
@@ -126,6 +136,7 @@ namespace NuGet.PackageManagement.VisualStudio
             [Import("VisualStudioActivityLogger")]
             Common.ILogger logger,
             Lazy<ISettings> settings,
+            INuGetFeatureFlagService featureFlagService,
             JoinableTaskContext joinableTaskContext)
             : this(AsyncServiceProvider.GlobalProvider,
                    projectSystemCache,
@@ -134,6 +145,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    vsProjectAdapterProvider,
                    logger,
                    settings,
+                   featureFlagService,
                    joinableTaskContext)
         { }
 
@@ -146,6 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsProjectAdapterProvider vsProjectAdapterProvider,
             ILogger logger,
             Lazy<ISettings> settings,
+            INuGetFeatureFlagService featureFlagService,
             JoinableTaskContext joinableTaskContext)
         {
             Assumes.Present(asyncServiceProvider);
@@ -155,6 +168,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapterProvider);
             Assumes.Present(logger);
             Assumes.Present(settings);
+            Assumes.Present(featureFlagService);
             Assumes.Present(joinableTaskContext);
 
             _asyncServiceProvider = asyncServiceProvider;
@@ -164,15 +178,18 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
             _logger = logger;
             _settings = settings;
+            _featureFlagService = featureFlagService;
             _initLock = new NuGetLockService(joinableTaskContext);
+            _dte = new(() => asyncServiceProvider.GetDTEAsync(), NuGetUIThreadHelper.JoinableTaskFactory);
+            _asyncVSSolution = new(() => asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>(), NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         private async Task InitializeAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
-            var dte = await _asyncServiceProvider.GetDTEAsync();
+            _vsSolution = await _asyncVSSolution.GetValueAsync();
+            var dte = await _dte.GetValueAsync();
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
@@ -184,15 +201,27 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
             });
 
-            TelemetryActivity.NuGetTelemetryService = new NuGetVSTelemetryService();
-
             _vsMonitorSelection = await _asyncServiceProvider.GetServiceAsync<SVsShellMonitorSelection, IVsMonitorSelection>();
 
             var solutionLoadedGuid = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
             _vsMonitorSelection.GetCmdUIContextCookie(ref solutionLoadedGuid, out _solutionLoadedUICookie);
 
-            uint cookie;
-            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out cookie);
+            _isSolutionOpen = false;
+            _solutionDirectory = null;
+
+            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_IsSolutionOpen, out object isSoltuionOpen)))
+            {
+                _isSolutionOpen = (bool)isSoltuionOpen;
+            }
+
+            if (_isSolutionOpen)
+            {
+                UpdateSolutionDirectory();
+            }
+
+            var hr = _vsMonitorSelection.AdviseSelectionEvents(this, out _selectionEventsCookie);
+            ErrorHandler.ThrowOnFailure(hr);
+            hr = _vsSolution.AdviseSolutionEvents(this, out _solutionEventsCookie);
             ErrorHandler.ThrowOnFailure(hr);
 
             // Keep a reference to SolutionEvents so that it doesn't get GC'ed. Otherwise, we won't receive events.
@@ -203,12 +232,12 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
-            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
+            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B", provider: null);
             var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
             var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
 
-            _solutionSaveEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
-            _solutionSaveAsEvent = dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+            _solutionSaveEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveID);
+            _solutionSaveAsEvent = dte.Events.get_CommandEvents(vSStd97CmdIDGUID, solutionSaveAsID);
 
             _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
             _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
@@ -216,6 +245,21 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
 
             _projectSystemCache.CacheUpdated += NuGetCacheUpdate_After;
+        }
+
+        private void UpdateSolutionDirectory()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (ErrorHandler.Succeeded(_vsSolution.GetProperty((int)__VSPROPID.VSPROPID_SolutionDirectory, out object solutionDirectory)))
+            {
+                _solutionDirectory = (string)solutionDirectory;
+            }
+            else
+            {
+                // This may happen for "temporary" solutions - a file is open or created without a project or solution
+                _solutionDirectory = null;
+            }
         }
 
         public async Task<NuGetProject> GetNuGetProjectAsync(string nuGetProjectSafeName)
@@ -245,7 +289,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (nuGetProject == null)
             {
-                throw new ArgumentNullException("nuGetProject");
+                throw new ArgumentNullException(nameof(nuGetProject));
             }
 
             await EnsureInitializeAsync();
@@ -278,7 +322,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<bool> IsAllProjectsNominatedAsync()
         {
-            var netCoreProjects = (await GetNuGetProjectsAsync()).OfType<NetCorePackageReferenceProject>().ToList();
+            var netCoreProjects = (await GetNuGetProjectsAsync())
+                            .Where(e => IsRestoredOnSolutionLoad(e))
+                            .Cast<BuildIntegratedNuGetProject>()
+                            .ToList();
 
             foreach (var project in netCoreProjects)
             {
@@ -296,6 +343,26 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
+        public IReadOnlyList<object> GetAllProjectRestoreInfoSources()
+        {
+            return _projectSystemCache.GetProjectRestoreInfoSources();
+        }
+
+        private static bool IsRestoredOnSolutionLoad(NuGetProject nuGetProject)
+        {
+            if (nuGetProject is CpsPackageReferenceProject)
+            {
+                return true;
+            }
+            if (nuGetProject is LegacyPackageReferenceProject legacyPackageReferenceProject)
+            {
+                return legacyPackageReferenceProject.ProjectServices.Capabilities.NominatesOnSolutionLoad;
+            }
+            return false;
+        }
+
+        public CancellationToken VsShutdownToken => VsShellUtilities.ShutdownToken;
+
         /// <summary>
         /// IsSolutionOpen is true, if the dte solution is open
         /// and is saved as required
@@ -304,21 +371,29 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                if (_solutionEventsCookie != 0)
                 {
-                    return await IsSolutionOpenAsync();
-                });
+                    return _isSolutionOpen;
+                }
+                else
+                {
+                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(IsSolutionOpenAsync);
+                }
             }
         }
 
         public async Task<bool> IsSolutionOpenAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var dte = await _asyncServiceProvider.GetDTEAsync();
-            return dte != null &&
-                   dte.Solution != null &&
-                   dte.Solution.IsOpen;
+            if (_solutionEventsCookie != 0)
+            {
+                return _isSolutionOpen;
+            }
+            else
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var vsSolution = await _asyncVSSolution.GetValueAsync();
+                return IsSolutionOpenFromVSSolution(vsSolution);
+            }
         }
 
         public async Task<bool> IsSolutionAvailableAsync()
@@ -359,16 +434,31 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // Do NOT initialize VSSolutionManager through this API (by calling EnsureInitializeAsync)
             // This is a fast check implemented specifically for right click context menu to be
-            // quick and does not involve initializing VSSolutionManager. Otherwise it will create
-            // hang issues for right click on solution.
+            // quick and does not involve initializing VSSolutionManager. Otherwise it will make
+            // the UI stop responding for right click on solution.
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            // first check with DTE, and if we find any supported project, then return immediately.
-            var dte = await _asyncServiceProvider.GetDTEAsync();
+            var isSupported = false;
 
-            var isSupported =  EnvDTESolutionUtility.GetAllEnvDTEProjects(dte)
-                .Where(EnvDTEProjectUtility.IsSupported)
-                .Any();
+            if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
+            {
+                var ivsSolution = await _asyncVSSolution.GetValueAsync();
+                if (IsSolutionOpenFromVSSolution(ivsSolution))
+                {
+                    return VsHierarchyUtility.AreAnyLoadedProjectsNuGetCompatible(ivsSolution);
+                }
+            }
+            else
+            {
+                // first check with DTE, and if we find any supported project, then return immediately.
+                var dte = await _dte.GetValueAsync();
+
+                foreach (Project project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+                {
+                    isSupported = true;
+                    break;
+                }
+            }
 
             return isSupported;
         }
@@ -380,13 +470,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 await EnsureInitializeAsync();
-                var vsSolution4 = _vsSolution as IVsSolution4;
-
-                if (vsSolution4 != null)
-                {
-                    // ignore result and continue. Since results may be incomplete if user canceled.
-                    vsSolution4.EnsureSolutionIsLoaded((uint)__VSBSLFLAGS.VSBSLFLAGS_None);
-                }
             });
         }
 
@@ -394,50 +477,47 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                if (_solutionEventsCookie != 0)
                 {
-                    if (!await IsSolutionOpenAsync())
-                    {
-                        return null;
-                    }
-                    var solutionFilePath = await GetSolutionFilePathAsync();
-
-                    if (string.IsNullOrEmpty(solutionFilePath))
-                    {
-                        return null;
-                    }
-                    return Path.GetDirectoryName(solutionFilePath);
-                });
+                    return _solutionDirectory;
+                }
+                else
+                {
+                    return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetSolutionDirectoryAsync);
+                }
             }
+        }
+
+        public async Task<string> GetSolutionDirectoryAsync()
+        {
+            if (_solutionEventsCookie != 0)
+            {
+                return _solutionDirectory;
+            }
+            else
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var vsSolution = await _asyncVSSolution.GetValueAsync();
+                if (IsSolutionOpenFromVSSolution(vsSolution))
+                {
+                    return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionDirectory);
+                }
+                return null;
+            }
+        }
+
+        private static bool IsSolutionOpenFromVSSolution(IVsSolution vsSolution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var isOpen = (bool)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_IsSolutionOpen);
+            return isOpen;
         }
 
         public async Task<string> GetSolutionFilePathAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
-            // available if the solution is just being created
-            string solutionFilePath = null;
-
-            var dte = await _asyncServiceProvider.GetDTEAsync();
-            var property = dte.Solution.Properties.Item("Path");
-            if (property == null)
-            {
-                return null;
-            }
-            try
-            {
-                // When using a temporary solution, (such as by saying File -> New File), querying this value throws.
-                // Since we wouldn't be able to do manage any packages at this point, we return null. Consumers of this property typically
-                // use a String.IsNullOrEmpty check either way, so it's alright.
-                solutionFilePath = (string)property.Value;
-            }
-            catch (COMException)
-            {
-                return null;
-            }
-
-            return solutionFilePath;
+            var vsSolution = await _asyncVSSolution.GetValueAsync();
+            return (string)GetVSSolutionProperty(vsSolution, (int)__VSPROPID.VSPROPID_SolutionFileName);
         }
 
         /// <summary>
@@ -445,6 +525,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         private bool DoesSolutionRequireAnInitialSaveAs()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Check if user is doing File - New File without saving the solution.
             var value = GetVSSolutionProperty((int)(__VSPROPID.VSPROPID_IsSolutionSaveAsRequired));
             if ((bool)value)
@@ -457,16 +539,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return (bool)value;
         }
 
+        private static object GetVSSolutionProperty(IVsSolution vsSolution, int propId)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ErrorHandler.ThrowOnFailure(vsSolution.GetProperty(propId, out object value));
+            return value;
+        }
+
         private object GetVSSolutionProperty(int propId)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
-            object value;
-            var hr = _vsSolution.GetProperty(propId, out value);
-
-            ErrorHandler.ThrowOnFailure(hr);
-
-            return value;
+            return GetVSSolutionProperty(_vsSolution, propId);
         }
 
         private async Task OnSolutionExistsAndFullyLoadedAsync()
@@ -474,6 +557,8 @@ namespace NuGet.PackageManagement.VisualStudio
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             SolutionOpening?.Invoke(this, EventArgs.Empty);
+
+            NuGetPowerShellUsage.RaiseSolutionOpenEvent();
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
@@ -491,18 +576,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnAfterClosing()
         {
-            SolutionClosed?.Invoke(this, EventArgs.Empty);
-        }
-
-        private void OnBeforeClosing()
-        {
             DefaultNuGetProjectName = null;
             _projectSystemCache.Clear();
             _cacheInitialized = false;
 
-            SolutionClosing?.Invoke(this, EventArgs.Empty);
+            SolutionClosed?.Invoke(this, EventArgs.Empty);
 
             _solutionOpenedRaised = false;
+        }
+
+        private void OnBeforeClosing()
+        {
+            NuGetPowerShellUsage.RaiseSolutionCloseEvent();
+
+            SolutionClosing?.Invoke(this, EventArgs.Empty);
         }
 
         private void SolutionSaveAs_BeforeExecute(
@@ -517,6 +604,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void SolutionSaveAs_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            UpdateSolutionDirectory();
+
             // If SolutionDirectory before solution save was null
             // Or, if SolutionDirectory before solution save is different from the current one
             // Reset cache among other things
@@ -540,15 +630,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 if (!string.IsNullOrEmpty(oldName) && await IsSolutionOpenAsync() && _solutionOpenedRaised)
                 {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
 
-                    if (EnvDTEProjectUtility.IsSupported(envDTEProject))
+                    if (await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject))
                     {
                         RemoveVsProjectAdapterFromCache(oldName);
 
@@ -569,12 +659,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         // In the case where a solution directory was changed, project FullNames are unchanged.
                         // We only need to invalidate the projects under the current tree so as to sync the CustomUniqueNames.
-                        foreach (var item in EnvDTEProjectUtility.GetSupportedChildProjects(envDTEProject))
+                        foreach (var item in await EnvDTEProjectUtility.GetSupportedChildProjectsAsync(envDTEProject))
                         {
                             RemoveVsProjectAdapterFromCache(item.FullName);
 
                             var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(item);
-                            await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                            if (await vsProjectAdapter.IsSupportedAsync())
+                            {
+                                await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                            }
                         }
                     }
                 }
@@ -586,21 +679,22 @@ namespace NuGet.PackageManagement.VisualStudio
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            RemoveVsProjectAdapterFromCache(envDTEProject.FullName);
             NuGetProject nuGetProject;
             _projectSystemCache.TryGetNuGetProject(envDTEProject.Name, out nuGetProject);
+
+            RemoveVsProjectAdapterFromCache(envDTEProject.FullName);
 
             NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
 
         private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 if (await IsSolutionOpenAsync()
-                    && EnvDTEProjectUtility.IsSupported(envDTEProject)
+                    && await EnvDTEProjectUtility.IsSupportedAsync(envDTEProject)
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
                     && _solutionOpenedRaised)
                 {
@@ -617,14 +711,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task SetDefaultProjectNameAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             IEnumerable<object> startupProjects;
 
             try
             {
                 // when a new solution opens, we set its startup project as the default project in NuGet Console
-                var dte = await _asyncServiceProvider.GetDTEAsync();
+                var dte = await _dte.GetValueAsync();
                 var solutionBuild = dte.Solution.SolutionBuild as SolutionBuild2;
                 startupProjects = solutionBuild?.StartupProjects as IEnumerable<object>;
             }
@@ -652,32 +746,52 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (!_cacheInitialized && await IsSolutionOpenAsync())
+                if (!_cacheInitialized && IsSolutionOpen)
                 {
                     try
                     {
-                        var dte = await _asyncServiceProvider.GetDTEAsync();
-
-                        var supportedProjects = EnvDTESolutionUtility
-                            .GetAllEnvDTEProjects(dte)
-                            .Where(EnvDTEProjectUtility.IsSupported);
-
-                        foreach (var project in supportedProjects)
+                        if (await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.NuGetSolutionCacheInitilization))
                         {
-                            try
+                            IVsSolution ivsSolution = await _asyncVSSolution.GetValueAsync();
+                            foreach (var hierarchy in VsHierarchyUtility.GetAllLoadedProjects(ivsSolution))
                             {
-                                var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(project);
-                                await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
-                            }
-                            catch (Exception e)
-                            {
-                                // Ignore failed projects.
-                                _logger.LogWarning($"The project {project.Name} failed to initialize as a NuGet project.");
-                                _logger.LogError(e.ToString());
-                            }
+                                try
+                                {
+                                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(hierarchy);
+                                    await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                                }
+                                catch (Exception e)
+                                {
+                                    // Ignore failed projects.
+                                    _logger.LogWarning($"The project {VsHierarchyUtility.GetProjectPath(hierarchy)} failed to initialize as a NuGet project.");
+                                    _logger.LogError(e.ToString());
+                                }
 
-                            // Consider that the cache is initialized only when there are any projects to add.
-                            _cacheInitialized = true;
+                                // Consider that the cache is initialized only when there are any projects to add.
+                                _cacheInitialized = true;
+                            }
+                        }
+                        else
+                        {
+                            var dte = await _dte.GetValueAsync();
+
+                            foreach (var project in await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte))
+                            {
+                                try
+                                {
+                                    var vsProjectAdapter = await _vsProjectAdapterProvider.CreateAdapterForFullyLoadedProjectAsync(project);
+                                    await AddVsProjectAdapterToCacheAsync(vsProjectAdapter);
+                                }
+                                catch (Exception e)
+                                {
+                                    // Ignore failed projects.
+                                    _logger.LogWarning($"The project {project.Name} failed to initialize as a NuGet project.");
+                                    _logger.LogError(e.ToString());
+                                }
+
+                                // Consider that the cache is initialized only when there are any projects to add.
+                                _cacheInitialized = true;
+                            }
                         }
 
                         await SetDefaultProjectNameAsync();
@@ -696,11 +810,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task AddVsProjectAdapterToCacheAsync(IVsProjectAdapter vsProjectAdapter)
         {
-            if (!vsProjectAdapter.IsSupported)
-            {
-                return;
-            }
-
             _projectSystemCache.TryGetProjectNameByShortName(vsProjectAdapter.ProjectName, out var oldProjectName);
 
             // Create the NuGet project first. If this throws we bail out and do not change the cache.
@@ -762,31 +871,35 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // If already initialized, need not be on the UI thread
-                if (!_initialized)
+                if (_initialized)
                 {
-                    _initialized = true;
+                    await EnsureNuGetAndVsProjectAdapterCacheAsync();
+                    return;
+                }
+
+                // Ensure all initialization finished when needed, it still runs as async and prevents _initialized set true too early.
+                // Setting '_initialized = true' too early caused random timing bug.
+
+                await _semaphoreLock.ExecuteAsync(async () =>
+                {
+                    if (_initialized)
+                    {
+                        return;
+                    }
+
+                    NuGetVSTelemetryService.Initialize();
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     await InitializeAsync();
 
-                    var dte = await _asyncServiceProvider.GetDTEAsync();
-                    if (dte.Solution.IsOpen)
+                    if ((bool)GetVSSolutionProperty((int)__VSPROPID.VSPROPID_IsSolutionOpen))
                     {
                         await OnSolutionExistsAndFullyLoadedAsync();
                     }
-                }
-                else
-                {
-                    // Check if the cache is initialized.
-                    // It is possible that the cache is not initialized, since,
-                    // the solution was not saved and/or there were no projects in the solution
-                    if (!_cacheInitialized && _solutionOpenedRaised)
-                    {
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        await EnsureNuGetAndVsProjectAdapterCacheAsync();
-                    }
-                }
+
+                    _initialized = true;
+                });
             }
             catch (Exception e)
             {
@@ -859,7 +972,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             // The AfterNuGetCacheUpdated event is raised on a separate Task to prevent blocking of the caller.
             // E.g. - If Restore updates the cache entries on CPS nomination, then restore should not be blocked till UI is restored.
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => FireNuGetCacheUpdatedEventAsync(e)).PostOnFailure(nameof(VSSolutionManager));
         }
 
         private async Task FireNuGetCacheUpdatedEventAsync(NuGetEventArgs<string> e)
@@ -887,13 +1000,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive)
         {
-            if (dwCmdUICookie == _solutionLoadedUICookie
-                && fActive == 1)
-            {
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                    await OnSolutionExistsAndFullyLoadedAsync());
-            }
-
             return VSConstants.S_OK;
         }
 
@@ -909,10 +1015,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
-            if (ActionsExecuted != null)
-            {
-                ActionsExecuted(this, new ActionsExecutedEventArgs(actions));
-            }
+            ActionsExecuted?.Invoke(this, new ActionsExecutedEventArgs(actions));
         }
 
         #endregion IVsSelectionEvents
@@ -923,7 +1026,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var projectSafeName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(project);
+            var projectSafeName = await project.GetCustomUniqueNameAsync();
             var nuGetProject = await GetNuGetProjectAsync(projectSafeName);
 
             // if the project does not exist in the solution (this is true for new templates)
@@ -1003,7 +1106,96 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return nuGetProject;
         }
-
         #endregion
+
+        #region IVsSolutionEvents
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            UpdateSolutionDirectory();
+            _isSolutionOpen = true;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                await OnSolutionExistsAndFullyLoadedAsync()).PostOnFailure(nameof(OnAfterOpenSolution));
+            return VSConstants.S_OK;
+        }
+
+        public int OnQueryCloseSolution(object pUnkReserved, ref int pfCancel)
+        {
+            return VSConstants.S_OK;
+        }
+
+        public int OnBeforeCloseSolution(object pUnkReserved)
+        {
+            _solutionDirectory = null;
+            _isSolutionOpen = false;
+            return VSConstants.S_OK;
+        }
+
+        public int OnAfterCloseSolution(object pUnkReserved)
+        {
+            return VSConstants.S_OK;
+        }
+        #endregion
+
+        private bool _disposed = false;
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _disposed = true;
+
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    if (_vsMonitorSelection != null && _selectionEventsCookie != 0)
+                    {
+                        _vsMonitorSelection.UnadviseSelectionEvents(_selectionEventsCookie);
+                        _selectionEventsCookie = 0;
+                    }
+
+                    if (_vsSolution != null && _solutionEventsCookie != 0)
+                    {
+                        _vsSolution.UnadviseSolutionEvents(_solutionEventsCookie);
+                        _solutionEventsCookie = 0;
+                    }
+                });
+
+                _semaphoreLock?.Dispose();
+            }
+        }
     }
 }

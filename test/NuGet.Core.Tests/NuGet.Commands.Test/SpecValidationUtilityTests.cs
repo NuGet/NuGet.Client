@@ -8,8 +8,8 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using Test.Utility;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.Commands.Test
 {
@@ -143,10 +143,10 @@ namespace NuGet.Commands.Test
 
             spec.Projects.First().RestoreMetadata.TargetFrameworks.Single()
                 .ProjectReferences.Add(new ProjectRestoreReference()
-            {
-                ProjectPath = "b.csproj",
-                ProjectUniqueName = "b"
-            });
+                {
+                    ProjectPath = "b.csproj",
+                    ProjectUniqueName = "b"
+                });
 
             spec.Projects.First().Dependencies.Add(new LibraryDependency()
             {
@@ -310,14 +310,13 @@ namespace NuGet.Commands.Test
         [Fact]
         public void SpecValidationUtility_UAP_VerifyOutputPath()
         {
-
             // Arrange
             var spec = new DependencyGraphSpec();
             spec.AddRestore("a");
 
             var targetFramework1 = new TargetFrameworkInformation()
             {
-                FrameworkName = NuGetFramework.Parse("net45")
+                FrameworkName = NuGetFramework.Parse("net45"),
             };
 
             var info = new[] { targetFramework1 };
@@ -366,7 +365,7 @@ namespace NuGet.Commands.Test
             project.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
 
             spec.AddProject(project);
-    
+
             SpecValidationUtility.ValidateDependencySpec(spec);
 
         }
@@ -468,11 +467,47 @@ namespace NuGet.Commands.Test
             AssertError(spec, "Property 'ProjectJsonPath' is not allowed for project type 'PackageReference'.", "a.csproj");
         }
 
+        [Fact]
+        public void SpecValidationUtility_VerifyFrameworks_WithSameBase_DifferentAssetTargetFallback_Duplicates()
+        {
+            // Arrange
+            var spec = new DependencyGraphSpec();
+            spec.AddRestore("a");
+
+            var targetFramework1 = new TargetFrameworkInformation()
+            {
+                FrameworkName = new AssetTargetFallbackFramework(CommonFrameworks.Net50, new List<NuGetFramework>() { CommonFrameworks.Net463 })
+            };
+
+            var targetFramework2 = new TargetFrameworkInformation()
+            {
+                FrameworkName = new AssetTargetFallbackFramework(CommonFrameworks.Net50, new List<NuGetFramework>() { CommonFrameworks.Net462 })
+            };
+
+            var info = new[] { targetFramework1, targetFramework2 };
+
+            var project = new PackageSpec(info);
+            project.RestoreMetadata = new ProjectRestoreMetadata();
+            project.Name = "a";
+            project.FilePath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectUniqueName = "a";
+            project.RestoreMetadata.ProjectName = "a";
+            project.RestoreMetadata.ProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "a.csproj");
+            project.RestoreMetadata.ProjectStyle = ProjectStyle.ProjectJson;
+            project.RestoreMetadata.ProjectJsonPath = Path.Combine(Directory.GetCurrentDirectory(), "project.json");
+
+            spec.AddProject(project);
+
+            // Act && Assert
+            AssertError(spec, "Duplicate frameworks found");
+        }
+
         private static PackageSpec GetProjectA()
         {
             var targetFramework1 = new TargetFrameworkInformation()
             {
-                FrameworkName = NuGetFramework.Parse("net45")
+                FrameworkName = NuGetFramework.Parse("net45"),
+                TargetAlias = "net45",
             };
 
             var info = new[] { targetFramework1 };

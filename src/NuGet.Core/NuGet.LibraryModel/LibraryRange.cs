@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -14,21 +15,28 @@ namespace NuGet.LibraryModel
         {
         }
 
-        public LibraryRange(string name, LibraryDependencyTarget typeConstraint): this(name, null, typeConstraint)
+        [SetsRequiredMembers]
+        public LibraryRange(string name) : this(name, null, LibraryDependencyTarget.All)
         {
         }
 
-        public LibraryRange(string name, VersionRange versionRange, LibraryDependencyTarget typeConstraint)
+        [SetsRequiredMembers]
+        public LibraryRange(string name, LibraryDependencyTarget typeConstraint) : this(name, null, typeConstraint)
+        {
+        }
+
+        [SetsRequiredMembers]
+        public LibraryRange(string name, VersionRange? versionRange, LibraryDependencyTarget typeConstraint)
         {
             Name = name;
             VersionRange = versionRange;
             TypeConstraint = typeConstraint;
         }
 
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
         // Null is used for all, CLI still has code expecting this
-        public VersionRange VersionRange { get; set; }
+        public VersionRange? VersionRange { get; set; }
 
         public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
 
@@ -65,46 +73,45 @@ namespace NuGet.LibraryModel
             return output;
         }
 
-        public string ToLockFileDependencyGroupString()
+        public string? ToLockFileDependencyGroupString()
         {
-            var sb = new StringBuilder();
+            if (VersionRange is null)
+            {
+                return null;
+            }
+
+            StringBuilder sb = StringBuilderPool.Shared.Rent(256);
+
             sb.Append(Name);
 
-            if (VersionRange != null)
+            if (VersionRange.HasLowerBound)
             {
-                if (VersionRange.HasLowerBound)
+                if (VersionRange.IsMinInclusive)
                 {
-                    sb.Append(" ");
-
-                    if (VersionRange.IsMinInclusive)
-                    {
-                        sb.Append(">= ");
-                    }
-                    else
-                    {
-                        sb.Append("> ");
-                    }
-
-                    if (VersionRange.IsFloating)
-                    {
-                        sb.Append(VersionRange.Float.ToString());
-                    }
-                    else
-                    {
-                        sb.Append(VersionRange.MinVersion.ToNormalizedString());
-                    }
+                    sb.Append(" >= ");
+                }
+                else
+                {
+                    sb.Append(" > ");
                 }
 
-                if (VersionRange.HasUpperBound)
+                if (VersionRange.IsFloating)
                 {
-                    sb.Append(" ");
-
-                    sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
-                    sb.Append(VersionRange.MaxVersion.ToNormalizedString());
+                    VersionRange.Float.ToString(sb);
+                }
+                else
+                {
+                    sb.Append(VersionRange.MinVersion.ToNormalizedString());
                 }
             }
 
-            return sb.ToString();
+            if (VersionRange.HasUpperBound)
+            {
+                sb.Append(VersionRange.IsMaxInclusive ? " <= " : " < ");
+                sb.Append(VersionRange.MaxVersion.ToNormalizedString());
+            }
+
+            return StringBuilderPool.Shared.ToStringAndReturn(sb);
         }
 
         /// <summary>
@@ -123,7 +130,7 @@ namespace NuGet.LibraryModel
             return (TypeConstraint & flag) != LibraryDependencyTarget.None;
         }
 
-        public bool Equals(LibraryRange other)
+        public bool Equals(LibraryRange? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -140,7 +147,7 @@ namespace NuGet.LibraryModel
                 && Equals(VersionRange, other.VersionRange);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as LibraryRange);
         }
@@ -151,17 +158,17 @@ namespace NuGet.LibraryModel
 
             combiner.AddStringIgnoreCase(Name);
             combiner.AddObject(VersionRange);
-            combiner.AddObject(TypeConstraint);
+            combiner.AddObject((int)TypeConstraint);
 
             return combiner.CombinedHash;
         }
 
-        public static bool operator ==(LibraryRange left, LibraryRange right)
+        public static bool operator ==(LibraryRange? left, LibraryRange? right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(LibraryRange left, LibraryRange right)
+        public static bool operator !=(LibraryRange? left, LibraryRange? right)
         {
             return !Equals(left, right);
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Shared;
 using NuGet.Versioning;
 using ILogger = NuGet.Common.ILogger;
 
@@ -44,17 +46,27 @@ namespace NuGet.Commands
                 IgnoreFailedSources = true,
             })
             {
-                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N"));
+                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N", null));
 
-                var projectName = Guid.NewGuid().ToString("N");
+                var projectName = Guid.NewGuid().ToString("N", null);
 
                 var projectFullPath = Path.Combine(projectDirectory, $"{projectName}.proj");
 
-                // The package spec details what packages to restore
-                var packageSpec = new PackageSpec(TargetFrameworks.Select(i => new TargetFrameworkInformation
+                // Iterate through TargetFrameworks to generate Lists required for packageSpec
+                var frameworks = new List<TargetFrameworkInformation>(TargetFrameworks.Count);
+                var originalTargetFrameworks = new List<string>(TargetFrameworks.Count);
+                foreach (var tf in TargetFrameworks)
                 {
-                    FrameworkName = i,
-                }).ToList())
+                    frameworks.Add(new TargetFrameworkInformation
+                    {
+                        FrameworkName = tf
+                    });
+
+                    originalTargetFrameworks.Add(tf.ToString());
+                }
+
+                // The package spec details what packages to restore
+                var packageSpec = new PackageSpec(frameworks)
                 {
                     Dependencies = new List<LibraryDependency>
                     {
@@ -71,7 +83,6 @@ namespace NuGet.Commands
                             SuppressParent = LibraryIncludeFlags.All,
                             AutoReferenced = true,
                             IncludeType = LibraryIncludeFlags.None,
-                            Type = LibraryDependencyType.Build
                         }
                     },
                     RestoreMetadata = new ProjectRestoreMetadata
@@ -81,10 +92,10 @@ namespace NuGet.Commands
                         ProjectStyle = ProjectStyle.PackageReference,
                         ProjectUniqueName = projectFullPath,
                         OutputPath = projectDirectory,
-                        OriginalTargetFrameworks = TargetFrameworks.Select(i => i.ToString()).ToList(),
+                        OriginalTargetFrameworks = originalTargetFrameworks,
                         ConfigFilePaths = settings.GetConfigFilePaths(),
                         PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
-                        Sources = SettingsUtility.GetEnabledSources(settings).ToList(),
+                        Sources = SettingsUtility.GetEnabledSources(settings).AsList(),
                         FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList()
                     },
                     FilePath = projectFullPath,

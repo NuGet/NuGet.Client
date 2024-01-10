@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-
+using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 using static NuGet.Protocol.Core.Types.Repository;
 

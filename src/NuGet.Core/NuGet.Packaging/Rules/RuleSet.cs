@@ -3,13 +3,13 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace NuGet.Packaging.Rules
 {
     public static class RuleSet
     {
-        private static readonly ReadOnlyCollection<IPackageRule> _packageCreationRules = new ReadOnlyCollection<IPackageRule>(
-            new IPackageRule[] {
+        private static readonly IPackageRule[] PackageCreationRuleArray = new IPackageRule[] {
                 new InvalidFrameworkFolderRule(AnalysisResources.InvalidFrameworkWarning),
                 new MisplacedAssemblyUnderLibRule(AnalysisResources.AssemblyDirectlyUnderLibWarning),
                 new MisplacedAssemblyOutsideLibRule(AnalysisResources.AssemblyOutsideLibWarning),
@@ -29,24 +29,33 @@ namespace NuGet.Packaging.Rules
                 new DependenciesGroupsForEachTFMRule(),
                 new UpholdBuildConventionRule(),
                 new ReferencesInNuspecMatchRefAssetsRule(),
+                new InvalidUndottedFrameworkRule(),
                 new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-            }
+        };
+
+        // Non-breaking best practice rules.  
+        private static readonly IPackageRule[] PackageCreationBestPracticeRuleArray = new IPackageRule[] {
+                new MissingReadmeRule(AnalysisResources.MissingReadmeInformation)
+        };
+
+        private static readonly ReadOnlyCollection<IPackageRule> PackageCreationRules = new ReadOnlyCollection<IPackageRule>(
+            PackageCreationRuleArray.Concat(PackageCreationBestPracticeRuleArray).ToArray()
         );
 
-        private static readonly ReadOnlyCollection<IPackageRule> _packagesConfigToPackageReferenceMigrationRuleSet = new ReadOnlyCollection<IPackageRule>(
-            new IPackageRule[] {
+        private static readonly ReadOnlyCollection<IPackageRule> PackagesConfigToPackageReferenceMigrationRules = new ReadOnlyCollection<IPackageRule>(
+             new IPackageRule[] {
                 new MisplacedAssemblyUnderLibRule(AnalysisResources.Migrator_AssemblyDirectlyUnderLibWarning),
                 new InstallScriptInPackageReferenceProjectRule(AnalysisResources.Migrator_PackageHasInstallScript),
                 new ContentFolderInPackageReferenceProjectRule(AnalysisResources.Migrator_PackageHasContentFolder),
                 new XdtTransformInPackageReferenceProjectRule(AnalysisResources.Migrator_XdtTransformInPackage)
-            }
-        );
+             }
+         );
 
         public static IEnumerable<IPackageRule> PackageCreationRuleSet
         {
             get
             {
-                return _packageCreationRules;
+                return PackageCreationRules;
             }
         }
 
@@ -54,7 +63,7 @@ namespace NuGet.Packaging.Rules
         {
             get
             {
-                return _packagesConfigToPackageReferenceMigrationRuleSet;
+                return PackagesConfigToPackageReferenceMigrationRules;
             }
         }
     }

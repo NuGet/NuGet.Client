@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Moq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI
@@ -33,11 +33,15 @@ namespace NuGet.PackageManagement.UI
         [InlineData("ftp://www.nuget.org/", "nuget.org")]
         public void RemovesWwwSubdomainFromPackageDetailsText(string url, string expected)
         {
-            var metadata = new Mock<IPackageSearchMetadata>();
-            metadata.Setup(x => x.Identity).Returns(new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0")));
-            metadata.Setup(x => x.PackageDetailsUrl).Returns(() => new Uri(url));
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0")),
+                PackageDetailsUrl = new Uri(url)
+            };
 
-            var target = new DetailedPackageMetadata(metadata.Object, deprecationMetadata: null, downloadCount: null);
+            var packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata);
+
+            var target = new DetailedPackageMetadata(packageSearchMetadataContextInfo, deprecationMetadata: null, downloadCount: null);
 
             Assert.Equal(expected, target.PackageDetailsText);
         }

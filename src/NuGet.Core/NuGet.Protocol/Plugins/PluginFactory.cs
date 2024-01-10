@@ -86,13 +86,13 @@ namespace NuGet.Protocol.Plugins
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="Plugin" />
         /// instance.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="filePath" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="arguments" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="requestHandlers" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="options" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="sessionCancellationToken" />
         /// is cancelled.</exception>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
@@ -193,7 +193,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     exitedProcess.Exited -= onExited;
 
-                    OnPluginProcessExited(eventSender, exitedProcess, pluginId);
+                    OnPluginProcessExited(exitedProcess, pluginId);
 
                     if (connection?.State == ConnectionState.Handshaking)
                     {
@@ -214,7 +214,7 @@ namespace NuGet.Protocol.Plugins
 
                 var sender = new Sender(pluginProcess.StandardInput);
                 var receiver = new StandardOutputReceiver(pluginProcess);
-                var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.Handshake, MessageMethod.Log});
+                var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.Handshake, MessageMethod.Log });
                 var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), processingHandler, _logger);
                 connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
 
@@ -287,9 +287,9 @@ namespace NuGet.Protocol.Plugins
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="Plugin" />
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="requestHandlers" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="options" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="sessionCancellationToken" />
         /// is cancelled.</exception>
         /// <remarks>This is intended to be called by a plugin.</remarks>
@@ -411,7 +411,7 @@ namespace NuGet.Protocol.Plugins
 
         // This is more reliable than OnPluginExited as this even handler is wired up before the process
         // has even started, while OnPluginExited is wired up after.
-        private void OnPluginProcessExited(object sender, IPluginProcess pluginProcess, string pluginId)
+        private void OnPluginProcessExited(IPluginProcess pluginProcess, string pluginId)
         {
             if (_logger.IsEnabled)
             {

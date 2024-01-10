@@ -60,7 +60,7 @@ namespace NuGet.Configuration
 
             var parsedCertificates = _parsedDescendants.OfType<CertificateItem>().ToList();
 
-            if (parsedCertificates.Count() < 1)
+            if (parsedCertificates.Count == 0)
             {
                 throw new NuGetConfigurationException(
                     string.Format(CultureInfo.CurrentCulture, Resources.UserSettings_UnableToParseConfigFile, Resources.TrustedSignerMustHaveCertificates, origin.ConfigFilePath));

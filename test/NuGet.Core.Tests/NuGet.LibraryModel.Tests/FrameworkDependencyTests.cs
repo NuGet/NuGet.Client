@@ -11,13 +11,13 @@ namespace NuGet.LibraryModel
     public class FrameworkDependencyTests
     {
         [Fact]
-        public void FrameworkDependecy_ConstructorWithNullName_Throws()
+        public void FrameworkDependency_ConstructorWithNullName_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new FrameworkDependency(null, FrameworkDependencyFlags.All));
+            Assert.Throws<ArgumentNullException>(() => new FrameworkDependency(null!, FrameworkDependencyFlags.All));
         }
 
         [Fact]
-        public void FrameworkDependecy_NamesWithDifferentCasing_AreEqual()
+        public void FrameworkDependency_NamesWithDifferentCasing_AreEqual()
         {
             Assert.Equal(new FrameworkDependency("AAA", FrameworkDependencyFlags.All),
                         new FrameworkDependency("aaa", FrameworkDependencyFlags.All));
@@ -31,7 +31,7 @@ namespace NuGet.LibraryModel
         }
 
         [Fact]
-        public void FrameworkDependecy_NamesWithDifferentCasign_DoNotAffectCompare()
+        public void FrameworkDependency_NamesWithDifferentCasign_DoNotAffectCompare()
         {
             var frameworkDependencies = new List<FrameworkDependency>();
 
@@ -46,7 +46,7 @@ namespace NuGet.LibraryModel
         }
 
         [Fact]
-        public void FrameworkDependecy_DifferentFlags_AffectCompare()
+        public void FrameworkDependency_DifferentFlags_AffectCompare()
         {
             Assert.True(new FrameworkDependency("AAA", FrameworkDependencyFlags.All).CompareTo(new FrameworkDependency("AAA", FrameworkDependencyFlags.None)) > 0);
         }

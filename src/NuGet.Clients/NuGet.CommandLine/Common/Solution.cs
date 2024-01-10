@@ -28,7 +28,7 @@ namespace NuGet.Common
 
             try
             {
-                var msbuildAssembly = Assembly.LoadFile(
+                var msbuildAssembly = Assembly.LoadFrom(
                     Path.Combine(msbuildPath, "Microsoft.Build.dll"));
                 switch (msbuildAssembly.GetName().Version.Major)
                 {
@@ -87,6 +87,8 @@ namespace NuGet.Common
                 }
             }
 
+            var solutionDirectory = Path.GetDirectoryName(solutionFileName);
+
             // load projects
             var projectInSolutionType = msbuildAssembly.GetType(
                 "Microsoft.Build.Construction.ProjectInSolution",
@@ -103,7 +105,8 @@ namespace NuGet.Common
                 var projectType = projectTypeProperty.GetValue(proj, index: null).ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
                 var relativePath = (string)relativePathProperty.GetValue(proj, index: null);
-                projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
+                var absolutePath = Path.Combine(solutionDirectory, relativePath);
+                projects.Add(new ProjectInSolution(relativePath, absolutePath, isSolutionFolder));
             }
             Projects = projects;
         }
@@ -111,8 +114,16 @@ namespace NuGet.Common
         // Load the solution file using the public class SolutionFile in msbuild 14
         private void LoadSolutionWithMsbuild14(Assembly msbuildAssembly, string solutionFileName)
         {
+            var isSolutionFilter = solutionFileName.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase);
             var solutionFileType = msbuildAssembly.GetType("Microsoft.Build.Construction.SolutionFile");
             var parseMethod = solutionFileType.GetMethod("Parse", BindingFlags.Static | BindingFlags.Public);
+            var projectShouldBuildMethod = isSolutionFilter ? solutionFileType.GetMethod("ProjectShouldBuild", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException(string.Format(
+                    CultureInfo.InvariantCulture,
+                    LocalizedResourceManager.GetString(nameof(NuGet.CommandLine.NuGetResources.Error_UnsupportedMsBuildForSolutionFilter)),
+                    msbuildAssembly.FullName))
+                : null;
+
             dynamic solutionFile = parseMethod.Invoke(null, new object[] { solutionFileName });
 
             // load projects
@@ -121,8 +132,22 @@ namespace NuGet.Common
             {
                 var projectType = project.ProjectType.ToString();
                 var isSolutionFolder = projectType.Equals("SolutionFolder", StringComparison.OrdinalIgnoreCase);
-                var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
-                projects.Add(new ProjectInSolution(relativePath, isSolutionFolder));
+
+                try
+                {
+                    var projectShouldBuild = !isSolutionFilter || projectShouldBuildMethod.Invoke(solutionFile, new object[] { project.RelativePath });
+                    if (projectShouldBuild)
+                    {
+                        var relativePath = project.RelativePath.Replace('\\', Path.DirectorySeparatorChar);
+                        var absolutePath = project.AbsolutePath;
+
+                        projects.Add(new ProjectInSolution(relativePath, absolutePath, isSolutionFolder));
+                    }
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw ex.InnerException ?? ex;
+                }
             }
             Projects = projects;
         }

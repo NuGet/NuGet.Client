@@ -5,8 +5,10 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
   Background="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+  imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
   x:Name="_self"
   mc:Ignorable="d"
   d:DesignHeight="523"
@@ -32,6 +34,9 @@
     <CommandBinding
       Command="{x:Static nuget:Commands.RestartSearchCommand}" 
       Executed="ExecuteRestartSearchCommand"/>
+    <CommandBinding
+      Command="{x:Static nuget:Commands.SearchPackageCommand}"
+      Executed="ExecuteSearchPackageCommand"/>
   </UserControl.CommandBindings>
   <UserControl.InputBindings>
     <KeyBinding
@@ -45,7 +50,8 @@
     <DockPanel
       x:Name="_root"
       LastChildFill="True"
-      Width="{Binding ActualWidth, ElementName=_self}">
+      Width="{Binding ActualWidth, ElementName=_self}"
+      KeyboardNavigation.TabNavigation="Cycle">
       <DockPanel.MinWidth>
         <MultiBinding Converter="{StaticResource AdditionConverter}">
           <Binding Path="MinWidth" ElementName="_leftSideGridColumn" />
@@ -61,12 +67,13 @@
       SettingsButtonClicked="SettingsButtonClicked"
       FilterChanged="Filter_SelectionChanged"
       PrereleaseCheckChanged="CheckboxPrerelease_CheckChanged"
+      VulnerabilitiesCheckChanged="CheckboxVulnerabilties_CheckChanged"
       SourceRepoListSelectionChanged="SourceRepoList_SelectionChanged" />
 
     <Border
       DockPanel.Dock="Top"
       BorderThickness="0,1,0,0"
-      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
+      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       VerticalAlignment="Stretch">
         <Grid
           Width="{Binding ActualWidth, ElementName=_root}">
@@ -87,7 +94,7 @@
             <ColumnDefinition
               x:Name="_rightSideGridColumn"
               Width="35*"
-              MinWidth="330" />
+              MinWidth="382" />
           </Grid.ColumnDefinitions>
 
           <!-- left side -->
@@ -105,6 +112,7 @@
               x:Name="_packageList"
               AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackagesList}"
               SelectionChanged="PackageList_SelectionChanged"
+              GroupExpansionChanged="PackageList_GroupExpansionChanged"
               UpdateButtonClicked="PackageList_UpdateButtonClicked"
               Width="{Binding ActualWidth, ElementName=_leftSide}"/>
 

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,15 +10,18 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 using TelemetryPiiProperty = Microsoft.VisualStudio.Telemetry.TelemetryPiiProperty;
 
@@ -27,101 +32,59 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class UIActionEngine
     {
+        private delegate Task<IReadOnlyList<ProjectAction>> ResolveActionsAsync(INuGetProjectManagerService projectManagerService);
+
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly NuGetPackageManager _packageManager;
         private readonly INuGetLockService _lockService;
-
-        private const __VSCREATEWEBBROWSER CreateWebBrowserFlags = __VSCREATEWEBBROWSER.VSCWB_StartCustom | __VSCREATEWEBBROWSER.VSCWB_ReuseExisting | __VSCREATEWEBBROWSER.VSCWB_AutoShow;
-        private const string CreateWebBrowserOwnerGuidString = "192D4A62-3273-4C4F-9EB4-B53DAAFFCBFB";
 
         /// <summary>
         /// Create a UIActionEngine to perform installs/uninstalls
         /// </summary>
         public UIActionEngine(
-            ISourceRepositoryProvider sourceProvider, 
+            ISourceRepositoryProvider sourceProvider,
             NuGetPackageManager packageManager,
             INuGetLockService lockService)
         {
-            if (sourceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(sourceProvider));
-            }
-
-            if (packageManager == null)
-            {
-                throw new ArgumentNullException(nameof(packageManager));
-            }
-
-            if (lockService == null)
-            {
-                throw new ArgumentNullException(nameof(lockService));
-            }
-
-            _sourceProvider = sourceProvider;
-            _packageManager = packageManager;
-            _lockService = lockService;
+            _sourceProvider = sourceProvider ?? throw new ArgumentNullException(nameof(sourceProvider));
+            _packageManager = packageManager ?? throw new ArgumentNullException(nameof(packageManager));
+            _lockService = lockService ?? throw new ArgumentNullException(nameof(lockService));
         }
 
         /// <summary>
-        /// Perform a user action.
+        /// Perform an install or uninstall user action.
         /// </summary>
-        /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
-        public async Task PerformActionAsync(
+        /// <remarks>This needs to be called from a background thread. It may make the UI thread stop responding.</remarks>
+        public async Task PerformInstallOrUninstallAsync(
             INuGetUI uiService,
             UserAction userAction,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
-            var operationType = NuGetOperationType.Install;
-            if (userAction.Action == NuGetProjectActionType.Uninstall)
-            {
-                operationType = NuGetOperationType.Uninstall;
-            }
-
-            await PerformActionImplAsync(
+            await PerformActionAsync(
                 uiService,
-                (sourceCacheContext) =>
-                {
-                    var projects = uiService.Projects;
-
-                    // Allow prerelease packages only if the target is prerelease
-                    var includePrelease =
-                        userAction.Action == NuGetProjectActionType.Uninstall ||
-                        userAction.Version.IsPrerelease == true;
-
-                    var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
-
-                    var resolutionContext = new ResolutionContext(
-                        uiService.DependencyBehavior,
-                        includePrelease,
-                        includeUnlisted,
-                        VersionConstraints.None,
-                        new GatherCache(),
-                        sourceCacheContext);
-
-                    return GetActionsAsync(
-                        uiService,
-                        projects,
-                        userAction,
-                        uiService.RemoveDependencies,
-                        uiService.ForceRemove,
-                        resolutionContext,
-                        projectContext: uiService.ProjectContext,
-                        token: token);
-                },
-                (actions, sourceCacheContext) =>
-                {
-                    return ExecuteActionsAsync(actions, uiService.ProjectContext, uiService.CommonOperations, userAction, sourceCacheContext, token);
-                },
-                operationType,
                 userAction,
-                token);
+                userAction.Action,
+                (projectManagerService) => GetActionsAsync(
+                    projectManagerService,
+                    uiService,
+                    uiService.Projects,
+                    userAction,
+                    uiService.RemoveDependencies,
+                    uiService.ForceRemove,
+                    newMappingID: userAction.PackageId,
+                    newMappingSource: userAction.SelectedSourceName,
+                    cancellationToken),
+                cancellationToken);
         }
 
-        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, NuGetProject nuGetProject)
+        public async Task UpgradeNuGetProjectAsync(INuGetUI uiService, IProjectContextInfo project)
         {
-            var context = uiService.UIContext;
+            Assumes.NotNull(uiService);
+            Assumes.NotNull(project);
+
+            INuGetUIContext context = uiService.UIContext;
             // Restore the project before proceeding
-            var solutionDirectory = context.SolutionManager.SolutionDirectory;
+            string solutionDirectory = await context.SolutionManagerService.GetSolutionDirectoryAsync(CancellationToken.None);
 
             await context.PackageRestoreManager.RestoreMissingPackagesInSolutionAsync(
                 solutionDirectory,
@@ -129,8 +92,26 @@ namespace NuGet.PackageManagement.UI
                 new LoggerAdapter(uiService.ProjectContext),
                 CancellationToken.None);
 
-            var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
-            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel((MSBuildNuGetProject)nuGetProject, packagesDependencyInfo.ToList());
+            IServiceBroker serviceBroker = context.ServiceBroker;
+            NuGetProjectUpgradeWindowModel upgradeInformationWindowModel;
+
+            using (INuGetProjectManagerService? projectManager = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService,
+                CancellationToken.None))
+            {
+                Assumes.NotNull(projectManager);
+
+                IReadOnlyCollection<PackageDependencyInfo> packagesDependencyInfo = await projectManager.GetInstalledPackagesDependencyInfoAsync(
+                    project.ProjectId,
+                    includeUnresolved: true,
+                    CancellationToken.None);
+
+                upgradeInformationWindowModel = await NuGetProjectUpgradeWindowModel.CreateAsync(
+                    serviceBroker,
+                    project,
+                    packagesDependencyInfo.ToList(),
+                    CancellationToken.None);
+            }
 
             var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
             if (!result)
@@ -139,8 +120,13 @@ namespace NuGet.PackageManagement.UI
                 var packagesCount = upgradeInformationWindowModel.UpgradeDependencyItems.Count;
 
                 var upgradeTelemetryEvent = new UpgradeInformationTelemetryEvent();
-                upgradeTelemetryEvent.SetResult(
+                IEnumerable<string> projectIds = await ProjectUtility.GetSortedProjectIdsAsync(
+                    uiService.UIContext.ServiceBroker,
                     uiService.Projects,
+                    CancellationToken.None);
+
+                upgradeTelemetryEvent.SetResult(
+                    projectIds,
                     NuGetOperationStatus.Cancelled,
                     packagesCount);
 
@@ -150,19 +136,22 @@ namespace NuGet.PackageManagement.UI
             }
 
             var progressDialogData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage);
+            string? projectName = await project.GetUniqueNameOrNameAsync(
+                uiService.UIContext.ServiceBroker,
+                CancellationToken.None);
             string backupPath;
 
             var windowTitle = string.Format(
                 CultureInfo.CurrentCulture,
                 Resources.WindowTitle_NuGetMigrator,
-                NuGetProject.GetUniqueNameOrName(nuGetProject));
+                projectName);
 
-            using (var progressDialogSession = await context.StartModalProgressDialogAsync(windowTitle, progressDialogData, uiService))
+            using (IModalProgressDialogSession progressDialogSession = await context.StartModalProgressDialogAsync(windowTitle, progressDialogData, uiService))
             {
                 backupPath = await PackagesConfigToPackageReferenceMigrator.DoUpgradeAsync(
                     context,
                     uiService,
-                    nuGetProject,
+                    project,
                     upgradeInformationWindowModel.UpgradeDependencyItems,
                     upgradeInformationWindowModel.NotFoundPackages,
                     progressDialogSession.Progress,
@@ -171,34 +160,17 @@ namespace NuGet.PackageManagement.UI
 
             if (!string.IsNullOrEmpty(backupPath))
             {
-                var htmlLogFile = GenerateUpgradeReport(nuGetProject, backupPath, upgradeInformationWindowModel);
-
-                Process process = null;
+                string htmlLogFile = GenerateUpgradeReport(projectName, backupPath, upgradeInformationWindowModel);
                 try
                 {
-                    process = Process.Start(htmlLogFile);
+                    using var process = Process.Start(htmlLogFile);
                 }
                 catch { }
             }
         }
 
-        private static void OpenUrlInInternalWebBrowser(string url)
+        private static string GenerateUpgradeReport(string? projectName, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var webBrowsingService = Package.GetGlobalService(typeof(SVsWebBrowsingService)) as IVsWebBrowsingService;
-            if (webBrowsingService == null)
-            {
-                return;
-            }
-
-            var createWebBrowserOwnerGuid = new Guid(CreateWebBrowserOwnerGuidString);
-
-            webBrowsingService.CreateWebBrowser((uint)CreateWebBrowserFlags, ref createWebBrowserOwnerGuid, null, url, null, out var browser, out var frame);
-        }
-
-        private static string GenerateUpgradeReport(NuGetProject nuGetProject, string backupPath, NuGetProjectUpgradeWindowModel upgradeInformationWindowModel)
-        {
-            var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             using (var upgradeLogger = new UpgradeLogger(projectName, backupPath))
             {
                 var installedAsTopLevel = upgradeInformationWindowModel.UpgradeDependencyItems.Where(t => t.InstallAsTopLevel);
@@ -220,113 +192,119 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Perform the multi-package update action.
         /// </summary>
-        /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
+        /// <remarks>This needs to be called from a background thread. It may make the UI thread stop responding.</remarks>
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
-            CancellationToken token)
+            CancellationToken cancellationToken)
         {
-            await PerformActionImplAsync(
-                uiService,
-                (sourceCacheContext) =>
-                {
-                    return ResolveActionsForUpdateAsync(
-                        uiService,
-                        packagesToUpdate,
-                        token);
-                },
-                async (actions, sourceCacheContext) =>
-                {
-                    // Get all Nuget projects and actions and call ExecuteNugetProjectActions once for all the projects.
-                    var nugetProjects = actions.Select(action => action.Project);
-                    var nugetActions = actions.Select(action => action.Action);
-                    await _packageManager.ExecuteNuGetProjectActionsAsync(
-                        nugetProjects,
-                        nugetActions,
-                        uiService.ProjectContext,
-                        sourceCacheContext,
-                        token);
-                },
-                NuGetOperationType.Update,
-                userAction: null,
-                token);
+            IServiceBroker serviceBroker = uiService.UIContext.ServiceBroker;
+
+            using (INuGetProjectManagerService? projectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService,
+                cancellationToken: cancellationToken))
+            {
+                Assumes.NotNull(projectManagerService);
+
+                await PerformActionAsync(
+                    uiService,
+                    userAction: null,
+                    NuGetProjectActionType.Update,
+                    (projectManagerService) =>
+                        ResolveActionsForUpdateAsync(projectManagerService, uiService, packagesToUpdate, cancellationToken),
+                    cancellationToken);
+            }
         }
 
         /// <summary>
         /// Calculates the list of actions needed to perform packages updates.
         /// </summary>
-        /// <param name="uiService">ui service.</param>
-        /// <param name="packagesToUpdate">The list of packages to update.</param>
-        /// <param name="token">Cancellation token.</param>
-        /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdateAsync(
+        private async Task<IReadOnlyList<ProjectAction>> ResolveActionsForUpdateAsync(
+            INuGetProjectManagerService projectManagerService,
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
         {
-            var resolvedActions = new List<ResolvedAction>();
+            bool includePrerelease = packagesToUpdate
+                .Any(package => package.Version.IsPrerelease);
 
-            // Keep a single gather cache across projects
-            var gatherCache = new GatherCache();
+            string[] projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
 
-            var includePrerelease = packagesToUpdate.Where(
-                package => package.Version.IsPrerelease).Any();
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
 
-            using (var sourceCacheContext = new SourceCacheContext())
-            {
-                var resolutionContext = new ResolutionContext(
-                    uiService.DependencyBehavior,
-                    includePrelease: includePrerelease,
-                    includeUnlisted: true,
-                    versionConstraints: VersionConstraints.None,
-                    gatherCache: gatherCache,
-                    sourceCacheContext: sourceCacheContext);
-
-                var secondarySources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-
-                var actions = await _packageManager.PreviewUpdatePackagesAsync(
-                    packagesToUpdate,
-                    uiService.Projects,
-                    resolutionContext,
-                    uiService.ProjectContext,
-                    uiService.ActiveSources,
-                    secondarySources,
-                    token);
-
-                resolvedActions.AddRange(actions.Select(action => new ResolvedAction(action.Project, action))
-                    .ToList());
-            }
-
-            return resolvedActions;
+            return await projectManagerService.GetUpdateActionsAsync(
+                projectIds,
+                packagesToUpdate,
+                VersionConstraints.None,
+                includePrerelease,
+                uiService.DependencyBehavior,
+                packageSourceNames,
+                token);
         }
 
-        /// <summary>
-        /// The internal implementation to perform user action.
-        /// </summary>
-        /// <param name="resolveActionsAsync">A function that returns a task that resolves the user
-        /// action into project actions.</param>
-        /// <param name="executeActionsAsync">A function that returns a task that executes
-        /// the project actions.</param>
-        private async Task PerformActionImplAsync(
+        private async Task PerformActionAsync(
             INuGetUI uiService,
-            Func<SourceCacheContext, Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
-            Func<IReadOnlyList<ResolvedAction>, SourceCacheContext, Task> executeActionsAsync,
-            NuGetOperationType operationType,
-            UserAction userAction,
-            CancellationToken token)
+            UserAction? userAction,
+            NuGetProjectActionType operationType,
+            ResolveActionsAsync resolveActionsAsync,
+            CancellationToken cancellationToken)
+        {
+            IServiceBroker serviceBroker = uiService.UIContext.ServiceBroker;
+
+            using (INuGetProjectManagerService? projectManagerService = await serviceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService,
+                cancellationToken: cancellationToken))
+            {
+                Assumes.NotNull(projectManagerService);
+
+                await projectManagerService.BeginOperationAsync(cancellationToken);
+
+                try
+                {
+                    await PerformActionImplAsync(
+                        serviceBroker,
+                        projectManagerService,
+                        uiService,
+                        resolveActionsAsync,
+                        operationType,
+                        userAction,
+                        cancellationToken);
+                }
+                finally
+                {
+                    await projectManagerService.EndOperationAsync(cancellationToken);
+                }
+            }
+        }
+
+        private static Tuple<string, string, string?> CreatePackageTuple(IPackageReferenceContextInfo pkg)
+        {
+            PackageIdentity package = pkg.Identity;
+            return Tuple.Create(package.Id, package.Version == null ? string.Empty : package.Version.ToNormalizedString(), pkg?.AllowedVersions?.OriginalString ?? null);
+        }
+
+        private async Task PerformActionImplAsync(
+            IServiceBroker serviceBroker,
+            INuGetProjectManagerService projectManagerService,
+            INuGetUI uiService,
+            ResolveActionsAsync resolveActionsAsync,
+            NuGetProjectActionType operationType,
+            UserAction? userAction,
+            CancellationToken cancellationToken)
         {
             var status = NuGetOperationStatus.Succeeded;
             var startTime = DateTimeOffset.Now;
             var packageCount = 0;
 
-            bool continueAfterPreview = true;
-            bool acceptedLicense = true;
+            var continueAfterPreview = true;
+            var acceptedLicense = true;
 
-            List<string> removedPackages = null;
-            HashSet<Tuple<string, string>> existingPackages = new HashSet<Tuple<string, string>>();
-            List<Tuple<string,string>> addedPackages = null;
-            List<Tuple<string,string>> updatedPackagesOld = null;
-            List<Tuple<string,string>> updatedPackagesNew = null;
+            List<string>? removedPackages = null;
+            var existingPackages = new HashSet<Tuple<string, string, string?>>();
+            List<Tuple<string, string>>? addedPackages = null;
+            List<Tuple<string, string>>? updatedPackagesOld = null;
+            List<Tuple<string, string>>? updatedPackagesNew = null;
+            bool? packageToInstallWasTransitive = null;
 
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
@@ -335,17 +313,36 @@ namespace NuGet.PackageManagement.UI
             packageEnumerationTime.Start();
             try
             {
+                IServiceBroker sb = uiService.UIContext.ServiceBroker;
+                int projectsCount = uiService.Projects.Count();
+                IEnumerable<IPackageReferenceContextInfo>? installedPackages = null;
                 // collect the install state of the existing packages
-                foreach (var project in uiService.Projects)
+                foreach (IProjectContextInfo project in uiService.Projects) // only one project when PM UI is in project mode
                 {
-                    var result = await project.GetInstalledPackagesAsync(token);
-                    foreach (var package in result)
+                    if (projectsCount == 1 && userAction != null && !userAction.IsSolutionLevel && userAction.Action == NuGetProjectActionType.Install && project.ProjectStyle == ProjectModel.ProjectStyle.PackageReference && project.ProjectKind == NuGetProjectKind.PackageReference)
                     {
-                        Tuple<string, string> packageInfo = new Tuple<string, string>(package.PackageIdentity.Id, (package.PackageIdentity.Version == null ? "" : package.PackageIdentity.Version.ToNormalizedString()));
-                        if (!existingPackages.Contains(packageInfo))
+                        IInstalledAndTransitivePackages installedAndTransitives = await project.GetInstalledAndTransitivePackagesAsync(sb, cancellationToken);
+                        installedPackages = installedAndTransitives.InstalledPackages;
+
+                        packageToInstallWasTransitive = false;
+                        string packageIdToInstall = VSTelemetryServiceUtility.NormalizePackageId(userAction.PackageId);
+                        foreach (IPackageReferenceContextInfo transitivePackage in installedAndTransitives.TransitivePackages)
                         {
-                            existingPackages.Add(packageInfo);
+                            if (packageIdToInstall == VSTelemetryServiceUtility.NormalizePackageId(transitivePackage.Identity.Id))
+                            {
+                                packageToInstallWasTransitive = true;
+                                break;
+                            }
                         }
+                    }
+                    else
+                    {
+                        installedPackages = await project.GetInstalledPackagesAsync(sb, cancellationToken);
+                    }
+
+                    foreach (IPackageReferenceContextInfo package in installedPackages)
+                    {
+                        existingPackages.Add(CreatePackageTuple(package));
                     }
                 }
             }
@@ -353,117 +350,151 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't teardown the process if we have a telemetry failure
             }
+
+            var sourceMappingProvider = new PackageSourceMappingProvider(uiService.Settings);
+            IReadOnlyList<PackageSourceMappingSourceItem> existingPackageSourceMappingSourceItems = sourceMappingProvider.GetPackageSourceMappingItems();
+
             packageEnumerationTime.Stop();
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
             {
+                int? countCreatedTopLevelSourceMappings = null;
+                int? countCreatedTransitiveSourceMappings = null;
+
                 try
                 {
                     uiService.BeginOperation();
 
-                    var acceptedFormat = await CheckPackageManagementFormat(uiService, token);
-                    if (!acceptedFormat)
+                    using (INuGetProjectUpgraderService? projectUpgrader = await serviceBroker.GetProxyAsync<INuGetProjectUpgraderService>(
+                        NuGetServices.ProjectUpgraderService,
+                        cancellationToken))
                     {
-                        return;
+                        bool isAcceptedFormat = await CheckPackageManagementFormatAsync(projectUpgrader, uiService, cancellationToken);
+                        if (!isAcceptedFormat)
+                        {
+                            status = NuGetOperationStatus.Cancelled;
+                            return;
+                        }
                     }
 
                     TelemetryServiceUtility.StartOrResumeTimer();
 
-                    using (var sourceCacheContext = new SourceCacheContext())
+                    IReadOnlyList<ProjectAction> actions = await resolveActionsAsync(projectManagerService);
+                    IReadOnlyList<PreviewResult> results = await GetPreviewResultsAsync(projectManagerService, actions, userAction, uiService, cancellationToken);
+
+                    if (results.Any(previewResult => previewResult.NuGetOperationStatus != NuGetOperationStatus.Succeeded))
                     {
-                        var actions = await resolveActionsAsync(sourceCacheContext);
-                        var results = GetPreviewResults(actions);
+                        status = NuGetOperationStatus.Failed;
+                    }
 
-                        if (operationType == NuGetOperationType.Uninstall)
+                    if (operationType == NuGetProjectActionType.Uninstall)
+                    {
+                        // removed packages don't have version info
+                        removedPackages = results.SelectMany(result => result.Deleted)
+                            .Select(package => package.Id)
+                            .Distinct()
+                            .ToList();
+                        packageCount = removedPackages.Count;
+                    }
+                    else
+                    {
+                        // log rich info about added packages
+                        addedPackages = results.SelectMany(result => result.Added)
+                            .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
+                            .Distinct()
+                            .ToList();
+                        var addCount = addedPackages.Count;
+
+                        //updated packages can have an old and a new id.
+                        updatedPackagesOld = results.SelectMany(result => result.Updated)
+                            .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
+                            .Distinct()
+                            .ToList();
+                        updatedPackagesNew = results.SelectMany(result => result.Updated)
+                            .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
+                            .Distinct()
+                            .ToList();
+                        var updateCount = updatedPackagesNew.Count;
+
+                        // update packages count
+                        packageCount = addCount + updateCount;
+
+                        if (updateCount > 0)
                         {
-                            // removed packages don't have version info
-                            removedPackages = results.SelectMany(result => result.Deleted)
-                                                     .Select(package => package.Id)
-                                                     .Distinct()
-                                                     .ToList();
-                            packageCount = removedPackages.Count;
+                            // set operation type to update when there are packages being updated
+                            operationType = NuGetProjectActionType.Update;
                         }
-                        else
+                    }
+
+                    if (status == NuGetOperationStatus.Failed)
+                    {
+                        return;
+                    }
+
+                    TelemetryServiceUtility.StopTimer();
+
+                    // Show the preview window.
+                    if (uiService.DisplayPreviewWindow)
+                    {
+                        bool shouldContinue = uiService.PromptForPreviewAcceptance(results);
+                        if (!shouldContinue)
                         {
-                            // log rich info about added packages
-                            addedPackages = results.SelectMany(result => result.Added)
-                                                   .Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString())))
-                                                   .Distinct()
-                                                   .ToList();
-                            var addCount = addedPackages.Count;
-
-                            //updated packages can have an old and a new id.
-                            updatedPackagesOld = results.SelectMany(result => result.Updated)
-                                                        .Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString())))
-                                                        .Distinct()
-                                                        .ToList();
-                            updatedPackagesNew = results.SelectMany(result => result.Updated)
-                                                        .Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString())))
-                                                        .Distinct()
-                                                        .ToList();
-                            var updateCount = updatedPackagesNew.Count;
-
-                            // update packages count
-                            packageCount = addCount + updateCount;
-
-                            if (updateCount > 0)
-                            {
-                                // set operation type to update when there are packages being updated
-                                operationType = NuGetOperationType.Update;
-                            }
-                        }
-
-                        TelemetryServiceUtility.StopTimer();
-
-                        // Show the preview window.
-                        if (uiService.DisplayPreviewWindow)
-                        {
-                            var shouldContinue = uiService.PromptForPreviewAcceptance(results);
-                            if (!shouldContinue)
-                            {
-                                continueAfterPreview = false;
-                                return;
-                            }
-                        }
-
-                        TelemetryServiceUtility.StartOrResumeTimer();
-
-                        // Show the license acceptance window.
-                        var accepted = await CheckLicenseAcceptanceAsync(uiService, results, token);
-
-                        TelemetryServiceUtility.StartOrResumeTimer();
-
-                        if (!accepted)
-                        {
-                            acceptedLicense = false;
+                            continueAfterPreview = false;
                             return;
                         }
+                    }
 
-                        // Warn about the fact that the "dotnet" TFM is deprecated.
-                        if (uiService.DisplayDeprecatedFrameworkWindow)
+                    TelemetryServiceUtility.StartOrResumeTimer();
+
+                    // Show the license acceptance window.
+                    bool accepted = await CheckLicenseAcceptanceAsync(uiService, results, cancellationToken);
+
+                    TelemetryServiceUtility.StartOrResumeTimer();
+
+                    if (!accepted)
+                    {
+                        acceptedLicense = false;
+                        return;
+                    }
+
+                    // Warn about the fact that the "dotnet" TFM is deprecated.
+                    if (uiService.DisplayDeprecatedFrameworkWindow)
+                    {
+                        bool shouldContinue = await ShouldContinueDueToDotnetDeprecationAsync(projectManagerService, uiService, cancellationToken);
+
+                        TelemetryServiceUtility.StartOrResumeTimer();
+
+                        if (!shouldContinue)
                         {
-                            var shouldContinue = ShouldContinueDueToDotnetDeprecation(uiService, actions, token);
-
-                            TelemetryServiceUtility.StartOrResumeTimer();
-
-                            if (!shouldContinue)
-                            {
-                                return;
-                            }
+                            return;
                         }
+                    }
 
-                        if (!token.IsCancellationRequested)
-                        {
-                            // execute the actions
-                            await executeActionsAsync(actions, sourceCacheContext);
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        PreviewResult? sourceMappingPreviewResult = results.SingleOrDefault(result => result.NewSourceMappings != null);
+                        PackageSourceMappingUtility.ConfigureNewPackageSourceMappings(
+                            userAction,
+                            sourceMappingPreviewResult,
+                            sourceMappingProvider,
+                            existingPackageSourceMappingSourceItems,
+                            out countCreatedTopLevelSourceMappings,
+                            out countCreatedTransitiveSourceMappings);
 
-                            // fires ActionsExecuted event to update the UI
-                            uiService.OnActionsExecuted(actions);
-                        }
-                        else
-                        {
-                            status = NuGetOperationStatus.Cancelled;
-                        }
+                        await projectManagerService.ExecuteActionsAsync(
+                            actions,
+                            cancellationToken);
+
+                        string[] projectIds = actions
+                            .Select(action => action.ProjectId)
+                            .Distinct()
+                            .ToArray();
+
+                        uiService.UIContext.RaiseProjectActionsExecuted(projectIds);
+                    }
+                    else
+                    {
+                        status = NuGetOperationStatus.Cancelled;
                     }
                 }
                 catch (System.Net.Http.HttpRequestException ex)
@@ -503,18 +534,26 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
-                    var frameworks = plc.GetSupportedFrameworks().ToList();
-
-                    var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
-                        uiService.ProjectContext.OperationId.ToString(),
+                    var plc = new PackageLoadContext(isSolution: false, uiService.UIContext);
+                    IReadOnlyCollection<string> frameworks = await plc.GetSupportedFrameworksAsync();
+                    string[] projectIds = (await ProjectUtility.GetSortedProjectIdsAsync(
+                        uiService.UIContext.ServiceBroker,
                         uiService.Projects,
+                        cancellationToken)).ToArray();
+
+                    var isPackageSourceMappingEnabled = existingPackageSourceMappingSourceItems.Count > 0;
+
+                    var actionTelemetryEvent = new VSActionsTelemetryEvent(
+                        uiService.ProjectContext.OperationId.ToString(),
+                        projectIds,
                         operationType,
                         OperationSource.UI,
                         startTime,
                         status,
                         packageCount,
-                        duration.TotalSeconds);
+                        DateTimeOffset.Now,
+                        duration.TotalSeconds,
+                        isPackageSourceMappingEnabled);
 
                     var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
@@ -526,52 +565,73 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
                         nuGetUI?.RecommenderVersion,
+                        nuGetUI?.TopLevelVulnerablePackagesCount ?? 0,
+                        nuGetUI?.TopLevelVulnerablePackagesMaxSeverities?.ToList() ?? new List<int>(),
+                        nuGetUI?.TransitiveVulnerablePackagesCount ?? 0,
+                        nuGetUI?.TransitiveVulnerablePackagesMaxSeverities?.ToList() ?? new List<int>(),
                         existingPackages,
                         addedPackages,
                         removedPackages,
                         updatedPackagesOld,
                         updatedPackagesNew,
-                        frameworks);
+                        frameworks,
+                        countCreatedTopLevelSourceMappings,
+                        countCreatedTransitiveSourceMappings);
 
+                    if (packageToInstallWasTransitive.HasValue)
+                    {
+                        actionTelemetryEvent.PackageToInstallWasTransitive = packageToInstallWasTransitive.Value;
+                    }
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
-            }, token);
+            }, cancellationToken);
+        }
+
+        internal static TelemetryEvent ToTelemetryPackage(string packageId, string packageVersion, string? packageVersionRange)
+        {
+            var subEvent = new TelemetryEvent(eventName: string.Empty);
+            subEvent.AddPiiData("id", VSTelemetryServiceUtility.NormalizePackageId(packageId));
+            subEvent["version"] = packageVersion;
+            if (packageVersionRange != null)
+            {
+                subEvent["versionRange"] = packageVersionRange;
+            }
+
+            return subEvent;
+        }
+
+        internal static List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
+        {
+            var list = new List<TelemetryEvent>(packages.Count);
+            list.AddRange(packages.Select(p => ToTelemetryPackage(p.Item1, p.Item2, null)));
+            return list;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
-        private static void AddUiActionEngineTelemetryProperties(
+        internal static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
             bool acceptedLicense,
-            UserAction userAction,
+            UserAction? userAction,
             int? selectedIndex,
             int? recommendedCount,
             bool? recommendPackages,
             (string modelVersion, string vsixVersion)? recommenderVersion,
-            HashSet<Tuple<string, string>> existingPackages,
-            List<Tuple<string, string>> addedPackages,
-            List<string> removedPackages,
-            List<Tuple<string, string>> updatedPackagesOld,
-            List<Tuple<string, string>> updatedPackagesNew,
-            List<string> targetFrameworks)
+            int topLevelVulnerablePackagesCount,
+            List<int> topLevelVulnerablePackagesMaxSeverities,
+            int transitiveVulnerablePackagesCount,
+            List<int> transitiveVulnerablePackagesMaxSeverities,
+            HashSet<Tuple<string, string, string?>>? existingPackages,
+            List<Tuple<string, string>>? addedPackages,
+            List<string>? removedPackages,
+            List<Tuple<string, string>>? updatedPackagesOld,
+            List<Tuple<string, string>>? updatedPackagesNew,
+            IReadOnlyCollection<string> targetFrameworks,
+            int? countCreatedTopLevelSourceMappings,
+            int? countCreatedTransitiveSourceMappings)
         {
-            TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
-            {
-                var subEvent = new TelemetryEvent(eventName: null);
-                subEvent.AddPiiData("id", package.Item1?.ToLowerInvariant() ?? "(empty package id)");
-                subEvent["version"] = package.Item2;
-                return subEvent;
-            }
-
-            List<TelemetryEvent> ToTelemetryPackageList(List<Tuple<string, string>> packages)
-            {
-                var list = new List<TelemetryEvent>(packages.Count);
-                list.AddRange(packages.Select(ToTelemetryPackage));
-                return list;
-            }
-
             // log possible cancel reasons
             if (!continueAfterPreview)
             {
@@ -587,13 +647,20 @@ namespace NuGet.PackageManagement.UI
             if (userAction != null)
             {
                 // userAction.Version can be null for deleted packages.
-                actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
+                actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty, userAction.VersionRange?.OriginalString);
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
                 actionTelemetryEvent["RecommendedCount"] = recommendedCount;
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
                 actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
                 actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
+                actionTelemetryEvent.IsSolutionLevel = userAction.IsSolutionLevel;
+                actionTelemetryEvent.Tab = userAction.ActiveTab;
             }
+
+            actionTelemetryEvent["TopLevelVulnerablePackagesCount"] = topLevelVulnerablePackagesCount;
+            actionTelemetryEvent.ComplexData["TopLevelVulnerablePackagesMaxSeverities"] = topLevelVulnerablePackagesMaxSeverities;
+            actionTelemetryEvent["TransitiveVulnerablePackagesCount"] = transitiveVulnerablePackagesCount;
+            actionTelemetryEvent.ComplexData["TransitiveVulnerablePackagesMaxSeverities"] = transitiveVulnerablePackagesMaxSeverities;
 
             // log the installed package state
             if (existingPackages?.Count > 0)
@@ -602,7 +669,7 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in existingPackages)
                 {
-                    packages.Add(ToTelemetryPackage(package));
+                    packages.Add(ToTelemetryPackage(package.Item1, package.Item2, package.Item3));
                 }
 
                 actionTelemetryEvent.ComplexData["ExistingPackages"] = packages;
@@ -615,7 +682,15 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in addedPackages)
                 {
-                    packages.Add(ToTelemetryPackage(package));
+                    // Update package VersionRange if it is the selected one
+                    if (userAction != null && package.Item1.Equals(userAction.PackageId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        packages.Add(ToTelemetryPackage(package.Item1, package.Item2, userAction.VersionRange?.OriginalString));
+                    }
+                    else
+                    {
+                        packages.Add(ToTelemetryPackage(package.Item1, package.Item2, null));
+                    }
                 }
 
                 actionTelemetryEvent.ComplexData["AddedPackages"] = packages;
@@ -636,7 +711,21 @@ namespace NuGet.PackageManagement.UI
             // two collections for updated packages: pre and post upgrade
             if (updatedPackagesNew?.Count > 0)
             {
-                actionTelemetryEvent.ComplexData["UpdatedPackagesNew"] = ToTelemetryPackageList(updatedPackagesNew);
+                var packages = new List<TelemetryEvent>();
+
+                foreach (var package in updatedPackagesNew)
+                {
+                    if (userAction != null && package.Item1.Equals(userAction.PackageId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        packages.Add(ToTelemetryPackage(package.Item1, package.Item2, userAction.VersionRange?.OriginalString));
+                    }
+                    else
+                    {
+                        packages.Add(ToTelemetryPackage(package.Item1, package.Item2, null));
+                    }
+                }
+
+                actionTelemetryEvent.ComplexData["UpdatedPackagesNew"] = packages;
             }
 
             if (updatedPackagesOld?.Count > 0)
@@ -649,59 +738,73 @@ namespace NuGet.PackageManagement.UI
             {
                 actionTelemetryEvent["TargetFrameworks"] = string.Join(";", targetFrameworks);
             }
+
+            if (countCreatedTopLevelSourceMappings.HasValue)
+            {
+                actionTelemetryEvent["CreatedTopLevelSourceMappingsCount"] = countCreatedTopLevelSourceMappings.Value;
+            }
+
+            if (countCreatedTransitiveSourceMappings.HasValue)
+            {
+                actionTelemetryEvent["CreatedTransitiveSourceMappingsCount"] = countCreatedTransitiveSourceMappings.Value;
+            }
         }
 
-        private async Task<bool> CheckPackageManagementFormat(INuGetUI uiService, CancellationToken token)
+        private async Task<bool> CheckPackageManagementFormatAsync(
+            INuGetProjectUpgraderService? projectUpgrader,
+            INuGetUI uiService,
+            CancellationToken cancellationToken)
         {
-            var potentialProjects = new List<NuGetProject>();
-
-            // check if project suppports <PackageReference> items.
-            // otherwise don't show format selector dialog for this project
-            var capableProjects = uiService
-                .Projects
-                .Where(project =>
-                    project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig &&
-                    project.ProjectServices.Capabilities.SupportsPackageReferences);
-
-            // get all packages.config based projects with no installed packages
-            foreach (var project in capableProjects)
+            if (projectUpgrader == null)
             {
-                var installedPackages = await project.GetInstalledPackagesAsync(token);
-
-                if (!installedPackages.Any())
-                {
-                    potentialProjects.Add(project);
-                }
+                return false;
             }
-            
+
+            IReadOnlyCollection<string> projectIds = uiService.Projects.Select(project => project.ProjectId).ToArray();
+            IReadOnlyCollection<IProjectContextInfo> upgradeableProjects = await projectUpgrader.GetUpgradeableProjectsAsync(
+                projectIds,
+                cancellationToken);
+
             // only show this dialog if there are any new project(s) with no installed packages.
-            if (potentialProjects.Count > 0)
+            if (upgradeableProjects.Count > 0)
             {
                 var packageManagementFormat = new PackageManagementFormat(uiService.Settings);
+
                 if (!packageManagementFormat.Enabled)
                 {
                     // user disabled this prompt either through Tools->options or previous interaction of this dialog.
                     // now check for default package format, if its set to PackageReference then update the project.
                     if (packageManagementFormat.SelectedPackageManagementFormat == 1)
                     {
-                        await uiService.UpdateNuGetProjectToPackageRef(potentialProjects);
+                        await uiService.UpgradeProjectsToPackageReferenceAsync(upgradeableProjects);
                     }
 
                     return true;
                 }
 
-                packageManagementFormat.ProjectNames = potentialProjects
-                    .Select(project => project.GetMetadata<string>(NuGetProjectMetadataKeys.Name))
-                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+                Task<IProjectMetadataContextInfo>[] tasks = upgradeableProjects
+                    .Select(project => project.GetMetadataAsync(
+                            uiService.UIContext.ServiceBroker,
+                            cancellationToken)
+                        .AsTask())
+                    .ToArray();
+
+                IProjectMetadataContextInfo[] projectMetadatas = await Task.WhenAll(tasks);
+
+                packageManagementFormat.ProjectNames = projectMetadatas
+                    .Select(metadata => metadata.Name)
+                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
 
                 // show dialog for package format selector
-                var result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
+                bool result = uiService.PromptForPackageManagementFormat(packageManagementFormat);
 
                 // update nuget projects if user selected PackageReference option
                 if (result && packageManagementFormat.SelectedPackageManagementFormat == 1)
                 {
-                    await uiService.UpdateNuGetProjectToPackageRef(potentialProjects);
+                    await uiService.UpgradeProjectsToPackageReferenceAsync(upgradeableProjects);
                 }
+
                 return result;
             }
 
@@ -716,29 +819,31 @@ namespace NuGet.PackageManagement.UI
         {
             // find all the packages that might need a license acceptance
             var licenseCheck = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-            foreach (var result in results)
+
+            foreach (PreviewResult result in results)
             {
-                foreach (var pkg in result.Added)
+                foreach (AccessiblePackageIdentity pkg in result.Added)
                 {
                     licenseCheck.Add(pkg);
                 }
 
-                foreach (var pkg in result.Updated)
+                foreach (UpdatePreviewResult pkg in result.Updated)
                 {
                     licenseCheck.Add(pkg.New);
                 }
             }
-            var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
-            var licenseMetadata = await GetPackageMetadataAsync(sources, licenseCheck, token);
+
+            List<IPackageSearchMetadata> licenseMetadata = await GetPackageMetadataAsync(uiService, licenseCheck, token);
 
             TelemetryServiceUtility.StopTimer();
 
             // show license agreement
             if (licenseMetadata.Any(e => e.RequireLicenseAcceptance))
             {
-                var licenseInfoItems = licenseMetadata
+                IEnumerable<PackageLicenseInfo> licenseInfoItems = licenseMetadata
                     .Where(p => p.RequireLicenseAcceptance)
                     .Select(e => GeneratePackageLicenseInfo(e));
+
                 return uiService.PromptForLicenseAcceptance(licenseInfoItems);
             }
 
@@ -753,181 +858,149 @@ namespace NuGet.PackageManagement.UI
                 metadata.Authors);
         }
 
-        /// <summary>
-        /// Warns the user about the fact that the dotnet TFM is deprecated.
-        /// </summary>
-        /// <returns>Returns true if the user wants to ignore the warning or if the warning does not apply.</returns>
-        private bool ShouldContinueDueToDotnetDeprecation(
+        private async ValueTask<bool> ShouldContinueDueToDotnetDeprecationAsync(
+            INuGetProjectManagerService projectManagerService,
             INuGetUI uiService,
-            IEnumerable<ResolvedAction> actions,
             CancellationToken token)
         {
-            var projects = DotnetDeprecatedPrompt.GetAffectedProjects(actions);
+            IReadOnlyCollection<IProjectContextInfo> projects = await projectManagerService.GetProjectsWithDeprecatedDotnetFrameworkAsync(token);
 
             TelemetryServiceUtility.StopTimer();
 
             if (projects.Any())
             {
-                return uiService.WarnAboutDotnetDeprecation(projects);
+                return await uiService.WarnAboutDotnetDeprecationAsync(projects, token);
             }
 
             return true;
         }
 
-        /// <summary>
-        /// Execute the installs/uninstalls
-        /// </summary>
-        private async Task ExecuteActionsAsync(
-            IEnumerable<ResolvedAction> actions,
-            INuGetProjectContext projectContext, 
-            ICommonOperations commonOperations,
-            UserAction userAction,
-            SourceCacheContext sourceCacheContext,
-            CancellationToken token)
-        {
-            var nuGetProjects = actions.Select(action => action.Project);
-            var nuGetActions = actions.Select(action => action.Action);
-
-            var directInstall = GetDirectInstall(nuGetActions, userAction, commonOperations);
-            if (directInstall != null)
-            {
-                NuGetPackageManager.SetDirectInstall(directInstall, projectContext);
-            }
-
-            await _packageManager.ExecuteNuGetProjectActionsAsync(
-                nuGetProjects,
-                nuGetActions,
-                projectContext,
-                sourceCacheContext,
-                token);
-
-            NuGetPackageManager.ClearDirectInstall(projectContext);
-        }
-
-        private static PackageIdentity GetDirectInstall(IEnumerable<NuGetProjectAction> nuGetProjectActions,
-            UserAction userAction,
-            ICommonOperations commonOperations)
-        {
-            if (commonOperations != null
-                && userAction != null
-                && userAction.Action == NuGetProjectActionType.Install
-                && nuGetProjectActions.Any())
-            {
-                return new PackageIdentity(userAction.PackageId, userAction.Version);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Return the resolve package actions
-        /// </summary>
-        private async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
+        private async Task<IReadOnlyList<ProjectAction>> GetActionsAsync(
+            INuGetProjectManagerService projectManagerService,
             INuGetUI uiService,
-            IEnumerable<NuGetProject> targets,
+            IEnumerable<IProjectContextInfo> projects,
             UserAction userAction,
             bool removeDependencies,
             bool forceRemove,
-            ResolutionContext resolutionContext,
-            INuGetProjectContext projectContext,
+            string? newMappingID,
+            string? newMappingSource,
             CancellationToken token)
         {
-            var results = new List<ResolvedAction>();
+            var results = new List<ProjectAction>();
 
-            Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
+            // Allow prerelease packages only if the target is prerelease
+            bool includePrelease =
+                userAction.Action == NuGetProjectActionType.Uninstall ||
+                userAction.Version?.IsPrerelease == true;
+
+            IReadOnlyList<string> packageSourceNames = uiService.ActivePackageSourceMoniker.PackageSourceNames;
+            string[] projectIds = projects
+                .Select(project => project.ProjectId)
+                .Distinct()
+                .ToArray();
+
             if (userAction.Action == NuGetProjectActionType.Install)
             {
-                foreach (var target in targets)
-                {
-                    var actions = await _packageManager.PreviewInstallPackageAsync(
-                        target,
-                        new PackageIdentity(userAction.PackageId, userAction.Version),
-                        resolutionContext,
-                        projectContext,
-                        uiService.ActiveSources,
-                        null,
-                        token);
-                    results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
-                }
+                var packageIdentity = new PackageIdentity(userAction.PackageId, userAction.Version);
+
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetInstallActionsAsync(
+                    projectIds,
+                    packageIdentity,
+                    VersionConstraints.None,
+                    includePrelease,
+                    uiService.DependencyBehavior,
+                    packageSourceNames,
+                    userAction.VersionRange,
+                    newMappingID,
+                    newMappingSource,
+                    token);
+
+                results.AddRange(actions);
             }
             else
             {
-                var uninstallationContext = new UninstallationContext(
-                    removeDependencies: removeDependencies,
-                    forceRemove: forceRemove);
+                var packageIdentity = new PackageIdentity(userAction.PackageId, version: null);
 
-                foreach (var target in targets)
-                {
-                    IEnumerable<NuGetProjectAction> actions;
+                IReadOnlyList<ProjectAction> actions = await projectManagerService.GetUninstallActionsAsync(
+                    projectIds,
+                    packageIdentity,
+                    removeDependencies,
+                    forceRemove,
+                    token);
 
-                    actions = await _packageManager.PreviewUninstallPackageAsync(
-                        target, userAction.PackageId, uninstallationContext, projectContext, token);
-
-                    results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
-                }
+                results.AddRange(actions);
             }
 
             return results;
         }
 
-        /// <summary>
-        /// Convert NuGetProjectActions into PreviewResult types
-        /// </summary>
-        private static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
+        // Non-private only to facilitate testing.
+        internal async ValueTask<IReadOnlyList<PreviewResult>> GetPreviewResultsAsync(
+            INuGetProjectManagerService projectManagerService,
+            IReadOnlyList<ProjectAction> projectActions,
+            UserAction? userAction,
+            INuGetUI uiService,
+            CancellationToken cancellationToken)
         {
             var results = new List<PreviewResult>();
+            var expandedActions = new List<ProjectAction>();
 
-            var expandedActions = new List<ResolvedAction>();
-
-            // BuildIntegratedProjectActions contain all project actions rolled up into a single action,
-            // to display these we need to expand them into the low level actions.
-            foreach (var action in projectActions)
+            foreach (ProjectAction projectAction in projectActions)
             {
-                var buildIntegratedAction = action.Action as BuildIntegratedProjectAction;
-
-                if (buildIntegratedAction != null)
+                if (projectAction.ImplicitActions.Count == 0)
                 {
-                    foreach (var buildAction in buildIntegratedAction.GetProjectActions())
-                    {
-                        expandedActions.Add(new ResolvedAction(action.Project, buildAction));
-                    }
+                    // leave the action as is
+                    expandedActions.Add(projectAction);
                 }
                 else
                 {
-                    // leave the action as is
-                    expandedActions.Add(action);
+                    foreach (ImplicitProjectAction implicitAction in projectAction.ImplicitActions)
+                    {
+                        expandedActions.Add(
+                            new ProjectAction(
+                                implicitAction.Id,
+                                projectAction.ProjectId,
+                                implicitAction.PackageIdentity,
+                                implicitAction.ProjectActionType,
+                                implicitActions: null));
+                    }
                 }
             }
 
             // Group actions by project
-            var actionsByProject = expandedActions.GroupBy(action => action.Project);
+            var actionsByProject = expandedActions.GroupBy(action => action.ProjectId);
+
+            Dictionary<string, SortedSet<string>>? newSourceMappings = null;
+            bool isNewSourceMappingPreviewResultSuccessful = false;
 
             // Group actions by operation
-            foreach (var actions in actionsByProject)
+            foreach (IGrouping<string, ProjectAction> actions in actionsByProject)
             {
                 var installed = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
                 var uninstalled = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
                 var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var action in actions.Select(a => a.Action))
+                foreach (ProjectAction action in actions)
                 {
-                    var package = action.PackageIdentity;
-                    packageIds.Add(package.Id);
-
                     // Create new identities without the dependency graph
-                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    var packageIdentity = new PackageIdentity(action.PackageIdentity.Id, action.PackageIdentity.Version);
+
+                    packageIds.Add(packageIdentity.Id);
+
+                    if (action.ProjectActionType == NuGetProjectActionType.Install)
                     {
-                        installed[package.Id] = new PackageIdentity(package.Id, package.Version);
+                        installed[packageIdentity.Id] = packageIdentity;
                     }
                     else
                     {
-                        uninstalled[package.Id] = new PackageIdentity(package.Id, package.Version);
+                        uninstalled[packageIdentity.Id] = packageIdentity;
                     }
                 }
 
                 var added = new List<AccessiblePackageIdentity>();
                 var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
+
                 foreach (var packageId in packageIds)
                 {
                     var isInstalled = installed.ContainsKey(packageId);
@@ -951,8 +1024,50 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                var result = new PreviewResult(actions.Key, added, deleted, updated);
+                if (userAction?.SelectedSourceName != null)
+                {
+                    IReadOnlyList<SourceRepository>? globalPackageFolders = _packageManager.GlobalPackageFolderRepositories;
+                    IReadOnlyList<SourceRepository> enabledSourceRepositories = _sourceProvider.GetRepositories()
+                        .Where(e => e.PackageSource.IsEnabled)
+                        .ToList()
+                        .AsReadOnly();
+
+                    // Everything added which didn't already have a source mapping will be mentioned in the Preview Window.
+                    isNewSourceMappingPreviewResultSuccessful |= PackageSourceMappingUtility.AddNewSourceMappingsFromAddedPackages(
+                        ref newSourceMappings,
+                        userAction.SelectedSourceName,
+                        userAction.PackageId,
+                        added,
+                        uiService.UIContext.PackageSourceMapping,
+                        globalPackageFolders,
+                        enabledSourceRepositories,
+                        uiService.UILogger);
+                }
+
+                IProjectMetadataContextInfo projectMetadata = await projectManagerService.GetMetadataAsync(actions.Key, cancellationToken);
+
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                string projectName;
+                if (projectMetadata is null || string.IsNullOrEmpty(projectMetadata.UniqueName))
+                {
+                    projectName = Resources.Preview_UnknownProject;
+                }
+                else
+                {
+                    projectName = projectMetadata.UniqueName;
+                }
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+                var result = new PreviewResult(projectName!, added, deleted, updated);
+
                 results.Add(result);
+            }
+
+            if (newSourceMappings?.Count > 0)
+            {
+                var nuGetOperationStatus = isNewSourceMappingPreviewResultSuccessful ? NuGetOperationStatus.Succeeded : NuGetOperationStatus.Failed;
+                var solutionSourceMappingResult = new PreviewResult(newSourceMappings, nuGetOperationStatus);
+                results.Add(solutionSourceMappingResult);
             }
 
             return results;
@@ -962,61 +1077,106 @@ namespace NuGet.PackageManagement.UI
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
         private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(
-            IEnumerable<SourceRepository> sources,
+            INuGetUI uiService,
             IEnumerable<PackageIdentity> packages,
             CancellationToken token)
         {
-            var results = new List<IPackageSearchMetadata>();
+            PackageIdentity[] allPackages = packages.ToArray();
+            List<IPackageSearchMetadata> results = new List<IPackageSearchMetadata>(capacity: allPackages.Length);
+            using var sourceCacheContext = new SourceCacheContext();
 
-            // local sources
-            var localSources = new List<SourceRepository>();
-            localSources.Add(_packageManager.PackagesFolderSourceRepository);
-            localSources.AddRange(_packageManager.GlobalPackageFolderRepositories);
+            IPackageSearchMetadata[] localMetadata = await GetOnlyLocalPackageMetadataAsync(uiService, sourceCacheContext, packages, token);
+            results.AddRange(localMetadata);
 
-            var allPackages = packages.ToArray();
-
-            using (var sourceCacheContext = new SourceCacheContext())
+            if (localMetadata.Length != allPackages.Length)
             {
-                // first check all the packages with local sources.
-                var completed = (await TaskCombinators.ThrottledAsync(
-                    allPackages,
-                    (p, t) => GetPackageMetadataAsync(localSources, sourceCacheContext, p, t),
-                    token)).Where(metadata => metadata != null).ToArray();
+                // get remaining package's metadata from remote repositories
+                IEnumerable<PackageIdentity> remainingPackages = allPackages.Where(package => package != null && !localMetadata.Any(packageMetadata => packageMetadata != null && packageMetadata.Identity.Equals(package)));
+                IEnumerable<SourceRepository> enabledSources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
-                results.AddRange(completed);
-
-                if (completed.Length != allPackages.Length)
-                {
-                    // get remaining package's metadata from remote repositories
-                    var remainingPackages = allPackages.Where(package => !completed.Any(pack => pack.Identity.Equals(package)));
-
-                    var remoteResults = (await TaskCombinators.ThrottledAsync(
-                        remainingPackages,
-                        (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
-                        token)).Where(metadata => metadata != null).ToArray();
-
-                    results.AddRange(remoteResults);
-                }
+                List<IPackageSearchMetadata> remoteMetadata = await GetRemotePackageMetadataAsync(enabledSources, sourceCacheContext, remainingPackages, uiService.UIContext.PackageSourceMapping, token);
+                results.AddRange(remoteMetadata);
             }
-            // check if missing metadata for any package
-            if (allPackages.Length != results.Count)
-            {
-                var package = allPackages.First(pkg => !results.Any(result => result.Identity.Equals(pkg)));
 
-                throw new InvalidOperationException(
-                        string.Format("Unable to find metadata of {0}", package));
+            // check if missing metadata for any package
+            if (results.Count != allPackages.Length)
+            {
+                PackageIdentity package = allPackages.First(pkg => !results.Any(result => result != null && result.Identity.Equals(pkg)));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_MetadataNotFound, package));
             }
 
             return results;
         }
 
-        private void LogError(Task task, INuGetUI uiService)
+        private async Task<List<IPackageSearchMetadata>> GetRemotePackageMetadataAsync(
+            IEnumerable<SourceRepository> enabledSources,
+            SourceCacheContext sourceCacheContext,
+            IEnumerable<PackageIdentity> packages,
+            PackageSourceMapping packageSourceMapping,
+            CancellationToken token)
         {
-            var exception = ExceptionUtilities.Unwrap(task.Exception);
-            uiService.ProjectContext.Log(MessageLevel.Error, exception.Message);
+            var results = new List<IPackageSearchMetadata>();
+
+            if (!packageSourceMapping.IsEnabled)
+            {
+                var remoteResults = await GetPackageMetadataThrottledAsync(enabledSources, sourceCacheContext, packages, token);
+                results.AddRange(remoteResults);
+            }
+            else // Only look at sources for the package's source mapping.
+            {
+                var remoteResults = await GetPackageMetadataThrottledAsync(packageSourceMapping, enabledSources, sourceCacheContext, packages, token);
+                results.AddRange(remoteResults);
+            }
+
+            return results;
         }
 
-        private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
+        private async Task<IPackageSearchMetadata[]> GetOnlyLocalPackageMetadataAsync(
+            INuGetUI uiService,
+            SourceCacheContext sourceCacheContext,
+            IEnumerable<PackageIdentity> packages,
+            CancellationToken token)
+        {
+            var projects = (IReadOnlyCollection<IProjectContextInfo>)uiService.Projects;
+            var searchService = uiService.UIContext.NuGetSearchService;
+            IReadOnlyList<SourceRepository> localSources = await searchService.GetAllPackageFoldersAsync(projects, token);
+
+            IPackageSearchMetadata[] completed = await GetPackageMetadataThrottledAsync(localSources, sourceCacheContext, packages, token);
+            return completed;
+        }
+
+        private static async Task<IPackageSearchMetadata[]> GetPackageMetadataThrottledAsync(IEnumerable<SourceRepository> sources, SourceCacheContext sourceCacheContext, IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+            IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) => GetPackageMetadataAsync(sources, sourceCacheContext, p, t),
+                token)).Where(metadata => metadata != null).Cast<IPackageSearchMetadata>().ToArray();
+
+            return completed;
+        }
+
+        private static async Task<IPackageSearchMetadata[]> GetPackageMetadataThrottledAsync(PackageSourceMapping packageSourceMapping, IEnumerable<SourceRepository> enabledSources, SourceCacheContext sourceCacheContext, IEnumerable<PackageIdentity> packages, CancellationToken token)
+        {
+            IPackageSearchMetadata[] completed = (await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) =>
+                {
+                    IReadOnlyList<string> mappedSources = packageSourceMapping.GetConfiguredPackageSources(p.Id);
+                    if (mappedSources.Count == 0)
+                    {
+                        return Task.FromResult<IPackageSearchMetadata?>(null);
+                    }
+
+                    var enabledAndMappedSources = enabledSources.Where(_ => mappedSources.Contains(_.PackageSource.Name));
+
+                    return GetPackageMetadataAsync(enabledAndMappedSources, sourceCacheContext, p, t);
+                },
+                token)).Where(metadata => metadata != null).Cast<IPackageSearchMetadata>().ToArray();
+
+            return completed;
+        }
+
+        private static async Task<IPackageSearchMetadata?> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             SourceCacheContext sourceCacheContext,
             PackageIdentity package,
@@ -1034,10 +1194,10 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    var packageMetadata = await metadataResource.GetMetadataAsync(
+                    IPackageSearchMetadata? packageMetadata = await metadataResource.GetMetadataAsync(
                         package,
                         sourceCacheContext,
-                        log: Common.NullLogger.Instance,
+                        log: NullLogger.Instance,
                         token: token);
                     if (packageMetadata != null)
                     {

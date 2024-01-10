@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -30,7 +30,7 @@ namespace NuGet.RuntimeModel.Test
     }
 }";
             Assert.Equal(
-                new RuntimeGraph(new []
+                new RuntimeGraph(new[]
                     {
                         new CompatibilityProfile("windows-frob", new []
                             {
@@ -51,7 +51,7 @@ namespace NuGet.RuntimeModel.Test
     }
 }";
             Assert.Equal(
-                new RuntimeGraph(new []
+                new RuntimeGraph(new[]
                     {
                         new CompatibilityProfile("windows-frob")
                     }),
@@ -70,7 +70,7 @@ namespace NuGet.RuntimeModel.Test
     }
 }";
             Assert.Equal(
-                new RuntimeGraph(new []
+                new RuntimeGraph(new[]
                     {
                         new CompatibilityProfile("windows-phone-8", new [] {
                             new FrameworkRuntimePair(FrameworkConstants.CommonFrameworks.WP8, null)

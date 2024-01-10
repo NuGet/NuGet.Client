@@ -37,7 +37,7 @@ namespace NuGet.Packaging
         {
             if (_hash == null)
             {
-                _hashFunc.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
+                _hashFunc.TransformFinalBlock(Array.Empty<byte>(), inputOffset: 0, inputCount: 0);
                 _hash = _hashFunc.Hash;
             }
 

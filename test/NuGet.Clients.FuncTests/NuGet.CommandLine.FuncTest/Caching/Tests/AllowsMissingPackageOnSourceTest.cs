@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             // The package is not available on the source.
             context.IsPackageBAvailable = false;
-            
+
             return command.PrepareArguments(context, context.PackageIdentityB);
         }
 
@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.Test.Caching
 
             validations.Add(
                 CachingValidationType.CommandSucceeded,
-                result.Item1 == 0);
+                result.ExitCode == 0);
 
             validations.Add(
                 CachingValidationType.PackageInstalled,

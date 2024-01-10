@@ -32,7 +32,7 @@ namespace NuGet.ProjectManagement
             {
                 message = string.Format(CultureInfo.CurrentCulture, message, args);
             }
-            
+
             switch (level)
             {
                 case ProjectManagement.MessageLevel.Debug:

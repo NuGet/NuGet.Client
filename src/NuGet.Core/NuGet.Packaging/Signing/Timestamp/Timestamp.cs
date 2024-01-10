@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class Timestamp
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
         /// <summary>
         /// Upper limit of Timestamp.
@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp token info for this timestamp.
         /// </summary>
-        internal Rfc3161TimestampTokenInfo TstInfo { get; }
+        internal IRfc3161TimestampTokenInfo TstInfo { get; }
 
         /// <summary>
         /// Default constructor. Limits are set to current time.
@@ -133,7 +133,7 @@ namespace NuGet.Packaging.Signing
             flags |= VerificationUtility.ValidateTimestamp(this, signature, treatIssueAsError, issues, SigningSpecifications.V1);
             if (flags == SignatureVerificationStatusFlags.NoErrors)
             {
-                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString()) + Environment.NewLine));
+                issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.TimestampValue, GeneralizedTime.LocalDateTime.ToString(CultureInfo.CurrentCulture)) + Environment.NewLine));
 
                 issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
                     Strings.VerificationTimestamperCertDisplay,
@@ -142,9 +142,9 @@ namespace NuGet.Packaging.Signing
 
                 var certificateExtraStore = SignedCms.Certificates;
 
-                using (var chainHolder = new X509ChainHolder())
+                using (X509ChainHolder chainHolder = X509ChainHolder.CreateForTimestamping())
                 {
-                    var chain = chainHolder.Chain;
+                    IX509Chain chain = chainHolder.Chain2;
 
                     // This flag should only be set for verification scenarios, not signing.
                     chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
@@ -161,7 +161,7 @@ namespace NuGet.Packaging.Signing
                     }
 
                     var chainBuildSucceed = CertificateChainUtility.BuildCertificateChain(chain, timestamperCertificate, out var chainStatusList);
-                    var x509ChainString = CertificateUtility.X509ChainToString(chain, fingerprintAlgorithm);
+                    string x509ChainString = CertificateUtility.X509ChainToString(chain.PrivateReference, fingerprintAlgorithm);
 
                     if (!string.IsNullOrWhiteSpace(x509ChainString))
                     {
@@ -178,7 +178,7 @@ namespace NuGet.Packaging.Signing
 
                     var timestampInvalidCertificateFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
-                    if (CertificateChainUtility.TryGetStatusMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
+                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, timestampInvalidCertificateFlags, out messages))
                     {
                         foreach (var message in messages)
                         {
@@ -193,15 +193,17 @@ namespace NuGet.Packaging.Signing
                     // therefore if we are checking for one specific chain status we can use the first of the returned list
                     // if we are combining checks for more than one, then we have to use the whole list.
 
-                    if (CertificateChainUtility.TryGetStatusMessage(chainStatusList, X509ChainStatusFlags.UntrustedRoot, out messages))
+                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, X509ChainStatusFlags.UntrustedRoot, out messages))
                     {
-                        issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, messages.First())));
+                        SignatureUtility.LogAdditionalContext(chain, issues);
+
+                        issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyTimestampChainBuildingIssue_UntrustedRoot, signature.FriendlyName)));
 
                         flags |= SignatureVerificationStatusFlags.UntrustedRoot;
                         chainBuildingHasIssues = true;
                     }
 
-                    if (CertificateChainUtility.TryGetStatusMessage(chainStatusList, X509ChainStatusFlags.Revoked, out messages))
+                    if (CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, X509ChainStatusFlags.Revoked, out messages))
                     {
                         issues.Add(SignatureLog.Error(NuGetLogCode.NU3028, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_TimestampVerifyChainBuildingIssue, signature.FriendlyName, messages.First())));
                         flags |= SignatureVerificationStatusFlags.CertificateRevoked;
@@ -209,8 +211,8 @@ namespace NuGet.Packaging.Signing
                         return flags;
                     }
 
-                    var offlineRevocationErrors = CertificateChainUtility.TryGetStatusMessage(chainStatusList, X509ChainStatusFlags.OfflineRevocation, out var _);
-                    var unknownRevocationErrors = CertificateChainUtility.TryGetStatusMessage(chainStatusList, X509ChainStatusFlags.RevocationStatusUnknown, out var unknownRevocationStatusMessages);
+                    var offlineRevocationErrors = CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, X509ChainStatusFlags.OfflineRevocation, out var _);
+                    var unknownRevocationErrors = CertificateChainUtility.TryGetStatusAndMessage(chainStatusList, X509ChainStatusFlags.RevocationStatusUnknown, out var unknownRevocationStatusMessages);
                     if (offlineRevocationErrors || unknownRevocationErrors)
                     {
                         if (treatIssueAsError)

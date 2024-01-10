@@ -8,10 +8,11 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using SB = Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
+using SB = Microsoft.VisualStudio.Shell.ServiceBroker;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.OnlineEnvironment.Client
@@ -30,7 +31,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public void RunSolutionRestore()
         {
-            _joinableTaskFactory.RunAsync(RunSolutionRestoreAsync);
+            _joinableTaskFactory.RunAsync(RunSolutionRestoreAsync).PostOnFailure(nameof(RestoreCommandHandler));
         }
 
         private async Task RunSolutionRestoreAsync()
@@ -46,7 +47,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 SB.IBrokeredServiceContainer serviceContainer = await _asyncServiceProvider.GetServiceAsync<SB.SVsBrokeredServiceContainer, SB.IBrokeredServiceContainer>();
                 IServiceBroker serviceBroker = serviceContainer.GetFullAccessServiceBroker();
 
-                INuGetSolutionService nugetSolutionService = await serviceBroker.GetProxyAsync<INuGetSolutionService>(NuGetServices.NuGetSolutionService);
+                INuGetSolutionService nugetSolutionService = await serviceBroker.GetProxyAsync<INuGetSolutionService>(NuGetServices.SolutionService);
 
                 try
                 {

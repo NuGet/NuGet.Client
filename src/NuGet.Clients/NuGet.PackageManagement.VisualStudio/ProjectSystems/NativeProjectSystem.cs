@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public override Task<bool> ReferenceExistsAsync(string name)
         {
             // We disable assembly reference for native projects
-            return Task.FromResult(true);
+            return TaskResult.True;
         }
 
         public override Task RemoveReferenceAsync(string name)
@@ -62,7 +62,11 @@ namespace NuGet.PackageManagement.VisualStudio
             var fullPath = FileSystemUtility.GetFullPath(ProjectFullPath, path);
 
             bool succeeded;
-            succeeded = VCProjectHelper.RemoveFileFromProject(VsProjectAdapter.Project.Object, fullPath, folderPath);
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
+            // Since the C++ project system now uses CPS, it no longer needs to be on the UI thread.
+            object projectObject = VsProjectAdapter.Project.Object;
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
+            succeeded = VCProjectHelper.RemoveFileFromProject(projectObject, fullPath, folderPath);
             if (succeeded)
             {
                 // The RemoveFileFromProject() method only removes file from project.

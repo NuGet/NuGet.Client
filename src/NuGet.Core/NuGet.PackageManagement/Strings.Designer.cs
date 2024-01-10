@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -79,15 +79,6 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Added package &apos;{0}&apos; to project &apos;{1}&apos;.
-        /// </summary>
-        internal static string AddedPackageToMSBuildProject {
-            get {
-                return ResourceManager.GetString("AddedPackageToMSBuildProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Added package &apos;{0}&apos; to &apos;{1}&apos;.
         /// </summary>
         internal static string AddedPackageToPackagesConfig {
@@ -102,15 +93,6 @@ namespace NuGet.PackageManagement {
         internal static string AddingPackageToFolder {
             get {
                 return ResourceManager.GetString("AddingPackageToFolder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Adding package &apos;{0}&apos; to project &apos;{1}&apos;.
-        /// </summary>
-        internal static string AddingPackageToMSBuildProject {
-            get {
-                return ResourceManager.GetString("AddingPackageToMSBuildProject", resourceCulture);
             }
         }
         
@@ -133,29 +115,11 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Another NuGetProject with the same name &apos;{0}&apos; exists in solution.
-        /// </summary>
-        internal static string AnotherNuGetProjectWithSameNameExistsInSolution {
-            get {
-                return ResourceManager.GetString("AnotherNuGetProjectWithSameNameExistsInSolution", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Argument cannot be null or empty.
         /// </summary>
         internal static string Argument_Cannot_Be_Null_Or_Empty {
             get {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Value must be greater than or equal to {0}.
-        /// </summary>
-        internal static string Argument_Must_Be_GreaterThanOrEqualTo {
-            get {
-                return ResourceManager.GetString("Argument_Must_Be_GreaterThanOrEqualTo", resourceCulture);
             }
         }
         
@@ -192,42 +156,6 @@ namespace NuGet.PackageManagement {
         internal static string AttemptingToResolveDependenciesForMultiplePackages {
             get {
                 return ResourceManager.GetString("AttemptingToResolveDependenciesForMultiplePackages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package restore failed for &apos;{0}&apos;..
-        /// </summary>
-        internal static string BuildIntegratedPackageRestoreFailed {
-            get {
-                return ResourceManager.GetString("BuildIntegratedPackageRestoreFailed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Restoring packages for &apos;{0}&apos;..
-        /// </summary>
-        internal static string BuildIntegratedPackageRestoreStarted {
-            get {
-                return ResourceManager.GetString("BuildIntegratedPackageRestoreStarted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package restore completed successfully for &apos;{0}&apos;..
-        /// </summary>
-        internal static string BuildIntegratedPackageRestoreSucceeded {
-            get {
-                return ResourceManager.GetString("BuildIntegratedPackageRestoreSucceeded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Content files should not be target framework specific, whereas, &apos;{0}&apos; is.
-        /// </summary>
-        internal static string ContentFilesShouldNotBeTargetFrameworkSpecific {
-            get {
-                return ResourceManager.GetString("ContentFilesShouldNotBeTargetFrameworkSpecific", resourceCulture);
             }
         }
         
@@ -282,51 +210,6 @@ namespace NuGet.PackageManagement {
         internal static string Debug_TargetFrameworkInfo {
             get {
                 return ResourceManager.GetString("Debug_TargetFrameworkInfo", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Assembly references.
-        /// </summary>
-        internal static string Debug_TargetFrameworkInfo_AssemblyReferences {
-            get {
-                return ResourceManager.GetString("Debug_TargetFrameworkInfo_AssemblyReferences", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Build files.
-        /// </summary>
-        internal static string Debug_TargetFrameworkInfo_BuildFiles {
-            get {
-                return ResourceManager.GetString("Debug_TargetFrameworkInfo_BuildFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Content files.
-        /// </summary>
-        internal static string Debug_TargetFrameworkInfo_ContentFiles {
-            get {
-                return ResourceManager.GetString("Debug_TargetFrameworkInfo_ContentFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to (not framework-specific).
-        /// </summary>
-        internal static string Debug_TargetFrameworkInfo_NotFrameworkSpecific {
-            get {
-                return ResourceManager.GetString("Debug_TargetFrameworkInfo_NotFrameworkSpecific", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &gt;&gt; PowerShell scripts are being executed from &apos;{0}&apos;{1}.
-        /// </summary>
-        internal static string Debug_TargetFrameworkInfo_PowershellScripts {
-            get {
-                return ResourceManager.GetString("Debug_TargetFrameworkInfo_PowershellScripts", resourceCulture);
             }
         }
         
@@ -412,6 +295,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error occurred while getting package vulnerability data: {0}.
+        /// </summary>
+        internal static string Error_VulnerabilityDataFetch {
+            get {
+                return ResourceManager.GetString("Error_VulnerabilityDataFetch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while reading file &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string ErrorLoadingPackagesConfig {
@@ -426,24 +318,6 @@ namespace NuGet.PackageManagement {
         internal static string ErrorWritingPackagesConfig {
             get {
                 return ResourceManager.GetString("ErrorWritingPackagesConfig", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;..
-        /// </summary>
-        internal static string Exception_PackageNotFound {
-            get {
-                return ResourceManager.GetString("Exception_PackageNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Exception Type.
-        /// </summary>
-        internal static string ExceptionType {
-            get {
-                return ResourceManager.GetString("ExceptionType", resourceCulture);
             }
         }
         
@@ -493,47 +367,11 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installed package &apos;{0}&apos; to project.
-        /// </summary>
-        internal static string InstalledPackage {
-            get {
-                return ResourceManager.GetString("InstalledPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Installing package &apos;{0}&apos; to project.
-        /// </summary>
-        internal static string InstallingPackage {
-            get {
-                return ResourceManager.GetString("InstallingPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to &apos;%AppData%\NuGet\NuGet.config&apos;.
-        /// </summary>
-        internal static string InvalidNullSettingsOperation {
-            get {
-                return ResourceManager.GetString("InvalidNullSettingsOperation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to determine the project name for &apos;{0}&apos;..
         /// </summary>
         internal static string InvalidProjectName {
             get {
                 return ResourceManager.GetString("InvalidProjectName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest.
-        /// </summary>
-        internal static string MultiplePackageInstallOrUpdateHasToBeAnUpdate {
-            get {
-                return ResourceManager.GetString("MultiplePackageInstallOrUpdateHasToBeAnUpdate", resourceCulture);
             }
         }
         
@@ -556,29 +394,11 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid!! Could not find a folder under artifact type &apos;{0}&apos;, so cannot request for artifacts specific to target framework &apos;{1}&apos;.
-        /// </summary>
-        internal static string NoFolderSpecificToTargetFxFound {
-            get {
-                return ResourceManager.GetString("NoFolderSpecificToTargetFxFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to No latest version found for &apos;{0}&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
             get {
                 return ResourceManager.GetString("NoLatestVersionFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No NuGetProject is available with specified name &apos;{0}&apos;.
-        /// </summary>
-        internal static string NoNuGetProjectWithSpecifiedName {
-            get {
-                return ResourceManager.GetString("NoNuGetProjectWithSpecifiedName", resourceCulture);
             }
         }
         
@@ -615,24 +435,6 @@ namespace NuGet.PackageManagement {
         internal static string NugetActionsTotalTime {
             get {
                 return ResourceManager.GetString("NugetActionsTotalTime", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGetProject does not have &apos;Name&apos; set in metadata. It should be set and it should be unique.
-        /// </summary>
-        internal static string NuGetProjectDoesNotHaveName {
-            get {
-                return ResourceManager.GetString("NuGetProjectDoesNotHaveName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more packages not found.
-        /// </summary>
-        internal static string OneOrMorePackagesNotFound {
-            get {
-                return ResourceManager.GetString("OneOrMorePackagesNotFound", resourceCulture);
             }
         }
         
@@ -781,6 +583,24 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source mapping matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;.
+        /// </summary>
+        internal static string PackageSourceMappingPatternMatchFound {
+            get {
+                return ResourceManager.GetString("PackageSourceMappingPatternMatchFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source mapping match not found for package ID &apos;{0}&apos;.
+        /// </summary>
+        internal static string PackageSourceMappingPatternNoMatchFound {
+            get {
+                return ResourceManager.GetString("PackageSourceMappingPatternNoMatchFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package stream should be seekable.
         /// </summary>
         internal static string PackageStreamShouldBeSeekable {
@@ -817,20 +637,20 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        internal static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from folder &apos;{1}&apos;.
         /// </summary>
         internal static string RemovedPackageFromFolder {
             get {
                 return ResourceManager.GetString("RemovedPackageFromFolder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Removed package &apos;{0}&apos; from project &apos;{1}&apos;.
-        /// </summary>
-        internal static string RemovedPackageFromMSBuildProject {
-            get {
-                return ResourceManager.GetString("RemovedPackageFromMSBuildProject", resourceCulture);
             }
         }
         
@@ -849,15 +669,6 @@ namespace NuGet.PackageManagement {
         internal static string RemovingPackageFromFolder {
             get {
                 return ResourceManager.GetString("RemovingPackageFromFolder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Removing package &apos;{0}&apos; from project &apos;{1}&apos;.
-        /// </summary>
-        internal static string RemovingPackageFromMSBuildProject {
-            get {
-                return ResourceManager.GetString("RemovingPackageFromMSBuildProject", resourceCulture);
             }
         }
         
@@ -952,15 +763,6 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Solution directory &apos;{0}&apos; must be a rooted path..
-        /// </summary>
-        internal static string SolutionDirectoryMustBeRooted {
-            get {
-                return ResourceManager.GetString("SolutionDirectoryMustBeRooted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Solution is not opened or not saved. Please ensure you have an open and saved solution..
         /// </summary>
         internal static string SolutionDirectoryNotAvailable {
@@ -997,20 +799,20 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The replacement token &apos;{0}&apos; has no value.
-        /// </summary>
-        internal static string TokenHasNoValue {
-            get {
-                return ResourceManager.GetString("TokenHasNoValue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Could not install package &apos;{0}&apos;. You are trying to install this package into a project that targets &apos;{1}&apos;, but the package does not contain any assembly references or content files that are compatible with that framework. For more information, contact the package author..
         /// </summary>
         internal static string UnableToFindCompatibleItems {
             get {
                 return ResourceManager.GetString("UnableToFindCompatibleItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Either should have value in {0} for {1} or {2} &amp; {3}..
+        /// </summary>
+        internal static string UnableToFindPathInLookupOrList {
+            get {
+                return ResourceManager.GetString("UnableToFindPathInLookupOrList", resourceCulture);
             }
         }
         
@@ -1078,42 +880,6 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Source &apos;{0}&apos; not found. Please provide an HTTP or local source..
-        /// </summary>
-        internal static string UnknownSource {
-            get {
-                return ResourceManager.GetString("UnknownSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unsupported type of source &apos;{0}&apos;. Please provide an HTTP or local source..
-        /// </summary>
-        internal static string UnknownSourceType {
-            get {
-                return ResourceManager.GetString("UnknownSourceType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos; at source &apos;{1}&apos;. Source not found..
-        /// </summary>
-        internal static string UnknownSourceWithId {
-            get {
-                return ResourceManager.GetString("UnknownSourceWithId", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; uses features that are not supported by the current version of NuGet. To upgrade NuGet, see https://docs.nuget.org/consume/installing-nuget.
-        /// </summary>
-        internal static string UnsupportedPackageFeature {
-            get {
-                return ResourceManager.GetString("UnsupportedPackageFeature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; has a package type &apos;{1}&apos; that is not supported by project &apos;{2}&apos;..
         /// </summary>
         internal static string UnsupportedPackageType {
@@ -1155,6 +921,24 @@ namespace NuGet.PackageManagement {
         internal static string Warning_FileModified {
             get {
                 return ResourceManager.GetString("Warning_FileModified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source, &apos;{1}&apos;. Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        /// </summary>
+        internal static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; {1} has a known {2} severity vulnerability, {3}.
+        /// </summary>
+        internal static string Warning_PackageWithKnownVulnerability {
+            get {
+                return ResourceManager.GetString("Warning_PackageWithKnownVulnerability", resourceCulture);
             }
         }
         

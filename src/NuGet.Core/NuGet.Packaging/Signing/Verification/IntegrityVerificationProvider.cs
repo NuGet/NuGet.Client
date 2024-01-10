@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Signing
             return VerifyPackageIntegrityAsync(package, signature, settings);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private async Task<PackageVerificationResult> VerifyPackageIntegrityAsync(ISignedPackageReader package, PrimarySignature signature, SignedPackageVerifierSettings settings)
         {
             var status = SignatureVerificationStatus.Unknown;

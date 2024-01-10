@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,7 +43,7 @@ namespace NuGet.CommandLine.XPlat
                 locals.OnExecute(() =>
                 {
                     var logger = getLogger();
-                    var setting = XPlatUtility.CreateDefaultSettings();
+                    var setting = XPlatUtility.GetSettingsForCurrentWorkingDirectory();
 
                     // Using both -clear and -list command options, or neither one of them, is not supported.
                     // We use MinArgs = 0 even though the first argument is required,
@@ -63,11 +63,11 @@ namespace NuGet.CommandLine.XPlat
                     }
                     else
                     {
-                        var localsArgs = new LocalsArgs(arguments.Values, 
-                            setting, 
-                            logger.LogInformation, 
-                            logger.LogError, 
-                            clear.HasValue(), 
+                        var localsArgs = new LocalsArgs(arguments.Values,
+                            setting,
+                            logger.LogInformation,
+                            logger.LogError,
+                            clear.HasValue(),
                             list.HasValue());
 
                         var localsCommandRunner = new LocalsCommandRunner();

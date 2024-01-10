@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -17,6 +18,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using VSLangProj;
+using VSLangProj150;
 using VSLangProj80;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -27,20 +29,22 @@ namespace NuGet.PackageManagement.VisualStudio
     internal class VsCoreProjectSystemReferenceReader
         : IProjectSystemReferencesReader
     {
+        private readonly Array _referenceMetadata;
+
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
 
         public VsCoreProjectSystemReferenceReader(
             IVsProjectAdapter vsProjectAdapter,
-            INuGetProjectServices projectServices)
+            IVsProjectThreadingService threadingService)
         {
             Assumes.Present(vsProjectAdapter);
-            Assumes.Present(projectServices);
+            Assumes.Present(threadingService);
 
             _vsProjectAdapter = vsProjectAdapter;
+            _threadingService = threadingService;
 
-            _threadingService = projectServices.GetGlobalService<IVsProjectThreadingService>();
-            Assumes.Present(_threadingService);
+            _referenceMetadata = new string[] { "ReferenceOutputAssembly" };
         }
 
         public async Task<IEnumerable<ProjectRestoreReference>> GetProjectReferencesAsync(
@@ -50,12 +54,8 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var results = new List<ProjectRestoreReference>();
-
-            var itemsFactory = ServiceLocator.GetInstance<IVsEnumHierarchyItemsFactory>();
-
-            // Verify ReferenceOutputAssembly
-            var excludedProjects = GetExcludedReferences(itemsFactory, logger);
             var hasMissingReferences = false;
+            var hasProjectsWithUnresolvedMetadata = false;
 
             // find all references in the project
             foreach (var childReference in GetVSProjectReferences())
@@ -74,25 +74,36 @@ namespace NuGet.PackageManagement.VisualStudio
                             continue;
                         }
 
-                        if (EnvDTEProjectUtility.HasUnsupportedProjectCapability(reference3.SourceProject))
+                        if (await EnvDTEProjectUtility.HasUnsupportedProjectCapabilityAsync(reference3.SourceProject))
                         {
                             // Skip this shared project
                             continue;
                         }
 
-                        var childProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(reference3.SourceProject);
+                        var childProjectPath = reference3.SourceProject.GetFullProjectPath();
 
                         // Skip projects which have ReferenceOutputAssembly=false
-                        if (!string.IsNullOrEmpty(childProjectPath)
-                            && !excludedProjects.Contains(childProjectPath, StringComparer.OrdinalIgnoreCase))
+                        var addProject = true;
+
+                        if (childReference is Reference6 reference6)
                         {
-                            var restoreReference = new ProjectRestoreReference()
+                            reference6.GetMetadata(_referenceMetadata, out Array _, out Array metadataValues);
+                            var referenceOutputAssembly = GetReferenceMetadataValue(metadataValues);
+                            addProject = string.IsNullOrEmpty(referenceOutputAssembly) ||
+                                !string.Equals(bool.FalseString, referenceOutputAssembly, StringComparison.OrdinalIgnoreCase);
+                        }
+                        else
+                        {
+                            hasProjectsWithUnresolvedMetadata = true;
+                        }
+
+                        if (addProject)
+                        {
+                            results.Add(new ProjectRestoreReference()
                             {
                                 ProjectPath = childProjectPath,
                                 ProjectUniqueName = childProjectPath
-                            };
-
-                            results.Add(restoreReference);
+                            });
                         }
                     }
                     else
@@ -125,11 +136,32 @@ namespace NuGet.PackageManagement.VisualStudio
                 logger.LogVerbose(message);
             }
 
+            if (hasProjectsWithUnresolvedMetadata)
+            {
+                IList<string> excludedProjects = await GetExcludedProjectsAsync(logger);
+                if (excludedProjects.Count > 0)
+                {
+                    results = results.Where(e => !excludedProjects.Contains(e.ProjectPath, StringComparer.OrdinalIgnoreCase)).ToList();
+                }
+            }
+
             return results;
+
+            static string GetReferenceMetadataValue(Array metadataValues)
+            {
+                if (metadataValues == null || metadataValues.Length == 0)
+                {
+                    return string.Empty; // no metadata for package
+                }
+
+                return metadataValues.GetValue(0) as string;
+            }
         }
 
         private IEnumerable<Reference> GetVSProjectReferences()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var langProject = _vsProjectAdapter.Project.Object as VSProject;
             if (langProject != null)
             {
@@ -139,6 +171,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return Enumerable.Empty<Reference>();
         }
 
+        private async Task<IList<string>> GetExcludedProjectsAsync(Common.ILogger logger)
+        {
+            var itemsFactory = await ServiceLocator.GetGlobalServiceAsync<IVsEnumHierarchyItemsFactory, IVsEnumHierarchyItemsFactory>();
+
+            // Verify ReferenceOutputAssembly
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var excludedProjects = GetExcludedReferences(itemsFactory, logger);
+
+            return excludedProjects;
+        }
+
         /// <summary>
         /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
         /// </summary>
@@ -146,7 +189,7 @@ namespace NuGet.PackageManagement.VisualStudio
             IVsEnumHierarchyItemsFactory itemsFactory,
             Common.ILogger logger)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             var excludedReferences = new List<string>();
 
@@ -194,9 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                                 if (IsProjectReference(reference, logger) && IsReferenceResolved(reference, logger))
                                 {
-                                    var childPath = EnvDTEProjectInfoUtility
-                                        .GetFullProjectPath(reference.SourceProject);
-
+                                    var childPath = reference.SourceProject.GetFullProjectPath();
                                     excludedReferences.Add(childPath);
                                 }
                             }
@@ -210,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool IsProjectReference(Reference3 reference, Common.ILogger logger)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             try
             {
@@ -227,7 +268,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool IsReferenceResolved(Reference3 reference, Common.ILogger logger)
         {
-            _threadingService.ThrowIfNotOnUIThread();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             try
             {

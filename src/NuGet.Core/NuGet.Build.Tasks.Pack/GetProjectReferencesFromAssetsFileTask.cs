@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks.Pack
     /// This list is then later traversed to determine the version
     /// of the project reference during pack.
     /// </summary>
-    public class GetProjectReferencesFromAssetsFileTask : Task
+    public class GetProjectReferencesFromAssetsFileTask : Microsoft.Build.Utilities.Task
     {
         public string RestoreOutputAbsolutePath { get; set; }
 
@@ -34,7 +34,7 @@ namespace NuGet.Build.Tasks.Pack
         public override bool Execute()
         {
             var assetsFilePath = string.Empty;
-            if(!string.IsNullOrEmpty(ProjectAssetsFileAbsolutePath) && File.Exists(ProjectAssetsFileAbsolutePath))
+            if (!string.IsNullOrEmpty(ProjectAssetsFileAbsolutePath) && File.Exists(ProjectAssetsFileAbsolutePath))
             {
                 assetsFilePath = ProjectAssetsFileAbsolutePath;
             }
@@ -71,13 +71,13 @@ namespace NuGet.Build.Tasks.Pack
                 .Select(library => new TaskItem(Path.GetFullPath(Path.Combine(
                         projectDirectory,
                         PathUtility.GetPathWithDirectorySeparator(library.MSBuildProject)))));
-            if(projectPathToLibraryIdentities != null)
+            if (projectPathToLibraryIdentities != null)
             {
                 ProjectReferences = projectPathToLibraryIdentities.ToArray();
             }
             else
             {
-                ProjectReferences = new ITaskItem[0];
+                ProjectReferences = Array.Empty<ITaskItem>();
             }
             return true;
         }

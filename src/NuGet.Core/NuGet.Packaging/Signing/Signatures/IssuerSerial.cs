@@ -44,7 +44,7 @@ namespace NuGet.Packaging.Signing
                 throw new ArgumentNullException(nameof(certificate));
             }
 
-            var generalNames = new [] { GeneralName.Create(certificate.IssuerName) };
+            var generalNames = new[] { GeneralName.Create(certificate.IssuerName) };
             var serialNumber = certificate.GetSerialNumber();
 
             // Convert from little endian to big endian.

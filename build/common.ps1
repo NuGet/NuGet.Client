@@ -7,20 +7,8 @@ $ConfigureJson = Join-Path $Artifacts configure.json
 $BuiltInVsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSVersion = $env:VisualStudioVersion
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console\2.1.0\tools\xunit.console.exe'
-$ILMerge = Join-Path $NuGetClientRoot 'packages\ilmerge\2.14.1208\tools\ILMerge.exe'
 
 Set-Alias dotnet $DotNetExe
-Set-Alias xunit $XunitConsole
-Set-Alias ilmerge $ILMerge
-
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-$Version = New-Object -TypeName System.Version -ArgumentList "4.0"
-
-if ($PSVersionTable.PSVersion.CompareTo($Version) -lt 0) {
-    Set-Alias wget Invoke-WebRequest
-}
 
 Function Read-PackageSources {
     param($NuGetConfig)
@@ -86,11 +74,11 @@ Function Invoke-BuildStep {
     [CmdletBinding()]
     [Alias('ibs')]
     param(
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory = $True)]
         [string]$BuildStep,
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory = $True)]
         [ScriptBlock]$Expression,
-        [Parameter(Mandatory=$False)]
+        [Parameter(Mandatory = $False)]
         [Alias('args')]
         [Object[]]$Arguments,
         [Alias('skip')]
@@ -129,11 +117,7 @@ Function Invoke-BuildStep {
                 Trace-Log "[STOPPED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
             else {
-                Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
-            }
-
-            if ($env:TEAMCITY_VERSION) {
-                Write-Output "##teamcity[blockClosed name='$BuildStep']"
+                Trace-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
         }
     }
@@ -165,54 +149,77 @@ Function Update-Submodules {
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param(
-        [switch]$Force
+        [switch]$Force,
+        [switch]$SkipDotnetInfo
     )
-    $vsMajorVersion = Get-VSMajorVersion
-    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
-    $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
-    $cli = @{
-        Root = $CLIRoot
-        Version = 'latest'
-        Channel = $CliBranchForTesting.Trim()
+    $DotNetInstall = Join-Path $CLIRoot 'dotnet-install.ps1'
+
+    #If "-force" is specified, or dotnet.exe under cli folder doesn't exist, create cli folder and download dotnet-install.ps1 into cli folder.
+    if ($Force -or -not (Test-Path $DotNetExe)) {
+        Trace-Log "Downloading .NET CLI install script"
+
+        New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
+
+        Download-FileWithRetry 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
+    }
+
+    if (-not ([string]::IsNullOrEmpty($env:DOTNET_SDK_VERSIONS))) {
+        Trace-Log "Using environment variable DOTNET_SDK_VERSIONS instead of DotNetSdkVersions.txt.  Value: '$env:DOTNET_SDK_VERSIONS'"
+        $CliBranchList = $env:DOTNET_SDK_VERSIONS -Split ";"
+    } else {
+        $CliBranchList = (Get-Content -Path "$NuGetClientRoot\build\DotNetSdkVersions.txt")
+    }
+
+    ForEach ($CliBranch in $CliBranchList) {
+        $CliBranch = $CliBranch.trim()
+        if ($CliBranch.StartsWith("#") -or $CliBranch.Equals("")) {
+            continue
+        }
+
+        if ([Environment]::Is64BitOperatingSystem) {
+            $arch = "x64";
+        }
+        else {
+            $arch = "x86";
+        }
+
+        Trace-Log "$DotNetInstall $CliBranch -InstallDir $CLIRoot -Architecture $arch -NoPath"
+ 
+        & powershell $DotNetInstall $CliBranch -InstallDir $CLIRoot -Architecture $arch -NoPath
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "dotnet-install.ps1 exited with non-zero exit code"
+        }
     }
     
-    $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
-
-    if ([Environment]::Is64BitOperatingSystem) {
-        $arch = "x64";
-    }
-    else {
-        $arch = "x86";
-    }
-
-    $env:DOTNET_HOME=$cli.Root
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
-    $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
-
-    if ($Force -or -not (Test-Path $DotNetExe)) {
-        Trace-Log 'Downloading .NET CLI'
-
-        New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
-
-        Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
-        Trace-Log "$DotNetInstall -Channel $($cli.Channel) -i $($cli.Root) -Version $($cli.Version) -Architecture $arch"
-        & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
-    }
-
     if (-not (Test-Path $DotNetExe)) {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
-    # Install the 2.x runtime because our tests target netcoreapp2x
-    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
-    & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
-    # Display build info
-    & $DotNetExe --info
+    if ($SkipDotnetInfo -ne $true) {
+        # Display build info
+        & $DotNetExe --info
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "dotnet --info exited with non-zero exit code"
+        }
+    }
+    
+    if ($env:CI -eq "true") {
+        Write-Host "##vso[task.setvariable variable=DOTNET_ROOT;isOutput=false;issecret=false;]$CLIRoot"
+        Write-Host "##vso[task.setvariable variable=DOTNET_MULTILEVEL_LOOKUP;isOutput=false;issecret=false;]0"
+        Write-Host "##vso[task.prependpath]$CLIRoot"
+    } else {
+        $env:DOTNET_ROOT=$CLIRoot
+        $env:DOTNET_MULTILEVEL_LOOKUP=0
+        if (-not $env:path.Contains($CLIRoot)) {
+            $env:path = $CLIRoot + ";" + $env:path
+        }
+    }
 }
 
 Function Get-LatestVisualStudioRoot {
-
     if (Test-Path $BuiltInVsWhereExe) {
         $installationPath = & $BuiltInVsWhereExe -latest -prerelease -property installationPath
         $installationVersion = & $BuiltInVsWhereExe -latest -prerelease -property installationVersion
@@ -222,7 +229,7 @@ Function Get-LatestVisualStudioRoot {
         $script:FallbackVSVersion = "$majorVersion.0"
 
         return $installationPath
-    } 
+    }
 
     Error-Log "Could not find a compatible Visual Studio Version because $BuiltInVsWhereExe does not exist" -Fatal
 }
@@ -235,7 +242,7 @@ otherwise we pick the latest Visual Studio version available on the machine.
 #>
 Function Get-VSVersion() {
     if (-not $VSVersion) {
-        if(-not $script:FallbackVSVersion){
+        if (-not $script:FallbackVSVersion) {
             Verbose-Log "No fallback VS Version set yet. This means that we are running outside of a developer command prompt scope."
             $_ = Get-LatestVisualStudioRoot
         }
@@ -245,87 +252,57 @@ Function Get-VSVersion() {
     return $VSVersion
 }
 
-Function Get-VSMajorVersion() {
-    $vsVersion = Get-VSVersion
-    $vsMajorVersion = "${vsVersion}".Split('.')[0]
-    return $vsMajorVersion
-}
-
 Function Get-MSBuildExe {
-    param(
-        [ValidateSet("15", "16", $null)]
-        [string]$MSBuildVersion
-    )
 
-    if(-not $MSBuildVersion){
-        $MSBuildVersion = Get-VSMajorVersion
+    # If there's a msbuild.exe on the path, use it.
+    if ($null -ne (Get-Command "msbuild.exe" -ErrorAction Ignore))
+    {
+        return "msbuild.exe"
     }
 
-    $CommonToolsVar = "Env:VS${MSBuildVersion}0COMNTOOLS"
-    if (Test-Path $CommonToolsVar) {
-        $CommonToolsValue = gci $CommonToolsVar | select -expand value -ea Ignore
-        $MSBuildRoot = Join-Path $CommonToolsValue '..\..\MSBuild' -Resolve
-    } else {
-        $VisualStudioRoot = Get-LatestVisualStudioRoot
-        if ($VisualStudioRoot -and (Test-Path $VisualStudioRoot)) {
-            $MSBuildRoot = Join-Path $VisualStudioRoot 'MSBuild'
-        }
-    }
-
-    $MSBuildExe = Join-Path $MSBuildRoot 'Current\bin\msbuild.exe'
-
-    if (-not (Test-Path $MSBuildExe)) {
-        $MSBuildExe = Join-Path $MSBuildRoot "${MSBuildVersion}.0\bin\msbuild.exe"
-    }
+    # Otherwise, use VSWhere.exe to find the latest MSBuild.exe.
+    $MSBuildExe = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -requires Microsoft.Component.MSBuild -find MSBuild\**\bin\MSBuild.exe
 
     if (Test-Path $MSBuildExe) {
         Verbose-Log "Found MSBuild.exe at `"$MSBuildExe`""
-        $MSBuildExe
-    } else {
+        return $MSBuildExe
+    }
+    else {
         Error-Log 'Could not find MSBuild.exe' -Fatal
     }
 }
 
 Function Test-BuildEnvironment {
-    [CmdletBinding()]
-    param(
-        [switch]$CI
-    )
-    if (-not (Test-Path $ConfigureJson)) {
-        # Run the configure script if it hasn't been executed
-        $configureScriptPath = Join-Path $NuGetClientRoot configure.ps1
-        Invoke-Expression $configureScriptPath
-    }
-
     $Installed = (Test-Path $DotNetExe)
     if (-not $Installed) {
         Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
     }
-
-    $script:ConfigureObject = Get-Content $ConfigureJson -Raw | ConvertFrom-Json
-    Set-Variable MSBuildExe -Value $ConfigureObject.BuildTools.MSBuildExe -Scope Script -Force
-    Set-Alias msbuild $script:MSBuildExe -Scope Script -Force
-    Set-Variable BuildToolsets -Value $ConfigureObject.Toolsets -Scope Script -Force
-
-    $script:VSToolsetInstalled = ($BuildToolsets | where vstoolset -ne $null)
-
-    $ConfigureObject |
-         select -expand envvars -ea Ignore |
-         %{ $_.psobject.properties } |
-         %{ Set-Item -Path "env:$($_.Name)" -Value $_.Value }
-
-    if ($CI) {
-        # Explicitly add cli to environment PATH
-        # because dotnet-install script runs in configure.ps1 in previous build step
-        $env:path = "$CLIRoot;${env:path}"
-    }
 }
 
-Function Get-BuildNumber() {
-    $NuGetEpoch = '2010-08-29T23:58:25-07:00' # NuGet client first commit!
-    # Build number is a 16-bit integer. The limitation is imposed by VERSIONINFO.
-    # https://msdn.microsoft.com/en-gb/library/aa381058.aspx
-    [uint16]((((Get-Date) - (Get-Date $NuGetEpoch)).TotalMinutes / 5) % [uint16]::MaxValue)
+Function Install-ProcDump {
+    [CmdletBinding()]
+    param()
+    if ($Env:OS -eq "Windows_NT")
+    {
+        Trace-Log "Downloading ProcDump..."
+        
+        $ProcDumpZip = Join-Path $env:TEMP 'ProcDump.zip'
+        $TestDir = Join-Path $NuGetClientRoot '.test'
+        $ProcDumpDir = Join-Path $TestDir 'ProcDump'
+
+        Download-FileWithRetry 'https://download.sysinternals.com/files/Procdump.zip' -OutFile $ProcDumpZip
+        if (Test-Path $ProcDumpDir) {
+            Remove-Item $ProcDumpDir -Recurse -Force | Out-Null
+        }
+        New-Item $ProcDumpDir -ItemType Directory -Force | Out-Null
+        Expand-Archive $ProcDumpZip -DestinationPath $ProcDumpDir
+
+        if ($env:CI -eq "true") {
+            Write-Host "##vso[task.setvariable variable=PROCDUMP_PATH;isOutput=false;issecret=false;]$ProcDumpDir"
+        } else {
+            $env:PROCDUMP_PATH=$ProcDumpDir
+        }
+    }
 }
 
 Function Clear-PackageCache {
@@ -339,7 +316,7 @@ Function Clear-PackageCache {
 Function Clear-Artifacts {
     [CmdletBinding()]
     param()
-    if( Test-Path $Artifacts) {
+    if ( Test-Path $Artifacts) {
         Trace-Log 'Cleaning the Artifacts folder'
         Remove-Item $Artifacts\* -Recurse -Force -Exclude 'configure.json'
     }
@@ -354,17 +331,40 @@ Function Clear-Nupkgs {
     }
 }
 
-Function Restore-SolutionPackages{
-    [CmdletBinding()]
-    param(
+Function Download-FileWithRetry {
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string] $Uri,
+        [Parameter(Mandatory = $true)]
+        [string] $OutFile,
+        [Parameter(Mandatory = $false)]
+        [int] $Retries = 5
     )
-    $opts = 'msbuild', '-t:restore'
-    $opts += "${NuGetClientRoot}\build\bootstrap.proj"
 
-    Trace-Log "Restoring packages @""$NuGetClientRoot"""
-    Trace-Log "dotnet $opts"
-    & dotnet $opts
-    if (-not $?) {
-        Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
+    while($true)
+    {
+        try
+        {
+            Trace-Log "Downloading '$Uri' to '$OutFile'"
+            Invoke-WebRequest $Uri -OutFile $OutFile
+            break
+        }
+        catch
+        {
+            $exceptionMessage = $_.Exception.Message
+            Warning-Log "Failed to download '$Uri': $exceptionMessage"
+            if ($Retries -gt 0) {
+                $Retries--
+                Trace-Log "Waiting 10 seconds before retrying. Retries left: $Retries"
+                Start-Sleep -Seconds 10
+ 
+            }
+            else
+            {
+                $exception = $_.Exception
+                throw $exception
+            }
+        }
     }
 }

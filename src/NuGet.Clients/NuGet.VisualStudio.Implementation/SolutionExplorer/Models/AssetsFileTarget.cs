@@ -19,9 +19,12 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
     internal sealed class AssetsFileTarget
     {
         /// <summary>
-        /// Gets the target framework moniker, such as <c>.NETFramework,Version=v4.8</c> or <c>.NETStandard,Version=v1.3</c>.
+        /// Gets the target framework alias, which is the string from the project file.
+        /// Target framework aliases may be arbitrary strings, so this value should not be parsed.
+        /// It is used here to join attached nodes in Solution Explorer under the correct target
+        /// node in multi-target projects.
         /// </summary>
-        public string TargetFrameworkMoniker { get; }
+        public string TargetAlias { get; }
 
         /// <summary>
         /// Gets diagnostic messages for this target. Often empty.
@@ -49,14 +52,14 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         /// </summary>
         private readonly Dictionary<(string LibraryName, string? Version), ImmutableArray<AssetsFileTargetLibrary>> _dependenciesByNameAndVersion = new Dictionary<(string LibraryName, string? Version), ImmutableArray<AssetsFileTargetLibrary>>();
 
-        public AssetsFileTarget(AssetsFileDependenciesSnapshot snapshot, string targetFrameworkMoniker, ImmutableArray<AssetsFileLogMessage> logs, ImmutableDictionary<string, AssetsFileTargetLibrary> libraryByName)
+        public AssetsFileTarget(AssetsFileDependenciesSnapshot snapshot, string targetAlias, ImmutableArray<AssetsFileLogMessage> logs, ImmutableDictionary<string, AssetsFileTargetLibrary> libraryByName)
         {
             Requires.NotNull(snapshot, nameof(snapshot));
-            Requires.NotNullOrWhiteSpace(targetFrameworkMoniker, nameof(targetFrameworkMoniker));
+            Requires.NotNullOrWhiteSpace(targetAlias, nameof(targetAlias));
             Requires.Argument(!logs.IsDefault, nameof(logs), "Must not be default");
             Requires.NotNull(libraryByName, nameof(libraryByName));
 
-            TargetFrameworkMoniker = targetFrameworkMoniker;
+            TargetAlias = targetAlias;
             _snapshot = snapshot;
             Logs = logs;
             LibraryByName = libraryByName;
@@ -103,7 +106,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         /// <returns><see langword="true"/> if dependencies were found, otherwise <see langword="false"/>.</returns>
         public bool TryGetDependencies(string libraryName, string? version, out ImmutableArray<AssetsFileTargetLibrary> dependencies)
         {
-            if (!LibraryByName.TryGetValue(libraryName, out AssetsFileTargetLibrary library))
+            if (!LibraryByName.TryGetValue(libraryName, out AssetsFileTargetLibrary? library))
             {
                 dependencies = default;
                 return false;
@@ -129,7 +132,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                         // For example "NETStandard.Library" as a dependency of a package brought in via a project will
                         // not cause details NETStandard.Library to be included in the grandparent's assets file.
                         // Such libraries are excluded.
-                        if (LibraryByName.TryGetValue(dependencyName, out AssetsFileTargetLibrary dependency))
+                        if (LibraryByName.TryGetValue(dependencyName, out AssetsFileTargetLibrary? dependency))
                         {
                             builder.Add(dependency);
                         }
@@ -145,14 +148,12 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             return true;
         }
 
-        public bool TryGetPackage(string packageId, string version, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? assetsFileLibrary)
+        public bool TryGetPackage(string packageId, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? assetsFileLibrary)
         {
             Requires.NotNull(packageId, nameof(packageId));
-            Requires.NotNull(version, nameof(version));
 
             if (LibraryByName.TryGetValue(packageId, out assetsFileLibrary) &&
-                assetsFileLibrary.Type == AssetsFileLibraryType.Package &&
-                assetsFileLibrary.Version == version)
+                assetsFileLibrary.Type is AssetsFileLibraryType.Package or AssetsFileLibraryType.Unknown)
             {
                 return true;
             }
@@ -166,7 +167,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             Requires.NotNull(projectId, nameof(projectId));
 
             if (LibraryByName.TryGetValue(projectId, out assetsFileLibrary) &&
-                assetsFileLibrary.Type == AssetsFileLibraryType.Project)
+                assetsFileLibrary.Type is AssetsFileLibraryType.Project or AssetsFileLibraryType.Unknown)
             {
                 return true;
             }
@@ -183,7 +184,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         public override string ToString()
         {
             var s = new StringBuilder();
-            s.Append("Target \"").Append(TargetFrameworkMoniker).Append("\" ");
+            s.Append("Target \"").Append(TargetAlias).Append("\" ");
             s.Append(LibraryByName.Count).Append(LibraryByName.Count == 1 ? " library" : " libraries");
             s.Append(Logs.Length).Append(Logs.Length == 1 ? " log" : " logs");
             return s.ToString();

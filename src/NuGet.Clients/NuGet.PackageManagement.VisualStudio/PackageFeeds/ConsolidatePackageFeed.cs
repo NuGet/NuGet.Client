@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -48,16 +49,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
+            var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             var packagesNeedingConsolidation = _installedPackages
                 .GroupById()
                 .Where(g => g.Count() > 1)
-                .Select(g => new PackageIdentity(g.Key, g.Max()))
+                .Select(g => new PackageIdentity(g.Key, g.Max().Version))
                 .ToArray();
 
             var packages = packagesNeedingConsolidation

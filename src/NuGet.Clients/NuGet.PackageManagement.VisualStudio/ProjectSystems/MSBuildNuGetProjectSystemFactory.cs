@@ -31,8 +31,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async static Task<VsMSBuildProjectSystem> CreateMSBuildNuGetProjectSystemAsync(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
         {
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             if (vsProjectAdapter == null)
             {
                 throw new ArgumentNullException(nameof(vsProjectAdapter));
@@ -43,13 +41,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture,
                         Strings.DTE_ProjectUnsupported, vsProjectAdapter.ProjectName));
-            }
-
-            if (!vsProjectAdapter.IsDeferred 
-                && EnvDTEProjectUtility.SupportsProjectKPackageManager(vsProjectAdapter.Project))
-            {
-                throw new InvalidOperationException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.DTE_ProjectUnsupported, typeof(IMSBuildProjectSystem).FullName));
             }
 
             var guids = await vsProjectAdapter.GetProjectTypeGuidsAsync();

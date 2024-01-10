@@ -16,8 +16,7 @@
   </TemplateData>
   <TemplateContent>
     <Project File="Library.fsproj" ReplaceParameters="true">
-      <ProjectItem ReplaceParameters="true" OpenInEditor="true">Module1.fs</ProjectItem>
-      <ProjectItem ReplaceParameters="true">Script.fsx</ProjectItem>
+      <ProjectItem ReplaceParameters="true" OpenInEditor="true">Library.fs</ProjectItem>
     </Project>
   </TemplateContent>
 </VSTemplate>

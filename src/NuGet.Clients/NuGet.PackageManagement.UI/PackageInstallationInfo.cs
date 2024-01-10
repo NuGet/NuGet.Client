@@ -3,10 +3,12 @@
 
 using System;
 using System.ComponentModel;
-using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
-using NuGet.ProjectManagement;
+using Microsoft.ServiceHub.Framework;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,26 +16,62 @@ namespace NuGet.PackageManagement.UI
     // - A version of the package is installed. In this case, property Version is not null.
     //   Property IsSolution indicates if the package is installed in the solution or in a project.
     // - The package is not installed in a project/solution. In this case, property Version is null.
-    public class PackageInstallationInfo : IComparable<PackageInstallationInfo>,
-        INotifyPropertyChanged
+    public class PackageInstallationInfo : IComparable<PackageInstallationInfo>, INotifyPropertyChanged, ISelectableItem
     {
-        private NuGetVersion _version;
+        public event EventHandler SelectedChanged;
+
+        private bool _autoReferenced;
+        private bool _isSelected;
+        private string _projectName;
+        private readonly IServiceBroker _serviceBroker;
+
+        private PackageInstallationInfo(IServiceBroker serviceBroker, IProjectContextInfo project)
+        {
+            _serviceBroker = serviceBroker;
+            NuGetProject = project;
+        }
+
+        public static async ValueTask<PackageInstallationInfo> CreateAsync(
+            IServiceBroker serviceBroker,
+            IProjectContextInfo project,
+            CancellationToken cancellationToken)
+        {
+            var packageInstallationInfo = new PackageInstallationInfo(serviceBroker, project);
+            await packageInstallationInfo.InitializeAsync(cancellationToken);
+            return packageInstallationInfo;
+        }
+
+        private async ValueTask InitializeAsync(CancellationToken cancellationToken)
+        {
+            _projectName = await NuGetProject.GetUniqueNameOrNameAsync(_serviceBroker, cancellationToken);
+        }
+
+        private NuGetVersion _versionInstalled;
+        private string _versionRequested;
 
         public NuGetVersion InstalledVersion
         {
-            get { return _version; }
+            get { return _versionInstalled; }
             set
             {
-                _version = value;
+                _versionInstalled = value;
                 OnPropertyChanged(nameof(InstalledVersion));
             }
         }
 
-        private bool _autoReferenced;
+        public string RequestedVersion
+        {
+            get { return _versionRequested; }
+            set
+            {
+                _versionRequested = value;
+                OnPropertyChanged(nameof(RequestedVersion));
+            }
+        }
 
         public bool AutoReferenced
         {
-            get { return _autoReferenced; }
+            get => _autoReferenced;
             set
             {
                 _autoReferenced = value;
@@ -41,64 +79,29 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public event EventHandler SelectedChanged;
-
-        private bool _isSelected;
-
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get => _isSelected;
             set
             {
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    if (SelectedChanged != null)
-                    {
-                        SelectedChanged(this, EventArgs.Empty);
-                    }
+                    SelectedChanged?.Invoke(this, EventArgs.Empty);
                     OnPropertyChanged(nameof(IsSelected));
                 }
             }
         }
 
-        public NuGetProject NuGetProject { get; }        
-
-        public PackageInstallationInfo(
-            NuGetProject project)
-        {
-            NuGetProject = project;
-            _projectName = NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
-            _isSelected = false;
-        }
-
-        private string _projectName;
+        public IProjectContextInfo NuGetProject { get; }
 
         public string ProjectName
         {
-            get
-            {
-                return _projectName;
-            }
+            get => _projectName;
             set
             {
                 _projectName = value;
                 OnPropertyChanged(nameof(ProjectName));
-            }
-        }
-
-        private AlternativePackageManagerProviders _providers;
-        public AlternativePackageManagerProviders Providers
-        {
-            get
-            {
-                return _providers;
-            }
-
-            set
-            {
-                _providers = value;
-                OnPropertyChanged(nameof(Providers));
             }
         }
 

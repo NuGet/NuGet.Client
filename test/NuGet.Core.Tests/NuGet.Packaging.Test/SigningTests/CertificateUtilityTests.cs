@@ -13,7 +13,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class CertificateUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class CertificateUtilityTests
     {
         private readonly CertificatesFixture _fixture;
 
@@ -118,19 +119,19 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void GetCertificateChain_ReturnsCertificatesInOrder()
         {
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
             using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
             using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
             using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
-                var chain = chainHolder.Chain;
+                IX509Chain chain = chainHolder.Chain2;
 
                 chain.ChainPolicy.ExtraStore.Add(rootCertificate);
                 chain.ChainPolicy.ExtraStore.Add(intermediateCertificate);
 
                 chain.Build(leafCertificate);
 
-                using (var certificateChain = CertificateChainUtility.GetCertificateChain(chain))
+                using (IX509CertificateChain certificateChain = CertificateChainUtility.GetCertificateChain(chain.PrivateReference))
                 {
                     Assert.Equal(3, certificateChain.Count);
                     Assert.Equal(leafCertificate.Thumbprint, certificateChain[0].Thumbprint);

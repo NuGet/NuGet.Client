@@ -112,7 +112,18 @@ namespace NuGet.CommandLine
             // If the SolutionDir is specified, use the .nuget directory under it to determine the solution-level settings
             if (!string.IsNullOrEmpty(SolutionDirectory))
             {
-                var path = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
+                string path;
+                try
+                {
+                    path = Path.Combine(SolutionDirectory, NuGetConstants.NuGetSolutionSettingsFolder);
+                }
+                catch (ArgumentException e)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("Error_InvalidSolutionDirectory"),
+                            SolutionDirectory),
+                        e);
+                }
 
                 var solutionSettingsFile = Path.GetFullPath(path);
 
@@ -183,8 +194,13 @@ namespace NuGet.CommandLine
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 logger: Console);
 
-            var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).Any();
+            var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+            if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+            {
+                packageSaveMode = EffectivePackageSaveMode;
+            }
+
+            var missingPackageReferences = installedPackageReferences.Any(reference => !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode));
 
             if (!missingPackageReferences)
             {
@@ -197,7 +213,7 @@ namespace NuGet.CommandLine
             }
             using (var cacheContext = new SourceCacheContext())
             {
-                cacheContext.NoCache = NoCache;
+                cacheContext.NoCache = NoCache || NoHttpCache;
                 cacheContext.DirectDownload = DirectDownload;
 
                 var clientPolicyContext = ClientPolicyContext.GetClientPolicy(Settings, Console);
@@ -205,13 +221,15 @@ namespace NuGet.CommandLine
                 var projectContext = new ConsoleProjectContext(Console)
                 {
                     PackageExtractionContext = new PackageExtractionContext(
-                        Packaging.PackageSaveMode.Defaultv2,
+                        packageSaveMode,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         clientPolicyContext,
                         Console)
                 };
 
-                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload)
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, installPath, DirectDownload, packageSourceMapping)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -244,10 +262,6 @@ namespace NuGet.CommandLine
         {
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
-
-
-
-
 
         private async Task InstallPackageAsync(
             string packageId,
@@ -286,7 +300,7 @@ namespace NuGet.CommandLine
                 var resolutionContext = new ResolutionContext(
                 dependencyBehavior,
                 includePrelease: allowPrerelease,
-                includeUnlisted: true,
+                includeUnlisted: false,
                 versionConstraints: VersionConstraints.None,
                 gatherCache: new GatherCache(),
                 sourceCacheContext: sourceCacheContext);
@@ -330,8 +344,14 @@ namespace NuGet.CommandLine
 
                 var packageIdentity = new PackageIdentity(packageId, version);
 
+                var PackageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+                if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                {
+                    PackageSaveMode = EffectivePackageSaveMode;
+                }
+
                 // Check if the package already exists or a higher version exists already.
-                var skipInstall = project.PackageExists(packageIdentity);
+                var skipInstall = project.PackageExists(packageIdentity, PackageSaveMode);
 
                 // For SxS allow other versions to install. For non-SxS skip if a higher version exists.
                 skipInstall |= (ExcludeVersion && alreadyInstalledVersions.Any(e => e >= version));
@@ -352,21 +372,18 @@ namespace NuGet.CommandLine
                     var projectContext = new ConsoleProjectContext(Console)
                     {
                         PackageExtractionContext = new PackageExtractionContext(
-                            Packaging.PackageSaveMode.Defaultv2,
+                            PackageSaveMode,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
                             clientPolicyContext,
                             Console)
                     };
 
-                    if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
-                    {
-                        projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
-                    }
-
-                    resolutionContext.SourceCacheContext.NoCache = NoCache;
+                    resolutionContext.SourceCacheContext.NoCache = NoCache || NoHttpCache;
                     resolutionContext.SourceCacheContext.DirectDownload = DirectDownload;
 
-                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload)
+                    var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
+
+                    var downloadContext = new PackageDownloadContext(resolutionContext.SourceCacheContext, installPath, DirectDownload, packageSourceMapping)
                     {
                         ClientPolicyContext = clientPolicyContext
                     };

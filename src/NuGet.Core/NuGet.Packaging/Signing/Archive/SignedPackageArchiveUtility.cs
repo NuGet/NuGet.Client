@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Text;
@@ -76,7 +76,7 @@ namespace NuGet.Packaging.Signing
         /// <remarks>Callers should first verify that a package is signed before calling this method.</remarks>
         /// <param name="reader">A binary reader for a signed package.</param>
         /// <returns>A readable stream.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <see langword="null" />.</exception>
         /// <exception cref="SignatureException">Thrown if a package signature file is invalid or missing.</exception>
         public static Stream OpenPackageSignatureFileStream(BinaryReader reader)
         {
@@ -226,7 +226,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Removes repository primary signature (if it exists) or any repository countersignature (if it exists).
         /// </summary>
@@ -404,11 +404,29 @@ namespace NuGet.Packaging.Signing
             SignedPackageArchiveIOUtility.RemoveSignature(reader, writer);
         }
 
+        internal static void HashUInt16(HashAlgorithm hashAlgorithm, ushort value)
+        {
+            byte[] array = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(array);
+            }
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, array);
+        }
+
+        internal static void HashUInt32(HashAlgorithm hashAlgorithm, uint value)
+        {
+            byte[] array = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(array);
+            }
+            SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, array);
+        }
+
         /// <summary>
         /// Verifies that a signed package archive's signature is valid and it has not been tampered with.
         ///
-        /// TODO: When we work to support signing for netcore then we should use GetPackageContentHash api to calculate package hash
-        /// which works for desktop as well as netcore.
         /// </summary>
         /// <param name="reader">Signed package to verify</param>
         /// <param name="hashAlgorithm">Hash algorithm to be used to hash data.</param>
@@ -465,7 +483,7 @@ namespace NuGet.Packaging.Signing
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + 42);
 
                     var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
-                    SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
+                    HashUInt32(hashAlgorithm, relativeOffsetOfLocalFileHeader);
 
                     // Continue hashing file name, extra field, and file comment fields.
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Position + record.HeaderSize - CentralDirectoryHeader.SizeInBytesOfFixedLengthFields);
@@ -479,20 +497,20 @@ namespace NuGet.Packaging.Signing
                 var eocdrTotalEntries = (ushort)(reader.ReadUInt16() - 1);
                 var eocdrTotalEntriesOnDisk = (ushort)(reader.ReadUInt16() - 1);
 
-                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntries));
-                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
+                HashUInt16(hashAlgorithm, eocdrTotalEntries);
+                HashUInt16(hashAlgorithm, eocdrTotalEntriesOnDisk);
 
                 // update the central directory size by substracting the size of the package signature file's central directory header
                 var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize);
-                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
+                HashUInt32(hashAlgorithm, eocdrSizeOfCentralDirectory);
 
                 var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;
-                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
+                HashUInt32(hashAlgorithm, eocdrOffsetOfCentralDirectory);
 
                 // Hash until the end of the reader
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, reader.BaseStream.Length);
 
-                hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
+                hashAlgorithm.TransformFinalBlock(Array.Empty<byte>(), inputOffset: 0, inputCount: 0);
 
                 return CompareHash(expectedHash, hashAlgorithm.Hash);
             }
@@ -548,6 +566,26 @@ namespace NuGet.Packaging.Signing
             return centralDirectoryRecordsList;
         }
 
+        internal static void HashUInt16(Sha512HashFunction hashFunc, ushort value)
+        {
+            byte[] array = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(array);
+            }
+            SignedPackageArchiveIOUtility.HashBytes(hashFunc, array);
+        }
+
+        internal static void HashUInt32(Sha512HashFunction hashFunc, uint value)
+        {
+            byte[] array = BitConverter.GetBytes(value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(array);
+            }
+            SignedPackageArchiveIOUtility.HashBytes(hashFunc, array);
+        }
+
         internal static string GetPackageContentHash(BinaryReader reader)
         {
             using (var hashFunc = new Sha512HashFunction())
@@ -580,7 +618,7 @@ namespace NuGet.Packaging.Signing
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Position + 42);
 
                     var relativeOffsetOfLocalFileHeader = (uint)(reader.ReadUInt32() + record.ChangeInOffset);
-                    SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(relativeOffsetOfLocalFileHeader));
+                    HashUInt32(hashFunc, relativeOffsetOfLocalFileHeader);
 
                     // Continue hashing file name, extra field, and file comment fields.
                     SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Position + record.HeaderSize - CentralDirectoryHeader.SizeInBytesOfFixedLengthFields);
@@ -594,20 +632,20 @@ namespace NuGet.Packaging.Signing
                 var eocdrTotalEntries = (ushort)(reader.ReadUInt16() - 1);
                 var eocdrTotalEntriesOnDisk = (ushort)(reader.ReadUInt16() - 1);
 
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrTotalEntries));
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrTotalEntriesOnDisk));
+                HashUInt16(hashFunc, eocdrTotalEntries);
+                HashUInt16(hashFunc, eocdrTotalEntriesOnDisk);
 
                 // update the central directory size by substracting the size of the package signature file's central directory header
                 var eocdrSizeOfCentralDirectory = (uint)(reader.ReadUInt32() - signatureCentralDirectoryHeader.HeaderSize);
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrSizeOfCentralDirectory));
+                HashUInt32(hashFunc, eocdrSizeOfCentralDirectory);
 
                 var eocdrOffsetOfCentralDirectory = reader.ReadUInt32() - (uint)signatureCentralDirectoryHeader.FileEntryTotalSize;
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, BitConverter.GetBytes(eocdrOffsetOfCentralDirectory));
+                HashUInt32(hashFunc, eocdrOffsetOfCentralDirectory);
 
                 // Hash until the end of the reader
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashFunc, reader.BaseStream.Length);
 
-                hashFunc.Update(new byte[0], offset: 0, count: 0);
+                hashFunc.Update(Array.Empty<byte>(), offset: 0, count: 0);
 
                 return hashFunc.GetHash();
             }

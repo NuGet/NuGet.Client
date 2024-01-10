@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using FluentAssertions;
 using Newtonsoft.Json;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
@@ -126,7 +127,7 @@ namespace NuGet.ProjectModel.Test
                     "file/b.txt"
                 }
             };
-            
+
             // Use Newtonsoft.Json to enumerate all properties.
             var originalSerialized = JsonConvert.SerializeObject(original, Formatting.Indented);
 
@@ -207,6 +208,295 @@ namespace NuGet.ProjectModel.Test
 
             var originalSerializedAfter = JsonConvert.SerializeObject(original, Formatting.Indented);
             Assert.Equal(originalSerializedBefore, originalSerializedAfter);
+        }
+
+        public void LockFileLibrary_EqualityEmpty()
+        {
+            // Arrange
+            var library1 = new LockFileLibrary();
+            var library2 = new LockFileLibrary();
+
+            // Act & Assert
+            Assert.True(library1.Equals(library2));
+        }
+
+        public void LockFileLibrary_EqualityDiffersOnMSBuildPath()
+        {
+            // Arrange
+            var library1 = new LockFileLibrary()
+            {
+                MSBuildProject = "a"
+            };
+
+            var library2 = new LockFileLibrary()
+            {
+                MSBuildProject = "b"
+            };
+
+            // Act & Assert
+            Assert.False(library1.Equals(library2));
+        }
+
+        public void LockFileLibrary_EqualitySameMSBuildPath()
+        {
+            // Arrange
+            var library1 = new LockFileLibrary()
+            {
+                MSBuildProject = "b"
+            };
+
+            var library2 = new LockFileLibrary()
+            {
+                MSBuildProject = "b"
+            };
+
+            // Act & Assert
+            Assert.True(library1.Equals(library2));
+        }
+
+        [Theory]
+        [InlineData("name", "name", true)]
+        [InlineData("NAME", "name", true)]
+        [InlineData("name", "name2", false)]
+        public void Equals_WithName(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                Name = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                Name = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData("project", "project", true)]
+        [InlineData("PROJECT", "project", true)]
+        [InlineData("project", "package", false)]
+        public void Equals_WithType(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                Type = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                Type = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData("1.0.0", "1.0.0", true)]
+        [InlineData("1.0.0-preview.1", "1.0.0-preview.1", true)]
+        [InlineData("1.0.0", "2.1.0", false)]
+        public void Equals_WithVersion(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                Version = NuGetVersion.Parse(left)
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                Version = NuGetVersion.Parse(right)
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(false, false, true)]
+        [InlineData(true, false, false)]
+        public void Equals_WithIsServiceable(bool left, bool right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                IsServiceable = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                IsServiceable = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData(true, true, true)]
+        [InlineData(false, false, true)]
+        [InlineData(true, false, false)]
+        public void Equals_WithHasTools(bool left, bool right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                HasTools = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                HasTools = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData("project", "project", true)]
+        [InlineData("project", "PROJECT", false)]
+        [InlineData("project", "package", false)]
+        public void Equals_WithPath(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                Path = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                Path = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData("project", "project", true)]
+        [InlineData("project", "PROJECT", false)]
+        [InlineData("project", "package", false)]
+        public void Equals_WithMSBuildProject(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                MSBuildProject = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                MSBuildProject = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData("project", "project", true)]
+        [InlineData("project", "PROJECT", false)]
+        [InlineData("project", "package", false)]
+        public void Equals_WithSha512(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                Sha512 = left
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                Sha512 = right
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
+        }
+
+        [Theory]
+        [InlineData("project", "project", true)]
+        [InlineData("PROJECT", "project", false)]
+        [InlineData("project", "package", false)]
+        [InlineData("project;project2", "project2;project", true)]
+        [InlineData("project;project2", "project;project2;project3", false)]
+        public void Equals_WithFiles(string left, string right, bool expected)
+        {
+            var leftSide = new LockFileLibrary()
+            {
+                Files = left.Split(';')
+            };
+
+            var rightSide = new LockFileLibrary()
+            {
+                Files = right.Split(';')
+            };
+
+            // Act & Assert
+            if (expected)
+            {
+                leftSide.Should().Be(rightSide);
+            }
+            else
+            {
+                leftSide.Should().NotBe(rightSide);
+            }
         }
     }
 }

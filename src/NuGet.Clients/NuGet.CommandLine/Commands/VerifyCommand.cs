@@ -36,15 +36,16 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(PackagePath))
             {
-                throw new ArgumentNullException(nameof(PackagePath));
+                throw new ArgumentException(nameof(PackagePath));
             }
 
             var verifyArgs = new VerifyArgs()
             {
                 Verifications = GetVerificationTypes(),
-                PackagePath = PackagePath,
+                PackagePaths = new[] { PackagePath },
                 CertificateFingerprint = CertificateFingerprint,
-                Logger = Console
+                Logger = Console,
+                Settings = Settings
             };
 
             switch (Verbosity)
@@ -66,7 +67,7 @@ namespace NuGet.CommandLine
             {
                 throw new ExitCodeException(1);
             }
-            return Task.FromResult(result);
+            return Task.CompletedTask;
         }
 
         private IList<Verification> GetVerificationTypes()

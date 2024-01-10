@@ -15,7 +15,8 @@ using IssuerSerial = NuGet.Packaging.Signing.IssuerSerial;
 
 namespace NuGet.Packaging.Test
 {
-    public class IssuerSerialTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class IssuerSerialTests
     {
         private readonly CertificatesFixture _fixture;
 

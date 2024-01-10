@@ -1,6 +1,4 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
@@ -10,10 +8,17 @@
     <PackProject>false</PackProject>
     <IncludeInVsix>false</IncludeInVsix>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GetSigningInputsDependsOn>GetSigningInputsCustom</GetSigningInputsDependsOn>
+    <GetSymbolsToIndexDependsOn>GetSymbolsToIndexCustom</GetSymbolsToIndexDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj" />
+    <PackageReference Include="ILMerge" PrivateAssets="All" />
+    <None Include="$(BuildCommonDirectory)NOTICES.txt" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.CommandLine\NuGet.CommandLine.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,24 +36,33 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="ILMergeNuGetMssignExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+  <Target Name="DetermineILMergeNuGetMssignExeInputsOutputs">
+    <PropertyGroup>
+      <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
+      <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe</PathToMergedNuGetExe>
+    </PropertyGroup>
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
     </ItemGroup>
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
+  </Target>
+
+  <Target Name="ILMergeNuGetMssignExe"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineILMergeNuGetMssignExeInputsOutputs"
+          Inputs="$(PathToBuiltNuGetExe);@(BuildArtifacts)"
+          Outputs="$(PathToMergedNuGetExe)"
+          Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
     <PropertyGroup>
-      <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
-      <IlmergeCommand>$(ILMergeExePath) $(PathToBuiltNuGetExe) /lib:$(OutputPath) @(BuildArtifacts->'%(filename)%(extension)', ' ') /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeConsolePath) $(PathToBuiltNuGetExe) /lib:$(OutputPath) @(BuildArtifacts->'%(filename)%(extension)', ' ') /out:$(PathToMergedNuGetExe) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ')</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
     </PropertyGroup>
-    <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetExe)))" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
-
-  <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
+  <Target Name="GetSigningInputsCustom" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe">
         <StrongName>MsSharedLib72</StrongName>
@@ -57,12 +71,10 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetSymbolsToIndex" Returns="@(SymbolsToIndex)">
+  <Target Name="GetSymbolsToIndexCustom" Returns="@(SymbolsToIndex)">
     <ItemGroup>
       <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.exe" />
       <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.Mssign.pdb" />
     </ItemGroup>
   </Target>
-  
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

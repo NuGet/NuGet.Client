@@ -41,6 +41,7 @@ namespace NuGet.Packaging
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
         private const string Icon = "icon";
+        private const string Readme = "readme";
 
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
@@ -214,7 +215,7 @@ namespace NuGet.Packaging
 
             var ns = Xml.Root.GetDefaultNamespace().NamespaceName;
 
-            var groups = new Dictionary<NuGetFramework, HashSet<string>>(new NuGetFrameworkFullComparer());
+            var groups = new Dictionary<NuGetFramework, HashSet<string>>(NuGetFrameworkFullComparer.Instance);
 
             foreach (var group in MetadataNode.Elements(XName.Get(FrameworkAssemblies, ns)).Elements(XName.Get(FrameworkAssembly, ns))
                 .GroupBy(n => GetAttributeValue(n, TargetFramework)))
@@ -254,9 +255,9 @@ namespace NuGet.Packaging
             }
 
             // Sort items to make this deterministic for the caller
-            foreach (var framework in groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter()))
+            foreach ((var framework, var items) in groups.OrderBy(e => e.Key, NuGetFrameworkSorter.Instance))
             {
-                var group = new FrameworkSpecificGroup(framework, groups[framework].OrderBy(item => item, StringComparer.OrdinalIgnoreCase));
+                var group = new FrameworkSpecificGroup(framework, items.OrderBy(item => item, StringComparer.OrdinalIgnoreCase));
 
                 results.Add(group);
             }
@@ -569,7 +570,7 @@ namespace NuGet.Packaging
         /// </summary>
         public IEnumerable<FrameworkReferenceGroup> GetFrameworkRefGroups()
         {
-            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace : true);
+            return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace: true);
         }
 
         /// <summary>
@@ -582,7 +583,17 @@ namespace NuGet.Packaging
             return node?.Value;
         }
 
-        private static bool? AttributeAsNullableBool(XElement element, string attributeName)
+        /// <summary>
+        /// Gets the readme metadata from the .nuspec
+        /// </summary>
+        /// <returns>A string containing the readme path or null if no readme entry is found</returns>
+        public string GetReadme()
+        {
+            var node = MetadataNode.Elements(XName.Get(Readme, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node?.Value;
+        }
+
+        private bool? AttributeAsNullableBool(XElement element, string attributeName)
         {
             bool? result = null;
 
@@ -603,7 +614,8 @@ namespace NuGet.Packaging
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.InvalidNuspecEntry,
-                            element.ToString().Trim());
+                            element.ToString().Trim(),
+                            GetIdentity());
 
                     throw new PackagingException(message);
                 }

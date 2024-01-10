@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class IntegrityVerificationProviderTests
     {
-        private const string _packageTamperedError = "The package integrity check failed.";
+        private const string _packageTamperedError = "The package integrity check failed. The package has changed since it was signed. Try clearing the local http-cache and run nuget operation again.";
         private const string _packageUnsignedError = "The package is not signed.";
         private const string _packageInvalidSignatureError = "The package signature is invalid or cannot be verified on this platform.";
 

@@ -3,14 +3,17 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing
 {
     /// <summary>
     /// Test certificate pair.
     /// </summary>
-    public class TestCertificate
+    public sealed class TestCertificate
     {
+        private readonly X509StorePurpose _storePurpose;
+
         /// <summary>
         /// Cert
         /// </summary>
@@ -32,22 +35,80 @@ namespace Test.Utility.Signing
         /// </summary>
         public CertificateRevocationList Crl { get; set; }
 
-        /// <summary>
-        /// Trust the PublicCert cert for the life of the object.
-        /// </summary>
-        /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
+        public TestCertificate(X509StorePurpose storePurpose)
         {
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+            _storePurpose = storePurpose;
         }
 
         /// <summary>
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
+        /// According to https://github.com/dotnet/corefx/blob/master/Documentation/architecture/cross-platform-cryptography.md#x509store
+        /// Linux could not read/write LocalMachine\Root , but could only read/write CurrentUser\Root
+        public TrustedTestCert<TestCertificate> WithTrust()
         {
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCert,
+                _storePurpose,
+                StoreName.Root,
+                storeLocation);
+        }
+
+        /// <summary>
+        /// Trust the PublicCert cert for the life of the object.
+        /// </summary>
+        /// <remarks>Dispose of the object returned!</remarks>
+        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople)
+        {
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCertWithPrivateKey,
+                _storePurpose,
+                storeName,
+                storeLocation);
+        }
+
+        /// <summary>
+        /// Trust the PublicCert cert as intermediate CA certificate.
+        /// </summary>
+        /// <remarks>Dispose of the object returned!</remarks>
+        /// On MacOs, there is no StoreName.CertificateAuthority, so add to LocalMachine\My instead.
+        internal TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForIntermediateCertificateAuthority()
+        {
+            StoreName storeName = CertificateStoreUtilities.GetCertificateAuthorityStoreName();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCertWithPrivateKey,
+                _storePurpose,
+                storeName,
+                storeLocation);
+        }
+
+        /// <summary>
+        /// Trust the PublicCert cert as leaf or self-issued.
+        /// </summary>
+        /// <remarks>Dispose of the object returned!</remarks>
+        /// On MacOs, if we add the leaf or self-issued certificate into LocalMachine\Root, the private key will not be accessed. So the dotnet signing command tests will fail for:
+        ///  "Object contains only the public half of a key pair. A private key must also be provided."
+        internal TrustedTestCert<TestCertificate> WithPrivateKeyAndTrustForLeafOrSelfIssued()
+        {
+            StoreName storeName = CertificateStoreUtilities.GetTrustedCertificateStoreNameForLeafOrSelfIssuedCertificate();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocationForLeafOrSelfIssuedCertificate();
+
+            return new TrustedTestCert<TestCertificate>(
+                this,
+                e => PublicCertWithPrivateKey,
+                _storePurpose,
+                storeName,
+                storeLocation);
         }
 
         public static string GenerateCertificateName()
@@ -55,10 +116,16 @@ namespace Test.Utility.Signing
             return "NuGetTest-" + Guid.NewGuid().ToString();
         }
 
-        public static TestCertificate Generate(Action<TestCertificateGenerator> modifyGenerator = null, ChainCertificateRequest chainCertificateRequest = null)
+        public static TestCertificate Generate(
+            X509StorePurpose storePurpose,
+            Action<TestCertificateGenerator> modifyGenerator = null,
+            ChainCertificateRequest chainCertificateRequest = null)
         {
-            var certName = GenerateCertificateName();
-            var cert = SigningTestUtility.GenerateCertificateWithKeyInfo(certName, modifyGenerator, chainCertificateRequest: chainCertificateRequest);
+            string certName = GenerateCertificateName();
+            X509CertificateWithKeyInfo cert = SigningTestUtility.GenerateCertificateWithKeyInfo(
+                certName,
+                modifyGenerator,
+                chainCertificateRequest: chainCertificateRequest);
             CertificateRevocationList crl = null;
 
             // create a crl only if the certificate is part of a chain and it is a CA and ConfigureCrl is true
@@ -67,7 +134,7 @@ namespace Test.Utility.Signing
                 crl = CertificateRevocationList.CreateCrl(cert, chainCertificateRequest.CrlLocalBaseUri);
             }
 
-            var testCertificate = new TestCertificate
+            var testCertificate = new TestCertificate(storePurpose)
             {
                 Cert = cert.Certificate,
                 Crl = crl

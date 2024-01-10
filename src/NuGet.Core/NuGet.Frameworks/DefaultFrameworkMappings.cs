@@ -7,12 +7,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    sealed class DefaultFrameworkMappings : IFrameworkMappings
+    public sealed class DefaultFrameworkMappings : IFrameworkMappings
     {
         private static Lazy<KeyValuePair<string, string>[]> IdentifierSynonymsLazy = new Lazy<KeyValuePair<string, string>[]>(() =>
         {
@@ -84,6 +79,7 @@ namespace NuGet.Frameworks
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Tizen, "tizen"),
+                new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NanoFramework, "netnano"),
             };
         });
 

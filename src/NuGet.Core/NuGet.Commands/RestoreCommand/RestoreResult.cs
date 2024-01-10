@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -57,6 +59,12 @@ namespace NuGet.Commands
         public TimeSpan ElapsedTime { get; }
 
         /// <summary>
+        /// The log messages raised during this restore operation
+        /// </summary>
+        /// <remarks>The messages here are usually sources from the <see cref="LockFile"/> in full restores or <see cref="CacheFile"/> for no-op restores.</remarks>
+        public virtual IList<IAssetsLogMessage> LogMessages { get; internal set; }
+
+        /// <summary>
         ///  Cache File. The previous cache file for this project
         /// </summary>
         private CacheFile CacheFile { get; }
@@ -64,7 +72,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Cache File path. The file path where the cache is written out
         /// </summary>
-        protected string CacheFilePath { get;  }
+        protected string CacheFilePath { get; }
 
         /// <summary>
         /// New Packages lock file path
@@ -74,7 +82,7 @@ namespace NuGet.Commands
         /// <summary>
         /// NuGet lock file which is either generated or updated to lock down NuGet packages version
         /// </summary>
-        private readonly PackagesLockFile _newPackagesLockFile;
+        internal PackagesLockFile _newPackagesLockFile { get; }
 
 
         private readonly string _dependencyGraphSpecFilePath;
@@ -113,6 +121,7 @@ namespace NuGet.Commands
             _dependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
+            LogMessages = lockFile?.LogMessages ?? new List<IAssetsLogMessage>();
         }
 
         /// <summary>
@@ -159,11 +168,11 @@ namespace NuGet.Commands
                 log: log,
                 toolCommit: isTool,
                 token: token);
-            
+
             //Commit the cache file to disk
             await CommitCacheFileAsync(
                 log: log,
-                toolCommit : isTool);
+                toolCommit: isTool);
 
             // Commit the lock file to disk
             await CommitLockFileAsync(
@@ -183,6 +192,8 @@ namespace NuGet.Commands
             bool toolCommit,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             // Commit targets/props to disk before the assets file.
             // Visual Studio typically watches the assets file for changes
             // and begins a reload when that file changes.
@@ -191,7 +202,7 @@ namespace NuGet.Commands
 
             BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
 
-            if (result.LockFile == null || result.LockFilePath ==  null)
+            if (result.LockFile == null || result.LockFilePath == null)
             {
                 // there is no assets file to be written so just return
                 return;
@@ -242,13 +253,15 @@ namespace NuGet.Commands
 
         private async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
         {
-            if (CacheFile != null && CacheFilePath != null) { // This is done to preserve the old behavior
+            if (CacheFile != null && CacheFilePath != null)
+            { // This is done to preserve the old behavior
 
-                if (toolCommit) { 
+                if (toolCommit)
+                {
                     log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_ToolWritingCacheFile,
                             CacheFilePath));
-                } 
+                }
                 else
                 {
                     log.LogVerbose(string.Format(CultureInfo.CurrentCulture,

@@ -19,7 +19,7 @@ The output directory where the test data package will be created.  The default v
 param (
     [ValidateSet('debug', 'release')]
     [string] $configuration = 'debug',
-    [ValidateSet(15, 16)]
+    [ValidateSet(15, 16, 17)]
     [int] $toolsetVersion = 15,
     [string] $outputDirectoryPath = $PWD
 )

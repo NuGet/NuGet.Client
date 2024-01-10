@@ -86,8 +86,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                             if (IsSolutionOnlySelection(selection))
                             {
                                 var isRestoreActionInProgress = _restoreCommandHandler.IsRestoreActionInProgress();
-                                cmdf = (uint)((isRestoreActionInProgress ? 0 : OLECMDF.OLECMDF_ENABLED)
-                                    | OLECMDF.OLECMDF_SUPPORTED);
+                                cmdf = (uint)((isRestoreActionInProgress ? 0 : OLECMDF.OLECMDF_ENABLED) | OLECMDF.OLECMDF_SUPPORTED);
                                 handled = true;
                             }
                             break;
@@ -130,6 +129,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 {
                     return false;
                 }
+
                 // We do not know if the project is supported
                 return fileExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase);
             }
@@ -140,8 +140,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             return selection != null &&
                 selection.Count.Equals(1) &&
-                selection.First().NodeMoniker.Equals(string.Empty);
+                selection.First().NodeMoniker.Equals(string.Empty, StringComparison.Ordinal);
         }
-
     }
 }

@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.ProjectModel;
 
 namespace NuGet.Build.Tasks
@@ -51,21 +53,10 @@ namespace NuGet.Build.Tasks
         {
             var log = new MSBuildLogger(Log);
 
-            // Log Inputs
-            BuildTasksUtility.LogInputParam(log, nameof(HasPackageReferenceItems), HasPackageReferenceItems.ToString());
-            BuildTasksUtility.LogInputParam(log, nameof(MSBuildProjectDirectory), MSBuildProjectDirectory);
-            BuildTasksUtility.LogInputParam(log, nameof(MSBuildProjectName), MSBuildProjectName);
-            BuildTasksUtility.LogInputParam(log, nameof(ProjectJsonPath), ProjectJsonPath);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreProjectStyle), RestoreProjectStyle);
-
             var result = BuildTasksUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName, log);
 
             IsPackageReferenceCompatibleProjectStyle = result.IsPackageReferenceCompatibleProjectStyle;
             ProjectStyle = result.ProjectStyle;
-
-            // Log Outputs
-            BuildTasksUtility.LogOutputParam(log, nameof(IsPackageReferenceCompatibleProjectStyle), IsPackageReferenceCompatibleProjectStyle.ToString());
-            BuildTasksUtility.LogOutputParam(log, nameof(ProjectStyle), ProjectStyle.ToString());
 
             return !Log.HasLoggedErrors;
         }

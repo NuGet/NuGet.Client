@@ -1,16 +1,31 @@
+<!-- DO NOT MODIFY OR DELETE THIS TEMPLATE. IT IS USED IN AUTOMATION. -->
 ## Bug
 
-Fixes: Link_to_issue (search [NuGet/Home](https://github.com/NuGet/Home/issues), and create one if you can't find a suitable issue)
-Regression: Yes/No  
-* Last working version:   
-* How are we preventing it in future:   
+<!-- Search https://github.com/NuGet/Home/issues, and create one if you can't find a suitable issue. -->
+<!-- Paste the full link, like https://github.com/nuget/home/issues/1000. GitHub will render is neatly. -->
+Fixes:
 
-## Fix
+Regression? Last working version:
 
-Details: Details_about_the_fix  
+## Description
+<!-- Add details about the fix. Include any information that would help the maintainer review this change effective. -->
 
-## Testing/Validation
+## PR Checklist
 
-Tests Added: Yes/No  
-Reason for not adding tests:  
-Validation:  
+- [ ] PR has a meaningful title
+- [ ] PR has a linked issue.
+- [ ] Described changes
+
+- **Tests**
+  - [ ] Automated tests added
+  - **OR**
+  <!-- Describe why you haven't added automation. -->
+  - [ ] Test exception
+  - **OR**
+  - [ ] N/A <!-- Infrastructure, documentation etc. -->
+
+- **Documentation**
+  <!-- Please link the PR/issue if appropriate -->
+  - [ ] Documentation PR or issue filled
+  - **OR**
+  - [ ] N/A

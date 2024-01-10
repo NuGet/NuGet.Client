@@ -152,7 +152,7 @@ namespace Test.Utility.Signing
                 new RevocationInfo(certificate.SerialNumber, revocationDate, reason));
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)

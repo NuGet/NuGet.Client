@@ -19,7 +19,7 @@ namespace NuGet.Protocol {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -57,33 +57,6 @@ namespace NuGet.Protocol {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Install failed. Rolling back....
-        /// </summary>
-        internal static string ActionExecutor_RollingBack {
-            get {
-                return ResourceManager.GetString("ActionExecutor_RollingBack", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unrecognized Package Action &apos;{0}&apos;..
-        /// </summary>
-        internal static string ActionResolver_UnsupportedAction {
-            get {
-                return ResourceManager.GetString("ActionResolver_UnsupportedAction", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unsupported Dependency Behavior &apos;{0}&apos;..
-        /// </summary>
-        internal static string ActionResolver_UnsupportedDependencyBehavior {
-            get {
-                return ResourceManager.GetString("ActionResolver_UnsupportedDependencyBehavior", resourceCulture);
             }
         }
         
@@ -187,24 +160,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The download URL for {0} &apos;{1}&apos; is invalid..
-        /// </summary>
-        internal static string DownloadActionHandler_InvalidDownloadUrl {
-            get {
-                return ResourceManager.GetString("DownloadActionHandler_InvalidDownloadUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No download URL could be found for {0}..
-        /// </summary>
-        internal static string DownloadActionHandler_NoDownloadUrl {
-            get {
-                return ResourceManager.GetString("DownloadActionHandler_NoDownloadUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The download of &apos;{0}&apos; timed out because no data was received for {1}ms..
         /// </summary>
         internal static string Error_DownloadTimeout {
@@ -255,6 +210,15 @@ namespace NuGet.Protocol {
         internal static string Http_ResponseLog {
             get {
                 return ResourceManager.GetString("Http_ResponseLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} {1} {2}ms (retry after: {3}s).
+        /// </summary>
+        internal static string Http_ResponseLogWithRetryAfter {
+            get {
+                return ResourceManager.GetString("Http_ResponseLogWithRetryAfter", resourceCulture);
             }
         }
         
@@ -520,24 +484,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create a NuGet Repository from the Aggregate Source.
-        /// </summary>
-        internal static string NuGetRepository_CannotCreateAggregateRepo {
-            get {
-                return ResourceManager.GetString("NuGetRepository_CannotCreateAggregateRepo", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The {0} service is not supported by this object..
-        /// </summary>
-        internal static string NuGetServiceProvider_ServiceNotSupported {
-            get {
-                return ResourceManager.GetString("NuGetServiceProvider_ServiceNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid nupkg file..
         /// </summary>
         internal static string NupkgPath_Invalid {
@@ -561,15 +507,6 @@ namespace NuGet.Protocol {
         internal static string OneOrMoreUrisMustBeSpecified {
             get {
                 return ResourceManager.GetString("OneOrMoreUrisMustBeSpecified", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unrecognized Package Action &apos;{0}&apos;..
-        /// </summary>
-        internal static string PackageActionDescriptionWrapper_UnrecognizedAction {
-            get {
-                return ResourceManager.GetString("PackageActionDescriptionWrapper_UnrecognizedAction", resourceCulture);
             }
         }
         
@@ -664,15 +601,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A failure occurred while attempting to query plugin operation claims for the plugin at &apos;{0}&apos;.  Exception:  {1}.
-        /// </summary>
-        internal static string Plugin_FailedToQueryPluginOperationsClaims {
-            get {
-                return ResourceManager.GetString("Plugin_FailedToQueryPluginOperationsClaims", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to A failure occurred while attempting to query package versions for package &apos;{0}&apos; using the plugin at &apos;{1}&apos;..
         /// </summary>
         internal static string Plugin_FailureQueryingPackageVersions {
@@ -723,15 +651,6 @@ namespace NuGet.Protocol {
         internal static string Plugin_IdleTimeoutMustBeGreaterThanOrEqualToInfiniteTimeSpan {
             get {
                 return ResourceManager.GetString("Plugin_IdleTimeoutMustBeGreaterThanOrEqualToInfiniteTimeSpan", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An illegal message type was received during handshake..
-        /// </summary>
-        internal static string Plugin_IllegalMessageWhileHandshaking {
-            get {
-                return ResourceManager.GetString("Plugin_IllegalMessageWhileHandshaking", resourceCulture);
             }
         }
         
@@ -871,15 +790,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; is not one of the projects targetted by this object..
-        /// </summary>
-        internal static string ProjectInstallationTarget_ProjectIsNotTargetted {
-            get {
-                return ResourceManager.GetString("ProjectInstallationTarget_ProjectIsNotTargetted", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to retrieve metadata from source &apos;{0}&apos;..
         /// </summary>
         internal static string Protocol_BadSource {
@@ -898,38 +808,11 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;versions&apos; property at &apos;{0}&apos; must be an array..
-        /// </summary>
-        internal static string Protocol_FlatContainerIndexVersionsNotArray {
-            get {
-                return ResourceManager.GetString("Protocol_FlatContainerIndexVersionsNotArray", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Service index document is missing the &apos;resources&apos; property..
-        /// </summary>
-        internal static string Protocol_IndexMissingResourcesNode {
-            get {
-                return ResourceManager.GetString("Protocol_IndexMissingResourcesNode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The content at &apos;{0}&apos; is not a valid JSON object..
         /// </summary>
         internal static string Protocol_InvalidJsonObject {
             get {
                 return ResourceManager.GetString("Protocol_InvalidJsonObject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The source does not have the &apos;version&apos; property at &apos;{0}&apos;..
-        /// </summary>
-        internal static string Protocol_InvalidServiceIndex {
-            get {
-                return ResourceManager.GetString("Protocol_InvalidServiceIndex", resourceCulture);
             }
         }
         
@@ -948,15 +831,6 @@ namespace NuGet.Protocol {
         internal static string Protocol_MalformedMetadataError {
             get {
                 return ResourceManager.GetString("Protocol_MalformedMetadataError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The source does not have a Registration Base Url defined!.
-        /// </summary>
-        internal static string Protocol_MissingRegistrationBase {
-            get {
-                return ResourceManager.GetString("Protocol_MissingRegistrationBase", resourceCulture);
             }
         }
         
@@ -1069,24 +943,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;{0}&apos; installation feature was required by a package but is not supported on the current host..
-        /// </summary>
-        internal static string RequiredFeatureUnsupportedException_DefaultMessageWithFeature {
-            get {
-                return ResourceManager.GetString("RequiredFeatureUnsupportedException_DefaultMessageWithFeature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The installation host does not support a feature required by this package..
-        /// </summary>
-        internal static string RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature {
-            get {
-                return ResourceManager.GetString("RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
         /// </summary>
         internal static string StringCannotBeNullOrEmpty {
@@ -1114,20 +970,83 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to API v2 (legacy).
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; has {1} vulnerability data pages. Using the first {2}..
         /// </summary>
-        internal static string v2sourceDescription {
+        internal static string Vulnerability_TooManyPages {
             get {
-                return ResourceManager.GetString("v2sourceDescription", resourceCulture);
+                return ResourceManager.GetString("Vulnerability_TooManyPages", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to API v3.
+        ///   Looks up a localized string similar to Package source &apos;{0}&apos; vulnerability data index &apos;{1}&apos; could not be loaded. This indicates a problem with the JSON file contents returned from the server..
         /// </summary>
-        internal static string v3sourceDescription {
+        internal static string VulnerabilityPage_CouldNotLoad {
             get {
-                return ResourceManager.GetString("v3sourceDescription", resourceCulture);
+                return ResourceManager.GetString("VulnerabilityPage_CouldNotLoad", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerability page index {0} does not contain a name (Source: &apos;{1}&apos;).
+        /// </summary>
+        internal static string VulnerabilityPage_HasNoName {
+            get {
+                return ResourceManager.GetString("VulnerabilityPage_HasNoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerability page index {0} contains invalid characters (Source: &apos;{1}&apos;).
+        /// </summary>
+        internal static string VulnerabilityPage_NameHasInvalidCharacters {
+            get {
+                return ResourceManager.GetString("VulnerabilityPage_NameHasInvalidCharacters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerability page name &apos;{0}&apos; is not unique. Only using the first (Source: &apos;{1}&apos;).
+        /// </summary>
+        internal static string VulnerabilityPage_NameNotUnique {
+            get {
+                return ResourceManager.GetString("VulnerabilityPage_NameNotUnique", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerability page index {0} name is longer than {1} characters (Source: &apos;{2}&apos;).
+        /// </summary>
+        internal static string VulnerabilityPage_NameTooLong {
+            get {
+                return ResourceManager.GetString("VulnerabilityPage_NameTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerability page &apos;{0}&apos; does not contain a URL (Source: &apos;{1}&apos;).
+        /// </summary>
+        internal static string VulnerabilityPage_NoUrl {
+            get {
+                return ResourceManager.GetString("VulnerabilityPage_NoUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vulnerability page &apos;{0}&apos; contains URL that is not http(s) (Source: &apos;{1}&apos;).
+        /// </summary>
+        internal static string VulnerabilityPage_UrlNotHttp {
+            get {
+                return ResourceManager.GetString("VulnerabilityPage_UrlNotHttp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source, &apos;{1}&apos;. Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        /// </summary>
+        internal static string Warning_HttpServerUsage {
+            get {
+                return ResourceManager.GetString("Warning_HttpServerUsage", resourceCulture);
             }
         }
         

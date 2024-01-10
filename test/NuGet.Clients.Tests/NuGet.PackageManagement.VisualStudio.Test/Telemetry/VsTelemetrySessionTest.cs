@@ -1,10 +1,10 @@
 using System;
-using System.Linq;
-using NuGet.VisualStudio.Telemetry;
-using NuGet.VisualStudio;
-using Xunit;
 using System.Globalization;
+using System.Linq;
 using NuGet.Common;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
@@ -17,13 +17,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var actionTelemetryData = new VSActionsTelemetryEvent(
                Guid.NewGuid().ToString(),
                projectIds: new[] { Guid.NewGuid().ToString() },
-               operationType: NuGetOperationType.Install,
+               operationType: NuGetProjectActionType.Install,
                source: OperationSource.UI,
                startTime: DateTimeOffset.Now.AddSeconds(-2),
                status: NuGetOperationStatus.Failed,
                packageCount: 1,
                endTime: DateTimeOffset.Now,
-               duration: 1.30);
+               duration: 1.30,
+               isPackageSourceMappingEnabled: false);
 
             // Act
             var vsTelemetryEvent = VSTelemetrySession.ToVsTelemetryEvent(actionTelemetryData);

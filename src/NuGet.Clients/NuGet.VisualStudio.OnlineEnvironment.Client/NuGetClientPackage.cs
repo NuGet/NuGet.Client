@@ -2,6 +2,8 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.UI;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.OnlineEnvironment.Client
@@ -26,6 +28,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [Guid(PackageGuidString)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
+    [ProvideToolWindow(typeof(PackageManagerToolWindowPane),
+        Style = VsDockStyle.MDI,
+        MultiInstances = true,
+        DocumentLikeTool = true)]
     public sealed class NuGetClientPackage : AsyncPackage
     {
         /// <summary>
@@ -44,6 +50,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             // When initialized asynchronously, the current thread may be a background thread at this point.
             // Do any initialization that requires the UI thread after switching to the UI thread
+            NuGetVSTelemetryService.Initialize();
+
             return Task.CompletedTask;
         }
     }

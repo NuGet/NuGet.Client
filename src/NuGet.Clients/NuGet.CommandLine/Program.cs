@@ -32,8 +32,8 @@ namespace NuGet.CommandLine
         private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
         private const int Net462ReleasedVersion = 394802;
 
-
-        private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
+        internal static readonly Assembly NuGetExeAssembly = typeof(Program).Assembly;
+        private static readonly string ThisExecutableName = NuGetExeAssembly.GetName().Name;
 
         [Import]
         public HelpCommand HelpCommand { get; set; }
@@ -62,6 +62,8 @@ namespace NuGet.CommandLine
             }
 #endif
 
+            NuGet.Common.Migrations.MigrationRunner.Run();
+
 #if IS_DESKTOP
             // Find any response files and resolve the args
             if (!RuntimeEnvironmentHelper.IsMono)
@@ -74,10 +76,16 @@ namespace NuGet.CommandLine
 
         public static int MainCore(string workingDirectory, string[] args)
         {
+            var console = new Console();
+
             // First, optionally disable localization in resources.
             if (args.Any(arg => string.Equals(arg, ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
             {
                 CultureUtility.DisableLocalization();
+            }
+            else
+            {
+                UILanguageOverride.Setup(console);
             }
 
             // set output encoding to UTF8 if -utf8 is specified
@@ -99,7 +107,6 @@ namespace NuGet.CommandLine
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
 
-            var console = new Console();
             var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
 
             try
@@ -122,6 +129,11 @@ namespace NuGet.CommandLine
                 // Parse the command
                 var command = parser.ParseCommandLine(args) ?? p.HelpCommand;
                 command.CurrentDirectory = workingDirectory;
+                if (command is DownloadCommandBase downloadCommandBase && downloadCommandBase.NoCache)
+                {
+                    // NoCache option is deprecated. Users should use NoHttpCache instead.
+                    console.LogInformation(NuGetCommand.Log_RestoreNoCacheInformation);
+                }
 
                 if (command is Command commandImpl)
                 {
@@ -176,7 +188,10 @@ namespace NuGet.CommandLine
             catch (PathTooLongException e)
             {
                 LogException(e, console);
-                LogHelperMessageForPathTooLongException(console);
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    LogHelperMessageForPathTooLongException(console);
+                }
                 return 1;
             }
             catch (Exception exception)
@@ -196,6 +211,7 @@ namespace NuGet.CommandLine
         private void Initialize(CoreV2.NuGet.IFileSystem fileSystem, IConsole console)
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+            AppDomain.CurrentDomain.ResourceResolve += CurrentDomain_ResourceResolve;
 
             using (var catalog = new AggregateCatalog(new AssemblyCatalog(GetType().Assembly)))
             {
@@ -221,23 +237,86 @@ namespace NuGet.CommandLine
             }
         }
 
+        private Assembly CurrentDomain_ResourceResolve(object sender, ResolveEventArgs args)
+        {
+            Assembly returnedResource = null;
+
+            // We want to intercept NuGet.Resources resources and redirect it to nuget.exe assembly
+            if (!args.Name.StartsWith("NuGet.CommandLine", StringComparison.OrdinalIgnoreCase) && args.Name.StartsWith("NuGet", StringComparison.OrdinalIgnoreCase) && string.Equals("NuGet.Resources", args.RequestingAssembly.GetName().Name, StringComparison.OrdinalIgnoreCase))
+            {
+                ManifestResourceInfo resource = NuGetExeAssembly.GetManifestResourceInfo(args.Name);
+                if (resource != null)
+                {
+                    // Return nuget.exe assembly, since it contains the requested resource by NuGet.Resources assembly
+                    returnedResource = NuGetExeAssembly;
+                }
+            }
+
+            return returnedResource;
+        }
+
         // This method acts as a binding redirect
         private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            var name = new AssemblyName(args.Name);
+            AssemblyName name = new AssemblyName(args.Name);
+            Assembly customLoadedAssembly = null;
 
             if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
             {
-                return typeof(Program).Assembly;
+                customLoadedAssembly = NuGetExeAssembly;
+            }
+            // .NET Framework 4.x now triggers AssemblyResolve event for resource assemblies
+            // We want to catch failed NuGet.resources.dll assembly load to look for it in embedded resoruces
+            else if (name.Name == "NuGet.resources")
+            {
+                // Load satellite resource assembly from embedded resources
+                customLoadedAssembly = GetNuGetResourcesAssembly(name.Name, name.CultureInfo);
             }
 
-            return null;
+            return customLoadedAssembly;
+        }
+
+        private static Assembly GetNuGetResourcesAssembly(string name, CultureInfo culture)
+        {
+            string resourceName = $"NuGet.CommandLine.{culture.Name}.{name}.dll";
+            Assembly resourceAssembly = LoadAssemblyFromEmbeddedResources(resourceName);
+            if (resourceAssembly == null)
+            {
+                // Sometimes, embedded assembly names have dashes replaced by underscores
+                string altResourceName = $"NuGet.CommandLine.{culture.Name.Replace("-", "_")}.{name}.dll";
+                resourceAssembly = LoadAssemblyFromEmbeddedResources(altResourceName);
+            }
+
+            return resourceAssembly;
+        }
+
+        private static Assembly LoadAssemblyFromEmbeddedResources(string resourceName)
+        {
+            Assembly resourceAssembly = null;
+            using (var stream = NuGetExeAssembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream != null)
+                {
+                    byte[] assemblyData = new byte[stream.Length];
+                    stream.Read(assemblyData, offset: 0, assemblyData.Length);
+                    try
+                    {
+                        resourceAssembly = Assembly.Load(assemblyData);
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        resourceAssembly = null;
+                    }
+                }
+            }
+
+            return resourceAssembly;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
         internal static void RemoveOldFile(CoreV2.NuGet.IFileSystem fileSystem)
         {
-            var oldFile = typeof(Program).Assembly.Location + ".old";
+            var oldFile = NuGetExeAssembly.Location + ".old";
             try
             {
                 if (fileSystem.FileExists(oldFile))
@@ -303,7 +382,7 @@ namespace NuGet.CommandLine
                     }
 
                     var message =
-                        string.Format(LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
+                        string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
                                       item);
 
                     console.WriteWarning(message);
@@ -334,7 +413,7 @@ namespace NuGet.CommandLine
                         perAssemblyError = builder.ToString();
                     }
 
-                    var warning = string.Format(resource, item, perAssemblyError);
+                    var warning = string.Format(CultureInfo.CurrentCulture, resource, item, perAssemblyError);
 
                     console.WriteWarning(warning);
                 }
@@ -398,7 +477,7 @@ namespace NuGet.CommandLine
         {
             var productName = (string)RegistryKeyUtility.GetValueFromRegistryKey("ProductName", OSVersionRegistryKey, Registry.LocalMachine, logger);
 
-            return productName != null && productName.StartsWith("Windows 10");
+            return productName != null && productName.StartsWith("Windows 10", StringComparison.Ordinal);
         }
 
         private static bool IsSupportLongPathEnabled(ILogger logger)

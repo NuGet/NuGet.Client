@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -8,21 +7,25 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
+using FluentAssertions;
 using Moq;
 using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
-using System.Reflection;
-using NuGet.Configuration;
 
 namespace NuGet.CommandLine.Test
 {
+    using IPackageFile = NuGet.Packaging.IPackageFile;
+
     public static class Util
     {
         private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
@@ -53,9 +56,10 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int expectedExitCode = 0, params string[] additionalArgs)
         {
-            var nugetexe = GetNuGetExePath();
+            var nugetExe = GetNuGetExePath();
 
-            var args = new string[] {
+            var args = new string[]
+                {
                     "restore",
                     inputPath,
                     "-Verbosity",
@@ -64,7 +68,7 @@ namespace NuGet.CommandLine.Test
 
             args = args.Concat(additionalArgs).ToArray();
 
-            return RunCommand(pathContext, nugetexe, expectedExitCode, args);
+            return RunCommand(pathContext, nugetExe, expectedExitCode, args);
         }
 
         public static CommandRunnerResult RunCommand(SimpleTestPathContext pathContext, string nugetExe, int expectedExitCode = 0, params string[] arguments)
@@ -73,8 +77,6 @@ namespace NuGet.CommandLine.Test
             var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
             var envVars = new Dictionary<string, string>()
                 {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath },
                     { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
                 };
 
@@ -83,11 +85,10 @@ namespace NuGet.CommandLine.Test
                 nugetExe,
                 pathContext.WorkingDirectory.Path,
                 string.Join(" ", arguments),
-                waitForExit: true,
                 environmentVariables: envVars);
 
             // Assert
-            Assert.True(expectedExitCode == r.Item1, r.Item3 + "\n\n" + r.Item2);
+            Assert.True(expectedExitCode == r.ExitCode, r.Errors + "\n\n" + r.Output);
 
             return r;
         }
@@ -100,10 +101,9 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
-                new List<Packaging.Core.PackageDependency>()
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency>()
             {
-                new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
+                new PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
             });
 
             return CreateTestPackage(packageId, version, path,
@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.Test
             var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
 
             packageBuilder.Description = string.Format(
@@ -141,16 +141,7 @@ namespace NuGet.CommandLine.Test
 
             packageBuilder.Authors.Add("test author");
 
-            foreach (var group in dependencies)
-            {
-                var set = new PackageDependencySet(
-                    null,
-                    group.Packages.Select(package =>
-                        new PackageDependency(package.Id,
-                            VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
-
-                packageBuilder.DependencySets.Add(set);
-            }
+            packageBuilder.DependencyGroups.AddRange(dependencies);
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
@@ -174,7 +165,7 @@ namespace NuGet.CommandLine.Test
             var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
             packageBuilder.Description = string.Format(
                 CultureInfo.InvariantCulture,
@@ -227,7 +218,7 @@ namespace NuGet.CommandLine.Test
             var packageBuilder = new PackageBuilder
             {
                 Id = packageId,
-                Version = new SemanticVersion(version)
+                Version = new NuGetVersion(version)
             };
             packageBuilder.Description = string.Format(
                 CultureInfo.InvariantCulture,
@@ -279,39 +270,6 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
-        /// Creates a basic package builder for unit tests.
-        /// </summary>
-        public static PackageBuilder CreateTestPackageBuilder(string packageId, string version)
-        {
-            var packageBuilder = new PackageBuilder
-            {
-                Id = packageId,
-                Version = new SemanticVersion(version)
-            };
-
-            packageBuilder.Description = string.Format(
-                CultureInfo.InvariantCulture,
-                "desc of {0} {1}",
-                packageId, version);
-
-            packageBuilder.Authors.Add("test author");
-
-            return packageBuilder;
-        }
-
-        public static string CreateTestPackage(PackageBuilder packageBuilder, string directory)
-        {
-            var packageFileName = string.Format("{0}.{1}.nupkg", packageBuilder.Id, packageBuilder.Version);
-            var packageFileFullPath = Path.Combine(directory, packageFileName);
-            using (var fileStream = File.Create(packageFileFullPath))
-            {
-                packageBuilder.Save(fileStream);
-            }
-
-            return packageFileFullPath;
-        }
-
-        /// <summary>
         /// Create a project.json based project. Returns the path to the project file.
         /// </summary>
         public static string CreateUAPProject(string directory, string projectJsonContent)
@@ -358,15 +316,15 @@ namespace NuGet.CommandLine.Test
         /// <param name="directory">The directory of the created file.</param>
         /// <param name="fileName">The name of the created file.</param>
         /// <param name="fileContent">The content of the created file.</param>
-        public static void CreateFile(string directory, string fileName, string fileContent)
+        public static string CreateFile(string directory, string fileName, string fileContent)
         {
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
+            var fileInfo = new FileInfo(Path.Combine(directory, fileName));
 
-            var fileFullName = Path.Combine(directory, fileName);
-            CreateFile(fileFullName, fileContent);
+            fileInfo.Directory.Create();
+
+            CreateFile(fileInfo.FullName, fileContent);
+
+            return fileInfo.FullName;
         }
 
         public static void CreateFile(string fileFullName, string fileContent)
@@ -377,30 +335,16 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private static IPackageFile CreatePackageFile(string name)
+        public static IPackageFile CreatePackageFile(string name)
         {
             var file = new Mock<IPackageFile>();
             file.SetupGet(f => f.Path).Returns(name);
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
 
             string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(name, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
-
-            return file.Object;
-        }
-
-        public static IPackageFile CreatePackageFile(string path, string content)
-        {
-            var file = new Mock<IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(path);
-            file.Setup(f => f.GetStream()).Returns(new MemoryStream(Encoding.UTF8.GetBytes(content)));
-
-            string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
-            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
+            file.SetupGet(f => f.NuGetFramework).Returns(fx);
 
             return file.Object;
         }
@@ -408,7 +352,7 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Creates a mock server that contains the specified list of packages
         /// </summary>
-        public static MockServer CreateMockServer(IList<IPackage> packages)
+        public static MockServer CreateMockServer(IList<FileInfo> packages)
         {
             var server = new MockServer();
 
@@ -422,13 +366,14 @@ namespace NuGet.CommandLine.Test
                     MockServer.SetResponseContent(response, feed);
                 }));
 
-            foreach (var package in packages)
+            foreach (var file in packages)
             {
+                var package = new PackageArchiveReader(file.OpenRead());
                 var url = string.Format(
                     CultureInfo.InvariantCulture,
                     "/nuget/Packages(Id='{0}',Version='{1}')",
-                    package.Id,
-                    package.Version);
+                    package.NuspecReader.GetId(),
+                    package.NuspecReader.GetVersion());
                 server.Get.Add(url, r =>
                     new Action<HttpListenerResponse>(response =>
                     {
@@ -441,13 +386,13 @@ namespace NuGet.CommandLine.Test
                 url = string.Format(
                     CultureInfo.InvariantCulture,
                     "/package/{0}/{1}",
-                    package.Id,
-                    package.Version);
+                    package.NuspecReader.GetId(),
+                    package.NuspecReader.GetVersion());
                 server.Get.Add(url, r =>
                     new Action<HttpListenerResponse>(response =>
                     {
                         response.ContentType = "application/zip";
-                        using (var stream = package.GetStream())
+                        using (var stream = file.OpenRead())
                         {
                             var content = stream.ReadAllBytes();
                             MockServer.SetResponseContent(response, content);
@@ -481,22 +426,23 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static string GetNuGetExePath()
         {
-            return _nuGetExePath.Value;
-        }
-
-        private static readonly Lazy<string> _nuGetExePath = new Lazy<string>(GetNuGetExePathCore);
-
-        private static string GetNuGetExePathCore()
-        {
+            const string fileName = "NuGet.exe";
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "NuGet", "NuGet.exe");
-            return nugetexe;
+            var nugetExe = Path.Combine(targetDir, "NuGet", fileName);
+            // Revert to parent dir if not found under layout dir.
+            if (!File.Exists(nugetExe)) nugetExe = Path.Combine(targetDir, fileName);
+            if (!File.Exists(nugetExe)) throw new FileNotFoundException($"The NuGet executable is not present in '{targetDir}'", fileName);
+            return nugetExe;
         }
 
         public static string GetTestablePluginPath()
         {
+            const string fileName = "CredentialProvider.Testable.exe";
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var plugin = Path.Combine(targetDir, "TestableCredentialProvider", "CredentialProvider.Testable.exe");
+            var plugin = Path.Combine(targetDir, "TestableCredentialProvider", fileName);
+            // Revert to parent dir if not found under layout dir.
+            if (!File.Exists(plugin)) plugin = Path.Combine(targetDir, fileName);
+            if (!File.Exists(plugin)) throw new FileNotFoundException($"The CredentialProvider executable is not present in '{targetDir}'", fileName);
             return plugin;
         }
 
@@ -505,88 +451,34 @@ namespace NuGet.CommandLine.Test
             return Path.GetDirectoryName(GetTestablePluginPath());
         }
 
-        public static bool IsSuccess(CommandRunnerResult result)
-        {
-            return result.Item1 == 0;
-        }
-
         public static JObject CreateIndexJson()
         {
-            return JObject.Parse(@"
-{
-    ""version"": ""3.2.0"",
-    ""resources"": [],
-    ""@context"": {
-        ""@vocab"": ""http://schema.nuget.org/services#"",
-        ""comment"": ""http://www.w3.org/2000/01/rdf-schema#comment""
-    }
-}");
+            return FeedUtilities.CreateIndexJson();
         }
 
         public static void AddFlatContainerResource(JObject index, MockServer server)
         {
-            var resource = new JObject
-            {
-                { "@id", $"{server.Uri}flat" },
-                { "@type", "PackageBaseAddress/3.0.0" }
-            };
-
-            var array = index["resources"] as JArray;
-            array.Add(resource);
+            FeedUtilities.AddFlatContainerResource(index, server.Uri);
         }
 
         public static void AddRegistrationResource(JObject index, MockServer server)
         {
-            var resource = new JObject
-            {
-                { "@id", $"{server.Uri}reg" },
-                { "@type", "RegistrationsBaseUrl/3.0.0-beta" }
-            };
-
-            var array = index["resources"] as JArray;
-            array.Add(resource);
+            FeedUtilities.AddRegistrationResource(index, server.Uri);
         }
 
         public static void AddLegacyGalleryResource(JObject index, MockServer serverV2, string relativeUri = null)
         {
-            var resourceUri = new Uri(serverV2.Uri);
-            if (relativeUri != null)
-            {
-                resourceUri = new Uri(resourceUri, relativeUri);
-            }
-
-            var resource = new JObject
-            {
-                { "@id", resourceUri },
-                { "@type", "LegacyGallery/2.0.0" }
-            };
-
-            var array = index["resources"] as JArray;
-            array.Add(resource);
+            FeedUtilities.AddLegacyGalleryResource(index, serverV2.Uri, relativeUri);
         }
 
         public static void AddPublishResource(JObject index, MockServer publishServer)
         {
-            var resource = new JObject
-            {
-                { "@id", $"{publishServer.Uri}push" },
-                { "@type", "PackagePublish/2.0.0" }
-            };
-
-            var array = index["resources"] as JArray;
-            array.Add(resource);
+            FeedUtilities.AddPublishResource(index, publishServer.Uri);
         }
 
         public static void AddPublishSymbolsResource(JObject index, MockServer publishServer)
         {
-            var resource = new JObject
-            {
-                { "@id", $"{publishServer.Uri}push" },
-                { "@type", "SymbolPackagePublish/4.9.0" }
-            };
-
-            var array = index["resources"] as JArray;
-            array.Add(resource);
+            FeedUtilities.AddPublishSymbolsResource(index, publishServer.Uri);
         }
 
         public static void CreateConfigForGlobalPackagesFolder(string workingDirectory)
@@ -624,6 +516,10 @@ namespace NuGet.CommandLine.Test
                 sourceEntry.Add(new XAttribute(XName.Get("value"), source));
                 packageSources.Add(sourceEntry);
             }
+
+            var packageSourceMapping = new XElement(XName.Get("packageSourceMapping"));
+            configuration.Add(packageSourceMapping);
+            packageSourceMapping.Add(new XElement(XName.Get("clear")));
 
             Util.CreateFile(workingPath, "NuGet.Config", doc.ToString());
         }
@@ -666,29 +562,16 @@ namespace NuGet.CommandLine.Test
         /// Create a simple package with a lib folder. This package should install everywhere.
         /// The package will be removed from the machine cache upon creation
         /// </summary>
-        public static ZipPackage CreatePackage(string repositoryPath, string id, string version)
+        public static void CreatePackage(string repositoryPath, string id, string version)
         {
-            var package = Util.CreateTestPackageBuilder(id, version);
-            var libFile = Util.CreatePackageFile("lib/uap/a.dll", "a");
-            package.Files.Add(libFile);
 
-            libFile = Util.CreatePackageFile("lib/net45/a.dll", "a");
-            package.Files.Add(libFile);
-
-            libFile = Util.CreatePackageFile("lib/native/a.dll", "a");
-            package.Files.Add(libFile);
-
-            libFile = Util.CreatePackageFile("lib/win/a.dll", "a");
-            package.Files.Add(libFile);
-
-            libFile = Util.CreatePackageFile("lib/net20/a.dll", "a");
-            package.Files.Add(libFile);
-
-            var path = Util.CreateTestPackage(package, repositoryPath);
-
-            ZipPackage zipPackage = new ZipPackage(path);
-
-            return zipPackage;
+            var context = new SimpleTestPackageContext(id, version);
+            context.AddFile("lib/uap/a.dll", "a");
+            context.AddFile("lib/net45/a.dll", "a");
+            context.AddFile("lib/native/a.dll", "a");
+            context.AddFile("lib/win/a.dll", "a");
+            context.AddFile("lib/net20/a.dll", "a");
+            SimpleTestPackageUtility.CreateOPCPackage(context, repositoryPath);
         }
 
         /// <summary>
@@ -696,97 +579,12 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static JObject CreateSinglePackageRegistrationBlob(MockServer server, string id, string version)
         {
-            return CreatePackageRegistrationBlob(server, id, new KeyValuePair<string, bool>[] { new KeyValuePair<string, bool>(version, true) });
-        }
-
-        /// <summary>
-        /// Create a registration blob for a package
-        /// </summary>
-        public static JObject CreatePackageRegistrationBlob(MockServer server, string id, IEnumerable<KeyValuePair<string, bool>> versionToListedMap)
-        {
-            var indexUrl = string.Format(CultureInfo.InvariantCulture,
-                                    "{0}reg/{1}/index.json", server.Uri, id);
-            var lowerBound = "0.0.0";
-            var upperBound = "9.0.0";
-            var regBlob = new JObject();
-            regBlob.Add(new JProperty("@id", indexUrl));
-            var typeArray = new JArray();
-            regBlob.Add(new JProperty("@type", typeArray));
-            typeArray.Add("catalog: CatalogRoot");
-            typeArray.Add("PackageRegistration");
-            typeArray.Add("catalog: Permalink");
-
-            regBlob.Add(new JProperty("commitId", Guid.NewGuid()));
-            regBlob.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
-            regBlob.Add(new JProperty("count", "1"));
-
-            var pages = new JArray();
-            regBlob.Add(new JProperty("items", pages));
-
-            var page = new JObject();
-            pages.Add(page);
-
-            page.Add(new JProperty("@id", indexUrl + $"#page/{lowerBound}/{upperBound}"));
-            page.Add(new JProperty("@type", indexUrl + "catalog:CatalogPage"));
-            page.Add(new JProperty("commitId", Guid.NewGuid()));
-            page.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
-            page.Add(new JProperty("count", versionToListedMap.Count()));
-            page.Add(new JProperty("parent", indexUrl));
-            page.Add(new JProperty("lower", lowerBound));
-            page.Add(new JProperty("upper", upperBound));
-
-            var items = new JArray();
-            page.Add(new JProperty("items", items));
-            foreach (var versionToListed in versionToListedMap)
-            {
-                var item = GetPackageRegistrationItem(server, id, version: versionToListed.Key, listed: versionToListed.Value, indexUrl);
-                items.Add(item);
-            }
-            return regBlob;
-        }
-
-        private static JObject GetPackageRegistrationItem(MockServer server, string id, string version, bool listed, string indexUrl)
-        {
-            var item = new JObject();
-
-            item.Add(new JProperty("@id",
-                    string.Format("{0}reg/{1}/{2}.json", server.Uri, id, version)));
-
-            item.Add(new JProperty("@type", "Package"));
-            item.Add(new JProperty("commitId", Guid.NewGuid()));
-            item.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
-
-            var catalogEntry = new JObject();
-            item.Add(new JProperty("catalogEntry", catalogEntry));
-            item.Add(new JProperty("packageContent", $"{server.Uri}packages/{id}.{version}.nupkg"));
-            item.Add(new JProperty("registration", indexUrl));
-
-            catalogEntry.Add(new JProperty("@id",
-                string.Format("{0}catalog/{1}/{2}.json", server.Uri, id, version)));
-
-            catalogEntry.Add(new JProperty("@type", "PackageDetails"));
-            catalogEntry.Add(new JProperty("authors", "test"));
-            catalogEntry.Add(new JProperty("description", "test"));
-            catalogEntry.Add(new JProperty("iconUrl", ""));
-            catalogEntry.Add(new JProperty("id", id));
-            catalogEntry.Add(new JProperty("language", "en-us"));
-            catalogEntry.Add(new JProperty("licenseUrl", ""));
-            catalogEntry.Add(new JProperty("listed", listed));
-            catalogEntry.Add(new JProperty("minClientVersion", ""));
-            catalogEntry.Add(new JProperty("projectUrl", ""));
-            catalogEntry.Add(new JProperty("published", "2015-06-22T22:30:00.1487642Z"));
-            catalogEntry.Add(new JProperty("requireLicenseAcceptance", false));
-            catalogEntry.Add(new JProperty("summary", ""));
-            catalogEntry.Add(new JProperty("title", ""));
-            catalogEntry.Add(new JProperty("version", version));
-            catalogEntry.Add(new JProperty("tags", new JArray()));
-
-            return item;
+            return FeedUtilities.CreatePackageRegistrationBlob(server.Uri, id, new KeyValuePair<string, bool>[] { new KeyValuePair<string, bool>(version, true) });
         }
 
         public static string CreateProjFileContent(
             string projectName = "proj1",
-            string targetFrameworkVersion = "v4.5",
+            string targetFrameworkVersion = "v4.7.2",
             string[] references = null,
             string[] contentFiles = null)
         {
@@ -796,7 +594,7 @@ namespace NuGet.CommandLine.Test
 
         public static XElement CreateProjFileXmlContent(
             string projectName = "proj1",
-            string targetFrameworkVersion = "v4.5",
+            string targetFrameworkVersion = "v4.7.2",
             string[] references = null,
             string[] contentFiles = null)
         {
@@ -841,23 +639,19 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
 EndProject";
         }
 
-        public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null)
+        public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null, string extraDebugInfo = null)
         {
-            Assert.True(
-                result.Item1 == 0,
-                "nuget.exe DID NOT SUCCEED: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+            result.ExitCode.Should().Be(0, $"nuget.exe should have succeeded with exit code 0 but returned exit code {result.ExitCode}{Environment.NewLine}Output:{Environment.NewLine}{result.Output}{Environment.NewLine}Errors:{Environment.NewLine}{result.Errors}{extraDebugInfo}");
 
             if (!string.IsNullOrEmpty(expectedOutputMessage))
             {
-                Assert.Contains(
-                    expectedOutputMessage,
-                    result.Item2);
+                result.Output.Should().Contain(expectedOutputMessage);
             }
         }
 
         /// <summary>
         /// Utility for asserting faulty executions of nuget.exe
-        /// 
+        ///
         /// Asserts a non-zero status code and a message on stderr.
         /// </summary>
         /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
@@ -865,13 +659,9 @@ EndProject";
         public static void VerifyResultFailure(CommandRunnerResult result,
                                                string expectedErrorMessage)
         {
-            Assert.True(
-                result.Item1 != 0,
-                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+            result.ExitCode.Should().NotBe(0, $"nuget.exe should have failed with a non zero exit code but returned exit code {result.ExitCode}{Environment.NewLine}Output:{Environment.NewLine}{result.Output}{Environment.NewLine}Errors:{Environment.NewLine}{result.Errors}");
 
-            Assert.True(
-                result.Item3.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
+            result.Errors.Should().Contain(expectedErrorMessage);
         }
 
         public static void VerifyPackageExists(
@@ -1033,7 +823,7 @@ EndProject";
                     <AppDesignerFolder>Properties</AppDesignerFolder>
                     <RootNamespace>$NAME$</RootNamespace>
                     <AssemblyName>$NAME$</AssemblyName>
-                    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+                    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
                     <FileAlignment>512</FileAlignment>
                     <DebugSymbols>true</DebugSymbols>
                     <DebugType>full</DebugType>
@@ -1057,20 +847,7 @@ EndProject";
                  </Project>".Replace("$NAME$", projectName);
         }
 
-        public static void ClearWebCache()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            var r = CommandRunner.Run(
-            nugetexe,
-            ".",
-            "locals http-cache -Clear",
-            waitForExit: true);
-
-            Assert.Equal(0, r.Item1);
-        }
-
-        public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName)
+        public static string CreateBasicTwoProjectSolution(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName, bool redirectGlobalPackagesFolder = true)
         {
             var repositoryPath = Path.Combine(workingPath, "Repository");
             var proj1Directory = Path.Combine(workingPath, "proj1");
@@ -1105,7 +882,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='{include1}' />
@@ -1134,7 +911,7 @@ EndProject");
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Include='{include2}' />
@@ -1152,7 +929,7 @@ EndProject");
 
             // If either project uses project.json, then define "globalPackagesFolder" so the package doesn't get
             // installed in the usual global packages folder.
-            if (IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName))
+            if ((IsProjectJson(proj1ConfigFileName) || IsProjectJson(proj2ConfigFileName)) && redirectGlobalPackagesFolder)
             {
                 CreateFile(workingPath, "nuget.config",
 @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1162,6 +939,46 @@ EndProject");
   </config>
 </configuration>");
             }
+
+            return repositoryPath;
+        }
+
+        public static string CreateBasicTwoProjectSolutionWithSolutionFilters(TestDirectory workingPath, string proj1ConfigFileName, string proj2ConfigFileName, bool redirectGlobalPackagesFolder = true)
+        {
+            var repositoryPath = CreateBasicTwoProjectSolution(workingPath, proj1ConfigFileName, proj2ConfigFileName, redirectGlobalPackagesFolder);
+            var filterInSubfolderPath = Path.Combine(workingPath, "filter");
+
+            Directory.CreateDirectory(filterInSubfolderPath);
+
+            CreateFile(workingPath, "a.proj1.slnf", @"{
+  ""solution"": {
+    ""path"": ""a.sln"",
+    ""projects"": [
+      ""proj1\\proj1.csproj""
+    ]
+  }
+}");
+
+            CreateFile(workingPath, "a.proj2.slnf", @"{
+  ""solution"": {
+    ""path"": ""a.sln"",
+    ""projects"": [
+      ""proj2\\proj2.csproj""
+    ]
+  }
+}");
+
+
+            CreateFile(filterInSubfolderPath, "filterinsubfolder.slnf", @"{
+  ""solution"": {
+    ""path"": ""..\\a.sln"",
+    ""projects"": [
+      ""proj1\\proj1.csproj"",
+      ""proj2\\proj2.csproj"",
+    ]
+  }
+}");
+
 
             return repositoryPath;
         }
@@ -1226,8 +1043,7 @@ EndProject");
             var result = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 Directory.GetCurrentDirectory(),
-                command,
-                waitForExit: true);
+                command);
 
             var commandSplit = command.Split(' ');
 
@@ -1238,13 +1054,113 @@ EndProject");
             var mainCommand = commandSplit[0];
 
             // Assert command
-            Assert.Contains(mainCommand, result.Item3, StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains(mainCommand, result.Errors, StringComparison.InvariantCultureIgnoreCase);
             // Assert invalid argument message
             var invalidMessage = string.Format(": invalid arguments.", mainCommand);
             // Verify Exit code
             VerifyResultFailure(result, invalidMessage);
             // Verify traits of help message in stdout
-            Assert.Contains("usage:", result.Item2);
+            Assert.Contains("usage:", result.Output);
+        }
+
+        /// <summary>
+        /// Create a basic nfproj file for .NET nanoFramework.
+        /// </summary>
+        public static string GetNFProjXML(
+            string projectName,
+            List<(string, string)> packages)
+        {
+            var projContent = new StringBuilder();
+
+            projContent.AppendLine(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+    <Project ToolsVersion=""Current"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <PropertyGroup Label=""Globals"">
+        <NanoFrameworkProjectSystemPath>$(MSBuildToolsPath)..\..\..\nanoFramework\v1.0\</NanoFrameworkProjectSystemPath>
+        </PropertyGroup>
+        <Import Project=""$(NanoFrameworkProjectSystemPath)NFProjectSystem.Default.props"" Condition=""Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.Default.props')"" />
+        <PropertyGroup>
+        <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+        <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+        <ProjectTypeGuids>{11A8DD76-328B-46DF-9F39-F559912D0360};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+        <ProjectGuid>9e332e06-5faf-4861-8318-a806978b677d</ProjectGuid>
+        <OutputType>Exe</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <FileAlignment>512</FileAlignment>
+        <RootNamespace>$NAME$</RootNamespace>
+        <AssemblyName>$NAME$</AssemblyName>
+        <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+        </PropertyGroup>
+        <Import Project=""$(NanoFrameworkProjectSystemPath)NFProjectSystem.props"" Condition=""Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')"" />
+        <ItemGroup>");
+
+            foreach ((string, string) package in packages)
+            {
+                projContent.AppendLine(
+$@"        <Reference Include=""{package.Item1}, Version={package.Item2}, Culture=neutral"">
+            <HintPath>..\packages\{package.Item1}.{package.Item2}\lib\{package.Item1}.dll</HintPath>
+            <Private>True</Private>
+            <SpecificVersion>True</SpecificVersion>
+        </Reference>");
+            }
+
+            projContent.AppendLine(
+@"        </ItemGroup>
+            <ItemGroup>
+            <None Include=""packages.config"" />
+            </ItemGroup>
+            <Import Project=""$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets"" Condition=""Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets')"" />
+            <ProjectExtensions>
+            <ProjectCapabilities>
+                <ProjectConfigurationsDeclaredAsItems />
+            </ProjectCapabilities>
+            </ProjectExtensions>
+        </Project>".Replace("$NAME$", projectName));
+
+            return projContent.ToString();
+        }
+
+        /// <summary>
+        /// Create a Solution file with .NET nanoFramework projects in it.
+        /// </summary>
+        /// <param name="projectList">List of .NET nanoFramework projects to add to the solution</param>
+        /// <returns>Content of the Solution file</returns>
+        public static string CreateNFSolutionFileContent(List<string> projectList)
+        {
+            var slnContent = new StringBuilder();
+
+            slnContent.AppendLine("Microsoft Visual Studio Solution File, Format Version 12.00");
+            slnContent.AppendLine("# Visual Studio Version 16");
+            slnContent.AppendLine("VisualStudioVersion = 16.0.31005.135");
+
+            foreach (string project in projectList)
+            {
+                slnContent.AppendLine($"Project(\"{{11A8DD76-328B-46DF-9F39-F559912D0360}}\") = \"{project}\", \"{project}\\{project}.nfproj\", \"{{{Guid.NewGuid().ToString()}}}");
+                slnContent.AppendLine("EndProject");
+            }
+
+            return slnContent.ToString();
+        }
+
+        /// <summary>
+        /// Build packages.config from list of NuGet packages for .NET nanoFramework.
+        /// </summary>
+        /// <param name="packages">List of NuGet packages for .NET nanoFramework</param>
+        /// <returns></returns>
+        internal static string GetNFPackageConfig(List<(string, string)> packages)
+        {
+            var configContent = new StringBuilder();
+
+            configContent.AppendLine("<packages>");
+
+            foreach ((string, string) package in packages)
+            {
+                configContent.AppendLine($@"  <package id=""{package.Item1}"" version=""{package.Item2}"" targetFramework=""netnanoframework10"" />");
+            }
+
+            configContent.AppendLine("</packages>");
+
+            return configContent.ToString();
         }
     }
 }

@@ -7,19 +7,11 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Rules;
 using Xunit;
-using NuGet.RuntimeModel;
-using NuGet.Client;
-using NuGet.ContentModel;
-using NuGet.Packaging.Core;
-using System.Reflection;
 
 namespace NuGet.Packaging.Test
 {
     public class DependenciesGroupsForEachTFMRuleTests
     {
-        ManagedCodeConventions _managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
-        ContentItemCollection _collection = new ContentItemCollection();
-
         [Fact]
         public void GenerateWarnings_PackageWithDependenciesForEachTFMInLib_ShouldNotWarn()
         {
@@ -447,7 +439,7 @@ namespace NuGet.Packaging.Test
                 "lib/netstandard1.3/test.dll",
                 "lib/netstandard2.0/test.dll",
             };
-            
+
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();

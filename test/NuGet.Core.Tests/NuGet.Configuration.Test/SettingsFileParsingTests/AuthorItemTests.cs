@@ -15,7 +15,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void AuthorItem_WithoutName_Throws()
         {
-             // Arrange
+            // Arrange
             var config = @"
 <configuration>
     <SectionName>

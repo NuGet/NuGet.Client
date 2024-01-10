@@ -13,6 +13,9 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+# Spell checker configuration
+spelling_exclusion_path = spelling.dic
+
 ; Code files
 [*.{cs}]
 indent_size = 4
@@ -55,6 +58,9 @@ dotnet_style_collection_initializer = true:suggestion
 dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_coalesce_expression = true:suggestion
 dotnet_style_null_propagation = true:suggestion
+
+; Licence header
+file_header_template = Copyright (c) .NET Foundation. All rights reserved.\nLicensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 ; CSharp code style settings
 [*.cs]
@@ -136,3 +142,7 @@ dotnet_naming_symbols.private_field_symbols.applicable_accessibilities = private
 dotnet_naming_rule.private_field_rule.severity = warning
 dotnet_naming_rule.private_field_rule.symbols  = private_field_symbols
 dotnet_naming_rule.private_field_rule.style = private_member_style
+
+; Diagnostics rule: Don't leave unnecessary suppressions
+dotnet_diagnostic.IDE0076.severity = warning
+dotnet_diagnostic.IDE0005.severity = warning

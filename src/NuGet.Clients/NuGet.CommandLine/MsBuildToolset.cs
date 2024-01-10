@@ -17,7 +17,7 @@ namespace NuGet.CommandLine
     /// ISetupInstance in the new (with MSBuild v15.1) installation story. Allows all discovered installations
     /// to be contained in the same collection.
     /// </summary>
-    public class MsBuildToolset: IComparable<MsBuildToolset>
+    public class MsBuildToolset : IComparable<MsBuildToolset>
     {
         private Version _parsedToolsVersion;
 
@@ -26,7 +26,7 @@ namespace NuGet.CommandLine
         /// </summary>
         public MsBuildToolset(string version, string path)
         {
-            Version = version;
+            Version = version ?? GetMsBuildVersionFromMsBuildDir(path);
             Path = path;
         }
 

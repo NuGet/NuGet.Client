@@ -55,6 +55,7 @@ namespace NuGet.Configuration
             if (element != null)
             {
                 settings.Remove(section, element);
+                settings.SaveToDisk();
 
                 return true;
             }
@@ -101,6 +102,23 @@ namespace NuGet.Configuration
             }
 
             return SignatureValidationMode.Accept;
+        }
+
+        public static bool GetUpdatePackageLastAccessTimeEnabledStatus(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var updatePackageLastAccessTimeStatus = GetConfigValue(settings, ConfigurationConstants.UpdatePackageLastAccessTime);
+
+            if (!string.IsNullOrEmpty(updatePackageLastAccessTimeStatus) && bool.TryParse(updatePackageLastAccessTimeStatus, result: out bool updatePackageLastAccessTime))
+            {
+                return updatePackageLastAccessTime;
+            }
+
+            return false;
         }
 
         public static string GetDecryptedValueForAddItem(ISettings settings, string section, string key, bool isPath = false)
@@ -288,7 +306,7 @@ namespace NuGet.Configuration
                 paths[i] = Path.GetFullPath(paths[i]);
             }
 
-            return paths;
+            return paths.AsReadOnly();
         }
 
         /// <summary>

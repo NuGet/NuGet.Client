@@ -120,15 +120,22 @@
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
   </data>
-  <data name="DialogTitle" xml:space="preserve">
-    <value>NuGet Package Manager</value>
-  </data>
   <data name="ErrorOccurredRestoringPackages" xml:space="preserve">
     <value>Error occurred while restoring NuGet packages: {0}</value>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
-    <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
-    <comment>0 - the version string that's not exact</comment>
+    <value>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</comment>
+  </data>
+  <data name="Error_PackageDownload_NoVersion" xml:space="preserve">
+    <value>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
+  </data>
+  <data name="InfoBar_HyperlinkMessage" xml:space="preserve">
+    <value>Manage NuGet Packages</value>
+  </data>
+  <data name="InfoBar_TextMessage" xml:space="preserve">
+    <value>This solution contains packages with vulnerabilities.</value>
   </data>
   <data name="NothingToRestore" xml:space="preserve">
     <value>All packages are already installed and there is nothing to restore.</value>
@@ -183,7 +190,7 @@ To prevent NuGet from restoring packages during build, open the Visual Studio Op
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
   </data>
-  <data name="SolutionRestoreFailed_RestoreWorkerIsBusy" xml:space="preserve">
-    <value>Solution Restore cannot be started while an automatic restore is in progress.</value>
+  <data name="PropertyDoesNotHaveSingleValue" xml:space="preserve">
+    <value>The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}</value>
   </data>
 </root>

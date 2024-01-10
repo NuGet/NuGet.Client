@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Test
@@ -15,23 +14,18 @@ namespace NuGet.Build.Tasks.Test
         public void Execute_CheckAllMetadata()
         {
             // Arrange
-            var buildEngine = new TestBuildEngine();
-
-            var packageX = new TaskItem();
-            packageX.ItemSpec = "x";
-            packageX.SetMetadata("Version", "[1.0.0]");
-
-            var packageDownloads = new List<ITaskItem>()
-            {
-                packageX
-            };
-
             var task = new GetRestorePackageDownloadsTask()
             {
-                BuildEngine = buildEngine,
+                BuildEngine = new TestBuildEngine(),
                 ProjectUniqueName = "MyProj",
                 TargetFrameworks = "netstandard2.0",
-                PackageDownloads = packageDownloads.ToArray()
+                PackageDownloads = new ITaskItem[]
+                {
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[1.0.0]"
+                    }
+                }
             };
 
             // Act
@@ -51,28 +45,22 @@ namespace NuGet.Build.Tasks.Test
         public void Execute_UseFirstVersionPerId()
         {
             // Arrange
-            var buildEngine = new TestBuildEngine();
-
-            var packageX1 = new TaskItem();
-            packageX1.ItemSpec = "x";
-            packageX1.SetMetadata("Version", "[1.0.0]");
-
-            var packageX2 = new TaskItem();
-            packageX2.ItemSpec = "x";
-            packageX2.SetMetadata("Version", "[2.0.0]");
-
-            var packageDownloads = new List<ITaskItem>()
-            {
-                packageX1,
-                packageX2
-            };
-
             var task = new GetRestorePackageDownloadsTask()
             {
-                BuildEngine = buildEngine,
+                BuildEngine = new TestBuildEngine(),
                 ProjectUniqueName = "MyProj",
                 TargetFrameworks = "netstandard2.0",
-                PackageDownloads = packageDownloads.ToArray()
+                PackageDownloads = new ITaskItem[]
+                {
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[1.0.0]"
+                    },
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[2.0.0]"
+                    }
+                }
             };
 
             // Act
@@ -89,23 +77,18 @@ namespace NuGet.Build.Tasks.Test
         public void Execute_AllowMultiRangeVersion()
         {
             // Arrange
-            var buildEngine = new TestBuildEngine();
-
-            var packageX = new TaskItem();
-            packageX.ItemSpec = "x";
-            packageX.SetMetadata("Version", "[1.0.0];[2.0.0]");
-
-            var packageDownloads = new List<ITaskItem>()
-            {
-                packageX
-            };
-
             var task = new GetRestorePackageDownloadsTask()
             {
-                BuildEngine = buildEngine,
+                BuildEngine = new TestBuildEngine(),
                 ProjectUniqueName = "MyProj",
                 TargetFrameworks = "netstandard2.0",
-                PackageDownloads = packageDownloads.ToArray()
+                PackageDownloads = new ITaskItem[]
+                {
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[1.0.0];[2.0.0]"
+                    }
+                }
             };
 
             // Act
@@ -122,28 +105,22 @@ namespace NuGet.Build.Tasks.Test
         public void Execute_AllowMultiplePackages()
         {
             // Arrange
-            var buildEngine = new TestBuildEngine();
-
-            var packageX = new TaskItem();
-            packageX.ItemSpec = "x";
-            packageX.SetMetadata("Version", "[1.0.0]");
-
-            var packageY = new TaskItem();
-            packageY.ItemSpec = "y";
-            packageY.SetMetadata("Version", "[2.0.0]");
-
-            var packageDownloads = new List<ITaskItem>()
-            {
-                packageX,
-                packageY
-            };
-
             var task = new GetRestorePackageDownloadsTask()
             {
-                BuildEngine = buildEngine,
+                BuildEngine = new TestBuildEngine(),
                 ProjectUniqueName = "MyProj",
                 TargetFrameworks = "netstandard2.0",
-                PackageDownloads = packageDownloads.ToArray()
+                PackageDownloads = new ITaskItem[]
+                {
+                    new MockTaskItem("x")
+                    {
+                        ["Version"] = "[1.0.0]"
+                    },
+                    new MockTaskItem("y")
+                    {
+                        ["Version"] = "[2.0.0]"
+                    }
+                }
             };
 
             // Act

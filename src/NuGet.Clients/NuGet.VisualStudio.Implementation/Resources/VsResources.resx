@@ -162,9 +162,6 @@
   <data name="InvalidNuGetVersionString" xml:space="preserve">
     <value>The provided version string is not a valid nuget version.</value>
   </data>
-  <data name="InvalidPackageList" xml:space="preserve">
-    <value>Package list contains invalid or duplicate entries.</value>
-  </data>
   <data name="InvalidSource" xml:space="preserve">
     <value>The specified source '{0}' is invalid. Please provide a valid source.</value>
   </data>
@@ -178,9 +175,6 @@ The string representation of the user's input framework name.</comment>
   </data>
   <data name="Error_ProjectNotInCache" xml:space="preserve">
     <value>Project {0} does not exist in the project system cache.</value>
-  </data>
-  <data name="Error_InvalidPackageRefProjectCast" xml:space="preserve">
-    <value>The project '{0}' does not support PackageReference.</value>
   </data>
   <data name="Error_FileNotExists" xml:space="preserve">
     <value>The project file '{0}' does not exist on disk.</value>
@@ -321,5 +315,42 @@ The string representation of the user's input framework name.</comment>
   </data>
   <data name="PackageFrameworkAssemblyGroupName" xml:space="preserve">
     <value>Framework Assemblies</value>
+  </data>
+  <data name="PackageDocumentGroupName" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="PackageDocumentBrowseObjectClassName" xml:space="preserve">
+    <value>Package Document</value>
+  </data>
+  <data name="PackageDocumentPathDisplayName" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="PackageDocumentPathDescription" xml:space="preserve">
+    <value>The document's path.</value>
+  </data>
+  <data name="PackageBuildFileGroupName" xml:space="preserve">
+    <value>Build Files</value>
+  </data>
+  <data name="PackageBuildMultiTargetingFileGroupName" xml:space="preserve">
+    <value>Build Files (Multi-targeting)</value>
+  </data>
+  <data name="PackageBuildFileBrowseObjectClassName" xml:space="preserve">
+    <value>Build File</value>
+  </data>
+  <data name="PackageBuildFileNameDisplayName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="PackageBuildFileNameDescription" xml:space="preserve">
+    <value>The build file's name.</value>
+  </data>
+  <data name="PackageBuildFilePathDisplayName" xml:space="preserve">
+    <value>Path</value>
+  </data>
+  <data name="PackageBuildFilePathDescription" xml:space="preserve">
+    <value>The build file's path.</value>
+  </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
   </data>
 </root>

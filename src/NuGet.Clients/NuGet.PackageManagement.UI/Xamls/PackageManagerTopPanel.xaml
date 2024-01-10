@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
-             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="800">
   <UserControl.Resources>
@@ -13,9 +14,13 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
-      <BitmapImage
-        x:Key="BitmapImage_Refresh"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/Refresh.16.16.png" />
+
+      <CollectionViewSource x:Key="cvsPackageSources">
+        <CollectionViewSource.SortDescriptions>
+          <scm:SortDescription PropertyName="PriorityOrder" Direction="Ascending" />
+          <scm:SortDescription PropertyName="SourceName" Direction="Ascending" />
+        </CollectionViewSource.SortDescriptions>
+      </CollectionViewSource>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -49,7 +54,7 @@
                     </Grid.RowDefinitions>
                     <Border x:Name="mainBorder" Background="{TemplateBinding Background}" BorderThickness="0" Margin="0">
                     </Border>
-                    <ContentPresenter  Grid.Row="0" x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                    <ContentPresenter Grid.Row="0" x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
                     <!-- the line under the text to indicate that this label is selected -->
                     <Rectangle
                       x:Name="_underline"
@@ -58,21 +63,27 @@
                       Visibility="Collapsed"
                       Width="{Binding ActualWidth, ElementName=contentPresenter}"
                       HorizontalAlignment="Center"
-                      Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedBrushKey}}"/>
+                      Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedIndicatorBrushKey}}"/>
                   </Grid>
                   <ControlTemplate.Triggers>
-                    <MultiDataTrigger>
-                      <MultiDataTrigger.Conditions>
-                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
-                      </MultiDataTrigger.Conditions>
-                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverBrushKey }}" />
-                    </MultiDataTrigger>
                     <MultiDataTrigger>
                       <MultiDataTrigger.Conditions>
                         <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
                       </MultiDataTrigger.Conditions>
                       <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
-                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey }}" />
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey}}" />
+                    </MultiDataTrigger>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="true" />
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabTextFocusedBrushKey}}" />
+                    </MultiDataTrigger>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabTextHoverBrushKey}}" />
                     </MultiDataTrigger>
                   </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -111,13 +122,11 @@
             </MultiBinding>
           </AutomationProperties.Name>
           <TabItem.Header>
-            <StackPanel Orientation="Horizontal">
-              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}"/>
+            <StackPanel Orientation="Horizontal" >
+              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}" IsHitTestVisible="False" />
               <imaging:CrispImage
                 Name="_warningIcon"
                 Margin="3,0"
-                Width="13"
-                Height="13"
                 Visibility="Collapsed"
                 Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
             </StackPanel>
@@ -132,7 +141,7 @@
           </AutomationProperties.Name>
           <TabItem.Header>
             <StackPanel Orientation="Horizontal">
-              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}"/>
+              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}" IsHitTestVisible="False" />
               <!-- the textblock that displays the count -->
               <Border
                 x:Name="_countUpdatesContainer"
@@ -182,6 +191,7 @@
           <ColumnDefinition Width="*" MaxWidth="320" MinWidth="118"/>
           <ColumnDefinition Width="auto" />
           <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <!-- container of the search control -->
         <Border
@@ -202,8 +212,8 @@
           AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Refresh}"
           Style="{StaticResource ToolBarButtonStyle}"
           Command="{x:Static nuget:Commands.RestartSearchCommand}">
-          <Image
-            Source="{StaticResource BitmapImage_Refresh}"
+          <imaging:CrispImage
+            Moniker="{x:Static catalog:KnownMonikers.Refresh}"
             Margin="2"
             Height="16"
             Width="16" />
@@ -222,9 +232,23 @@
           Checked="_checkboxPrerelease_Checked"
           Unchecked="_checkboxPrerelease_Unchecked"
           IsChecked="True" />
+
+        <!-- show vulnerabilities checkbox -->
+        <CheckBox
+          Grid.Column="3"
+          x:Name="_checkboxVulnerabilities"
+          AutomationProperties.AutomationId="CheckBox_Vulnerabilities"
+          Margin="3,0"
+          VerticalAlignment="Center"
+          Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+          VerticalContentAlignment="Center"
+          Checked="_checkboxVulnerabilities_Checked"
+          Unchecked="_checkboxVulnerabilities_Unchecked"
+          Visibility="Hidden"
+          IsChecked="False">
+          <TextBlock Text="{x:Static nuget:Resources.Checkbox_Show_Vulnerable_Only}" />
+        </CheckBox>
       </Grid>
-
-
       <Grid
         Grid.Column="2"
         VerticalAlignment="Center"
@@ -250,7 +274,9 @@
           MinHeight="22"
           AutomationProperties.Name="{x:Static nuget:Resources.Label_Repository}"
           SelectionChanged="_sourceRepoList_SelectionChanged"
-          HorizontalAlignment="Right">
+          HorizontalAlignment="Right"
+          PreviewKeyDown="SourceRepoList_PreviewKeyDown"
+          ItemsSource="{Binding Source={StaticResource cvsPackageSources}}">
           <ComboBox.ItemTemplate>
             <DataTemplate>
               <TextBlock
@@ -266,51 +292,24 @@
             </ToolTip>
           </ComboBox.ToolTip>
           <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}">
+            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
               <Setter Property="AutomationProperties.Name" Value="{Binding SourceName}"/>
             </Style>
           </ComboBox.ItemContainerStyle>
         </ComboBox>
         <Button
-        Grid.Column="3"
-        x:Name="_settingsButton"
-        Margin="12,0,0,0"
-        AutomationProperties.AutomationId="Button_Settings"
-        VerticalAlignment="Center"
-        Padding="0"
-        ToolTip="{x:Static nuget:Resources.ToolTip_Settings}"
-        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Settings}"
-        Style="{StaticResource ToolBarButtonStyle}"
-        Click="_settingsButton_Click">
-          <Rectangle
-          Width="{Binding FontSize,RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"
-          Height="{Binding FontSize,RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}">
-            <Rectangle.Fill>
-              <DrawingBrush>
-                <DrawingBrush.Drawing>
-                  <DrawingGroup>
-                    <DrawingGroup.Children>
-                      <GeometryDrawing
-                          Brush="#00FFFFFF"
-                          Geometry="F1M16,16L0,16 0,0 16,0z" />
-                      <GeometryDrawing
-                          Brush="#FFF6F6F6"
-                          Geometry="F1M15.9434,7.0796L15.8734,6.4596 13.6374,5.6646 14.6544,3.5256 14.2684,3.0376C13.8854,2.5536,13.4464,2.1146,12.9644,1.7316L12.4754,1.3456 10.3354,2.3626 9.5414,0.1286 8.9224,0.057599999999999C8.6194,0.0215999999999994 8.3124,-0.000400000000000844 8.0004,-0.000400000000000844 7.6894,-0.000400000000000844 7.3824,0.0215999999999994 7.0804,0.0565999999999995L6.4614,0.126599999999999 5.6664,2.3626 3.5254,1.3456 3.0374,1.7316C2.5554,2.1126,2.1164,2.5516,1.7324,3.0366L1.3454,3.5246 2.3624,5.6646 0.1274,6.4596 0.0564,7.0796C0.0224000000000011,7.3816 0.000400000000000844,7.6876 0.000400000000000844,7.9996 0.000400000000000844,8.3116 0.0224000000000011,8.6186 0.0564,8.9206L0.1274,9.5396 2.3624,10.3346 1.3454,12.4746 1.7324,12.9626C2.1144,13.4466,2.5534,13.8846,3.0374,14.2676L3.5254,14.6556 5.6664,13.6376 6.4614,15.8726 7.0804,15.9436C7.3824,15.9786 7.6894,15.9996 8.0004,15.9996 8.3134,15.9996 8.6204,15.9786 8.9244,15.9426L9.5424,15.8706 10.3364,13.6366 12.4754,14.6556 12.9644,14.2676C13.4484,13.8836,13.8874,13.4446,14.2684,12.9616L14.6544,12.4736 13.6374,10.3346 15.8734,9.5396 15.9434,8.9206C15.9784,8.6186 16.0004,8.3116 16.0004,7.9996 16.0004,7.6876 15.9784,7.3816 15.9434,7.0796" />
-                      <GeometryDrawing
-                          Brush="#FF414141"
-                          Geometry="F1M8,5C6.343,5 5,6.343 5,8 5,9.657 6.343,11 8,11 9.657,11 11,9.657 11,8 11,6.343 9.657,5 8,5 M12.714,9.603C12.644,9.81,12.563,10.01,12.468,10.203L13.484,12.342C13.149,12.766,12.767,13.148,12.343,13.484L10.203,12.467C10.01,12.563,9.81,12.643,9.603,12.714L8.808,14.949C8.542,14.98 8.273,15 8,15 7.728,15 7.459,14.98 7.194,14.95L6.399,12.715C6.192,12.644,5.991,12.564,5.798,12.468L3.658,13.484C3.234,13.148,2.852,12.766,2.516,12.342L3.532,10.203C3.437,10.01,3.356,9.81,3.286,9.603L1.05,8.807C1.02,8.542 1,8.273 1,8 1,7.727 1.02,7.458 1.05,7.193L3.286,6.397C3.356,6.19,3.437,5.991,3.532,5.797L2.516,3.658C2.852,3.234,3.234,2.851,3.658,2.516L5.798,3.532C5.991,3.436,6.191,3.356,6.399,3.286L7.194,1.05C7.459,1.02 7.728,1 8,1 8.273,1 8.542,1.02 8.808,1.05L9.603,3.287C9.81,3.357,10.01,3.437,10.203,3.533L12.343,2.516C12.767,2.852,13.149,3.235,13.484,3.658L12.468,5.797C12.563,5.991,12.644,6.19,12.714,6.397L14.95,7.193C14.98,7.458 15,7.727 15,8 15,8.273 14.98,8.542 14.95,8.807z" />
-                      <GeometryDrawing
-                          Brush="#FF414141"
-                          Geometry="F1M9.5,8C9.5,8.828 8.829,9.5 8,9.5 7.171,9.5 6.5,8.828 6.5,8 6.5,7.172 7.171,6.5 8,6.5 8.829,6.5 9.5,7.172 9.5,8" />
-                      <GeometryDrawing
-                          Brush="#FFF0EFF1"
-                          Geometry="F1M8,9.5C7.172,9.5 6.5,8.828 6.5,8 6.5,7.172 7.172,6.5 8,6.5 8.828,6.5 9.5,7.172 9.5,8 9.5,8.828 8.828,9.5 8,9.5 M8,5C6.343,5 5,6.343 5,8 5,9.656 6.343,11 8,11 9.657,11 11,9.656 11,8 11,6.343 9.657,5 8,5" />
-                    </DrawingGroup.Children>
-                  </DrawingGroup>
-                </DrawingBrush.Drawing>
-              </DrawingBrush>
-            </Rectangle.Fill>
-          </Rectangle>
+          Grid.Column="3"
+          x:Name="_settingsButton"
+          Margin="12,0,0,0"
+          AutomationProperties.AutomationId="Button_Settings"
+          VerticalAlignment="Center"
+          Padding="0"
+          ToolTip="{x:Static nuget:Resources.ToolTip_Settings}"
+          AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Settings}"
+          Style="{StaticResource ToolBarButtonStyle}"
+          Click="_settingsButton_Click">
+          <imaging:CrispImage
+            Moniker="{x:Static catalog:KnownMonikers.Settings}" />
         </Button>
       </Grid>
     </Grid>

@@ -1,4 +1,4 @@
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     partial class GeneralOptionControl
     {
@@ -60,7 +60,7 @@ namespace NuGet.Options
             resources.ApplyResources(this.packageRestoreConsentCheckBox, "packageRestoreConsentCheckBox");
             this.packageRestoreConsentCheckBox.Name = "packageRestoreConsentCheckBox";
             this.packageRestoreConsentCheckBox.UseVisualStyleBackColor = true;
-            this.packageRestoreConsentCheckBox.CheckedChanged += new System.EventHandler(this.packageRestoreConsentCheckBox_CheckedChanged);
+            this.packageRestoreConsentCheckBox.CheckedChanged += new System.EventHandler(this.OnPackageRestoreConsentCheckBoxCheckedChanged);
             // 
             // packageRestoreAutomaticCheckBox
             // 
@@ -77,7 +77,7 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.localsCommandButton, "localsCommandButton");
             this.localsCommandButton.Name = "localsCommandButton";
-            this.localsCommandButton.Click += new System.EventHandler(this.localsCommandButton_OnClick);
+            this.localsCommandButton.Click += new System.EventHandler(this.OnLocalsCommandButtonOnClick);
             // 
             // localsCommandStatusText
             // 
@@ -87,8 +87,8 @@ namespace NuGet.Options
             this.localsCommandStatusText.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.localsCommandStatusText.Name = "localsCommandStatusText";
             this.localsCommandStatusText.ReadOnly = true;
-            this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.localsCommandStatusText_ContentChanged);
-            this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.localsCommandStatusText_LinkClicked);
+            this.localsCommandStatusText.ContentsResized += new System.Windows.Forms.ContentsResizedEventHandler(this.OnLocalsCommandStatusTextContentChanged);
+            this.localsCommandStatusText.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.OnLocalsCommandStatusTextLinkClicked);
             // 
             // PackageManagementHeader
             // 

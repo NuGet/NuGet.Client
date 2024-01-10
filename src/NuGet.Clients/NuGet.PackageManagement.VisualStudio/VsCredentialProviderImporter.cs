@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -57,6 +58,9 @@ namespace NuGet.PackageManagement.VisualStudio
         [ImportMany(typeof(IVsCredentialProvider))]
         public IEnumerable<Lazy<IVsCredentialProvider>> ImportedProviders { get; set; }
 
+        [Import]
+        public IVsSolutionManager SolutionManager { get; set; }
+
         /// <summary>
         /// Plugin providers are entered loaded the same way as other nuget extensions,
         /// matching any extension named CredentialProvider.*.exe.
@@ -72,13 +76,13 @@ namespace NuGet.PackageManagement.VisualStudio
             TryImportCredentialProviders(results, ImportedProviders);
 
             // Ensure imported providers ordering is deterministic
-            results.Sort((a, b) => a.GetType().FullName.CompareTo(b.GetType().FullName));
+            results.Sort((a, b) => string.Compare(a.GetType().FullName, b.GetType().FullName, StringComparison.Ordinal));
 
             return results;
         }
 
         private void TryImportCredentialProviders(
-            List<ICredentialProvider> importedProviders, 
+            List<ICredentialProvider> importedProviders,
             IEnumerable<Lazy<IVsCredentialProvider>> credentialProviders)
         {
             if (credentialProviders != null)
@@ -88,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     try
                     {
                         var credentialProvider = credentialProviderFactory.Value;
-                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider));
+                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider, SolutionManager));
                     }
                     catch (Exception exception)
                     {
@@ -96,7 +100,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         _errorDelegate(
                             exception,
-                            string.Format(Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
+                            string.Format(CultureInfo.CurrentCulture, Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
                             );
                     }
                 }
@@ -112,8 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void Initialize()
         {
-            var componentModel = ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>();
-            
+            var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }

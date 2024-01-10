@@ -204,7 +204,38 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
+
+                // Act
+                var section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+
+                var element = section.Items.FirstOrDefault() as UnknownItem;
+                element.Should().NotBeNull();
+
+                // Assert
+                var ex = Record.Exception(() => element.Add(new SettingText("test")));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+            }
+        }
+
+        [Fact]
+        public void UnknownItem_Add_ToReadOnly_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <Unknown />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: false, isReadOnly: true);
 
                 // Act
                 var section = settingsFile.GetSection("Section");
@@ -306,7 +337,7 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act
                 var section = settingsFile.GetSection("Section");
@@ -322,6 +353,38 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void UnknownItem_Remove_ToReadOnly_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <Unknown>
+            <Unknown2 />
+        </Unknown>
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: false, isReadOnly: true);
+
+                // Act
+                var section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+
+                var element = section.Items.FirstOrDefault() as UnknownItem;
+                element.Should().NotBeNull();
+
+                // Assert
+                var ex = Record.Exception(() => element.Remove(element.Children.First()));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+            }
+        }
 
         [Fact]
         public void UnknownItem_Remove_UnexistingChild_DoesNotRemoveAnything()
@@ -859,7 +922,7 @@ namespace NuGet.Configuration.Test
         {
             var originalSetting = new UnknownItem("Unknown",
                 attributes: null,
-                children: new List<SettingBase>() { new AddItem("key",  "val") });
+                children: new List<SettingBase>() { new AddItem("key", "val") });
 
             var newSetting = new UnknownItem("Unknown",
                 attributes: null,

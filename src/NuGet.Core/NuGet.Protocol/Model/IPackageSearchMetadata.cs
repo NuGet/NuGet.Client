@@ -23,6 +23,7 @@ namespace NuGet.Protocol.Core.Types
         PackageIdentity Identity { get; }
         Uri LicenseUrl { get; }
         Uri ProjectUrl { get; }
+        Uri ReadmeUrl { get; }
         Uri ReportAbuseUrl { get; }
         Uri PackageDetailsUrl { get; }
         DateTimeOffset? Published { get; }
@@ -36,7 +37,28 @@ namespace NuGet.Protocol.Core.Types
         bool PrefixReserved { get; }
 
         LicenseMetadata LicenseMetadata { get; }
+
+        /// <summary>
+        /// Gets the deprecation metadata for the package.
+        /// </summary>
+        /// <remarks>
+        /// Deprecation metadata is only available through remote feeds, not local feeds. Some servers do not return deprecation information via
+        /// <see cref="PackageSearchResource" /> results, only through <see cref="PackageMetadataResource" /> or <see cref="FindPackageByIdResource" />.
+        /// </remarks>
         Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync();
+
+        /// <summary>
+        /// Lists the available versions of the package on the source.
+        /// </summary>
         Task<IEnumerable<VersionInfo>> GetVersionsAsync();
+
+        /// <summary>
+        /// Gets the vulnerability metadata for the package.
+        /// </summary>
+        /// <remarks>
+        /// Vulnerability metadata is only available through remote feeds, not local feeds. Some servers do not return vulnerability information via
+        /// <see cref="PackageSearchResource" /> results, only through <see cref="PackageMetadataResource" /> or <see cref= "FindPackageByIdResource" />.
+        /// </remarks>
+        IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; }
     }
 }

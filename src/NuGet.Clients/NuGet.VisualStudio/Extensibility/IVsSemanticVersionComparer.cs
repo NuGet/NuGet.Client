@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,7 @@ namespace NuGet.VisualStudio
         /// are equivalent. Returns a number greater than zero if <paramref name="versionA"/>
         /// is greater than <paramref name="versionB"/>.
         /// </summary>
+        /// <remarks>This API is free-threaded.</remarks>
         /// <param name="versionA">The first version string.</param>
         /// <param name="versionB">The second version string.</param>
         /// <exception cref="ArgumentNullException">If either version string is null.</exception>

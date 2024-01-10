@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using FluentAssertions;
+using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -13,10 +15,12 @@ using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
+    [UseCulture("")] // Fix tests failing on systems with non-English locales
     public class JsonPackageSpecReaderTests
     {
         [Fact]
@@ -158,60 +162,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void PackageSpecReader_SetsPlatformDependencyFlagsCorrectly()
-        {
-            // Arrange
-            var json = @"{
-                           ""dependencies"": {
-                             ""redist"": {
-                               ""version"": ""1.0.0"",
-                               ""type"": ""platform""
-                             }
-                           }
-                         }";
-
-            // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
-            Assert.NotNull(dep);
-            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
-
-            var expected = LibraryIncludeFlags.Build |
-                LibraryIncludeFlags.Compile |
-                LibraryIncludeFlags.Analyzers;
-            Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Fact]
-        public void PackageSpecReader_ExplicitExcludesAddToTypePlatform()
-        {
-            // Arrange
-            var json = @"{
-                           ""dependencies"": {
-                             ""redist"": {
-                               ""version"": ""1.0.0"",
-                               ""type"": ""platform"",
-                               ""exclude"": ""analyzers""
-                             }
-                           }
-                         }";
-
-            // Act
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
-            Assert.NotNull(dep);
-            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
-
-            var expected = LibraryIncludeFlags.Build |
-                LibraryIncludeFlags.Compile;
-            Assert.Equal(expected, dep.IncludeType);
-        }
-
-        [Fact]
         public void PackageSpecReader_ExplicitIncludesOverrideTypePlatform()
         {
             // Arrange
@@ -231,7 +181,6 @@ namespace NuGet.ProjectModel.Test
             // Assert
             var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
             Assert.NotNull(dep);
-            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
 
             var expected = LibraryIncludeFlags.Analyzers;
             Assert.Equal(expected, dep.IncludeType);
@@ -257,6 +206,7 @@ namespace NuGet.ProjectModel.Test
                           ""packageType"": []
                         }
                       }")]
+#pragma warning disable CS0612 // Type or member is obsolete
         public void PackageSpecReader_PackOptions_Default(string json)
         {
             // Arrange & Act
@@ -500,33 +450,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(expectedValue, actual.BuildOptions.OutputName);
             }
         }
-
-        [Fact]
-        public void PackageSpecReader_ReadsWithRestoreSettings()
-        {
-            // Arrange
-            var json = @"{
-                          ""dependencies"": {
-                                ""packageA"": {
-                                    ""target"": ""package"",
-                                    ""version"": ""1.0.0""
-                                }
-                            },
-                            ""frameworks"": {
-                                ""net46"": {}
-                            },
-                            ""restoreSettings"": {
-                            ""hideWarningsAndErrors"": true
-                            },
-                        }";
-
-            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-
-            // Assert
-            Assert.NotNull(actual);
-            Assert.NotNull(actual.RestoreSettings);
-            Assert.True(actual.RestoreSettings.HideWarningsAndErrors);
-        }
+#pragma warning restore CS0612 // Type or member is obsolete
 
         [Fact]
         public void PackageSpecReader_ReadsWithoutRestoreSettings()
@@ -684,6 +608,10 @@ namespace NuGet.ProjectModel.Test
       ""warnAsError"": [
         ""NU1500"",
         ""NU1501""
+      ],
+      ""warnNotAsError"": [
+        ""NU1801"",
+        ""NU1802""
       ]
     }
   }
@@ -703,6 +631,9 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, warningProperties.WarningsAsErrors.Count);
             Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1500));
             Assert.True(warningProperties.WarningsAsErrors.Contains(NuGetLogCode.NU1501));
+            Assert.Equal(2, warningProperties.WarningsNotAsErrors.Count);
+            Assert.True(warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1801));
+            Assert.True(warningProperties.WarningsNotAsErrors.Contains(NuGetLogCode.NU1802));
         }
 
         [Fact]
@@ -1024,6 +955,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Null(spec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         [Fact]
         public void GetPackageSpec_WhenAuthorsPropertyIsAbsent_ReturnsEmptyAuthors()
         {
@@ -1221,6 +1153,7 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(expectedValue, packageSpec.Copyright);
         }
+#pragma warning restore CS0612 // Type or member is obsolete
 
         [Fact]
         public void GetPackageSpec_WhenDependenciesPropertyIsAbsent_ReturnsEmptyDependencies()
@@ -1323,7 +1256,6 @@ namespace NuGet.ProjectModel.Test
         [InlineData("exclude")]
         [InlineData("include")]
         [InlineData("suppressParent")]
-        [InlineData("type")]
         public void GetPackageSpec_WhenDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"dependencies\":{{\"a\":{{\"{propertyName}\":[\"b\"]}}}}}}";
@@ -1537,6 +1469,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedValue, dependency.VersionCentrallyManaged);
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         [Fact]
         public void GetPackageSpec_WhenDescriptionPropertyIsAbsent_ReturnsNullDescription()
         {
@@ -1576,6 +1509,7 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(expectedResult, packageSpec.Language);
         }
+#pragma warning restore CS0612 // Type or member is obsolete
 
         [Fact]
         public void GetPackageSpec_WhenFrameworksPropertyIsAbsent_ReturnsEmptyFrameworks()
@@ -1611,6 +1545,21 @@ namespace NuGet.ProjectModel.Test
             TargetFrameworkInformation framework = GetFramework(json);
 
             Assert.Equal(expectedValue, framework.AssetTargetFallback);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithAssetTargetFallbackAndImportsValues_ReturnsValidAssetTargetFallbackFramework()
+        {
+            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"assetTargetFallback\": true, \"imports\": [\"net472\", \"net471\"]}}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+
+            framework.AssetTargetFallback.Should().BeTrue();
+            var assetTargetFallback = framework.FrameworkName as AssetTargetFallbackFramework;
+            assetTargetFallback.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
+            assetTargetFallback.Fallback.Should().HaveCount(2);
+            assetTargetFallback.Fallback.First().Should().Be(FrameworkConstants.CommonFrameworks.Net472);
+            assetTargetFallback.Fallback.Last().Should().Be(FrameworkConstants.CommonFrameworks.Net471);
         }
 
         [Fact]
@@ -1803,7 +1752,6 @@ namespace NuGet.ProjectModel.Test
         [InlineData("exclude")]
         [InlineData("include")]
         [InlineData("suppressParent")]
-        [InlineData("type")]
         public void GetPackageSpec_WhenFrameworksDependenciesDependencyValueIsArray_Throws(string propertyName)
         {
             var json = $"{{\"frameworks\":{{\"a\":{{\"dependencies\":{{\"b\":{{\"{propertyName}\":[\"c\"]}}}}}}}}}}";
@@ -2442,6 +2390,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedResult, framework.Warn);
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         [Fact]
         public void GetPackageSpec_WhenPackIncludePropertyIsAbsent_ReturnsEmptyPackInclude()
         {
@@ -2851,6 +2800,7 @@ namespace NuGet.ProjectModel.Test
 
             Assert.Equal(expectedResults, packageSpec.PackOptions.Mappings);
         }
+#pragma warning restore CS0612 // Type or member is obsolete
 
         [Fact]
         public void GetPackageSpec_WhenRestorePropertyIsAbsent_ReturnsNullRestoreMetadata()
@@ -3047,6 +2997,48 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void GetPackageSpec_WhenCentralPackageFloatingVersionsEnabledValueIsValid_ReturnsCentralPackageFloatingVersionsEnabled(
+            bool? value,
+            bool expectedValue)
+        {
+            var json = $"{{\"restore\":{{\"centralPackageFloatingVersionsEnabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageFloatingVersionsEnabled);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void GetPackageSpec_WhenCentralPackageVersionOverrideDisabledValueIsValid_ReturnsCentralPackageVersionOverrideDisabled(
+            bool? value,
+            bool expectedValue)
+        {
+            var json = $"{{\"restore\":{{\"centralPackageVersionOverrideDisabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageVersionOverrideDisabled);
+        }
+
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void GetPackageSpec_WhenCentralPackageTransitivePinningEnabledValueIsValid_ReturnsCentralPackageTransitivePinningEnabled(
+            bool? value,
+            bool expectedValue)
+        {
+            var json = $"{{\"restore\":{{\"CentralPackageTransitivePinningEnabled\":{(value.HasValue ? value.ToString().ToLowerInvariant() : "null")}}}}}";
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            Assert.Equal(expectedValue, packageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled);
+        }
+
         [Fact]
         public void GetPackageSpec_WhenSourcesValueIsEmptyObject_ReturnsEmptySources()
         {
@@ -3235,7 +3227,8 @@ namespace NuGet.ProjectModel.Test
             var expectedResult = new WarningProperties(
                 new HashSet<NuGetLogCode>() { NuGetLogCode.NU3000 },
                 new HashSet<NuGetLogCode>() { NuGetLogCode.NU3001 },
-                allWarningsAsErrors: true);
+                allWarningsAsErrors: true,
+                new HashSet<NuGetLogCode>());
             var json = $"{{\"restore\":{{\"warningProperties\":{{\"allWarningsAsErrors\":{expectedResult.AllWarningsAsErrors.ToString().ToLowerInvariant()}," +
                 $"\"warnAsError\":[\"{expectedResult.WarningsAsErrors.Single()}\"],\"noWarn\":[\"{expectedResult.NoWarn.Single()}\"]}}}}}}";
             PackageSpec packageSpec = GetPackageSpec(json);
@@ -3306,25 +3299,10 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedResult, packageSpec.RestoreSettings);
         }
 
-        [Theory]
-        [InlineData(null, false)]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        public void GetPackageSpec_WhenRestoreSettingsValueIsValid_ReturnsRestoreSettings(
-            bool? value,
-            bool expectedHide)
-        {
-            var expectedResult = new ProjectRestoreSettings() { HideWarningsAndErrors = expectedHide };
-            var json = $"{{\"restoreSettings\":{{\"hideWarningsAndErrors\":{(value == null ? "null" : value.ToString().ToLowerInvariant())}}}}}";
-            PackageSpec packageSpec = GetPackageSpec(json);
-
-            Assert.Equal(expectedResult, packageSpec.RestoreSettings);
-        }
-
         [Fact]
         public void GetPackageSpec_WhenRuntimesValueIsEmptyObject_ReturnsRuntimes()
         {
-            var expectedResult = new RuntimeGraph();
+            var expectedResult = RuntimeGraph.Empty;
             const string json = "{\"runtimes\":{}}";
             PackageSpec packageSpec = GetPackageSpec(json);
 
@@ -3381,7 +3359,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void GetPackageSpec_WhenSupportsValueIsEmptyObject_ReturnsSupports()
         {
-            var expectedResult = new RuntimeGraph();
+            var expectedResult = RuntimeGraph.Empty;
             const string json = "{\"supports\":{}}";
             PackageSpec packageSpec = GetPackageSpec(json);
 
@@ -3417,6 +3395,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedResult, packageSpec.RuntimeGraph);
         }
 
+#pragma warning disable CS0612 // Type or member is obsolete
         [Fact]
         public void GetPackageSpec_WhenScriptsValueIsEmptyObject_ReturnsScripts()
         {
@@ -3469,6 +3448,7 @@ namespace NuGet.ProjectModel.Test
                         actualScript => Assert.Equal(script2, actualScript));
                 });
         }
+#pragma warning restore CS0612 // Type or member is obsolete
 
         [Theory]
         [InlineData("null", null)]
@@ -3505,6 +3485,263 @@ namespace NuGet.ProjectModel.Test
             PackageSpec packageSpec = GetPackageSpec(json);
 
             Assert.Equal(expectedResult, packageSpec.FilePath);
+        }
+
+        [Fact]
+        public void GetTargetFrameworkInformation_WithAnAlias()
+        {
+            TargetFrameworkInformation framework = GetFramework("{\"frameworks\":{\"net46\":{ \"targetAlias\" : \"alias\"}}}");
+
+            Assert.Equal("alias", framework.TargetAlias);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ReadsRestoreMetadataWithAliases()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""projectUniqueName"",
+    ""projectName"": ""projectName"",
+    ""projectPath"": ""projectPath"",
+    ""projectJsonPath"": ""projectJsonPath"",
+    ""packagesPath"": ""packagesPath"",
+    ""outputPath"": ""outputPath"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""frameworks"": {
+      ""frameworkidentifier123-frameworkprofile"": {
+        ""targetAlias"" : ""alias"",
+        ""projectReferences"": {}
+      }
+    },
+    ""warningProperties"": {
+    }
+  }
+}";
+
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var warningProperties = actual.RestoreMetadata.ProjectWideWarningProperties;
+
+            Assert.NotNull(metadata);
+            Assert.Equal("alias", metadata.TargetFrameworks.Single().TargetAlias);
+        }
+
+
+        [Fact]
+        public void PackageSpecReader_Read()
+        {
+            // Arrange
+            var json = @"{
+                            ""centralTransitiveDependencyGroups"": {
+                                    "".NETCoreApp,Version=v3.1"": {
+                                        ""Foo"": {
+                                            ""exclude"": ""Native"",
+                                            ""include"": ""Build"",
+                                            ""suppressParent"": ""All"",
+                                            ""version"": ""1.0.0""
+                                    }
+                                },
+                                    "".NETCoreApp,Version=v3.0"": {
+                                        ""Bar"": {
+                                            ""exclude"": ""Native"",
+                                            ""include"": ""Build"",
+                                            ""suppressParent"": ""All"",
+                                            ""version"": ""2.0.0""
+                                    }
+                                }
+                            }
+                        }";
+
+            // Act
+            var results = new List<CentralTransitiveDependencyGroup>();
+            using (var stringReader = new StringReader(json.ToString()))
+            using (var jsonReader = new JsonTextReader(stringReader))
+            {
+                jsonReader.ReadObject(ctdPropertyName =>
+                {
+                    jsonReader.ReadObject(frameworkPropertyName =>
+                    {
+                        var dependencies = new List<LibraryDependency>();
+                        NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                        JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                            jsonReader: jsonReader,
+                            results: dependencies,
+                            packageSpecPath: "SomePath");
+                        results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                    });
+                });
+            }
+
+            // Assert
+            Assert.Equal(2, results.Count);
+            Assert.Equal(".NETCoreApp,Version=v3.1", results.ElementAt(0).FrameworkName);
+            var firstGroup = results.ElementAt(0);
+            Assert.Equal(1, firstGroup.TransitiveDependencies.Count());
+            Assert.Equal("Build", firstGroup.TransitiveDependencies.First().IncludeType.ToString());
+            Assert.Equal("All", firstGroup.TransitiveDependencies.First().SuppressParent.ToString());
+            Assert.Equal("[1.0.0, )", firstGroup.TransitiveDependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(firstGroup.TransitiveDependencies.First().VersionCentrallyManaged);
+
+            var secondGroup = results.ElementAt(1);
+            Assert.Equal(1, secondGroup.TransitiveDependencies.Count());
+            Assert.Equal("Build", secondGroup.TransitiveDependencies.First().IncludeType.ToString());
+            Assert.Equal("All", secondGroup.TransitiveDependencies.First().SuppressParent.ToString());
+            Assert.Equal("[2.0.0, )", secondGroup.TransitiveDependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(secondGroup.TransitiveDependencies.First().VersionCentrallyManaged);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework()
+        {
+            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"secondaryFramework\": \"native\"}}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+            framework.FrameworkName.Should().BeOfType<DualCompatibilityFramework>();
+            var dualCompatibilityFramework = framework.FrameworkName as DualCompatibilityFramework;
+            dualCompatibilityFramework.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
+            dualCompatibilityFramework.SecondaryFramework.Should().Be(FrameworkConstants.CommonFrameworks.Native);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithAssetTargetFallbackAndWithSecondaryFrameworks_ReturnsTargetFrameworkInformationWithDualCompatibilityFramework()
+        {
+            var json = $"{{\"frameworks\":{{\"net5.0\":{{\"assetTargetFallback\": true, \"imports\": [\"net472\", \"net471\"], \"secondaryFramework\": \"native\" }}}}}}";
+
+            TargetFrameworkInformation framework = GetFramework(json);
+            framework.FrameworkName.Should().BeOfType<AssetTargetFallbackFramework>();
+            framework.AssetTargetFallback.Should().BeTrue();
+            var assetTargetFallbackFramework = framework.FrameworkName as AssetTargetFallbackFramework;
+            assetTargetFallbackFramework.RootFramework.Should().BeOfType<DualCompatibilityFramework>();
+            var dualCompatibilityFramework = assetTargetFallbackFramework.RootFramework as DualCompatibilityFramework;
+            dualCompatibilityFramework.RootFramework.Should().Be(FrameworkConstants.CommonFrameworks.Net50);
+            dualCompatibilityFramework.SecondaryFramework.Should().Be(FrameworkConstants.CommonFrameworks.Native);
+            assetTargetFallbackFramework.Fallback.Should().HaveCount(2);
+            assetTargetFallbackFramework.Fallback.First().Should().Be(FrameworkConstants.CommonFrameworks.Net472);
+            assetTargetFallbackFramework.Fallback.Last().Should().Be(FrameworkConstants.CommonFrameworks.Net471);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithRestoreAuditProperties_ReturnsRestoreAuditProperties()
+        {
+            // Arrange
+            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\": \"a\", \"auditLevel\": \"b\", \"auditMode\": \"c\"}}}}}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            // Assert
+            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
+        }
+
+        [Fact]
+        public void GetPackageSpec_RestoreMetadataWithoutMacros_WithMacrosEnabled()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""C:\\Users\\me\\source\\code\\project.csproj"",
+    ""projectName"": ""project"",
+    ""projectPath"": ""C:\\Users\\me\\source\\code\\project.csproj"",
+    ""projectJsonPath"": ""C:\\Users\\me\\source\\code\\project.json"",
+    ""packagesPath"": ""C:\\Users\\me\\.nuget\\packages"",
+    ""outputPath"": ""C:\\Users\\me\\source\\code\\obj"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+        ""C:\\Users\\me\\source\\code\\NuGet.Config"",
+        ""C:\\Users\\me\\AppData\\Roaming\\NuGet\\NuGet.Config"",
+        ""C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"",
+        ""C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config""
+    ],
+    ""fallbackFolders"": [
+        ""C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"",
+        ""C:\\Users\\me\\fallbackFolder""
+
+
+    ]
+  }
+}";
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+                {
+                    { MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS, "true" }
+            });
+
+            PackageSpec actual = PackageSpecTestUtility.GetPackageSpec(json, environmentReader);
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+
+            Assert.NotNull(metadata);
+            metadata.ProjectUniqueName.Should().Be(@"C:\Users\me\source\code\project.csproj");
+            metadata.ProjectPath.Should().Be(@"C:\Users\me\source\code\project.csproj");
+            metadata.ProjectJsonPath.Should().Be(@"C:\Users\me\source\code\project.json");
+            metadata.PackagesPath.Should().Be(@"C:\Users\me\.nuget\packages");
+            metadata.OutputPath.Should().Be(@"C:\Users\me\source\code\obj");
+
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Users\me\source\code\NuGet.Config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Users\me\AppData\Roaming\NuGet\NuGet.Config");
+
+            metadata.FallbackFolders.Should().Contain(@"C:\Program Files\dotnet\sdk\NuGetFallbackFolder");
+            metadata.FallbackFolders.Should().Contain(@"C:\Users\me\fallbackFolder");
+        }
+
+        [Fact]
+        public void GetPackageSpec_RestoreMetadataWithMacros()
+        {
+            // Arrange
+            var json = @"{  
+                            ""restore"": {
+    ""projectUniqueName"": ""C:\\users\\me\\source\\code\\project.csproj"",
+    ""projectName"": ""project"",
+    ""projectPath"": ""C:\\users\\me\\source\\code\\project.csproj"",
+    ""projectJsonPath"": ""C:\\users\\me\\source\\code\\project.json"",
+    ""packagesPath"": ""$(User).nuget\\packages"",
+    ""outputPath"": ""C:\\users\\me\\source\\code\\obj"",
+    ""projectStyle"": ""PackageReference"",
+    ""crossTargeting"": true,
+    ""configFilePaths"": [
+        ""$(User)source\\code\\NuGet.Config"",
+        ""$(User)AppData\\Roaming\\NuGet\\NuGet.Config"",
+        ""C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"",
+        ""C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config""
+    ],
+    ""fallbackFolders"": [
+        ""C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"",
+        ""$(User)fallbackFolder""
+
+
+    ]
+  }
+}";
+            var environmentReader = new TestEnvironmentVariableReader(new Dictionary<string, string>()
+                {
+                    { MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS, "true" }
+            });
+
+            PackageSpec actual = PackageSpecTestUtility.GetPackageSpec(json, environmentReader);
+
+            // Assert
+            var metadata = actual.RestoreMetadata;
+            var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+            Assert.NotNull(metadata);
+            metadata.PackagesPath.Should().Be(@$"{userSettingsDirectory}.nuget\packages");
+
+            metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}source\code\NuGet.Config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config");
+            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config");
+            metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}AppData\Roaming\NuGet\NuGet.Config");
+
+            metadata.FallbackFolders.Should().Contain(@"C:\Program Files\dotnet\sdk\NuGetFallbackFolder");
+            metadata.FallbackFolders.Should().Contain(@$"{userSettingsDirectory}fallbackFolder");
         }
 
         private static PackageSpec GetPackageSpec(string json)

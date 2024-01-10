@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using SystemTask = System.Threading.Tasks.Task;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
@@ -27,7 +28,7 @@ namespace NuGet.SolutionRestoreManager
     /// UpdateSolution_Cancel
     /// UpdateSolution_Done
     /// </remarks>
-    public sealed class SolutionRestoreBuildHandler 
+    public sealed class SolutionRestoreBuildHandler
         : IVsUpdateSolutionEvents5, IDisposable
     {
         private const uint VSCOOKIE_NIL = 0;
@@ -81,13 +82,16 @@ namespace NuGet.SolutionRestoreManager
 
         public void Dispose()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (_updateSolutionEventsCookieEx != VSCOOKIE_NIL)
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                ((IVsSolutionBuildManager)_solutionBuildManager).UnadviseUpdateSolutionEvents(_updateSolutionEventsCookieEx);
-                _updateSolutionEventsCookieEx = VSCOOKIE_NIL;
-            }
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (_updateSolutionEventsCookieEx != VSCOOKIE_NIL)
+                {
+                    ((IVsSolutionBuildManager)_solutionBuildManager).UnadviseUpdateSolutionEvents(_updateSolutionEventsCookieEx);
+                    _updateSolutionEventsCookieEx = VSCOOKIE_NIL;
+                }
+            }).PostOnFailure(nameof(SolutionRestoreBuildHandler));
         }
 
         // A factory method invoked internally only

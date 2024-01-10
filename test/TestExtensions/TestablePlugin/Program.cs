@@ -32,7 +32,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                 return Error;
             }
 
-            if (parsedArgs.Hang)
+            if (parsedArgs.Freeze)
             {
                 while (true)
                 {

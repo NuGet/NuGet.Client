@@ -10,12 +10,13 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Xunit;
 
 namespace Test.Utility.Signing
 {
     public static class SignatureTestUtility
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
 
@@ -35,12 +36,14 @@ namespace Test.Utility.Signing
             DateTimeOffset notAfter = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
 
             // Ensure the certificate has expired.
-            var delay = notAfter.AddSeconds(1) - DateTimeOffset.UtcNow;
+            TimeSpan delay = notAfter.AddSeconds(1) - DateTimeOffset.UtcNow;
 
             if (delay > TimeSpan.Zero)
             {
                 return Task.Delay(delay);
             }
+
+            Assert.True(DateTimeOffset.Now > notAfter);
 
             return Task.CompletedTask;
         }
@@ -159,7 +162,7 @@ namespace Test.Utility.Signing
             reader.BaseStream.Seek(offset: metadata.EndOfCentralDirectory, origin: SeekOrigin.Begin);
             SignedPackageArchiveIOUtility.ReadAndWriteUntilPosition(reader, writer, reader.BaseStream.Length);
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         private static List<CentralDirectoryHeaderMetadata> ShiftMetadata(

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI
                 return enumValue.ToString();
             }
 
-            var resourceString =  Resources.ResourceManager.GetString(attrib.Description, culture);
+            var resourceString = Resources.ResourceManager.GetString(attrib.Description, culture);
             return !string.IsNullOrEmpty(resourceString) ? resourceString : attrib.Description;
         }
     }

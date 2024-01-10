@@ -48,23 +48,23 @@ namespace NuGet.Commands
                 switch (item)
                 {
                     case FileClientCertItem fileCertItem:
-                    {
-                        builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesFileCertFilePath, defaultIndentation, fileCertItem.FilePath);
-                        builder.AppendLine();
-
-                        if (string.IsNullOrEmpty(fileCertItem.Password))
                         {
-                            builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesFileCertNoPassword, defaultIndentation);
-                        }
-                        else
-                        {
-                            builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesFileCertWithPassword, defaultIndentation);
-                        }
+                            builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesFileCertFilePath, defaultIndentation, fileCertItem.FilePath);
+                            builder.AppendLine();
 
-                        builder.AppendLine();
+                            if (string.IsNullOrEmpty(fileCertItem.Password))
+                            {
+                                builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesFileCertNoPassword, defaultIndentation);
+                            }
+                            else
+                            {
+                                builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesFileCertWithPassword, defaultIndentation);
+                            }
 
-                        break;
-                    }
+                            builder.AppendLine();
+
+                            break;
+                        }
                     case StoreClientCertItem storeCertItem:
                         builder.AppendFormat(CultureInfo.CurrentCulture, Strings.ClientCertificatesStoreCertStoreLocation, defaultIndentation, StoreClientCertItem.GetString(storeCertItem.StoreLocation));
                         builder.AppendLine();

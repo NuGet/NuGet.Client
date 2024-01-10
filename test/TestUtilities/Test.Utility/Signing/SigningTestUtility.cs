@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -25,7 +27,7 @@ namespace Test.Utility.Signing
 {
     public static class SigningTestUtility
     {
-        private static readonly string _signatureLogPrefix = "Package '{0} {1}' from source '{2}':";
+        private static readonly string SignatureLogPrefix = "Package '{0} {1}' from source '{2}':";
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
@@ -118,6 +120,25 @@ namespace Test.Utility.Signing
         }
 
         /// <summary>
+        /// Modification generator that can be passed to TestCertificate.Generate().
+        /// The generator will create a certificate that is only valid for a specified short period.
+        /// </summary>
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorForCertificateThatOnlyValidInSpecifiedPeriod(DateTimeOffset notBefore, DateTimeOffset notAfter)
+        {
+            return (TestCertificateGenerator gen) =>
+            {
+                var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
+
+                gen.Extensions.Add(
+                    new X509EnhancedKeyUsageExtension(
+                        usages,
+                        critical: true));
+
+                gen.NotBefore = notBefore;
+                gen.NotAfter = notAfter;
+            };
+        }
+        /// <summary>
         /// Generates a list of certificates representing a chain of certificates.
         /// The first certificate is the root certificate stored in StoreName.Root and StoreLocation.LocalMachine.
         /// The last certificate is the leaf certificate stored in StoreName.TrustedPeople and StoreLocation.LocalMachine.
@@ -127,11 +148,13 @@ namespace Test.Utility.Signing
         /// <param name="crlServerUri">Uri for crl server</param>
         /// <param name="crlLocalUri">Uri for crl local</param>
         /// <param name="configureLeafCrl">Indicates if leaf crl should be configured</param>
+        /// <param name="leafCertificateActionGenerator">Specify actionGenerator for the leaf certificate of the chain</param>
         /// <returns>List of certificates representing a chain of certificates.</returns>
-        public static IList<TrustedTestCert<TestCertificate>> GenerateCertificateChain(int length, string crlServerUri, string crlLocalUri, bool configureLeafCrl = true)
+        public static IList<TrustedTestCert<TestCertificate>> GenerateCertificateChain(int length, string crlServerUri, string crlLocalUri, bool configureLeafCrl = true, Action<TestCertificateGenerator> leafCertificateActionGenerator = null)
         {
             var certChain = new List<TrustedTestCert<TestCertificate>>();
             var actionGenerator = CertificateModificationGeneratorForCodeSigningEkuCert;
+            var leafGenerator = leafCertificateActionGenerator ?? actionGenerator;
             TrustedTestCert<TestCertificate> issuer = null;
             TrustedTestCert<TestCertificate> cert = null;
 
@@ -147,7 +170,8 @@ namespace Test.Utility.Signing
                         IsCA = true
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator, chainCertificateRequest)
+                        .WithPrivateKeyAndTrust(StoreName.Root);
                     issuer = cert;
                 }
                 else if (i < length - 1) // intermediate CA cert
@@ -161,7 +185,8 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator, chainCertificateRequest)
+                        .WithPrivateKeyAndTrustForIntermediateCertificateAuthority();
                     issuer = cert;
                 }
                 else // leaf cert
@@ -175,13 +200,115 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(X509StorePurpose.CodeSigning, leafGenerator, chainCertificateRequest)
+                        .WithPrivateKeyAndTrustForLeafOrSelfIssued();
                 }
 
                 certChain.Add(cert);
             }
 
             return certChain;
+        }
+
+        public static IX509CertificateChain GenerateCertificateChainWithoutTrust(
+            int length,
+            string crlServerUri,
+            string crlLocalUri,
+            bool configureLeafCrl = true,
+            Action<TestCertificateGenerator> leafCertificateActionGenerator = null,
+            bool revokeEndCertificate = false)
+        {
+            List<TestCertificate> testCertificates = new();
+            X509CertificateChain certificateChain = new();
+            Action<TestCertificateGenerator> actionGenerator = CertificateModificationGeneratorForCodeSigningEkuCert;
+            Action<TestCertificateGenerator> leafGenerator = leafCertificateActionGenerator ?? actionGenerator;
+            X509Certificate2 issuer = null;
+            X509Certificate2 certificate = null;
+            CertificateRevocationList crl = null;
+
+            for (var i = 0; i < length; i++)
+            {
+                TestCertificate testCertificate;
+
+                if (i == 0) // root CA cert
+                {
+                    ChainCertificateRequest chainCertificateRequest = new()
+                    {
+                        ConfigureCrl = true,
+                        CrlLocalBaseUri = crlLocalUri,
+                        CrlServerBaseUri = crlServerUri,
+                        IsCA = true
+                    };
+
+                    testCertificate = TestCertificate.Generate(
+                        X509StorePurpose.CodeSigning,
+                        actionGenerator,
+                        chainCertificateRequest);
+
+                    testCertificates.Add(testCertificate);
+
+                    issuer = certificate = testCertificate.PublicCertWithPrivateKey;
+                }
+                else if (i < length - 1) // intermediate CA cert
+                {
+                    ChainCertificateRequest chainCertificateRequest = new ChainCertificateRequest()
+                    {
+                        ConfigureCrl = true,
+                        CrlLocalBaseUri = crlLocalUri,
+                        CrlServerBaseUri = crlServerUri,
+                        IsCA = true,
+                        Issuer = issuer
+                    };
+
+                    testCertificate = TestCertificate.Generate(
+                        X509StorePurpose.CodeSigning,
+                        actionGenerator,
+                        chainCertificateRequest);
+
+                    testCertificates.Add(testCertificate);
+
+                    issuer = certificate = testCertificate.PublicCertWithPrivateKey;
+
+                    if (revokeEndCertificate)
+                    {
+                        crl = testCertificate.Crl;
+                    }
+                }
+                else // leaf cert
+                {
+                    ChainCertificateRequest chainCertificateRequest = new()
+                    {
+                        CrlLocalBaseUri = crlLocalUri,
+                        CrlServerBaseUri = crlServerUri,
+                        IsCA = false,
+                        ConfigureCrl = configureLeafCrl,
+                        Issuer = issuer
+                    };
+
+                    testCertificate = TestCertificate.Generate(
+                        X509StorePurpose.CodeSigning,
+                        leafGenerator,
+                        chainCertificateRequest);
+
+                    certificate = testCertificate.PublicCertWithPrivateKey;
+
+                    if (revokeEndCertificate)
+                    {
+                        testCertificates[testCertificates.Count - 1].Crl.RevokeCertificate(certificate);
+                    }
+
+                    testCertificates.Add(testCertificate);
+                }
+
+                certificateChain.Insert(index: 0, certificate);
+            }
+
+            foreach (TestCertificate testCertificate in testCertificates)
+            {
+                testCertificate.Cert.Dispose();
+            }
+
+            return certificateChain;
         }
 
         public static X509CertificateWithKeyInfo GenerateCertificateWithKeyInfo(
@@ -243,7 +370,12 @@ namespace Test.Utility.Signing
 
             var keyUsage = X509KeyUsageFlags.DigitalSignature;
 
-            if (chainCertificateRequest != null)
+            if (chainCertificateRequest == null)
+            {
+                // Self-signed certificates should have this flag set.
+                keyUsage |= X509KeyUsageFlags.KeyCertSign;
+            }
+            else
             {
                 if (chainCertificateRequest.Issuer != null)
                 {
@@ -286,6 +418,7 @@ namespace Test.Utility.Signing
 
             var padding = paddingMode.ToPadding();
             var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
+            bool isCa = isSelfSigned ? true : (chainCertificateRequest?.IsCA ?? false);
 
             certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
             certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
@@ -301,7 +434,7 @@ namespace Test.Utility.Signing
             certGen.Extensions.Add(
                 new X509KeyUsageExtension(keyUsage, critical: false));
             certGen.Extensions.Add(
-                new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+                new X509BasicConstraintsExtension(certificateAuthority: isCa, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
 
             // Allow changes
             modifyGenerator?.Invoke(certGen);
@@ -388,7 +521,7 @@ namespace Test.Utility.Signing
             var request = new CertificateRequest(subjectDN, algorithm, hashAlgorithm, RSASignaturePadding.Pkcs1);
 
             request.CertificateExtensions.Add(
-                new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0,  critical: true));
+                new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
             request.CertificateExtensions.Add(
                 new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
             request.CertificateExtensions.Add(
@@ -490,7 +623,7 @@ namespace Test.Utility.Signing
 
             return cms;
         }
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
@@ -541,7 +674,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateExpired()
@@ -551,7 +684,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateNotYetValid()
@@ -561,7 +694,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon(TimeSpan expiresIn)
@@ -571,7 +704,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator).WithTrust();
         }
 
         public static bool AreVerifierSettingsEqual(SignedPackageVerifierSettings first, SignedPackageVerifierSettings second)
@@ -654,101 +787,107 @@ namespace Test.Utility.Signing
             Assert.Equal(expectedHex, actualHex);
         }
 
+        //We will not change the original X509ChainStatus.StatusInformation of OfflineRevocation if we directly call API CertificateChainUtility.GetCertificateChain (or SigningUtility.Verify)
+        //So if we use APIs above to verify the results of chain.build, we should use AssertOfflineRevocation 
         public static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string offlineRevocation;
+            string offlineRevocation = X509ChainStatusFlags.OfflineRevocation.ToString();
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                offlineRevocation = "An incomplete certificate revocation check occurred.";
-            }
-            else
-            {
-                offlineRevocation = "unable to get certificate CRL";
-            }
-
-            Assert.Contains(issues, issue =>
+            bool isOfflineRevocation = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(offlineRevocation));
+                issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == offlineRevocation));
+
+            Assert.True(isOfflineRevocation);
+        }
+
+        //We will change the original X509ChainStatus.StatusInformation of OfflineRevocation to VerifyCertTrustOfflineWhileRevocationModeOffline or VerifyCertTrustOfflineWhileRevocationModeOnline in Signature.cs and Timestamp.cs
+        //So if we use APIs above to verify the results of chain.build, we should use assert AssertOfflineRevocationOnlineMode and AssertOfflineRevocationOfflineMode
+        public static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        {
+            AssertOfflineRevocationOnlineMode(issues, logLevel, NuGetLogCode.NU3018);
+        }
+
+        public static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel, NuGetLogCode code)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == code &&
+                issue.Level == logLevel &&
+                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline));
+        }
+
+        public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
+        {
+            AssertOfflineRevocationOfflineMode(issues, LogLevel.Information, NuGetLogCode.Undefined);
+        }
+
+        public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel, NuGetLogCode code)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == code &&
+                issue.Level == logLevel &&
+                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string revocationStatusUnknown;
+            AssertRevocationStatusUnknown(issues, logLevel, NuGetLogCode.NU3018);
+        }
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                revocationStatusUnknown = "The revocation function was unable to check revocation for the certificate";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                revocationStatusUnknown = "An incomplete certificate revocation check occurred.";
-            }
-            else
-            {
-                revocationStatusUnknown = "unable to get certificate CRL";
-            }
+        public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel, NuGetLogCode code)
+        {
+            string revocationStatusUnknown = X509ChainStatusFlags.RevocationStatusUnknown.ToString();
 
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
+            bool isRevocationStatusUnknown = issues.Any(issue =>
+                issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(revocationStatusUnknown));
+                issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == revocationStatusUnknown));
+
+            Assert.True(isRevocationStatusUnknown);
+        }
+
+        public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, NuGetLogCode code, LogLevel logLevel)
+        {
+            string untrustedRoot = X509ChainStatusFlags.UntrustedRoot.ToString();
+
+            bool isUntrustedRoot = issues.Any(issue =>
+                issue.Code == code &&
+                issue.Level == logLevel &&
+                (issue.Message.Contains("certificate is not trusted by the trust provider") ||
+                 issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot)));
+
+            Assert.True(isUntrustedRoot);
+
+#if NET5_0_OR_GREATER
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                bool hasNU3042 = issues.Any(issue => issue.Code == NuGetLogCode.NU3042);
+
+                Assert.True(hasNU3042);
+            }
+#endif
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string untrustedRoot;
-
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                untrustedRoot = "The trust policy was not trusted.";
-            }
-            else
-            {
-                untrustedRoot = "self signed certificate";
-            }
-
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains(untrustedRoot));
+            AssertUntrustedRoot(issues, NuGetLogCode.NU3018, logLevel);
         }
 
         public static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string notTimeValid;
+            string notTimeValid = X509ChainStatusFlags.NotTimeValid.ToString();
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                notTimeValid = "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                notTimeValid = "An expired certificate was detected.";
-            }
-            else
-            {
-                notTimeValid = "certificate has expired";
-            }
-
-            Assert.Contains(issues, issue =>
+            bool isNotTimeValid = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(notTimeValid));
+                issue.Message.Split(new[] { ' ', ':' }).Any(WORDEXTFLAGS => WORDEXTFLAGS == notTimeValid));
+
+            Assert.True(isNotTimeValid);
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
         {
-            return $"{string.Format(_signatureLogPrefix, package.Id, package.Version, source)} {log}";
+            return $"{string.Format(CultureInfo.CurrentCulture, SignatureLogPrefix, package.Id, package.Version, source)} {log}";
         }
     }
 }

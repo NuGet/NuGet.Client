@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -52,7 +53,7 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="message">Message that should be suppressed or upgraded to an error.</param>
         /// <returns>Bool indicating is the warning should be suppressed or not. 
-        /// If not then the param message sould have been mutated to an error</returns>
+        /// If not then the param message should have been mutated to an error</returns>
         public bool ApplyWarningProperties(IRestoreLogMessage message)
         {
             if (ApplyProjectWideNoWarnProperties(message, ProjectWideWarningProperties) || ApplyPackageSpecificNoWarnProperties(message))
@@ -92,15 +93,13 @@ namespace NuGet.Commands
         /// <param name="message">Message to be checked for no warn.</param>
         /// <returns>bool indicating if the IRestoreLogMessage should be suppressed or not.</returns>
         private bool ApplyPackageSpecificNoWarnProperties(IRestoreLogMessage message)
-        {            
+        {
             if (message.Level == LogLevel.Warning &&
                 PackageSpecificWarningProperties != null &&
                 !string.IsNullOrEmpty(message.LibraryId))
             {
-                var messageTargetFrameworks = message.TargetGraphs.Select(GetNuGetFramework).ToList();
-
                 // If the message does not contain a target graph, assume that it is applicable for all project frameworks.
-                if (messageTargetFrameworks.Count == 0)
+                if (!message.TargetGraphs.Select(GetNuGetFramework).Any())
                 {
                     // Suppress the warning if the code + libraryId combination is suppressed for all project frameworks.
                     if (ProjectFrameworks.Count > 0 &&
@@ -142,7 +141,7 @@ namespace NuGet.Commands
                 {
                     // If the project wide NoWarn contains the message code then suppress it.
                     return true;
-                }              
+                }
             }
 
             // the project wide NoWarn does contain the message code. do not suppress the warning.
@@ -155,13 +154,19 @@ namespace NuGet.Commands
         /// <param name="message">Message which should be upgraded to error if needed.</param>
         public static void ApplyProjectWideWarningsAsErrorProperties(ILogMessage message, WarningProperties warningProperties)
         {
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             if (message.Level == LogLevel.Warning && warningProperties != null)
             {
-                if ((warningProperties.AllWarningsAsErrors && message.Code > NuGetLogCode.Undefined) || 
+                if ((warningProperties.AllWarningsAsErrors && message.Code > NuGetLogCode.Undefined && !warningProperties.WarningsNotAsErrors.Contains(message.Code)) ||
                     warningProperties.WarningsAsErrors.Contains(message.Code))
                 {
-                    // If the project wide AllWarningsAsErrors is true and the message has a valid code or
+                    // If the project wide AllWarningsAsErrors is true, the message has a valid code and warning not as error is not enabled or
                     // Project wide WarningsAsErrors contains the message code then upgrade to error.
+                    message.Message = string.Format(CultureInfo.CurrentCulture, Strings.WarningAsError, message.Message);
                     message.Level = LogLevel.Error;
                 }
             }
@@ -209,7 +214,7 @@ namespace NuGet.Commands
 
             return EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
                 EqualityUtility.EqualsWithNullCheck(PackageSpecificWarningProperties, other.PackageSpecificWarningProperties) &&
-                EqualityUtility.OrderedEquals(ProjectFrameworks, other.ProjectFrameworks, (fx) => fx.Framework, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: new NuGetFrameworkFullComparer());
+                EqualityUtility.OrderedEquals(ProjectFrameworks, other.ProjectFrameworks, (fx) => fx.Framework, orderComparer: StringComparer.OrdinalIgnoreCase, sequenceComparer: NuGetFrameworkFullComparer.Instance);
         }
     }
 }

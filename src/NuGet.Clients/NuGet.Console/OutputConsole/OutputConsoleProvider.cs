@@ -55,7 +55,7 @@ namespace NuGetConsole
                         // This is disposable, but it lives for the duration of the process.
                         return new ChannelOutputConsole(
                                 _asyncServiceProvider,
-                                GuidList.guidNuGetOutputWindowPaneGuid,
+                                GuidList.NuGetOutputWindowPaneGuid,
                                 Resources.OutputConsolePaneName,
                                 NuGetUIThreadHelper.JoinableTaskFactory);
                     }
@@ -70,7 +70,7 @@ namespace NuGetConsole
             _isServerMode = new AsyncLazy<bool>(
                 () =>
                 {
-                    return IsInServerModeAsync(CancellationToken.None);
+                    return VisualStudioContextHelper.IsInServerModeAsync(CancellationToken.None);
                 }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
@@ -108,7 +108,7 @@ namespace NuGetConsole
         private IHostProvider GetPowerShellHostProvider()
         {
             // The PowerConsole design enables multiple hosts (PowerShell, Python, Ruby)
-            // For the Output window console, we're only interested in the PowerShell host. 
+            // For the Output window console, we're only interested in the PowerShell host.
             // Here we filter out the PowerShell host provider based on its name.
 
             // The PowerShell host provider name is defined in PowerShellHostProvider.cs
@@ -118,15 +118,6 @@ namespace NuGetConsole
                 .Single(export => export.Metadata.HostName == PowerShellHostProviderName);
 
             return psProvider.Value;
-        }
-
-        public static async Task<bool> IsInServerModeAsync(CancellationToken token)
-        {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-            IVsShell shell = await ServiceLocator.GetGlobalServiceAsync<SVsShell, IVsShell>();
-            return shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out object value) == VSConstants.S_OK &&
-                value is int shellMode &&
-                shellMode == (int)__VSShellMode.VSSM_Server;
         }
     }
 }

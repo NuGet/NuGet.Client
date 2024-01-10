@@ -82,7 +82,7 @@ namespace NuGet.Credentials.Test
             var result = builder.BuildAll(NormalVerbosity).ToList();
 
             Assert.Equal(6, result.Count());
-            var actual = result.Select(x => (PluginCredentialProvider) x).Select(x => x.Path);
+            var actual = result.Select(x => (PluginCredentialProvider)x).Select(x => x.Path);
             var expected = new[]
             {
                 @"c:\dir1\CredentialProvider.a.exe",
@@ -127,7 +127,7 @@ namespace NuGet.Credentials.Test
         {
             var builder = new TestablePluginCredentialProviderBuilder();
             builder._mockExtensionLocator.Setup(x => x.FindCredentialProviders())
-                .Returns(new[] {@"c:\CredentialProvider.Mine.exe"});
+                .Returns(new[] { @"c:\CredentialProvider.Mine.exe" });
 
             var result = builder.BuildAll(NormalVerbosity).ToList();
 
@@ -141,7 +141,7 @@ namespace NuGet.Credentials.Test
         {
             var builder = new TestablePluginCredentialProviderBuilder();
             builder._mockExtensionLocator.Setup(x => x.FindCredentialProviders())
-                .Returns(new[] {@"c:\CredentialProvider.Mine.exe"});
+                .Returns(new[] { @"c:\CredentialProvider.Mine.exe" });
             builder._mockEnvarReader
                 .Setup(x => x.GetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS"))
                 .Returns("10");
@@ -158,7 +158,7 @@ namespace NuGet.Credentials.Test
         {
             var builder = new TestablePluginCredentialProviderBuilder();
             builder._mockExtensionLocator.Setup(x => x.FindCredentialProviders())
-                .Returns(new[] {@"c:\CredentialProvider.Mine.exe"});
+                .Returns(new[] { @"c:\CredentialProvider.Mine.exe" });
             builder._mockEnvarReader
                 .Setup(x => x.GetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS"))
                 .Returns("10");

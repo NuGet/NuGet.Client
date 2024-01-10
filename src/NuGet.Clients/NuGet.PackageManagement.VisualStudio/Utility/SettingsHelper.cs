@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </param>
         public static void Set(string property, string value)
         {
-            var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+            var settings = ServiceLocator.GetComponentModelService<ISettings>();
             var packageRestoreConsent = new PackageRestoreConsent(settings);
             if (string.Equals(property, "PackageRestoreConsentGranted", StringComparison.OrdinalIgnoreCase))
             {
@@ -51,9 +51,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Gets the VsSettings singleton object.
         /// </summary>
         /// <returns>The VsSettings object in the system.</returns>
-        public static Configuration.ISettings GetVsSettings()
+        public static ISettings GetVsSettings()
         {
-            return ServiceLocator.GetInstance<Configuration.ISettings>();
+            return ServiceLocator.GetComponentModelService<ISettings>();
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="source">Value (uri) of the new source.</param>
         public static void AddSource(string name, string source)
         {
-            var sourceRepositoryProvider = ServiceLocator.GetInstanceSafe<ISourceRepositoryProvider>();
+            var sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
             if (sourceRepositoryProvider == null)
             {
                 throw new ArgumentException("sourceRepositoryProvider");
@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="name">Name of the source.</param>
         public static void RemoveSource(string name)
         {
-            var sourceRepositoryProvider = ServiceLocator.GetInstanceSafe<ISourceRepositoryProvider>();
+            var sourceRepositoryProvider = ServiceLocator.GetComponentModelService<ISourceRepositoryProvider>();
             if (sourceRepositoryProvider == null)
             {
                 throw new ArgumentException("sourceRepositoryProvider");

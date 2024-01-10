@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.IO;
-using Moq;
+using NuGet.Packaging;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.Test
 {
-    public class PackageCreater
+    public class PackageCreator
     {
         public static string CreatePackage(string id, string version, string outputDirectory,
             Action<PackageBuilder> additionalAction = null)
@@ -12,11 +13,11 @@ namespace NuGet.CommandLine.Test
             PackageBuilder builder = new PackageBuilder()
             {
                 Id = id,
-                Version = new SemanticVersion(version),
+                Version = new NuGetVersion(version),
                 Description = "Descriptions",
             };
             builder.Authors.Add("test");
-            builder.Files.Add(CreatePackageFile(Path.Combine("content", "test1.txt")));
+            builder.Files.Add(Util.CreatePackageFile(Path.Combine("content", "test1.txt")));
             if (additionalAction != null)
             {
                 additionalAction(builder);
@@ -36,12 +37,12 @@ namespace NuGet.CommandLine.Test
             PackageBuilder builder = new PackageBuilder()
             {
                 Id = id,
-                Version = new SemanticVersion(version),
+                Version = new NuGetVersion(version),
                 Description = "Descriptions",
             };
             builder.Authors.Add("test");
-            builder.Files.Add(CreatePackageFile(Path.Combine("content", "symbol_test1.txt")));
-            builder.Files.Add(CreatePackageFile(@"symbol.txt"));
+            builder.Files.Add(Util.CreatePackageFile(Path.Combine("content", "symbol_test1.txt")));
+            builder.Files.Add(Util.CreatePackageFile(@"symbol.txt"));
 
             var packageFileName = Path.Combine(outputDirectory, id + "." + version + ".symbol.nupkg");
             using (var stream = new FileStream(packageFileName, FileMode.CreateNew))
@@ -50,20 +51,6 @@ namespace NuGet.CommandLine.Test
             }
 
             return packageFileName;
-        }
-
-        private static IPackageFile CreatePackageFile(string name)
-        {
-            var file = new Mock<IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(name);
-            file.Setup(f => f.GetStream()).Returns(new MemoryStream());
-
-            string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
-            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
-
-            return file.Object;
         }
     }
 }

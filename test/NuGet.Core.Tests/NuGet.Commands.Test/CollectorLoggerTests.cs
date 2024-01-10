@@ -7,18 +7,15 @@ using Moq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class RestoreCollectorLoggerTests
     {
-
         [Fact]
         public void CollectorLogger_DoesNotPassLogMessagesToInnerLoggerByDefault()
         {
-
             // Arrange
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object, LogLevel.Debug, hideWarningsAndErrors: false);
@@ -105,9 +102,8 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Never());
         }
 
-
         [Fact]
-        public void CollectorLogger_DoesNotPassLogCallsToInnerLoggerByDefaultWithFilePath()
+        public void CollectorLogger_DoesNotPassLogCallsToInnerLoggerByDefaultWithFilePathAndProjectPath()
         {
             // Arrange
             var projectPath = @"kung/fu/fighting.csproj";
@@ -130,11 +126,11 @@ namespace NuGet.Commands.Test
             collector.Log(LogLevel.Error, "Error");
 
             // Assert
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once(), filePath: projectPath);
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once(), filePath: projectPath);
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once(), filePath: projectPath);
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), filePath: projectPath);
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once(), filePath: projectPath);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Debug, "Debug", Times.Once(), filePath: projectPath, projectPath: projectPath);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once(), filePath: projectPath, projectPath: projectPath);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once(), filePath: projectPath, projectPath: projectPath);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), filePath: projectPath, projectPath: projectPath);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once(), filePath: projectPath, projectPath: projectPath);
         }
 
         [Fact]
@@ -369,12 +365,13 @@ namespace NuGet.Commands.Test
             // Arrange
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -393,7 +390,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Once(), NuGetLogCode.NU1601);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1500);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Once(), NuGetLogCode.NU1500);
         }
 
 
@@ -403,12 +400,13 @@ namespace NuGet.Commands.Test
             // Arrange
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = true;
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -426,7 +424,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once());
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Once());
         }
 
         [Fact]
@@ -435,12 +433,13 @@ namespace NuGet.Commands.Test
             // Arrange
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = true;
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -460,7 +459,7 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Exactly(3));
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Exactly(3));
         }
 
         [Fact]
@@ -469,12 +468,13 @@ namespace NuGet.Commands.Test
             // Arrange
             var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -504,6 +504,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -512,7 +513,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     null)
             };
@@ -542,6 +543,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -550,7 +552,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     null)
             };
@@ -580,6 +582,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -590,7 +593,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                   new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                   new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                    packageSpecificWarningProperties,
                    null)
             };
@@ -622,15 +625,16 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
-            packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605}, libraryId, targetFramework);
+            packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601, NuGetLogCode.NU1605 }, libraryId, targetFramework);
 
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     null)
             };
@@ -662,6 +666,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.AddRangeOfCodes(new List<NuGetLogCode> { NuGetLogCode.NU1500 }, libraryId, targetFramework);
@@ -670,7 +675,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     null)
             };
@@ -704,6 +709,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -712,7 +718,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework })
             };
@@ -744,6 +750,7 @@ namespace NuGet.Commands.Test
             var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -752,7 +759,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework, netcoreTargetFramework })
             };
@@ -782,6 +789,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -792,7 +800,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework })
             };
@@ -826,6 +834,7 @@ namespace NuGet.Commands.Test
             var netcoreTargetFramework = NuGetFramework.Parse(netcoreFrameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -836,7 +845,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     new List<NuGetFramework> { targetFramework, netcoreTargetFramework })
             };
@@ -868,11 +877,12 @@ namespace NuGet.Commands.Test
             var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { };
             var allWarningsAsErrors = true;
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -900,11 +910,12 @@ namespace NuGet.Commands.Test
             var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var allWarningsAsErrors = false;
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -931,12 +942,13 @@ namespace NuGet.Commands.Test
             // Arrange
             var noWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var innerLogger = new Mock<ILogger>();
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     null,
                     null)
             };
@@ -966,6 +978,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = false;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -976,7 +989,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     null)
             };
@@ -1008,6 +1021,7 @@ namespace NuGet.Commands.Test
             var targetFramework = NuGetFramework.Parse(frameworkString);
             var noWarnSet = new HashSet<NuGetLogCode> { };
             var warnAsErrorSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1500 };
+            var warningsNotAsErrors = new HashSet<NuGetLogCode>();
             var allWarningsAsErrors = true;
             var packageSpecificWarningProperties = new PackageSpecificWarningProperties();
             packageSpecificWarningProperties.Add(NuGetLogCode.NU1500, libraryId, targetFramework);
@@ -1018,7 +1032,7 @@ namespace NuGet.Commands.Test
             var collector = new RestoreCollectorLogger(innerLogger.Object)
             {
                 ProjectWarningPropertiesCollection = new WarningPropertiesCollection(
-                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors),
+                    new WarningProperties(warnAsErrorSet, noWarnSet, allWarningsAsErrors, warningsNotAsErrors),
                     packageSpecificWarningProperties,
                     null)
             };
@@ -1038,17 +1052,18 @@ namespace NuGet.Commands.Test
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Verbose, "Verbose", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Information, "Information", Times.Once());
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Warning, "Warning", Times.Never());
-            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning", Times.Once(), NuGetLogCode.NU1107);
+            VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Warning As Error: Warning", Times.Once(), NuGetLogCode.NU1107);
             VerifyInnerLoggerCalls(innerLogger, LogLevel.Error, "Error", Times.Once());
         }
 
-        private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times, NuGetLogCode code = NuGetLogCode.Undefined, string filePath = null)
+        private void VerifyInnerLoggerCalls(Mock<ILogger> innerLogger, LogLevel messageLevel, string message, Times times, NuGetLogCode code = NuGetLogCode.Undefined, string filePath = null, string projectPath = null)
         {
-            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l => 
-            l.Level == messageLevel && 
+            innerLogger.Verify(x => x.Log(It.Is<RestoreLogMessage>(l =>
+            l.Level == messageLevel &&
             l.Message == message &&
             (code == NuGetLogCode.Undefined || l.Code == code) &&
-            (filePath == null || filePath == l.FilePath))),
+            filePath == l.FilePath &&
+            projectPath == l.ProjectPath)),
             times);
         }
     }

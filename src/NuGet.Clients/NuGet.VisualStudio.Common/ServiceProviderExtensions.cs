@@ -14,40 +14,35 @@ namespace NuGet.VisualStudio
     /// </summary>
     public static class ServiceProviderExtensions
     {
-        public static EnvDTE.DTE GetDTE(this IServiceProvider serviceProvider)
-        {
-            return serviceProvider.GetService<SDTE, EnvDTE.DTE>();
-        }
-
-        public static IComponentModel GetComponentModel(this IServiceProvider serviceProvider)
-        {
-            return serviceProvider.GetService<SComponentModel, IComponentModel>();
-        }
-
-        public static TService GetService<TService>(
-            this IServiceProvider serviceProvider)
-            where TService : class
-        {
-            return serviceProvider.GetService(typeof(TService)) as TService;
-        }
-
         public static Task<EnvDTE.DTE> GetDTEAsync(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
+            this IAsyncServiceProvider site)
         {
             return site.GetServiceAsync<SDTE, EnvDTE.DTE>();
         }
 
         public static Task<IComponentModel> GetComponentModelAsync(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
+            this IAsyncServiceProvider site)
         {
             return site.GetServiceAsync<SComponentModel, IComponentModel>();
         }
 
-        public static async Task<TService> GetServiceAsync<TService>(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
-            where TService : class
+#pragma warning disable RS0030 // Do not used banned APIs
+        /// <summary>
+        /// Use this to acquire services that *do not* have UI thread dependencies.
+        /// Under the hood, this method simply justs <see cref="IAsyncServiceProvider.GetServiceAsync(Type)"/>
+        /// </summary>
+        /// <typeparam name="TService">Service type</typeparam>
+        /// <typeparam name="TInterface">Interface type</typeparam>
+        /// <param name="site">Service Provider</param>
+        /// <returns>Service from the given ServiceProvider.</returns>
+        public static async Task<TInterface> GetFreeThreadedServiceAsync<TService, TInterface>(this IAsyncServiceProvider site) where TInterface : class
         {
-            return await site.GetServiceAsync(typeof(TService)) as TService;
+            // Note that using Microsoft.VisualStudio.Shell.ServiceExtensions.GetServiceAsync<TService, TInterface>()
+            // is not appropriate because that method always switches to the UI thread to cast to the Interface.
+            object service = await site.GetServiceAsync(typeof(TService));
+            return service as TInterface;
         }
+#pragma warning restore RS0030 // Do not used banned APIs
     }
 }
+

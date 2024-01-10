@@ -14,11 +14,11 @@ namespace NuGet.Common.Test
     public class TelemetryActivityTests
     {
         private readonly Mock<INuGetTelemetryService> _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Strict);
-        private TelemetryEvent _telemetryEvent;
+        private TelemetryEvent? _telemetryEvent;
 
         private readonly Mock<IDisposable> _activity = new Mock<IDisposable>(MockBehavior.Strict);
         private bool _activityDisposed;
-        private string _activityName;
+        private string? _activityName;
 
         public TelemetryActivityTests()
         {
@@ -45,7 +45,8 @@ namespace NuGet.Common.Test
                 operationId = telemetry.OperationId;
             }
 
-            Assert.Null(_telemetryEvent["ParentId"]);
+            _telemetryEvent.Should().NotBeNull();
+            Assert.Null(_telemetryEvent!["ParentId"]);
             Assert.Equal(operationId.ToString(), _telemetryEvent["OperationId"]);
         }
 
@@ -60,7 +61,8 @@ namespace NuGet.Common.Test
                 operationId = telemetry.OperationId;
             }
 
-            Assert.Equal(parentId.ToString(), _telemetryEvent["ParentId"]);
+            _telemetryEvent.Should().NotBeNull();
+            Assert.Equal(parentId.ToString(), _telemetryEvent!["ParentId"]);
             Assert.Equal(operationId.ToString(), _telemetryEvent["OperationId"]);
         }
 
@@ -77,7 +79,8 @@ namespace NuGet.Common.Test
                 telemetry.EndIntervalMeasure(measureName);
             }
 
-            var value = _telemetryEvent[measureName];
+            _telemetryEvent.Should().NotBeNull();
+            var value = _telemetryEvent![measureName];
             value.Should().NotBeNull();
             var actualCount = Convert.ToInt32(value);
             Assert.True(actualCount >= secondsToWait, $"The telemetry duration count should at least be {secondsToWait} seconds.");
@@ -92,7 +95,8 @@ namespace NuGet.Common.Test
             {
             }
 
-            Assert.Null(_telemetryEvent["ParentId"]);
+            _telemetryEvent.Should().NotBeNull();
+            Assert.Null(_telemetryEvent!["ParentId"]);
         }
 
         [Fact]
@@ -102,7 +106,8 @@ namespace NuGet.Common.Test
             {
             }
 
-            var startTime = _telemetryEvent["StartTime"] as string;
+            _telemetryEvent.Should().NotBeNull();
+            var startTime = _telemetryEvent!["StartTime"] as string;
 
             Assert.NotNull(startTime);
 
@@ -116,7 +121,8 @@ namespace NuGet.Common.Test
             {
             }
 
-            var endTime = _telemetryEvent["EndTime"] as string;
+            _telemetryEvent.Should().NotBeNull();
+            var endTime = _telemetryEvent!["EndTime"] as string;
 
             Assert.NotNull(endTime);
 
@@ -131,7 +137,8 @@ namespace NuGet.Common.Test
                 Thread.Sleep(10);
             }
 
-            var duration = (double)_telemetryEvent["Duration"];
+            _telemetryEvent.Should().NotBeNull();
+            var duration = (double)_telemetryEvent!["Duration"]!;
 
             Assert.InRange(duration, 0d, 10d);
         }
@@ -156,9 +163,60 @@ namespace NuGet.Common.Test
             Assert.True(_activityDisposed);
         }
 
+        [Fact]
+        public void Dispose_IndependentInterval_EmitsIntervalMeasure()
+        {
+            const string measureName = nameof(Dispose_IndependentInterval_EmitsIntervalMeasure);
+            var secondsToWait = 1;
+
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
+            {
+                using (telemetry.StartIndependentInterval(measureName))
+                {
+                    Thread.Sleep(secondsToWait * 1000);
+                }
+            }
+
+            _telemetryEvent?.Should().NotBeNull();
+            var value = _telemetryEvent![measureName];
+            value.Should().NotBeNull();
+            var actualCount = Convert.ToInt32(value);
+            Assert.True(actualCount >= secondsToWait, $"The telemetry duration count should at least be {secondsToWait} seconds.");
+        }
+
+        [Fact]
+        public void Dispose_WithIndependentInterval_DoesNotClashWithNonoverlappingInterval()
+        {
+            const string independentInterval = "independentTestInterval";
+            const string nonOverlappingInterval = "nonOverlappingInterval";
+
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
+            {
+                telemetry.StartIntervalMeasure();
+                Thread.Sleep(1000);
+
+                using (telemetry.StartIndependentInterval(independentInterval))
+                {
+                    Thread.Sleep(1000);
+                }
+                telemetry.EndIntervalMeasure(nonOverlappingInterval);
+            }
+
+            _telemetryEvent!.Should().NotBeNull();
+            var independentIntervalValue = _telemetryEvent![independentInterval];
+            independentIntervalValue.Should().NotBeNull();
+            int independentActualCount = Convert.ToInt32(independentIntervalValue);
+            Assert.True(independentActualCount >= 1, $"The telemetry duration count should at least be 1 seconds.");
+
+            var overlappingIntervalValue = _telemetryEvent[nonOverlappingInterval];
+            overlappingIntervalValue.Should().NotBeNull();
+            int actualCount = Convert.ToInt32(overlappingIntervalValue);
+            Assert.True(actualCount >= 2, $"The telemetry duration count should at least be 2 seconds.");
+        }
+
         private static TelemetryEvent CreateNewTelemetryEvent()
         {
-            return new TelemetryEvent("testEvent", new Dictionary<string, object>());
+            return new TelemetryEvent("testEvent", new Dictionary<string, object?>());
         }
     }
 }

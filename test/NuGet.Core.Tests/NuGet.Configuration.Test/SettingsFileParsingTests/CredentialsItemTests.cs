@@ -259,7 +259,7 @@ namespace NuGet.Configuration.Test
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                var origin = new SettingsFile(mockBaseDirectory, fileName: Settings.DefaultSettingsFileName, isMachineWide: true);
+                var origin = new SettingsFile(mockBaseDirectory, fileName: Settings.DefaultSettingsFileName, isMachineWide: true, isReadOnly: false);
 
                 var xelement = new XElement("name",
                                 new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
@@ -275,6 +275,33 @@ namespace NuGet.Configuration.Test
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
                 ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
+
+                credentials.Password.Should().Be("pass");
+            }
+        }
+
+        [Fact]
+        public void CredentialsItem_Update_WhenOriginIsReadOnly_Throws()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var origin = new SettingsFile(mockBaseDirectory, fileName: Settings.DefaultSettingsFileName, isMachineWide: false, isReadOnly: true);
+
+                var xelement = new XElement("name",
+                                new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),
+                                new XElement("add", new XAttribute("key", "Password"), new XAttribute("value", "pass")));
+
+                var credentials = new CredentialsItem(xelement, origin);
+
+                // Act
+                var ex = Record.Exception(() =>
+                    credentials.Update(new CredentialsItem("name", "user", "notpass", isPasswordClearText: true, validAuthenticationTypes: null)));
+
+                // Assert
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 credentials.Password.Should().Be("pass");
             }

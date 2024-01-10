@@ -18,7 +18,7 @@ namespace NuGet.ProjectManagement
         /// Gets the path to the MSBuild project file. This is an absolute path.
         /// </summary>
         string MSBuildProjectPath { get; }
-        
+
         /// <summary>
         /// Project specs related to this project. This must include the project's own spec, and may
         /// optionally include more specs to restore such as tools.

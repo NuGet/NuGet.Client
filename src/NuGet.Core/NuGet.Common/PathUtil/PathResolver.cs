@@ -23,9 +23,9 @@ namespace NuGet.Common
             Func<T, string> getPath,
             IEnumerable<string> wildcards)
         {
-            IEnumerable<Regex> filters = wildcards.Select(WildcardToRegex);
+            List<Regex> filters = wildcards.Select(WildcardToRegex).ToList();
 
-            return source.Where(item =>
+            return source.AsParallel().Where(item =>
             {
                 string path = getPath(item);
                 return filters.Any(f => f.IsMatch(path));
@@ -79,7 +79,7 @@ namespace NuGet.Common
                 // regex wildcard adjustments for *nix-style file systems
                 pattern = pattern
                     .Replace(@"\.\*\*", @"\.[^/.]*") // .** should not match on ../file or ./file but will match .file
-                    .Replace(@"\*\*/", "(.+/)*") //For recursive wildcards /**/, include the current directory.
+                    .Replace(@"\*\*/", "/?([^/]+/)*?") //For recursive wildcards /**/, include the current directory.
                     .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
                     .Replace(@"\*", @"[^/]*(/)?") // For non recursive searches, limit it any character that is not a directory separator
                     .Replace(@"\?", "."); // ? translates to a single any character
@@ -90,7 +90,7 @@ namespace NuGet.Common
                 pattern = pattern
                     .Replace("/", @"\\") // On Windows, / is treated the same as \.
                     .Replace(@"\.\*\*", @"\.[^\\.]*") // .** should not match on ../file or ./file but will match .file
-                    .Replace(@"\*\*\\", @"(.+\\)*") //For recursive wildcards \**\, include the current directory.
+                    .Replace(@"\*\*\\", @"(\\\\)?([^\\]+\\)*?") //For recursive wildcards \**\, include the current directory.
                     .Replace(@"\*\*", ".*") // For recursive wildcards that don't end in a slash e.g. **.txt would be treated as a .txt file at any depth
                     .Replace(@"\*", @"[^\\]*(\\)?") // For non recursive searches, limit it any character that is not a directory separator
                     .Replace(@"\?", "."); // ? translates to a single any character
@@ -138,7 +138,7 @@ namespace NuGet.Common
             // (a) Path is not recursive search
             bool isRecursiveSearch = searchPath.IndexOf("**", StringComparison.OrdinalIgnoreCase) != -1;
             // (b) Path does not have any wildcards.
-            bool isWildcardPath = Path.GetDirectoryName(searchPath).Contains('*');
+            bool isWildcardPath = Path.GetDirectoryName(searchPath)?.Contains('*') ?? false;
             if (!isRecursiveSearch && !isWildcardPath)
             {
                 searchOption = SearchOption.TopDirectoryOnly;
@@ -146,9 +146,9 @@ namespace NuGet.Common
 
             // Starting from the base path, enumerate over all files and match it using the wildcard expression provided by the user.
             // Note: We use Directory.GetFiles() instead of Directory.EnumerateFiles() here to support Mono
-            IEnumerable<SearchPathResult> matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption)
-                               where searchRegex.IsMatch(file)
-                               select new SearchPathResult(file, isFile: true);
+            IEnumerable<SearchPathResult> matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption).AsParallel()
+                                                         where searchRegex.IsMatch(file)
+                                                         select new SearchPathResult(file, isFile: true);
 
             if (!includeEmptyDirectories)
             {
@@ -158,8 +158,8 @@ namespace NuGet.Common
             // retrieve empty directories
             // Note: We use Directory.GetDirectories() instead of Directory.EnumerateDirectories() here to support Mono
             IEnumerable<SearchPathResult> matchedDirectories = from directory in Directory.GetDirectories(normalizedBasePath, "*.*", searchOption)
-                                     where searchRegex.IsMatch(directory) && IsEmptyDirectory(directory)
-                                     select new SearchPathResult(directory, isFile: false);
+                                                               where searchRegex.IsMatch(directory) && IsEmptyDirectory(directory)
+                                                               select new SearchPathResult(directory, isFile: false);
 
             if (searchDirectory && IsEmptyDirectory(normalizedBasePath))
             {
@@ -178,7 +178,11 @@ namespace NuGet.Common
                 // For paths without wildcard, we could either have base relative paths (such as lib\foo.dll) or paths outside the base path
                 // (such as basePath: C:\packages and searchPath: D:\packages\foo.dll)
                 // In this case, Path.Combine would pick up the right root to enumerate from.
-                string searchRoot = Path.GetDirectoryName(searchPath);
+                string? searchRoot = Path.GetDirectoryName(searchPath);
+                if (searchRoot is null)
+                {
+                    throw new ArgumentException(paramName: nameof(searchPath), message: "Path.GetDirectoryName(searchPath) returned null");
+                }
                 basePathToEnumerate = Path.Combine(basePath, searchRoot);
             }
             else
@@ -201,7 +205,7 @@ namespace NuGet.Common
             return basePathToEnumerate;
         }
 
-        internal static string NormalizeBasePath(string basePath, ref string searchPath)
+        internal static string NormalizeBasePath(string? basePath, ref string searchPath)
         {
             string parentDirectoryPath = $"..{Path.DirectorySeparatorChar}";
             string currentDirectoryPath = $".{Path.DirectorySeparatorChar}";
@@ -228,7 +232,7 @@ namespace NuGet.Common
             return filter.IndexOf('*') != -1;
         }
 
-        public static bool IsDirectoryPath(string path)
+        public static bool IsDirectoryPath(string? path)
         {
             return path != null && path.Length > 1 &&
                 (path[path.Length - 1] == Path.DirectorySeparatorChar ||

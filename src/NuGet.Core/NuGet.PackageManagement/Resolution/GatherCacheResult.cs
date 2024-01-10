@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement
 
             if (Packages.Any(package => package == null))
             {
-                throw new ArgumentException("Values in packages must not be null", "packages");
+                throw new ArgumentException("Values in packages must not be null", nameof(packages));
             }
         }
 

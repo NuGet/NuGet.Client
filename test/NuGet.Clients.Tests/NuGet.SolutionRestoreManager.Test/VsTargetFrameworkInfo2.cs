@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
@@ -26,7 +27,9 @@ namespace NuGet.SolutionRestoreManager.Test
             IEnumerable<IVsReferenceItem> projectReferences,
             IEnumerable<IVsReferenceItem> packageDownloads,
             IEnumerable<IVsReferenceItem> frameworkReferences,
-            IEnumerable<IVsProjectProperty> projectProperties)
+            IEnumerable<IVsProjectProperty> projectProperties,
+            string originalTargetFramework = null,
+            bool addTargetFrameworkProperties = true)
         {
             if (string.IsNullOrEmpty(targetFrameworkMoniker))
             {
@@ -63,7 +66,10 @@ namespace NuGet.SolutionRestoreManager.Test
             ProjectReferences = new VsReferenceItems(projectReferences);
             PackageDownloads = new VsReferenceItems(packageDownloads);
             FrameworkReferences = new VsReferenceItems(frameworkReferences);
-            Properties = new VsProjectProperties(projectProperties);
+            Properties =
+                addTargetFrameworkProperties
+                ? new VsProjectProperties(ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(targetFrameworkMoniker, originalTargetFramework).Concat(projectProperties))
+                : new VsProjectProperties(projectProperties);
         }
 
     }

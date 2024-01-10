@@ -12,7 +12,7 @@ using NuGet.Protocol.Plugins;
 
 namespace NuGet.Credentials
 {
-    public class DefaultCredentialServiceUtility
+    public static class DefaultCredentialServiceUtility
     {
         /// <summary>
         /// Sets-up the CredentialService and all of its providers.

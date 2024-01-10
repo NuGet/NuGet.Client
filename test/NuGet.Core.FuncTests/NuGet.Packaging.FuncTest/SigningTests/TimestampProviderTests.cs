@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,6 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class TimestampProviderTests
     {
-        private const string ArgumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
         private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 
         private SigningTestFixture _testFixture;
@@ -37,7 +36,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WithValidInput_ReturnsTimestampAsync()
+        public async Task GetTimestampAsync_WithValidInput_ReturnsTimestampAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -59,7 +58,7 @@ namespace NuGet.Packaging.FuncTest
                 );
 
                 // Act
-                var timestampedCms = timestampProvider.GetTimestamp(request, logger, CancellationToken.None);
+                var timestampedCms = await timestampProvider.GetTimestampAsync(request, logger, CancellationToken.None);
 
                 // Assert
                 timestampedCms.Should().NotBeNull();
@@ -70,7 +69,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_AssertCompleteChain_SuccessAsync()
+        public async Task GetTimestampAsync_AssertCompleteChain_SuccessAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -88,9 +87,9 @@ namespace NuGet.Packaging.FuncTest
                 var chainBuildSuccess = true;
 
                 // rebuild the chain to get the list of certificates
-                using (var chainHolder = new X509ChainHolder())
+                using (X509ChainHolder chainHolder = X509ChainHolder.CreateForTimestamping())
                 {
-                    var chain = chainHolder.Chain;
+                    IX509Chain chain = chainHolder.Chain2;
                     var policy = chain.ChainPolicy;
 
                     policy.ApplicationPolicy.Add(new Oid(Oids.TimeStampingEku));
@@ -100,7 +99,7 @@ namespace NuGet.Packaging.FuncTest
 
                     var timestampSignerCertificate = timestampCms.SignerInfos[0].Certificate;
                     chainBuildSuccess = chain.Build(timestampSignerCertificate);
-                    certificateChain = CertificateChainUtility.GetCertificateChain(chain);
+                    certificateChain = CertificateChainUtility.GetCertificateChain(chain.PrivateReference);
                 }
 
                 using (certificateChain)
@@ -129,7 +128,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenRequestNull_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenRequestNull_ThrowsAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -157,17 +156,17 @@ namespace NuGet.Packaging.FuncTest
                     target: SignaturePlacement.PrimarySignature
                 );
 
-                // Act
-                Action timestampAction = () => timestampProvider.GetTimestamp(null, logger, CancellationToken.None);
-
                 // Assert
-                timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(ArgumentNullExceptionMessage, nameof(request)));
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(request: null, logger, CancellationToken.None));
+
+                Assert.Equal("request", exception.ParamName);
+                Assert.StartsWith("Value cannot be null.", exception.Message);
             }
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenLoggerNull_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenLoggerNull_ThrowsAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -188,17 +187,17 @@ namespace NuGet.Packaging.FuncTest
                     target: SignaturePlacement.PrimarySignature
                 );
 
-                // Act
-                Action timestampAction = () => timestampProvider.GetTimestamp(request, null, CancellationToken.None);
-
                 // Assert
-                timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(ArgumentNullExceptionMessage, "logger"));
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(request, logger: null, CancellationToken.None));
+
+                Assert.Equal("logger", exception.ParamName);
+                Assert.StartsWith("Value cannot be null.", exception.Message);
             }
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenCancelled_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenCancelled_ThrowsAsync()
         {
             var logger = new TestLogger();
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -220,17 +219,16 @@ namespace NuGet.Packaging.FuncTest
                    target: SignaturePlacement.PrimarySignature
                );
 
-                // Act
-                Action timestampAction = () => timestampProvider.GetTimestamp(request, logger, new CancellationToken(canceled: true));
-
                 // Assert
-                timestampAction.ShouldThrow<OperationCanceledException>()
-                    .WithMessage(OperationCancelledExceptionMessage);
+                var exception = await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => timestampProvider.GetTimestampAsync(request, logger, new CancellationToken(canceled: true)));
+
+                Assert.Equal(OperationCancelledExceptionMessage, exception.Message);
             }
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenRevocationInformationUnavailable_SuccessAsync()
+        public async Task GetTimestampAsync_WhenRevocationInformationUnavailable_SuccessAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var ca = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -243,10 +241,10 @@ namespace NuGet.Packaging.FuncTest
                 VerifyTimestampData(
                     testServer,
                     timestampService,
-                    (timestampProvider, request) =>
+                    async (timestampProvider, request) =>
                     {
                         var logger = new TestLogger();
-                        var timestamp = timestampProvider.GetTimestamp(request, logger, CancellationToken.None);
+                        var timestamp = await timestampProvider.GetTimestampAsync(request, logger, CancellationToken.None);
 
                         Assert.NotNull(timestamp);
 
@@ -260,7 +258,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenTimestampSigningCertificateRevoked_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenTimestampSigningCertificateRevoked_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -274,17 +272,17 @@ namespace NuGet.Packaging.FuncTest
             VerifyTimestampData(
                 testServer,
                 timestampService,
-                (timestampProvider, request) =>
+                async (timestampProvider, request) =>
                 {
-                    var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<TimestampException>(
+                        () => timestampProvider.GetTimestampAsync(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal("Certificate chain validation failed.", exception.Message);
                 });
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WithFailureReponse_ThrowsAsync()
+        public async Task GetTimestampAsync_WithFailureReponse_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -294,10 +292,10 @@ namespace NuGet.Packaging.FuncTest
             VerifyTimestampData(
                 testServer,
                 timestampService,
-                (timestampProvider, request) =>
+                async (timestampProvider, request) =>
                 {
-                    var exception = Assert.Throws<CryptographicException>(
-                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<CryptographicException>(
+                        () => timestampProvider.GetTimestampAsync(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.StartsWith(
                         "The timestamp signature and/or certificate could not be verified or is malformed.",
@@ -306,7 +304,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenSigningCertificateNotReturned_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenSigningCertificateNotReturned_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -316,17 +314,17 @@ namespace NuGet.Packaging.FuncTest
             VerifyTimestampData(
                 testServer,
                 timestampService,
-                (timestampProvider, request) =>
+                async (timestampProvider, request) =>
                 {
-                    var exception = Assert.Throws<CryptographicException>(
-                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<CryptographicException>(
+                        () => timestampProvider.GetTimestampAsync(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.StartsWith("Cannot find object or property.", exception.Message);
                 });
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenSignatureHashAlgorithmIsSha1_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenSignatureHashAlgorithmIsSha1_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -336,10 +334,10 @@ namespace NuGet.Packaging.FuncTest
             VerifyTimestampData(
                 testServer,
                 timestampService,
-                (timestampProvider, request) =>
+                async (timestampProvider, request) =>
                 {
-                    var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<TimestampException>(
+                        () => timestampProvider.GetTimestampAsync(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
                         "The timestamp signature has an unsupported digest algorithm (SHA1). The following algorithms are supported: SHA256, SHA384, SHA512.",
@@ -348,7 +346,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_WhenCertificateSignatureAlgorithmIsSha1_ThrowsAsync()
+        public async Task GetTimestampAsync_WhenCertificateSignatureAlgorithmIsSha1_ThrowsAsync()
         {
             var testServer = await _testFixture.GetSigningTestServerAsync();
             var certificateAuthority = await _testFixture.GetDefaultTrustedCertificateAuthorityAsync();
@@ -361,10 +359,10 @@ namespace NuGet.Packaging.FuncTest
             VerifyTimestampData(
                 testServer,
                 timestampService,
-                (timestampProvider, request) =>
+                async (timestampProvider, request) =>
                 {
-                    var exception = Assert.Throws<TimestampException>(
-                        () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<TimestampException>(
+                        () => timestampProvider.GetTimestampAsync(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(
                         "The timestamp certificate has an unsupported signature algorithm (SHA1RSA). The following algorithms are supported: SHA256RSA, SHA384RSA, SHA512RSA.",
@@ -373,7 +371,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_TimestampGeneralizedTimeOutsideCertificateValidityPeriod_FailAsync()
+        public async Task GetTimestampAsync_TimestampGeneralizedTimeOutsideCertificateValidityPeriod_FailAsync()
         {
             // Arrange
             var testServer = await _testFixture.GetSigningTestServerAsync();
@@ -390,10 +388,10 @@ namespace NuGet.Packaging.FuncTest
             VerifyTimestampData(
                 testServer,
                 timestampService,
-                (timestampProvider, request) =>
+                async (timestampProvider, request) =>
                 {
-                    var exception = Assert.Throws<TimestampException>(
-                          () => timestampProvider.GetTimestamp(request, NullLogger.Instance, CancellationToken.None));
+                    var exception = await Assert.ThrowsAsync<TimestampException>(
+                          () => timestampProvider.GetTimestampAsync(request, NullLogger.Instance, CancellationToken.None));
 
                     Assert.Equal(NuGetLogCode.NU3036, exception.Code);
                     Assert.Contains(

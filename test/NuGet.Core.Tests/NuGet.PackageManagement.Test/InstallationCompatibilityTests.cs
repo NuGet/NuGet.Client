@@ -109,89 +109,6 @@ namespace NuGet.PackageManagement.Test
         }
 
         [Fact]
-        public async Task EnsurePackageCompatibility_WithValidProjectActions_Succeeds()
-        {
-            // Arrange
-            using (var userPackageFolder = TestDirectory.Create())
-            {
-                var tc = new TestContext(userPackageFolder);
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    userPackageFolder,
-                    PackageSaveMode.Defaultv3,
-                    new[]
-                    {
-                        new SimpleTestPackageContext(tc.PackageIdentityA)
-                        {
-                            PackageTypes = { PackageType.DotnetCliTool }
-                        },
-                        new SimpleTestPackageContext(tc.PackageIdentityB) // Not inspected, because this package is
-                                                                          // being uninstalled, not installed.
-                        {
-                            PackageTypes = { tc.InvalidPackageType }
-                        },
-                        new SimpleTestPackageContext(tc.PackageIdentityC)
-                        {
-                            PackageTypes = { PackageType.Dependency }
-                        },
-                    });
-
-                // Act & Assert
-                tc.Target.EnsurePackageCompatibility(
-                    tc.ProjectKProject,
-                    tc.NuGetPathContext.Object,
-                    new NuGetProjectAction[]
-                    {
-                        NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityA, tc.SourceRepository, tc.ProjectKProject),
-                        NuGetProjectAction.CreateUninstallProjectAction(tc.PackageIdentityB, tc.ProjectKProject),
-                        NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityC, tc.SourceRepository, tc.ProjectKProject)
-                    },
-                    tc.GetRestoreResult(new[]
-                    {
-                        tc.PackageIdentityA,
-                        tc.PackageIdentityB,
-                        tc.PackageIdentityC
-                    }));
-            }
-        }
-
-        [Fact]
-        public async Task EnsurePackageCompatibility_WithInvalidProjectActions_Fails()
-        {
-            // Arrange
-            using (var userPackageFolder = TestDirectory.Create())
-            {
-                var tc = new TestContext(userPackageFolder);
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    userPackageFolder,
-                    PackageSaveMode.Defaultv3,
-                    new[]
-                    {
-                        new SimpleTestPackageContext(tc.PackageIdentityA)
-                        {
-                            PackageTypes = { tc.InvalidPackageType }
-                        }
-                    });
-
-                // Act & Assert
-                var ex = Assert.Throws<PackagingException>(() =>
-                    tc.Target.EnsurePackageCompatibility(
-                        tc.ProjectKProject,
-                        tc.NuGetPathContext.Object,
-                        new NuGetProjectAction[]
-                        {
-                            NuGetProjectAction.CreateInstallProjectAction(tc.PackageIdentityA, tc.SourceRepository, tc.ProjectKProject)
-                        },
-                        tc.GetRestoreResult(new[] { tc.PackageIdentityA })));
-
-                Assert.Equal(
-                    "Package 'PackageA 1.0.0' has a package type 'Invalid 1.2' that is not supported by project 'TestProjectKNuGetProject'.",
-                    ex.Message);
-            }
-        }
-
-        [Fact]
         public async Task EnsurePackageCompatibilityAsync_WithNuGetProject_WithInvalidType_Fails()
         {
             // Arrange
@@ -266,72 +183,12 @@ namespace NuGet.PackageManagement.Test
             await tc.VerifySuccessAsync(tc.NuGetProject);
         }
 
-        [Fact]
-        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithInvalidType_Fails()
-        {
-            // Arrange
-            var tc = new TestContext();
-            tc.PackageTypes.Add(tc.InvalidPackageType);
-
-            // Act & Assert
-            await tc.VerifyFailureAsync(
-                tc.ProjectKProject,
-                "Package 'PackageA 1.0.0' has a package type 'Invalid 1.2' that is not supported by project 'TestProjectKNuGetProject'.");
-        }
-
-        [Fact]
-        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithMultipleTypes_Fails()
-        {
-            // Arrange
-            var tc = new TestContext();
-            tc.PackageTypes.Add(PackageType.Legacy);
-            tc.PackageTypes.Add(PackageType.Dependency);
-
-            // Act & Assert
-            await tc.VerifyFailureAsync(
-                tc.ProjectKProject,
-                "Package 'PackageA 1.0.0' has multiple package types, which is not supported.");
-        }
-
-        [Fact]
-        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithDotnetCliToolType_Succeeds()
-        {
-            // Arrange
-            var tc = new TestContext();
-            tc.PackageTypes.Add(PackageType.DotnetCliTool);
-
-            // Act & Assert
-            await tc.VerifySuccessAsync(tc.ProjectKProject);
-        }
-
-        [Fact]
-        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithLegacyType_Succeeds()
-        {
-            // Arrange
-            var tc = new TestContext();
-            tc.PackageTypes.Add(PackageType.Legacy);
-
-            // Act & Assert
-            await tc.VerifySuccessAsync(tc.ProjectKProject);
-        }
-
-        [Fact]
-        public async Task EnsurePackageCompatibilityAsync_WithProjectKProject_WithDependency_Succeeds()
-        {
-            // Arrange
-            var tc = new TestContext();
-            tc.PackageTypes.Add(PackageType.Dependency);
-
-            // Act & Assert
-            await tc.VerifySuccessAsync(tc.ProjectKProject);
-        }
-
         private class TestContext
         {
             public TestContext(string userPackageFolder = null)
             {
                 // Dependencies
-                SourceRepository = new SourceRepository(new PackageSource("http://example/index.json"), Enumerable.Empty <INuGetResourceProvider>());
+                SourceRepository = new SourceRepository(new PackageSource("http://example/index.json"), Enumerable.Empty<INuGetResourceProvider>());
 
                 PackageIdentityA = new PackageIdentity("PackageA", NuGetVersion.Parse("1.0.0"));
                 PackageIdentityB = new PackageIdentity("PackageB", NuGetVersion.Parse("1.0.0"));
@@ -342,7 +199,6 @@ namespace NuGet.PackageManagement.Test
                 InvalidPackageType = new PackageType("Invalid", new Version(1, 2));
 
                 NuGetProject = new TestNuGetProject(new List<PackageReference>());
-                ProjectKProject = new TestProjectKNuGetProject();
 
                 NuGetPathContext = new Mock<INuGetPathContext>();
 
@@ -397,7 +253,6 @@ namespace NuGet.PackageManagement.Test
             public List<PackageType> PackageTypes { get; }
             public NuGetVersion MinClientVersion { get; set; }
             public TestNuGetProject NuGetProject { get; }
-            public TestProjectKNuGetProject ProjectKProject { get; }
             public Mock<INuGetPathContext> NuGetPathContext { get; }
             public Mock<PackageReaderBase> PackageReader { get; }
             public Mock<NuspecReader> NuspecReader { get; }

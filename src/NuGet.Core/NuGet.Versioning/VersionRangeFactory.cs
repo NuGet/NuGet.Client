@@ -3,26 +3,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
 namespace NuGet.Versioning
 {
-    /// <summary>
-    /// Static factory methods for creating version range objects.
-    /// </summary>
     public partial class VersionRange
     {
+        // Static factory methods for creating version range objects.
+
         /// <summary>
         /// A range that accepts all versions, prerelease and stable.
         /// </summary>
         public static readonly VersionRange All = new VersionRange(null, true, null, true);
 
+        private static readonly NuGetVersion V0 = new NuGetVersion(0, 0, 0);
+
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
         [Obsolete("Consider not using this VersionRange. The lack of a proper normalized version means that it is not round trippable in an assets file.")]
-        public static readonly VersionRange AllFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
+        public static readonly VersionRange AllFloating = new VersionRange(V0, true, null, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest, V0, "*"));
 
         /// <summary>
         /// A range that accepts all stable versions
@@ -33,7 +35,7 @@ namespace NuGet.Versioning
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
         [Obsolete("Consider not using this VersionRange. The lack of a proper normalized version means that it is not round trippable in an assets file.")]
-        public static readonly VersionRange AllStableFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major));
+        public static readonly VersionRange AllStableFloating = new VersionRange(V0, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major));
 
         /// <summary>
         /// A range that rejects all versions
@@ -66,7 +68,7 @@ namespace NuGet.Versioning
                 throw new ArgumentNullException(nameof(value));
             }
 
-            VersionRange versionInfo;
+            VersionRange? versionInfo;
             if (!TryParse(value, allowFloating, out versionInfo))
             {
                 throw new ArgumentException(
@@ -80,7 +82,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parses a VersionRange from its string representation.
         /// </summary>
-        public static bool TryParse(string value, out VersionRange versionRange)
+        public static bool TryParse(string value, [NotNullWhen(true)] out VersionRange? versionRange)
         {
             return TryParse(value, true, out versionRange);
         }
@@ -88,18 +90,17 @@ namespace NuGet.Versioning
         /// <summary>
         /// Parses a VersionRange from its string representation.
         /// </summary>
-        public static bool TryParse(string value, bool allowFloating, out VersionRange versionRange)
+        public static bool TryParse(string value, bool allowFloating, [NotNullWhen(true)] out VersionRange? versionRange)
         {
             versionRange = null;
 
-            if (value == null)
+            var trimmedValue = value?.Trim();
+            if (string.IsNullOrEmpty(trimmedValue))
             {
                 return false;
             }
 
-            var trimmedValue = value.Trim();
-
-            var charArray = trimmedValue.ToCharArray();
+            var charArray = trimmedValue!.ToCharArray();
 
             // * is the only 1 char range
             if (allowFloating
@@ -110,19 +111,13 @@ namespace NuGet.Versioning
                 return true;
             }
 
-            // Fail early if the string is too short to be valid
-            if (charArray.Length < 3)
-            {
-                return false;
-            }
-
-            string minVersionString = null;
-            string maxVersionString = null;
+            string? minVersionString = null;
+            string? maxVersionString = null;
             var isMinInclusive = false;
             var isMaxInclusive = false;
-            NuGetVersion minVersion = null;
-            NuGetVersion maxVersion = null;
-            FloatRange floatRange = null;
+            NuGetVersion? minVersion = null;
+            NuGetVersion? maxVersion = null;
+            FloatRange? floatRange = null;
 
             if (charArray[0] == '('
                 || charArray[0] == '[')
@@ -158,6 +153,7 @@ namespace NuGet.Versioning
 
                 // Split by comma, and make sure we don't get more than two pieces
                 var parts = trimmedValue.Split(',');
+
                 if (parts.Length > 2)
                 {
                     return false;
@@ -182,6 +178,13 @@ namespace NuGet.Versioning
                     }
                 }
 
+                // (1.0.0] and [1.0.0),(1.0.0) are invalid.
+                if (parts.Length == 1
+                    && !(isMinInclusive && isMaxInclusive))
+                {
+                    return false;
+                }
+
                 // If there is only one piece, we use it for both min and max
                 minVersionString = parts[0];
                 maxVersionString = (parts.Length == 2) ? parts[1] : parts[0];
@@ -198,7 +201,11 @@ namespace NuGet.Versioning
             if (!string.IsNullOrWhiteSpace(minVersionString))
             {
                 // parse the min version string
+#if NETCOREAPP2_1_OR_GREATER
+                if (allowFloating && minVersionString.Contains('*', StringComparison.Ordinal))
+#else
                 if (allowFloating && minVersionString.Contains("*"))
+#endif
                 {
                     // single floating version
                     if (FloatRange.TryParse(minVersionString, out floatRange)
@@ -229,6 +236,24 @@ namespace NuGet.Versioning
                 if (!NuGetVersion.TryParse(maxVersionString, out maxVersion))
                 {
                     // invalid version
+                    return false;
+                }
+            }
+
+            if (minVersion != null && maxVersion != null)
+            {
+                int result = minVersion.CompareTo(maxVersion);
+
+                // minVersion > maxVersion
+                if (result > 0)
+                {
+                    return false;
+                }
+
+                // minVersion is equal to maxVersion (1.0.0, 1.0.0], [1.0.0, 1.0.0)
+                if (result == 0
+                    && (isMinInclusive ^ isMaxInclusive))
+                {
                     return false;
                 }
             }
@@ -302,8 +327,6 @@ namespace NuGet.Versioning
 
             if (ranges.Any())
             {
-                var rangeComparer = new VersionRangeComparer(comparer);
-
                 // start with the first range in the list
                 var first = ranges.First();
 
@@ -323,7 +346,10 @@ namespace NuGet.Versioning
                     {
                         if (range.HasLowerBound)
                         {
+#pragma warning disable CS8604 // Possible null reference argument.
+                            // The BCL is missing nullable annotations in IComparer<T> before net5.0
                             var lowerCompare = comparer.Compare(range.MinVersion, lowest);
+#pragma warning restore CS8604 // Possible null reference argument.
 
                             if (lowerCompare < 0)
                             {
@@ -351,7 +377,10 @@ namespace NuGet.Versioning
                     {
                         if (range.HasUpperBound)
                         {
+#pragma warning disable CS8604 // Possible null reference argument.
+                            // The BCL is missing nullable annotations in IComparer<T> before net5.0
                             var higherCompare = comparer.Compare(range.MaxVersion, highest);
+#pragma warning restore CS8604 // Possible null reference argument.
 
                             if (higherCompare > 0)
                             {
@@ -419,12 +448,18 @@ namespace NuGet.Versioning
 
             // exclude this lowest if any range has this lowest as excluded, else include
             var excludeLowest = versionRanges.Any(range => range.HasLowerBound &&
+#pragma warning disable CS8604 // Possible null reference argument.
+                                                    // The BCL is missing nullable annotations in IComparer<T> before net5.0
                                                     comparer.Compare(range.MinVersion, lowest) == 0 &&
+#pragma warning restore CS8604 // Possible null reference argument.
                                                     !range.IsMinInclusive);
 
             // exclude this highest if any range has this highest excluded, else include
             var excludeHighest = versionRanges.Any(range => range.HasUpperBound &&
+#pragma warning disable CS8604 // Possible null reference argument.
+                                                    // The BCL is missing nullable annotations in IComparer<T> before net5.0
                                                     comparer.Compare(range.MaxVersion, highest) == 0 &&
+#pragma warning restore CS8604 // Possible null reference argument.
                                                     !range.IsMaxInclusive);
 
             // finally check the final lowest n highest versions

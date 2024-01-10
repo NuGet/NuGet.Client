@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -32,14 +33,14 @@ namespace NuGet.Commands
                 var framework = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(
                     f => EqualityUtility.EqualsWithNullCheck(f.FrameworkName, target.TargetFramework));
 
-                var libraries = target.Libraries;
+                IEnumerable<LockFileTargetLibrary> libraries = target.Libraries;
 
                 // check if this is RID-based graph then only add those libraries which differ from original TFM.
                 if (!string.IsNullOrEmpty(target.RuntimeIdentifier))
                 {
                     var onlyTFM = assetsFile.Targets.First(t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, target.TargetFramework));
 
-                    libraries = target.Libraries.Where(lib => !onlyTFM.Libraries.Any(tfmLib => tfmLib.Equals(lib))).ToList();
+                    libraries = target.Libraries.Where(lib => !onlyTFM.Libraries.Any(tfmLib => tfmLib.Equals(lib)));
                 }
 
                 foreach (var library in libraries.Where(e => e.Type == LibraryType.Package))

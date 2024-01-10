@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace NuGet.Protocol.LocalRepositories
             ListResource resource = null;
             var findLocalPackagesResource = await source.GetResourceAsync<FindLocalPackagesResource>(token);
 
-            if(findLocalPackagesResource != null)
+            if (findLocalPackagesResource != null)
             {
                 resource = new LocalPackageListResource(new LocalPackageSearchResource(findLocalPackagesResource), source.PackageSource.Source);
             }

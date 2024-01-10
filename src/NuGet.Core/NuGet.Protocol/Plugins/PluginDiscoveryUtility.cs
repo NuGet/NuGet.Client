@@ -33,13 +33,17 @@ namespace NuGet.Protocol.Plugins
         /// <remarks>The MSBuild.exe is in MSBuild\Current\Bin, the Plugins directory is in Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins</remarks>
         public static string GetInternalPluginRelativeToMSBuildDirectory(string msbuildDirectoryPath)
         {
-            var parentDirectory = "..";
-            return !string.IsNullOrEmpty(msbuildDirectoryPath) ?
-                Path.GetFullPath(Path.Combine(
-                    msbuildDirectoryPath,
-                    Path.Combine(parentDirectory, parentDirectory, parentDirectory, "Common7", "IDE", "CommonExtensions", "Microsoft", "NuGet", NuGetPluginsDirectory)
-                    )) :
-                null;
+            if (string.IsNullOrEmpty(msbuildDirectoryPath))
+            {
+                return null;
+            }
+
+            // If the path to MSBUild ends with "64" its the amd64 or arm64 variant so go up an extra directory
+            string path = msbuildDirectoryPath.EndsWith("64", StringComparison.OrdinalIgnoreCase)
+                ? Path.Combine(msbuildDirectoryPath, "..", "..", "..", "..", "Common7", "IDE", "CommonExtensions", "Microsoft", "NuGet", NuGetPluginsDirectory)
+                : Path.Combine(msbuildDirectoryPath, "..", "..", "..", "Common7", "IDE", "CommonExtensions", "Microsoft", "NuGet", NuGetPluginsDirectory);
+
+            return Path.GetFullPath(path);
         }
 #endif
 

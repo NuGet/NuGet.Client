@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -228,7 +228,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
             solution.Add(CreatePackage("d", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
-            solution.Add(CreatePackage("e", "1.0.0",null));
+            solution.Add(CreatePackage("e", "1.0.0", null));
 
             solution.Add(CreatePackage("f", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("g", VersionRange.Parse("[1.0.0]"))));
@@ -259,7 +259,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("j", VersionRange.Parse("[1.0.0]"))));
             solution.Add(CreatePackage("c", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
-            solution.Add(CreatePackage("d", "1.0.0",null));
+            solution.Add(CreatePackage("d", "1.0.0", null));
             solution.Add(CreatePackage("g", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("h", VersionRange.Parse("[1.0.0]"))));
             solution.Add(CreatePackage("h", "1.0.0", null));
@@ -270,7 +270,7 @@ namespace NuGet.Resolver.Test
 
             // Assert
             Assert.False(result.Any());
-        }        
+        }
 
         [Fact]
         public void ResolverUtility_GetDiagnosticMessageVerifyDiamondDependencySortsById()
@@ -548,8 +548,8 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, 
-                new List<PackageSource>() { new PackageSource("http://test","test")});
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" },
+                new List<PackageSource>() { new PackageSource("http://test", "test") });
 
             // Assert
             Assert.Equal("Unable to resolve dependency 'b'. Source(s) used: 'test'.", message);

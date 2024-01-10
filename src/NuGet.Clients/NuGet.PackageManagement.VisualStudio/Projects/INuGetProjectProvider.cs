@@ -26,8 +26,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="forceProjectType">Flag to control project type preference. <code>true</code> indicates provider is to create a project regardless of providers order limitations.</param>
         /// <returns>New instance if instantiation succeeds, null otherwise.</returns>
         Task<NuGetProject> TryCreateNuGetProjectAsync(
-            IVsProjectAdapter project, 
-            ProjectProviderContext context, 
+            IVsProjectAdapter project,
+            ProjectProviderContext context,
             bool forceProjectType);
     }
 }

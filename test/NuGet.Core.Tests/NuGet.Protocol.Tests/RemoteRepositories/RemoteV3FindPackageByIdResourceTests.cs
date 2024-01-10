@@ -22,6 +22,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RemoteV3FindPackageByIdResourceTests
     {
         [Fact]
@@ -549,7 +550,7 @@ namespace NuGet.Protocol.Tests
         private static HttpSource CreateDummyHttpSource()
         {
             var packageSource = new PackageSource("https://unit.test");
-            Task<HttpHandlerResource> messageHandlerFactory() => Task.FromResult<HttpHandlerResource>(null);
+            Task<HttpHandlerResource> messageHandlerFactory() => TaskResult.Null<HttpHandlerResource>();
 
             return new HttpSource(packageSource, messageHandlerFactory, Mock.Of<IThrottle>());
         }

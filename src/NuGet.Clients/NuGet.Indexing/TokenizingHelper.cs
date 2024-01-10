@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace NuGet.Indexing
 {
@@ -20,7 +21,7 @@ namespace NuGet.Indexing
                 yield break;
             }
 
-            string word = term[0].ToString();
+            string word = term[0].ToString(CultureInfo.CurrentCulture);
             bool lastIsUpper = Char.IsUpper(term[0]);
             bool lastIsLetter = Char.IsLetter(term[0]);
 
@@ -45,11 +46,11 @@ namespace NuGet.Indexing
             yield break;
         }
 
-        private static ISet<string> _stopWords = new HashSet<string> 
+        private static ISet<string> _stopWords = new HashSet<string>
         {
             "a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "i",
             "if", "in", "into", "is", "it", "its", "no", "not", "of", "on", "or", "s", "such",
-            "that", "the", "their", "then", "there", "these", "they", "this", "to", 
+            "that", "the", "their", "then", "there", "these", "they", "this", "to",
             "was", "we", "will", "with"
         };
 

@@ -1,8 +1,10 @@
 <UserControl
   x:Class="NuGet.PackageManagement.UI.InfiniteScrollList"
+  x:Name="_infiniteScrollList"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:common="clr-namespace:NuGet.VisualStudio;assembly=NuGet.VisualStudio.Common"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
@@ -10,42 +12,53 @@
   d:DesignHeight="200"
   d:DesignWidth="500">
   <UserControl.Resources>
-    <nuget:InfiniteScrollListItemStyleSelector
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+
+      <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
 
-    <DataTemplate
+      <nuget:PackageLevelToGroupNameConverter
+      x:Key="PackageLevelToGroupNameConverter" />
+
+      <nuget:PackageLevelGroupToBooleanConverter
+       x:Key="PackageLevelGroupToBooleanConverter" />
+
+      <DataTemplate
       DataType="{x:Type nuget:PackageDependencyMetadata}">
-      <TextBlock
-        Text="{Binding}" />
-    </DataTemplate>
-
-    <DataTemplate
-      DataType="{x:Type nuget:PackageItemListViewModel}">
-      <nuget:PackageItemControl
-        DataContext="{Binding}" />
-    </DataTemplate>
-
-    <DataTemplate
-      DataType="{x:Type nuget:LoadingStatusIndicator}">
-      <Grid
-        Margin="0,8">
         <TextBlock
+        Text="{Binding}" />
+      </DataTemplate>
+
+      <DataTemplate
+      DataType="{x:Type nuget:PackageItemViewModel}">
+        <nuget:PackageItemControl
+        DataContext="{Binding}" />
+      </DataTemplate>
+
+      <DataTemplate
+      DataType="{x:Type nuget:LoadingStatusIndicator}">
+        <Grid
+        Margin="0,8">
+          <TextBlock
           Name="_noItemsFound"
           FontStyle="Italic"
           HorizontalAlignment="Center"
           Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
           Visibility="Collapsed" />
 
-        <Grid
+          <Grid
           Name="_progressBar"
           Visibility="Collapsed"
           HorizontalAlignment="Center"
           Height="22">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <nuget:Spinner
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <nuget:Spinner
             Grid.Column="0"
             Width="16"
             Height="16"
@@ -53,176 +66,176 @@
             HorizontalAlignment="Center" 
             VerticalAlignment="Center" 
             Visibility="{Binding Visibility,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}"/>
-          <TextBlock
+            <TextBlock
             Grid.Column="1"
             Text="{Binding Path=LoadingMessage}"
             HorizontalAlignment="Left" 
             VerticalAlignment="Center"/>
+          </Grid>
         </Grid>
-      </Grid>
-      <DataTemplate.Triggers>
-        <DataTrigger
+        <DataTemplate.Triggers>
+          <DataTrigger
           Binding="{Binding Path=Status}"
           Value="Loading">
-          <Setter
+            <Setter
             TargetName="_progressBar"
             Property="Visibility"
             Value="Visible" />
-        </DataTrigger>
-        <DataTrigger
+          </DataTrigger>
+          <DataTrigger
           Binding="{Binding Path=Status}"
           Value="Ready">
-          <Setter
+            <Setter
             TargetName="_progressBar"
             Property="Visibility"
             Value="Visible" />
-        </DataTrigger>
-        <DataTrigger
+          </DataTrigger>
+          <DataTrigger
           Binding="{Binding Path=Status}"
           Value="NoItemsFound">
-          <Setter
+            <Setter
             TargetName="_noItemsFound"
             Property="Visibility"
             Value="Visible" />
-        </DataTrigger>
-      </DataTemplate.Triggers>
-    </DataTemplate>
+          </DataTrigger>
+        </DataTemplate.Triggers>
+      </DataTemplate>
 
-    <!-- Template used by ListBoxItem that represents a package. -->
-    <ControlTemplate
+      <!-- Template used by ListBoxItem that represents a package. -->
+      <ControlTemplate
       x:Key="ListBoxItemTemplate"
       TargetType="{x:Type ListBoxItem}">
-      <Border
+        <Border
         x:Name="Bd"
         BorderThickness="0"
         Background="{TemplateBinding Background}"
         Padding="0"
         SnapsToDevicePixels="true">
-        <ContentPresenter
+          <ContentPresenter
           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
           VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-      </Border>
-      <ControlTemplate.Triggers>
-        <!-- set the background for IsEnabled == false -->
-        <Trigger
+        </Border>
+        <ControlTemplate.Triggers>
+          <!-- set the background for IsEnabled == false -->
+          <Trigger
           Property="IsEnabled"
           Value="false">
-          <Setter
+            <Setter
             Property="Background"
             TargetName="Bd"
             Value="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}" />
-        </Trigger>
+          </Trigger>
 
-        <MultiTrigger>
-          <MultiTrigger.Conditions>
-            <Condition
+          <MultiTrigger>
+            <MultiTrigger.Conditions>
+              <Condition
               Property="IsMouseOver"
               Value="True" />
-          </MultiTrigger.Conditions>
-          <Setter
+            </MultiTrigger.Conditions>
+            <Setter
             Property="Background"
             TargetName="Bd"
             Value="{DynamicResource {x:Static nuget:Brushes.ContentMouseOverBrushKey}}" />
-          <Setter
+            <Setter
             Property="TextBlock.Foreground"
             Value="{DynamicResource {x:Static nuget:Brushes.ContentMouseOverTextBrushKey}}" />
-        </MultiTrigger>
-        <MultiTrigger>
-          <MultiTrigger.Conditions>
-            <Condition
+          </MultiTrigger>
+          <MultiTrigger>
+            <MultiTrigger.Conditions>
+              <Condition
               Property="Selector.IsSelectionActive"
               Value="False" />
-            <Condition
+              <Condition
               Property="IsSelected"
               Value="True" />
-          </MultiTrigger.Conditions>
-          <Setter
+            </MultiTrigger.Conditions>
+            <Setter
             Property="Background"
             TargetName="Bd"
             Value="{DynamicResource {x:Static nuget:Brushes.ContentInactiveSelectedBrushKey}}" />
-          <Setter
+            <Setter
             Property="TextBlock.Foreground"
             Value="{DynamicResource {x:Static nuget:Brushes.ContentInactiveSelectedTextBrushKey}}" />
-        </MultiTrigger>
-        <MultiTrigger>
-          <MultiTrigger.Conditions>
-            <Condition
+          </MultiTrigger>
+          <MultiTrigger>
+            <MultiTrigger.Conditions>
+              <Condition
               Property="Selector.IsSelectionActive"
               Value="True" />
-            <Condition
+              <Condition
               Property="IsSelected"
               Value="True" />
-          </MultiTrigger.Conditions>
-          <Setter
+            </MultiTrigger.Conditions>
+            <Setter
             Property="Background"
             TargetName="Bd"
             Value="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}" />
-          <Setter
+            <Setter
             Property="TextBlock.Foreground"
             TargetName="Bd"
             Value="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}" />
-        </MultiTrigger>
-      </ControlTemplate.Triggers>
-    </ControlTemplate>
+          </MultiTrigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate>
 
-    <!-- Template used by the LoadingIndicator. We use it to disable the background change when mouse hovers over it. -->
-    <ControlTemplate
+      <!-- Template used by the LoadingIndicator. We use it to disable the background change when mouse hovers over it. -->
+      <ControlTemplate
       x:Key="LoadingIndicatorListBoxItemTemplate"
       TargetType="{x:Type ListBoxItem}">
-      <Border
+        <Border
         x:Name="Bd"
         BorderThickness="0"
         Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
         Padding="0"
         SnapsToDevicePixels="true">
-        <ContentPresenter
+          <ContentPresenter
           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
           SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
           VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-      </Border>
-    </ControlTemplate>
+        </Border>
+      </ControlTemplate>
 
-    <!-- the base style of the ListBoxItem. -->
-    <Style
+      <!-- the base style of the ListBoxItem. -->
+      <Style
       x:Key="listBoxItemStyle"
       TargetType="{x:Type ListBoxItem}">
-      <Setter
+        <Setter
         Property="Padding"
         Value="0" />
-      <Setter
+        <Setter
         Property="SnapsToDevicePixels"
         Value="True" />
-      <Setter
+        <Setter
         Property="HorizontalContentAlignment"
         Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
-      <Setter
+        <Setter
         Property="VerticalContentAlignment"
         Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
-      <Setter
+        <Setter
         Property="Background"
         Value="Transparent" />
-    </Style>
+      </Style>
 
-    <!-- the style of the ListBoxItem when the item is the loading status indicator. -->
-    <Style
+      <!-- the style of the ListBoxItem when the item is the loading status indicator. -->
+      <Style
       x:Key="loadingStatusIndicatorStyle"
       TargetType="{x:Type ListBoxItem}"
       BasedOn="{StaticResource listBoxItemStyle}">
-      <Setter
+        <Setter
         Property="Template"
         Value="{StaticResource LoadingIndicatorListBoxItemTemplate}" />
-      <Setter
+        <Setter
         Property="Focusable"
         Value="False" />
-    </Style>
+      </Style>
 
-    <!-- the style of the ListBoxItem when the item is a package. -->
-    <Style
+      <!-- the style of the ListBoxItem when the item is a package. -->
+      <Style
       x:Key="packageItemStyle"
       TargetType="{x:Type ListBoxItem}"
       BasedOn="{StaticResource listBoxItemStyle}">
-      <!--
+        <!--
             Note that we cannot set the template property in xaml list this:
 
                <Setter Property="Template" Value="{StaticResource ListBoxItemTemplate}" />
@@ -231,43 +244,91 @@
             available when this is used in the standalone mode, i.e. outside of VisualStudio. So the setter is
             added by code when Standalone == false.
             -->
-    </Style>
+      </Style>
 
-    <Style TargetType="FrameworkElement" x:Key="FadeAnimationStyle">
-      <Setter Property="Visibility" Value="Hidden"/>
-      <Style.Triggers>
-        <Trigger Property="Visibility" Value="Visible">
-          <Trigger.EnterActions>
-            <BeginStoryboard>
-              <Storyboard>
-                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+      <Style TargetType="FrameworkElement" x:Key="FadeAnimationStyle">
+        <Setter Property="Visibility" Value="Hidden"/>
+        <Style.Triggers>
+          <Trigger Property="Visibility" Value="Visible">
+            <Trigger.EnterActions>
+              <BeginStoryboard>
+                <Storyboard>
+                  <DoubleAnimation Storyboard.TargetProperty="Opacity"
                              From="0.0" To="1.0" Duration="0:0:0.7"/>
-              </Storyboard>
-            </BeginStoryboard>
-          </Trigger.EnterActions>
-        </Trigger>
-      </Style.Triggers>
-    </Style>
-    <!--
+                </Storyboard>
+              </BeginStoryboard>
+            </Trigger.EnterActions>
+          </Trigger>
+        </Style.Triggers>
+      </Style>
+      <!--
       This scrollviewer template has one change from the default - a -22 margin on the verical srollbar.
       This enables the loadingStatusBar to appear to be in the listbox.
     -->
-    <ControlTemplate x:Key="ScrollViewerWithScrollBarExtraLargeOnTop" TargetType="{x:Type ScrollViewer}">
-      <Grid x:Name="Grid" Background="{TemplateBinding Background}" >
+      <ControlTemplate x:Key="ScrollViewerWithScrollBarExtraLargeOnTop" TargetType="{x:Type ScrollViewer}">
+        <Grid x:Name="Grid" Background="{TemplateBinding Background}" >
           <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
           <Grid.RowDefinitions>
-              <RowDefinition Height="*"/>
-              <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
           </Grid.RowDefinitions>
           <Rectangle x:Name="Corner" Grid.Column="1" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.Row="1"/>
           <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="0" Margin="{TemplateBinding Padding}" Grid.Row="0"/>
           <ScrollBar x:Name="PART_VerticalScrollBar" AutomationProperties.AutomationId="VerticalScrollBar" Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Margin="0,-22,0,0" Minimum="0" Grid.Row="0" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportHeight}"/>
           <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}"/>
-      </Grid>
-    </ControlTemplate>
+        </Grid>
+      </ControlTemplate>
+
+      <MultiBinding x:Key="GroupHeaderMultiBinding" Converter="{StaticResource PackageLevelToGroupNameConverter}">
+        <Binding Path="Name" />
+        <Binding ElementName="_infiniteScrollList" Path="TopLevelPackageCount" />
+        <Binding ElementName="_infiniteScrollList" Path="TransitivePackageCount" />
+      </MultiBinding>
+
+      <Style
+        x:Key="ExpanderStyle"
+        TargetType="{x:Type Expander}"
+        BasedOn="{StaticResource {x:Type Expander}}">
+        <Setter Property="Header" Value="{StaticResource GroupHeaderMultiBinding}" />
+        <Setter Property="Tag" Value="{Binding Name}" /> <!-- Store unconverted enum PackageLevel-->
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+      </Style>
+
+      <ControlTemplate
+        x:Key="GroupedListItemControlTemplate"
+        TargetType="{x:Type GroupItem}">
+        <Expander
+          Style="{StaticResource ExpanderStyle}"
+          Expanded="Expander_ExpansionStateToggled"
+          Collapsed="Expander_ExpansionStateToggled"
+          IsExpanded="True">
+          <ItemsPresenter />
+        </Expander>
+      </ControlTemplate>
+
+      <ControlTemplate
+        x:Key="GroupedListItemNoExpanderControlTemplate"
+        TargetType="{x:Type GroupItem}">
+        <ItemsPresenter />
+      </ControlTemplate>
+
+      <Style
+        x:Key="GroupedListContainerStyle"
+        TargetType="{x:Type GroupItem}">
+        <Setter Property="Template" Value="{StaticResource GroupedListItemControlTemplate}" />
+        <Setter Property="AutomationProperties.Name" Value="{StaticResource GroupHeaderMultiBinding}" />
+        <Style.Triggers>
+          <!--This data trigger is when a new group is added, if the group is not of type PackageLevel
+            it won't add a expander header and will instead show it flat in the list -->
+          <DataTrigger Binding="{Binding Converter={StaticResource PackageLevelGroupToBooleanConverter}}" Value="False">
+            <Setter Property="Template" Value="{StaticResource GroupedListItemNoExpanderControlTemplate}" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+    </ResourceDictionary>
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
     <Border
@@ -275,7 +336,8 @@
       DockPanel.Dock="Top"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       BorderThickness="0,0,0,1"
-      Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}">
+      Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}"
+      Visibility="Collapsed">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="auto" />
@@ -338,11 +400,16 @@
       VirtualizingPanel.VirtualizationMode="Recycling"
       VirtualizingPanel.CacheLength="1,2"
       VirtualizingPanel.CacheLengthUnit="Page"
+      VirtualizingPanel.IsVirtualizingWhenGrouping="True"
       BorderThickness="0,0,0,0"
       HorizontalContentAlignment="Stretch"
       SelectionChanged="List_SelectionChanged"
       Loaded="List_Loaded"
       ItemsSource="{Binding}">
+      <ListBox.GroupStyle>
+        <GroupStyle
+          ContainerStyle="{StaticResource GroupedListContainerStyle}" />
+      </ListBox.GroupStyle>
       <!-- set the template to disable the background change when the IsEnabled is false. -->
       <ListBox.Template>
         <ControlTemplate

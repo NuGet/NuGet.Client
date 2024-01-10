@@ -38,7 +38,7 @@ namespace NuGet.ProjectModel.Test
             spec.TargetFrameworks[0].Imports.Add(net461);
 
             var outSpec = spec.RoundTrip();
-            outSpec.TargetFrameworks[0].Imports.ShouldBeEquivalentTo(new[] { net461 });
+            outSpec.TargetFrameworks[0].Imports.Should().BeEquivalentTo(new[] { net461 });
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void GivenAssetTargetFallbackEqualityIsTransitive()
         {
-            var A1 = new AssetTargetFallbackFramework(NuGetFramework.Parse("netcoreapp2.0"), new[] { NuGetFramework.Parse("net461")});
+            var A1 = new AssetTargetFallbackFramework(NuGetFramework.Parse("netcoreapp2.0"), new[] { NuGetFramework.Parse("net461") });
             var A2 = new AssetTargetFallbackFramework(NuGetFramework.Parse("netcoreapp2.0"), new[] { NuGetFramework.Parse("net461") });
             var B1 = new AssetTargetFallbackFramework(NuGetFramework.Parse("netcoreapp2.0"), new[] { NuGetFramework.Parse("net462") });
             var B2 = new AssetTargetFallbackFramework(NuGetFramework.Parse("netcoreapp2.0"), new[] { NuGetFramework.Parse("net462") });

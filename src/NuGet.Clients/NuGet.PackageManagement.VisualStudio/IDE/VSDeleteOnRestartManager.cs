@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -58,10 +59,11 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (SolutionManager.SolutionDirectory != null)
+                var solutionDirectory = SolutionManager.SolutionDirectory;
+                if (solutionDirectory != null)
                 {
                     _packagesFolderPath =
-                        PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings);
+                        PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, Settings);
                 }
 
                 return _packagesFolderPath;
@@ -74,7 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Gets the directories marked for deletion. Returns empty is <see cref="PackagesFolderPath"/> is <c>null</c> >
+        /// Gets the directories marked for deletion. Returns empty is <see cref="PackagesFolderPath"/> is <see langword="null" /> >
         /// </summary>
         public IReadOnlyList<string> GetPackageDirectoriesMarkedForDeletion()
         {
@@ -101,7 +103,7 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Checks for any pacakge directories that are pending to be deleted and raises the
+        /// Checks for any package directories that are pending to be deleted and raises the
         /// <see cref="PackagesMarkedForDeletionFound"/> event.
         /// </summary>
         public void CheckAndRaisePackageDirectoriesMarkedForDeletion()
@@ -213,7 +215,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
             // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext));
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () => await DeleteMarkedPackageDirectoriesAsync(SolutionManager.NuGetProjectContext))
+                                                   .PostOnFailure(nameof(VsDeleteOnRestartManager));
         }
     }
 }

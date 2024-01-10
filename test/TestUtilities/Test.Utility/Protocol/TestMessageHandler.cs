@@ -54,7 +54,7 @@ namespace Test.Utility
                 Interlocked.Decrement(ref _currentRequestCount);
             }
         }
-        
+
         private Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> GetResponse(Dictionary<string, string> responses, string errorContent)
         {
             return responses.ToDictionary<KeyValuePair<string, string>, string, Func<HttpRequestMessage, Task<HttpResponseMessage>>>(
@@ -98,7 +98,7 @@ namespace Test.Utility
 
             return msg;
         }
-        
+
         public virtual async Task<HttpResponseMessage> SendAsyncPublic(HttpRequestMessage request)
         {
             Func<HttpRequestMessage, Task<HttpResponseMessage>> getResponse;

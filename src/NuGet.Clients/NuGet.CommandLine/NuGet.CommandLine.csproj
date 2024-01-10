@@ -1,11 +1,4 @@
-<Project>
-
-  <PropertyGroup>
-    <IsCommandLinePackage>true</IsCommandLinePackage>
-  </PropertyGroup>
-
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="ilmerge.props" />
 
   <PropertyGroup>
@@ -27,6 +20,9 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+    <GetSigningInputsDependsOn>GetSigningInputsCustom</GetSigningInputsDependsOn>
+    <GetSymbolsToIndexDependsOn>GetSymbolsToIndexCustom</GetSymbolsToIndexDependsOn>
   </PropertyGroup>
 
   <Target Name="CreateCommandlineNupkg">
@@ -40,36 +36,6 @@
     </ItemGroup>
   </Target>
 
-  <ItemGroup Condition="$(DefineConstants.Contains(SIGNED_BUILD))">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.FuncTest, PublicKey=002400000480000094000000060200000024000052534131000400000100010007d1fa57c4aed9f0a32e84aa0faefd0de9e8fd6aec8f87fb03766c834c99921eb23be79ad9d5dcc1dd9ad236132102900b723cf980957fc4e177108fc607774f29e8320e92ea05ece4e821c0a5efe8f1645c4c0c93c1ab99285d622caa652c1dfad63d745d6f2de5f17e5eaf0fc4963d261c8a12436518206dc093344d5ad293</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010007d1fa57c4aed9f0a32e84aa0faefd0de9e8fd6aec8f87fb03766c834c99921eb23be79ad9d5dcc1dd9ad236132102900b723cf980957fc4e177108fc607774f29e8320e92ea05ece4e821c0a5efe8f1645c4c0c93c1ab99285d622caa652c1dfad63d745d6f2de5f17e5eaf0fc4963d261c8a12436518206dc093344d5ad293</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup Condition="!$(DefineConstants.Contains(SIGNED_BUILD))">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.FuncTest</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.Test</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup Condition="$(DefineConstants.Contains(SIGNED_BUILD))">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010007d1fa57c4aed9f0a32e84aa0faefd0de9e8fd6aec8f87fb03766c834c99921eb23be79ad9d5dcc1dd9ad236132102900b723cf980957fc4e177108fc607774f29e8320e92ea05ece4e821c0a5efe8f1645c4c0c93c1ab99285d622caa652c1dfad63d745d6f2de5f17e5eaf0fc4963d261c8a12436518206dc093344d5ad293</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup Condition="!$(DefineConstants.Contains(SIGNED_BUILD))">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.Test</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.CSharp" />
@@ -82,14 +48,20 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="NuGet.Core">
-      <HintPath>$(SolutionPackagesFolder)nuget.core\2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>$(PkgNuGet_Core)\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>CoreV2</Aliases>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
+    <PackageReference Include="NuGet.Core" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" ExcludeAssets="Runtime" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILMerge" PrivateAssets="All" />
+    <None Include="$(BuildCommonDirectory)\NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -112,49 +84,62 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>NuGetResources.resx</DependentUpon>
     </Compile>
+    <!-- nuget.exe localized assemblies -->
+    <EmbeddedResource Include="$(OutputPath)\**\$(AssemblyName).resources.dll" />
+    <!-- NuGet.Commands localized assemblies -->
+    <LocResource Include="$(OutputPath)\**\NuGet.Commands.resources.dll" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.targets">
+    <EmbeddedResource Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.props">
+      <Link>NuGet.props</Link>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
       <Link>NuGet.targets</Link>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
 
+  <Target Name="DetermineILMergeNuGetExeInputsOutputs">
+    <PropertyGroup>
+      <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
+      <PathToMergedNuGetExe>$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe</PathToMergedNuGetExe>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Dependent assemblies -->
+      <BuildArtifacts Include="$(OutputPath)\*.dll" />
+    </ItemGroup>
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetExe)" Importance="High" />
+  </Target>
+
   <!-- 	Since we are moving some code and strings from NuGet.CommandLine to NuGet.Commands, we opted to go through normal localization process
         (build .resources.dll) and then add them to the ILMerged nuget.exe -->
   <!-- This will also be called from CI build, after assemblies are localized, since our test infra takes nuget.exe before Localization  -->
-  <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNuGetExe)' != 'true'" >
+  <Target Name="ILMergeNuGetExe"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineILMergeNuGetExeInputsOutputs"
+          Inputs="$(PathToBuiltNuGetExe);@(BuildArtifacts)"
+          Outputs="$(PathToMergedNuGetExe)"
+          Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNuGetExe)' != 'true'" >
     <PropertyGroup>
-      <!-- when done after build, no localizedartifacts are built yet, so expected localized artifact count is 0. -->
-      <ExpectedLocalizedArtifactCount Condition="'$(ExpectedLocalizedArtifactCount)' == ''">0</ExpectedLocalizedArtifactCount>
-    </PropertyGroup>
-    <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
-      <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
-      <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\**\$(NETFXTargetFramework)\**\*.resources.dll" />
-    </ItemGroup>
-    <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
-    <Error Text="Satellite assemblies count ILMerged into NuGet.exe should be $(ExpectedLocalizedArtifactCount), but was: @(LocalizedArtifacts-&gt;Count())" 
-           Condition="'@(LocalizedArtifacts-&gt;Count())' != '$(ExpectedLocalizedArtifactCount)'" />
-    <PropertyGroup>
-      <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
-      <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
+      <IlmergeCommand>$(ILMergeConsolePath) /lib:$(OutputPath) /out:$(PathToMergedNuGetExe) @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
-      <!-- LocalizedArtifacts need fullpath, since there will be duplicate file names -->
-      <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNuGetExe) @(BuildArtifacts->'%(filename)%(extension)', ' ') @(LocalizedArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
+      <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNuGetExe) @(BuildArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
+      <IlmergeCommand>$(IlmergeCommand) @(LocResource->'%(fullpath)', ' ')</IlmergeCommand>
     </PropertyGroup>
-    <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetExe)))" />
     <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
+  <!-- This strips away the framework assemblies from the resulting nuspec.-->
+  <Target Name="ClearFrameworkAssemblyReferences" BeforeTargets="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn)">
+    <ItemGroup>
+      <_FrameworkAssemblyReferences Remove="@(_FrameworkAssemblyReferences)" />
+    </ItemGroup>
+  </Target>
 
-  <!-- Do nothing. This basically strips away the framework assemblies from the resulting nuspec.-->
-  <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences"/>
-
-  <Target Name="GetSigningInputs" Returns="@(DllsToSign)">
+  <Target Name="GetSigningInputsCustom" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe">
         <StrongName>MsSharedLib72</StrongName>
@@ -163,12 +148,10 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetSymbolsToIndex" Returns="@(SymbolsToIndex)">
+  <Target Name="GetSymbolsToIndexCustom" Returns="@(SymbolsToIndex)">
     <ItemGroup>
       <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe" />
       <SymbolsToIndex Include="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.pdb" />
     </ItemGroup>
   </Target>
-  
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

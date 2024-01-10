@@ -17,7 +17,6 @@
   <TemplateContent>
     <Project File="ConsoleApplication.fsproj" ReplaceParameters="true">
       <ProjectItem ReplaceParameters="true" OpenInEditor="true">Program.fs</ProjectItem>
-      <ProjectItem ReplaceParameters="true">App.config</ProjectItem>
     </Project>
   </TemplateContent>
 </VSTemplate>

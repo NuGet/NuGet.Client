@@ -140,9 +140,6 @@
   <data name="CannotUpdateNode" xml:space="preserve">
     <value>Cannot update the node of a setting.</value>
   </data>
-  <data name="CannotUpdateOrigin" xml:space="preserve">
-    <value>Cannot update the origin of a setting.</value>
-  </data>
   <data name="CredentialsItemMustHaveUsernamePassword" xml:space="preserve">
     <value>Credentials item must have username and password.</value>
   </data>
@@ -165,9 +162,6 @@
   </data>
   <data name="Error_MoreThanOneValidAuthenticationTypes" xml:space="preserve">
     <value>A credentials item must have only one ValidAuthenticationTypes entry.</value>
-  </data>
-  <data name="Error_NoWritableConfig" xml:space="preserve">
-    <value>There are no writable config files.</value>
   </data>
   <data name="FileDoesNotExist" xml:space="preserve">
     <value>File '{0}' does not exist.</value>
@@ -201,15 +195,9 @@
   <data name="OwnersMustOnlyHaveContent" xml:space="preserve">
     <value>Owners item must only have text content and cannot be empty.</value>
   </data>
-  <data name="PackageSource_Invalid" xml:space="preserve">
-    <value>The package source does not belong to the collection of available sources.</value>
-  </data>
   <data name="PropertyCannotBeNullOrEmpty" xml:space="preserve">
     <value>{0} cannot be null or empty.</value>
     <comment>0 - property name</comment>
-  </data>
-  <data name="RelativeEnvVarPath" xml:space="preserve">
-    <value>Environment variable '{0}' must contain an absolute path, the full path of '{1}' cannot be determined.</value>
   </data>
   <data name="RepositoryMustHaveOneOwners" xml:space="preserve">
     <value>The repository item with name '{0}' and service index '{1}' has more than one owners item in it.</value>
@@ -295,5 +283,30 @@
   <data name="FileCertItemPasswordCannotBeDecrypted" xml:space="preserve">
     <value>Client certificate configuration password for the package source '{0}' cannot be decrypted</value>
     <comment>0 - Package name</comment>
+  </data>
+  <data name="CannotUpdateReadOnlyConfig" xml:space="preserve">
+    <value>Unable to update setting since it is in an uneditable config file.</value>
+  </data>
+  <data name="Error_ItemNeedsAtLeastOnePackagePattern" xml:space="preserve">
+    <value>Package source '{0}' must have at least one package pattern.</value>
+    <comment>0 - The name of the item.</comment>
+  </data>
+  <data name="Error_ItemNeedsAtLeastOnePackagePatternWithPath" xml:space="preserve">
+    <value>Package source '{0}' must have at least one package pattern. Path: '{1}'</value>
+    <comment>0 - The name of the item
+1 - file path</comment>
+  </data>
+  <data name="Argument_Cannot_Be_Null_Empty_Or_WhiteSpaceOnly" xml:space="preserve">
+    <value>Argument cannot be null, empty, or whitespace only.</value>
+  </data>
+  <data name="Error_DuplicatePackageSource" xml:space="preserve">
+    <value>PackageSourceMapping is enabled and there are multiple package sources associated with the same key(s): {0}. Path: {1}</value>
+    <comment>0 - package sources separated with comma 1 - path</comment>
+  </data>
+  <data name="ShowError_ConfigDuplicateDisabledSources" xml:space="preserve">
+    <value>Cannot update package sources, config file contains a duplicated key '{0}' in the disabled package sources section. Path: '{1}'</value>
+    <comment>0 - key 
+1 - config file path
+</comment>
   </data>
 </root>

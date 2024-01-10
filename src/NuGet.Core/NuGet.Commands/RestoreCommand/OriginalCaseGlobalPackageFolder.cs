@@ -42,6 +42,7 @@ namespace NuGet.Commands
             }
 
             _request = request;
+            ParentId = parentId;
 
             _localRepositories = new List<NuGetv3LocalRepository>();
             _localRepositories.Add(request.DependencyProviders.GlobalPackages);

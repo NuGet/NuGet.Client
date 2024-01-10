@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -32,7 +32,7 @@ namespace NuGet.ProjectModel.Test
 
             var graphs = message.GetTargetGraphs(assetsFile);
 
-            graphs.Select(e => e.Name).ShouldBeEquivalentTo(new[] { expected });
+            graphs.Select(e => e.Name).Should().BeEquivalentTo(new[] { expected });
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace NuGet.ProjectModel.Test
 
             var graphs = message.GetTargetGraphs(assetsFile);
 
-            graphs.Select(e => e.Name).ShouldBeEquivalentTo(new[] { expected1, expected2 });
+            graphs.Select(e => e.Name).Should().BeEquivalentTo(new[] { expected1, expected2 });
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace NuGet.ProjectModel.Test
 
             var graphs = message.GetTargetGraphs(assetsFile);
 
-            graphs.Select(e => e.Name).ShouldBeEquivalentTo(new[] { expected1, expected2, expected3 });
+            graphs.Select(e => e.Name).Should().BeEquivalentTo(new[] { expected1, expected2, expected3 });
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace NuGet.ProjectModel.Test
 
             var graphs = message.GetTargetGraphs(assetsFile);
 
-            graphs.SelectMany(e => e.Libraries).Select(e => e.Name).ShouldBeEquivalentTo(new[] { "x" });
+            graphs.SelectMany(e => e.Libraries).Select(e => e.Name).Should().BeEquivalentTo(new[] { "x" });
         }
     }
 }

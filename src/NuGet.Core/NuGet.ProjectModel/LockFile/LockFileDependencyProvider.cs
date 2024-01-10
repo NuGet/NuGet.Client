@@ -11,6 +11,7 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
+    [Obsolete("This is an unused class and will be removed in a future version.")]
     public class LockFileDependencyProvider : IDependencyProvider
     {
         private readonly IDictionary<Tuple<NuGetFramework, string>, LockFileTargetLibrary> _targetLibraries;

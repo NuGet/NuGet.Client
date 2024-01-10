@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -12,60 +12,8 @@ namespace NuGet.XPlat.FuncTest
 {
     public class DotnetCliUtil
     {
-        private const string DotnetCliBinary = "dotnet";
-        private const string DotnetCliExe = "dotnet.exe";
         private const string XPlatDll = "NuGet.CommandLine.XPlat.dll";
         private static readonly string[] TestFileNames = new string[] { "file1.txt", "file2.txt" };
-
-        /// <summary>
-        /// Provides the path to dotnet cli on the test machine.
-        /// It traverses in the directory tree going one step up at a time and looks for cli folder.
-        /// </summary>
-        /// <returns>
-        /// <code>String</code> containing the path to the dotnet cli within the local repository.
-        /// Can return <code>null</code> if no cli directory or dotnet cli is found, in which case the tests can fail.
-        /// </returns>
-        public static string GetDotnetCli()
-        {
-            var cliDirName = "cli";
-            var dir = ParentDirectoryLookup()
-                .FirstOrDefault(d => DirectoryContains(d, cliDirName));
-            if (dir != null)
-            {
-                var dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliExe);
-                if (File.Exists(dotnetCli))
-                {
-                    return dotnetCli;
-                }
-
-                dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliBinary);
-                if (File.Exists(dotnetCli))
-                {
-                    return dotnetCli;
-                }
-            }
-
-            return null;
-        }
-
-        private static IEnumerable<DirectoryInfo> ParentDirectoryLookup()
-        {
-            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-            while (currentDirInfo != null)
-            {
-                yield return currentDirInfo;
-                currentDirInfo = currentDirInfo.Parent;
-            }
-
-            yield break;
-        }
-
-        private static bool DirectoryContains(DirectoryInfo directoryInfo, string subDirectory)
-        {
-            return directoryInfo
-                .EnumerateDirectories()
-                .Any(dir => StringComparer.OrdinalIgnoreCase.Equals(dir.Name, subDirectory));
-        }
 
         /// <summary>
         /// Adds a few dummy text files at the specified path for testing nuget locals --clear
@@ -117,8 +65,8 @@ namespace NuGet.XPlat.FuncTest
         /// </returns>
         public static string GetXplatDll()
         {
-            var dir = ParentDirectoryLookup()
-               .FirstOrDefault(d => DirectoryContains(d, "src"));
+            var dir = TestFileSystemUtility.ParentDirectoryLookup()
+               .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, "src")));
 
             if (dir != null)
             {
@@ -128,39 +76,45 @@ namespace NuGet.XPlat.FuncTest
 #else
                 "Release";
 #endif
+                var configurationDirectory = Path.Combine(dir.FullName, "artifacts", "NuGet.CommandLine.XPlat", "bin", configuration);
+                var referenceTfm = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(int.MaxValue, 0, 0));
+                var bestTfm = GetTfmToCopy(configurationDirectory, referenceTfm);
+                var filePath = Path.Combine(configurationDirectory, bestTfm, XPlatDll);
 
-                var relativePaths = new string[]
+                if (File.Exists(filePath))
                 {
-                    Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp2.1", XPlatDll)
-                };
-
-                foreach (var relativePath in relativePaths)
-                {
-                    var filePath = Path.Combine(dir.FullName, relativePath);
-
-                    if (File.Exists(filePath))
-                    {
-                        return filePath;
-                    }
+                    return filePath;
                 }
             }
 
             return null;
         }
 
-        /// <summary>
-        /// Provides the path to artifacts directory in the root of repo on the test machine.
-        /// </summary>
-        /// <returns>
-        /// <code>String</code> containing the path to the nupkg directory in the local repository.
-        /// </returns>
-        public static string GetArtifactsDirectoryInRepo()
+        private static string GetTfmToCopy(string projectArtifactsBinFolder, NuGetFramework referenceTfm)
         {
-            var repositoryRootDir = ParentDirectoryLookup()
-                .FirstOrDefault(d => DirectoryContains(d, "artifacts"));
+            var compiledTfms =
+                Directory.EnumerateDirectories(projectArtifactsBinFolder) // get all directories in bin folder
+                .Select(Path.GetFileName) // just the folder name (tfm)
+                .ToDictionary(folder => NuGetFramework.Parse(folder));
 
-            return Path.Combine(repositoryRootDir?.FullName, "artifacts");
+            var reducer = new FrameworkReducer();
+            var selectedTfm = reducer.GetNearest(referenceTfm, compiledTfms.Keys);
+
+            if (selectedTfm == null)
+            {
+                var message = $@"Could not find suitable assets to copy in {projectArtifactsBinFolder}
+TFM being tested: {referenceTfm}
+project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString()))}";
+
+                throw new Exception(message);
+            }
+
+            var selectedVersion = compiledTfms[selectedTfm];
+
+            return selectedVersion;
         }
+
+
 
         /// <summary>
         /// Used to verify the success of positive test cases
@@ -170,14 +124,14 @@ namespace NuGet.XPlat.FuncTest
         public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null)
         {
             Assert.True(
-                result.Item1 == 0,
-                $"Command DID NOT SUCCEED. Ouput is: \"{result.Item2}\". Error is: \"{result.Item3}\"");
+                result.ExitCode == 0,
+                $"Command DID NOT SUCCEED. Ouput is: \"{result.Output}\". Error is: \"{result.Errors}\"");
 
             if (!string.IsNullOrEmpty(expectedOutputMessage))
             {
                 Assert.Contains(
                     expectedOutputMessage,
-                    result.Item2);
+                    result.Output);
             }
         }
 
@@ -190,12 +144,12 @@ namespace NuGet.XPlat.FuncTest
                                                string expectedErrorMessage)
         {
             Assert.True(
-                result.Item1 != 0,
-                $"Command DID NOT FAIL. Ouput is: \"{result.Item2}\". Error is: \"{result.Item3}\"");
+                result.ExitCode != 0,
+                $"Command DID NOT FAIL. Ouput is: \"{result.Output}\". Error is: \"{result.Errors}\"");
 
             Assert.True(
-                result.Item2.Contains(expectedErrorMessage),
-                $"Expected error is: \"{expectedErrorMessage}\". Actual error is: \"{result.Item3}\". Ouput is: \"{result.Item2}\".");
+                result.Output.Contains(expectedErrorMessage),
+                $"Expected error is: \"{expectedErrorMessage}\". Actual error is: \"{result.Errors}\". Ouput is: \"{result.Output}\".");
         }
     }
 }

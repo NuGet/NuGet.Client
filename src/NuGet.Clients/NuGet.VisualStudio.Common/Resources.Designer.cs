@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -70,6 +70,15 @@ namespace NuGet.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument is not a valid GUID..
+        /// </summary>
+        internal static string Argument_Invalid_GUID {
+            get {
+                return ResourceManager.GetString("Argument_Invalid_GUID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value must be greater than or equal to {0}..
         /// </summary>
         internal static string Argument_Must_Be_GreaterThanOrEqualTo {
@@ -79,56 +88,20 @@ namespace NuGet.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Experiment flight &apos;{0}&apos; evaluation overridden by environment variable &apos;{1}&apos; set to &apos;{2}&apos;.
+        /// </summary>
+        internal static string ExperimentVariableOverrideLogText {
+            get {
+                return ResourceManager.GetString("ExperimentVariableOverrideLogText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ========== Finished ==========.
         /// </summary>
         internal static string Finished {
             get {
                 return ResourceManager.GetString("Finished", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to nuget.
-        /// </summary>
-        internal static string NuGetSearchProvider_CategoryShortcut {
-            get {
-                return ResourceManager.GetString("NuGetSearchProvider_CategoryShortcut", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search NuGet packages.
-        /// </summary>
-        internal static string NuGetSearchProvider_Description {
-            get {
-                return ResourceManager.GetString("NuGetSearchProvider_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet Packages.
-        /// </summary>
-        internal static string NuGetSearchProvider_DisplayText {
-            get {
-                return ResourceManager.GetString("NuGetSearchProvider_DisplayText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGet Search.
-        /// </summary>
-        internal static string NuGetSearchProvider_Name {
-            get {
-                return ResourceManager.GetString("NuGetSearchProvider_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search Online for NuGet Packages matching &apos;{0}&apos;.
-        /// </summary>
-        internal static string NuGetStaticResult_DisplayText {
-            get {
-                return ResourceManager.GetString("NuGetStaticResult_DisplayText", resourceCulture);
             }
         }
         

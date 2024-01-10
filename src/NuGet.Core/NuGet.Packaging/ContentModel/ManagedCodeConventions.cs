@@ -39,12 +39,14 @@ namespace NuGet.Client
 
         private static readonly Dictionary<string, object> NetTFMTable = new Dictionary<string, object>
         {
-            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) },
+            { "tfm_raw", "net0" }
         };
 
         private static readonly Dictionary<string, object> DefaultTfmAny = new Dictionary<string, object>
         {
-            { PropertyNames.TargetFrameworkMoniker, AnyFramework.Instance }
+            { PropertyNames.TargetFrameworkMoniker, AnyFramework.Instance },
+            { PropertyNames.TargetFrameworkMoniker + "_raw", "any" }
         };
 
         private static readonly PatternTable DotnetAnyTable = new PatternTable(new[]
@@ -62,6 +64,8 @@ namespace NuGet.Client
                 "any",
                 AnyFramework.Instance )
         });
+
+        private static readonly FrameworkReducer FrameworkReducer = new();
 
         private RuntimeGraph _runtimeGraph;
 
@@ -201,7 +205,7 @@ namespace NuGet.Client
                 return result;
             }
 
-            // Everything should be in the folder format, but fallback to 
+            // Everything should be in the folder format, but fallback to
             // full parsing for legacy support.
             result = NuGetFramework.ParseFrameworkName(name, DefaultFrameworkNameProvider.Instance);
 
@@ -266,11 +270,10 @@ namespace NuGet.Client
                 // If the frameworks are the same this can be skipped
                 if (!criteriaFrameworkName.Equals(availableFrameworkName))
                 {
-                    var reducer = new FrameworkReducer();
                     var frameworks = new NuGetFramework[] { criteriaFrameworkName, availableFrameworkName };
 
                     // Find the nearest compatible framework to the project framework.
-                    var nearest = reducer.GetNearest(projectFrameworkName, frameworks);
+                    var nearest = FrameworkReducer.GetNearest(projectFrameworkName, frameworks);
 
                     if (criteriaFrameworkName.Equals(nearest))
                     {

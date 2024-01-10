@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -24,7 +24,8 @@ using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
 
 namespace NuGet.Packaging.Test
 {
-    public class AttributeUtilityTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class AttributeUtilityTests
     {
         private const string CommitmentTypeIdentifierProofOfDelivery = "1.2.840.113549.1.9.16.6.3";
         private const string CommitmentTypeIdentifierProofOfSender = "1.2.840.113549.1.9.16.6.4";
@@ -44,8 +45,10 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void CreateCommitmentTypeIndication_WithUnknownSignature_Throws()
         {
-            Assert.Throws<ArgumentException>(
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(
                 () => AttributeUtility.CreateCommitmentTypeIndication(SignatureType.Unknown));
+
+            Assert.Contains("signatureType", exception.Message);
         }
 
         [Fact]

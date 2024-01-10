@@ -1,4 +1,4 @@
-﻿{
+{
   "@context": {
     "@vocab": "http://schema.nuget.org/schema#",
     "@base": "http://api.nuget.org/v3/registration0/"
@@ -31,7 +31,7 @@
         },
         {
           "version": "4.1.10331",
-          "downloads": 612084,
+          "downloads": 2147483657,
           "@id": "http://api.nuget.org/v3/registration0/entityframework/4.1.10331.json"
         },
         {

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -97,6 +98,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (!Children.Contains(setting) && !setting.IsEmpty())
             {
                 Children.Add(setting);
@@ -125,6 +131,11 @@ namespace NuGet.Configuration
             if (Origin != null && Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
+            }
+
+            if (Origin != null && Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
             }
 
             if (TryGetChild(setting, out var currentSetting) && Children.Remove(currentSetting))

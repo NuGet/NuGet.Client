@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -17,7 +19,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(NuGetProjectType.Unknown)]
         [InlineData(NuGetProjectType.PackagesConfig)]
         [InlineData(NuGetProjectType.UwpProjectJson)]
-        [InlineData(NuGetProjectType.XProjProjectJson)]
         [InlineData(NuGetProjectType.CPSBasedPackageRefs)]
         [InlineData(NuGetProjectType.LegacyProjectSystemWithPackageRefs)]
         [InlineData(NuGetProjectType.UnconfiguredNuGetType)]
@@ -34,7 +35,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 "3.5.0-beta2",
                 "15e9591f-9391-4ddf-a246-ca9e0351277d",
                 projectType,
-                true);
+                true,
+                @"C:\path\to\project.csproj");
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -65,6 +67,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(isPRUpgradable);
             Assert.IsType<bool>(isPRUpgradable);
             Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
+
+            var projectFilePath = lastTelemetryEvent
+                .GetPiiData()
+                .Where(kv => kv.Key == ProjectTelemetryEvent.ProjectFilePath)
+                .First()
+                .Value;
+            Assert.IsType<string>(projectFilePath);
+            Assert.True(!string.IsNullOrEmpty((string)projectFilePath));
         }
 
         [Theory]
@@ -73,14 +83,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [InlineData(RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.NoOp)]
         [InlineData(RefreshOperationSource.ClearSearch, RefreshOperationStatus.NoOp)]
         [InlineData(RefreshOperationSource.ExecuteAction, RefreshOperationStatus.NotApplicable)]
-        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable)]
+        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable, false)]
+        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable, true)]
         [InlineData(RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.Failed)]
         [InlineData(RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success)]
         [InlineData(RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success)]
-        public void NuGetTelemetryService_EmitsPMUIRefreshEvent(RefreshOperationSource expectedRefreshSource, RefreshOperationStatus expectedRefreshStatus)
+        public void NuGetTelemetryService_EmitsPMUIRefreshEvent(RefreshOperationSource expectedRefreshSource, RefreshOperationStatus expectedRefreshStatus, bool expectedUiFiltering = false)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -91,9 +103,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var expectedGuid = Guid.NewGuid();
             var expectedIsSolutionLevel = true;
-            var expectedTab = "All";
+            var expectedTab = ItemFilter.All;
             var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
-            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, expectedTimeSinceLastRefresh);
+            var expectedDuration = TimeSpan.FromSeconds(1);
+            var refreshEvent = PackageManagerUIRefreshEvent.ForSolution(expectedGuid, expectedRefreshSource, expectedRefreshStatus, expectedTab, isUIFiltering: expectedUiFiltering, expectedTimeSinceLastRefresh, expectedDuration.TotalMilliseconds);
             var target = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -103,7 +116,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal("PMUIRefresh", lastTelemetryEvent.Name);
-            Assert.Equal(6, lastTelemetryEvent.Count);
+            Assert.Equal(8, lastTelemetryEvent.Count);
 
             var parentIdGuid = lastTelemetryEvent["ParentId"];
             Assert.NotNull(parentIdGuid);
@@ -127,13 +140,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var tab = lastTelemetryEvent["Tab"];
             Assert.NotNull(tab);
-            Assert.IsType<string>(tab);
+            Assert.IsType<ItemFilter>(tab);
             Assert.Equal(expectedTab, tab);
+
+            var isUIFiltering = lastTelemetryEvent["IsUIFiltering"];
+            Assert.NotNull(isUIFiltering);
+            Assert.IsType<bool>(isUIFiltering);
+            Assert.Equal(expectedUiFiltering, isUIFiltering);
 
             var timeSinceLastRefresh = lastTelemetryEvent["TimeSinceLastRefresh"];
             Assert.NotNull(timeSinceLastRefresh);
             Assert.IsType<double>(timeSinceLastRefresh);
             Assert.Equal(expectedTimeSinceLastRefresh.TotalMilliseconds, timeSinceLastRefresh);
+            var duration = lastTelemetryEvent["Duration"];
+            Assert.NotNull(duration);
+            Assert.IsType<double>(duration);
+            Assert.Equal(expectedDuration.TotalMilliseconds, timeSinceLastRefresh);
         }
     }
 }

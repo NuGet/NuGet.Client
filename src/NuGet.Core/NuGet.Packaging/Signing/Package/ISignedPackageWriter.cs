@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     public interface ISignedPackageWriter
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Removes a signature if it exists.
         /// </summary>

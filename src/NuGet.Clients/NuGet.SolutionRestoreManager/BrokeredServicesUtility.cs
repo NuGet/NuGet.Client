@@ -11,11 +11,19 @@ namespace NuGet.SolutionRestoreManager
     internal static class BrokeredServicesUtility
     {
         // It is very important that these names and versions are kept the same as the ones in NuGet.VisualStudio.Internal.Contracts.NuGetServices.
-        internal const string NuGetSolutionServiceName = "NuGetSolutionService";
-        internal const string NuGetSolutionServiceVersion = "1.0.0";
+        internal const string SolutionServiceName = "Microsoft.VisualStudio.NuGet.SolutionService";
+        internal const string SolutionServiceVersion = "1.0.0";
 
-        internal static readonly ServiceRpcDescriptor NuGetSolutionService = new ServiceJsonRpcDescriptor(
-            new ServiceMoniker(NuGetSolutionServiceName, new Version(NuGetSolutionServiceVersion)),
+        internal const string DeprecatedSolutionServiceName = "NuGetSolutionService";
+        internal const string DeprecatedSolutionServiceVersion = "1.0.0";
+
+        internal static readonly ServiceRpcDescriptor DeprecatedSolutionService = new ServiceJsonRpcDescriptor(
+            new ServiceMoniker(DeprecatedSolutionServiceName, new Version(DeprecatedSolutionServiceVersion)),
+            ServiceJsonRpcDescriptor.Formatters.UTF8,
+            ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
+
+        internal static readonly ServiceRpcDescriptor SolutionService = new ServiceJsonRpcDescriptor(
+            new ServiceMoniker(SolutionServiceName, new Version(SolutionServiceVersion)),
             ServiceJsonRpcDescriptor.Formatters.UTF8,
             ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
 

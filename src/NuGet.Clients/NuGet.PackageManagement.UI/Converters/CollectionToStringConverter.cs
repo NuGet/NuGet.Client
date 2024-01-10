@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class CollectionToStringConverter: IValueConverter
+    internal class CollectionToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {

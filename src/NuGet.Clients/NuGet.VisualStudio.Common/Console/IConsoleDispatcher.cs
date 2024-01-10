@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio
 {
@@ -14,6 +15,8 @@ namespace NuGet.VisualStudio
         /// Start dispatching console command line inputs. This method can execute asynchronously.
         /// </summary>
         void Start();
+
+        Task StartAsync();
 
         /// <summary>
         /// Raised when the Start method completes asynchronously.

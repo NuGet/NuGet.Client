@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Convert .metaproj paths to project paths.
     /// </summary>
-    public class GetRestoreSolutionProjectsTask : Task
+    public class GetRestoreSolutionProjectsTask : Microsoft.Build.Utilities.Task
     {
         private const string MetaProjExtension = ".metaproj";
 
@@ -37,11 +37,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            // Log inputs
-            var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectReferences '{string.Join(";", ProjectReferences.Select(p => p.ItemSpec))}'");
-            log.LogDebug($"(in) SolutionFilePath '{SolutionFilePath}'");
-
             var entries = new List<ITaskItem>();
             var parentDirectory = Path.GetDirectoryName(SolutionFilePath);
 

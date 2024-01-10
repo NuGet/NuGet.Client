@@ -11,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -2031,6 +2029,7 @@ namespace ProjectManagement.Test
         {
             public IDictionary<string, int> ScriptsExecuted { get; } = new Dictionary<string, int>();
 
+            [Obsolete]
             public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
 
             public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
@@ -2068,7 +2067,7 @@ namespace ProjectManagement.Test
                 }
 
                 ScriptsExecuted[scriptRelativePath]++;
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)

@@ -102,7 +102,7 @@ namespace NuGet.ProjectModel
             try
             {
                 var json = JsonUtility.LoadJson(reader);
-                var lockFile = ReadLockFile(json);
+                var lockFile = ReadLockFile(json, path);
                 lockFile.Path = path;
                 return lockFile;
             }
@@ -144,11 +144,11 @@ namespace NuGet.ProjectModel
         public void Write(TextWriter textWriter, LockFile lockFile)
         {
             using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var jsonObjectWriter = new JsonObjectWriter(jsonWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
 
-                var json = WriteLockFile(lockFile);
-                json.WriteTo(jsonWriter);
+                WriteLockFile(jsonWriter, jsonObjectWriter, lockFile);
             }
         }
 
@@ -161,7 +161,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static LockFile ReadLockFile(JObject cursor)
+        private static LockFile ReadLockFile(JObject cursor, string path)
         {
             var lockFile = new LockFile()
             {
@@ -171,7 +171,7 @@ namespace NuGet.ProjectModel
                 ProjectFileDependencyGroups = JsonUtility.ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
                 PackageFolders = JsonUtility.ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
                 PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
-                CentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject)
+                CentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject, path)
             };
 
             lockFile.LogMessages = ReadLogMessageArray(cursor[LogsProperty] as JArray,
@@ -180,35 +180,39 @@ namespace NuGet.ProjectModel
             return lockFile;
         }
 
-        private static JObject WriteLockFile(LockFile lockFile)
+        private static void WriteLockFile(JsonWriter writer, IObjectWriter jsonObjectWriter, LockFile lockFile)
         {
-            var json = new JObject
-            {
-                [VersionProperty] = new JValue(lockFile.Version),
-                [TargetsProperty] = JsonUtility.WriteObject(lockFile.Targets, WriteTarget),
-                [LibrariesProperty] = JsonUtility.WriteObject(lockFile.Libraries, WriteLibrary),
-                [ProjectFileDependencyGroupsProperty] = JsonUtility.WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup)
-            };
+            writer.WriteStartObject();
+
+            writer.WritePropertyName(VersionProperty);
+            writer.WriteValue(lockFile.Version);
+
+            writer.WritePropertyName(TargetsProperty);
+            JsonUtility.WriteObject(writer, lockFile.Targets, WriteTarget);
+
+            writer.WritePropertyName(LibrariesProperty);
+            JsonUtility.WriteObject(writer, lockFile.Libraries, WriteLibrary);
+
+            writer.WritePropertyName(ProjectFileDependencyGroupsProperty);
+            JsonUtility.WriteObject(writer, lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
+
             if (lockFile.PackageFolders?.Any() == true)
             {
-                json[PackageFoldersProperty] = JsonUtility.WriteObject(lockFile.PackageFolders, WriteFileItem);
+                writer.WritePropertyName(PackageFoldersProperty);
+                JsonUtility.WriteObject(writer, lockFile.PackageFolders, WriteFileItem);
             }
 
             if (lockFile.Version >= 2)
             {
                 if (lockFile.PackageSpec != null)
                 {
-                    using (var jsonWriter = new JTokenWriter())
-                    using (var writer = new JsonObjectWriter(jsonWriter))
-                    {
-                        writer.WriteObjectStart();
+                    writer.WritePropertyName(PackageSpecProperty);
 
-                        PackageSpecWriter.Write(lockFile.PackageSpec, writer);
+                    jsonObjectWriter.WriteObjectStart();
 
-                        writer.WriteObjectEnd();
+                    PackageSpecWriter.Write(lockFile.PackageSpec, jsonObjectWriter);
 
-                        json[PackageSpecProperty] = (JObject)jsonWriter.Token;
-                    }
+                    jsonObjectWriter.WriteObjectEnd();
                 }
             }
 
@@ -217,17 +221,18 @@ namespace NuGet.ProjectModel
                 if (lockFile.LogMessages.Count > 0)
                 {
                     var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
-                    json[LogsProperty] = WriteLogMessages(lockFile.LogMessages, projectPath);
+                    writer.WritePropertyName(LogsProperty);
+                    WriteLogMessages(writer, lockFile.LogMessages, projectPath);
                 }
             }
 
             if (lockFile.CentralTransitiveDependencyGroups.Any())
             {
-                JToken token = WriteCentralTransitiveDependencyGroup(lockFile.CentralTransitiveDependencyGroups);
-                json[CentralTransitiveDependencyGroupsProperty] = (JObject)token;
+                writer.WritePropertyName(CentralTransitiveDependencyGroupsProperty);
+                WriteCentralTransitiveDependencyGroup(jsonObjectWriter, lockFile.CentralTransitiveDependencyGroups);
             }
 
-            return json;
+            writer.WriteEndObject();
         }
 
         private static LockFileLibrary ReadLibrary(string property, JToken json)
@@ -249,56 +254,63 @@ namespace NuGet.ProjectModel
             library.Sha512 = JsonUtility.ReadProperty<string>(jObject, Sha512Property);
 
             library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
-            library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
+            library.Files = ReadPathArray(json[FilesProperty] as JArray);
 
             library.HasTools = ReadBool(json, HasToolsProperty, defaultValue: false);
             return library;
         }
 
-        private static JProperty WriteLibrary(LockFileLibrary library)
+        private static void WriteLibrary(JsonWriter writer, LockFileLibrary library)
         {
-            var json = new JObject();
+            writer.WritePropertyName(library.Name + "/" + library.Version.ToNormalizedString());
+
+            writer.WriteStartObject();
+
             if (library.IsServiceable)
             {
-                WriteBool(json, ServicableProperty, library.IsServiceable);
+                writer.WritePropertyName(ServicableProperty);
+                writer.WriteValue(library.IsServiceable);
             }
 
             if (library.Sha512 != null)
             {
-                json[Sha512Property] = JsonUtility.WriteString(library.Sha512);
+                writer.WritePropertyName(Sha512Property);
+                writer.WriteValue(library.Sha512);
             }
 
-            json[TypeProperty] = JsonUtility.WriteString(library.Type);
+            writer.WritePropertyName(TypeProperty);
+            writer.WriteValue(library.Type);
 
             if (library.Path != null)
             {
-                json[PathProperty] = JsonUtility.WriteString(library.Path);
+                writer.WritePropertyName(PathProperty);
+                writer.WriteValue(library.Path);
             }
 
             if (library.MSBuildProject != null)
             {
-                json[MSBuildProjectProperty] = JsonUtility.WriteString(library.MSBuildProject);
+                writer.WritePropertyName(MSBuildProjectProperty);
+                writer.WriteValue(library.MSBuildProject);
             }
 
             if (library.HasTools)
             {
-                WriteBool(json, HasToolsProperty, library.HasTools);
+                writer.WritePropertyName(HasToolsProperty);
+                writer.WriteValue(library.HasTools);
             }
 
-            WritePathArray(json, FilesProperty, library.Files, JsonUtility.WriteString);
+            WritePathArray(writer, FilesProperty, library.Files);
 
-            return new JProperty(
-                library.Name + "/" + library.Version.ToNormalizedString(),
-                json);
+            writer.WriteEndObject();
         }
 
-        private static JProperty WriteTarget(LockFileTarget target)
+        private static void WriteTarget(JsonWriter writer, LockFileTarget target)
         {
-            var json = JsonUtility.WriteObject(target.Libraries, WriteTargetLibrary);
-
             var key = target.Name;
 
-            return new JProperty(key, json);
+            writer.WritePropertyName(key);
+
+            JsonUtility.WriteObject(writer, target.Libraries, WriteTargetLibrary);
         }
 
         private static LockFileTarget ReadTarget(string property, JToken json)
@@ -317,21 +329,23 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Converts the <code>IAssetsLogMessage</code> object into a <code>JObject</code> that can be written into the assets file.
+        /// Writes the <see cref="IAssetsLogMessage"/> object to the <see cref="JsonWriter"/>.
         /// </summary>
         /// <param name="logMessage"><code>IAssetsLogMessage</code> representing the log message.</param>
-        /// <returns><code>JObject</code> containg the json representation of the log message.</returns>
-        private static JObject WriteLogMessage(IAssetsLogMessage logMessage, string projectPath)
+        private static void WriteLogMessage(JsonWriter writer, IAssetsLogMessage logMessage, string projectPath)
         {
-            var logJObject = new JObject()
-            {
-                [LogMessageProperties.CODE] = Enum.GetName(typeof(NuGetLogCode), logMessage.Code),
-                [LogMessageProperties.LEVEL] = Enum.GetName(typeof(LogLevel), logMessage.Level)
-            };
+            writer.WriteStartObject();
+
+            writer.WritePropertyName(LogMessageProperties.CODE);
+            writer.WriteValue(Enum.GetName(typeof(NuGetLogCode), logMessage.Code));
+
+            writer.WritePropertyName(LogMessageProperties.LEVEL);
+            writer.WriteValue(Enum.GetName(typeof(LogLevel), logMessage.Level));
 
             if (logMessage.Level == LogLevel.Warning)
             {
-                logJObject[LogMessageProperties.WARNING_LEVEL] = (int)logMessage.WarningLevel;
+                writer.WritePropertyName(LogMessageProperties.WARNING_LEVEL);
+                writer.WriteValue((int)logMessage.WarningLevel);
             }
 
             if (logMessage.FilePath != null &&
@@ -339,47 +353,55 @@ namespace NuGet.ProjectModel
             {
                 // Do not write the file path if it is the same as the project path.
                 // This prevents duplicate information in the lock file.
-                logJObject[LogMessageProperties.FILE_PATH] = logMessage.FilePath;
+                writer.WritePropertyName(LogMessageProperties.FILE_PATH);
+                writer.WriteValue(logMessage.FilePath);
             }
 
             if (logMessage.StartLineNumber > 0)
             {
-                logJObject[LogMessageProperties.START_LINE_NUMBER] = logMessage.StartLineNumber;
+                writer.WritePropertyName(LogMessageProperties.START_LINE_NUMBER);
+                writer.WriteValue(logMessage.StartLineNumber);
             }
 
             if (logMessage.StartColumnNumber > 0)
             {
-                logJObject[LogMessageProperties.START_COLUMN_NUMBER] = logMessage.StartColumnNumber;
+                writer.WritePropertyName(LogMessageProperties.START_COLUMN_NUMBER);
+                writer.WriteValue(logMessage.StartColumnNumber);
             }
 
             if (logMessage.EndLineNumber > 0)
             {
-                logJObject[LogMessageProperties.END_LINE_NUMBER] = logMessage.EndLineNumber;
+                writer.WritePropertyName(LogMessageProperties.END_LINE_NUMBER);
+                writer.WriteValue(logMessage.EndLineNumber);
             }
 
             if (logMessage.EndColumnNumber > 0)
             {
-                logJObject[LogMessageProperties.END_COLUMN_NUMBER] = logMessage.EndColumnNumber;
+                writer.WritePropertyName(LogMessageProperties.END_COLUMN_NUMBER);
+                writer.WriteValue(logMessage.EndColumnNumber);
             }
 
             if (logMessage.Message != null)
             {
-                logJObject[LogMessageProperties.MESSAGE] = logMessage.Message;
+                writer.WritePropertyName(LogMessageProperties.MESSAGE);
+                writer.WriteValue(logMessage.Message);
             }
 
             if (logMessage.LibraryId != null)
             {
-                logJObject[LogMessageProperties.LIBRARY_ID] = logMessage.LibraryId;
+                writer.WritePropertyName(LogMessageProperties.LIBRARY_ID);
+                writer.WriteValue(logMessage.LibraryId);
             }
 
             if (logMessage.TargetGraphs != null &&
                 logMessage.TargetGraphs.Any() &&
                 logMessage.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
-                logJObject[LogMessageProperties.TARGET_GRAPHS] = new JArray(logMessage.TargetGraphs);
+                writer.WritePropertyName(LogMessageProperties.TARGET_GRAPHS);
+                WriteArray(writer, logMessage.TargetGraphs);
             }
 
-            return logJObject;
+            writer.WriteEndObject();
         }
 
         /// <summary>
@@ -422,6 +444,8 @@ namespace NuGet.ProjectModel
                         assetsLogMessage.WarningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), warningLevelJson.Value<int>());
                     }
 
+                    assetsLogMessage.ProjectPath = projectPath;
+
                     if (filePathJson != null)
                     {
                         assetsLogMessage.FilePath = filePathJson.Value<string>();
@@ -463,152 +487,239 @@ namespace NuGet.ProjectModel
 
         internal static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
         {
-            var logMessageArray = new JArray();
+            using var writer = new JTokenWriter();
+
+            WriteLogMessages(writer, logMessages, projectPath);
+
+            return (JArray)writer.Token;
+        }
+
+        internal static void WriteLogMessages(JsonWriter writer, IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
+        {
+            writer.WriteStartArray();
+
             foreach (var logMessage in logMessages)
             {
-                logMessageArray.Add(WriteLogMessage(logMessage, projectPath));
+                WriteLogMessage(writer, logMessage, projectPath);
             }
-            return logMessageArray;
+
+            writer.WriteEndArray();
         }
 
         private static LockFileTargetLibrary ReadTargetLibrary(string property, JToken json)
         {
             var library = new LockFileTargetLibrary();
 
-            var parts = property.Split(new[] { '/' }, 2);
-            library.Name = parts[0];
-            if (parts.Length == 2)
+#pragma warning disable CA1307 // Specify StringComparison
+            int slashIndex = property.IndexOf('/');
+#pragma warning restore CA1307 // Specify StringComparison
+            if (slashIndex == -1)
             {
-                library.Version = NuGetVersion.Parse(parts[1]);
+                library.Name = property;
+            }
+            else
+            {
+                library.Name = property.Substring(0, slashIndex);
+                library.Version = NuGetVersion.Parse(property.Substring(slashIndex + 1));
             }
 
             var jObject = json as JObject;
             library.Type = JsonUtility.ReadProperty<string>(jObject, TypeProperty);
             library.Framework = JsonUtility.ReadProperty<string>(jObject, FrameworkProperty);
 
-            library.Dependencies = JsonUtility.ReadObject(json[DependenciesProperty] as JObject, JsonUtility.ReadPackageDependency);
-            library.FrameworkAssemblies = ReadArray(json[FrameworkAssembliesProperty] as JArray, ReadString);
-            library.RuntimeAssemblies = JsonUtility.ReadObject(json[RuntimeProperty] as JObject, ReadFileItem);
-            library.CompileTimeAssemblies = JsonUtility.ReadObject(json[CompileProperty] as JObject, ReadFileItem);
-            library.ResourceAssemblies = JsonUtility.ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
-            library.NativeLibraries = JsonUtility.ReadObject(json[NativeProperty] as JObject, ReadFileItem);
-            library.Build = JsonUtility.ReadObject(json[BuildProperty] as JObject, ReadFileItem);
-            library.BuildMultiTargeting = JsonUtility.ReadObject(json[BuildMultiTargetingProperty] as JObject, ReadFileItem);
-            library.ContentFiles = JsonUtility.ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile);
-            library.RuntimeTargets = JsonUtility.ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
-            library.ToolsAssemblies = JsonUtility.ReadObject(json[ToolsProperty] as JObject, ReadFileItem);
-            library.EmbedAssemblies = JsonUtility.ReadObject(json[EmbedProperty] as JObject, ReadFileItem);
-            library.FrameworkReferences = ReadArray(json[FrameworkReferencesProperty] as JArray, ReadString);
+            if (JsonUtility.ReadObject(json[DependenciesProperty] as JObject, JsonUtility.ReadPackageDependency) is { Count: not 0 } dependencies)
+            {
+                library.Dependencies = dependencies;
+            }
+
+            if (ReadArray(json[FrameworkAssembliesProperty] as JArray, ReadString) is { Count: not 0 } frameworkAssemblies)
+            {
+                library.FrameworkAssemblies = frameworkAssemblies;
+            }
+
+            if (JsonUtility.ReadObject(json[RuntimeProperty] as JObject, ReadFileItem) is { Count: not 0 } runtimeAssemblies)
+            {
+                library.RuntimeAssemblies = runtimeAssemblies;
+            }
+
+            if (JsonUtility.ReadObject(json[CompileProperty] as JObject, ReadFileItem) is { Count: not 0 } compileTimeAssemblies)
+            {
+                library.CompileTimeAssemblies = compileTimeAssemblies;
+            }
+
+            if (JsonUtility.ReadObject(json[ResourceProperty] as JObject, ReadFileItem) is { Count: not 0 } resourceAssemblies)
+            {
+                library.ResourceAssemblies = resourceAssemblies;
+            }
+
+            if (JsonUtility.ReadObject(json[NativeProperty] as JObject, ReadFileItem) is { Count: not 0 } nativeLibraries)
+            {
+                library.NativeLibraries = nativeLibraries;
+            }
+
+            if (JsonUtility.ReadObject(json[BuildProperty] as JObject, ReadFileItem) is { Count: not 0 } build)
+            {
+                library.Build = build;
+            }
+
+            if (JsonUtility.ReadObject(json[BuildMultiTargetingProperty] as JObject, ReadFileItem) is { Count: not 0 } buildMultiTargeting)
+            {
+                library.BuildMultiTargeting = buildMultiTargeting;
+            }
+
+            if (JsonUtility.ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile) is { Count: not 0 } contentFiles)
+            {
+                library.ContentFiles = contentFiles;
+            }
+
+            if (JsonUtility.ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget) is { Count: not 0 } runtimeTargets)
+            {
+                library.RuntimeTargets = runtimeTargets;
+            }
+
+            if (JsonUtility.ReadObject(json[ToolsProperty] as JObject, ReadFileItem) is { Count: not 0 } toolsAssemblies)
+            {
+                library.ToolsAssemblies = toolsAssemblies;
+            }
+
+            if (JsonUtility.ReadObject(json[EmbedProperty] as JObject, ReadFileItem) is { Count: not 0 } embedAssemblies)
+            {
+                library.EmbedAssemblies = embedAssemblies;
+            }
+
+            if (ReadArray(json[FrameworkReferencesProperty] as JArray, ReadString) is { Count: not 0 } frameworkReferences)
+            {
+                library.FrameworkReferences = frameworkReferences;
+            }
+
+            library.Freeze();
 
             return library;
         }
 
-        private static JProperty WriteTargetLibrary(LockFileTargetLibrary library)
+        private static void WriteTargetLibrary(JsonWriter writer, LockFileTargetLibrary library)
         {
-            var json = new JObject();
+            writer.WritePropertyName(library.Name + "/" + library.Version.ToNormalizedString());
+
+            writer.WriteStartObject();
 
             if (library.Type != null)
             {
-                json[TypeProperty] = library.Type;
+                writer.WritePropertyName(TypeProperty);
+                writer.WriteValue(library.Type);
             }
 
             if (library.Framework != null)
             {
-                json[FrameworkProperty] = library.Framework;
+                writer.WritePropertyName(FrameworkProperty);
+                writer.WriteValue(library.Framework);
             }
 
             if (library.Dependencies.Count > 0)
             {
                 var ordered = library.Dependencies.OrderBy(dependency => dependency.Id, StringComparer.Ordinal);
 
-                json[DependenciesProperty] = JsonUtility.WriteObject(ordered, JsonUtility.WritePackageDependency);
+                writer.WritePropertyName(DependenciesProperty);
+                JsonUtility.WriteObject(writer, ordered, JsonUtility.WritePackageDependencyWithLegacyString);
             }
 
             if (library.FrameworkAssemblies.Count > 0)
             {
                 var ordered = library.FrameworkAssemblies.OrderBy(assembly => assembly, StringComparer.Ordinal);
 
-                json[FrameworkAssembliesProperty] = WriteArray(ordered, JsonUtility.WriteString);
+                writer.WritePropertyName(FrameworkAssembliesProperty);
+                WriteArray(writer, ordered);
             }
 
             if (library.CompileTimeAssemblies.Count > 0)
             {
                 var ordered = library.CompileTimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[CompileProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(CompileProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.RuntimeAssemblies.Count > 0)
             {
                 var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[RuntimeProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(RuntimeProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.FrameworkReferences.Count > 0)
             {
                 var ordered = library.FrameworkReferences.OrderBy(reference => reference, StringComparer.Ordinal);
 
-                json[FrameworkReferencesProperty] = WriteArray(ordered, JsonUtility.WriteString);
+                writer.WritePropertyName(FrameworkReferencesProperty);
+                WriteArray(writer, ordered);
             }
 
             if (library.ResourceAssemblies.Count > 0)
             {
                 var ordered = library.ResourceAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[ResourceProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(ResourceProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.NativeLibraries.Count > 0)
             {
                 var ordered = library.NativeLibraries.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[NativeProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(NativeProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.ContentFiles.Count > 0)
             {
                 var ordered = library.ContentFiles.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[ContentFilesProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(ContentFilesProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.Build.Count > 0)
             {
                 var ordered = library.Build.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[BuildProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(BuildProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.BuildMultiTargeting.Count > 0)
             {
                 var ordered = library.BuildMultiTargeting.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[BuildMultiTargetingProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(BuildMultiTargetingProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.RuntimeTargets.Count > 0)
             {
                 var ordered = library.RuntimeTargets.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[RuntimeTargetsProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(RuntimeTargetsProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.ToolsAssemblies.Count > 0)
             {
                 var ordered = library.ToolsAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[ToolsProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(ToolsProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
             if (library.EmbedAssemblies.Count > 0)
             {
-                var ordered = library.EmbedAssemblies.OrderBy(assemby => assemby.Path, StringComparer.Ordinal);
+                var ordered = library.EmbedAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
-                json[EmbedProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
+                writer.WritePropertyName(EmbedProperty);
+                JsonUtility.WriteObject(writer, ordered, WriteFileItem);
             }
 
-            return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
+            writer.WriteEndObject();
         }
 
         private static LockFileRuntimeTarget ReadRuntimeTarget(string property, JToken json)
@@ -644,11 +755,10 @@ namespace NuGet.ProjectModel
 #pragma warning restore CS0618
         }
 
-        private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)
+        private static void WriteProjectFileDependencyGroup(JsonWriter writer, ProjectFileDependencyGroup frameworkInfo)
         {
-            return new JProperty(
-                frameworkInfo.FrameworkName,
-                WriteArray(frameworkInfo.Dependencies, JsonUtility.WriteString));
+            writer.WritePropertyName(frameworkInfo.FrameworkName);
+            WriteArray(writer, frameworkInfo.Dependencies);
         }
 
         private static LockFileItem ReadFileItem(string property, JToken json)
@@ -666,34 +776,40 @@ namespace NuGet.ProjectModel
             return item;
         }
 
-        private static JProperty WriteFileItem(LockFileItem item)
+        private static void WriteFileItem(JsonWriter writer, LockFileItem item)
         {
-            return new JProperty(
-                item.Path,
-                new JObject(item.Properties.OrderBy(prop => prop.Key, StringComparer.Ordinal).Select(x =>
+            writer.WritePropertyName(item.Path);
+
+            writer.WriteStartObject();
+
+            foreach (var property in item.Properties.OrderBy(x => x.Key, StringComparer.Ordinal))
+            {
+                writer.WritePropertyName(property.Key);
+
+                if (bool.TrueString.Equals(property.Value, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (bool.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new JProperty(x.Key, true);
-                    }
-                    else if (bool.FalseString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return new JProperty(x.Key, false);
-                    }
-                    else
-                    {
-                        return new JProperty(x.Key, x.Value);
-                    }
-                })));
+                    writer.WriteValue(true);
+                }
+                else if (bool.FalseString.Equals(property.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    writer.WriteValue(false);
+                }
+                else
+                {
+                    writer.WriteValue(property.Value);
+                }
+            }
+
+            writer.WriteEndObject();
         }
 
         private static IList<TItem> ReadArray<TItem>(JArray json, Func<JToken, TItem> readItem)
         {
             if (json == null)
             {
-                return new List<TItem>();
+                return new List<TItem>(0);
             }
-            var items = new List<TItem>();
+            var items = new List<TItem>(json.Count);
             foreach (var child in json)
             {
                 var item = readItem(child);
@@ -712,7 +828,7 @@ namespace NuGet.ProjectModel
                 return new List<IAssetsLogMessage>();
             }
 
-            var items = new List<IAssetsLogMessage>();
+            var items = new List<IAssetsLogMessage>(json.Count);
             foreach (var child in json)
             {
                 var logMessage = ReadLogMessage(child as JObject, projectPath);
@@ -724,50 +840,32 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static IList<string> ReadPathArray(JArray json, Func<JToken, string> readItem)
+        private static IList<string> ReadPathArray(JArray json)
         {
-            return ReadArray(json, readItem).Select(f => GetPathWithForwardSlashes(f)).ToList();
+            return ReadArray(json, f => GetPathWithForwardSlashes(ReadString(f)));
         }
 
-        private static void WriteArray<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
+        private static void WritePathArray(JsonWriter writer, string property, IEnumerable<string> items)
         {
             if (items.Any())
             {
-                json[property] = WriteArray(items, writeItem);
+                var orderedItems = items
+                    .Select(f => GetPathWithForwardSlashes(f))
+                    .OrderBy(f => f, StringComparer.Ordinal);
+
+                writer.WritePropertyName(property);
+                WriteArray(writer, orderedItems);
             }
         }
 
-        private static void WritePathArray(JToken json, string property, IEnumerable<string> items, Func<string, JToken> writeItem)
+        internal static void WriteArray(JsonWriter writer, IEnumerable<string> values)
         {
-            var orderedItems = items
-                .Select(f => GetPathWithForwardSlashes(f))
-                .OrderBy(f => f, StringComparer.Ordinal)
-                .ToList();
-
-            WriteArray(json, property, orderedItems, writeItem);
-        }
-
-        private static JArray WriteArray<TItem>(IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
-        {
-            var array = new JArray();
-            foreach (var item in items)
+            writer.WriteStartArray();
+            foreach (var value in values)
             {
-                array.Add(writeItem(item));
+                writer.WriteValue(value);
             }
-            return array;
-        }
-
-        private static JArray WritePathArray(IEnumerable<string> items, Func<string, JToken> writeItem)
-        {
-            return WriteArray(items.Select(f => GetPathWithForwardSlashes(f)), writeItem);
-        }
-
-        private static void WriteObject<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JProperty> writeItem)
-        {
-            if (items.Any())
-            {
-                json[property] = JsonUtility.WriteObject(items, writeItem);
-            }
+            writer.WriteEndArray();
         }
 
         private static bool ReadBool(JToken cursor, string property, bool defaultValue)
@@ -790,14 +888,9 @@ namespace NuGet.ProjectModel
             var valueToken = json[property];
             if (valueToken == null)
             {
-                throw new Exception(string.Format("TODO: lock file missing required property {0}", property));
+                throw new Exception(string.Format(CultureInfo.CurrentCulture, "TODO: lock file missing required property {0}", property));
             }
             return SemanticVersion.Parse(valueToken.Value<string>());
-        }
-
-        private static void WriteBool(JToken token, string property, bool value)
-        {
-            token[property] = new JValue(value);
         }
 
         private static string GetPathWithForwardSlashes(string path)
@@ -810,24 +903,19 @@ namespace NuGet.ProjectModel
             return path.Replace('/', '\\');
         }
 
-        private static JToken WriteCentralTransitiveDependencyGroup(IList<CentralTransitiveDependencyGroup> centralTransitiveDependencyGroups)
+        private static void WriteCentralTransitiveDependencyGroup(IObjectWriter writer, IList<CentralTransitiveDependencyGroup> centralTransitiveDependencyGroups)
         {
-            using (var jsonWriter = new JTokenWriter())
-            using (var writer = new JsonObjectWriter(jsonWriter))
+            writer.WriteObjectStart();
+
+            foreach (var centralTransitiveDepGroup in centralTransitiveDependencyGroups.OrderBy(ptdg => ptdg.FrameworkName))
             {
-                writer.WriteObjectStart();
-
-                foreach (var centralTransitiveDepGroup in centralTransitiveDependencyGroups.OrderBy(ptdg => ptdg.FrameworkName))
-                {
-                    PackageSpecWriter.SetDependencies(writer, centralTransitiveDepGroup.FrameworkName, centralTransitiveDepGroup.TransitiveDependencies);
-                }
-
-                writer.WriteObjectEnd();
-                return jsonWriter.Token;
+                PackageSpecWriter.SetCentralTransitveDependencyGroup(writer, centralTransitiveDepGroup.FrameworkName, centralTransitiveDepGroup.TransitiveDependencies);
             }
+
+            writer.WriteObjectEnd();
         }
 
-        private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json)
+        private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json, string path)
         {
             var results = new List<CentralTransitiveDependencyGroup>();
 
@@ -844,15 +932,13 @@ namespace NuGet.ProjectModel
                     NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
                     var dependencies = new List<LibraryDependency>();
 
-                    JsonPackageSpecReader.ReadDependencies(
+                    JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                         jsonReader: jsonReader,
                         results: dependencies,
-                        packageSpecPath: "",
-                        isGacOrFrameworkReference: false);
+                        packageSpecPath: path);
                     results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
                 });
             }
-
             return results;
         }
     }

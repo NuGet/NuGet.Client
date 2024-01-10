@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,26 +7,21 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    static class FrameworkNameHelpers
+    public static class FrameworkNameHelpers
     {
         public static string GetPortableProfileNumberString(int profileNumber)
         {
             return String.Format(CultureInfo.InvariantCulture, "Profile{0}", profileNumber);
         }
 
-        public static string GetFolderName(string identifierShortName, string versionString, string profileShortName)
+        public static string GetFolderName(string identifierShortName, string versionString, string? profileShortName)
         {
             return String.Format(CultureInfo.InvariantCulture, "{0}{1}{2}{3}", identifierShortName, versionString, String.IsNullOrEmpty(profileShortName) ? string.Empty : "-", profileShortName);
         }
 
         public static string GetVersionString(Version version)
         {
-            string versionString = null;
+            string? versionString = null;
 
             if (version != null)
             {
@@ -43,23 +38,21 @@ namespace NuGet.Frameworks
                 }
             }
 
-            return versionString;
+            return versionString!;
         }
 
-        public static Version GetVersion(string versionString)
+        public static Version GetVersion(string? versionString)
         {
-            Version version = null;
-
-            if (String.IsNullOrEmpty(versionString))
+            if (string.IsNullOrEmpty(versionString))
             {
-                version = FrameworkConstants.EmptyVersion;
+                return FrameworkConstants.EmptyVersion;
             }
             else
             {
-                if (versionString.IndexOf('.') > -1)
+                if (versionString!.IndexOf('.') > -1)
                 {
                     // parse the version as a normal dot delimited version
-                    Version.TryParse(versionString, out version);
+                    return Version.Parse(versionString);
                 }
                 else
                 {
@@ -72,11 +65,9 @@ namespace NuGet.Frameworks
                     // take only the first 4 digits and add dots
                     // 451 -> 4.5.1
                     // 81233 -> 8123
-                    Version.TryParse(String.Join(".", versionString.ToCharArray().Take(4)), out version);
+                    return Version.Parse(string.Join(".", versionString.ToCharArray().Take(4)));
                 }
             }
-
-            return version;
         }
     }
 }

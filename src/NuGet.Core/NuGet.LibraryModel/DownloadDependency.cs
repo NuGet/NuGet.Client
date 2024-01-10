@@ -8,7 +8,10 @@ using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
 {
-    public class DownloadDependency : IEquatable<DownloadDependency>, IComparable<DownloadDependency>
+    /// <remarks>
+    /// Immutable.
+    /// </remarks>
+    public sealed class DownloadDependency : IEquatable<DownloadDependency>, IComparable<DownloadDependency>
     {
         public string Name { get; }
 
@@ -32,13 +35,14 @@ namespace NuGet.LibraryModel
             };
         }
 
-        public int CompareTo(DownloadDependency other)
+        public int CompareTo(DownloadDependency? other)
         {
+            if (other == null) return 1;
 
             var compare = string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
             if (compare == 0)
             {
-                
+
                 if (VersionRange == null
                     && other.VersionRange == null)
                 {
@@ -79,12 +83,12 @@ namespace NuGet.LibraryModel
             return hashCode.CombinedHash;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as DownloadDependency);
         }
 
-        public bool Equals(DownloadDependency other)
+        public bool Equals(DownloadDependency? other)
         {
             if (other == null)
             {
@@ -100,9 +104,10 @@ namespace NuGet.LibraryModel
                    EqualityUtility.EqualsWithNullCheck(VersionRange, other.VersionRange);
         }
 
+        [Obsolete("This type is immutable, so there is no need or point to clone it.")]
         public DownloadDependency Clone()
         {
-            return new DownloadDependency(Name, VersionRange);
+            return this;
         }
     }
 }

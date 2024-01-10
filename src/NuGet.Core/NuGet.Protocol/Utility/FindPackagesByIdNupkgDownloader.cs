@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -27,8 +28,11 @@ namespace NuGet.Protocol
             new ConcurrentDictionary<string, NuspecReader>();
 
         private readonly HttpSource _httpSource;
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
-        public FindPackagesByIdNupkgDownloader(HttpSource httpSource)
+        public FindPackagesByIdNupkgDownloader(HttpSource httpSource) : this(httpSource, EnvironmentVariableWrapper.Instance) { }
+
+        internal FindPackagesByIdNupkgDownloader(HttpSource httpSource, IEnvironmentVariableReader environmentVariableReader)
         {
             if (httpSource == null)
             {
@@ -36,6 +40,7 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSource;
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
         /// <summary>
@@ -72,7 +77,7 @@ namespace NuGet.Protocol
                 {
                     reader = PackageUtilities.OpenNuspecFromNupkg(identity.Id, stream, logger);
 
-                    return Task.FromResult(true);
+                    return TaskResult.True;
                 },
                 cacheContext,
                 logger,
@@ -112,17 +117,41 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            return await ProcessNupkgStreamAsync(
-                identity,
-                url,
-                async stream => 
-                {
-                    await stream.CopyToAsync(destination, token);
-                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
-                },
-                cacheContext,
-                logger,
-                token);
+            if (!destination.CanSeek)
+            {
+                // In order to handle retries, we need to write to a temporary file, then copy to destination in one pass.
+                string tempFilePath = Path.GetTempFileName();
+                using Stream tempFile = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, bufferSize: 4096, FileOptions.DeleteOnClose);
+                bool result = await CopyNupkgToStreamAsync(identity, url, tempFile, cacheContext, logger, token);
+
+                tempFile.Position = 0;
+                await tempFile.CopyToAsync(destination, token);
+
+                return result;
+            }
+            else
+            {
+                return await ProcessNupkgStreamAsync(
+                    identity,
+                    url,
+                    async stream =>
+                    {
+                        try
+                        {
+                            await stream.CopyToAsync(destination, token);
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                        }
+                        catch when (!token.IsCancellationRequested)
+                        {
+                            destination.Position = 0;
+                            destination.SetLength(0);
+                            throw;
+                        }
+                    },
+                    cacheContext,
+                    logger,
+                    token);
+            }
         }
 
         /// <summary>
@@ -259,7 +288,8 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            const int maxRetries = 3;
+            int maxRetries = _enhancedHttpRetryHelper.IsEnabled ? _enhancedHttpRetryHelper.RetryCount : 3;
+
             for (var retry = 1; retry <= maxRetries; ++retry)
             {
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
@@ -300,6 +330,19 @@ namespace NuGet.Protocol
                         + ExceptionUtilities.DisplayMessage(ex);
 
                     logger.LogMinimal(message);
+
+                    if (_enhancedHttpRetryHelper.IsEnabled &&
+                        ex.InnerException != null &&
+                        ex.InnerException is IOException &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                    {
+                        // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                        // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                        // Delaying gives Azure more of a chance to recover.
+                        logger.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                        await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds), token);
+                    }
                 }
                 catch (Exception ex) when (retry == maxRetries)
                 {

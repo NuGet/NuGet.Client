@@ -61,7 +61,7 @@ namespace NuGet.Protocol
             var cacheFileDirectory = Path.GetDirectoryName(result.CacheFile);
 
             // Make sure the new cache file directory is created before writing a file to it.
-            DirectoryUtility.CreateSharedDirectory(newCacheFileDirectory);
+            Directory.CreateDirectory(newCacheFileDirectory);
 
             // The update of a cached file is divided into two steps:
             // 1) Delete the old file.
@@ -73,7 +73,11 @@ namespace NuGet.Protocol
                 FileShare.None,
                 BufferSize))
             {
+#if NETCOREAPP2_0_OR_GREATER
+                using (var networkStream = await response.Content.ReadAsStreamAsync(cancellationToken))
+#else
                 using (var networkStream = await response.Content.ReadAsStreamAsync())
+#endif
                 {
                     await networkStream.CopyToAsync(fileStream, BufferSize, cancellationToken);
                 }
@@ -100,7 +104,7 @@ namespace NuGet.Protocol
             // Make sure the cache file directory is created before moving or writing a file to it.
             if (cacheFileDirectory != newCacheFileDirectory)
             {
-                DirectoryUtility.CreateSharedDirectory(cacheFileDirectory);
+                Directory.CreateDirectory(cacheFileDirectory);
             }
 
             // If the destination file doesn't exist, we can safely perform moving operation.

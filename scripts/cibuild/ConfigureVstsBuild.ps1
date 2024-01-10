@@ -1,63 +1,67 @@
 <#
 .SYNOPSIS
-Sets build variables during a VSTS build dynamically.
+Sets build variables during a CI build dynamically.
 
 .DESCRIPTION
-This script is used to dynamically set some build variables during VSTS build.
-Specifically, this script reads the buildcounter.txt file in the $(DropRoot) to
-determine the build number of the artifacts, also it sets the $(NupkgOutputDir)
-based on whether $(BuildRTM) is true or false.
-
-.PARAMETER BuildCounterFile
-Path to the file in the drop root which stores the current build counter.
-
-.PARAMETER BuildInfoJsonFile
-Path to the buildInfo.json file that is generated for every build in the output folder.
+This script is used to dynamically set some build variables during CI build.
+Specifically, this script determines the build number of the artifacts,
+also it sets the $(NupkgOutputDir) based on whether $(BuildRTM) is true or false.
 
 .PARAMETER BuildRTM
 True/false depending on whether nupkgs are being with or without the release labels.
 
+.PARAMETER RepositoryPath
+The path to the root of the NuGet.Client repo
+
+.PARAMETER BranchName
+The name of the branch being built
+
+.PARAMETER CommitHash
+The commit hash being built
+
+.PARAMETER BuildNumber
+The build number of the current build
 #>
 
 param
 (
     [Parameter(Mandatory=$True)]
-    [string]$BuildCounterFile,
-
-    [Parameter(Mandatory=$True)]
-    [string]$BuildInfoJsonFile,
-
-    [Parameter(Mandatory=$True)]
     [string]$BuildRTM,
-    
-    [switch]$SkipUpdateBuildNumber
+    [Parameter(Mandatory=$true)]
+    [string]$RepositoryPath,
+    [Parameter(Mandatory=$true)]
+    [string]$BranchName,
+    [Parameter(Mandatory=$true)]
+    [string]$CommitHash,
+    [Parameter(Mandatory=$true)]
+    [string]$BuildNumber
 )
 
 Function Get-Version {
     param(
-        [string]$ProductVersion,
-        [string]$build
+        [string]$buildNumber
     )
-        Write-Host "Evaluating the new VSIX Version : ProductVersion $ProductVersion, build $build"
+        Write-Host "Evaluating the new VSIX Version : $buildNumber"
         # The major version is NuGetMajorVersion + 11, to match VS's number.
-        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105. 
-        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks. 
+        # The new minor version is: 4.0.0 => 40000, 4.11.5 => 41105.
+        # This assumes we only get to NuGet major/minor/patch 99 at worst, otherwise the logic breaks.
         # The final version for NuGet 4.0.0, build number 3128 would be 15.0.40000.3128
-        $versionParts = $ProductVersion -split '\.'
-        $major = $($versionParts[0] / 1) + 11
-        $finalVersion = "$major.0.$((-join ($versionParts | %{ '{0:D2}' -f ($_ -as [int]) } )).TrimStart("0")).$build"    
-    
+        $parsedVersion = [System.Version]::Parse($buildNumber)
+        $major = $parsedVersion.Major + 11
+        $patchVersion = $parsedVersion.Major * 10000 + $parsedVersion.Minor * 100 + $parsedVersion.Build
+        $finalVersion = "$major.0.$patchVersion.$($parsedVersion.Revision)"
+
         Write-Host "The new VSIX Version is: $finalVersion"
         return $finalVersion
 }
 
 Function Update-VsixVersion {
     param(
-        [string]$ReleaseProductVersion,
+        [string]$buildNumber,
         [string]$manifestName,
-        [int]$buildNumber
+        [string]$repositoryPath
     )
-    $vsixManifest = Join-Path $env:BUILD_REPOSITORY_LOCALPATH\src\NuGet.Clients\NuGet.VisualStudio.Client $manifestName
+    $vsixManifest = Join-Path "$repositoryPath\src\NuGet.Clients\NuGet.VisualStudio.Client" $manifestName
 
     Write-Host "Updating the VSIX version in manifest $vsixManifest"
 
@@ -67,7 +71,7 @@ Function Update-VsixVersion {
     # Reading the current version from the manifest
     $oldVersion = $root.Metadata.Identity.Version
     # Evaluate the new version
-    $newVersion = Get-Version $ReleaseProductVersion $buildNumber
+    $newVersion = Get-Version $buildNumber
     Write-Host "Updating the VSIX version [$oldVersion] => [$newVersion]"
     Write-Host "##vso[task.setvariable variable=VsixBuildNumber;]$newVersion"
     # setting the revision to the new version
@@ -78,7 +82,37 @@ Function Update-VsixVersion {
     Write-Host "Updated the VSIX version [$oldVersion] => [$($root.Metadata.Identity.Version)]"
 }
 
-$msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
+Function Set-RtmLabel {
+    param(
+        [Parameter(Mandatory = $true)]
+        [boolean]$isRTMBuild
+    )
+
+    if ($isRTMBuild -eq $true) {
+        $label = "RTM"
+    } else {
+        $label = "NonRTM"
+    }
+
+    Write-Host "RTM Label: $label"
+    Write-Host "##vso[task.setvariable variable=RtmLabel;]$label"
+}
+
+Function Get-LocBranchExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$branchName
+    )
+
+    Write-Host "Looking for branch '$branchName' in NuGet.Build.Localization"
+    $lsRemoteOpts = 'ls-remote', '--exit-code', 'origin', "refs/heads/$branchName"
+    $branchExists = & git -C $NuGetLocalization $lsRemoteOpts
+    return $LASTEXITCODE -eq 0
+}
+
+$isRTMBuild = [boolean]::Parse($BuildRTM)
+
+Set-RtmLabel -isRTMBuild $isRTMBuild
 
 # Disable strong name verification of common public keys so that scenarios like building the VSIX or running unit tests
 # will not fail because of strong name verification errors.
@@ -87,127 +121,81 @@ $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MS
 $regKeyFileSystem = "HKLM:SYSTEM\CurrentControlSet\Control\FileSystem"
 $enableLongPathSupport = "LongPathsEnabled"
 
-$NuGetClientRoot = $env:BUILD_REPOSITORY_LOCALPATH
-$Submodules = Join-Path $NuGetClientRoot submodules -Resolve
+$Submodules = Join-Path $RepositoryPath submodules -Resolve
 
 # NuGet.Build.Localization repository set-up
 $NuGetLocalization = Join-Path $Submodules NuGet.Build.Localization -Resolve
 
-# Check if there is a localization branch associated with this branch repo 
-$currentNuGetBranch = $env:BUILD_SOURCEBRANCHNAME
-$lsRemoteOpts = 'ls-remote', 'origin', $currentNuGetBranch
-Write-Host "Looking for branch '$currentNuGetBranch' in NuGet.Build.Localization"
-$lsResult = & git -C $NuGetLocalization $lsRemoteOpts
-
-if ($lsResult)
+# Check if there is a localization branch associated with this branch repo
+if (Get-LocBranchExists $BranchName)
 {
-    $NuGetLocalizationRepoBranch = $currentNuGetBranch
+    $NuGetLocalizationRepoBranch = $BranchName
 }
 else
 {
-    $NuGetLocalizationRepoBranch = 'dev'
+    if ($BranchName -like "*-MSRC") {
+        $currentNuGetBranch = $BranchName -replace "-MSRC$", ""
+        if (Get-LocBranchExists $currentNuGetBranch) {
+            $NuGetLocalizationRepoBranch = $currentNuGetBranch
+        }
+        else
+        {
+            $NuGetLocalizationRepoBranch = "dev"
+        }
+    }
+    else {
+        $NuGetLocalizationRepoBranch = 'dev'
+    }
 }
 Write-Host "NuGet.Build.Localization Branch: $NuGetLocalizationRepoBranch"
 
 # update submodule NuGet.Build.Localization
-$updateOpts = 'pull', 'origin', $NuGetLocalizationRepoBranch
+$updateOpts = 'switch', '-d', "origin/$NuGetLocalizationRepoBranch", "-q"
 Write-Host "git update NuGet.Build.Localization at $NuGetLocalization"
 & git -C $NuGetLocalization $updateOpts 2>&1 | Write-Host
 # Get the commit of the localization repository that will be used for this build.
 $LocalizationRepoCommitHash = & git -C $NuGetLocalization log --pretty=format:'%H' -n 1
 
-if (-not (Test-Path $regKeyFileSystem)) 
+if (-not (Test-Path $regKeyFileSystem))
 {
     Write-Host "Enabling long path support on the build machine"
     Set-ItemProperty -Path $regKeyFileSystem -Name $enableLongPathSupport -Value 1
 }
 
 
-if ($BuildRTM -eq 'true')
+if ($BuildRTM -eq $true)
 {
-    # Set the $(NupkgOutputDir) build variable in VSTS build
-    Write-Host "##vso[task.setvariable variable=NupkgOutputDir;]ReleaseNupkgs"
     Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15-RTM"
-    # Only for backward compatibility with orchestrated builds
-    if(-not $SkipUpdateBuildNumber)
-    {
-        $numberOfTries = 0
-        do{
-            Write-Host "Waiting for buildinfo.json to be generated..."
-            $numberOfTries++
-            Start-Sleep -s 15
-        }
-        until ((Test-Path $BuildInfoJsonFile) -or ($numberOfTries -gt 50))
-        $json = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
-        $currentBuild = [System.Decimal]::Parse($json.BuildNumber)
-        # Set the $(Revision) build variable in VSTS build
-        Write-Host "##vso[task.setvariable variable=Revision;]$currentBuild"
-        Write-Host "##vso[build.updatebuildnumber]$currentBuild" 
-        $oldBuildOutputDirectory = Split-Path -Path $BuildInfoJsonFile
-        $branchDirectory = Split-Path -Path $oldBuildOutputDirectory
-        $newBuildOutputFolder =  Join-Path $branchDirectory $currentBuild
-        if(Test-Path $newBuildOutputFolder)
-        {
-            Move-Item -Path $BuildInfoJsonFile -Destination $newBuildOutputFolder
-            Remove-Item -Path $oldBuildOutputDirectory -Force
-        }
-        else
-        {
-            Rename-Item $oldBuildOutputDirectory $currentBuild
-        }
-    }
 }
 else
 {
-    # Only for backward compatibility with orchestrated builds
-    if(-not $SkipUpdateBuildNumber)
-    {
-        $revision = Get-Content $BuildCounterFile
-        $newBuildCounter = [System.Decimal]::Parse($revision)
-        $newBuildCounter++
-        Set-Content $BuildCounterFile $newBuildCounter
-        # Set the $(Revision) build variable in VSTS build
-        Write-Host "##vso[task.setvariable variable=Revision;]$newBuildCounter"
-        Write-Host "##vso[build.updatebuildnumber]$newBuildCounter"
-        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
-    }
-    else
-    {
-        $newBuildCounter = $env:BUILD_BUILDNUMBER
-    }
+    Write-Host "##vso[task.setvariable variable=VsixPublishDir;]VS15"
+    $newBuildCounter = $BuildNumber
+    $VsTargetBranch = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetBranch) | Out-String).Trim()
+    $NuGetSdkVsVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetNuGetSdkVsSemanticVersion) | Out-String).Trim()
+    $VsTargetChannel = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetChannel) | Out-String).Trim()
+    $VsTargetMajorVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetVsTargetMajorVersion) | Out-String).Trim()
+    $GetNuGetVsVersion = ((& dotnet msbuild $RepositoryPath\build\config.props /restore:false "/ConsoleLoggerParameters:Verbosity=Minimal;NoSummary;ForceNoAlign" /nologo /target:GetNuGetVsVersion) | Out-String).Trim()
 
-    $VsTargetBranch = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetVsTargetBranch
-    $CliTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliTargetBranches
-    $SdkTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSdkTargetBranches
-    $ToolsetTargetBranches = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetToolsetTargetBranches
-    Write-Host $VsTargetBranch
+    Write-Host "VS target branch: $VsTargetBranch"
     $jsonRepresentation = @{
         BuildNumber = $newBuildCounter
-        CommitHash = $env:BUILD_SOURCEVERSION
-        BuildBranch = $env:BUILD_SOURCEBRANCHNAME
+        CommitHash = $CommitHash
+        BuildBranch = $BranchName
         LocalizationRepositoryBranch = $NuGetLocalizationRepoBranch
         LocalizationRepositoryCommitHash = $LocalizationRepoCommitHash
-        VsTargetBranch = $VsTargetBranch.Trim()
-        CliTargetBranches = $CliTargetBranches.Trim()
-        SdkTargetBranches = $SdkTargetBranches.Trim()
-        ToolsetTargetBranches = $ToolsetTargetBranches.Trim()
+        VsTargetBranch = $VsTargetBranch
+        VsTargetChannel = $VstargetChannel
+        VsTargetMajorVersion = $VsTargetMajorVersion
+        NuGetSdkVsVersion = $NuGetSdkVsVersion
+        NuGetVsVersion = $GetNuGetVsVersion
     }
 
     # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
-    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$Env:BUILD_REPOSITORY_LOCALPATH\artifacts", 'buildinfo.json')
+    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$RepositoryPath\artifacts", 'buildinfo.json')
 
-    New-Item $localBuildInfoJsonFilePath -Force
+    New-Item $localBuildInfoJsonFilePath -Force | Out-Null
     $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
 
-    # Now copy the file to the remote folder.
-    [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($BuildInfoJsonFile))
-    [System.IO.File]::Copy($localBuildInfoJsonFilePath, $BuildInfoJsonFile)
-
-    $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
-    if (-not $?)
-    {
-        Write-Error "Failed to get product version."
-        exit 1
-    }
-    Update-VsixVersion -manifestName source.extension.vsixmanifest -ReleaseProductVersion $productVersion -buildNumber $env:BUILDNUMBER
+    Update-VsixVersion -manifestName source.extension.vsixmanifest -buildNumber $BuildNumber -RepositoryPath $RepositoryPath
 }

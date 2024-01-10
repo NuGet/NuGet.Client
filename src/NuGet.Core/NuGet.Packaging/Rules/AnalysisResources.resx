@@ -169,6 +169,25 @@
   <data name="InvalidPrereleaseDependencyWarning" xml:space="preserve">
     <value>A stable release of a package should not have a prerelease dependency. Either modify the version spec of dependency "{0}" or update the version field in the nuspec.</value>
   </data>
+  <data name="InvalidUndottedFrameworkInDependencyGroupsWarning" xml:space="preserve">
+    <value>The following dependency group(s) require(s) dots in the framework version: {0}</value>
+    <comment>0 - comma-separated list of target frameworks</comment>
+  </data>
+  <data name="InvalidUndottedFrameworkInFilesWarning" xml:space="preserve">
+    <value>The following packaged file folder(s) require(s) dots in the framework version: {0}</value>
+    <comment>0 - comma-separated list of paths</comment>
+  </data>
+  <data name="InvalidUndottedFrameworkInFrameworkAssemblyGroupsWarning" xml:space="preserve">
+    <value>The following framework assembly group(s) require(s) dots in the framework version: {0}</value>
+    <comment>0 - comma-separated list of target frameworks</comment>
+  </data>
+  <data name="InvalidUndottedFrameworkInReferenceGroupsWarning" xml:space="preserve">
+    <value>The following reference group(s) require(s) dots in the framework version: {0}</value>
+    <comment>0 - comma-separated list of target frameworks</comment>
+  </data>
+  <data name="InvalidUndottedFrameworkWarning" xml:space="preserve">
+    <value>One or more target framework specifiers in your package are missing required dots in their framework version numbers. This is required as of .NET5.0. Please rename them to include dots as needed (e.g. 'net50' to 'net5.0').</value>
+  </data>
   <data name="LegacyVersionWarning" xml:space="preserve">
     <value>The package version '{0}' uses SemVer 2.0.0 or components of SemVer 1.0.0 that are not supported on legacy clients. Change the package version to a SemVer 1.0.0 string. If the version contains a release label it must start with a letter. This message can be ignored if the package is not intended for older clients.</value>
   </data>
@@ -193,6 +212,10 @@
   </data>
   <data name="MisplacedTransformFileWarning" xml:space="preserve">
     <value>The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package. Move it into the 'content' folder.</value>
+  </data>
+  <data name="MissingReadmeInformation" xml:space="preserve">
+    <value>The package {0} is missing a readme. Go to https://aka.ms/nuget/authoring-best-practices/readme to learn why package readmes are important.</value>
+    <comment>0 - package identity</comment>
   </data>
   <data name="NoRefOrLibFolderInPackage" xml:space="preserve">
     <value>This package does not contain a lib/ or ref/ folder, and will therefore be treated as compatible for all frameworks. Since framework specific files were found under the build/ directory for {0}, consider creating the following empty files to correctly narrow the compatibility of the package:

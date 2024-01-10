@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
 
         public void Dispose()
         {
-            if(!_isDisposed)
+            if (!_isDisposed)
             {
                 _dispose();
                 _isDisposed = true;

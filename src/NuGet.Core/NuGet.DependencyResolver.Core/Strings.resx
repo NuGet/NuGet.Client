@@ -120,4 +120,12 @@
   <data name="Error_PackageNotFoundWhenExpected" xml:space="preserve">
     <value>The feed '{0}' lists package '{1}' but multiple attempts to download the nupkg have failed. The feed is either invalid or required packages were removed while the current operation was in progress. Verify the package exists on the feed and try again.</value>
   </data>
+  <data name="Log_MatchingSourceFoundForPackage" xml:space="preserve">
+    <value>Package source mapping matches found for package ID '{0}' are: '{1}'.</value>
+    <comment>{0} - Package id {1} - list of sources</comment>
+  </data>
+  <data name="Log_NoMatchingSourceFoundForPackage" xml:space="preserve">
+    <value>Package source mapping match not found for package ID '{0}'.</value>
+    <comment>{0} - Package id</comment>
+  </data>
 </root>

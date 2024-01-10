@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,12 +14,12 @@ namespace NuGet.Credentials
         string Id { get; }
 
         Task<CredentialResponse> GetAsync(
-            Uri uri, 
-            IWebProxy proxy, 
+            Uri uri,
+            IWebProxy proxy,
             CredentialRequestType type,
             string message,
             bool isRetry,
-            bool nonInteractive, 
+            bool nonInteractive,
             CancellationToken cancellationToken);
     }
 }

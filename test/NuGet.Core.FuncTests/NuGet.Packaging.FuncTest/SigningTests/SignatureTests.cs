@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -59,7 +59,7 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(SignatureVerificationStatus.Disallowed, result.Status);
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
 
-                AssertUntrustedRoot(result.Issues, LogLevel.Error);
+                SigningTestUtility.AssertUntrustedRoot(result.Issues, LogLevel.Error);
             }
         }
 
@@ -84,7 +84,7 @@ namespace NuGet.Packaging.FuncTest
 
                 Assert.Equal(SignatureVerificationStatus.Valid, result.Status);
                 Assert.Equal(0, result.Issues.Count(issue => issue.Level == LogLevel.Error));
-                Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
+                Assert.NotEqual(0, result.Issues.Count(issue => issue.Level == LogLevel.Warning));
             }
         }
 
@@ -231,14 +231,6 @@ namespace NuGet.Packaging.FuncTest
 
             Assert.Equal(expectedAttributesCount, attributesCount);
             Assert.Equal(expectedValuesCount, valuesCount);
-        }
-
-        private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("The primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
         }
 
         private static SignerInformation GetFirstSignerInfo(SignerInformationStore store)

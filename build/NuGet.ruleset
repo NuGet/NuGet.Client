@@ -1,11 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="NuGet Code Analysis Rules" ToolsVersion="16.0">
+<RuleSet Name="NuGet Code Analysis Rules" ToolsVersion="17.0">
   <Include Path="managedminimumrules.ruleset" Action="Default" />
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
     <Rule Id="CA1001" Action="Warning" />
     <Rule Id="CA1821" Action="Warning" />
     <Rule Id="CA2213" Action="Warning" />
     <Rule Id="CA2231" Action="Warning" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp.CodeStyle" RuleNamespace="Microsoft.CodeQuality.Analyzers">
+    <Rule Id="IDE0055" Action="Warning" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp.NetAnalyzers" RuleNamespace="Microsoft.CodeAnalysis.CSharp.NetAnalyzers">
+    <Rule Id="CA2016" Action="Warning" />
+  </Rules>
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.NetAnalyzers" RuleNamespace="Microsoft.CodeAnalysis.NetAnalyzers">
+    <Rule Id="CA3061" Action="Warning" />
+    <Rule Id="CA3076" Action="Warning" />
+    <Rule Id="CA3077" Action="Warning" />
+    <Rule Id="CA3147" Action="Warning" />
+    <Rule Id="CA5351" Action="Warning" />
+    <Rule Id="CA5359" Action="Warning" />
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeAnalysis.VersionCheckAnalyzer" RuleNamespace="Microsoft.CodeAnalysis.VersionCheckAnalyzer">
     <Rule Id="CA9999" Action="None" />
@@ -78,11 +92,17 @@
     <Rule Id="CA2241" Action="None" />
     <Rule Id="CA2242" Action="None" />
     <Rule Id="CA2243" Action="None" />
-    <Rule Id="CA3061" Action="None" />
-    <Rule Id="CA5351" Action="None" />
-    <Rule Id="CA5359" Action="None" />
+    <Rule Id="CA2301" Action="Warning" />
+    <Rule Id="CA2302" Action="Warning" />
+    <Rule Id="CA2305" Action="Warning" />
+    <Rule Id="CA2311" Action="Warning" />
+    <Rule Id="CA2312" Action="Warning" />
+    <Rule Id="CA2315" Action="Warning" />
+    <Rule Id="CA2321" Action="Warning" />
+    <Rule Id="CA2322" Action="Warning" />
+    <Rule Id="CA3001" Action="Warning" />
+    <Rule Id="CA5358" Action="Warning" />
     <Rule Id="CA5360" Action="None" />
-    <Rule Id="CA5361" Action="None" />
     <Rule Id="CA5363" Action="None" />
     <Rule Id="CA5365" Action="None" />
     <Rule Id="CA5366" Action="None" />
@@ -95,12 +115,12 @@
     <Rule Id="CA5374" Action="None" />
     <Rule Id="CA5376" Action="None" />
     <Rule Id="CA5377" Action="None" />
-    <Rule Id="CA5378" Action="None" />
     <Rule Id="CA5379" Action="None" />
     <Rule Id="CA5380" Action="None" />
     <Rule Id="CA5381" Action="None" />
     <Rule Id="CA5384" Action="None" />
     <Rule Id="CA5385" Action="None" />
+    <Rule Id="CA5386" Action="Warning" />
     <Rule Id="CA5397" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.NetCore.CSharp.Analyzers" RuleNamespace="Microsoft.NetCore.CSharp.Analyzers">
@@ -113,12 +133,6 @@
   </Rules>
   <Rules AnalyzerId="Microsoft.NetFramework.Analyzers" RuleNamespace="Microsoft.NetFramework.Analyzers">
     <Rule Id="CA1058" Action="None" />
-    <Rule Id="CA2153" Action="None" />
-    <Rule Id="CA3147" Action="None" />
-  </Rules>
-  <Rules AnalyzerId="Microsoft.NetFramework.CSharp.Analyzers" RuleNamespace="Microsoft.NetFramework.CSharp.Analyzers">
-    <Rule Id="CA3076" Action="None" />
-    <Rule Id="CA3077" Action="None" />
   </Rules>
   <Rules AnalyzerId="Microsoft.VisualStudio.Threading.Analyzers" RuleNamespace="Microsoft.VisualStudio.Threading.Analyzers">
     <Rule Id="VSTHRD103" Action="Hidden" />

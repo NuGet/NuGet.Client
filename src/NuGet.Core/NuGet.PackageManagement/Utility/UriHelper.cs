@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -40,7 +40,6 @@ namespace NuGet.PackageManagement
                 // REVIEW: Will this allow a package author to execute arbitrary program on user's machine?
                 // We have limited the url to be HTTP only, but is it sufficient?
                 Process.Start(url.AbsoluteUri);
-                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.LinkOpened);
             }
         }
 
@@ -108,7 +107,7 @@ namespace NuGet.PackageManagement
                 }
 
                 var packageSource = packageSourceProvider.LoadPackageSources()
-                    .FirstOrDefault(p => p.Name.Equals(source, StringComparison.CurrentCultureIgnoreCase));
+                    .FirstOrDefault(p => p.Name.Equals(source, StringComparison.OrdinalIgnoreCase));
                 return (packageSource != null) && IsHttpSource(packageSource.Source);
             }
 

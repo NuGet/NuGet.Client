@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel
 
         /// <summary>
         /// Framework specific metadata, this may be a subset of the project's frameworks.
-        /// Operations to determine the nearest framework should be done against the project's frameworks, 
+        /// Operations to determine the nearest framework should be done against the project's frameworks,
         /// and then matched directly to this section.
         /// </summary>
         public IList<ProjectRestoreMetadataFrameworkInfo> TargetFrameworks { get; set; } = new List<ProjectRestoreMetadataFrameworkInfo>();
@@ -113,32 +113,55 @@ namespace NuGet.ProjectModel
 
         public RestoreLockProperties RestoreLockProperties { get; set; } = new RestoreLockProperties();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether or not central package management is enabled.
+        /// </summary>
         public bool CentralPackageVersionsEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not a package version specified centrally can be overridden.
+        /// </summary>
+        public bool CentralPackageVersionOverrideDisabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not floating versions are allowed when using central package management (CPM).
+        /// </summary>
+        public bool CentralPackageFloatingVersionsEnabled { get; set; }
+
+        public bool CentralPackageTransitivePinningEnabled { get; set; }
+
+        public RestoreAuditProperties RestoreAuditProperties { get; set; }
 
         public override int GetHashCode()
         {
+            StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
+
             var hashCode = new HashCodeCombiner();
 
-            hashCode.AddObject(ProjectStyle);
-            hashCode.AddObject(ProjectPath);
-            hashCode.AddObject(ProjectJsonPath);
-            hashCode.AddObject(OutputPath);
-            hashCode.AddObject(ProjectName);
-            hashCode.AddObject(ProjectUniqueName);
-            hashCode.AddSequence(Sources);
-            hashCode.AddObject(PackagesPath);
-            hashCode.AddSequence(ConfigFilePaths);
-            hashCode.AddSequence(FallbackFolders);
-            hashCode.AddSequence(TargetFrameworks);
-            hashCode.AddSequence(OriginalTargetFrameworks);
+            hashCode.AddStruct(ProjectStyle);
+            hashCode.AddObject(ProjectPath, osStringComparer);
+            hashCode.AddObject(ProjectJsonPath, osStringComparer);
+            hashCode.AddObject(OutputPath, osStringComparer);
+            hashCode.AddObject(ProjectName, osStringComparer);
+            hashCode.AddObject(ProjectUniqueName, osStringComparer);
+            hashCode.AddUnorderedSequence(Sources);
+            hashCode.AddObject(PackagesPath, osStringComparer);
+            hashCode.AddUnorderedSequence(ConfigFilePaths, osStringComparer);
+            hashCode.AddUnorderedSequence(FallbackFolders, osStringComparer);
+            hashCode.AddUnorderedSequence(TargetFrameworks);
+            hashCode.AddUnorderedSequence(OriginalTargetFrameworks, StringComparer.OrdinalIgnoreCase);
             hashCode.AddObject(CrossTargeting);
             hashCode.AddObject(LegacyPackagesDirectory);
-            hashCode.AddObject(Files);
+            hashCode.AddSequence(Files);
             hashCode.AddObject(ValidateRuntimeAssets);
             hashCode.AddObject(SkipContentFileWrite);
             hashCode.AddObject(ProjectWideWarningProperties);
             hashCode.AddObject(RestoreLockProperties);
             hashCode.AddObject(CentralPackageVersionsEnabled);
+            hashCode.AddObject(CentralPackageFloatingVersionsEnabled);
+            hashCode.AddObject(CentralPackageVersionOverrideDisabled);
+            hashCode.AddObject(CentralPackageTransitivePinningEnabled);
+            hashCode.AddObject(RestoreAuditProperties);
 
             return hashCode.CombinedHash;
         }
@@ -160,17 +183,18 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
+            StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
             return ProjectStyle == other.ProjectStyle &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectPath, other.ProjectPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectJsonPath, other.ProjectJsonPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(OutputPath, other.OutputPath) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectName, other.ProjectName) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(ProjectUniqueName, other.ProjectUniqueName) &&
+                   osStringComparer.Equals(ProjectPath, other.ProjectPath) &&
+                   osStringComparer.Equals(ProjectJsonPath, other.ProjectJsonPath) &&
+                   osStringComparer.Equals(OutputPath, other.OutputPath) &&
+                   osStringComparer.Equals(ProjectName, other.ProjectName) &&
+                   osStringComparer.Equals(ProjectUniqueName, other.ProjectUniqueName) &&
                    Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, StringComparer.OrdinalIgnoreCase) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(PackagesPath, other.PackagesPath) &&
-                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
-                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, PathUtility.GetStringComparerBasedOnOS(), PathUtility.GetStringComparerBasedOnOS()) &&
-                   EqualityUtility.SequenceEqualWithNullCheck(TargetFrameworks, other.TargetFrameworks) &&
+                   osStringComparer.Equals(PackagesPath, other.PackagesPath) &&
+                   ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, osStringComparer, osStringComparer) &&
+                   FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, osStringComparer, osStringComparer) &&
+                   EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, dep => dep.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    OriginalTargetFrameworks.OrderedEquals(other.OriginalTargetFrameworks, fw => fw, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase) &&
                    CrossTargeting == other.CrossTargeting &&
                    LegacyPackagesDirectory == other.LegacyPackagesDirectory &&
@@ -179,7 +203,11 @@ namespace NuGet.ProjectModel
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
-                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled);
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled) &&
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageFloatingVersionsEnabled, other.CentralPackageFloatingVersionsEnabled) &&
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionOverrideDisabled, other.CentralPackageVersionOverrideDisabled) &&
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageTransitivePinningEnabled, other.CentralPackageTransitivePinningEnabled) &&
+                   RestoreAuditProperties == other.RestoreAuditProperties;
         }
 
         public virtual ProjectRestoreMetadata Clone()
@@ -212,6 +240,10 @@ namespace NuGet.ProjectModel
             clone.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
             clone.RestoreLockProperties = RestoreLockProperties?.Clone();
             clone.CentralPackageVersionsEnabled = CentralPackageVersionsEnabled;
+            clone.CentralPackageFloatingVersionsEnabled = CentralPackageFloatingVersionsEnabled;
+            clone.CentralPackageVersionOverrideDisabled = CentralPackageVersionOverrideDisabled;
+            clone.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
+            clone.RestoreAuditProperties = RestoreAuditProperties?.Clone();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,7 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
+        private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
 
         /// <summary>
         /// Checks if <paramref name="s"/> already exists in the cache.
@@ -36,6 +37,7 @@ namespace NuGet.Protocol
             }
 
             string cachedValue;
+
             if (!_stringCache.TryGetValue(s, out cachedValue))
             {
                 _stringCache.Add(s, s);
@@ -76,7 +78,12 @@ namespace NuGet.Protocol
         /// <summary>
         /// <see cref="IEnumerable{Type}"/> containing all types that can be cached.
         /// </summary>
-        public static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
+        internal static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
+
+        /// <summary>
+        /// <see cref="IEnumerable{Type}"/> containing string type methods can be cached.
+        /// </summary>
+        internal Dictionary<Type, MethodInfo> CachableMethodTypes { get; } = new Dictionary<Type, MethodInfo>();
 
         /// <summary>
         /// Iterates through the properties of <paramref name="input"/> that are either <see cref="string"/>s, <see cref="DateTimeOffset"/>s, or <see cref="NuGetVersion"/>s and checks them against the cache.
@@ -85,7 +92,7 @@ namespace NuGet.Protocol
         {
             // Get all properties that contain both a Get method and a Set method and can be cached.
             PropertyInfo[] properties;
-            var typeKey = typeof(T);
+            Type typeKey = typeof(T);
 
             if (!_propertyCache.TryGetValue(typeKey, out properties))
             {
@@ -97,12 +104,27 @@ namespace NuGet.Protocol
                 _propertyCache.Add(typeKey, properties);
             }
 
-            for (var i=0; i < properties.Length; i++)
+            if (!CachableMethodTypes.ContainsKey(typeof(MetadataReferenceCache)))
             {
-                var property = properties[i];
+                // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
+                Type stringPropertyType = typeof(string);
+                MethodInfo method = _metadataReferenceCacheType.GetTypeInfo()
+                        .DeclaredMethods.FirstOrDefault(
+                            m =>
+                                m.Name == CachableTypesMap[stringPropertyType] &&
+                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
+                CachableMethodTypes.Add(_metadataReferenceCacheType, method);
+            }
 
-                var value = property.GetMethod.Invoke(input, null);
-                var cachedValue =
+            for (var i = 0; i < properties.Length; i++)
+            {
+                PropertyInfo property = properties[i];
+                object value = property.GetMethod.Invoke(input, null);
+
+                object cachedValue = property.PropertyType == typeof(string) ?
+                    CachableMethodTypes[_metadataReferenceCacheType]
+                    .Invoke(this, new[] { value })
+                    :
                     typeof(MetadataReferenceCache).GetTypeInfo()
                         .DeclaredMethods.FirstOrDefault(
                             m =>

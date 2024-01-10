@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.Commands
                 // immediately show usage help for this command instead.
                 HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
 
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             if (LocalsCommandRunner == null)
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.Commands
             }
             var localsArgs = new LocalsArgs(Arguments, Settings, Console.LogInformation, Console.LogError, Clear, List);
             LocalsCommandRunner.ExecuteCommand(localsArgs);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

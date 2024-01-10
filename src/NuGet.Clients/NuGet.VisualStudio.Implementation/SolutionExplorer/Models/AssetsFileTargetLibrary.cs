@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
     /// </summary>
     internal sealed class AssetsFileTargetLibrary
     {
-        public static bool TryCreate(LockFileTargetLibrary lockFileLibrary, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? library)
+        public static bool TryCreate(LockFile lockFile, LockFileTargetLibrary lockFileLibrary, [NotNullWhen(returnValue: true)] out AssetsFileTargetLibrary? targetLibrary)
         {
             AssetsFileLibraryType type;
             if (lockFileLibrary.Type == "package")
@@ -29,34 +29,76 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             }
             else
             {
-                library = null;
+                targetLibrary = null;
                 return false;
             }
 
-            library = new AssetsFileTargetLibrary(lockFileLibrary, type);
+            LockFileLibrary? library = lockFile.Libraries.FirstOrDefault(lib => lib.Name == lockFileLibrary.Name);
+
+            targetLibrary = new AssetsFileTargetLibrary(library, lockFileLibrary, type);
             return true;
         }
 
-        private AssetsFileTargetLibrary(LockFileTargetLibrary library, AssetsFileLibraryType type)
+        /// <summary>
+        /// Creates a dummy placeholder for a library in cases where we only know the name of the library.
+        /// </summary>
+        /// <remarks>
+        /// This is useful, for example, when a referenced package does not exist. It will not have an entry in "libraries",
+        /// yet we want to model its presence in our snapshot so that we can display diagnostic nodes to it. For such libraries,
+        /// the version is unknown, which we represent with a <see langword="null"/> value.
+        /// </remarks>
+        public static AssetsFileTargetLibrary CreatePlaceholder(string name)
         {
-            Name = library.Name;
-            Version = library.Version.ToNormalizedString();
+            return new AssetsFileTargetLibrary(name);
+        }
+
+        private AssetsFileTargetLibrary(string name)
+        {
+            Name = name;
+            Version = null;
+            Type = AssetsFileLibraryType.Unknown;
+            Dependencies = ImmutableArray<string>.Empty;
+            FrameworkAssemblies = ImmutableArray<string>.Empty;
+            CompileTimeAssemblies = ImmutableArray<string>.Empty;
+            ContentFiles = ImmutableArray<AssetsFileTargetLibraryContentFile>.Empty;
+            BuildFiles = ImmutableArray<string>.Empty;
+            BuildMultiTargetingFiles = ImmutableArray<string>.Empty;
+            DocumentationFiles = ImmutableArray<string>.Empty;
+        }
+
+        private AssetsFileTargetLibrary(LockFileLibrary? library, LockFileTargetLibrary targetLibrary, AssetsFileLibraryType type)
+        {
+            Name = targetLibrary.Name!;
+            Version = targetLibrary.Version!.ToNormalizedString();
             Type = type;
 
-            Dependencies = library.Dependencies.Select(dep => dep.Id).ToImmutableArray();
+            Dependencies = targetLibrary.Dependencies.Select(dep => dep.Id).ToImmutableArray();
 
-            CompileTimeAssemblies = library.CompileTimeAssemblies
+            CompileTimeAssemblies = targetLibrary.CompileTimeAssemblies
+                .Where(a => a is not null && !IsPlaceholderFile(a.Path))
                 .Select(a => a.Path)
-                .Where(path => path != null)
-                .Where(path => !IsPlaceholderFile(path))
                 .ToImmutableArray();
 
-            FrameworkAssemblies = library.FrameworkAssemblies.ToImmutableArray();
+            FrameworkAssemblies = targetLibrary.FrameworkAssemblies.ToImmutableArray();
 
-            ContentFiles = library.ContentFiles
+            ContentFiles = targetLibrary.ContentFiles
                 .Where(file => !IsPlaceholderFile(file.Path))
                 .Select(file => new AssetsFileTargetLibraryContentFile(file))
                 .ToImmutableArray();
+
+            BuildFiles = targetLibrary.Build
+                .Where(file => !IsPlaceholderFile(file.Path))
+                .Select(file => file.Path)
+                .ToImmutableArray();
+
+            BuildMultiTargetingFiles = targetLibrary.BuildMultiTargeting
+                .Where(file => !IsPlaceholderFile(file.Path))
+                .Select(file => file.Path)
+                .ToImmutableArray();
+
+            DocumentationFiles = library?.Files
+                .Where(IsDocumentationFile)
+                .ToImmutableArray() ?? ImmutableArray<string>.Empty;
 
             return;
 
@@ -75,16 +117,37 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
 
                 return false;
             }
+
+            static bool IsDocumentationFile(string path)
+            {
+                // Content files are not considered documentation. They are displayed via different means.
+                if (path.StartsWith("contentFiles/", StringComparison.OrdinalIgnoreCase))
+                    return false;
+
+                return path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".md", StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         public string Name { get; }
-        public string Version { get; }
+
+        /// <summary>
+        /// Gets the version of the library, or <see langword="null"/> if it is unknown.
+        /// </summary>
+        /// <remarks>
+        /// The version can be unknown for packages that fail to resolve at all, for example when the package
+        /// name is not found. For resolved packages however, this value will always be present.
+        /// </remarks>
+        public string? Version { get; }
         public AssetsFileLibraryType Type { get; }
         public ImmutableArray<string> Dependencies { get; }
         public ImmutableArray<string> FrameworkAssemblies { get; }
         public ImmutableArray<string> CompileTimeAssemblies { get; }
         public ImmutableArray<AssetsFileTargetLibraryContentFile> ContentFiles { get; }
+        public ImmutableArray<string> BuildFiles { get; }
+        public ImmutableArray<string> BuildMultiTargetingFiles { get; }
+        public ImmutableArray<string> DocumentationFiles { get; }
 
-        public override string ToString() => $"{Type} {Name} ({Version}) {Dependencies.Length} {(Dependencies.Length == 1 ? "dependency" : "dependencies")}";
+        public override string ToString() => $"{Type} {Name} ({Version ?? "Unknown"}) {Dependencies.Length} {(Dependencies.Length == 1 ? "dependency" : "dependencies")}";
     }
 }

@@ -9,10 +9,10 @@ Uses the Personal Access Token of NuGetLurker to automate the tagging process.
 PersonalAccessToken of the NuGetLurker account
 
 .PARAMETER VsTargetBranch
-The VS Branch that the NuGet build is being inserted into. 
+The VS Branch that the NuGet build is being inserted into.
 
 .PARAMETER BuildOutputPath
-The output path for NuGet Build artifacts.
+The path to root artifacts.
 #>
 
 [CmdletBinding()]
@@ -23,21 +23,19 @@ param
     [Parameter(Mandatory=$True)]
     [string]$VsTargetBranch,
     [Parameter(Mandatory=$True)]
-    [string]$BuildOutputPath
+    [string]$ArtifactsDirectory
 )
 
 # Set security protocol to tls1.2 for Invoke-RestMethod powershell cmdlet
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 # These environment variables are set on the VSTS Release Definition agents.
-$Branch = ${env:BUILD_SOURCEBRANCHNAME}
-$Build = ${env:BUILD_BUILDNUMBER}
 $Commit = ${env:BUILD_SOURCEVERSION}
 
-$NuGetExePath = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'artifacts', 'VS15', "NuGet.exe")
+$BuildInfoJsonFile = [System.IO.Path]::Combine($ArtifactsDirectory, 'BuildInfo','buildinfo.json')
+$NuGetExePath = [System.IO.Path]::Combine($ArtifactsDirectory, 'VS15', "NuGet.exe")
 Write-Host $NuGetExePath
 
-$TagName = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).FileVersion
 $AttemptNum = ${env:RELEASE_ATTEMPTNUMBER}
 $ProductVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($NuGetExePath).ProductVersion
 $index = $ProductVersion.LastIndexOf('+')
@@ -48,10 +46,9 @@ if($index -ne '-1')
 
 $Date = Get-Date
 $Message = "Insert $ProductVersion into $VsTargetBranch on $Date"
-$BuildInfoJsonFile = [System.IO.Path]::Combine($BuildOutputPath, $Branch, $Build, 'buildinfo.json')
 $buildInfoJson = (Get-Content $BuildInfoJsonFile -Raw) | ConvertFrom-Json
 $LocRepoCommitHash = $buildInfoJson.LocalizationRepositoryCommitHash
-
+$TagName = $buildInfoJson.BuildNumber
 
 Function Tag-GitCommit {
     param(
@@ -76,12 +73,12 @@ try {
         type = 'commit';
         message= $TagMessage;
         } | ConvertTo-Json;
-        
+
         Write-Host $Body
-        
+
     $tagObject = "refs/tags/$TagName"
     $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
-    Write-Host $r1    
+    Write-Host $r1
 }
 catch {
     # The above would fail if the tag already existed, in which case we would append the attempt number to the tag name to make it unique
@@ -93,9 +90,9 @@ catch {
         type = 'commit';
         message= $TagMessage;
         } | ConvertTo-Json;
-        
+
         Write-Host $Body
-        
+
     $tagObject = "refs/tags/$TagName"
     $r1 = Invoke-RestMethod -Headers $Headers -Method Post -Uri "https://api.github.com/repos/NuGet/$NuGetRepository/git/tags" -Body $Body
     Write-Host $r1

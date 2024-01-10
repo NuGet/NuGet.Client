@@ -19,10 +19,8 @@ namespace NuGet.Commands
     public class MSBuildProjectFactory : IProjectFactory
     {
         private ILogger _logger;
-        
+
         // Packaging folders
-        private static readonly string ReferenceFolder = PackagingConstants.Folders.Lib;
-        private static readonly string ToolsFolder = PackagingConstants.Folders.Tools;
         private static readonly string SourcesFolder = PackagingConstants.Folders.Source;
 
         private MSBuildPackTargetArgs PackTargetArgs { get; set; }
@@ -43,8 +41,8 @@ namespace NuGet.Commands
         public Dictionary<string, string> ProjectProperties { get; private set; }
 
         public bool IsTool { get; set; }
-        public ICollection<ManifestFile> Files { get; set; } 
-        
+        public ICollection<ManifestFile> Files { get; set; }
+
         public ILogger Logger
         {
             get
@@ -80,7 +78,7 @@ namespace NuGet.Commands
             Files.Clear();
             builder.Files.Clear();
 
-            AddOutputFiles(builder);
+            AddOutputFiles();
 
             // Add content files if there are any. They could come from a project or nuspec file
             AddContentFiles(builder);
@@ -110,13 +108,13 @@ namespace NuGet.Commands
             {
                 manifest.Save(stream);
             }
-            
+
             builder.PopulateFiles(string.Empty, Files);
-            
+
             return builder;
         }
 
-        private void AddOutputFiles(PackageBuilder builder)
+        private void AddOutputFiles()
         {
             if (PackTargetArgs.IncludeBuildOutput)
             {
@@ -140,7 +138,7 @@ namespace NuGet.Commands
                 }
                 var tfm = NuGetFramework.Parse(file.TargetFramework).GetShortFolderName();
                 var targetPath = file.TargetPath;
-                for (var i=0; i<targetFolders.Length; i++)
+                for (var i = 0; i < targetFolders.Length; i++)
                 {
                     var packageFile = new ManifestFile()
                     {
@@ -159,7 +157,7 @@ namespace NuGet.Commands
             {
                 var fileExtension = Path.GetExtension(packageFile.Source);
 
-                if(IncludeSymbols &&
+                if (IncludeSymbols &&
                     PackArgs.SymbolPackageFormat == SymbolPackageFormat.Snupkg &&
                     !string.Equals(fileExtension, ".pdb", StringComparison.OrdinalIgnoreCase))
                 {
@@ -184,16 +182,15 @@ namespace NuGet.Commands
 
         private void AddContentFiles(PackageBuilder builder)
         {
-            foreach (var sourcePath in PackTargetArgs.ContentFiles.Keys)
+            foreach ((var sourcePath, var listOfContentMetadata) in PackTargetArgs.ContentFiles)
             {
-                var listOfContentMetadata = PackTargetArgs.ContentFiles[sourcePath];
                 foreach (var contentMetadata in listOfContentMetadata)
                 {
                     var target = contentMetadata.Target;
                     var packageFile = new ManifestFile()
                     {
                         Source = sourcePath,
-                        Target = target.EndsWith(Path.DirectorySeparatorChar.ToString()) || string.IsNullOrEmpty(target)
+                        Target = target.EndsWith(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) || string.IsNullOrEmpty(target)
                         ? Path.Combine(target, Path.GetFileName(sourcePath))
                         : target
                     };
@@ -218,7 +215,7 @@ namespace NuGet.Commands
                             CopyToOutput = contentMetadata.CopyToOutput,
                             Flatten = contentMetadata.Flatten
                         };
-                        
+
                         builder.ContentFiles.Add(manifestContentFile);
                     }
                 }
@@ -227,9 +224,8 @@ namespace NuGet.Commands
 
         private void AddSourceFiles()
         {
-            foreach (var sourcePath in PackTargetArgs.SourceFiles.Keys)
+            foreach ((var sourcePath, var projectDirectory) in PackTargetArgs.SourceFiles)
             {
-                var projectDirectory = PackTargetArgs.SourceFiles[sourcePath];
                 var finalTargetPath = GetTargetPathForSourceFile(sourcePath, projectDirectory);
 
                 var packageFile = new ManifestFile()
@@ -243,7 +239,7 @@ namespace NuGet.Commands
 
         public static string GetTargetPathForSourceFile(string sourcePath, string projectDirectory)
         {
-            if(string.IsNullOrEmpty(sourcePath))
+            if (string.IsNullOrEmpty(sourcePath))
             {
                 throw new PackagingException(NuGetLogCode.NU5020, string.Format(CultureInfo.CurrentCulture, Strings.Error_EmptySourceFilePath));
             }
@@ -259,12 +255,20 @@ namespace NuGet.Commands
             }
             var projectName = Path.GetFileName(projectDirectory);
             var targetPath = Path.Combine(SourcesFolder, projectName);
+#if NETCOREAPP
+            if (sourcePath.Contains(projectDirectory, StringComparison.Ordinal))
+#else
             if (sourcePath.Contains(projectDirectory))
+#endif
             {
                 // This is needed because Path.GetDirectoryName returns a path with Path.DirectorySepartorChar
                 var projectDirectoryWithSeparatorChar = PathUtility.GetPathWithDirectorySeparator(projectDirectory);
 
+#if NETCOREAPP
+                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty, StringComparison.Ordinal);
+#else
                 var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty);
+#endif
                 if (!string.IsNullOrEmpty(relativePath) && PathUtility.IsDirectorySeparatorChar(relativePath[0]))
                 {
                     relativePath = relativePath.Substring(1, relativePath.Length - 1);

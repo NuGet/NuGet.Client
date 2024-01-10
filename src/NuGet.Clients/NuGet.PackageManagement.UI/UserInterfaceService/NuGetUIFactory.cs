@@ -4,7 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Utilities;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -13,6 +17,7 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -34,9 +39,6 @@ namespace NuGet.PackageManagement.UI
         [Import]
         private INuGetUILogger OutputConsoleLogger { get; set; }
 
-        [ImportMany]
-        private IEnumerable<Lazy<NuGet.VisualStudio.IVsPackageManagerProvider, IOrderable>> PackageManagerProviders { get; set; }
-
         [Import]
         private Lazy<IPackageRestoreManager> PackageRestoreManager { get; set; }
 
@@ -55,6 +57,9 @@ namespace NuGet.PackageManagement.UI
         [Import]
         private Lazy<ISourceRepositoryProvider> SourceRepositoryProvider { get; set; }
 
+        [Import]
+        private Lazy<IRestoreProgressReporter> RestoreProgressReporter { get; set; }
+
         [ImportingConstructor]
         public NuGetUIFactory(
             ICommonOperations commonOperations,
@@ -70,52 +75,40 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Returns the UI for the project or given set of projects.
         /// </summary>
-        public INuGetUI Create(params NuGetProject[] projects)
+        public async ValueTask<INuGetUI> CreateAsync(
+            IServiceBroker serviceBroker,
+            params IProjectContextInfo[] projects)
         {
-            var uiContext = CreateUIContext(projects);
+            if (serviceBroker is null)
+            {
+                throw new ArgumentNullException(nameof(serviceBroker));
+            }
 
             var adapterLogger = new LoggerAdapter(ProjectContext);
+
             ProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
-                    adapterLogger);
+                PackageSaveMode.Defaultv2,
+                PackageExtractionBehavior.XmlDocFileSaveMode,
+                ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
+                adapterLogger);
 
-            return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
-        }
-
-        private INuGetUIContext CreateUIContext(params NuGetProject[] projects)
-        {
-            var packageManager = new NuGetPackageManager(
+            return await NuGetUI.CreateAsync(
+                serviceBroker,
+                CommonOperations,
+                ProjectContext,
                 SourceRepositoryProvider.Value,
                 Settings.Value,
                 SolutionManager,
-                DeleteOnRestartManager.Value);
-
-            var actionEngine = new UIActionEngine(
-                SourceRepositoryProvider.Value,
-                packageManager,
-                LockService.Value);
-
-            // only pick up at most three integrated package managers
-            const int MaxPackageManager = 3;
-            var packageManagerProviders = PackageManagerProviderUtility.Sort(
-                PackageManagerProviders, MaxPackageManager);
-
-            var context = new NuGetUIContext(
-                SourceRepositoryProvider.Value,
-                SolutionManager,
-                packageManager,
-                actionEngine,
                 PackageRestoreManager.Value,
                 OptionsPageActivator.Value,
                 SolutionUserOptions,
-                packageManagerProviders)
-            {
-                Projects = projects
-            };
-
-            return context;
+                DeleteOnRestartManager.Value,
+                SolutionUserOptions,
+                LockService.Value,
+                OutputConsoleLogger,
+                RestoreProgressReporter.Value,
+                CancellationToken.None,
+                projects);
         }
     }
 }

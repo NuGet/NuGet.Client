@@ -1,4 +1,4 @@
-﻿# VSSolutionManager and ProjectSystemCache event test for .net core
+# VSSolutionManager and ProjectSystemCache event test for .net core
 function Test-NetCoreProjectSystemCacheUpdateEvent {
 
     # Arrange
@@ -17,7 +17,7 @@ function Test-NetCoreProjectSystemCacheUpdateEvent {
     Try
     {
         # Act
-        $projectA | Install-Package Newtonsoft.Json -Version '9.0.1'
+        $projectA | Install-Package Newtonsoft.Json -Version '13.0.1'
 
         $cacheEvent = Wait-Event -SourceIdentifier SolutionManagerCacheUpdated -TimeoutSec 10
     }
@@ -139,7 +139,9 @@ function Test-NetCoreConsoleAppRebuildDoesNotDeleteCacheFile {
 }
 
 function Test-NetCoreVSandMSBuildNoOp {
-    
+    [SkipTest('https://github.com/NuGet/Home/issues/13003')]
+    param ()
+
     # Arrange
     $project = New-NetCoreConsoleApp ConsoleApp
     Build-Solution
@@ -148,12 +150,13 @@ function Test-NetCoreVSandMSBuildNoOp {
     $cacheFile = Get-ProjectCacheFilePath $project
 
     #Act
-    
+
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     $MSBuildExe = Get-MSBuildExe
-    
-    & "$MSBuildExe" /t:restore
+
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
@@ -162,7 +165,9 @@ function Test-NetCoreVSandMSBuildNoOp {
 }
 
 function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
-    
+    [SkipTest('https://github.com/NuGet/Home/issues/13003')]
+    param ()
+
     # Arrange
     $project = New-NetCoreConsoleTargetFrameworksApp ConsoleApp
     Build-Solution
@@ -171,12 +176,13 @@ function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
     $cacheFile = Get-ProjectCacheFilePath $project
 
     #Act
-    
+
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     $MSBuildExe = Get-MSBuildExe
-    
-    & "$MSBuildExe" /t:restore
+
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
@@ -185,7 +191,9 @@ function Test-NetCoreTargetFrameworksVSandMSBuildNoOp {
 }
 
 function Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp {
-    
+    [SkipTest('https://github.com/NuGet/Home/issues/11231')]
+    param ()
+
     # Arrange
     $project = New-NetCoreConsoleMultipleTargetFrameworksApp ConsoleApp
     Build-Solution
@@ -194,12 +202,13 @@ function Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp {
     $cacheFile = Get-ProjectCacheFilePath $project
 
     #Act
-    
+
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     $MSBuildExe = Get-MSBuildExe
-    
-    & "$MSBuildExe" /t:restore
+
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $cacheFile -Name LastWriteTime).lastwritetime).Ticks
 
@@ -208,19 +217,22 @@ function Test-NetCoreMultipleTargetFrameworksVSandMSBuildNoOp {
 }
 
 function Test-NetCoreToolsVSandMSBuildNoOp {
-    
+    [SkipTest('https://github.com/NuGet/Home/issues/11231')]
+    param ()
+
     # Arrange
     $project = New-NetCoreWebApp10 ConsoleApp
     Assert-NetCoreProjectCreation $project
 
     $ToolsCacheFile = Get-ProjectToolsCacheFilePath $project
-    
+
     #Act
     $VSRestoreTimestamp =( [datetime](Get-ItemProperty -Path $ToolsCacheFile -Name LastWriteTime).lastwritetime).Ticks
-    
+
     $MSBuildExe = Get-MSBuildExe
-    
-    & "$MSBuildExe" /t:restore
+
+    & "$MSBuildExe" /t:restore  $project.FullName
+    Assert-True ($LASTEXITCODE -eq 0)
 
     $MsBuildRestoreTimestamp =( [datetime](Get-ItemProperty -Path $ToolsCacheFile -Name LastWriteTime).lastwritetime).Ticks
 

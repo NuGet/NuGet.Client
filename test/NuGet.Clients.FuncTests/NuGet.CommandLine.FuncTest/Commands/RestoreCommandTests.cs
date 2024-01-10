@@ -5,11 +5,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.CommandLine.Test;
+using NuGet.Common;
+using NuGet.Configuration.Test;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -62,7 +67,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                Assert.Equal(4, lockFile.Targets.Count);
+                // There will be a "ridless" target, then one target per whichever RIDs the project system enables by default
+                lockFile.Targets.All(t => t.Name.StartsWith(".NETFramework,Version=v4.6.1")).Should().BeTrue();
 
                 var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
                 Assert.Equal(1, targets.Count);
@@ -135,7 +141,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Equal(packagesLockFilePath, projectA.NuGetLockFileOutputPath);
 
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                Assert.Equal(4, lockFile.Targets.Count);
+                // There will be a "ridless" target, then one target per whichever RIDs the project system enables by default
+                lockFile.Targets.All(t => t.Name.StartsWith(".NETFramework,Version=v4.6.1")).Should().BeTrue();
 
                 var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
                 Assert.Equal(1, targets.Count);
@@ -287,6 +294,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.Contains("NU1004:", result.Errors);
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
             }
         }
 
@@ -498,6 +507,66 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.Contains("NU1004:", result.Errors);
+            }
+        }
+
+        [Fact]
+        public async Task RestorePackagesConfig_WithExistingLockFile_LockedMode_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""x"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Preconditions, regular restore
+                var result = RunRestore(pathContext, _successExitCode);
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeFalse();
+
+                // Write expected lock file
+                var packagePath = LocalFolderUtility.GetPackagesV3(pathContext.PackageSource, NullLogger.Instance).Single().Path;
+
+                string contentHash = null;
+                using (var reader = new PackageArchiveReader(packagePath))
+                {
+                    contentHash = reader.GetContentHash(CancellationToken.None);
+                }
+
+                var expectedLockFile = GetResource("NuGet.CommandLine.FuncTest.compiler.resources.pc.packages.lock.json").Replace("TEMPLATE", contentHash);
+                File.WriteAllText(projectA.NuGetLockFileOutputPath, expectedLockFile);
+
+                // Run lockedmode restore.
+                result = RunRestore(pathContext, _successExitCode, "-LockedMode");
+                result.Success.Should().BeTrue(because: result.AllOutput);
+                new FileInfo(projectA.NuGetLockFileOutputPath).Exists.Should().BeTrue();
             }
         }
 
@@ -806,6 +875,81 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+        [Fact]
+        public async Task Restore_WithLockedModeAndNoObjFolder_RestoreFailsAndWritesOutRestoreResultFiles()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+                projectA.Properties.Add("RuntimeIdentifier", "win");
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
+                Assert.True(result.Success);
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var originalPackagesLockFileWriteTime = new FileInfo(projectA.NuGetLockFileOutputPath).LastWriteTimeUtc;
+
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.Save();
+
+                // Remove old obj folders.
+                Directory.Delete(Path.GetDirectoryName(projectA.AssetsFileOutputPath), recursive: true);
+
+                // Act
+                result = RunRestore(pathContext, _failureExitCode, "-LockedMode");
+
+                // Assert
+                Assert.Contains("NU1004:", result.Errors);
+                var assetsFile = projectA.AssetsFile;
+                var logCodes = assetsFile.LogMessages.Select(e => e.Code);
+                Assert.Contains(NuGetLogCode.NU1004, logCodes);
+                Assert.Equal(2, assetsFile.Targets.Count);
+                var ridlessMainTarget = assetsFile.Targets.FirstOrDefault(e => string.IsNullOrEmpty(e.RuntimeIdentifier));
+                Assert.Equal(net461, ridlessMainTarget.TargetFramework);
+                var ridMainTarget = assetsFile.Targets.FirstOrDefault(e => "win".Equals(e.RuntimeIdentifier));
+                Assert.Equal("win", ridMainTarget.RuntimeIdentifier);
+                Assert.True(File.Exists(projectA.PropsOutput));
+                Assert.True(File.Exists(projectA.TargetsOutput));
+                Assert.True(File.Exists(projectA.CacheFileOutputPath));
+                var packagesLockFileWriteTime = new FileInfo(projectA.NuGetLockFileOutputPath).LastWriteTimeUtc;
+                packagesLockFileWriteTime.Should().Be(originalPackagesLockFileWriteTime, because: "Locked mode must not overwrite the lock file");
+            }
+        }
+
         public static CommandRunnerResult RunRestore(SimpleTestPathContext pathContext, int expectedExitCode = 0, params string[] additionalArguments)
         {
             var nugetExe = Util.GetNuGetExePath();
@@ -831,13 +975,304 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 nugetExe,
                 pathContext.WorkingDirectory.Path,
                 string.Join(" ", args),
-                waitForExit: true,
                 environmentVariables: envVars);
 
             // Assert
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);
 
             return r;
+        }
+
+        [Fact]
+        public async Task Restore_PackageSourceMapping_Succeed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                var externalRepositoryPath = Path.Combine(pathContext.SolutionRoot, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var contosoRepositoryPath = Path.Combine(pathContext.SolutionRoot, "ContosoRepository");
+                Directory.CreateDirectory(contosoRepositoryPath);
+
+                var configPath = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+    <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""externalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""contosoRepository"">
+            <package pattern=""Contoso.*"" />
+            <package pattern=""Test.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+                var ContosoReal = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.A",
+                    Version = "1.0.0"
+                };
+                ContosoReal.AddFile("lib/net461/contosoA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    contosoRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ContosoReal);
+
+                var ExternalA = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.A",  // Initial version had package id conflict with Contoso repository
+                    Version = "1.0.0"
+                };
+                ExternalA.AddFile("lib/net461/externalA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalA);
+
+                var ExternalB = new SimpleTestPackageContext()
+                {
+                    Id = "External.B",  // name conflict resolved.
+                    Version = "2.0.0"
+                };
+                ExternalB.AddFile("lib/net461/externalB.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalB);
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""Contoso.A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""External.B"" version=""2.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = RunRestore(pathContext, _successExitCode);
+
+                // Assert
+                var contosoRestorePath = Path.Combine(projectAPackages, ContosoReal.ToString(), ContosoReal.ToString() + ".nupkg");
+                using (var nupkgReader = new PackageArchiveReader(contosoRestorePath))
+                {
+                    var allFiles = nupkgReader.GetFiles().ToList();
+                    // Assert correct Contoso package from Contoso repository was restored.
+                    Assert.Contains("lib/net461/contosoA.dll", allFiles);
+                }
+                var externalRestorePath = Path.Combine(projectAPackages, ExternalB.ToString(), ExternalB.ToString() + ".nupkg");
+                Assert.True(File.Exists(externalRestorePath));
+            }
+        }
+
+
+        [Fact]
+        public async Task Restore_PackageSourceMapping_Fails()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+                var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+                var externalRepositoryPath = Path.Combine(pathContext.SolutionRoot, "ExternalRepository");
+                Directory.CreateDirectory(externalRepositoryPath);
+
+                var contosoRepositoryPath = Path.Combine(pathContext.SolutionRoot, "ContosoRepository");
+                Directory.CreateDirectory(contosoRepositoryPath);
+
+                var configPath = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
+                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+    <add key=""ExternalRepository"" value=""{externalRepositoryPath}"" />
+    <add key=""ContosoRepository"" value=""{contosoRepositoryPath}"" />
+    </packageSources>
+    <packageSourceMapping>
+        <packageSource key=""ExternalRepository"">
+            <package pattern=""External.*"" />
+            <package pattern=""Others.*"" />
+        </packageSource>
+        <packageSource key=""ContosoRepository"">
+            <package pattern=""Contoso.*"" />  <!--Contoso.A package doesn't exist Contoso repository, so restore should fail-->
+            <package pattern=""Test.*"" />
+        </packageSource>
+    </packageSourceMapping>
+</configuration>");
+
+                var ExternalA = new SimpleTestPackageContext()
+                {
+                    Id = "Contoso.A",  // Initial version had package id conflict with Contoso repository
+                    Version = "1.0.0"
+                };
+                ExternalA.AddFile("lib/net461/externalA.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalA);
+
+                var ExternalB = new SimpleTestPackageContext()
+                {
+                    Id = "External.B",  // name conflict resolved.
+                    Version = "2.0.0"
+                };
+                ExternalB.AddFile("lib/net461/externalB.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    externalRepositoryPath,
+                    PackageSaveMode.Defaultv3,
+                    ExternalB);
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""Contoso.A"" version=""1.0.0"" targetFramework=""net461"" />
+  <package id=""External.B"" version=""2.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = RunRestore(pathContext, _failureExitCode);
+
+                // Assert
+                Assert.Contains("Unable to find version '1.0.0' of package 'Contoso.A'", result.Errors);
+            }
+        }
+
+
+        [Fact]
+        public async Task Restore_WithHttpSource_Warns()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json");
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json");
+
+            var net461 = NuGetFramework.Parse("net461");
+            var projectA = new SimpleTestProjectContext(
+                "a",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+            var projectAPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            // Act
+            var result = RunRestore(pathContext, _successExitCode);
+
+            // Assert
+            result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
+            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+        }
+
+        [Theory]
+        [InlineData("false", true)]
+        [InlineData("FALSE", true)]
+        [InlineData("invalidString", true)]
+        [InlineData("", true)]
+        [InlineData("true", false)]
+        [InlineData("TRUE", false)]
+        public async Task Restore_WithHttpSourceAndFalseAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
+
+            var net461 = NuGetFramework.Parse("net461");
+            var projectB = new SimpleTestProjectContext(
+                "b",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+            var projectBPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            // Act
+            CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
+
+            // Assert
+            string formatString = "You are running the 'restore' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS'";
+            string warningForHttpSource = string.Format(formatString, "http://api.source/index.json");
+            string warningForHttpsSource = string.Format(formatString, "https://api.source/index.json");
+
+            result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.Output);
+            Assert.DoesNotContain(warningForHttpsSource, result.Output);
+            if (hasHttpWarning)
+            {
+                Assert.Contains(warningForHttpSource, result.Output);
+            }
+            else
+            {
+                Assert.DoesNotContain(warningForHttpSource, result.Output);
+            }
+        }
+
+        public static string GetResource(string name)
+        {
+            using (var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream(name)))
+            {
+                return reader.ReadToEnd();
+            }
         }
     }
 }

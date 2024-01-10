@@ -36,11 +36,12 @@ namespace NuGet.Test.Utility
                 identity: pkgId,
                 path: pkgPath,
                 lastWriteTimeUtc: DateTime.UtcNow,
-                nuspec: new Lazy<Packaging.NuspecReader>(() => {
+                nuspec: new Lazy<Packaging.NuspecReader>(() =>
+                {
                     var reader = new PackageArchiveReader(pkgPath);
                     return reader.NuspecReader;
                 }),
-                getPackageReader: () => new PackageArchiveReader(pkgPath));
+                useFolder: false);
             TestData = new LocalPackageSearchMetadata(info);
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -77,7 +77,7 @@ namespace NuGet.Indexing.Test
             var y = "bbbb";
 
             var result = x.Merge(y, new NoopComparer<char>());
-        
+
             Assert.NotNull(result);
             Assert.Equal(x + y, new string(result.ToArray()));
         }
@@ -132,7 +132,7 @@ namespace NuGet.Indexing.Test
         {
             //  multiple results to merge - different lengths including zero length - this is similar to expected usage
 
-            var data = new []
+            var data = new[]
             {
                 new [] { "101", "107", "110" },
                 new [] { "201", "205", "211" },

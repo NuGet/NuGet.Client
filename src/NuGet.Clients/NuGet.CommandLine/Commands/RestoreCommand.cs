@@ -146,7 +146,7 @@ namespace NuGet.CommandLine
 
                 using (var cacheContext = new SourceCacheContext())
                 {
-                    cacheContext.NoCache = NoCache;
+                    cacheContext.NoCache = NoCache || NoHttpCache;
                     cacheContext.DirectDownload = DirectDownload;
 
                     var restoreContext = restoreInputs.RestoreV3Context;
@@ -264,7 +264,7 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());
+            var installedPackageReferences = new HashSet<Packaging.PackageReference>(PackageReferenceComparer.Instance);
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
                 installedPackageReferences.AddRange(packageRestoreInputs
@@ -379,10 +379,12 @@ namespace NuGet.CommandLine
 
             using (var cacheContext = new SourceCacheContext())
             {
-                cacheContext.NoCache = NoCache;
+                cacheContext.NoCache = NoCache || NoHttpCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload)
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, packageSourceMapping)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -496,7 +498,22 @@ namespace NuGet.CommandLine
             {
                 // Restore takes multiple arguments, each could be a file or directory
                 var argument = Arguments.Single();
-                var fullPath = Path.GetFullPath(argument);
+                string fullPath;
+                try
+                {
+                    fullPath = Path.GetFullPath(argument);
+                }
+                catch (ArgumentException)
+                {
+                    // Treat "invalid characters in path" like a file not found.
+                    // Afterall, a filename with invalid characters can't exist.
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("RestoreCommandFileNotFound"),
+                        argument);
+
+                    throw new InvalidOperationException(message);
+                }
 
                 if (Directory.Exists(fullPath))
                 {
@@ -614,10 +631,8 @@ namespace NuGet.CommandLine
 
             // Filter down to just the requested projects in the file
             // that support transitive references.
-            var v3RestoreProjects = dgFileOutput.Projects
-                .Where(project => (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                    || project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
-                    && entryPointProjects.Contains(project));
+            var v3RestoreProjects = entryPointProjects
+                .Where(project => project.RestoreMetadata.ProjectStyle is ProjectStyle.PackageReference or ProjectStyle.ProjectJson);
 
             packageRestoreInputs.RestoreV3Context.Inputs.AddRange(v3RestoreProjects
                 .Select(project => project.RestoreMetadata.ProjectPath));
@@ -717,7 +732,8 @@ namespace NuGet.CommandLine
             {
                 packageRestoreInputs.RestoreV3Context.Inputs.Add(projectFilePath);
             }
-            else if (projectFileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+            else if (projectFileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
+                || projectFileName.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase))
             {
                 ProcessSolutionFile(projectFilePath, packageRestoreInputs);
             }
@@ -818,7 +834,7 @@ namespace NuGet.CommandLine
         /// </summary>
         private static bool IsPackagesConfig(string projectFileName)
         {
-            return string.Equals(projectFileName, Constants.PackageReferenceFile)
+            return string.Equals(projectFileName, Constants.PackageReferenceFile, PathUtility.GetStringComparisonBasedOnOS())
                 || (projectFileName.StartsWith("packages.", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(
                     Path.GetExtension(projectFileName),
@@ -884,10 +900,22 @@ namespace NuGet.CommandLine
             restoreInputs.NameOfSolutionFile = Path.GetFileNameWithoutExtension(solutionFileFullPath);
 
             // restore packages for the solution
-            var solutionLevelPackagesConfig = Path.Combine(
-                restoreInputs.DirectoryOfSolutionFile,
-                NuGetConstants.NuGetSolutionSettingsFolder,
-                Constants.PackageReferenceFile);
+            string solutionLevelPackagesConfig;
+
+            try
+            {
+                solutionLevelPackagesConfig = Path.Combine(
+                    restoreInputs.DirectoryOfSolutionFile,
+                    NuGetConstants.NuGetSolutionSettingsFolder,
+                    Constants.PackageReferenceFile);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_InvalidSolutionDirectory"),
+                        restoreInputs.DirectoryOfSolutionFile),
+                    e);
+            }
 
             if (File.Exists(solutionLevelPackagesConfig))
             {

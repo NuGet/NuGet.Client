@@ -1084,7 +1084,7 @@ namespace NuGet.Protocol.Plugins.Tests
                         ".NETFramework,Version=v4.0",
                         ".NETFramework,Version=v4.5"
                     }, groups.Select(g => g.TargetFramework.DotNetFrameworkName));
-                Assert.Equal(new[] { "b","c" }, groups.First().Packages.Select(p => p.Id));
+                Assert.Equal(new[] { "b", "c" }, groups.First().Packages.Select(p => p.Id));
             }
         }
 

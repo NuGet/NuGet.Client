@@ -14,14 +14,19 @@ namespace NuGet.Configuration.Test
 {
     public static class SettingsTestUtils
     {
-        public static void CreateConfigurationFile(string configurationPath, string mockBaseDirectory, string configurationContent)
+        public static void CreateConfigurationFile(string configurationPath, string configurationContent)
         {
-            Directory.CreateDirectory(mockBaseDirectory);
-            using (var file = File.Create(Path.Combine(mockBaseDirectory, configurationPath)))
+            using (var file = File.Create(configurationPath))
             {
                 var info = Encoding.UTF8.GetBytes(configurationContent);
                 file.Write(info, 0, info.Count());
             }
+        }
+
+        public static void CreateConfigurationFile(string configurationPath, string mockBaseDirectory, string configurationContent)
+        {
+            Directory.CreateDirectory(mockBaseDirectory);
+            CreateConfigurationFile(Path.Combine(mockBaseDirectory, configurationPath), configurationContent);
         }
 
         public static byte[] GetFileHash(string fileName)
@@ -122,6 +127,14 @@ namespace NuGet.Configuration.Test
             else if (setting1 is FileClientCertItem)
             {
                 return FileClientCertItem_DeepEquals(setting1 as FileClientCertItem, setting2 as FileClientCertItem);
+            }
+            else if (setting1 is PackagePatternItem)
+            {
+                return PackagePatternItem_DeepEquals(setting1 as PackagePatternItem, setting2 as PackagePatternItem);
+            }
+            else if (setting2 is PackageSourceMappingSourceItem)
+            {
+                return PackageSourceMappingSourceItem_Equals(setting1 as PackageSourceMappingSourceItem, setting2 as PackageSourceMappingSourceItem);
             }
 
             return false;
@@ -291,5 +304,21 @@ namespace NuGet.Configuration.Test
         {
             return ItemBase_DeepEquals(item1, item2);
         }
+
+        private static bool PackagePatternItem_DeepEquals(PackagePatternItem item1, PackagePatternItem item2)
+        {
+            return ItemBase_DeepEquals(item1, item2);
+        }
+
+        private static bool PackageSourceMappingSourceItem_Equals(PackageSourceMappingSourceItem item1, PackageSourceMappingSourceItem item2)
+        {
+            if (!ItemBase_DeepEquals(item1, item2))
+            {
+                return false;
+            }
+
+            return item1.Patterns.OrderedEquals(item2.Patterns, e => e.Pattern, StringComparer.OrdinalIgnoreCase);
+        }
+
     }
 }

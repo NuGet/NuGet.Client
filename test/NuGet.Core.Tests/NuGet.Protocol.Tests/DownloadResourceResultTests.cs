@@ -25,11 +25,16 @@ namespace NuGet.Protocol.Tests
         {
             var exception = Assert.Throws<ArgumentException>(() => new DownloadResourceResult(status));
 
-            var expectedMessage = $"A stream should be provided when the result is available.{Environment.NewLine}"
-                + "Parameter name: status";
+            var expectedMessage = "A stream should be provided when the result is available.";
 
             Assert.Equal("status", exception.ParamName);
-            Assert.Equal(expectedMessage, exception.Message);
+            Assert.Contains(expectedMessage, exception.Message);
+
+            //Remove the expected message from the exception message, the rest part should have param info.
+            //Background of this change: System.ArgumentException(string message, string paramName) used to generate two lines of message before, but changed to generate one line
+            //in PR: https://github.com/dotnet/coreclr/pull/25185/files#diff-0365d5690376ef849bf908dfc225b8e8
+            var paramPart = exception.Message.Substring(exception.Message.IndexOf(expectedMessage) + expectedMessage.Length);
+            Assert.Contains("status", paramPart);
         }
 
         [Theory]
@@ -250,7 +255,7 @@ namespace NuGet.Protocol.Tests
 
             public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
             {
-                return Task.FromResult<PrimarySignature>(null);
+                return TaskResult.Null<PrimarySignature>();
             }
 
             public override Stream GetStream(string path)
@@ -260,7 +265,7 @@ namespace NuGet.Protocol.Tests
 
             public override Task<bool> IsSignedAsync(CancellationToken token)
             {
-                return Task.FromResult(false);
+                return TaskResult.False;
             }
 
             public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)

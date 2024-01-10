@@ -5,11 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
-using Xunit;
 using Test.Utility;
+using Xunit;
 
 namespace NuGet.DependencyResolver.Tests
 {
@@ -386,7 +387,8 @@ namespace NuGet.DependencyResolver.Tests
             cNode.Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity
             {
                 Name = "C",
-                Version = new NuGetVersion("2.0")
+                Version = new NuGetVersion("2.0"),
+                Type = LibraryType.Package
             });
 
             var result = node.Analyze();
@@ -827,14 +829,14 @@ namespace NuGet.DependencyResolver.Tests
             {
                 LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
             };
+            var parent = new GraphNode<RemoteResolveResult>(new LibraryRange("parentname1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package));
 
-            bool resultAdd = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+            transitiveCentralPackageVersions.Add(centralPackageVersionDependency, parent);
             bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
-            // nothing more to take 
+            // nothing more to take
             bool resultTake2 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake2);
 
             // Assert
-            Assert.True(resultAdd);
             Assert.True(resultTake1);
             Assert.False(resultTake2);
 
@@ -843,27 +845,36 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public void TransitiveCentralPackageVersions_TryAdd_DuplicatesAreIgnored()
+        public void TransitiveCentralPackageVersions_TryAdd_MultipleParents()
         {
             // Arrange
             var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
+            var centralLibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package);
             var centralPackageVersionDependency = new LibraryDependency()
             {
-                LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+                LibraryRange = centralLibraryRange,
             };
-            bool resultAdd1 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
-            bool resultAdd2 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+            var parent1 = new GraphNode<RemoteResolveResult>(new LibraryRange("parentname1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package));
+            var parent2 = new GraphNode<RemoteResolveResult>(new LibraryRange("parentname2", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package));
+            var centralNode = new GraphNode<RemoteResolveResult>(centralPackageVersionDependency.LibraryRange)
+            {
+                Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(centralPackageVersionDependency.LibraryRange.Name, NuGetVersion.Parse("1.0.0"), LibraryType.Package))
+            };
+
+            transitiveCentralPackageVersions.Add(centralPackageVersionDependency, parent1);
+            transitiveCentralPackageVersions.Add(centralPackageVersionDependency, parent2);
+            transitiveCentralPackageVersions.AddParentsToNode(centralNode);
 
             // Assert
-            Assert.True(resultAdd1);
-            Assert.False(resultAdd2);
-
-            // Once the data is added it cannot be re-added even if after TryTake 
             bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
-            bool resultAdd3 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+            bool resultTake2 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake2);
 
             Assert.True(resultTake1);
-            Assert.False(resultAdd3);
+            Assert.False(resultTake2);
+            Assert.Equal(2, centralNode.ParentNodes.Count);
+            var parentLibraryNames = centralNode.ParentNodes.Select(p => p.Key.Name).OrderBy(n => n).ToArray();
+            Assert.Equal("parentname1", parentLibraryNames[0]);
+            Assert.Equal("parentname2", parentLibraryNames[1]);
         }
 
         [Theory]
@@ -879,9 +890,9 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B
 
-            // Input 
+            // Input
             // A -> B (version = otherVersion) -> C (version = otherVersion) -> D (version = otherVersion)
             // A ~> D (the version 2.0.0 or as defined by "centralPackageVersion" argument
             //         the dependency is not direct,
@@ -938,7 +949,7 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public async Task WalkAsyncDowngradesBecauseOfCentralDependecy()
+        public async Task WalkAsyncDowngradesBecauseOfCentralDependency()
         {
             var centralPackageName = "D";
             var centralPackageVersion = "2.0.0";
@@ -949,7 +960,7 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B
 
             // Picture:
             // A -> B -> C -> D (version 1.0.0 or 2.0.0 as defined by "otherVersion" argument.
@@ -1005,7 +1016,7 @@ namespace NuGet.DependencyResolver.Tests
             var centralPackageName = "D";
             var context = new TestRemoteWalkContext();
             var centralPackageVersion = new CentralPackageVersion(centralPackageName, VersionRange.Parse("2.0.0"));
-            var centralPackageVersionDependecy_VersionCentrallyManaged = new LibraryDependency()
+            var centralPackageVersionDependency_VersionCentrallyManaged = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
                 VersionCentrallyManaged = versionCentrallyManaged,
@@ -1014,7 +1025,7 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
 
             // Act
-            var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependecy_VersionCentrallyManaged);
+            var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependency_VersionCentrallyManaged);
 
             // Assert
             if (referenceType != LibraryDependencyReferenceType.None)
@@ -1056,7 +1067,7 @@ namespace NuGet.DependencyResolver.Tests
             // B ~> centralPackage1
             provider.Package("B", "1.0.0")
                    .DependsOn("centralPackage1", "1.0.0", target: LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
-          
+
             provider.Package("centralPackage1", "1.0.0");
             provider.Package("centralPackage2", "1.0.0");
 
@@ -1067,7 +1078,1077 @@ namespace NuGet.DependencyResolver.Tests
             var rootNode = await DoWalkAsync(walker, "A", framework);
 
             // Assert
-            Assert.Equal(3, rootNode.InnerNodes.Count);       
+            Assert.Equal(3, rootNode.InnerNodes.Count);
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+        ///   -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
+        ///
+        ///  D has version defined centrally 2.0.0
+        ///  D 2.0.0 -> I 2.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CentralTransitiveDependency_IsRejected_If_ParentsAreRejected()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            // A -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("F", version100);
+            provider.Package("F", version100)
+                    .DependsOn("C", version200);
+            provider.Package("C", version200)
+                    .DependsOn("H", version200);
+            // add H 2.0.0 to the feed
+            provider.Package("H", version200);
+
+            // A -> -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("G", version100);
+            provider.Package("G", version100)
+                    .DependsOn("H", version100);
+            provider.Package("H", version100)
+                    .DependsOn("D", version100);
+
+            // D 2.0.0 -> I 2.0.0
+            provider.Package("D", version200)
+                   .DependsOn("I", version200);
+            provider.Package("I", version200);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version200, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(4, rootNode.InnerNodes.Count);
+
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(1, centralTransitiveNodes.Count);
+            Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
+
+            var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(3, notCentralTransitiveNodes.Count);
+            foreach (var node in notCentralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                node.ForEach((n) =>
+                {
+                    if ((n.Key.Name == "C" && n.Key.VersionRange.OriginalString == "1.0.0") ||
+                        (n.Key.Name == "H" && n.Key.VersionRange.OriginalString == "1.0.0"))
+                    {
+                        Assert.Equal(Disposition.Rejected, n.Disposition);
+                    }
+                    else
+                    {
+                        Assert.Equal(Disposition.Accepted, n.Disposition);
+                    }
+                });
+            }
+
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+        ///   -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
+        ///
+        ///  D has version defined centrally 2.0.0 and E is centrally as well with version 3.0.0
+        ///  and
+        ///  D 2.0.0 -> I 2.0.0 -> E 2.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CentralTransitiveDependency_IsRejected_If_ParentsAreRejected_TwoLevelCentralDependencies()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+            var version300 = "3.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            // A -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("F", version100);
+            provider.Package("F", version100)
+                    .DependsOn("C", version200);
+            provider.Package("C", version200)
+                    .DependsOn("H", version200);
+
+            // A -> -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("G", version100);
+            provider.Package("G", version100)
+                    .DependsOn("H", version100);
+            provider.Package("H", version100)
+                    .DependsOn("D", version100);
+
+            // D 2.0.0 -> I 2.0.0 -> E 2.0.0
+            provider.Package("D", version200)
+                   .DependsOn("I", version200);
+            provider.Package("I", version200)
+                   .DependsOn("E", version200);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version200, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+            provider.Package("A", version100)
+                     .DependsOn("E", version300, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            // Expected B,D, E,F,G
+            var innerNodes = rootNode.InnerNodes.OrderBy(n => n.Key.Name).ToArray();
+            Assert.Equal(5, innerNodes.Length);
+            Assert.Equal("B", innerNodes[0].Key.Name);
+            Assert.Equal("D", innerNodes[1].Key.Name);
+            Assert.Equal("E", innerNodes[2].Key.Name);
+            Assert.Equal("F", innerNodes[3].Key.Name);
+            Assert.Equal("G", innerNodes[4].Key.Name);
+
+            Assert.Equal(version100, innerNodes[0].Key.VersionRange.OriginalString);
+            Assert.Equal(version200, innerNodes[1].Key.VersionRange.OriginalString);
+            Assert.Equal(version300, innerNodes[2].Key.VersionRange.OriginalString);
+            Assert.Equal(version100, innerNodes[3].Key.VersionRange.OriginalString);
+            Assert.Equal(version100, innerNodes[4].Key.VersionRange.OriginalString);
+
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(2, centralTransitiveNodes.Count);
+            foreach (var node in centralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Rejected, node.Disposition);
+                node.ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
+            }
+
+            var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(3, notCentralTransitiveNodes.Count);
+            foreach (var node in notCentralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                node.ForEach((n) =>
+                {
+                    if ((n.Key.Name == "C" && n.Key.VersionRange.OriginalString == "1.0.0") ||
+                        (n.Key.Name == "H" && n.Key.VersionRange.OriginalString == "1.0.0"))
+                    {
+                        Assert.Equal(Disposition.Rejected, n.Disposition);
+                    }
+                    else
+                    {
+                        Assert.Equal(Disposition.Accepted, n.Disposition);
+                    }
+                });
+            }
+
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        /// A -> D 1.0.0 -> E 1.0.0(this will be rejected) -> B 1.0.0
+        ///   -> F 1.0.0 -> G 1.0.0(this will be rejected) -> C 1.0.0
+        ///   -> H 2.0.0 -> E 2.0.0
+        ///   -> I 2.0.0 -> G 2.0.0
+        ///
+        ///  B and C has version 2.0.0 defined centrally
+        ///   C 2.0.0 -> J 2.0.0 (Extra dependency not defined centrally) -> B 2.0.0
+        ///   B 2.0.0
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task CentralTransitiveDependency_IsRejected_If_CentralTransitiveParentsAreRejected(bool extraDependency)
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var v1 = "1.0.0";
+            var v2 = "2.0.0";
+
+            provider.Package("A", v1).DependsOn("D", v1);
+            provider.Package("A", v1).DependsOn("F", v1);
+            provider.Package("A", v1).DependsOn("H", v2);
+            provider.Package("A", v1).DependsOn("I", v2);
+            provider.Package("D", v1).DependsOn("E", v1);
+            provider.Package("E", v1).DependsOn("B", v1);
+            provider.Package("F", v1).DependsOn("G", v1);
+            provider.Package("G", v1).DependsOn("C", v1);
+            provider.Package("H", v2).DependsOn("E", v2);
+            provider.Package("I", v2).DependsOn("G", v2);
+            provider.Package("C", v1);
+            provider.Package("B", v1);
+            provider.Package("E", v2);
+            provider.Package("G", v2);
+
+            if (extraDependency)
+            {
+                provider.Package("C", v2).DependsOn("J", v2);
+                provider.Package("J", v2).DependsOn("B", v2);
+            }
+            else
+            {
+                provider.Package("C", v2).DependsOn("B", v2);
+            }
+
+            provider.Package("B", v2);
+
+
+            provider.Package("A", v1)
+                .DependsOn("C", v2, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            provider.Package("A", v1)
+                .DependsOn("B", v2, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(2, centralTransitiveNodes.Count);
+            Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
+            Assert.Equal(Disposition.Rejected, centralTransitiveNodes.Last().Disposition);
+
+            rootNode.ForEach((n) =>
+            {
+                if (n.Key.Name == "A" ||
+                    n.Key.Name == "D" && n.Key.VersionRange.OriginalString == v1 ||
+                    n.Key.Name == "F" && n.Key.VersionRange.OriginalString == v1 ||
+                    n.Key.Name == "E" && n.Key.VersionRange.OriginalString == v2 ||
+                    n.Key.Name == "G" && n.Key.VersionRange.OriginalString == v2 ||
+                    n.Key.Name == "H" && n.Key.VersionRange.OriginalString == v2 ||
+                    n.Key.Name == "I" && n.Key.VersionRange.OriginalString == v2)
+                {
+                    Assert.Equal(Disposition.Accepted, n.Disposition);
+                }
+                else if (n.Key.Name == "C" && n.Key.VersionRange.OriginalString == v2 ||
+                    n.Key.Name == "J" && n.Key.VersionRange.OriginalString == v2 ||
+                    n.Key.Name == "B" && n.Key.VersionRange.OriginalString == v2 ||
+                    n.Key.Name == "E" && n.Key.VersionRange.OriginalString == v1 ||
+                    n.Key.Name == "G" && n.Key.VersionRange.OriginalString == v1)
+                {
+                    Assert.Equal(Disposition.Rejected, n.Disposition);
+                }
+                else
+                {
+                    Assert.Fail(n.Key.ToString());
+                }
+            });
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0
+        ///
+        ///  D has version defined centrally 2.0.0
+        ///  D 2.0.0 -> I 2.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CentralTransitiveDependency_IsNotRejected_If_NotAllParentsAreRejected()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 1.0.0 -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            // A -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("F", version100);
+            provider.Package("F", version100)
+                    .DependsOn("C", version200);
+            provider.Package("C", version200)
+                    .DependsOn("H", version200);
+
+            // A -> -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("G", version100);
+            provider.Package("G", version100)
+                    .DependsOn("H", version200);
+            provider.Package("H", version200)
+                    .DependsOn("D", version100);
+
+            // D 2.0.0 -> I 2.0.0
+            provider.Package("D", version200)
+                   .DependsOn("I", version200);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version200, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(4, rootNode.InnerNodes.Count);
+
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(1, centralTransitiveNodes.Count);
+            Assert.Equal(Disposition.Accepted, centralTransitiveNodes.First().Disposition);
+            Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Accepted, n.Disposition); });
+
+            var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(3, notCentralTransitiveNodes.Count);
+            foreach (var node in notCentralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                node.ForEach((n) =>
+                {
+                    if ((n.Key.Name == "C" && n.Key.VersionRange.OriginalString == "1.0.0"))
+                    {
+                        Assert.Equal(Disposition.Rejected, n.Disposition);
+                    }
+                    else
+                    {
+                        Assert.Equal(Disposition.Accepted, n.Disposition);
+                    }
+                });
+            }
+
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0(this will be downgraded due to central 1.0.0) -> E 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+        ///   -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
+        ///
+        ///  D has version defined centrally 1.0.0
+        ///  D 1.0.0 -> I 1.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CentralTransitiveDependency_NoDowngrades_IfDowngrades_WereRejected()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0 (this will be downgraded) -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version200);
+            provider.Package("D", version200)
+                    .DependsOn("E", version100);
+
+            // A -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("F", version100);
+            provider.Package("F", version100)
+                    .DependsOn("C", version200);
+            provider.Package("C", version200)
+                    .DependsOn("H", version200);
+
+            // A -> -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("G", version100);
+            provider.Package("G", version100)
+                    .DependsOn("H", version100);
+            provider.Package("H", version100)
+                    .DependsOn("D", version100);
+
+            // D 1.0.0 -> I 1.0.0
+            provider.Package("D", version100)
+                   .DependsOn("I", version100);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version100, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(4, rootNode.InnerNodes.Count);
+
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(1, centralTransitiveNodes.Count);
+            Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
+            Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
+
+            var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(3, notCentralTransitiveNodes.Count);
+            foreach (var node in notCentralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                node.ForEach((n) =>
+                {
+                    // No D node expected in the graph
+                    // all downgrades shoudl have been removed
+                    Assert.True(n.Key.Name != "D");
+
+                    if ((n.Key.Name == "C" && n.Key.VersionRange.OriginalString == "1.0.0") ||
+                        (n.Key.Name == "H" && n.Key.VersionRange.OriginalString == "1.0.0"))
+                    {
+                        Assert.Equal(Disposition.Rejected, n.Disposition);
+                    }
+                    else
+                    {
+                        Assert.Equal(Disposition.Accepted, n.Disposition);
+                    }
+                });
+            }
+
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0(this will be downgraded due to central 1.0.0) -> E 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+        ///   -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 2.0.0 (it will be downgraded)
+        ///
+        ///  D has version defined centrally 1.0.0
+        ///  D 1.0.0 -> I 1.0.0
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task CentralTransitiveDependency_NoDowngrades_IfTwoDowngrades_WereRejected()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0 (this will be downgraded) -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version200);
+            provider.Package("D", version200)
+                    .DependsOn("E", version100);
+
+            // A -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("F", version100);
+            provider.Package("F", version100)
+                    .DependsOn("C", version200);
+            provider.Package("C", version200)
+                    .DependsOn("H", version200);
+
+            // A -> -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 2.0.0 (it will be downgraded)
+            provider.Package("A", version100)
+                    .DependsOn("G", version100);
+            provider.Package("G", version100)
+                    .DependsOn("H", version100);
+            provider.Package("H", version100)
+                    .DependsOn("D", version200);
+
+            // D 1.0.0 -> I 1.0.0
+            provider.Package("D", version100)
+                   .DependsOn("I", version100);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version100, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(4, rootNode.InnerNodes.Count);
+
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(1, centralTransitiveNodes.Count);
+            Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
+            Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
+
+            var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(3, notCentralTransitiveNodes.Count);
+            foreach (var node in notCentralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                node.ForEach((n) =>
+                {
+                    // No D node expected in the graph
+                    // all downgrades should have been removed
+                    Assert.True(n.Key.Name != "D");
+
+                    if ((n.Key.Name == "C" && n.Key.VersionRange.OriginalString == "1.0.0") ||
+                        (n.Key.Name == "H" && n.Key.VersionRange.OriginalString == "1.0.0"))
+                    {
+                        Assert.Equal(Disposition.Rejected, n.Disposition);
+                    }
+                    else
+                    {
+                        Assert.Equal(Disposition.Accepted, n.Disposition);
+                    }
+                });
+            }
+
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0(this will be downgraded due to central 1.0.0) -> E 1.0.0
+        ///   -> F 1.0.0 -> C 2.0.0
+        ///   -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 2.0.0 (this will be downgraded due to central 1.0.0)
+        ///
+        ///  D has version defined centrally 1.0.0
+        ///  D 1.0.0 -> I 1.0.0
+        /// </summary>
+        [Fact]
+        public async Task CentralTransitiveDependency_Downgrades_IfDowngrades_WereNotRejected()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0(this will be rejected) -> D 2.0.0 (this will be downgraded) -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version200);
+            provider.Package("D", version200)
+                    .DependsOn("E", version100);
+
+            // A -> F 1.0.0 -> C 2.0.0 -> H 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("F", version100);
+            provider.Package("F", version100)
+                    .DependsOn("C", version200);
+
+            // A -> -> G 1.0.0 -> H 2.0.0(this will not be rejected) -> D 2.0.0 (this will be downgraded)
+            provider.Package("A", version100)
+                    .DependsOn("G", version100);
+            provider.Package("G", version100)
+                    .DependsOn("H", version200);
+            provider.Package("H", version200)
+                    .DependsOn("D", version200);
+
+            // D 1.0.0 -> I 1.0.0
+            provider.Package("D", version100)
+                   .DependsOn("I", version100);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version100, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(4, rootNode.InnerNodes.Count);
+
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(1, centralTransitiveNodes.Count);
+            Assert.Equal(Disposition.Accepted, centralTransitiveNodes.First().Disposition);
+            Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Accepted, n.Disposition); });
+
+            var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(3, notCentralTransitiveNodes.Count);
+            foreach (var node in notCentralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                node.ForEach((n) =>
+                {
+                    // No D node expected in the graph
+                    // all downgrades should have been removed
+                    Assert.True(n.Key.Name != "D");
+
+                    if ((n.Key.Name == "C" && n.Key.VersionRange.OriginalString == "1.0.0"))
+                    {
+                        Assert.Equal(Disposition.Rejected, n.Disposition);
+                    }
+                    else
+                    {
+                        Assert.Equal(Disposition.Accepted, n.Disposition);
+                    }
+                });
+            }
+
+            var downgrades = result.Downgrades;
+            Assert.Equal(1, downgrades.Count);
+            var downgrade = downgrades.First();
+            Assert.Equal("D", downgrade.DowngradedTo.Key.Name);
+            Assert.Equal("1.0.0", downgrade.DowngradedTo.Key.VersionRange.OriginalString);
+            Assert.True(downgrade.DowngradedTo.Item.IsCentralTransitive);
+            Assert.Equal("D", downgrade.DowngradedFrom.Key.Name);
+            Assert.Equal("2.0.0", downgrade.DowngradedFrom.Key.VersionRange.OriginalString);
+        }
+
+        /// <summary>
+        ///   -> B 1.0.0 -> D [1.0.0] (PrivateAssets1)
+        /// A
+        ///   -> C 1.0.0 -> D [2.0.0] (PrivateAssets2)
+        /// </summary>
+        [Theory]
+        [InlineData(null, null, 1)]
+        [InlineData(LibraryIncludeFlags.All, null, 0)]
+        [InlineData(null, LibraryIncludeFlags.All, 0)]
+        [InlineData(LibraryIncludeFlags.All, LibraryIncludeFlags.All, 0)]
+        public async Task PrivateAssetsAll_VersionConflicts(LibraryIncludeFlags? privateAssets1,
+            LibraryIncludeFlags? privateAssets2, int expectedConflicts)
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "1.0.0")
+                .DependsOn("C", "1.0.0");
+
+            provider.Package("B", "1.0.0")
+                .DependsOn("D", "[1.0.0]", privateAssets: privateAssets1);
+
+            provider.Package("C", "1.0.0")
+                .DependsOn("D", "[2.0.0]", privateAssets: privateAssets2);
+
+            provider.Package("D", "1.0.0");
+            provider.Package("D", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedConflicts, result.VersionConflicts.Count);
+            Assert.Empty(result.Downgrades);
+
+            if (expectedConflicts == 1)
+            {
+                AssertPath(result.VersionConflicts[0].Conflicting, "A 1.0.0", "B 1.0.0", "D 1.0.0");
+                AssertPath(result.VersionConflicts[0].Selected, "A 1.0.0", "C 1.0.0", "D 2.0.0");
+            }
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 2.0.0 (PrivateAssets1)
+        ///   -> C 1.0.0 (PrivateAssets2)
+        /// </summary>
+        [Theory]
+        [InlineData(null, null, 1)]
+        [InlineData(LibraryIncludeFlags.All, null, 0)]
+        [InlineData(null, LibraryIncludeFlags.All, 1)]
+        [InlineData(LibraryIncludeFlags.All, LibraryIncludeFlags.All, 0)]
+        public async Task PrivateAssetsAll_VersionDowngrades(LibraryIncludeFlags? privateAssets1, LibraryIncludeFlags? privateAssets2, int expectedDowngrades)
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "1.0.0")
+                .DependsOn("C", "1.0.0", privateAssets: privateAssets2);
+
+            provider.Package("B", "1.0.0")
+                   .DependsOn("C", "2.0.0", privateAssets: privateAssets1);
+
+            provider.Package("C", "1.0.0");
+            provider.Package("C", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedDowngrades, result.Downgrades.Count);
+            Assert.Empty(result.VersionConflicts);
+
+            if (expectedDowngrades == 1)
+            {
+                GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+                GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+                AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
+                AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
+            }
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 (PrivateAssets) -> C 2.0.0
+        ///   -> C 1.0.0
+        /// </summary>
+        [Theory]
+        [InlineData(null, 1)]
+        [InlineData(LibraryIncludeFlags.All, 1)]
+        public async Task PrivateAssetsAll_VersionDowngradesForTransitiveDependencies(LibraryIncludeFlags? privateAssets, int expectedDowngrades)
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            provider.Package("A", "1.0.0")
+                .DependsOn("B", "1.0.0", privateAssets: privateAssets)
+                .DependsOn("C", "1.0.0");
+
+            provider.Package("B", "1.0.0")
+                .DependsOn("C", "2.0.0");
+
+            provider.Package("C", "1.0.0");
+            provider.Package("C", "2.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            GraphNode<RemoteResolveResult> rootNode = await DoWalkAsync(walker, "A", framework);
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(expectedDowngrades, result.Downgrades.Count);
+            Assert.Empty(result.VersionConflicts);
+
+            if (expectedDowngrades == 1)
+            {
+                GraphNode<RemoteResolveResult> downgraded = result.Downgrades[0].DowngradedFrom;
+                GraphNode<RemoteResolveResult> downgradedBy = result.Downgrades[0].DowngradedTo;
+
+                AssertPath(downgraded, "A 1.0.0", "B 1.0.0", "C 2.0.0");
+                AssertPath(downgradedBy, "A 1.0.0", "C 1.0.0");
+            }
+        }
+
+
+        /// A 1.0.0 -> C 1.0.0 -> D 1.1.0
+        /// B 1.0.0 -> C 1.1.0 -> D 1.0.0
+        /// D 1.0.0
+        [Fact]
+        public async Task WalkAsync_WithDowngradeInPrunedSubgraph_DoesNotReportDowngrades()
+        {
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("Project", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "1.0")
+                    .DependsOn("D", "1.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("C", "1.0");
+
+            provider.Package("B", "1.0")
+                    .DependsOn("C", "1.1");
+
+            provider.Package("C", "1.0")
+                    .DependsOn("D", "1.1");
+            provider.Package("C", "1.1")
+                    .DependsOn("D", "1.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "Project");
+
+            var result = node.Analyze();
+            result.Downgrades.Should().BeEmpty();
+        }
+
+        /// <summary>
+        /// A 1.0 -> D 1.0 (Central transitive)
+        ///       -> B 1.0 -> D 3.0 (Central transitive - should be ignored because it is not at root)
+        ///                -> C 1.0 -> D 2.0
+        /// </summary>
+        [Fact]
+        public async Task TransitiveDependenciesFromNonRootLibraries_AreIgnored()
+        {
+            var context = new TestRemoteWalkContext();
+            var projectProvider = new DependencyProvider();
+            projectProvider.Package("A", "1.0")
+                .DependsOn("B", "1.0", LibraryDependencyTarget.Project)
+                .DependsOn("D", "1.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            projectProvider.Package("B", "1.0", LibraryType.Project)
+                .DependsOn("C", "1.0", LibraryDependencyTarget.Project)
+                .DependsOn("D", "3.0", LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            projectProvider.Package("C", "1.0", LibraryType.Project)
+                .DependsOn("D", "2.0", LibraryDependencyTarget.Package);
+
+            context.ProjectLibraryProviders.Add(projectProvider);
+
+            var libraryProvider = new DependencyProvider();
+            libraryProvider.Package("D", "1.0", LibraryType.Package);
+            libraryProvider.Package("D", "2.0", LibraryType.Package);
+            libraryProvider.Package("D", "3.0", LibraryType.Package);
+
+            context.LocalLibraryProviders.Add(libraryProvider);
+
+            var walker = new RemoteDependencyWalker(context);
+            var root = await DoWalkAsync(walker, "A");
+            var result = root.Analyze();
+            Assert.Equal(0, result.VersionConflicts.Count);
+            Assert.Equal(0, result.Cycles.Count);
+            Assert.Equal(1, result.Downgrades.Count);
+            var d = result.Downgrades.Single();
+            AssertPath(d.DowngradedFrom, "A 1.0", "B 1.0", "C 1.0", "D 2.0");
+            AssertPath(d.DowngradedTo, "A 1.0", "D 1.0");
+        }
+
+        /// <summary>
+        /// A -> B 1.0.0 -> C 1.0.0 -> D 1.0.0 (this will be rejected)-> E 1.0.0
+        ///
+        ///  D has version defined centrally 2.0.0
+        ///  D 2.0.0 -> I 2.0.0 (this will be downgraded due to central I 1.0.0)
+        ///  (D 2.0.0 should have parentNode C 1.0.0)
+        ///
+        ///  I has version defined centrally 1.0.0
+        ///  I 1.0.0 -> G 1.0.0
+        ///  (I 1.0.0 should have parentNode D 2.0.0)
+        /// </summary>
+        [Fact]
+        public async Task WalkAsync_WithCentralTransitiveDependency_InnerNodesAndParentNodesCreatedCorrectly()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0 -> D 1.0.0 (this will be rejected) -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+            provider.Package("C", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            // D 2.0.0 -> I 2.0.0
+            provider.Package("D", version200)
+                   .DependsOn("I", version200);
+            provider.Package("I", version200);
+
+            // I 1.0.0 -> G 1.0.0
+            provider.Package("I", version100)
+                   .DependsOn("G", version100);
+            provider.Package("I", version100);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("D", version200, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            // Simulates the existence of a I centrally defined package that is not direct dependency
+            provider.Package("A", version100)
+                     .DependsOn("I", version100, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+            var allNodes = GetAllNodes(rootNode);
+            // RootNode A has 3 InnerNodes: B (1.0.0), D (2.0.0), I (1.0.0). D and I are Transitive Central PackageVersion Nodes.
+            Assert.Equal(3, rootNode.InnerNodes.Count);
+
+            //check if ParentNodes of centralTranstiveNodes are added correctly
+            List<GraphNode<RemoteResolveResult>> centralTransitiveNodes = allNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(2, centralTransitiveNodes.Count);
+            Assert.True(centralTransitiveNodes.Any(n => n.Item.Key.Name == "D"));
+            Assert.True(centralTransitiveNodes.Any(n => n.Item.Key.Name == "I"));
+
+            foreach (var node in centralTransitiveNodes)
+            {
+                Assert.Equal(Disposition.Accepted, node.Disposition);
+                if (node.Key.Name == "D")
+                {
+                    Assert.Equal("2.0.0", node.Key.VersionRange.OriginalString);
+                    Assert.Equal(1, node.ParentNodes.Count);
+                    Assert.Equal("C (>= 1.0.0)", node.ParentNodes.First().Key.ToString());
+                }
+                if (node.Key.Name == "I")
+                {
+                    Assert.Equal("1.0.0", node.Key.VersionRange.OriginalString);
+                    Assert.Equal(1, node.ParentNodes.Count);
+                    Assert.Equal("D (>= 2.0.0)", node.ParentNodes.First().Key.ToString());
+                }
+            }
+
+            //check if ParentNodes of nonCentralTransitiveNodes are empty and pointing to the static empty list correctly
+            var staticEmptyList = Array.Empty<GraphNode<RemoteResolveResult>>();
+
+            var nonCentralTransitiveNodes = allNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
+            Assert.Equal(4, nonCentralTransitiveNodes.Count);
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "A"));
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "B"));
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "C"));
+            Assert.True(nonCentralTransitiveNodes.Any(n => n.Item.Key.Name == "G"));
+            foreach (var node in nonCentralTransitiveNodes)
+            {
+                Assert.Equal(0, node.ParentNodes.Count);
+                Assert.True(staticEmptyList == node.ParentNodes); //All nonCentralTransitiveNodes have ParentNodes pointing to the same empty list.
+            }
+
+            //check if InnerNodes of nodesWithEmptyInnerNodes are pointing to the static empty list correctly
+            var nodesWithEmptyInnerNodes = allNodes.Where(n => n.InnerNodes.Count == 0).ToList();
+            Assert.Equal(3, nodesWithEmptyInnerNodes.Count);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "C"));
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "D"));
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "G"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "G").Single().InnerNodes == staticEmptyList);
+
+            Assert.Equal(1, result.Downgrades.Count);
+        }
+
+        /// <summary>
+        ///   -> B 1.0.0 -> C 1.0.0 (this would be eclipsed by C 2.0.0)
+        /// A -> C 2.0.0
+        ///   -> D 1.0.0 -> E 1.0.0
+        /// </summary>
+        [Fact]
+        public async Task WalkAsync_WithNoCPM_InnerNodesAndParentNodesCreatedCorrectly()
+        {
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            var version100 = "1.0.0";
+            var version200 = "2.0.0";
+
+            // A -> B 1.0.0 -> C 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("B", version100);
+            provider.Package("B", version100)
+                   .DependsOn("C", version100);
+
+            // A -> C 2.0.0
+            provider.Package("A", version100)
+                    .DependsOn("C", version200);
+
+            // A -> D 1.0.0 -> E 1.0.0
+            provider.Package("A", version100)
+                    .DependsOn("D", version100);
+            provider.Package("D", version100)
+                    .DependsOn("E", version100);
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
+            var allNodes = GetAllNodes(rootNode);
+            Assert.Equal(5, allNodes.Count);
+            Assert.Equal(3, rootNode.InnerNodes.Count);
+
+            //check if ParentNodes of allnodes are pointing to the static empty list correctly
+            var staticEmptyList = Array.Empty<GraphNode<RemoteResolveResult>>();
+            foreach (var node in allNodes)
+            {
+                Assert.Equal(0, node.ParentNodes.Count);
+                Assert.True(staticEmptyList == node.ParentNodes);
+            }
+
+            //check if InnerNodes of  are pointing to the static empty list correctly
+            var nodesWithEmptyInnerNodes = allNodes.Where(n => n.InnerNodes.Count == 0).ToList();
+            Assert.Equal(3, nodesWithEmptyInnerNodes.Count);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "B"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "B").Single().InnerNodes != staticEmptyList);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "C"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "C").Single().InnerNodes == staticEmptyList);
+            Assert.True(nodesWithEmptyInnerNodes.Any(n => n.Item.Key.Name == "E"));
+            Assert.True(nodesWithEmptyInnerNodes.Where(n => n.Item.Key.Name == "E").Single().InnerNodes == staticEmptyList);
         }
 
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
@@ -1080,7 +2161,7 @@ namespace NuGet.DependencyResolver.Tests
                 node = node.OuterNode;
             }
 
-            Assert.Equal(matches, items);
+            Assert.Equal(items, matches);
         }
 
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name)
@@ -1098,6 +2179,28 @@ namespace NuGet.DependencyResolver.Tests
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
 
+        }
+
+        private List<GraphNode<RemoteResolveResult>> GetAllNodes(GraphNode<RemoteResolveResult> rootNode)
+        {
+            var allNodes = new Dictionary<string, GraphNode<RemoteResolveResult>>();
+            allNodes.Add(rootNode.Key.ToString(), rootNode);
+
+            var queue = new Queue<GraphNode<RemoteResolveResult>>();
+            queue.Enqueue(rootNode);
+            while (queue.Count > 0)
+            {
+                var currNode = queue.Dequeue();
+                foreach (var innerNode in currNode.InnerNodes)
+                {
+                    if (!allNodes.TryGetValue(innerNode.Key.ToString(), out _))
+                    {
+                        allNodes.Add(innerNode.Key.ToString(), innerNode);
+                        queue.Enqueue(innerNode);
+                    }
+                }
+            }
+            return allNodes.Values.ToList();
         }
     }
 }

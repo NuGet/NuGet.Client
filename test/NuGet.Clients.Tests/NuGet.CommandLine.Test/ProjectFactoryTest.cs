@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,13 +11,14 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using Moq;
 using NuGet.CommandLine.Test;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.Common;
 using Xunit;
 
 namespace NuGet.CommandLine
 {
+    using global::Test.Utility;
     using NuGet.Packaging;
 
     public class ProjectFactoryTest
@@ -77,7 +77,7 @@ namespace NuGet.CommandLine
                 }
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), (e) => factory.GetPropertyValue(e));
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -155,7 +155,7 @@ namespace NuGet.CommandLine
 
                 // Act
                 var packageBuilder = factory.CreateBuilder(basePath, null, null, true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), (e) => factory.GetPropertyValue(e));
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -229,7 +229,7 @@ namespace NuGet.CommandLine
 
                 // Act
                 var packageBuilder = factory.CreateBuilder(basePath, null, "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), (e) => factory.GetPropertyValue(e));
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -303,7 +303,7 @@ namespace NuGet.CommandLine
 
                 // Act
                 var packageBuilder = factory.CreateBuilder(basePath, new NuGetVersion("3.0.0"), "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), (e) => { factory.ProjectProperties.TryGetValue(e, out string result); return result; });
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(cmdLineProperties["id"], xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -371,7 +371,7 @@ namespace NuGet.CommandLine
                 var msbuildPath = Util.GetMsbuildPathOnWindows();
                 var factory = new ProjectFactory(msbuildPath, projectPath, null) { Build = false };
                 var packageBuilder = factory.CreateBuilder(basePath, cmdLineVersion, "", true);
-                var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+                var actual = Preprocessor.Process(inputSpec.AsStream(), (e) => factory.GetPropertyValue(e));
 
                 var xdoc = XDocument.Load(new StringReader(actual));
                 Assert.Equal(testAssembly.GetName().Name, xdoc.XPathSelectElement("/package/metadata/id").Value);
@@ -407,12 +407,12 @@ namespace NuGet.CommandLine
                 Authors = new[] { "Outercurve Foundation" },
             };
             var projectMock = new Mock<MockProject>();
-            var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsBuildToolset(null, null).Path;
+            var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
             var factory = new ProjectFactory(msbuildDirectory, projectMock.Object);
 
             // act
             var author = factory.InitializeProperties(metadata);
-            var actual = NuGet.Common.Preprocessor.Process(inputSpec.AsStream(), propName => factory.GetPropertyValue(propName));
+            var actual = Preprocessor.Process(inputSpec.AsStream(), (e) => factory.GetPropertyValue(e));
 
             // assert
             Assert.Equal("Outercurve Foundation", author);
@@ -475,23 +475,24 @@ namespace NuGet.CommandLine
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack Assembly.csproj -build",
-                    waitForExit: true);
+                    "pack Assembly.csproj -build");
+
+                Util.VerifyResultSuccess(r);
 
                 // Assert
                 using (var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg")))
                 {
                     var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                    Assert.Equal(0, r.Item1);
+                    Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
-                        files,
                         new[]
                         {
-                            @"lib/net45/Assembly.dll",
-                            @"lib/net45/Assembly.xml"
-                        });
+                            @"lib/net472/Assembly.dll",
+                            @"lib/net472/Assembly.xml"
+                        },
+                        files);
                 }
             }
         }
@@ -517,8 +518,7 @@ namespace NuGet.CommandLine
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
-                    waitForExit: true);
+                    $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0");
 
                 // Assert
                 Util.VerifyResultSuccess(r);
@@ -527,14 +527,14 @@ namespace NuGet.CommandLine
                 {
                     var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                    Assert.Equal(0, r.Item1);
+                    Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
                         files,
                         new[]
                         {
-                            @"lib/net45/A.dll",
-                            @"lib/net45/Link.dll"
+                            @"lib/net472/A.dll",
+                            @"lib/net472/Link.dll"
                         });
                 }
             }
@@ -571,8 +571,7 @@ namespace NuGet.CommandLine
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
-                    waitForExit: true);
+                    $"pack Link{Path.DirectorySeparatorChar}Link.csproj -build -IncludeReferencedProjects -Version 1.0.0");
 
                 // Assert
                 Util.VerifyResultSuccess(r);
@@ -581,15 +580,15 @@ namespace NuGet.CommandLine
                 {
                     var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                    Assert.Equal(0, r.Item1);
+                    Assert.Equal(0, r.ExitCode);
                     Array.Sort(files);
                     Assert.Equal(
                         files,
                         new[]
                         {
-                            @"lib/net45/A.dll",
-                            @"lib/net45/C.dll",
-                            @"lib/net45/Link.dll"
+                            @"lib/net472/A.dll",
+                            @"lib/net472/C.dll",
+                            @"lib/net472/Link.dll"
                         });
                 }
             }
@@ -609,8 +608,8 @@ namespace NuGet.CommandLine
         <description>Description for Assembly.</description>
     </metadata>
     <files>
-        <file src=""bin\Debug\Assembly.dll"" target=""lib\net45\Assembly.dll"" />
-        <file src=""bin\Debug\Assembly.xml"" target=""lib\net45\Assembly.xml"" />
+        <file src=""bin\Debug\Assembly.dll"" target=""lib\net472\Assembly.dll"" />
+        <file src=""bin\Debug\Assembly.xml"" target=""lib\net472\Assembly.xml"" />
     </files>
 </package>";
         }
@@ -628,7 +627,7 @@ namespace NuGet.CommandLine
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Assembly</RootNamespace>
     <AssemblyName>Assembly</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
@@ -640,7 +639,7 @@ namespace NuGet.CommandLine
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
     <DebugType>pdbonly</DebugType>

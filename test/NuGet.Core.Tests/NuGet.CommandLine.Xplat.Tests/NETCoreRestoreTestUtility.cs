@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.XPlat.Tests
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
-                spec.RestoreMetadata.OutputPath = project.OutputPath;
+                spec.RestoreMetadata.OutputPath = project.ProjectExtensionsPath;
                 spec.RestoreMetadata.ProjectPath = project.ProjectPath;
 
                 projects.Add(project);
@@ -76,7 +76,7 @@ namespace NuGet.CommandLine.XPlat.Tests
             spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
-            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName));
+            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName) { TargetAlias = framework });
 
             return spec;
         }

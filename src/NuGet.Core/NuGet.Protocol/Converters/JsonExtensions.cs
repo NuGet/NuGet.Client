@@ -7,6 +7,8 @@ using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using NuGet.Protocol.Converters;
 
 namespace NuGet.Protocol
 {
@@ -23,14 +25,27 @@ namespace NuGet.Protocol
             {
                 new NuGetVersionConverter(),
                 new VersionInfoConverter(),
-                new StringEnumConverter { CamelCaseText = false },
+                new StringEnumConverter { NamingStrategy = new CamelCaseNamingStrategy() },
                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
                 new FingerprintsConverter(),
-                new VersionRangeConverter()
+                new VersionRangeConverter(),
+                new PackageVulnerabilityInfoConverter()
             },
         };
 
-        private static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+        internal static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+
+        internal static readonly System.Text.Json.JsonSerializerOptions JsonSerializerOptions = CreateJsonSerializerOptions();
+
+        private static System.Text.Json.JsonSerializerOptions CreateJsonSerializerOptions()
+        {
+            var options = new System.Text.Json.JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };
+            options.Converters.Add(new VersionRangeStjConverter());
+            return options;
+        }
 
         /// <summary>
         /// Serialize object to the JSON.

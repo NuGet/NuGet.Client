@@ -6,13 +6,46 @@ using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
-using NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Configuration;
+using NuGet.VisualStudio.Internal.Contracts;
+using GelUtilities = Microsoft.Internal.VisualStudio.PlatformUI.Utilities;
 
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     internal class PackageSourceCheckedListBox : CheckedListBox
     {
         public Size CheckBoxSize { get; set; }
+
+        private static Icon WarningIcon { get; set; }
+
+        private Icon GetWarningIcon()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (WarningIcon == null)
+            {
+                ImageAttributes attributes = new ImageAttributes
+                {
+                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                    ImageType = (uint)_UIImageType.IT_Icon,
+                    Format = (uint)_UIDataFormat.DF_WinForms,
+                    LogicalWidth = 16,
+                    LogicalHeight = 16,
+                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                };
+
+                IVsImageService2 imageService = (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
+                IVsUIObject uIObj = imageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                WarningIcon = (Icon)GelUtilities.GetObjectData(uIObj);
+            }
+
+            return WarningIcon;
+        }
 
         public override int ItemHeight
         {
@@ -35,6 +68,8 @@ namespace NuGet.Options
 
         protected override void OnDrawItem(DrawItemEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             var currentListBox = this;
             var graphics = e.Graphics;
             e.DrawBackground();
@@ -44,7 +79,7 @@ namespace NuGet.Options
                 return;
             }
 
-            var currentItem = (Configuration.PackageSource)currentListBox.Items[e.Index];
+            var currentItem = (PackageSourceContextInfo)currentListBox.Items[e.Index];
 
             using (var drawFormat = new StringFormat())
             {
@@ -61,7 +96,7 @@ namespace NuGet.Options
                     const int textMargin = 4;
 
                     // draw the enabled/disabled checkbox
-                    var checkBoxState = currentItem.IsEnabled ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal;
+                    var checkBoxState = currentListBox.GetItemChecked(e.Index) ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal;
                     var checkBoxSize = CheckBoxRenderer.GetGlyphSize(graphics, checkBoxState);
                     CheckBoxRenderer.DrawCheckBox(
                         graphics,
@@ -85,7 +120,7 @@ namespace NuGet.Options
                         // draw each package source as
                         //
                         // [checkbox] Name
-                        //            Source (italics)
+                        //            WarningIcon Source (italics)
 
                         var textWidth = e.Bounds.Width - checkBoxSize.Width - edgeMargin - textMargin;
 
@@ -100,8 +135,25 @@ namespace NuGet.Options
 
                         graphics.DrawString(currentItem.Name, e.Font, foreBrush, nameBounds, drawFormat);
 
+                        var packageSource = new PackageSource(currentItem.Source, currentItem.Name);
+                        packageSource.AllowInsecureConnections = currentItem.AllowInsecureConnections;
+                        var shouldShowHttpWarningIcon = packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections;
+                        Rectangle warningBounds = default;
+
+                        if (shouldShowHttpWarningIcon)
+                        {
+                            var warningIcon = GetWarningIcon();
+
+                            warningBounds = new Rectangle(
+                                nameBounds.Left,
+                                nameBounds.Bottom,
+                                warningIcon.Width,
+                                warningIcon.Height);
+                            graphics.DrawIcon(warningIcon, warningBounds);
+                        }
+
                         var sourceBounds = new Rectangle(
-                            nameBounds.Left,
+                            shouldShowHttpWarningIcon ? warningBounds.Right : nameBounds.Left,
                             nameBounds.Bottom,
                             textWidth,
                             e.Bounds.Bottom - nameBounds.Bottom);

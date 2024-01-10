@@ -1,77 +1,47 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
-    <TestProject>true</TestProject>
     <Description>Unit and integration tests for NuGet.PackageManagement.UI.</Description>
+    <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="Microsoft.VisualStudio.Diagnostics.Assert, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <Reference Include="Microsoft.VisualStudio.Diagnostics.Assert, Version=17.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <HintPath>$([MSBuild]::GetVsInstallRoot())\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Diagnostics.Assert.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Actions\AccessiblePackageIdentityTests.cs" />
-    <Compile Include="Actions\UpdatePreviewResultTests.cs" />
-    <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
-    <Compile Include="Converters\DateTimeConverterTests.cs" />
-    <Compile Include="Converters\VersionToStringConverterTests.cs" />
-    <Compile Include="ConverterTests.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Models\DetailControlModelTests.cs" />
-    <Compile Include="Models\PackageItemListViewModelTests.cs" />
-    <Compile Include="Models\PreviewWindowModelTests.cs" />
-    <Compile Include="Models\DetailedPackageMetadataTests.cs" />
-    <Compile Include="NuGetSettingsSerializerTests.cs" />
-    <Compile Include="PackageItemLoaderTests.cs" />
-    <Compile Include="PackageLicenseUtilitiesTests.cs" />
-    <Compile Include="PackageManagerListItemsTest.cs" />
-    <Compile Include="PackageManagerProviderTest.cs" />
-    <Compile Include="TestNuGetUILogger.cs" />
-    <Compile Include="TestPackageManagerProviders.cs" />
-    <Compile Include="TestPackageSearchMetadata.cs" />
-    <Compile Include="WpfFactAttribute.cs" />
-    <Compile Include="WpfFactDiscoverer.cs" />
-    <Compile Include="WpfTestCase.cs" />
-    <Compile Include="WpfTheoryAttribute.cs" />
-    <Compile Include="WpfTheoryDiscoverer.cs" />
-    <Compile Include="Xamls\InfiniteScrollListTests.cs" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
-    <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
+    <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
   </ItemGroup>
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\packageicon.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="Resources\customMetadata.jpeg" />
+    <EmbeddedResource Include="Resources\grayicc.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\EntityFrameworkSearch.json" />
@@ -79,12 +49,4 @@
     <EmbeddedResource Include="compiler\resources\nugetSearchPage1.json" />
     <EmbeddedResource Include="compiler\resources\nugetSearchPage2.json" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

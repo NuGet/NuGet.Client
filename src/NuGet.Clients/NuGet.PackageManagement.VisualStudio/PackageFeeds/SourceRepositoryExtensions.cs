@@ -8,8 +8,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -35,11 +38,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var stopWatch = Stopwatch.StartNew();
 
-            var searchToken = continuationToken as FeedSearchContinuationToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
+            var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
 
             var searchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>(cancellationToken);
 
@@ -51,7 +50,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Common.NullLogger.Instance,
                 cancellationToken);
 
-            var items = searchResults?.ToArray() ?? new IPackageSearchMetadata[] { };
+            var items = searchResults?.ToArray() ?? Array.Empty<IPackageSearchMetadata>();
 
             var hasMoreItems = items.Length > pageSize;
             if (hasMoreItems)
@@ -86,10 +85,41 @@ namespace NuGet.PackageManagement.VisualStudio
             return result;
         }
 
+        /// <summary>
+        /// Get the package metadata for the given identity
+        /// </summary>
+        public static async Task<IPackageSearchMetadata> GetPackageMetadataForIdentityAsync(this SourceRepository sourceRepository, PackageIdentity identity, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
+
+            if (metadataResource == null)
+            {
+                return null;
+            }
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                // Update http source cache context MaxAge so that it can always go online to fetch latest version of packages.
+                sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
+
+                return await metadataResource.GetMetadataAsync(identity, sourceCacheContext, Common.NullLogger.Instance, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Get the package metadata for the given identity.Id
+        /// </summary>
         public static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
             this SourceRepository sourceRepository, PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
+
+            if (metadataResource == null)
+            {
+                return null;
+            }
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
@@ -97,7 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // latest version of packages.
                 sourceCacheContext.MaxAge = DateTimeOffset.UtcNow;
 
-                var packages = await metadataResource?.GetMetadataAsync(
+                var packages = await metadataResource.GetMetadataAsync(
                     identity.Id,
                     includePrerelease: true,
                     includeUnlisted: false,
@@ -147,6 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
             this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken, VersionRange allowedVersions)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
             using (var sourceCacheContext = new SourceCacheContext())
@@ -177,6 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(
             this SourceRepository sourceRepository, string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
             using (var sourceCacheContext = new SourceCacheContext())
@@ -194,6 +226,21 @@ namespace NuGet.PackageManagement.VisualStudio
                     cancellationToken);
 
                 return packages;
+            }
+        }
+
+        public static async Task<GetVulnerabilityInfoResult> GetVulnerabilityInfoAsync(this SourceRepository sourceRepository, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var vulnerabilityResource = await sourceRepository.GetResourceAsync<IVulnerabilityInfoResource>(cancellationToken);
+            if (vulnerabilityResource is null)
+            {
+                return null;
+            }
+
+            using (var sourceCacheContext = new SourceCacheContext())
+            {
+                return await vulnerabilityResource.GetVulnerabilityInfoAsync(sourceCacheContext, Common.NullLogger.Instance, cancellationToken);
             }
         }
 

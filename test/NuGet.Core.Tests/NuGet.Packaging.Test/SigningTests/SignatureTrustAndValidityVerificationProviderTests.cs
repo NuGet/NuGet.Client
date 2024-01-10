@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Test
 {
     public class SignatureTrustAndValidityVerificationProviderTests
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static readonly Lazy<PrimarySignature> _signature = new Lazy<PrimarySignature>(
             () => PrimarySignature.Load(SigningTestUtility.GetResourceBytes(".signature.p7s")));
 #endif
@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Test
             _provider = new SignatureTrustAndValidityVerificationProvider();
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task GetTrustResultAsync_WhenPackageIsNull_Throws()
         {
@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("signature", exception.ParamName);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task GetTrustResultAsync_WhenSettingsIsNull_Throws()
         {

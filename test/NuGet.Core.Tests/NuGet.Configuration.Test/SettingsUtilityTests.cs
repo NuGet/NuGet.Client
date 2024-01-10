@@ -64,6 +64,31 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void GetUpdatePackageLastAccessTimeEnabledStatus_FromNuGetConfig()
+        {
+            // Arrange
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <config>
+        <add key='updatePackageLastAccessTime' value='true' />
+    </config>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var updatePackageLastAccessTimeEnabled = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
+
+                // Assert
+                updatePackageLastAccessTimeEnabled.Should().Be(true);
+            }
+        }
+
+        [Fact]
         public void GetGlobalPackagesFolder_FromNuGetConfig_RelativePath()
         {
             // Arrange
@@ -255,6 +280,33 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void DeleteConfigValue_WithValidSettings_DeletesKey()
+        {
+            // Arrange
+            var keyName = "dependencyVersion";
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""" + keyName + @""" value=""Highest"" />
+  </config>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                SettingsUtility.DeleteConfigValue(settings, keyName);
+
+                // Assert
+                var content = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                content.Should().NotContain(keyName);
+            }
+        }
+
+        [Fact]
         public void GetGlobalPackagesFolder_WithNullSettings_Throws()
         {
             var ex = Record.Exception(() => SettingsUtility.GetGlobalPackagesFolder(settings: null));
@@ -285,6 +337,15 @@ namespace NuGet.Configuration.Test
         public void GetDefaultPushSource_WithNullSettings_Throws()
         {
             var ex = Record.Exception(() => SettingsUtility.GetDefaultPushSource(settings: null));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetUpdatePackageLastAccessTimeEnabledStatus_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings: null));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();

@@ -26,7 +26,8 @@ namespace NuGet.Configuration
 
         public IList<string> Owners { get; private set; }
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = new HashSet<string>(new[] { ConfigurationConstants.NameAttribute, ConfigurationConstants.ServiceIndex });
 
         public RepositoryItem(string name, string serviceIndex, params CertificateItem[] certificates)
             : this(name, serviceIndex, owners: null, certificates: certificates)
@@ -46,7 +47,7 @@ namespace NuGet.Configuration
             if (!string.IsNullOrEmpty(owners))
             {
                 _owners = new OwnersItem(owners);
-                Owners =_owners.Content;
+                Owners = _owners.Content;
             }
             else
             {
@@ -84,7 +85,7 @@ namespace NuGet.Configuration
             var newItem = new RepositoryItem(
                 Name,
                 ServiceIndex,
-                string.Join(OwnersItem.OwnersListSeparator.ToString(), Owners),
+                string.Join(OwnersItem.OwnersListSeparator.ToString(CultureInfo.CurrentCulture), Owners),
                 Certificates.Select(c => c.Clone() as CertificateItem).ToArray());
 
             if (Origin != null)
@@ -171,7 +172,7 @@ namespace NuGet.Configuration
             {
                 if (_owners == null || !Owners.Any())
                 {
-                    _owners = new OwnersItem(string.Join(OwnersItem.OwnersListSeparator.ToString(), repository.Owners));
+                    _owners = new OwnersItem(string.Join(OwnersItem.OwnersListSeparator.ToString(CultureInfo.CurrentCulture), repository.Owners));
                     Owners = _owners.Content;
 
                     if (Origin != null)

@@ -11,7 +11,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class RepositorySignPackageRequestTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class RepositorySignPackageRequestTests
     {
         private readonly CertificatesFixture _fixture;
         private static readonly Uri _validV3ServiceIndexUrl = new Uri("https://test.test", UriKind.Absolute);

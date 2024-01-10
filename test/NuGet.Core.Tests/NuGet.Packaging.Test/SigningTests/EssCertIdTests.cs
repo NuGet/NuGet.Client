@@ -15,7 +15,8 @@ using EssCertId = NuGet.Packaging.Signing.EssCertId;
 
 namespace NuGet.Packaging.Test
 {
-    public class EssCertIdTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class EssCertIdTests
     {
         private readonly CertificatesFixture _fixture;
 
@@ -36,7 +37,7 @@ namespace NuGet.Packaging.Test
                 () => EssCertId.Read(new byte[] { 0x30, 0x0b }));
         }
 
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void Read_WithValidInput_ReturnsEssCertId()
         {

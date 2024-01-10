@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Text;
 
 namespace NuGet.Versioning
@@ -15,70 +14,51 @@ namespace NuGet.Versioning
         /// <summary>
         /// A static instance of the VersionFormatter class.
         /// </summary>
-        public static readonly VersionFormatter Instance = new VersionFormatter();
+        public static readonly VersionFormatter Instance = new();
 
         /// <summary>
         /// Format a version string.
         /// </summary>
-        public string Format(string format, object arg, IFormatProvider formatProvider)
+        public string Format(string? format, object? arg, IFormatProvider? formatProvider)
         {
             if (arg == null)
             {
                 throw new ArgumentNullException(nameof(arg));
             }
 
-            string formatted = null;
-            var argType = arg.GetType();
-
-            if (argType == typeof(IFormattable))
+            if (arg is string stringValue)
             {
-                formatted = ((IFormattable)arg).ToString(format, formatProvider);
-            }
-            else if (!String.IsNullOrEmpty(format))
-            {
-                var version = arg as SemanticVersion;
-
-                if (version != null)
-                {
-                    // single char identifiers
-                    if (format.Length == 1)
-                    {
-                        formatted = Format(format[0], version);
-                    }
-                    else
-                    {
-                        var sb = new StringBuilder(format.Length);
-
-                        for (var i = 0; i < format.Length; i++)
-                        {
-                            var s = Format(format[i], version);
-
-                            if (s == null)
-                            {
-                                sb.Append(format[i]);
-                            }
-                            else
-                            {
-                                sb.Append(s);
-                            }
-                        }
-
-                        formatted = sb.ToString();
-                    }
-                }
+                return stringValue;
             }
 
-            return formatted;
+            if (arg is not SemanticVersion version)
+            {
+                throw ResourcesFormatter.TypeNotSupported(arg.GetType(), nameof(arg));
+            }
+
+            if (string.IsNullOrEmpty(format))
+            {
+                format = "N";
+            }
+
+            StringBuilder builder = StringBuilderPool.Shared.Rent(256);
+
+            foreach (char c in format!)
+            {
+                Format(builder, c, version);
+            }
+
+            return StringBuilderPool.Shared.ToStringAndReturn(builder);
         }
 
         /// <summary>
         /// Get version format type.
         /// </summary>
-        public object GetFormat(Type formatType)
+        public object? GetFormat(Type? formatType)
         {
             if (formatType == typeof(ICustomFormatter)
                 || formatType == typeof(NuGetVersion)
-                || formatType == typeof(SemanticVersion))
+                || typeof(SemanticVersion).IsAssignableFrom(formatType))
             {
                 return this;
             }
@@ -86,83 +66,86 @@ namespace NuGet.Versioning
             return null;
         }
 
-        /// <summary>
-        /// Create a normalized version string. This string is unique for each version 'identity' 
-        /// and does not include leading zeros or metadata.
-        /// </summary>
-        private static string GetNormalizedString(SemanticVersion version)
+        private static void Format(StringBuilder builder, char c, SemanticVersion version)
         {
-            var normalized = Format('V', version);
-
-            if (version.IsPrerelease)
-            {
-                normalized = $"{normalized}-{version.Release}";
-            }
-
-            return normalized;
-        }
-
-        /// <summary>
-        /// Create the full version string including metadata. This is primarily for display purposes.
-        /// </summary>
-        private static string GetFullString(SemanticVersion version)
-        {
-            var fullString = GetNormalizedString(version);
-
-            if (version.HasMetadata)
-            {
-                fullString = $"{fullString}+{version.Metadata}";
-            }
-
-            return fullString;
-        }
-
-        private static string Format(char c, SemanticVersion version)
-        {
-            string s = null;
-
             switch (c)
             {
                 case 'N':
-                    s = GetNormalizedString(version);
-                    break;
-                case 'R':
-                    s = version.Release;
-                    break;
-                case 'M':
-                    s = version.Metadata;
-                    break;
+                    AppendNormalized(builder, version);
+                    return;
                 case 'V':
-                    s = FormatVersion(version);
-                    break;
+                    AppendVersion(builder, version);
+                    return;
                 case 'F':
-                    s = GetFullString(version);
-                    break;
+                    AppendFull(builder, version);
+                    return;
+                case 'R':
+                    builder.Append(version.Release);
+                    return;
+                case 'M':
+                    builder.Append(version.Metadata);
+                    return;
                 case 'x':
-                    s = string.Format(CultureInfo.InvariantCulture, "{0}", version.Major);
-                    break;
+                    builder.Append(version.Major);
+                    return;
                 case 'y':
-                    s = string.Format(CultureInfo.InvariantCulture, "{0}", version.Minor);
-                    break;
+                    builder.Append(version.Minor);
+                    return;
                 case 'z':
-                    s = string.Format(CultureInfo.InvariantCulture, "{0}", version.Patch);
-                    break;
+                    builder.Append(version.Patch);
+                    return;
                 case 'r':
-                    var nuGetVersion = version as NuGetVersion;
-                    s = string.Format(CultureInfo.InvariantCulture, "{0}", nuGetVersion != null && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
-                    break;
-            }
+                    builder.Append(version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
+                    return;
 
-            return s;
+                default:
+                    builder.Append(c);
+                    return;
+            }
         }
 
-        private static string FormatVersion(SemanticVersion version)
+        /// <summary>
+        /// Appends the full version string including metadata. This is primarily for display purposes.
+        /// </summary>
+        private static void AppendFull(StringBuilder builder, SemanticVersion version)
         {
-            var nuGetVersion = version as NuGetVersion;
-            var legacy = nuGetVersion != null && nuGetVersion.IsLegacyVersion;
+            AppendNormalized(builder, version);
 
-            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}{3}", version.Major, version.Minor, version.Patch,
-                legacy ? string.Format(CultureInfo.InvariantCulture, ".{0}", nuGetVersion.Version.Revision) : null);
+            if (version.HasMetadata)
+            {
+                builder.Append('+');
+                builder.Append(version.Metadata);
+            }
+        }
+
+        /// <summary>
+        /// Appends a normalized version string. This string is unique for each version 'identity' 
+        /// and does not include leading zeros or metadata.
+        /// </summary>
+        internal static void AppendNormalized(StringBuilder builder, SemanticVersion version)
+        {
+            AppendVersion(builder, version);
+
+            if (version.IsPrerelease)
+            {
+                builder.Append('-');
+                builder.Append(version.Release);
+            }
+        }
+
+        private static void AppendVersion(StringBuilder builder, SemanticVersion version)
+        {
+            builder.Append(version.Major);
+            builder.Append('.');
+            builder.Append(version.Minor);
+            builder.Append('.');
+            builder.Append(version.Patch);
+
+            if (version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion)
+            {
+                builder.Append('.');
+                builder.Append(nuGetVersion.Version.Revision);
+            }
         }
     }
 }

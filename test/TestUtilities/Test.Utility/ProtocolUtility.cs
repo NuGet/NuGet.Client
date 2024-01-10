@@ -3,14 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Reflection;
 
 namespace Test.Utility
 {
@@ -26,7 +27,7 @@ namespace Test.Utility
 
         public static string CreateServiceAddress()
         {
-            return string.Format("http://{0}/", Guid.NewGuid());
+            return string.Format(CultureInfo.InvariantCulture, "http://{0}/", Guid.NewGuid());
         }
     }
 }

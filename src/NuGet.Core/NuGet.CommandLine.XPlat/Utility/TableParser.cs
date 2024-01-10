@@ -4,100 +4,160 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
-    public static class TableParser
+    internal static class TableParser
     {
-        internal static Task<IEnumerable<string>> ToStringTableAsync<T>(
+        internal static IEnumerable<FormattedCell> ToStringTable<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
-          params Func<T, Task<object>>[] valueSelectors)
+          params Func<T, object>[] valueSelectors)
         {
-            return ToStringTableAsync(values.ToArray(), columnHeaders, valueSelectors);
+            return ToFormattedStringTable(values.ToArray(), columnHeaders, valueSelectors);
         }
 
-        internal static async Task<IEnumerable<string>> ToStringTableAsync<T>(
+        internal static IEnumerable<FormattedCell> ToFormattedStringTable<T>(
           this T[] values,
           string[] columnHeaders,
-          params Func<T, Task<object>>[] valueSelectors)
+          params Func<T, object>[] valueSelectors)
         {
-            var headerSpace = 1;
-
-            if (columnHeaders == null)
-            {
-                headerSpace = 0;
-            }
-
-            var arrValues = new string[values.Length + headerSpace, valueSelectors.Length];
+            var stringTable = new List<List<FormattedCell>>();
 
             // Fill headers
             if (columnHeaders != null)
             {
                 Debug.Assert(columnHeaders.Length == valueSelectors.Length);
 
-                for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-                {
-                    arrValues[0, colIndex] = columnHeaders[colIndex];
-                }
+                var headers = new List<FormattedCell>();
+                headers.AddRange(columnHeaders.Select(h => new FormattedCell(h)));
+                stringTable.Add(headers);
             }
 
-            // Fill table rows
-            for (var rowIndex = headerSpace; rowIndex < arrValues.GetLength(0); rowIndex++)
+            // Fill table rows - we need a queue for multi-line values
+            var columnQueues = new Dictionary<int, Queue<FormattedCell>>();
+            for (var rowIndex = 0; rowIndex < values.Length; rowIndex++)
             {
-                for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+                // process row
+                var row = new List<FormattedCell>();
+                for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
                 {
-                    var data = await valueSelectors[colIndex](values[rowIndex - headerSpace]);
-                    var cellContent = (colIndex == 1 ? "> " : "") + data.ToString();
-                    arrValues[rowIndex, colIndex] = cellContent;
-                }
-            }
-
-            return ToStringTable(values, arrValues);
-        }
-
-        internal static IEnumerable<string> ToStringTable<T>(this T[] values, string[,] arrValues)
-        {
-            var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
-            var rows = new List<string>();
-
-            for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
-            {
-                for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-                {
-                    var cell = arrValues[rowIndex, colIndex];
-                    cell = cell.PadRight(maxColumnsWidth[colIndex]);
-
-                    if (colIndex != 0)
+                    var data = valueSelectors[colIndex](values[rowIndex]);
+                    if (data is IEnumerable<object> dataEnum)
                     {
-                        cell = "   " + cell;
+                        // we have a potential multi-line value--we need to add the first line and store remainder
+                        var firstLine = true;
+                        var queue = new Queue<FormattedCell>();
+                        foreach (var dataCell in dataEnum)
+                        {
+                            if (dataCell is FormattedCell formattedDataCell)
+                            {
+                                formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+                                if (firstLine)
+                                {
+                                    // print it
+                                    row.Add(formattedDataCell);
+                                    firstLine = false;
+                                }
+                                else
+                                {
+                                    // store the rest
+                                    queue.Enqueue(formattedDataCell);
+                                }
+                            }
+                        }
+
+                        if (queue.Count > 0) // only add a queue when there's something to store
+                        {
+                            columnQueues[colIndex] = queue;
+                        }
+                    }
+                    else
+                    {
+                        // the normal case
+                        if (data is FormattedCell formattedDataCell)
+                        {
+                            formattedDataCell.Value = (colIndex == 0 ? "> " : "") + formattedDataCell.Value?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+                            row.Add(formattedDataCell);
+                        }
+                    }
+                }
+
+                stringTable.Add(row);
+
+                // clear column queues (strings for subsequent rows for this value) before proceeding with next row
+                while (columnQueues.Count > 0)
+                {
+                    var subsequentRow = new List<FormattedCell>();
+                    for (var colIndex = 0; colIndex < valueSelectors.Length; colIndex++)
+                    {
+                        var formattedDataCell = (FormattedCell)null;
+                        if (columnQueues.TryGetValue(colIndex, out var thisColumnQueue)) // we have at least one remaining value for this column
+                        {
+                            formattedDataCell = thisColumnQueue.Dequeue();
+                            if (thisColumnQueue.Count == 0)
+                            {
+                                columnQueues.Remove(colIndex); // once these are all cleared the outer loop will break
+                            }
+                        }
+                        else
+                        {
+                            formattedDataCell = new FormattedCell();
+                        }
+
+                        subsequentRow.Add(formattedDataCell);
                     }
 
-                    rows.Add(cell);
+                    stringTable.Add(subsequentRow);
                 }
-
-                rows.Add(Environment.NewLine);
             }
 
-            return rows;
+            return ToPaddedStringTable(stringTable);
         }
 
-        private static int[] GetMaxColumnsWidth(string[,] arrValues)
+        internal static IEnumerable<FormattedCell> ToPaddedStringTable(IEnumerable<ICollection<FormattedCell>> values)
         {
-            var maxColumnsWidth = new int[arrValues.GetLength(1)];
-            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-            {
-                for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
-                {
-                    var newLength = arrValues[rowIndex, colIndex].Length;
-                    var oldLength = maxColumnsWidth[colIndex];
+            var maxColumnsWidth = GetMaxColumnsWidth(values);
+            var stringTable = new List<FormattedCell>();
 
-                    if (newLength > oldLength)
+            foreach (var row in values)
+            {
+                int colIndex = 0;
+                foreach (var dataCell in row)
+                {
+                    dataCell.Value = "   " + dataCell.Value?.PadRight(maxColumnsWidth[colIndex]) ?? string.Empty;
+                    stringTable.Add(dataCell);
+                    colIndex++;
+                }
+
+                stringTable.Add(new FormattedCell(Environment.NewLine));
+            }
+
+            return stringTable;
+        }
+
+        private static int[] GetMaxColumnsWidth(IEnumerable<ICollection<FormattedCell>> values)
+        {
+            int[] maxColumnsWidth = null;
+            foreach (var row in values)
+            {
+                // use the first row to get dimension
+                if (maxColumnsWidth == null)
+                {
+                    maxColumnsWidth = new int[row.Count];
+                }
+
+                var colIndex = 0;
+                foreach (var formattedDataCell in row)
+                {
+                    if ((formattedDataCell.Value?.Length ?? 0) > maxColumnsWidth[colIndex])
                     {
-                        maxColumnsWidth[colIndex] = newLength;
+                        maxColumnsWidth[colIndex] = formattedDataCell.Value.Length;
                     }
+
+                    colIndex++;
                 }
             }
 

@@ -4,26 +4,33 @@
 namespace NuGet.Common
 {
     /// <summary>
-    /// This enum is used to quantify NuGet error and warning codes. 
+    /// This enum is used to quantify NuGet error and warning codes.
+    /// </summary>
+    /// <remarks>
+    /// <para>
     /// Format - NUxyzw where NU is the prefix indicating NuGet and xyzw is a 4 digit code
+    /// </para>
     ///
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
     ///         For example 1yzw are set of restore related errors and no other code path should use the range 1000 to 1999 for errors or warnings.
-    ///         
+    ///
     ///     y - 'y' is the second largest digit and should be used for sub sections withing a broad category.
-    ///     
+    ///
     ///         For example 12zw cvould be http related errors.
     ///         Further 'y' = 0-4 should be used for errors and 'y' = 5-9 should be warnings.
-    ///         
+    ///
     ///     zw - 'zw' are the least two digit.
     ///         These could be used for different errors or warnings within the broad categories set by digits 'xy'.
     ///
+    /// <para>
     /// Groups:
     /// 1000-1999 - Restore
     /// 3000-3999 - Signing
     /// 5000-5999 - Packaging
+    /// </para>
     ///
+    /// <para>
     /// Sub groups for Restore:
     /// error/warning - Reason
     /// 1000/1500     - Input
@@ -31,10 +38,12 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
-    /// 
+    /// </para>
+    ///
+    /// <para>
     /// All new codes need a corresponding MarkDown file under https://github.com/NuGet/docs.microsoft.com-nuget/tree/master/docs/reference/errors-and-warnings.
-    /// 
-    /// </summary>
+    /// </para>
+    /// </remarks>
     public enum NuGetLogCode
     {
         /// <summary>
@@ -93,6 +102,31 @@ namespace NuGet.Common
         NU1009 = 1009,
 
         /// <summary>
+        /// The PackageReference items {0} do not have corresponding PackageVersions.
+        /// </summary>
+        NU1010 = 1010,
+
+        /// <summary>
+        /// Central floating versions are not allowed.
+        /// </summary>
+        NU1011 = 1011,
+
+        /// <summary>
+        /// Platform version not found.
+        /// </summary>
+        NU1012 = 1012,
+
+        /// <summary>
+        /// Projects that use central package version management are not configured to allow package version overrides.
+        /// </summary>
+        NU1013 = 1013,
+
+        /// <summary>
+        /// NuGetAudit* MSBuild property input errors
+        /// </summary>
+        NU1014 = 1014,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -144,6 +178,11 @@ namespace NuGet.Common
         NU1109 = 1109,
 
         /// <summary>
+        /// The package `packageId` is available in the Global packages folder, but the source it came from `package source URI` is not one of the configured sources.
+        /// </summary>
+        NU1110 = 1110,
+
+        /// <summary>
         /// Dependency project has an incompatible framework.
         /// </summary>
         NU1201 = 1201,
@@ -161,7 +200,7 @@ namespace NuGet.Common
         /// <summary>
         /// Invalid package types
         /// </summary>
-        NU1204 = 1204, 
+        NU1204 = 1204,
 
         /// <summary>
         /// Project has an invalid dependency count
@@ -177,6 +216,11 @@ namespace NuGet.Common
         /// Incompatible package type
         /// </summary>
         NU1213 = 1213,
+
+        /// <summary>
+        /// Package Source is unreachable.
+        /// </summary>
+        NU1301 = 1301,
 
         /// <summary>
         /// Package MinClientVersion did not match.
@@ -217,6 +261,26 @@ namespace NuGet.Common
         /// Skipping project that does not support restore.
         /// </summary>
         NU1503 = 1503,
+
+        /// <summary>
+        /// Duplicate PackageReference found
+        /// </summary>
+        NU1504 = 1504,
+
+        /// <summary>
+        /// Duplicate PackageDownload found
+        /// </summary>
+        NU1505 = 1505,
+
+        /// <summary>
+        /// Duplicate PackageVersion found
+        /// </summary>
+        NU1506 = 1506,
+
+        /// <summary>
+        /// Central package management is in use but there are multiple feeds configured without using package source mapping.
+        /// </summary>
+        NU1507 = 1507,
 
         /// <summary>
         /// Dependency bumped up
@@ -263,9 +327,49 @@ namespace NuGet.Common
         NU1702 = 1702,
 
         /// <summary>
+        /// MacCatalyst platform fell back to xamarin.ios - Added in 6.0, removed in 6.1.
+        /// </summary>
+        NU1703 = 1703,
+
+        /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,
+
+        /// <summary>
+        /// Could not update package .nupkg.metadata timestamp
+        /// </summary>
+        NU1802 = 1802,
+
+        /// <summary>
+        /// HTTP Source specified, but HTTP sources will be deprecated.
+        /// </summary>
+        NU1803 = 1803,
+
+        /// <summary>
+        /// Server/package source vulnerability issue
+        /// </summary>
+        NU1900 = 1900,
+
+        /// <summary>
+        /// Package with known low severity vulnerability
+        /// </summary>
+        NU1901 = 1901,
+
+        /// <summary>
+        /// Package with known moderate severity vulnerability
+        /// </summary>
+        NU1902 = 1902,
+
+        /// <summary>
+        /// Package with known high severity vulnerability
+        /// </summary>
+        NU1903 = 1903,
+
+        /// <summary>
+        /// Package with known critical severity vulnerability
+        /// </summary>
+        NU1904 = 1904,
 
         /// <summary>
         /// Undefined signature error
@@ -484,6 +588,11 @@ namespace NuGet.Common
         NU3041 = 3041,
 
         /// <summary>
+        /// An X.509 trust store does not contain a root certificate observed in a package signature.
+        /// </summary>
+        NU3042 = 3042,
+
+        /// <summary>
         /// Undefined Package Error.
         /// </summary>
         NU5000 = 5000,
@@ -669,6 +778,36 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Error_ReadmeFileExtensionIsInvalid
+        /// </summary>
+        NU5038 = 5038,
+
+        /// <summary>
+        /// Error_ReadmeNoFileElement
+        /// </summary>
+        NU5039 = 5039,
+
+        /// <summary>
+        /// Error_ReadmeErrorEmpty
+        /// </summary>
+        NU5040 = 5040,
+
+        /// <summary>
+        /// Error_ReadmeCannotOpenFile
+        /// </summary>
+        NU5041 = 5041,
+
+        /// <summary>
+        /// Error_ProjectJsonPack_Deprecated_And_Disabled
+        /// </summary>
+        NU5042 = 5042,
+
+        /// <summary>
+        /// Invalid icon extension error
+        /// </summary>
+        NU5045 = 5045,
+
+        /// <summary>
         /// Error_Manifest_IconCannotOpenFile
         /// </summary>
         NU5046 = 5046,
@@ -684,9 +823,14 @@ namespace NuGet.Common
         NU5048 = 5048,
 
         /// <summary>
-        /// IconUrlAndIconWarning
+        /// Packing an SDK-based project with NuGet.exe error
         /// </summary>
         NU5049 = 5049,
+
+        /// <summary>
+        /// Attempted to write files from multiple sources into the same location
+        /// </summary>
+        NU5050 = 5050,
 
         /// <summary>
         /// AssemblyOutsideLibWarning
@@ -844,8 +988,23 @@ namespace NuGet.Common
         NU5131 = 5131,
 
         /// <summary>
+        /// File last write timestamp is out of range of what the zip format supports warning
+        /// </summary>
+        NU5132 = 5132,
+
+        /// <summary>
+        /// NuGet.exe needs to be unblocked after downloading
+        /// </summary>
+        NU5133 = 5133,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
+
+        /// <summary>
+        /// InvalidUndottedFrameworkWarning
+        /// </summary>
+        NU5501 = 5501,
     }
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Signing
             request.BuildSigningCertificateChainOnce(logger);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public static CryptographicAttributeObjectCollection CreateSignedAttributes(
             SignPackageRequest request,
             IReadOnlyList<X509Certificate2> chainList)
@@ -261,7 +261,7 @@ namespace NuGet.Packaging.Signing
                         var signatureContent = GenerateSignatureContent(hashAlgorithm, zipArchiveHash);
                         signature = await options.SignatureProvider.CreatePrimarySignatureAsync(signRequest, signatureContent, options.Logger, token);
                     }
-                    
+
                     using (var stream = new MemoryStream(signature.GetBytes()))
                     {
                         await package.AddSignatureAsync(stream, token);

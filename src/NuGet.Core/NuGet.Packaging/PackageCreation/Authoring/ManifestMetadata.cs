@@ -46,6 +46,7 @@ namespace NuGet.Packaging
             _projectUrl = copy.ProjectUrl?.OriginalString;
             _iconUrl = copy.IconUrl?.OriginalString;
             RequireLicenseAcceptance = copy.RequireLicenseAcceptance;
+            EmitRequireLicenseAcceptance = (copy as PackageBuilder)?.EmitRequireLicenseAcceptance ?? true;
             Description = copy.Description?.Trim();
             Copyright = copy.Copyright?.Trim();
             Summary = copy.Summary?.Trim();
@@ -62,6 +63,7 @@ namespace NuGet.Packaging
             Repository = copy.Repository;
             LicenseMetadata = copy.LicenseMetadata;
             Icon = copy.Icon;
+            Readme = copy.Readme;
         }
 
         [ManifestVersion(5)]
@@ -102,7 +104,7 @@ namespace NuGet.Packaging
         }
 
         // The (Icon/License/Project)Url properties have backing strings as we need to be able to differentiate
-        //   between the property not being set (valid) and set to an empty value (invalid). 
+        //   between the property not being set (valid) and set to an empty value (invalid).
         public void SetIconUrl(string iconUrl)
         {
             _iconUrl = iconUrl;
@@ -161,6 +163,8 @@ namespace NuGet.Packaging
 
         public bool RequireLicenseAcceptance { get; set; }
 
+        public bool EmitRequireLicenseAcceptance { get; set; } = true;
+
         public bool DevelopmentDependency { get; set; }
 
         public string Description { get; set; }
@@ -176,6 +180,8 @@ namespace NuGet.Packaging
         public string Language { get; set; }
 
         public string Tags { get; set; }
+
+        public string Readme { get; set; }
 
         public bool Serviceable { get; set; }
 
@@ -237,7 +243,7 @@ namespace NuGet.Packaging
         }
 
         public IEnumerable<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
-        
+
         public IEnumerable<PackageType> PackageTypes { get; set; } = new List<PackageType>();
 
         public LicenseMetadata LicenseMetadata { get; set; } = null;
@@ -347,9 +353,22 @@ namespace NuGet.Packaging
                 yield return NuGetResources.IconMissingRequiredValue;
             }
 
-            if (RequireLicenseAcceptance && (string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
+            if (Readme == string.Empty)
             {
-                yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
+                yield return NuGetResources.ReadmeMissingRequiredValue;
+            }
+
+            if (RequireLicenseAcceptance)
+            {
+                if ((string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
+                {
+                    yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
+                }
+
+                if (!EmitRequireLicenseAcceptance)
+                {
+                    yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresEmit;
+                }
             }
 
             if (_licenseUrl != null && LicenseMetadata != null && (string.IsNullOrWhiteSpace(_licenseUrl) || !LicenseUrl.Equals(LicenseMetadata.LicenseUrl)))

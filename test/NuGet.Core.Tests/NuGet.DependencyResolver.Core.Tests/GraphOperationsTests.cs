@@ -189,7 +189,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         public void GraphOperations_GraphItem_EqualObjects(bool nullIdentity, bool isCentralTransitive)
         {
             var libraryIdentity = nullIdentity ? null : new LibraryIdentity("a", new NuGetVersion("2.0.0"), LibraryType.Package);
-            
+
             var graphItem = new GraphItem<RemoteResolveResult>(libraryIdentity);
             graphItem.IsCentralTransitive = isCentralTransitive;
 
@@ -220,7 +220,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             var graphItem_2_2 = new GraphItem<RemoteResolveResult>(libraryIdentity2);
             graphItem_2_2.IsCentralTransitive = false;
 
-           
+
             var graphItem_null_1 = new GraphItem<RemoteResolveResult>(null);
             graphItem_null_1.IsCentralTransitive = true;
 
@@ -244,7 +244,7 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             Assert.False(graphItem_2_2.Equals(graphItem_null_1));
             Assert.False(graphItem_2_2.Equals(graphItem_null_2));
-            
+
             Assert.False(graphItem_null_1.Equals(graphItem_null_2));
         }
 

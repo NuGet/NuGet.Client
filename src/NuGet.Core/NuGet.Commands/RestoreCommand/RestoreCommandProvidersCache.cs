@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.Common;
@@ -26,6 +25,9 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<string, NuGetv3LocalRepository> _globalCache
             = new ConcurrentDictionary<string, NuGetv3LocalRepository>(PathUtility.GetStringComparerBasedOnOS());
 
+        private readonly ConcurrentDictionary<SourceRepository, IVulnerabilityInformationProvider> _vulnerabilityInformationProviders
+            = new ConcurrentDictionary<SourceRepository, IVulnerabilityInformationProvider>();
+
         private readonly LocalPackageFileCache _fileCache = new LocalPackageFileCache();
 
         public RestoreCommandProviders GetOrCreate(
@@ -35,8 +37,21 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
+            return GetOrCreate(globalPackagesPath, fallbackPackagesPaths, sources, cacheContext, log, updateLastAccess: false);
+        }
+
+        public RestoreCommandProviders GetOrCreate(
+            string globalPackagesPath,
+            IReadOnlyList<string> fallbackPackagesPaths,
+            IReadOnlyList<SourceRepository> sources,
+            SourceCacheContext cacheContext,
+            ILogger log,
+            bool updateLastAccess)
+        {
             var isFallbackFolder = false;
-            var globalCache = _globalCache.GetOrAdd(globalPackagesPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder));
+
+            NuGetv3LocalRepository globalCache = _globalCache.GetOrAdd(globalPackagesPath,
+                                                    (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder, updateLastAccess));
 
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
@@ -58,10 +73,11 @@ namespace NuGet.Commands
             var fallbackFolders = new List<NuGetv3LocalRepository>();
 
             isFallbackFolder = true;
+            updateLastAccess = false;
 
             foreach (var fallbackPath in fallbackPackagesPaths)
             {
-                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder));
+                var cache = _globalCache.GetOrAdd(fallbackPath, (path) => new NuGetv3LocalRepository(path, _fileCache, isFallbackFolder, updateLastAccess));
                 fallbackFolders.Add(cache);
 
                 var localProvider = _localProvider.GetOrAdd(fallbackPath, (path) =>
@@ -101,7 +117,14 @@ namespace NuGet.Commands
                 remoteProviders.Add(remoteProvider);
             }
 
-            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache);
+            var vulnerabilityInformationProviders = new List<IVulnerabilityInformationProvider>(sources.Count);
+            foreach (SourceRepository source in sources)
+            {
+                IVulnerabilityInformationProvider provider = _vulnerabilityInformationProviders.GetOrAdd(source, s => new VulnerabilityInformationProvider(s, log));
+                vulnerabilityInformationProviders.Add(provider);
+            }
+
+            return new RestoreCommandProviders(globalCache, fallbackFolders, localProviders, remoteProviders, _fileCache, vulnerabilityInformationProviders);
         }
     }
 }

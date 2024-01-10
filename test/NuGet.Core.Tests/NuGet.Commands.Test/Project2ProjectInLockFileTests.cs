@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class Project2ProjectTests
     {
         [Fact]
@@ -94,9 +95,9 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
                 var specPath3 = Path.Combine(project3.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
-                var spec3 = JsonPackageSpecReader.GetPackageSpec(project3Json, "project3", specPath3);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2).EnsureProjectJsonRestoreMetadata();
+                var spec3 = JsonPackageSpecReader.GetPackageSpec(project3Json, "project3", specPath3).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
@@ -198,8 +199,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(project2Json, "project2", specPath2).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
@@ -261,7 +262,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project3.FullName, "project3.csproj"), string.Empty);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
@@ -368,9 +369,9 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(project2.FullName, "project.json");
                 var specPath3 = Path.Combine(project3.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project2", specPath2);
-                var spec3 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project3", specPath3);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project2", specPath2).EnsureProjectJsonRestoreMetadata();
+                var spec3 = JsonPackageSpecReader.GetPackageSpec(projectJson, "project3", specPath3).EnsureProjectJsonRestoreMetadata();
 
                 var logger = new TestLogger();
                 var request = new TestRestoreRequest(spec1, sources, packagesDir, logger);
@@ -525,9 +526,9 @@ namespace NuGet.Commands.Test
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
                 spec1.FilePath = project1Path;
                 spec1.RestoreMetadata.ProjectPath = project1Path;
-                spec1.RestoreMetadata.ProjectUniqueName = project1Path;                
+                spec1.RestoreMetadata.ProjectUniqueName = project1Path;
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2, spec3);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2, spec3);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.assets.json");
                 var format = new LockFileFormat();

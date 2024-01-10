@@ -108,6 +108,7 @@
 
     <!-- Test inputs -->
     <PropertyGroup>
+      <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
       <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj</TestProjectPaths>
       <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
     </PropertyGroup>
@@ -130,21 +131,21 @@
     ============================================================
   -->
   <Target Name="RunVS" DependsOnTargets="BuildVS;Pack;CoreUnitTests;UnitTestsVS">
-    <Message Text="Running NuGet Build for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Running NuGet Build" Importance="high" />
   </Target>
 
   <!--
     ============================================================
-    Build 
+    Build
     ============================================================
   -->
   <Target Name="BuildVS"  Condition=" '$(IsXPlat)' != 'true' " >
-    <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Building" Importance="high" />
   </Target>
 
     <!--
     ============================================================
-    Build for XPLAT 
+    Build for XPLAT
     ============================================================
   -->
   <Target Name="BuildXPLAT" DependsOnTargets="GetXPLATProjects">
@@ -157,12 +158,11 @@
     ============================================================
   -->
   <Target Name="BuildNoVSIX" AfterTargets="BuildVS" Condition=" '$(IsXPlat)' != 'true' ">
-    <Message Text="Building for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Building" Importance="high" />
 
-    <MSBuild Projects="@(SolutionProjectsWithoutVSIX)"
+    <MSBuild Projects="@(SolutionProjects)"
              Targets="Build"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties);CreateVsixContainer=false" />
   </Target>
 
   <!--
@@ -175,8 +175,7 @@
 
     <MSBuild Projects="@(XPLATProjects)"
              Targets="Build"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties);" />
   </Target>
 
   <!--
@@ -187,14 +186,13 @@
     ============================================================
   -->
   <Target Name="BuildVSIX" AfterTargets= "BuildVS" Condition=" '$(IsXPlat)' != 'true' AND '$(BuildRTM)' != 'true'">
-    <Message Text="Building the VSIX for VS $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Building the VSIX" Importance="high" />
 
     <MSBuild Projects="$(VSIXProject)"
              Targets="Build"
              Properties="$(CommonMSBuildProperties);
                          BuildProjectReferences=false;
-                         IsVsixBuild=true;
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+                         IsVsixBuild=true;" />
   </Target>
 
   <!--
@@ -209,8 +207,7 @@
     <MSBuild BuildInParallel="true"
              Projects="@(SolutionProjects)"
              Targets="Clean"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties);" />
   </Target>
 
   <!--
@@ -219,13 +216,12 @@
     ============================================================
   -->
   <Target Name="Pack">
-    <Message Text="Packing for Visual Studio $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Packing" Importance="high" />
 
     <MSBuild BuildInParallel="false"
              Projects="@(SolutionProjects)"
              Targets="PackProjects"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties)" />
   </Target>
 
   <!--
@@ -239,8 +235,7 @@
     <MSBuild BuildInParallel="false"
              Projects="@(XPLATProjects)"
              Targets="PackProjects"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+             Properties="$(CommonMSBuildProperties)" />
   </Target>
 
   <!--
@@ -249,7 +244,7 @@
     ============================================================
   -->
   <Target Name="Restore">
-    <Message Text="Restoring for Visual Studio $(VisualStudioVersion)" Importance="high" />
+    <Message Text="Restoring" Importance="high" />
 
     <!-- Convert list of projects to a property -->
     <PropertyGroup>
@@ -260,8 +255,7 @@
       Projects="restorehelper.targets"
       Targets="Restore"
       Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+                  $(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
@@ -274,8 +268,7 @@
     <MSBuild
       Projects="$(MSBuildThisFileFullPath)"
       Targets="Restore"
-      Properties="$(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+      Properties="$(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
@@ -286,7 +279,7 @@
   -->
   <Target Name="RestoreXPLAT" DependsOnTargets="GetXPLATProjects">
     <Message Text="Restoring for XPLAT" Importance="high" />
-    
+
     <PropertyGroup>
       <ProjectListValue>@(XPLATProjects)</ProjectListValue>
     </PropertyGroup>
@@ -295,49 +288,47 @@
       Projects="restorehelper.targets"
       Targets="Restore"
       Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
+                  $(CommonMSBuildProperties)">
     </MSBuild>
   </Target>
 
   <!--
     ============================================================
-    Restore Apex 
+    Get projects need to be packed
     ============================================================
   -->
-  <Target Name="RestoreApex">
-    <Message Text="Restoring Apex projects" Importance="high" />
-
-    <PropertyGroup>
-      <ProjectListValue>@(ApexProjects)</ProjectListValue>
-    </PropertyGroup>
-
-    <MSBuild
-      Projects="restorehelper.targets"
-      Targets="Restore"
-      Properties="RestoreGraphProjectInput=$(ProjectListValue);
-                  $(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion)">
-    </MSBuild>
+  <Target Name="GetPackProjects">
+      <MsBuild
+        Projects="@(SolutionProjects)"
+        Targets="_IsProjectNeedsPack">
+          <Output
+              TaskParameter="TargetOutputs"
+              ItemName="PackProjects" />
+      </MsBuild>
   </Target>
 
-    <!--
+  <!--
     ============================================================
-    EnsurePackageReferenceVersionsInSolution
+    Ensure all the nupkg and symbol.nugkg files created
     ============================================================
   -->
-  <Target Name="EnsurePackageReferenceVersionsInSolution">
-      <MsBuild
-        Projects="@(AllRepoProjects)"
-        Targets="EnsurePackageReferenceVersions"
-        Properties="SkipCentralPackageVersions=true">
-    </MsBuild>
+  <Target Name="EnsurePackagesExist" DependsOnTargets="GetPackProjects">
+      <ItemGroup>
+          <NupkgsFiles Include="$(NupkgOutputDirectory)\*.nupkg"
+                       Exclude="$(NupkgOutputDirectory)\*.symbols.nupkg" />
+          <SymbolFiles Include="$(NupkgOutputDirectory)\*.symbols.nupkg" />
+      </ItemGroup>
+
+      <Message Text="Count of Projects need to be packed: @(PackProjects->Count())        Nupkg Count: @(NupkgsFiles->Count())        Symbol Count: @(SymbolFiles->Count())" Importance="high" />
+
+      <Error Text="There are @(PackProjects->Count()) projects need to be packed, but only @(NupkgsFiles->Count()) nupkg files and  @(SymbolFiles->Count()) symbol nupkg files are created under '$(NupkgOutputDirectory)'."
+             Condition=" '@(PackProjects->Count())' != '@(NupkgsFiles->Count())' OR '@(PackProjects->Count())' != '@(SymbolFiles->Count())' " />
   </Target>
 
   <!--
     ============================================================
     RunTestsOnProjects
-    Finds all test assemblies and allows Xunit to run them as 
+    Finds all test assemblies and allows Xunit to run them as
     efficiently as the xunit.runner.json settings allow.
     ============================================================
   -->
@@ -351,8 +342,7 @@
     <MSBuild
             Projects="@(TestProjectToSearch)"
             Targets="GetTestAssemblies"
-            Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);"
+            Properties="$(CommonMSBuildProperties)"
             Condition=" '$(TestProjectPaths)' != '' ">
       <Output TaskParameter="TargetOutputs"
               ItemName="TestAssemblyPath" />
@@ -366,53 +356,79 @@
     <MakeDir Directories="$(TestResultsDirectory)" />
 
     <PropertyGroup>
-      <TestResultOutputFormat Condition=" '$(TestResultOutputFormat)' == '' ">xml</TestResultOutputFormat>
-      <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
-      <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
+      <DotNetTestConsoleVerbosity Condition="'$(DotNetTestConsoleVerbosity)' == '' And '$(System_Debug)' == 'true'">detailed</DotNetTestConsoleVerbosity>
+      <DotNetTestConsoleVerbosity Condition="'$(DotNetTestConsoleVerbosity)' == ''">minimal</DotNetTestConsoleVerbosity>
     </PropertyGroup>
+    <PropertyGroup>
+      <DotNetTestAdditionalArgs Condition="'$(SYSTEM_DEBUG)' == 'true' And '$(BINLOG_DIRECTORY)' != ''">--diag &quot;$(BINLOG_DIRECTORY)\vstest.log&quot;</DotNetTestAdditionalArgs>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(SkipDesktopAssemblies)' != 'true' ">
+      <DesktopInputTestAssemblies Include="@(TestAssemblyPath->WithMetadataValue('IsDesktop', 'true'))" />
+    </ItemGroup>
 
     <PropertyGroup Condition=" '$(SkipDesktopAssemblies)' != 'true' ">
-      <!-- Sort assemblies -->
-      <DesktopInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsDesktop", "true"))</DesktopInputTestAssemblies>
-      <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
-      
-      <!-- Build exe commands -->
-      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced) -verbose</DesktopTestCommand>
-      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
+      <DesktopTestCommand>&quot;$(DotnetExePath)&quot; test @(DesktopInputTestAssemblies->'&quot;%(Identity)&quot;', ' ') --logger:&quot;console;verbosity=$(DotNetTestConsoleVerbosity)&quot; --settings:&quot;$(MSBuildThisFileDirectory)xunit.runsettings&quot; --ResultsDirectory:&quot;$(TestResultsDirectory)&quot; --logger:&quot;trx&quot; $(DotNetTestAdditionalArgs)</DesktopTestCommand>
     </PropertyGroup>
 
+    <ItemGroup Condition=" '$(SkipCoreAssemblies)' != 'true' ">
+      <CoreInputTestAssemblies Include="@(TestAssemblyPath->WithMetadataValue('IsCore', 'true'))" />
+    </ItemGroup>
+    
     <PropertyGroup Condition=" '$(SkipCoreAssemblies)' != 'true' ">
-      <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
-      <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
-
-      <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:"xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)" --logger:"console;verbosity=detailed" --settings:$(MSBuildThisFileDirectory)xunit.runsettings</VsTestLogger>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
+      <CoreTestCommand>&quot;$(DotnetExePath)&quot; test @(CoreInputTestAssemblies->'&quot;%(Identity)&quot;', ' ') --logger:&quot;console;verbosity=$(DotNetTestConsoleVerbosity)&quot; --settings:&quot;$(MSBuildThisFileDirectory)xunit.runsettings&quot; --ResultsDirectory:&quot;$(TestResultsDirectory)&quot; --logger:&quot;trx&quot; $(DotNetTestAdditionalArgs)</CoreTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
-    <Message Text="Running $(DesktopTestCommand)" 
-          Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' "/>
+    <Message Text="Running $(DesktopTestCommand)"
+             Importance="High"
+             Condition=" '$(SkipDesktopAssemblies)' != 'true' AND @(DesktopInputTestAssemblies->Count()) > 0 "/>
 
     <Exec Command="$(DesktopTestCommand)"
+          LogStandardErrorAsError="true"
           ContinueOnError="true"
-          Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' ">
+          EnvironmentVariables="VisualStudio.InstallationUnderTest.Path=$(VSINSTALLDIR);MSBUILD_EXE_PATH=$(MSBuildBinPath)\MSBuild.exe"
+          Condition=" '$(SkipDesktopAssemblies)' != 'true' AND @(DesktopInputTestAssemblies->Count()) > 0 ">
       <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
     </Exec>
-
+    
     <!-- VSTest/NETCore -->
-    <Message Text="Running $(VSTestCommand)" 
-          Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' "/>
+    <Message Text="Running $(CoreTestCommand)"
+             Importance="High"
+             Condition=" '$(SkipCoreAssemblies)' != 'true' AND @(CoreInputTestAssemblies->Count()) > 0 "/>
 
-    <Exec Command="$(VSTestCommand)"
+    <Exec Command="$(CoreTestCommand)"
+          LogStandardErrorAsError="true"
           ContinueOnError="true"
-          Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' ">
+          Condition=" '$(SkipCoreAssemblies)' != 'true' AND @(CoreInputTestAssemblies->Count()) > 0 ">
       <Output TaskParameter="ExitCode" PropertyName="VSTestErrorCode"/>
     </Exec>
 
-    <Error Text="Desktop $(TestResultsFileName) tests failed! Results: $(TestResultsXunit)" Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
-    <Error Text="NETCore $(TestResultsFileName) tests failed! Results: $(TestResultsVsts)" Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
+    <Error Text="Desktop $(TestResultsFileName) tests failed!"
+           Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' != '0' AND '$(DesktopTestErrorCode)' != '' " />
+    
+    <Error Text="NETCore $(TestResultsFileName) tests failed!"
+           Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' != '0' AND '$(VSTestErrorCode)' != '' " />
 
-    <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' == '0' " Importance="High" />
-    <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' == '0' " Importance="High" />
+    <Message Text="Desktop $(TestResultsFileName) tests passed!"
+             Importance="High"
+             Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' == '0' " />
+
+    <Message Text="NETCore $(TestResultsFileName) tests passed!"
+             Importance="High"
+             Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' == '0' " />
   </Target>
+
+      <!--
+    ============================================================
+    GetTargetFrameworks
+    ============================================================
+  -->
+  <Target Name="GetAllTargetFrameworks">
+      <MsBuild
+        Projects="@(AllRepoProjects)"
+        Targets="GetAllTargetFrameworks">
+    </MsBuild>
+  </Target>
+
 </Project>

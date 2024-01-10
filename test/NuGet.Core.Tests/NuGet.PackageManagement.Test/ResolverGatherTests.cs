@@ -10,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
@@ -1418,6 +1419,167 @@ namespace NuGet.Test
             Assert.Equal("a", check[0].Id);
             Assert.Equal("b", check[1].Id);
             Assert.Equal("c", check[2].Id);
+        }
+
+        /// <summary>
+        /// Test package patterns filters are respected and succeeds.
+        /// </summary>
+        [Theory]
+        [InlineData("public,Nuget", "Nuget")]
+        [InlineData("public,nuget", "Nuget")]
+        [InlineData("public,Nuget", "nuget")]
+        [InlineData("public,nuget", "nuget")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource.MVC.ASP")]
+        [InlineData("public,Contoso.Opensource.* ", "Contoso.Opensource.MVC.ASP")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "nuget")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "private1")]
+        public async Task ResolverGather_PackageSourceMapping_Succeed(string packagePatterns, string packageId)
+        {
+            // Arrange
+            var sourceMappingConfiguration = PackageSourceMappingUtility.GetPackageSourceMapping(packagePatterns);
+            IReadOnlyList<string> configuredSources = sourceMappingConfiguration.GetConfiguredPackageSources(packageId);
+            var target = new PackageIdentity(packageId, new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var packages1 = new List<SourcePackageDependencyInfo>
+                {
+                    new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+                };
+
+            var packages2 = new List<SourcePackageDependencyInfo>
+                {
+                    new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0),  new Packaging.Core.PackageDependency[] { }, true, null)
+                };
+
+            var packages3 = new List<SourcePackageDependencyInfo>
+                {
+                    new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0),  new Packaging.Core.PackageDependency[] { }, true, null)
+                };
+
+            var providers1 = new List<Lazy<INuGetResourceProvider>>();
+            providers1.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages1)));
+
+            var providers2 = new List<Lazy<INuGetResourceProvider>>();
+            providers2.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages2)));
+
+            var providers3 = new List<Lazy<INuGetResourceProvider>>();
+            providers3.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages3)));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(new SourceRepository(new PackageSource("http://1", "someRepository1"), providers1));
+            repos.Add(new SourceRepository(new PackageSource("http://2", "someRepository2"), providers2));
+            repos.Add(new SourceRepository(new PackageSource("http://3", configuredSources[0]), providers3));
+
+            var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
+
+            var context = new GatherContext(sourceMappingConfiguration)
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = new List<PackageIdentity>(),
+                TargetFramework = framework,
+                PrimarySources = repos,
+                AllSources = repos,
+                PackagesFolderSource = repos[2], // Since it's configuredSource it'll succeed finding the packageId.
+                ResolutionContext = new ResolutionContext(),
+                ProjectContext = testNuGetProjectContext
+            };
+
+            // Act
+            HashSet<SourcePackageDependencyInfo> results = await ResolverGather.GatherAsync(context, CancellationToken.None);
+
+            List<SourcePackageDependencyInfo> check = results.OrderBy(e => e.Id).ToList();
+
+            // Assert
+            Assert.True(sourceMappingConfiguration.IsEnabled);
+            Assert.Equal(1, configuredSources.Count);
+            Assert.Equal(1, check.Count);
+            // Only match to repository set in Package source mapping filter.
+            Assert.Equal(configuredSources[0], check[0].Source.PackageSource.Name);
+
+            // Assert log.
+            Assert.Equal($"Package source mapping matches found for package ID '{packageId}' are: '{configuredSources[0]}' ", testNuGetProjectContext.Logs.Value[0]);
+        }
+
+        /// <summary>
+        /// Test package source mapping filters are respected and fails if not found.
+        /// </summary>
+        [Theory]
+        [InlineData("public,nuget", "nuge")]
+        [InlineData("public,nuget", "nuget1")]
+        [InlineData("public,Contoso.Opensource.*", "Cont")]
+        [InlineData("public,Contoso.Opensource.*", "Contoso.Opensource")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "nuge")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "nuget1")]
+        [InlineData("nuget.org,nuget|privateRepository,private*", "privat")]
+        [InlineData("-", "privat")]
+        [InlineData("public,nuget", "-")]
+        public async Task ResolverGather_PackageSourceMapping_Fails(string packagePatterns, string packageId)
+        {
+            // Arrange
+            var sourceMappingConfiguration = PackageSourceMappingUtility.GetPackageSourceMapping(packagePatterns);
+            IReadOnlyList<string> configuredSources = sourceMappingConfiguration.GetConfiguredPackageSources(packageId);
+            var target = new PackageIdentity(packageId, new NuGetVersion(1, 0, 0));
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var packages1 = new List<SourcePackageDependencyInfo>
+                {
+                    new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null)
+                };
+
+            var packages2 = new List<SourcePackageDependencyInfo>
+                {
+                    new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0),  new Packaging.Core.PackageDependency[] { }, true, null)
+                };
+
+            var packages3 = new List<SourcePackageDependencyInfo>
+                {
+                    new SourcePackageDependencyInfo(packageId, new NuGetVersion(1, 0, 0),  new Packaging.Core.PackageDependency[] { }, true, null)
+                };
+
+            var providers1 = new List<Lazy<INuGetResourceProvider>>();
+            providers1.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages1)));
+
+            var providers2 = new List<Lazy<INuGetResourceProvider>>();
+            providers2.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages2)));
+
+            var providers3 = new List<Lazy<INuGetResourceProvider>>();
+            providers3.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages3)));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(new SourceRepository(new PackageSource("http://1", "nuget.org"), providers1));
+            repos.Add(new SourceRepository(new PackageSource("http://2", "nuget.org"), providers2));
+            repos.Add(new SourceRepository(new PackageSource("http://3", "privateRepository"), providers3));
+
+            var testNuGetProjectContext = new TestNuGetProjectContext() { EnableLogging = true };
+
+            var context = new GatherContext(sourceMappingConfiguration)
+            {
+                PrimaryTargets = targets.ToList(),
+                InstalledPackages = new List<PackageIdentity>(),
+                TargetFramework = framework,
+                PrimarySources = repos,
+                AllSources = repos,
+                PackagesFolderSource = repos[2],// Since it's not configuredSource it'll fail finding the packageId.
+                ResolutionContext = new ResolutionContext(),
+                ProjectContext = testNuGetProjectContext
+            };
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => ResolverGather.GatherAsync(context, CancellationToken.None));
+
+            // Assert
+            Assert.True(sourceMappingConfiguration.IsEnabled);
+            Assert.Empty(configuredSources);
+
+            // Assert log.
+            Assert.Contains($"Package '{packageId} 1.0.0' is not found in the following primary source(s)", exception.Message);
         }
 
         private static SourceRepository CreateTimeoutRepo(string source)

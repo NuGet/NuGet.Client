@@ -70,12 +70,12 @@ namespace NuGet.Packaging.Signing
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(Placement);
-            combiner.AddObject(Target);
+            combiner.AddStruct(Placement);
+            combiner.AddStruct(Target);
             combiner.AddObject(Fingerprint);
-            combiner.AddObject(FingerprintAlgorithm);
+            combiner.AddStruct(FingerprintAlgorithm);
 
-            return combiner.GetHashCode();
+            return combiner.CombinedHash;
         }
     }
 }

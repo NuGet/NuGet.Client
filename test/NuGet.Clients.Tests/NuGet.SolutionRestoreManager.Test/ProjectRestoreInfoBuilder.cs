@@ -3,8 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 
 namespace NuGet.SolutionRestoreManager.Test
@@ -106,14 +110,14 @@ namespace NuGet.SolutionRestoreManager.Test
         public ProjectRestoreInfoBuilder WithTargetFrameworkInfo(
             IVsTargetFrameworkInfo tfi)
         {
-            if(_projectRestoreInfo.TargetFrameworks is VsTargetFrameworks vsTargetFrameworks && tfi is VsTargetFrameworkInfo)
+            if (_projectRestoreInfo.TargetFrameworks is VsTargetFrameworks vsTargetFrameworks && tfi is VsTargetFrameworkInfo)
             {
                 vsTargetFrameworks.Add(tfi);
             }
 
             if (_projectRestoreInfo2.TargetFrameworks is VsTargetFrameworks2 vsTargetFrameworks2 && tfi is VsTargetFrameworkInfo2)
             {
-                vsTargetFrameworks2.Add((IVsTargetFrameworkInfo2) tfi);
+                vsTargetFrameworks2.Add((IVsTargetFrameworkInfo2)tfi);
             }
 
             return this;
@@ -124,7 +128,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public VsProjectRestoreInfo2 ProjectRestoreInfo2 => _projectRestoreInfo2;
 
         private static VsTargetFrameworkInfo ToTargetFrameworkInfo(
-            TargetFrameworkInformation tfm, 
+            TargetFrameworkInformation tfm,
             IEnumerable<IVsProjectProperty> globalProperties)
         {
             var packageReferences = tfm
@@ -142,14 +146,15 @@ namespace NuGet.SolutionRestoreManager.Test
                 {
                     "PackageTargetFallback",
                     string.Join(";", tfm.Imports.Select(x => x.GetShortFolderName()))
-                }
+                },
             };
 
             return new VsTargetFrameworkInfo(
                 tfm.FrameworkName.ToString(),
                 packageReferences,
                 projectReferences,
-                projectProperties.Concat(globalProperties));
+                projectProperties.Concat(globalProperties),
+                originalTargetFramework: tfm.TargetAlias);
         }
 
         private static VsTargetFrameworkInfo2 ToTargetFrameworkInfo2(
@@ -168,6 +173,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var packageDownloads = tfm
                 .DownloadDependencies
+                .GroupBy(e => e.Name)
                 .Select(ToPackageDownload);
 
             var frameworkReferences = tfm.FrameworkReferences.Select(ToFrameworkReference);
@@ -186,7 +192,103 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectReferences,
                 packageDownloads,
                 frameworkReferences,
-                projectProperties.Concat(globalProperties));
+                projectProperties.Concat(globalProperties),
+                originalTargetFramework: tfm.TargetAlias);
+        }
+
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(NuGetFramework framework, string originalString = null, string clrSupport = null)
+        {
+            string platformVersion = framework.PlatformVersion.ToString();
+            string platformMoniker = GetTargetPlatformMoniker(framework);
+            string windowsTargetPlatformMinVersion = string.Empty;
+            if (!string.IsNullOrEmpty(clrSupport))
+            {
+                windowsTargetPlatformMinVersion = framework.PlatformVersion.ToString();
+                var lowerPlatformVersionFramework = new NuGetFramework(
+                    framework.Framework,
+                    framework.Version,
+                    framework.Platform,
+                    new Version(framework.PlatformVersion.Major - 1, 0, 0));
+                platformMoniker = lowerPlatformVersionFramework.DotNetPlatformName;
+                platformVersion = lowerPlatformVersionFramework.PlatformVersion.ToString();
+            }
+
+            return new IVsProjectProperty[]
+            {
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkMoniker, GetTargetFrameworkMoniker(framework)),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformMoniker, platformMoniker),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkIdentifier, framework.Framework),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkVersion, "v" + framework.Version),
+                new VsProjectProperty(ProjectBuildProperties.TargetFrameworkProfile, framework.Profile),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformIdentifier, framework.Platform),
+                new VsProjectProperty(ProjectBuildProperties.TargetPlatformVersion, platformVersion),
+                new VsProjectProperty(ProjectBuildProperties.TargetFramework, originalString ?? framework.GetShortFolderName()),
+                new VsProjectProperty(ProjectBuildProperties.CLRSupport, clrSupport ?? string.Empty),
+                new VsProjectProperty(ProjectBuildProperties.WindowsTargetPlatformMinVersion, windowsTargetPlatformMinVersion)
+            };
+        }
+
+        private static string GetTargetPlatformMoniker(NuGetFramework framework)
+        {
+            if (framework.HasPlatform)
+            {
+                return framework.DotNetPlatformName;
+            }
+            return null;
+        }
+
+        private static string GetTargetFrameworkMoniker(NuGetFramework framework)
+        {
+            var parts = new List<string>(3) { framework.Framework };
+
+            parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
+
+            if (!string.IsNullOrEmpty(framework.Profile))
+            {
+                parts.Add(string.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
+            }
+
+            return string.Join(",", parts);
+        }
+
+        private static string GetDisplayVersion(Version version)
+        {
+            var sb = new StringBuilder(string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
+
+            if (version.Build > 0
+                || version.Revision > 0)
+            {
+                sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Build);
+
+                if (version.Revision > 0)
+                {
+                    sb.AppendFormat(CultureInfo.InvariantCulture, ".{0}", version.Revision);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public static IEnumerable<IVsProjectProperty> GetTargetFrameworkProperties(string targetFrameworkMoniker, string originalFrameworkName = null)
+        {
+            var framework = NuGetFramework.Parse(targetFrameworkMoniker);
+            var originalTFM = !string.IsNullOrEmpty(originalFrameworkName) ?
+                            originalFrameworkName :
+                            GetTargetFramework(framework, targetFrameworkMoniker);
+
+            return GetTargetFrameworkProperties(framework, originalTFM);
+        }
+
+        private static string GetTargetFramework(NuGetFramework framework, string targetFrameworkMoniker)
+        {
+            try
+            {
+                return framework.GetShortFolderName();
+            }
+            catch
+            {
+                return targetFrameworkMoniker;
+            }
         }
 
         private static IVsReferenceItem ToFrameworkReference(FrameworkDependency frameworkDependency)
@@ -221,12 +323,14 @@ namespace NuGet.SolutionRestoreManager.Test
             return new VsReferenceItem(libraryRange.Name, properties);
         }
 
-        private static IVsReferenceItem ToPackageDownload(DownloadDependency library)
+        private static IVsReferenceItem ToPackageDownload(IGrouping<string, DownloadDependency> library)
         {
+            string versionProperty = string.Join(";", library.Select(e => e.VersionRange.OriginalString));
+
             var properties = new VsReferenceProperties(
-                new[] { new VsReferenceProperty("Version", library.VersionRange.OriginalString) }
-            );
-            return new VsReferenceItem(library.Name, properties);
+                    new[] { new VsReferenceProperty("Version", versionProperty) }
+                );
+            return new VsReferenceItem(library.Key, properties);
         }
     }
 }

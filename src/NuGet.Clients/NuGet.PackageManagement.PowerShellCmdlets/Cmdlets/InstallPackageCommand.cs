@@ -13,7 +13,6 @@ using System.Text;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -82,21 +81,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WaitAndLogPackageActions();
                     UnsubscribeFromProgressEvents();
 
-                    return Task.FromResult(true);
+                    return TaskResult.True;
                 }, Token);
             });
 
             // stop timer for telemetry event and create action telemetry event instance
             TelemetryServiceUtility.StopTimer();
+
+            var isPackageSourceMappingEnabled = PackageSourceMappingUtility.IsMappingEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
-                NuGetOperationType.Install,
+                NuGetProjectActionType.Install,
                 OperationSource.PMC,
                 startTime,
                 _status,
                 _packageCount,
-                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds());
+                TelemetryServiceUtility.GetTimerElapsedTimeInSeconds(),
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
@@ -136,9 +138,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                    logMessages.ForEach(p => Log(ex.AsLogMessage()));
+                }
             }
             catch (Exception ex)
             {
@@ -181,7 +186,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Log(MessageLevel.Debug, ExceptionUtilities.DisplayMessage(ex));
 
                 // Wrap FatalProtocolException coming from the server with a user friendly message
-                var error = string.Format(CultureInfo.CurrentUICulture, Resources.Exception_PackageNotFound, Id, Source);
+                var error = string.Format(CultureInfo.CurrentCulture, Resources.Exception_PackageNotFound, Id, Source);
                 Log(MessageLevel.Error, error);
             }
             catch (SignatureException ex)
@@ -194,9 +199,12 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Log(ex.AsLogMessage());
                 }
 
-                var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
+                if (ex.Results != null)
+                {
+                    var logMessages = ex.Results.SelectMany(p => p.Issues).ToList();
 
-                logMessages.ForEach(p => Log(p));
+                    logMessages.ForEach(p => Log(p));
+                }
             }
             catch (Exception ex)
             {
@@ -227,17 +235,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     if (UriHelper.IsHttpSource(Id))
                     {
                         _isHttp = true;
-                        Source = Path.GetTempPath();
+                        Source = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
                     }
                     else
                     {
                         var fullPath = Path.GetFullPath(Id);
                         Source = Path.GetDirectoryName(fullPath);
                     }
-                }
-                else
-                {
-                    NormalizePackageId(Project);
                 }
             }
         }

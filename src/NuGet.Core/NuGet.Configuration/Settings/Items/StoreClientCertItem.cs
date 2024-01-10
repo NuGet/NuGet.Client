@@ -148,26 +148,30 @@ namespace NuGet.Configuration
             }
         }
 
-        protected override IReadOnlyCollection<string> AllowedAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.StoreLocationAttribute,
-            ConfigurationConstants.StoreNameAttribute,
-            ConfigurationConstants.FindByAttribute,
-            ConfigurationConstants.FindValueAttribute
-        };
+        protected override IReadOnlyCollection<string> AllowedAttributes { get; }
+            = new HashSet<string>(new[]
+                {
+                    ConfigurationConstants.PackageSourceAttribute,
+                    ConfigurationConstants.StoreLocationAttribute,
+                    ConfigurationConstants.StoreNameAttribute,
+                    ConfigurationConstants.FindByAttribute,
+                    ConfigurationConstants.FindValueAttribute
+                });
 
         protected override IReadOnlyDictionary<string, IReadOnlyCollection<string>> AllowedValues { get; } = new Dictionary<string, IReadOnlyCollection<string>>
         {
             {
-                ConfigurationConstants.StoreLocationAttribute, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                ConfigurationConstants.StoreLocationAttribute,
+                new HashSet<string>(new[]
                 {
                     GetString(StoreLocation.CurrentUser),
                     GetString(StoreLocation.LocalMachine)
-                }
+                },
+                    StringComparer.OrdinalIgnoreCase)
             },
             {
-                ConfigurationConstants.StoreNameAttribute, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                ConfigurationConstants.StoreNameAttribute,
+                new HashSet<string>(new []
                 {
                     GetString(StoreName.AddressBook),
                     GetString(StoreName.AuthRoot),
@@ -177,10 +181,12 @@ namespace NuGet.Configuration
                     GetString(StoreName.Root),
                     GetString(StoreName.TrustedPeople),
                     GetString(StoreName.TrustedPublisher)
-                }
+                },
+                    StringComparer.OrdinalIgnoreCase)
             },
             {
-                ConfigurationConstants.FindByAttribute, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                ConfigurationConstants.FindByAttribute,
+                new HashSet<string>(new[]
                 {
                     GetString(X509FindType.FindByThumbprint),
                     GetString(X509FindType.FindBySubjectName),
@@ -197,15 +203,14 @@ namespace NuGet.Configuration
                     GetString(X509FindType.FindByExtension),
                     GetString(X509FindType.FindByKeyUsage),
                     GetString(X509FindType.FindBySubjectKeyIdentifier)
-                }
+                },
+                    StringComparer.OrdinalIgnoreCase)
             }
         };
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.FindValueAttribute
-        };
+        protected override IReadOnlyCollection<string> RequiredAttributes
+        { get; }
+        = new HashSet<string>(new[] { ConfigurationConstants.PackageSourceAttribute, ConfigurationConstants.FindValueAttribute });
 
         internal override XNode AsXNode()
         {

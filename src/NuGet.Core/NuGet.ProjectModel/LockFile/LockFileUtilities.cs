@@ -20,7 +20,7 @@ namespace NuGet.ProjectModel
                 var format = new LockFileFormat();
 
                 // A corrupt lock file will log errors and return null
-                lockFile = FileUtility.SafeRead(filePath: lockFilePath,read: (stream, path) => format.Read(stream, logger, path));
+                lockFile = FileUtility.SafeRead(filePath: lockFilePath, read: (stream, path) => format.Read(stream, logger, path));
             }
 
             return lockFile;

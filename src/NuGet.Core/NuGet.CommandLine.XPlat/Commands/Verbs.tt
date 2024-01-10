@@ -8,70 +8,6 @@
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".cs" #>
 <#
-    string InitCaps(string input)
-    {
-        if (input == null) 
-        {
-            return null;
-        }
-
-        var textInfo = CultureInfo.InvariantCulture.TextInfo;
-        var output = textInfo.ToTitleCase(input);
-        
-        return output;
-    }
-
-    bool IsArgumentOrOption(string type)
-    {
-        return IsArgument(type) || IsOption(type);
-    }
-
-    bool IsArgument(string type)
-    {
-        return type == "Argument";
-    }
-
-    bool IsOption(string type)
-    {
-        return type == "Option";
-    }
-
-    string GetProperty(XElement element)
-    {
-        switch (element.Name.LocalName)
-        {
-            case "SingleValueOption":
-                return "Option";
-            case "SwitchOption":
-                return "Option";
-            case "Value":
-                return "Option";
-            case "Argument":
-                return "Argument";
-            case "Example":
-                return "Example";
-            case "SeeAlso":
-                return "SeeAlso";
-            default:
-                return "Unknown Element Type " + element.Name.LocalName;
-        }
-    }
-
-    string GetOptionType(XElement element)
-    {
-        switch (element.Name.LocalName)
-        {
-            case "SingleValueOption":
-                return "SingleValue";
-            case "SwitchOption":
-                return "NoValue";
-            case "Value":
-                return "Value";
-            default:
-                return "Unknown Element Type " + element.Name.LocalName;
-        }
-    }
-
  string commandFile = this.Host.ResolvePath("Commands.xml");
  XDocument commands = XDocument.Load(commandFile);
 #>
@@ -94,7 +30,7 @@ namespace NuGet.CommandLine.XPlat
 foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
 {
     string commandName = verb.Attribute(XName.Get("Name", "")).Value;
-    string  commandFormalName = InitCaps(commandName);
+    string  commandFormalName = StringUtilities.InitCaps(commandName);
 #>
     internal partial class <#= commandFormalName #>VerbParser
     {
@@ -104,10 +40,38 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
             app.Command("<#= commandName #>", <#= commandFormalName #>Cmd =>
             {
 <#
+    // Look for options directly under the verb
+    foreach (XElement option in verb.Descendants())
+    {
+        if (option.Name == XName.Get("Noun"))
+        {
+            break;
+        }
+
+        var data = new OptionData(option);
+        if (data.BaseClass == "Argument")
+        {
+#>
+                CommandArgument <#= data.FormalName #> = <#= commandFormalName #>Cmd.Argument(
+                    "<#= data.LongNameOrName #>", <#= data.Help #>);
+<#
+        }
+        else if (data.BaseClass == "Option")
+        {
+#>
+                CommandOption <#= data.FormalName #> = <#= commandFormalName #>Cmd.Option(
+                    "<#= data.ShortcutString #>",
+                    <#= data.Help #>,
+                    CommandOptionType.<#= data.OptionType #>);
+<#
+        }
+    }
+#>
+<#
     foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
     {
         string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
-        string nounFormalName = InitCaps(nounName);
+        string nounFormalName = StringUtilities.InitCaps(nounName);
         nounFormalName = nounFormalName.Replace("-", "");
         if (nounName != null)
         {
@@ -116,31 +80,26 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
                 {
 <#
         }
+
+        // Look for options directly under each noun
         foreach (XElement option in noun.Descendants())
         {
-            if (IsArgumentOrOption(GetProperty(option)))
+            var data = new OptionData(option);
+            if (data.BaseClass == "Argument")
             {
-                string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
-                string optionLongName = option.Attribute(XName.Get("LongName", ""))?.Value;
-                string optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
-                string optionFormalName = optionName.Replace("-","");
-                if (IsArgument(GetProperty(option)))
-                {
 #>
-                    CommandArgument <#= optionFormalName #> = <#= nounFormalName #>Cmd.Argument(
-                        "<#= optionLongName != null ? optionLongName : optionName #>", <#= optionHelp != null ? "Strings."+optionHelp : "" #>);
+                    CommandArgument <#= data.FormalName #> = <#= nounFormalName #>Cmd.Argument(
+                        "<#= data.LongNameOrName #>", <#= data.Help #>);
 <#
-                }
-                else if (IsOption(GetProperty(option)))
-                {
-                    string optionShortcut = option.Attribute(XName.Get("Shortcut",""))?.Value;
+            }
+            else if (data.BaseClass == "Option")
+            {
 #>
-                    CommandOption <#= optionFormalName #> = <#= nounFormalName #>Cmd.Option(
-                        "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName.ToLower() #>",
-                        <#= optionHelp != null ? "Strings."+optionHelp : "" #>,
-                        CommandOptionType.<#= GetOptionType(option) #>);
+                    CommandOption <#= data.FormalName #> = <#= nounFormalName #>Cmd.Option(
+                        "<#= data.ShortcutString #>",
+                        <#= data.Help #>,
+                        CommandOptionType.<#= data.OptionType #>);
 <#
-                }
             }
         }
 #>
@@ -153,34 +112,27 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
 <#
         foreach (XElement option in noun.Descendants())
         {
-            if (IsArgumentOrOption(GetProperty(option)))
+            var data = new OptionData(option);
+            if (data.BaseClass == "Argument")
             {
-                string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
-                string optionFormalName = optionName?.Replace("-","");
-                string optionCapsName = InitCaps(optionName);
-                optionCapsName = optionCapsName.Replace("-", "");
-                if (IsArgument(GetProperty(option)))
-                {
 #>
-                            <#= optionCapsName #> = <#=optionFormalName#>.Value,
+                            <#= data.InitCapsName #> = <#= data.FormalName #>.Value,
 <#
-                }
-                else if (IsOption(GetProperty(option)))
+            }
+            else if (data.BaseClass == "Option")
+            {
+                switch (data.OptionType)
                 {
-                    string optionType = GetOptionType(option);
-                    switch (optionType)
-                    {
-                        case "SingleValue":
+                    case "SingleValue":
 #>
-                            <#= optionCapsName #> = <#= optionFormalName #>.Value(),
-<#                    
-                            break;
-                        case "NoValue":
+                            <#= data.InitCapsName #> = <#= data.FormalName #>.Value(),
+<#
+                        break;
+                    case "NoValue":
 #>
-                            <#= optionCapsName #> = <#= optionFormalName #>.HasValue(),
-<#                    
-                            break;
-                    }
+                            <#= data.InitCapsName #> = <#= data.FormalName #>.HasValue(),
+<#
+                        break;
                 }
             }
         }
@@ -191,47 +143,41 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
 
             foreach (XElement option2 in noun.Descendants())
             {
-                bool required = option2.Attribute(XName.Get("Required", ""))?.Value == "true";
-                if (required)
+                var optionData = new OptionData(option2);
+                if (optionData.IsRequired)
                 {
-                    if (IsArgumentOrOption(GetProperty(option2)))
+                    if (optionData.BaseClass == "Argument")
                     {
-                        string optionName2 = option2.Attribute(XName.Get("Name", ""))?.Value;
-                        string optionFormalName2 = optionName2?.Replace("-","");
-                        string optionCapsName2 = InitCaps(optionFormalName2);
-                        if (IsArgument(GetProperty(option2)))
-                        {
 #>
-                    if (args.<#= optionCapsName2 #> == null)
+                    if (args.<#= optionData.InitCapsName #> == null)
                     {
-                        throw new CommandException("'<#=optionFormalName2#>' argument is missing but required.");
+                        throw new CommandException("'<#= optionData.FormalName #>' argument is missing but required.");
                     }
 <#
-                        }
-                        else if (IsOption(GetProperty(option2)))
+                    }
+                    else if (optionData.BaseClass == "Option")
+                    {
+                        switch (optionData.OptionType)
                         {
-                            string optionType2 = GetOptionType(option2);
-                            switch (optionType2)
-                            {
-                            case "SingleValue":
+                        case "SingleValue":
 #>
-                        if (args.<#= optionCapsName2 #> == null)
+                        if (args.<#= optionData.InitCapsName #> == null)
                         {
-                            throw new CommandException("'<#=optionFormalName2#>' option is missing but required.");
+                            throw new CommandException("'<#= optionData.FormalName #>' option is missing but required.");
                         }
-<#                    
+<#
                                 break;
                             case "NoValue":
 #>
                         //TODO: implement required for bool
-<#                    
+<#
                                 break;
-                            }
                         }
                     }
                 }
             }
-#>                        <#= commandFormalName #><#= nounFormalName #>Runner.Run(args, getLogger);
+#>
+                        <#= commandFormalName #><#= nounFormalName #>Runner.Run(args, getLogger);
                         return 0;
                     });
                 });
@@ -242,8 +188,66 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
                 <#= commandFormalName #>Cmd.Description = Strings.<#= commandFormalName #>_Description;
                 <#= commandFormalName #>Cmd.OnExecute(() =>
                 {
+<#
+        bool verbHasOptions = false;
+        foreach (XElement option in verb.Descendants())
+        {
+            if (option.Name == XName.Get("Noun"))
+            {
+                break;
+            }
+
+            if (!verbHasOptions)
+            {
+#>
+                    var args = new <#= commandFormalName #>Args()
+                    {
+<#
+            }
+
+            verbHasOptions = true;
+            var optionData = new OptionData(option);
+            if (optionData.BaseClass == "Argument")
+            {
+#>
+                        <#= optionData.InitCapsName #> = <#= optionData.FormalName #>.Value,
+<#
+            }
+            else if (optionData.BaseClass == "Option")
+            {
+                switch (optionData.OptionType)
+                {
+                    case "SingleValue":
+#>
+                        <#= optionData.InitCapsName #> = <#= optionData.FormalName #>.Value(),
+<#
+                        break;
+                    case "NoValue":
+#>
+                        <#= optionData.InitCapsName #> = <#= optionData.FormalName #>.HasValue(),
+<#
+                        break;
+                }
+            }
+        }
+
+        if (verbHasOptions)
+        {
+#>
+                    };
+
+                    <#= commandFormalName #>Runner.Run(args, getLogger);
+                    return 0;
+<#
+        }
+        else
+        {
+#>
                     app.ShowHelp("<#= commandName #>");
                     return 0;
+<#
+        }
+#>
                 });
             });
         }
@@ -252,3 +256,74 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
 <#
 }
 #>}
+<#+
+public class OptionData
+{
+    public OptionData(XElement element)
+    {
+        string elementName = element.Name.LocalName;
+        Name = element.Attribute(XName.Get("Name", ""))?.Value;
+        LongName = element.Attribute(XName.Get("LongName", ""))?.Value;
+        Help = element.Attribute(XName.Get("Help", ""))?.Value;
+        if (Help != null) { Help = "Strings." + Help; }
+        Shortcut = element.Attribute(XName.Get("Shortcut",""))?.Value;
+        IsRequired = element.Attribute(XName.Get("Required", ""))?.Value == "true";
+
+        switch (elementName)
+        {
+            case "SingleValueOption":
+                BaseClass = "Option";
+                OptionType = "SingleValue";
+                break;
+            case "SwitchOption":
+                BaseClass = "Option";
+                OptionType = "NoValue";
+                break;
+            case "Value":
+                BaseClass = "Option";
+                OptionType = "Value";
+                break;
+            case "Argument":
+                BaseClass = "Argument";
+                break;
+            case "Example":
+                BaseClass = "Example";
+                break;
+            case "SeeAlso":
+                BaseClass = "SeeAlso";
+                break;
+            default:
+                throw new Exception("Unknown Element Type " + element.Name.LocalName);
+        }
+    }
+
+    public string BaseClass { get; set; }
+    public string OptionType { get; set; }
+    public string Name { get; set; }
+    public string InitCapsName { get { return StringUtilities.InitCaps(Name).Replace("-", ""); } }
+    public string LongName { get; set; }
+    public string LongNameOrName { get { return LongName != null ? LongName : Name; }}
+    public string FormalName { get { return Name.Replace("-",""); } }
+    public string Shortcut { get; set; }
+    public string Help { get; set; }
+    public bool IsRequired { get; set; }
+    public string ShortcutString { get { return (Shortcut != null ? "-" + Shortcut + "|" : "") + "--" + Name.ToLower(); } }
+
+}
+
+public static class StringUtilities
+{
+    public static string InitCaps(string input)
+    {
+        if (input == null)
+        {
+            return null;
+        }
+
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+        var output = textInfo.ToTitleCase(input);
+
+        return output;
+    }
+}
+#>

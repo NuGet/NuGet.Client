@@ -3,43 +3,28 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
-using NuGet.ProjectModel;
 using Xunit;
-using FluentAssertions;
-using System.Diagnostics;
 
 namespace NuGet.Commands.Test
 {
     public class TransitiveNoWarnUtilsTests
     {
 
-        // Tests for TransitiveNoWarnUtils.ExtractPathNoWarnProperties
-        [Fact]
-        public void ExtractPathNoWarnProperties_ReturnsEmptySetIfPathPropertiesAreNull()
-        {
-            // Arrange & Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(null, "test_id");
-
-            // Assert
-            extractedNoWarnSet.Should().NotBeNull();
-            extractedNoWarnSet.Should().BeEmpty();
-        }
-
         [Fact]
         public void ExtractPathNoWarnProperties_CorrectlyReadsProjectWideNoWarns()
         {
             // Arrange
             var projectWideNoWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603 };
-            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+            TransitiveNoWarnUtils.NodeWarningProperties pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarn,
                 null);
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
-                pathWarningProperties,
+            var extractedNoWarnSet = pathWarningProperties.ExtractPathNoWarnProperties(
                 "test_id");
 
             // Assert
@@ -55,7 +40,7 @@ namespace NuGet.Commands.Test
             var framework = NuGetFramework.Parse("net461");
             var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1605 };
 
-            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+            TransitiveNoWarnUtils.NodeWarningProperties pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 null,
                 new Dictionary<string, HashSet<NuGetLogCode>>
                 {
@@ -63,8 +48,7 @@ namespace NuGet.Commands.Test
                 });
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
-                pathWarningProperties,
+            var extractedNoWarnSet = pathWarningProperties.ExtractPathNoWarnProperties(
                 packageId);
 
             // Assert
@@ -78,12 +62,12 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var packageId = "test_package";
-            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601 , NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1107 };
+            var expectedNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1603, NuGetLogCode.NU1605, NuGetLogCode.NU1107 };
             var projectWideNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1601, NuGetLogCode.NU1605 };
             var packageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1107 };
             var otherPackageSpecificNoWarnSet = new HashSet<NuGetLogCode> { NuGetLogCode.NU1603, NuGetLogCode.NU1701 };
 
-            var pathWarningProperties = new TransitiveNoWarnUtils.NodeWarningProperties(
+            TransitiveNoWarnUtils.NodeWarningProperties pathWarningProperties = TransitiveNoWarnUtils.NodeWarningProperties.Create(
                 projectWideNoWarnSet,
                 new Dictionary<string, HashSet<NuGetLogCode>>
                 {
@@ -92,8 +76,7 @@ namespace NuGet.Commands.Test
                 });
 
             // Act
-            var extractedNoWarnSet = TransitiveNoWarnUtils.ExtractPathNoWarnProperties(
-                pathWarningProperties,
+            var extractedNoWarnSet = pathWarningProperties.ExtractPathNoWarnProperties(
                 packageId);
 
             // Assert
@@ -302,10 +285,10 @@ namespace NuGet.Commands.Test
 
             // Assert
             mergedNoWarnForNet461.Should().NotBeNull();
-            mergedNoWarnForNet461.ShouldBeEquivalentTo(expectedNoWarnForNet461);
+            mergedNoWarnForNet461.Should().BeEquivalentTo(expectedNoWarnForNet461);
 
             mergedNoWarnForNetcoreapp.Should().NotBeNull();
-            mergedNoWarnForNetcoreapp.ShouldBeEquivalentTo(expectedNoWarnForNetcoreapp);
+            mergedNoWarnForNetcoreapp.Should().BeEquivalentTo(expectedNoWarnForNetcoreapp);
         }
 
         // Tests for TransitiveNoWarnUtils.MergeProjectWideWarningProperties
@@ -393,7 +376,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             merged.Should().NotBeNull();
-            merged.ShouldBeEquivalentTo(expected);
+            merged.Should().BeEquivalentTo(expected);
         }
 
 
@@ -488,7 +471,7 @@ namespace NuGet.Commands.Test
 
             // Assert
             result.Should().NotBeNull();
-            result.ShouldBeEquivalentTo(expected);
+            result.Should().BeEquivalentTo(expected);
         }
 
         // Tests for TransitiveNoWarnUtils.ExtractPackageSpecificNoWarnForFramework
@@ -586,9 +569,9 @@ namespace NuGet.Commands.Test
 
             // Assert
             resultNet461.Should().NotBeNull();
-            resultNet461.ShouldBeEquivalentTo(expected[net461]);
+            resultNet461.Should().BeEquivalentTo(expected[net461]);
             resultNetcoreapp.Should().NotBeNull();
-            resultNetcoreapp.ShouldBeEquivalentTo(expected[netcoreapp]);
+            resultNetcoreapp.Should().BeEquivalentTo(expected[netcoreapp]);
         }
 
         // Tests for TransitiveNoWarnUtils.DependencyNode equality
@@ -617,7 +600,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(null, null));
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null));
 
             TransitiveNoWarnUtils.DependencyNode second = null;
 
@@ -639,12 +622,12 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(null, null));
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null));
 
             // Act
             var seen = new HashSet<TransitiveNoWarnUtils.DependencyNode>
             {
-                first                
+                first
             };
 
             // Assert
@@ -656,12 +639,12 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var projectWideNoWarn = new HashSet<NuGetLogCode>();
-            var packageSpecificNoWarn= new Dictionary<string, HashSet<NuGetLogCode>>();
+            var packageSpecificNoWarn = new Dictionary<string, HashSet<NuGetLogCode>>();
 
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -669,7 +652,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -713,7 +696,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -721,7 +704,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -747,7 +730,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -755,7 +738,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: false,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -763,7 +746,7 @@ namespace NuGet.Commands.Test
             var third = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test_other",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    projectWideNoWarn,
                    packageSpecificNoWarn
                 ));
@@ -812,7 +795,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -820,7 +803,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -861,7 +844,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -869,7 +852,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -908,7 +891,7 @@ namespace NuGet.Commands.Test
             var first = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    firstProjectWideNoWarn,
                    firstPackageSpecificNoWarn
                 ));
@@ -916,7 +899,7 @@ namespace NuGet.Commands.Test
             var second = new TransitiveNoWarnUtils.DependencyNode(
                 id: "test",
                 isProject: true,
-                nodeWarningProperties: new TransitiveNoWarnUtils.NodeWarningProperties(
+                nodeWarningProperties: TransitiveNoWarnUtils.NodeWarningProperties.Create(
                    secondProjectWideNoWarn,
                    secondPackageSpecificNoWarn
                 ));
@@ -930,6 +913,579 @@ namespace NuGet.Commands.Test
 
             // Assert
             seen.Count.Should().Be(2);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("NU1605")]
+        [InlineData("NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_WithEqualProjectWideNoWarns_Succeeds(
+            string noWarn)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
+                null);
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                noWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(noWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void NodeWarningPropertiesIsSubSetOf_WithNullAndEmptyProjectWideNoWarns_Succeeds(bool nullFirst)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                nullFirst ? null : new HashSet<NuGetLogCode>(),
+                null);
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                nullFirst ? new HashSet<NuGetLogCode>() : null,
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData("NU1605", null)]
+        [InlineData("NU1605", "")]
+        [InlineData("NU1605, NU1604", null)]
+        [InlineData("NU1605, NU1604", "")]
+        [InlineData("NU1605, NU1604", "NU1605")]
+        [InlineData("NU1605, NU1604", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", null)]
+        [InlineData("NU1605, NU1604, NU1701", "")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1701")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_WithSecondProjectWideNoWarnAProperSubsetOfFirst_Succeeds(
+            string firstNoWarn,
+            string secondNoWarn)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
+                null);
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                secondNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(null, "NU1605")]
+        [InlineData("", "NU1605")]
+        [InlineData(null, "NU1605, NU1604")]
+        [InlineData("", "NU1605, NU1604")]
+        [InlineData("NU1605", "NU1604")]
+        [InlineData("NU1605", "NU1605, NU1604")]
+        [InlineData("NU1604", "NU1605, NU1604")]
+        [InlineData(null, "NU1605, NU1604, NU1701")]
+        [InlineData("", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1604", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1701", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1701")]
+        [InlineData("NU1605, NU1604", "NU1604, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1701")]
+        [InlineData("NU1605, NU1604", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1605, NU1701", "NU1605, NU1604, NU1701")]
+        [InlineData("NU1604, NU1701", "NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesIsSubSetOf_WithSecondProjectWideNoWarnNotASubsetOfFirst_Fails(
+            string firstNoWarn,
+            string secondNoWarn)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                firstNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstNoWarn).ToHashSet(),
+                null);
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                MSBuildStringUtility.GetNuGetLogCodes(secondNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData(null, new string[0])]
+        [InlineData(null, new[] { "test_id1:" })]
+        [InlineData(new string[0], null)]
+        [InlineData(new string[0], new string[0])]
+        [InlineData(new string[0], new[] { "test_id1:" })]
+        [InlineData(new[] { "test_id1:" }, null)]
+        [InlineData(new[] { "test_id1:" }, new string[0])]
+        [InlineData(new[] { "test_id1:" }, new[] { "test_id1:" })]
+        public void NodeWarningPropertiesIsSubSetOf_EmptyPackageSpecificNoWarns_Succeeds(
+            string[] firstNoWarn,
+            string[] secondNoWarn)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(firstNoWarn));
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(secondNoWarn));
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
+        public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsEmptySecondPackageSpecificNoWarnIsNotEmpty_Fails(
+            string[] firstNoWarn)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(firstNoWarn));
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
+        public void NodeWarningPropertiesIsSubSetOf_FirstPackageSpecificNoWarnIsNotEmptySecondPackageSpecificNoWarnIsEmpty_Succeeds(
+            string[] secondNoWarn)
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(new[] { "test_id1:NU1000" }));
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(secondNoWarn));
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Fact]
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeySameValue_Succeeds()
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Fact]
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveSameKeyDifferentValue_Fails()
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1001 } });
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        [Fact]
+        public void NodeWarningPropertiesIsSubSetOf_PackageSpecificNoWarnsHaveDifferentKeySameValue_Fails()
+        {
+            // Arrange
+            var first = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id1"] = new() { NuGetLogCode.NU1000 } });
+            var second = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                new Dictionary<string, HashSet<NuGetLogCode>> { ["test_id2"] = new() { NuGetLogCode.NU1000 } });
+
+            // Act
+            var result = first.IsSubSetOf(second);
+
+            // Assert
+            result.Should().Be(false);
+        }
+
+        // Tests for NodeWarningProperties.GetIntersect
+        [Theory]
+        [InlineData(new object[] { null, null })]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1000" } })]
+        [InlineData(new object[] { "", null })]
+        [InlineData(new object[] { "", new string[0] })]
+        [InlineData(new object[] { "", new[] { "test_id1:" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:" } })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingItselfShouldEqualItself(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Arrange
+            var node = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // Act
+            var result = node.GetIntersect(node);
+
+            // Assert
+            result.Should().BeEquivalentTo(node);
+        }
+
+        [Theory]
+        [InlineData(new object[] { null, null })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { null, new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1000" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingEquivalentShouldEqualItself(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Note: this test differs from the one above in that GetIntersect cannot rely on the ReferenceEquals check
+
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // Act
+            var result = firstNode.GetIntersect(secondNode);
+
+            // Assert
+            result.Should().BeEquivalentTo(secondNode);
+        }
+
+        [Theory]
+        [InlineData(new object[] { null, null })]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { "", null })]
+        [InlineData(new object[] { "", new string[0] })]
+        [InlineData(new object[] { "", new[] { "test_id1:" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "", new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingEquivalentSimplifiesEmptySets(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Note: this test differs from the one above in that GetIntersect cannot rely on the ReferenceEquals check AND we don't expect them to be exactly equal:
+            // instead, we expect empty sets to be simplified to null where appropriate
+
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // simplify the package-specific nowarns.
+            Dictionary<string, HashSet<NuGetLogCode>> simplifiedPackageSpecificNoWarn = null;
+            if (packageSpecificNoWarn != null)
+            {
+                simplifiedPackageSpecificNoWarn = GetPackageSpecificNoWarn(packageSpecificNoWarn);
+                foreach (var key in simplifiedPackageSpecificNoWarn.Keys.ToArray())
+                {
+                    if (simplifiedPackageSpecificNoWarn.TryGetValue(key, out var value) &&
+                        (value == null || value.Count == 0))
+                    {
+                        simplifiedPackageSpecificNoWarn.Remove(key);
+                    }
+                }
+
+                if (simplifiedPackageSpecificNoWarn.Count == 0)
+                {
+                    simplifiedPackageSpecificNoWarn = null;
+                }
+            }
+
+            var expectedResultNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                string.IsNullOrEmpty(projectWideNoWarn) ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                simplifiedPackageSpecificNoWarn);
+
+            // Act
+            var result = firstNode.GetIntersect(secondNode);
+
+            // Assert
+            result.Should().BeEquivalentTo(expectedResultNode);
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingNullShouldEqualNull(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Arrange
+            var node = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+
+            // Act
+            var result = node.GetIntersect(null);
+
+            // Assert
+            result.Should().BeNull();
+        }
+
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData(new object[] { null, new string[0] })]
+        [InlineData(new object[] { null, new[] { "test_id1:" } })]
+        [InlineData(new object[] { "NU1000", null })]
+        [InlineData(new object[] { "NU1000", new string[0] })]
+        [InlineData(new object[] { "NU1000", new[] { "test_id1:NU1000" } })]
+        [InlineData(new object[] { "NU1605, NU1604, NU1701", new[] { "test_id1:NU1000", "test_id2:NU1605, NU1604, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_IntersectingEmptyShouldEqualEmpty(
+            string projectWideNoWarn,
+            string[] packageSpecificNoWarn)
+        {
+            // Arrange
+            var node = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                projectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(projectWideNoWarn).ToHashSet(),
+                GetPackageSpecificNoWarn(packageSpecificNoWarn));
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
+
+            // Act
+            var resultOne = node.GetIntersect(empty);
+            var resultTwo = empty.GetIntersect(node);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("NU1000")]
+        [InlineData("NU1605, NU1604, NU1701")]
+        public void NodeWarningPropertiesGetIntersect_ProjectWideEmptyIntersection(
+            string firstProjectWideNoWarn)
+        {
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                firstProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstProjectWideNoWarn).ToHashSet(),
+                null);
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(empty);
+            var resultTwo = empty.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData("NU1605, NU1604, NU1701", "NU1000", null)]
+        [InlineData("NU1605, NU1604, NU1701", "NU1000, NU1604", "NU1604")]
+        [InlineData("NU1605, NU1604, NU1701", "NU1703, NU1605, NU1604", "NU1605, NU1604")]
+        public void NodeWarningPropertiesGetIntersect_ProjectWide(
+            string firstProjectWideNoWarn,
+            string secondProjectWideNoWarn,
+            string expectedProjectWideNoWarn)
+        {
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                firstProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(firstProjectWideNoWarn).ToHashSet(),
+                null);
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                secondProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(secondProjectWideNoWarn).ToHashSet(),
+                null);
+            var expectedResultNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                expectedProjectWideNoWarn == null ? null : MSBuildStringUtility.GetNuGetLogCodes(expectedProjectWideNoWarn).ToHashSet(),
+                null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(secondNode);
+            var resultTwo = secondNode.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(expectedResultNode);
+            resultTwo.Should().BeEquivalentTo(expectedResultNode);
+        }
+
+        [Theory]
+        [InlineData(new object[] { null })]
+        [InlineData(new object[] { new string[0] })]
+        [InlineData(new object[] { new[] { "test_id1:" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU1605, NU1604" } })]
+        public void NodeWarningPropertiesGetIntersect_PackageSpecificEmptyIntersection(
+            string[] firstPackageSpecificNoWarn)
+        {
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(empty);
+            var resultTwo = empty.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { "test_id1:NU1701" }, new[] { "test_id1:1000" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id1:NU1000, NU1703" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id2:NU1703, NU3018, NU1604" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU1605, NU3018" }, new[] { "test_id1:NU1703, NU3018", "test_id2:NU1604, NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU1605, NU3018" }, new[] { "test_id1:NU1703, NU3018", "test_id3:NU1703, NU1605, NU3018" } })]
+        public void NodeWarningPropertiesGetIntersect_PackageSpecificNonintersecting(
+            string[] firstPackageSpecificNoWarn,
+            string[] secondPackageSpecificNoWarn)
+        {
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(secondPackageSpecificNoWarn));
+            var empty = TransitiveNoWarnUtils.NodeWarningProperties.Create(null, null);
+
+            // Act
+            var resultOne = firstNode.GetIntersect(secondNode);
+            var resultTwo = secondNode.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(empty);
+            resultTwo.Should().BeEquivalentTo(empty);
+        }
+
+        [Theory]
+        [InlineData(new object[] { new[] { "test_id1:NU1701, NU1605" }, new[] { "test_id1:NU1604, NU1701" }, new[] { "test_id1:NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id1:NU1000, NU1604" }, new[] { "test_id1:NU1604" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701" }, new[] { "test_id1:NU1703, NU1605, NU1604" }, new[] { "test_id1:NU1605, NU1604" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id2:NU1703, NU3018, NU1701" }, new[] { "test_id1:NU1703, NU3018, NU1701", "test_id2:NU1604" }, new[] { "test_id1:NU1701" } })]
+        [InlineData(new object[] { new[] { "test_id1:NU1605, NU1604, NU1701", "test_id3:NU1703, NU3018, NU1701" }, new[] { "test_id2:NU1703, NU3018, NU1701", "test_id3:NU1604, NU3018, NU1701" }, new[] { "test_id3:NU3018, NU1701" } })]
+        public void NodeWarningPropertiesGetIntersect_PackageSpecificIntersecting(
+            string[] firstPackageSpecificNoWarn,
+            string[] secondPackageSpecificNoWarn,
+            string[] expectedPackageSpecificNoWarn)
+        {
+            // Arrange
+            var firstNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(firstPackageSpecificNoWarn));
+            var secondNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(secondPackageSpecificNoWarn));
+            var expectedResultNode = TransitiveNoWarnUtils.NodeWarningProperties.Create(
+                null,
+                GetPackageSpecificNoWarn(expectedPackageSpecificNoWarn));
+
+            // Act
+            var resultOne = firstNode.GetIntersect(secondNode);
+            var resultTwo = secondNode.GetIntersect(firstNode);
+
+            // Assert
+            resultOne.Should().BeEquivalentTo(expectedResultNode);
+            resultTwo.Should().BeEquivalentTo(expectedResultNode);
+        }
+
+        private static Dictionary<string, HashSet<NuGetLogCode>> GetPackageSpecificNoWarn(IEnumerable<string> values)
+        {
+            if (values == null)
+            {
+                return null;
+            }
+
+            var result = new Dictionary<string, HashSet<NuGetLogCode>>();
+
+            foreach (var value in values)
+            {
+                var split = value.Split(':');
+                result.Add(split[0], MSBuildStringUtility.GetNuGetLogCodes(split[1]).ToHashSet());
+            }
+
+            return result;
         }
     }
 }

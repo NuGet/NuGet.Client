@@ -49,7 +49,7 @@ namespace Test.Utility.Signing
             return new OcspResponder(certificateAuthority, options);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)
@@ -89,7 +89,9 @@ namespace Test.Utility.Signing
                 var certificateId = request.GetCertID();
                 var certificateStatus = CertificateAuthority.GetStatus(certificateId);
                 var thisUpdate = _options.ThisUpdate ?? now;
-                var nextUpdate = _options.NextUpdate ?? now.AddSeconds(1);
+                //On Windows, if the current time is equal (to the second) to a notAfter time (or nextUpdate time), it's considered valid.
+                //But OpenSSL considers it already expired (that the expiry happened when the clock changed to this second)
+                var nextUpdate = _options.NextUpdate ?? now.AddSeconds(2);
 
                 _responses.AddOrUpdate(certificateId.SerialNumber.ToString(), nextUpdate, (key, currentNextUpdate) =>
                 {

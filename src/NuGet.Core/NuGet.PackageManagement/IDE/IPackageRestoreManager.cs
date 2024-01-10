@@ -16,25 +16,14 @@ namespace NuGet.PackageManagement
     public interface IPackageRestoreManager
     {
         /// <summary>
-        /// Gets a value indicating whether the current solution is configured for Package Restore mode.
-        /// </summary>
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        bool IsCurrentSolutionEnabledForRestore { get; }
-
-        /// <summary>
-        /// Configures the current solution for Package Restore mode.
-        /// </summary>
-        /// <param name="fromActivation">
-        /// if set to <c>false</c>, the method will not show any error message, and will
-        /// not set package restore consent.
-        /// </param>
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        void EnableCurrentSolutionForRestore(bool fromActivation);
-
-        /// <summary>
         /// Occurs when it is detected that the packages are missing or restored for the current solution.
         /// </summary>
         event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
+
+        /// <summary>
+        /// Occurs when it is detected that the assets file is missing.
+        /// </summary>
+        event AssetsFileMissingStatusChanged AssetsFileMissingStatusChanged;
 
         /// <summary>
         /// PackageRestoredEvent which is raised after a package is restored.
@@ -68,6 +57,12 @@ namespace NuGet.PackageManagement
         /// Checks the current solution if there is any package missing.
         /// </summary>
         Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
+
+        /// <summary>
+        /// Checks if something is listening to the event of missing assets and change the status
+        /// </summary>
+        /// <param name="isAssetsFileMissing"></param>
+        void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing);
 
         /// <summary>
         /// Restores the missing packages for the current solution.
@@ -140,6 +135,8 @@ namespace NuGet.PackageManagement
             CancellationToken token);
     }
 
+    public delegate void AssetsFileMissingStatusChanged(object sender, bool isAssetsFileMissing);
+
     /// <summary>
     /// If 'Restored' is false, it means that the package was already restored
     /// If 'Restored' is true, the package was restored and successfully
@@ -153,7 +150,7 @@ namespace NuGet.PackageManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             Package = packageIdentity;

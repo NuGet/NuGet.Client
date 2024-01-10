@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 
@@ -12,7 +14,11 @@ namespace NuGet.Commands
     {
         /// <summary>
         /// Determine the target framework of an msbuild project.
+        /// Returns the <see cref="FrameworkName"/> equivalent representation.
         /// </summary>
+        /// <remarks>
+        /// Do not use this when expecting a project to target a .NET 5 era framework.
+        /// </remarks>
         public static IEnumerable<string> GetProjectFrameworkStrings(
             string projectFilePath,
             string targetFrameworks,
@@ -35,8 +41,79 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Determine the target framework of an msbuild project.
+        /// Given the properties from an msbuild project file and a the file path, infer the target framework.
+        /// This method prioritizes projects without a framework, such as vcxproj and accounts for the mismatching arguments in UAP projects, where the TFI and TFV are set but should be ignored.
+        /// Likewise, this method will *ignore* unnecessary properties, such as TPI and TPV when profiles are used, and frameworks that do not support platforms have some default values.
         /// </summary>
+        /// <returns>The inferred framework. Unsupported otherwise.</returns>
+        public static NuGetFramework GetProjectFramework(
+            string projectFilePath,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformMinVersion)
+        {
+            return GetProjectFramework(
+                projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformIdentifier: null,
+                targetPlatformVersion: null,
+                targetPlatformMinVersion,
+                clrSupport: null,
+                windowsTargetPlatformMinVersion: null,
+                isXnaWindowsPhoneProject: false,
+                isManagementPackProject: false);
+        }
+
+        public static NuGetFramework GetProjectFramework(
+            string projectFilePath,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformMinVersion,
+            string clrSupport,
+            string windowsTargetPlatformMinVersion)
+        {
+            return GetProjectFramework(
+                projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformIdentifier: null,
+                targetPlatformVersion: null,
+                targetPlatformMinVersion,
+                clrSupport,
+                windowsTargetPlatformMinVersion,
+                isXnaWindowsPhoneProject: false,
+                isManagementPackProject: false);
+        }
+
+        [Obsolete("If you need ClrSupport support parameter to be accounted for in the calculation, the method with the windowsTargetPlatformMinVersion is the only correct one.")]
+        public static NuGetFramework GetProjectFramework(
+            string projectFilePath,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformMinVersion,
+            string clrSupport)
+        {
+            return GetProjectFramework(
+                projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformIdentifier: null,
+                targetPlatformVersion: null,
+                targetPlatformMinVersion,
+                clrSupport,
+                windowsTargetPlatformMinVersion: null,
+                isXnaWindowsPhoneProject: false,
+                isManagementPackProject: false);
+        }
+
+        /// <summary>
+        /// Determine the target framework of an msbuild project.
+        /// Returns the <see cref="FrameworkName"/> equivalent representation.
+        /// </summary>
+        /// <remarks>
+        /// Do not use this when expecting a project to target a .NET 5 era framework.
+        /// </remarks>
         public static IEnumerable<string> GetProjectFrameworkStrings(
             string projectFilePath,
             string targetFrameworks,
@@ -45,6 +122,35 @@ namespace NuGet.Commands
             string targetPlatformIdentifier,
             string targetPlatformVersion,
             string targetPlatformMinVersion,
+            bool isXnaWindowsPhoneProject,
+            bool isManagementPackProject)
+        {
+            return GetProjectFrameworks(
+                projectFilePath,
+                targetFrameworks,
+                targetFramework,
+                targetFrameworkMoniker,
+                targetPlatformMoniker: null,
+                targetPlatformIdentifier,
+                targetPlatformVersion,
+                targetPlatformMinVersion,
+                clrSupport: null,
+                windowsTargetPlatformMinVersion: null,
+                isXnaWindowsPhoneProject,
+                isManagementPackProject);
+        }
+
+        internal static IEnumerable<string> GetProjectFrameworks(
+            string projectFilePath,
+            string targetFrameworks,
+            string targetFramework,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformIdentifier,
+            string targetPlatformVersion,
+            string targetPlatformMinVersion,
+            string clrSupport,
+            string windowsTargetPlatformMinVersion,
             bool isXnaWindowsPhoneProject,
             bool isManagementPackProject)
         {
@@ -68,34 +174,62 @@ namespace NuGet.Commands
                 return frameworks;
             }
 
+            return new string[] { GetProjectFramework(
+                projectFilePath,
+                targetFrameworkMoniker,
+                targetPlatformMoniker,
+                targetPlatformIdentifier,
+                targetPlatformVersion,
+                targetPlatformMinVersion,
+                clrSupport,
+                windowsTargetPlatformMinVersion,
+                isXnaWindowsPhoneProject,
+                isManagementPackProject).DotNetFrameworkName };
+        }
+
+        internal static NuGetFramework GetProjectFramework(
+            string projectFilePath,
+            string targetFrameworkMoniker,
+            string targetPlatformMoniker,
+            string targetPlatformIdentifier,
+            string targetPlatformVersion,
+            string targetPlatformMinVersion,
+            string clrSupport,
+            string windowsTargetPlatformMinVersion,
+            bool isXnaWindowsPhoneProject,
+            bool isManagementPackProject)
+        {
+            bool isCppCliSet = clrSupport?.Equals("NetCore", StringComparison.OrdinalIgnoreCase) == true;
+            bool isCppCli = false;
             // C++ check
             if (projectFilePath?.EndsWith(".vcxproj", StringComparison.OrdinalIgnoreCase) == true)
             {
-                // The C++ project does not have a TargetFrameworkMoniker property set. 
-                // We hard-code the return value to Native.
-                frameworks.Add("Native, Version=0.0");
-
-                return frameworks;
+                if (!isCppCliSet)
+                {
+                    // The C++ project does not have a TargetFrameworkMoniker property set. 
+                    // We hard-code the return value to Native.
+                    return FrameworkConstants.CommonFrameworks.Native;
+                }
+                isCppCli = true;
             }
 
             // The MP project does not have a TargetFrameworkMoniker property set. 
             // We hard-code the return value to SCMPInfra.
             if (isManagementPackProject)
             {
-                frameworks.Add("SCMPInfra, Version=0.0");
-
-                return frameworks;
+                return NuGetFramework.Parse("SCMPInfra, Version=0.0");
             }
 
             // UAP/Windows store projects
-            var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
-            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
+            var platformMoniker = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMoniker);
+            var platformMonikerIdentifier = GetParts(platformMoniker).FirstOrDefault();
 
-            // if targetPlatformMinVersion isn't defined then fallback to targetPlatformVersion
-            if (string.IsNullOrEmpty(platformVersion))
-            {
-                platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
-            }
+            var platformIdentifier = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformIdentifier);
+            var platformMinVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformMinVersion);
+            var platformVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(targetPlatformVersion);
+
+            var effectivePlatformVersion = platformMinVersion ?? platformVersion;
+            var effectivePlatformIdentifier = platformMonikerIdentifier ?? platformIdentifier;
 
             // Check for JS project
             if (projectFilePath?.EndsWith(".jsproj", StringComparison.OrdinalIgnoreCase) == true)
@@ -103,32 +237,42 @@ namespace NuGet.Commands
                 // JavaScript apps do not have a TargetFrameworkMoniker property set.
                 // We read the TargetPlatformIdentifier and targetPlatformMinVersion instead
                 // use the default values for JS if they were not given
-                if (string.IsNullOrEmpty(platformVersion))
+
+                // Prefer moniker over individual properties
+                if (!string.IsNullOrEmpty(platformMoniker))
                 {
-                    platformVersion = "0.0";
+                    return GetFrameworkFromMoniker(platformMonikerIdentifier, platformMoniker, platformMinVersion);
                 }
 
-                if (string.IsNullOrEmpty(platformIdentifier))
+                if (string.IsNullOrEmpty(effectivePlatformVersion))
                 {
-                    platformIdentifier = FrameworkConstants.FrameworkIdentifiers.Windows;
+                    effectivePlatformVersion = "0.0";
                 }
 
-                frameworks.Add($"{platformIdentifier}, Version={platformVersion}");
+                if (string.IsNullOrEmpty(effectivePlatformIdentifier))
+                {
+                    effectivePlatformIdentifier = FrameworkConstants.FrameworkIdentifiers.Windows;
+                }
 
-                return frameworks;
+                return NuGetFramework.Parse($"{effectivePlatformIdentifier}, Version={effectivePlatformVersion}");
             }
 
-            if (!string.IsNullOrEmpty(platformVersion)
-                && StringComparer.OrdinalIgnoreCase.Equals(platformIdentifier, "UAP"))
+            if (StringComparer.OrdinalIgnoreCase.Equals(effectivePlatformIdentifier, "UAP"))
             {
                 // Use the platform id and versions, this is done for UAP projects
-                frameworks.Add($"{platformIdentifier}, Version={platformVersion}");
-
-                return frameworks;
+                // Prefer moniker over individual properties
+                if (!string.IsNullOrEmpty(platformMoniker))
+                {
+                    return GetFrameworkFromMoniker(effectivePlatformIdentifier, platformMoniker, platformMinVersion);
+                }
+                if (!string.IsNullOrEmpty(effectivePlatformVersion))
+                {
+                    return NuGetFramework.Parse($"{effectivePlatformIdentifier}, Version={effectivePlatformVersion}");
+                }
             }
 
             // TargetFrameworkMoniker
-            currentFrameworkString = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkMoniker);
+            var currentFrameworkString = MSBuildStringUtility.TrimAndGetNullForEmpty(targetFrameworkMoniker);
 
             if (!string.IsNullOrEmpty(currentFrameworkString))
             {
@@ -138,21 +282,54 @@ namespace NuGet.Commands
                     && ".NETFramework,Version=v4.0".Equals(currentFrameworkString, StringComparison.OrdinalIgnoreCase))
                 {
                     currentFrameworkString = "Silverlight,Version=v4.0,Profile=WindowsPhone71";
+                    return NuGetFramework.Parse(currentFrameworkString);
                 }
 
-                frameworks.Add(currentFrameworkString);
+                NuGetFramework framework = NuGetFramework.ParseComponents(currentFrameworkString, platformMoniker);
 
-                return frameworks;
+                if (isCppCli)
+                {
+                    if (!string.IsNullOrEmpty(windowsTargetPlatformMinVersion))
+                    {
+                        if (!Version.TryParse(windowsTargetPlatformMinVersion, out Version cppCliVersion))
+                        {
+                            throw new ArgumentException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Error_InvalidWindowsTargetPlatformMinVersion,
+                                windowsTargetPlatformMinVersion));
+                        }
+                        framework = new NuGetFramework(framework.Framework, framework.Version, framework.Platform, cppCliVersion);
+                    }
+
+                    return new DualCompatibilityFramework(framework, FrameworkConstants.CommonFrameworks.Native);
+                }
+
+                return framework;
             }
 
-            // Default to unsupported it no framework can be found.
-            if (frameworks.Count < 1)
-            {
-                frameworks.Add(NuGetFramework.UnsupportedFramework.ToString());
-            }
-
-            return frameworks;
+            // Default to unsupported it no framework was found.
+            return NuGetFramework.UnsupportedFramework;
         }
+
+        private static NuGetFramework GetFrameworkFromMoniker(string platformIdentifier, string platformMoniker, string platformMinVersion)
+        {
+            if (!string.IsNullOrEmpty(platformMinVersion))
+            {
+                return NuGetFramework.Parse($"{platformIdentifier}, Version={platformMinVersion}");
+            }
+            else
+            {
+                return NuGetFramework.Parse(platformMoniker);
+            }
+        }
+
+        private static string[] GetParts(string targetPlatformMoniker)
+        {
+            return targetPlatformMoniker != null ?
+                targetPlatformMoniker.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray() :
+                new string[] { };
+        }
+
 
         /// <summary>
         /// Parse project framework strings into NuGetFrameworks.
@@ -194,14 +371,14 @@ namespace NuGet.Commands
             }
 
             // if the framework is .net core 4.5.1 return windows 8.1
-            if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
+            if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore, StringComparison.Ordinal)
                 && framework.Version.Equals(Version.Parse("4.5.1.0")))
             {
                 return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows,
                        new Version("8.1"), framework.Profile);
             }
             // if the framework is .net core 4.5 return 8.0
-            if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore)
+            if (framework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCore, StringComparison.Ordinal)
                 && framework.Version.Equals(Version.Parse("4.5.0.0")))
             {
                 return new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows,
@@ -209,18 +386,6 @@ namespace NuGet.Commands
             }
 
             return framework;
-        }
-
-        private static string GetPropertyOrNull(string propertyName, IDictionary<string, string> projectProperties)
-        {
-            string value;
-            if (projectProperties.TryGetValue(propertyName, out value)
-                && !string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
-            return null;
         }
     }
 }

@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -820,7 +822,7 @@ namespace NuGet.ProjectModel.Test
             var lockFile_1_2 = new LockFile
             {
                 Version = 3,
-                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>(){ projCTDG_1_2 }
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>() { projCTDG_1_2 }
             };
             var lockFile_11_22 = new LockFile
             {
@@ -850,6 +852,36 @@ namespace NuGet.ProjectModel.Test
             Assert.NotEqual(lockFile_1_2, lockFile_1);
             Assert.NotEqual(lockFile_1_2, lockFile_1_3);
             Assert.Equal(lockFile_1_2.GetHashCode(), lockFile_11_22.GetHashCode());
+        }
+
+        [Fact]
+        public void LockFile_GetTarget_WithNuGetFramework_ReturnsCorrectLockFileTarget()
+        {
+            // Arrange
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.sample.assets.json", typeof(LockFileTests));
+            var lockFile = new LockFileFormat().Parse(expectedJson, Path.GetTempPath());
+            NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
+
+            // Act
+            var target = lockFile.GetTarget(nuGetFramework, runtimeIdentifier: null);
+
+            // Assert
+            target.TargetFramework.Should().Be(nuGetFramework);
+        }
+
+        [Fact]
+        public void LockFile_GetTarget_WithAlias_ReturnsCorrectLockFileTarget()
+        {
+            // Arrange
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.sample.assets.json", typeof(LockFileTests));
+            var lockFile = new LockFileFormat().Parse(expectedJson, Path.GetTempPath());
+            NuGetFramework nuGetFramework = NuGetFramework.ParseComponents(".NETCoreApp,Version=v5.0", "Windows,Version=7.0");
+
+            // Act
+            var target = lockFile.GetTarget("net5.0", runtimeIdentifier: null);
+
+            // Assert
+            target.TargetFramework.Should().Be(nuGetFramework);
         }
     }
 }

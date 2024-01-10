@@ -1,8 +1,9 @@
-<nuget:VsDialogWindow
+<vs:DialogWindow
   x:Class="NuGet.PackageManagement.UI.PreviewWindow"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
   x:Name="_self"
   ShowInTaskbar="False"
   WindowStyle="SingleBorderWindow"
@@ -12,7 +13,7 @@
   Title="{Binding Title}"
   Height="500"
   Width="500"
-  MinWidth="{Binding WindowMinwidth}"
+  MinWidth="386"
   FocusManager.FocusedElement="{Binding ElementName=_okButton}">
   <Window.Resources>
     <ResourceDictionary>
@@ -21,51 +22,46 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Window.Resources>
-  <nuget:VsDialogWindow.CommandBindings>
+  <vs:DialogWindow.CommandBindings>
     <CommandBinding
       Command="{x:Static ApplicationCommands.Copy}"
       Executed="ExecuteCopyToClipboard" />
-  </nuget:VsDialogWindow.CommandBindings>
+  </vs:DialogWindow.CommandBindings>
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition
-        Height="auto" />
+      <RowDefinition Height="auto" />
       <RowDefinition />
-      <RowDefinition
-        Height="auto" />
+      <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Grid
-      Grid.Row="0">
+    <Grid Grid.Row="0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="auto" />
-        <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
       <TextBlock
-      Grid.Row="0"
-      Grid.Column="0"
-      Margin="12,12,12,0"
-      TextWrapping="Wrap"
-      x:Name="_changesText"
-      Text="{x:Static nuget:Resources.Text_Changes}" />
+        Grid.Column="0"
+        Margin="12,12,12,0"
+        TextWrapping="Wrap"
+        x:Name="_changesText"
+        Text="{x:Static nuget:Resources.Text_Changes}" />
       <Button
         Grid.Column="1"
-        MinWidth="{Binding ButtonMinWidth}"
+        MinWidth="86"
         MinHeight="24"
-        Margin="12"
+        Margin="12,12,12,9"
         AutomationProperties.AutomationId="Copy"
         Content="{x:Static nuget:Resources.Button_Copy}"
         Click="CopyButtonClicked" />
     </Grid>
     <Border
       Grid.Row="1"
-      Margin="12,12"
+      Margin="12,0,12,0"
       BorderBrush="{DynamicResource {x:Static nuget:Brushes.BorderBrush}}"
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
         IsTabStop="True"
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageChanges}">
+        AutomationProperties.LabeledBy="{Binding ElementName=_changesText, Mode=OneWay}">
         <ItemsControl
           x:Name="_changesItems"
           ItemsSource="{Binding Path=PreviewResults}"
@@ -75,7 +71,6 @@
               <StackPanel
                 Margin="6, 6">
                 <TextBlock
-                  x:Name="_changeName"
                   AutomationProperties.Name="{Binding Text}"
                   FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
                   Text="{Binding Path=Name}" />
@@ -85,7 +80,6 @@
                   Margin="0,8"
                   Visibility="{Binding Path=Deleted,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
-                    x:Name="_uninstalledPackages"
                     AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_UninstalledPackages}" />
@@ -106,7 +100,6 @@
                   Margin="0,8"
                   Visibility="{Binding Path=Updated,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
-                    x:Name="_updatedPackages"
                     AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_UpdatedPackages}" />
@@ -127,7 +120,6 @@
                   Margin="0,8"
                   Visibility="{Binding Path=Added,Converter={StaticResource EnumerableToVisibilityConverter}}">
                   <TextBlock
-                    x:Name="_installedPackages"
                     AutomationProperties.Name="{Binding Text}"
                     FontWeight="Bold"
                     Text="{x:Static nuget:Resources.Label_InstalledPackages}" />
@@ -142,6 +134,40 @@
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
+
+                <!-- New Source Mappings for added packages -->
+                <StackPanel
+                  Visibility="{Binding Path=NewSourceMappings,Converter={StaticResource EnumerableToVisibilityConverter}}">
+                  <ItemsControl
+                    ItemsSource="{Binding Path=NewSourceMappings}"
+                    IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel Margin="0,8">
+                          <!-- New Source Mapping with Source Name -->
+                          <TextBlock
+                            FontWeight="Bold"
+                            Text="{Binding Key, Mode=OneWay, StringFormat={x:Static nuget:Resources.Label_CreatingSourceMappings}}">
+                          </TextBlock>
+
+                          <!-- New Source Mapping Package IDs -->
+                          <ItemsControl
+                            Margin="10,0,0,0"
+                            ItemsSource="{Binding Value}"
+                            IsTabStop="False">
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <StackPanel>
+                                  <TextBlock Text="{Binding}" />
+                                </StackPanel>
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
               </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
@@ -152,7 +178,7 @@
     <Grid
       Grid.Row="2">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" MinWidth="180" />
         <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
@@ -160,7 +186,6 @@
         x:Name="_doNotShowCheckBox"
         Grid.Column="0"
         Margin="12"
-        MinWidth="{Binding DoNotShowAgainMinWidth}"
         VerticalAlignment="Center"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
         Content="{x:Static nuget:Resources.DoNotShowThisAgain}"
@@ -169,16 +194,16 @@
       <Button
         Name="_okButton"
         Grid.Column="1"
-        MinWidth="{Binding ButtonMinWidth}"
+        MinWidth="86"
         MinHeight="24"
         Margin="0,12"
         AutomationProperties.AutomationId="OK"
-        Content="{x:Static nuget:Resources.Button_OK}"
-        Click="OkButtonClicked"
+        Content="{x:Static nuget:Resources.Button_Apply}"
+        Click="ApplyButtonClicked"
         AutomationProperties.LabeledBy="{Binding Text, ElementName=_changesText}"/>
       <Button
         Grid.Column="2"
-        MinWidth="{Binding ButtonMinWidth}"
+        MinWidth="86"
         MinHeight="24"
         Margin="6,12,12,12"
         AutomationProperties.AutomationId="Cancel"
@@ -186,4 +211,4 @@
         Click="CancelButtonClicked" />
     </Grid>
   </Grid>
-</nuget:VsDialogWindow>
+</vs:DialogWindow>

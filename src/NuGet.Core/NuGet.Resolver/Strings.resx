@@ -153,9 +153,6 @@
   <data name="UnableToResolveDependencyForMultipleSources" xml:space="preserve">
     <value>Unable to resolve dependency '{0}'. Source(s) used: {1}.</value>
   </data>
-  <data name="UnknownDependencyBehavior" xml:space="preserve">
-    <value>Unknown DependencyBehavior value.</value>
-  </data>
   <data name="VersionIsNotCompatible" xml:space="preserve">
     <value>Unable to resolve dependencies. '{0}' is not compatible with {1}.</value>
   </data>

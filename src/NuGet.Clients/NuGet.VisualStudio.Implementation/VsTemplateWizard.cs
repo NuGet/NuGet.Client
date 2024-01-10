@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio;
@@ -21,8 +21,10 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.VisualStudio
 {
@@ -38,10 +40,12 @@ namespace NuGet.VisualStudio
         private IEnumerable<PreinstalledPackageConfiguration> _configurations;
 
         private DTE _dte;
+        private Lazy<PreinstalledPackageInstaller> _preinstalledPackageInstaller;
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly IVsPackageInstallerServices _packageServices;
+#pragma warning restore CS0618 // Type or member is obsolete
         private readonly IOutputConsoleProvider _consoleProvider;
         private readonly IVsSolutionManager _solutionManager;
-        private readonly PreinstalledPackageInstaller _preinstalledPackageInstaller;
         private readonly Configuration.ISettings _settings;
         private readonly ISourceRepositoryProvider _sourceProvider;
         private readonly IVsProjectAdapterProvider _vsProjectAdapterProvider;
@@ -51,7 +55,9 @@ namespace NuGet.VisualStudio
         [ImportingConstructor]
         public VsTemplateWizard(
             IVsPackageInstaller installer,
+#pragma warning disable CS0618 // Type or member is obsolete
             IVsPackageInstallerServices packageServices,
+#pragma warning restore CS0618 // Type or member is obsolete
             IOutputConsoleProvider consoleProvider,
             IVsSolutionManager solutionManager,
             Configuration.ISettings settings,
@@ -66,10 +72,19 @@ namespace NuGet.VisualStudio
             _settings = settings;
             _sourceProvider = sourceProvider;
             _vsProjectAdapterProvider = vsProjectAdapterProvider;
-
-            _preinstalledPackageInstaller = new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
-
+            _preinstalledPackageInstaller = new Lazy<PreinstalledPackageInstaller>(() =>
+                                            {
+                                                return new PreinstalledPackageInstaller(_packageServices, _solutionManager, _settings, _sourceProvider, (VsPackageInstaller)_installer, _vsProjectAdapterProvider);
+                                            });
             PumpingJTF = new PumpingJTF(NuGetUIThreadHelper.JoinableTaskFactory);
+        }
+
+        private PreinstalledPackageInstaller PreinstalledPackageInstaller
+        {
+            get
+            {
+                return _preinstalledPackageInstaller.Value;
+            }
         }
 
         private IEnumerable<PreinstalledPackageConfiguration> GetConfigurationsFromVsTemplateFile(string vsTemplatePath)
@@ -92,7 +107,7 @@ namespace NuGet.VisualStudio
 
             foreach (var packagesElement in packagesElements)
             {
-                IList<PreinstalledPackageInfo> packages = new PreinstalledPackageInfo[0];
+                IList<PreinstalledPackageInfo> packages = Array.Empty<PreinstalledPackageInfo>();
                 string repositoryPath = null;
                 var isPreunzipped = false;
                 var forceDesignTimeBuild = false;
@@ -100,7 +115,7 @@ namespace NuGet.VisualStudio
                 var isPreunzippedString = packagesElement.GetOptionalAttributeValue(IsPreunzippedAttributeName);
                 if (!string.IsNullOrEmpty(isPreunzippedString))
                 {
-                    Boolean.TryParse(isPreunzippedString, out isPreunzipped);
+                    _ = bool.TryParse(isPreunzippedString, out isPreunzipped);
                 }
 
                 var forceDesignTimeBuildString =
@@ -108,7 +123,7 @@ namespace NuGet.VisualStudio
 
                 if (!string.IsNullOrEmpty(forceDesignTimeBuildString))
                 {
-                    Boolean.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
+                    _ = bool.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
                 }
 
                 packages = GetPackages(packagesElement).ToList();
@@ -135,25 +150,25 @@ namespace NuGet.VisualStudio
         private IEnumerable<PreinstalledPackageInfo> GetPackages(XElement packagesElement)
         {
             var declarations = (from packageElement in packagesElement.ElementsNoNamespace("package")
-                let id = packageElement.GetOptionalAttributeValue("id")
-                let version = packageElement.GetOptionalAttributeValue("version")
-                let skipAssemblyReferences = packageElement.GetOptionalAttributeValue("skipAssemblyReferences")
-                let includeDependencies = packageElement.GetOptionalAttributeValue("includeDependencies")
-                select new { id, version, skipAssemblyReferences, includeDependencies }).ToList();
+                                let id = packageElement.GetOptionalAttributeValue("id")
+                                let version = packageElement.GetOptionalAttributeValue("version")
+                                let skipAssemblyReferences = packageElement.GetOptionalAttributeValue("skipAssemblyReferences")
+                                let includeDependencies = packageElement.GetOptionalAttributeValue("includeDependencies")
+                                select new { id, version, skipAssemblyReferences, includeDependencies }).ToList();
 
             NuGetVersion semVer = null;
             bool skipAssemblyReferencesValue;
             bool includeDependenciesValue;
             var missingOrInvalidAttributes = from declaration in declarations
-                where
-                    String.IsNullOrWhiteSpace(declaration.id) ||
-                    String.IsNullOrWhiteSpace(declaration.version) ||
-                    !NuGetVersion.TryParse(declaration.version, out semVer) ||
-                    (declaration.skipAssemblyReferences != null &&
-                     !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
-                    (declaration.includeDependencies != null &&
-                     !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
-                select declaration;
+                                             where
+                                                 String.IsNullOrWhiteSpace(declaration.id) ||
+                                                 String.IsNullOrWhiteSpace(declaration.version) ||
+                                                 !NuGetVersion.TryParse(declaration.version, out semVer) ||
+                                                 (declaration.skipAssemblyReferences != null &&
+                                                  !Boolean.TryParse(declaration.skipAssemblyReferences, out skipAssemblyReferencesValue)) ||
+                                                 (declaration.includeDependencies != null &&
+                                                  !Boolean.TryParse(declaration.includeDependencies, out includeDependenciesValue))
+                                             select declaration;
 
             if (missingOrInvalidAttributes.Any())
             {
@@ -163,15 +178,15 @@ namespace NuGet.VisualStudio
             }
 
             return from declaration in declarations
-                select new PreinstalledPackageInfo(
-                    declaration.id,
-                    declaration.version,
-                    skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
+                   select new PreinstalledPackageInfo(
+                       declaration.id,
+                       declaration.version,
+                       skipAssemblyReferences: declaration.skipAssemblyReferences != null && Boolean.Parse(declaration.skipAssemblyReferences),
 
-                    // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
-                    // The declaration uses includeDependencies so that the default value can be 'false'
-                    ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
-                    );
+                       // Note that the declaration uses "includeDependencies" but we need to invert it to become ignoreDependencies
+                       // The declaration uses includeDependencies so that the default value can be 'false'
+                       ignoreDependencies: !(declaration.includeDependencies != null && Boolean.Parse(declaration.includeDependencies))
+                       );
         }
 
         private string GetRepositoryPath(
@@ -205,7 +220,7 @@ namespace NuGet.VisualStudio
                 throw new WizardBackoutException();
             }
 
-            return _preinstalledPackageInstaller.GetExtensionRepositoryPath(repositoryId, vsExtensionManager, ThrowWizardBackoutError);
+            return PreinstalledPackageInstaller.GetExtensionRepositoryPath(repositoryId, vsExtensionManager, ThrowWizardBackoutError);
         }
 
         private string GetRegistryRepositoryPath(XElement packagesElement, IEnumerable<IRegistryKey> registryKeys)
@@ -217,7 +232,7 @@ namespace NuGet.VisualStudio
                 throw new WizardBackoutException();
             }
 
-            return _preinstalledPackageInstaller.GetRegistryRepositoryPath(keyName, registryKeys, ThrowWizardBackoutError);
+            return PreinstalledPackageInstaller.GetRegistryRepositoryPath(keyName, registryKeys, ThrowWizardBackoutError);
         }
 
         private RepositoryType GetRepositoryType(XElement packagesElement)
@@ -236,7 +251,7 @@ namespace NuGet.VisualStudio
                     return RepositoryType.Template;
 
                 default:
-                    ShowErrorMessage(String.Format(VsResources.TemplateWizard_InvalidRepositoryAttribute,
+                    ShowErrorMessage(string.Format(CultureInfo.CurrentCulture, VsResources.TemplateWizard_InvalidRepositoryAttribute,
                         repositoryAttributeValue));
                     throw new WizardBackoutException();
             }
@@ -244,7 +259,7 @@ namespace NuGet.VisualStudio
 
         internal virtual XDocument LoadDocument(string path)
         {
-            return XmlUtility.LoadSafe(path);
+            return XmlUtility.Load(path, LoadOptions.PreserveWhitespace);
         }
 
         private Task ProjectFinishedGeneratingAsync(Project project)
@@ -252,9 +267,10 @@ namespace NuGet.VisualStudio
             return TemplateFinishedGeneratingAsync(project);
         }
 
-        private Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
+        private async Task ProjectItemFinishedGeneratingAsync(ProjectItem projectItem)
         {
-            return TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await TemplateFinishedGeneratingAsync(projectItem.ContainingProject);
         }
 
         private async Task TemplateFinishedGeneratingAsync(Project project)
@@ -269,7 +285,7 @@ namespace NuGet.VisualStudio
                     var packageManagementFormat = new PackageManagementFormat(_settings);
                     // 1 means PackageReference
                     var preferPackageReference = packageManagementFormat.SelectedPackageManagementFormat == 1;
-                    await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
+                    await PreinstalledPackageInstaller.PerformPackageInstallAsync(
                         project,
                         configuration,
                         preferPackageReference,
@@ -285,15 +301,15 @@ namespace NuGet.VisualStudio
 
             if (forceDesignTimeBuild)
             {
-                RunDesignTimeBuild(project);
+                await RunDesignTimeBuildAsync(project);
             }
         }
 
-        private void RunDesignTimeBuild(Project project)
+        private async Task RunDesignTimeBuildAsync(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var solution = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+            var solution = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsSolution, IVsSolution>(throwOnFailure: false);
 
             if (solution != null)
             {
@@ -316,6 +332,8 @@ namespace NuGet.VisualStudio
 
         private void RunStarted(object automationObject, Dictionary<string, string> replacementsDictionary, WizardRunKind runKind, object[] customParams)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (runKind != WizardRunKind.AsNewProject
                 && runKind != WizardRunKind.AsNewItem)
             {
@@ -324,7 +342,11 @@ namespace NuGet.VisualStudio
             }
 
             _dte = (DTE)automationObject;
-            _preinstalledPackageInstaller.InfoHandler = message => _dte.StatusBar.Text = message;
+            PreinstalledPackageInstaller.InfoHandler = message =>
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                _dte.StatusBar.Text = message;
+            };
 
             if (customParams.Length > 0)
             {
@@ -338,8 +360,37 @@ namespace NuGet.VisualStudio
             }
         }
 
+        private string GetSolutionDirectoryFromDte(DTE dte)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            // Use .Properties.Item("Path") instead of .FullName because .FullName might not be
+            // available if the solution is just being created
+            string solutionFilePath;
+
+            var property = dte.Solution.Properties.Item("Path");
+            if (property == null)
+            {
+                return null;
+            }
+            try
+            {
+                // When using a temporary solution, (such as by saying File -> New File), querying this value throws.
+                // Since we wouldn't be able to do manage any packages at this point, we return null. Consumers of this property typically
+                // use a String.IsNullOrEmpty check either way, so it's alright.
+                solutionFilePath = (string)property.Value;
+            }
+            catch (COMException)
+            {
+                return null;
+            }
+
+            return Path.GetDirectoryName(solutionFilePath);
+        }
+
         private void AddTemplateParameters(Dictionary<string, string> replacementsDictionary)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // add the $nugetpackagesfolder$ parameter which returns relative path to the solution's packages folder.
             // this is used by project templates to include assembly references directly inside the template project file
             // without relying on nuget to install the actual packages.
@@ -350,8 +401,8 @@ namespace NuGet.VisualStudio
                 if (_dte.Solution != null
                     && _dte.Solution.IsOpen)
                 {
-                    //solutionRepositoryPath = RepositorySettings.Value.RepositoryPath;
-                    solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(_solutionManager, _settings);
+                    var solutionDirectory = GetSolutionDirectoryFromDte(_dte);
+                    solutionRepositoryPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, _settings);
                 }
                 else
                 {
@@ -392,7 +443,7 @@ namespace NuGet.VisualStudio
             }
 
             // provide a current timpestamp (for use by universal provider)
-            replacementsDictionary["$timestamp$"] = DateTime.Now.ToString("yyyyMMddHHmmss");
+            replacementsDictionary["$timestamp$"] = DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.CurrentCulture);
         }
 
         internal virtual void ThrowWizardBackoutError(string message)
@@ -412,7 +463,7 @@ namespace NuGet.VisualStudio
             {
                 var console = await _consoleProvider.CreatePackageManagerConsoleAsync();
                 await console.WriteLineAsync(message);
-                }
+            }
             );
         }
 
@@ -451,7 +502,7 @@ namespace NuGet.VisualStudio
             // VsPackageInstaller and VsPackageUninstaller. Because, no powershell scripts get executed
             // as part of the operations performed below. Powershell scripts need to be executed on the
             // pipeline execution thread and they might try to access DTE. Doing that under
-            // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
+            // ThreadHelper.JoinableTaskFactory.Run will consistently make the UI stop responding
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -77,8 +77,9 @@ namespace NuGet.Client.Test
                 "lib/uap10.0/a.dll",
             });
 
-            // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
+            List<ContentItemGroup> itemGroups = new();
+            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
+            var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
 
@@ -101,7 +102,8 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies).ToList();
+            List<ContentItemGroup> groups = new();
+            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, groups);
 
             // Assert
             Assert.Equal(1, groups.Count);
@@ -124,7 +126,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.RuntimeAssemblies)
+            List<ContentItemGroup> itemGroups = new();
+            collection.PopulateItemGroups(conventions.Patterns.RuntimeAssemblies, itemGroups);
+            var groups = itemGroups
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 

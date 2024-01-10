@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
@@ -13,6 +12,8 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
+using NuGet.Shared;
+using NuGetVersion = NuGet.Versioning.NuGetVersion;
 
 namespace NuGet.Commands
 {
@@ -32,18 +33,34 @@ namespace NuGet.Commands
             _includeFlagGraphs = includeFlagGraphs;
         }
 
+        [Obsolete("Use method with LockFileBuilderCache parameter")]
         public LockFile CreateLockFile(LockFile previousLockFile,
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             IReadOnlyList<NuGetv3LocalRepository> localRepositories,
             RemoteWalkContext context)
         {
+            return CreateLockFile(previousLockFile,
+                project,
+                targetGraphs,
+                localRepositories,
+                context,
+                new LockFileBuilderCache());
+        }
+
+        public LockFile CreateLockFile(LockFile previousLockFile,
+            PackageSpec project,
+            IEnumerable<RestoreTargetGraph> targetGraphs,
+            IReadOnlyList<NuGetv3LocalRepository> localRepositories,
+            RemoteWalkContext context,
+            LockFileBuilderCache lockFileBuilderCache)
+        {
             var lockFile = new LockFile()
             {
                 Version = _lockFileVersion
             };
 
-            var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
+            var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => ValueTuple.Create(l.Name, l.Version));
 
             if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference ||
                 project.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
@@ -56,8 +73,11 @@ namespace NuGet.Commands
             }
 
             // Record all libraries used
-            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct()
-                .OrderBy(x => x.Data.Match.Library))
+            var libraryItems = targetGraphs
+                .SelectMany(g => g.Flattened) // All GraphItem<RemoteResolveResult> resolved in the graph.
+                .Distinct(GraphItemKeyComparer<RemoteResolveResult>.Instance) // Distinct list of GraphItems. Two items are equal only if the itmes' Keys are equal.
+                .OrderBy(x => x.Data.Match.Library);
+            foreach (var item in libraryItems)
             {
                 var library = item.Data.Match.Library;
 
@@ -119,7 +139,7 @@ namespace NuGet.Commands
                         LockFileLibrary lockFileLib = null;
                         LockFileLibrary previousLibrary = null;
 
-                        if (previousLibraries?.TryGetValue(Tuple.Create(package.Id, package.Version), out previousLibrary) == true)
+                        if (previousLibraries?.TryGetValue(ValueTuple.Create(package.Id, package.Version), out previousLibrary) == true)
                         {
                             // Check that the previous library is still valid
                             if (previousLibrary != null
@@ -145,14 +165,11 @@ namespace NuGet.Commands
                 }
             }
 
-            var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
+            Dictionary<ValueTuple<string, NuGetVersion>, LockFileLibrary> libraries = EnsureUniqueLockFileLibraries(lockFile);
 
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
             var rootProjectStyle = project.RestoreMetadata?.ProjectStyle ?? ProjectStyle.Unknown;
-
-            // Cache package data and selection criteria across graphs.
-            var builderCache = new LockFileBuilderCache();
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
@@ -201,7 +218,6 @@ namespace NuGet.Commands
                             rootProjectStyle);
 
                         target.Libraries.Add(projectLib);
-                        continue;
                     }
                     else if (library.Type == LibraryType.Package)
                     {
@@ -215,34 +231,39 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
                         var libraryDependency = tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase));
 
-                        var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
-                            libraryDependency,
-                            libraries[Tuple.Create(library.Name, library.Version)],
+                        (LockFileTargetLibrary targetLibrary, bool usedFallbackFramework) = LockFileUtils.CreateLockFileTargetLibrary(
+                            libraryDependency?.Aliases,
+                            libraries[ValueTuple.Create(library.Name, library.Version)],
                             package,
                             targetGraph,
                             dependencyType: includeFlags,
                             targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies,
-                            cache: builderCache);
+                            cache: lockFileBuilderCache);
 
                         target.Libraries.Add(targetLibrary);
 
                         // Log warnings if the target library used the fallback framework
                         if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
                         {
-                            var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
+                            if (target.TargetFramework is FallbackFramework)
+                            {
+                                // PackageTargetFallback works different from AssetTargetFallback so the warning logic for PTF cannot be optimized.
+                                var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
 
-                            var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
-                                libraryDependency,
-                                libraries[Tuple.Create(library.Name, library.Version)],
-                                package,
-                                targetGraph,
-                                targetFrameworkOverride: nonFallbackFramework,
-                                dependencyType: includeFlags,
-                                dependencies: graphItem.Data.Dependencies,
-                                cache: builderCache);
+                                var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
+                                    libraryDependency?.Aliases,
+                                    libraries[ValueTuple.Create(library.Name, library.Version)],
+                                    package,
+                                    targetGraph,
+                                    targetFrameworkOverride: nonFallbackFramework,
+                                    dependencyType: includeFlags,
+                                    dependencies: graphItem.Data.Dependencies,
+                                    cache: lockFileBuilderCache);
+                                usedFallbackFramework = !targetLibrary.Equals(targetLibraryWithoutFallback);
+                            }
 
-                            if (!targetLibrary.Equals(targetLibraryWithoutFallback))
+                            if (usedFallbackFramework)
                             {
                                 var libraryName = DiagnosticUtility.FormatIdentity(library);
 
@@ -250,7 +271,7 @@ namespace NuGet.Commands
                                     Strings.Log_ImportsFallbackWarning,
                                     libraryName,
                                     GetFallbackFrameworkString(target.TargetFramework),
-                                    nonFallbackFramework);
+                                    new NuGetFramework(target.TargetFramework));
 
                                 var logMessage = RestoreLogMessage.CreateWarning(
                                     NuGetLogCode.NU1701,
@@ -267,6 +288,7 @@ namespace NuGet.Commands
                     }
                 }
 
+                EnsureUniqueLockFileTargetLibraries(target);
                 lockFile.Targets.Add(target);
             }
 
@@ -278,6 +300,97 @@ namespace NuGet.Commands
             lockFile.PackageSpec = project;
 
             return lockFile;
+        }
+
+        private Dictionary<ValueTuple<string, NuGetVersion>, LockFileLibrary> EnsureUniqueLockFileLibraries(LockFile lockFile)
+        {
+            IList<LockFileLibrary> libraries = lockFile.Libraries;
+            var libraryReferences = new Dictionary<ValueTuple<string, NuGetVersion>, LockFileLibrary>();
+
+            foreach (LockFileLibrary lib in libraries)
+            {
+                var libraryKey = ValueTuple.Create(lib.Name, lib.Version);
+
+                if (libraryReferences.TryGetValue(libraryKey, out LockFileLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(lib.Type))
+                    {
+                        // Prefer project reference over package reference, so replace the the package reference.
+                        libraryReferences[libraryKey] = lib;
+                    }
+                }
+                else
+                {
+                    libraryReferences[libraryKey] = lib;
+                }
+            }
+
+            if (lockFile.Libraries.Count != libraryReferences.Count)
+            {
+                lockFile.Libraries = new List<LockFileLibrary>(libraryReferences.Count);
+                foreach (KeyValuePair<ValueTuple<string, NuGetVersion>, LockFileLibrary> pair in libraryReferences)
+                {
+                    lockFile.Libraries.Add(pair.Value);
+                }
+            }
+
+            return libraryReferences;
+        }
+
+        private static void EnsureUniqueLockFileTargetLibraries(LockFileTarget lockFileTarget)
+        {
+            IList<LockFileTargetLibrary> libraries = lockFileTarget.Libraries;
+            var libraryReferences = new Dictionary<LockFileTargetLibrary, LockFileTargetLibrary>(comparer: LockFileTargetLibraryNameAndVersionEqualityComparer.Instance);
+
+            foreach (LockFileTargetLibrary library in libraries)
+            {
+                if (libraryReferences.TryGetValue(library, out LockFileTargetLibrary existingLibrary))
+                {
+                    if (RankReferences(existingLibrary.Type) > RankReferences(library.Type))
+                    {
+                        // Prefer project reference over package reference, so replace the the package reference.
+                        libraryReferences[library] = library;
+                    }
+                }
+                else
+                {
+                    libraryReferences[library] = library;
+                }
+            }
+
+            if (lockFileTarget.Libraries.Count == libraryReferences.Count)
+            {
+                return;
+            }
+
+            lockFileTarget.Libraries = new List<LockFileTargetLibrary>(libraryReferences.Count);
+            foreach (KeyValuePair<LockFileTargetLibrary, LockFileTargetLibrary> pair in libraryReferences)
+            {
+                lockFileTarget.Libraries.Add(pair.Value);
+            }
+        }
+
+        /// <summary>
+        /// Prefer projects over packages
+        /// </summary>
+        /// <param name="referenceType"></param>
+        /// <returns></returns>
+        private static int RankReferences(string referenceType)
+        {
+            if (referenceType == "project")
+            {
+                return 0;
+            }
+            else if (referenceType == "externalProject")
+            {
+                return 1;
+            }
+            else if (referenceType == "package")
+            {
+                return 2;
+            }
+
+            return 5;
         }
 
         private static string GetFallbackFrameworkString(NuGetFramework framework)
@@ -330,8 +443,6 @@ namespace NuGet.Commands
                     .Flattened
                     .SingleOrDefault(library => library.Key.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase));
 
-                Debug.Assert(resolvedEntry != null, "Unable to find project entry in target graph, project references will not be added");
-
                 // In some failure cases where there is a conflict the root level project cannot be resolved, this should be handled gracefully
                 if (resolvedEntry != null)
                 {
@@ -363,46 +474,137 @@ namespace NuGet.Commands
 
         private void AddCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
         {
-            if (project.RestoreMetadata?.CentralPackageVersionsEnabled == false)
+            if (project.RestoreMetadata == null || !project.RestoreMetadata.CentralPackageVersionsEnabled || !project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
             {
                 return;
             }
 
             // Do not pack anything from the runtime graphs
-            // The runtime graphs are added in addition to the graphs without a runtime 
-            foreach (var targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
+            // The runtime graphs are added in addition to the graphs without a runtime
+            foreach (RestoreTargetGraph targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
             {
-                var centralPackageVersionsForFramework = project.TargetFrameworks.Where(tfmi => tfmi.FrameworkName.Equals(targetGraph.Framework)).FirstOrDefault()?.CentralPackageVersions;
+                TargetFrameworkInformation targetFrameworkInformation = project.TargetFrameworks.FirstOrDefault(i => i.FrameworkName.Equals(targetGraph.Framework));
+
+                if (targetFrameworkInformation == null)
+                {
+                    continue;
+                }
 
                 // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
-                IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph
-                    .Flattened
-                    .Where(graphItem => graphItem.IsCentralTransitive && centralPackageVersionsForFramework?.ContainsKey(graphItem.Key.Name) == true)
-                    .Select((graphItem) =>
-                    {
-                        CentralPackageVersion matchingCentralVersion = centralPackageVersionsForFramework[graphItem.Key.Name];
-                        Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
-
-                        var libraryDependency = new LibraryDependency()
-                        {
-                            LibraryRange = new LibraryRange(matchingCentralVersion.Name, matchingCentralVersion.VersionRange, LibraryDependencyTarget.Package),
-                            ReferenceType = LibraryDependencyReferenceType.Transitive,
-                            VersionCentrallyManaged = true,
-                            IncludeType = dependenciesIncludeFlags[matchingCentralVersion.Name]
-                        };
-
-                        return libraryDependency;
-                    });
+                List<LibraryDependency> centralEnforcedTransitiveDependencies = GetLibraryDependenciesForCentralTransitiveDependencies(targetGraph, targetFrameworkInformation).ToList();
 
                 if (centralEnforcedTransitiveDependencies.Any())
                 {
                     var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
-                            (
-                                targetGraph.Framework,
-                                centralEnforcedTransitiveDependencies
-                            );
+                    (
+                        targetGraph.Framework,
+                        centralEnforcedTransitiveDependencies
+                    );
 
                     lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines the <see cref="LibraryDependency" /> objects for the specified <see cref="RestoreTargetGraph" /> that represent the centrally defined transitive dependencies.
+        /// </summary>
+        /// <param name="targetGraph">The <see cref="RestoreTargetGraph" /> to get centrally defined transitive dependencies for.</param>
+        /// <param name="targetFrameworkInformation">The <see cref="TargetFrameworkInformation" /> for the target framework to get centrally defined transitive dependencies for.</param>
+        /// <param name="centralPackageTransitivePinningEnabled">A value indicating whether or not central transitive dependency version pinning is enabled.</param>
+        /// <returns>An <see cref="IEnumerable{LibraryDependency}" /> representing the centrally defined transitive dependencies for the specified <see cref="RestoreTargetGraph" />.</returns>
+        private IEnumerable<LibraryDependency> GetLibraryDependenciesForCentralTransitiveDependencies(RestoreTargetGraph targetGraph, TargetFrameworkInformation targetFrameworkInformation)
+        {
+            HashSet<GraphNode<RemoteResolveResult>> visitedNodes = new HashSet<GraphNode<RemoteResolveResult>>();
+            Queue<GraphNode<RemoteResolveResult>> queue = new Queue<GraphNode<RemoteResolveResult>>();
+
+            foreach (GraphNode<RemoteResolveResult> rootNode in targetGraph.Graphs)
+            {
+                Dictionary<string, LibraryDependency> dependencyDictionary = null;
+
+                foreach (GraphNode<RemoteResolveResult> node in rootNode.InnerNodes)
+                {
+                    // Only consider nodes that are Accepted, IsCentralTransitive, and have a centrally defined package version
+                    if (node?.Item == null || node.Disposition != Disposition.Accepted || !node.Item.IsCentralTransitive || !targetFrameworkInformation.CentralPackageVersions?.ContainsKey(node.Item.Key.Name) == true)
+                    {
+                        continue;
+                    }
+
+                    if (dependencyDictionary == null)
+                    {
+                        dependencyDictionary = rootNode.Item.Data.Dependencies.ToDictionary(x => x.Name, x => x, StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    CentralPackageVersion centralPackageVersion = targetFrameworkInformation.CentralPackageVersions[node.Item.Key.Name];
+                    Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
+
+                    LibraryIncludeFlags suppressParent = LibraryIncludeFlags.All;
+
+                    // Centrally pinned dependencies are not directly declared but the intersection of all of the PrivateAssets of the parents that pulled it in should apply to it
+                    foreach (GraphNode<RemoteResolveResult> dependencyNode in EnumerateNodesForDependencyChecks(visitedNodes, queue, rootNode, node))
+                    {
+                        LibraryDependency dependency = dependencyDictionary[dependencyNode.Key.Name];
+                        suppressParent &= dependency.SuppressParent;
+                    }
+
+                    // If all assets are suppressed then the dependency should not be added
+                    if (suppressParent != LibraryIncludeFlags.All)
+                    {
+                        yield return new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
+                            ReferenceType = LibraryDependencyReferenceType.Transitive,
+                            VersionCentrallyManaged = true,
+                            IncludeType = dependenciesIncludeFlags[centralPackageVersion.Name],
+                            SuppressParent = suppressParent,
+                        };
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enumerates all inner nodes of the root node which directly or transitively reference the particular graph node.
+        /// </summary>
+        /// <typeparam name="T">The type of the node.</typeparam>
+        /// <param name="visitedNodes">Reusable <see cref="HashSet{GraphNode{T}}" /> for graph traversal algorithm.</param>
+        /// <param name="queue">Reusable <see cref="Queue{GraphNode{T}}" /> for graph traversal algorithm.</param>
+        /// <param name="rootNode">The <see cref="GraphNode{TItem}" /> to know which nodes are first level inner nodes.</param>
+        /// <param name="graphNode">The <see cref="GraphNode{TItem}" /> to enumerate the parent nodes of.</param>
+        /// <returns>An <see cref="IEnumerable{T}" /> containing list of parent nodes of the specified node.</returns>
+        private static IEnumerable<GraphNode<T>> EnumerateNodesForDependencyChecks<T>(HashSet<GraphNode<T>> visitedNodes, Queue<GraphNode<T>> queue, GraphNode<T> rootNode, GraphNode<T> graphNode)
+        {
+            visitedNodes.Clear();
+            queue.Clear();
+
+            queue.Enqueue(graphNode);
+
+            while (queue.Count > 0)
+            {
+                var node = queue.Dequeue();
+                if (!visitedNodes.Add(node))
+                    continue;
+
+                if (node.Item.IsCentralTransitive)
+                {
+                    foreach (var parentNode in node.ParentNodes)
+                    {
+                        queue.Enqueue(parentNode);
+                    }
+                }
+                else
+                {
+                    if (node.OuterNode == rootNode)
+                    {
+                        // We were traversing the graph upwards and now found a parent node (an inner node of the root node).
+                        // Now we return it, so it can be used to calculate the effective value of SuppressParent for the initial node.
+                        yield return node;
+                    }
+                    else
+                    {
+                        // Go one level up
+                        queue.Enqueue(node.OuterNode);
+                    }
                 }
             }
         }
@@ -428,8 +630,10 @@ namespace NuGet.Commands
                 Path = path
             };
 
-            foreach (var file in package.Files)
+            // Use for loop to avoid boxing enumerator
+            for (var i = 0; i < package.Files.Count; i++)
             {
+                var file = package.Files[i];
                 if (!lockFileLib.HasTools && HasTools(file))
                 {
                     lockFileLib.HasTools = true;
@@ -443,6 +647,50 @@ namespace NuGet.Commands
         private static bool HasTools(string file)
         {
             return file.StartsWith("tools/", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// An <see cref="IEqualityComparer{T}" /> that compares <see cref="LockFileTargetLibrary" /> objects by the value of the <see cref="LockFileTargetLibrary.Name" /> and <see cref="LockFileTargetLibrary.Version" /> properties.
+        /// </summary>
+        private class LockFileTargetLibraryNameAndVersionEqualityComparer : IEqualityComparer<LockFileTargetLibrary>
+        {
+            /// <summary>
+            /// Gets a static singleton for the <see cref="LockFileTargetLibraryNameAndVersionEqualityComparer" /> class.
+            /// </summary>
+            public static LockFileTargetLibraryNameAndVersionEqualityComparer Instance = new();
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LockFileTargetLibraryNameAndVersionEqualityComparer" /> class.
+            /// </summary>
+            private LockFileTargetLibraryNameAndVersionEqualityComparer()
+            {
+            }
+
+            /// <summary>
+            /// Determines whether the specified <see cref="LockFileTargetLibrary" /> objects are equal by comparing their <see cref="LockFileTargetLibrary.Name" /> and <see cref="LockFileTargetLibrary.Version" /> properties.
+            /// </summary>
+            /// <param name="x">The first <see cref="LockFileTargetLibrary" /> to compare.</param>
+            /// <param name="y">The second <see cref="LockFileTargetLibrary" /> to compare.</param>
+            /// <returns><see langword="true" /> if the specified <see cref="LockFileTargetLibrary" /> objects' <see cref="LockFileTargetLibrary.Name" /> and <see cref="LockFileTargetLibrary.Version" /> properties are equal, otherwise <see langword="false" />.</returns>
+            public bool Equals(LockFileTargetLibrary x, LockFileTargetLibrary y)
+            {
+                return string.Equals(x.Name, y.Name, StringComparison.Ordinal) && x.Version.Equals(y.Version);
+            }
+
+            /// <summary>
+            /// Returns a hash code for the specified <see cref="LockFileTargetLibrary" /> object's <see cref="LockFileTargetLibrary.Name" /> property.
+            /// </summary>
+            /// <param name="obj">The <see cref="LockFileTargetLibrary" /> for which a hash code is to be returned.</param>
+            /// <returns>A hash code for the specified <see cref="LockFileTargetLibrary" /> object's <see cref="LockFileTargetLibrary.Name" /> and and <see cref="LockFileTargetLibrary.Version" /> properties.</returns>
+            public int GetHashCode(LockFileTargetLibrary obj)
+            {
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject(obj.Name);
+                combiner.AddObject(obj.Version);
+
+                return combiner.CombinedHash;
+            }
         }
     }
 }

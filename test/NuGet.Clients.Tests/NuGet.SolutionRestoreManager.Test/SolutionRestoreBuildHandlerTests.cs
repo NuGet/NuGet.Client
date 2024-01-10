@@ -24,6 +24,12 @@ namespace NuGet.SolutionRestoreManager.Test
             Assumes.Present(fixture);
 
             _jtf = fixture.JoinableTaskFactory;
+
+#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
+            var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
+#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
+
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
         }
 
         [Fact]

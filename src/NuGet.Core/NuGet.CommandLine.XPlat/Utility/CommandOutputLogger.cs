@@ -12,20 +12,11 @@ namespace NuGet.CommandLine.XPlat
     /// <summary>
     /// Logger to print formatted command output.
     /// </summary>
-    public class CommandOutputLogger : LegacyLoggerAdapter, ILogger
+    internal class CommandOutputLogger : LoggerBase, ILoggerWithColor
     {
-        private static readonly bool _useConsoleColor = true;
-        private LogLevel _logLevel;
-
         public CommandOutputLogger(LogLevel logLevel)
         {
-            _logLevel = logLevel;
-        }
-
-        public LogLevel LogLevel
-        {
-            get { return _logLevel; }
-            set { _logLevel = value; }
+            VerbosityLevel = logLevel;
         }
 
         public override void LogDebug(string data)
@@ -59,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
 
         public override void LogInformationSummary(string data)
         {
-            if (_logLevel <= LogLevel.Information)
+            if (DisplayMessage(LogLevel.Information))
             {
                 Console.WriteLine(data);
             }
@@ -69,39 +60,33 @@ namespace NuGet.CommandLine.XPlat
 
         protected virtual void LogInternal(LogLevel logLevel, string message)
         {
-            if (logLevel < _logLevel)
+            if (!DisplayMessage(logLevel))
             {
                 return;
             }
 
             var caption = string.Empty;
-            if (_useConsoleColor)
+
+            switch (logLevel)
             {
-                switch (logLevel)
-                {
-                    case LogLevel.Debug:
-                        caption = "debug: ";
-                        break;
-                    case LogLevel.Verbose:
-                        caption = "trace: ";
-                        break;
-                    case LogLevel.Information:
-                        caption = HidePrefixForInfoAndMinimal ? null : "info : ";
-                        break;
-                    case LogLevel.Minimal:
-                        caption = HidePrefixForInfoAndMinimal ? null : "log  : ";
-                        break;
-                    case LogLevel.Warning:
-                        caption = "warn : ";
-                        break;
-                    case LogLevel.Error:
-                        caption = "error: ";
-                        break;
-                }
-            }
-            else
-            {
-                caption = logLevel.ToString().ToLowerInvariant();
+                case LogLevel.Debug:
+                    caption = "debug: ";
+                    break;
+                case LogLevel.Verbose:
+                    caption = "trace: ";
+                    break;
+                case LogLevel.Information:
+                    caption = HidePrefixForInfoAndMinimal ? null : "info : ";
+                    break;
+                case LogLevel.Minimal:
+                    caption = HidePrefixForInfoAndMinimal ? null : "log  : ";
+                    break;
+                case LogLevel.Warning:
+                    caption = "warn : ";
+                    break;
+                case LogLevel.Error:
+                    caption = "error: ";
+                    break;
             }
 
             if (message.IndexOf('\n') >= 0)
@@ -129,6 +114,26 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return builder.ToString();
+        }
+
+        public override void Log(ILogMessage message)
+        {
+            LogInternal(message.Level, message.FormatWithCode());
+        }
+
+        public override Task LogAsync(ILogMessage message)
+        {
+            Log(message);
+
+            return Task.CompletedTask;
+        }
+
+        public void LogMinimal(string data, ConsoleColor color)
+        {
+            var currentColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.Write(data);
+            Console.ForegroundColor = currentColor;
         }
     }
 }

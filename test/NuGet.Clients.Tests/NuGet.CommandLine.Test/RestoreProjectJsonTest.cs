@@ -23,13 +23,13 @@ namespace NuGet.CommandLine.Test
         public async Task RestoreProjectJson_MinClientVersionFailAsync()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
                 var packageContext = new SimpleTestPackageContext()
                 {
@@ -40,7 +40,6 @@ namespace NuGet.CommandLine.Test
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageContext);
 
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0'
@@ -65,12 +64,11 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", r.Errors);
             }
         }
 
@@ -122,11 +120,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -218,11 +215,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -307,11 +303,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
@@ -384,13 +379,12 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.True(test1Lock.Exists);
             }
@@ -534,13 +528,12 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 Assert.True(test1Lock.Exists);
 
@@ -648,13 +641,12 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    args,
-                    waitForExit: true);
+                    args);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + Environment.NewLine + r.Errors);
 
-                var lines = r.Item2.Split(
+                var lines = r.Output.Split(
                                 new[] { Environment.NewLine },
                                 StringSplitOptions.RemoveEmptyEntries);
 
@@ -677,11 +669,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreFromSlnWithReferenceOutputAssemblyFalse()
+        public async Task RestoreProjectJson_RestoreFromSlnWithReferenceOutputAssemblyFalse()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
                 var projectDir2 = Path.Combine(workingPath, "test2");
@@ -691,7 +684,6 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(projectDir2);
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Util.CreateFile(projectDir1, "project.json",
                                                 @"{
@@ -761,10 +753,9 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                         ");
 
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.0.0");
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-                packageA.Files.Add(libA);
-                Util.CreateTestPackage(packageA, repositoryPath);
+                var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
+                packageA.AddFile("lib/uap/a.dll", "a");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
                 var args = new string[] {
                     "restore",
@@ -779,11 +770,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -839,15 +829,14 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.False(test1Lock.Exists);
-                Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("input file does not exist", r.Errors, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -879,15 +868,14 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(1 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.False(test1Lock.Exists);
-                Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("input file does not exist", r.Errors, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -931,13 +919,12 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(test1Lock.Exists);
             }
         }
@@ -982,23 +969,23 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(test1Lock.Exists);
             }
         }
 
         [Fact]
-        public void RestoreProjectJson_RestoreFromSlnWithUnknownProjAndCsproj()
+        public async Task RestoreProjectJson_RestoreFromSlnWithUnknownProjAndCsproj()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
                 var projectDir2 = Path.Combine(workingPath, "test2");
@@ -1009,13 +996,9 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(projectDir2);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-                packageA.Files.Add(libA);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
+                packageA.AddFile("lib/uap/a.dll", "a");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
                 Util.CreateFile(projectDir1, "project.json",
                                                 @"{
@@ -1084,11 +1067,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -1202,13 +1184,12 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 // Verify restore worked, this requires finding the packages from the repository, which is in 
                 // the solution level nuget.config.
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
@@ -1222,8 +1203,9 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatReleaseLabelHighestPrelease()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -1232,7 +1214,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                         'dependencies': {
                                         'packageA': '1.0.0-*'
@@ -1258,8 +1239,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1269,7 +1249,7 @@ namespace NuGet.CommandLine.Test
                 var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("1.0.0-beta-02", installedA.Version.ToNormalizedString());
             }
         }
@@ -1278,19 +1258,18 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatReleaseLabelTakesStable()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "2.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0-*'
@@ -1315,8 +1294,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1326,7 +1304,7 @@ namespace NuGet.CommandLine.Test
                 var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("1.0.0", installedA.Version.ToNormalizedString());
             }
         }
@@ -1335,8 +1313,9 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_FloatIncludesStableOnly()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -1348,7 +1327,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageA", "1.1.15", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.15-beta", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.9-beta", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var projectJson = @"{
                                         ""dependencies"": {
@@ -1374,8 +1352,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1385,7 +1362,7 @@ namespace NuGet.CommandLine.Test
                 var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("1.0.10", installedA.Version.ToNormalizedString());
             }
         }
@@ -1394,18 +1371,17 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreFiltersToStablePackages()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageB", "1.0.0");
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "3.0.0", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0'
@@ -1430,8 +1406,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1441,7 +1416,7 @@ namespace NuGet.CommandLine.Test
                 var installedB = lockFile.Targets.First().Libraries.Where(package => package.Name == "packageB").ToList();
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(1, installedB.Count);
                 Assert.Equal("3.0.0", installedB.Single().Version.ToNormalizedString());
             }
@@ -1451,8 +1426,9 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreBumpsFromStableToPrereleaseWhenNeeded()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -1462,7 +1438,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath, "win8", "packageC", "2.0.0-beta");
                 Util.CreateTestPackage("packageC", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageC", "2.0.0-beta", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                         'dependencies': {
                                         'packageA': '1.0.0',
@@ -1488,8 +1463,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1499,7 +1473,7 @@ namespace NuGet.CommandLine.Test
                 var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("2.0.0-beta", installedC.Version.ToNormalizedString());
             }
         }
@@ -1508,8 +1482,9 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_RestoreDowngradesStableDependency()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
@@ -1519,7 +1494,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateTestPackage("packageB", "1.0.0", repositoryPath, "win8", "packageC", "[2.1.0]");
                 Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
                 Util.CreateTestPackage("packageC", "2.1.0", repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var projectJson = @"{
                                                     'dependencies': {
                                                     'packageA': '1.0.0',
@@ -1545,8 +1519,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1556,7 +1529,7 @@ namespace NuGet.CommandLine.Test
                 var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("2.1.0", installedC.Version.ToNormalizedString());
             }
         }
@@ -1602,8 +1575,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFilePath = Path.Combine(workingPath, "project.lock.json");
                 var lockFileFormat = new LockFileFormat();
@@ -1613,17 +1585,18 @@ namespace NuGet.CommandLine.Test
                 var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal("2.0.0-beta", installedC.Version.ToNormalizedString());
             }
         }
 
         [Fact]
-        public void RestoreProjectJson_SolutionFileWithAllProjectsInOneFolder()
+        public async Task RestoreProjectJson_SolutionFileWithAllProjectsInOneFolder()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir = Path.Combine(workingPath, "abc");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1631,17 +1604,12 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(projectDir);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                Util.CreateTestPackage(packageA, repositoryPath);
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
                 Util.CreateFile(projectDir, "testA.project.json",
                                                 @"{
@@ -1724,39 +1692,35 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFileA));
                 Assert.True(File.Exists(targetFileB));
                 Assert.True(File.Exists(lockFileA));
                 Assert.True(File.Exists(lockFileB));
-                Assert.True(File.Exists(Path.Combine(workingPath, "packages/packageA.1.1.0-beta-01/packageA.1.1.0-beta-01.nupkg")));
+                Assert.True(File.Exists(Path.Combine(workingPath, "globalPackages", "packageA", "1.1.0-beta-01", "packageA.1.1.0-beta-01.nupkg")));
             }
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateFilesWithProjectNameFromCSProj()
+        public async Task RestoreProjectJson_GenerateFilesWithProjectNameFromCSProj()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                Util.CreateTestPackage(packageA, repositoryPath);
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
                 Util.CreateFile(workingPath, "test.project.json",
                                                 @"{
@@ -1788,22 +1752,22 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(lockFilePath));
                 Assert.True(File.Exists(targetFilePath));
             }
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateTargetsFileFromSln()
+        public async Task RestoreProjectJson_GenerateTargetsFileFromSln()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var nugetexe = Util.GetNuGetExePath();
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -1813,17 +1777,11 @@ namespace NuGet.CommandLine.Test
                 Directory.CreateDirectory(projectDir);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
                 Util.CreateFile(projectDir, "project.json",
                                                 @"{
@@ -1881,11 +1839,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -1894,36 +1851,28 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateTargetsFileFromCSProj()
+        public async Task RestoreProjectJson_GenerateTargetsFileFromCSProj()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
-                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
 
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                var packageB = new SimpleTestPackageContext("packageB", "2.2.0-beta-02");
+                targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+                packageB.AddFile("build/uap/packageB.targets", targetContent);
+                packageB.AddFile("lib/uap/b.dll", "b");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
-                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
-
-                packageB.Files.Add(targetB);
-                packageB.Files.Add(libB);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
-                Util.CreateTestPackage(packageB, repositoryPath);
 
                 Util.CreateFile(workingPath, "project.json",
                                                 @"{
@@ -1955,11 +1904,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -1972,8 +1920,9 @@ namespace NuGet.CommandLine.Test
         public async Task RestoreProjectJson_GenerateTargetsForFallbackFolderAsync()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var globalPath = Path.Combine(workingPath, "global");
                 var fallback1 = Path.Combine(workingPath, "fallback1");
@@ -2001,33 +1950,25 @@ namespace NuGet.CommandLine.Test
         <clear />
         <add key=""a"" value=""{repositoryPath}"" />
     </packageSources>
+    <packageSourceMapping>
+      <clear />
+    </packageSourceMapping>
 </configuration>";
 
                 File.WriteAllText(Path.Combine(workingPath, "NuGet.Config"), config);
 
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
-                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
-
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-
-                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
-                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
-
-                packageB.Files.Add(targetB);
-                packageB.Files.Add(libB);
-
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
-
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                var packageB = new SimpleTestPackageContext("packageB", "2.2.0-beta-02");
+                targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+                packageB.AddFile("build/uap/packageB.targets", targetContent);
+                packageB.AddFile("lib/uap/b.dll", "b");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
                 var saveMode = PackageSaveMode.Defaultv3;
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(fallback2, saveMode, Directory.GetFiles(repositoryPath));
-
-                Util.CreateTestPackage(packageB, repositoryPath);
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageB);
 
                 Util.CreateFile(projectDir, "project.json",
                                                 @"{
@@ -2063,11 +2004,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2077,36 +2017,24 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateTargetsFileFromNuProj()
+        public async Task RestoreProjectJson_GenerateTargetsFileFromNuProj()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
-                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var workingPath = pathContext.WorkingDirectory;
+                var repositoryPath = pathContext.PackageSource;
                 var nugetexe = Util.GetNuGetExePath();
 
-                Directory.CreateDirectory(repositoryPath);
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
-                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
-
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
-                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
-
-                packageB.Files.Add(targetB);
-                packageB.Files.Add(libB);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
-                Util.CreateTestPackage(packageB, repositoryPath);
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                var packageB = new SimpleTestPackageContext("packageB", "2.2.0-beta-02");
+                targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+                packageB.AddFile("build/uap/packageB.targets", targetContent);
+                packageB.AddFile("lib/uap/b.dll", "b");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
                 Util.CreateFile(workingPath, "project.json",
                                                 @"{
@@ -2138,11 +2066,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2152,11 +2079,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateTargetsFileWithFolder()
+        public async Task RestoreProjectJson_GenerateTargetsFileWithFolder()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -2164,26 +2092,14 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
-                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
-
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
-                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
-
-                packageB.Files.Add(targetB);
-                packageB.Files.Add(libB);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
-                Util.CreateTestPackage(packageB, repositoryPath);
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                var packageB = new SimpleTestPackageContext("packageB", "2.2.0-beta-02");
+                packageB.AddFile("build/uap/packageB.targets", targetContent);
+                packageB.AddFile("lib/uap/b.dll", "b");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
                 Util.CreateFile(workingPath, "project.json",
                                                 @"{
@@ -2213,11 +2129,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2227,11 +2142,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateTargetsForRootBuildFolderIgnoreSubFolders()
+        public async Task RestoreProjectJson_GenerateTargetsForRootBuildFolderIgnoreSubFolders()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -2239,18 +2155,13 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                var packageA = Util.CreateTestPackageBuilder("packageA", "3.1.0");
 
+                var packageA = new SimpleTestPackageContext("packageA", "3.1.0");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+                packageA.AddFile("build/net45/packageA.targets", targetContent);
+                packageA.AddFile("build/packageA.targets", targetContent);
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA);
 
-                var targetA = Util.CreatePackageFile("build/net45/packageA.targets", targetContent);
-                var targetARoot = Util.CreatePackageFile("build/packageA.targets", targetContent);
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(targetARoot);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
 
                 Util.CreateFile(workingPath, "project.json",
                                                 @"{
@@ -2280,11 +2191,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 var targetsFile = File.ReadAllText(targetFilePath);
@@ -2297,11 +2207,12 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void RestoreProjectJson_GenerateTargetsPersistsWithMultipleRestores()
+        public async Task RestoreProjectJson_GenerateTargetsPersistsWithMultipleRestores()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -2309,26 +2220,15 @@ namespace NuGet.CommandLine.Test
 
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
-                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
-
+                var packageA = new SimpleTestPackageContext("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
-
-                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
-                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
-
-                packageA.Files.Add(targetA);
-                packageA.Files.Add(libA);
-
-                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
-                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
-
-                packageB.Files.Add(targetB);
-                packageB.Files.Add(libB);
-
-                Util.CreateTestPackage(packageA, repositoryPath);
-                Util.CreateTestPackage(packageB, repositoryPath);
+                packageA.AddFile("build/uap/packageA.targets", targetContent);
+                packageA.AddFile("lib/uap/a.dll", "a");
+                var packageB = new SimpleTestPackageContext("packageB", "2.2.0-beta-02");
+                targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+                packageB.AddFile("build/uap/packageB.targets", targetContent);
+                packageB.AddFile("lib/uap/b.dll", "b");
+                await SimpleTestPackageUtility.CreatePackagesAsync(repositoryPath, packageA, packageB);
 
                 Util.CreateFile(workingPath, "project.json",
                                                 @"{
@@ -2358,11 +2258,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 using (var stream = File.OpenText(targetFilePath))
@@ -2376,11 +2275,10 @@ namespace NuGet.CommandLine.Test
                 r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert 2
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 using (var stream = File.OpenText(targetFilePath))
@@ -2394,11 +2292,10 @@ namespace NuGet.CommandLine.Test
                 r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert 3
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.True(File.Exists(targetFilePath));
 
                 using (var stream = File.OpenText(targetFilePath))
@@ -2414,14 +2311,14 @@ namespace NuGet.CommandLine.Test
         public void RestoreProjectJson_CorruptedLockFile()
         {
             // Arrange
-            using (var workingPath = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
             {
+                string workingPath = pathContext.WorkingDirectory;
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
-                Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 var projectJson = @"{
@@ -2456,14 +2353,13 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
 
                 // Assert
                 // If the library count can be obtained then a new lock file was created
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
                 Assert.Equal(2, lockFile.Libraries.Count);
             }
         }

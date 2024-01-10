@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#if IS_DESKTOP
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -18,8 +18,6 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal sealed class Rfc3161TimestampRequest : AsnEncodedData
     {
-
-#if IS_DESKTOP
         private class DataType
         {
             internal int _version;
@@ -180,7 +178,7 @@ namespace NuGet.Packaging.Signing
         public X509ExtensionCollection GetExtensions() =>
             Rfc3161TimestampTokenInfo.ShallowCopy(Data._extensions, preserveNull: false);
 
-        public unsafe Rfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
+        public unsafe IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
         {
             if (timestampUri == null)
                 throw new ArgumentNullException(nameof(timestampUri));
@@ -239,7 +237,7 @@ namespace NuGet.Packaging.Signing
                 byte[] encoded = new byte[content.cbEncoded];
                 Marshal.Copy(content.pbEncoded, encoded, 0, content.cbEncoded);
 
-                Rfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
+                var tstInfo = new Rfc3161TimestampTokenInfoNet472Wrapper(new Rfc3161TimestampTokenInfo(pTsContext));
                 X509Certificate2 signerCert = new X509Certificate2(pTsSigner);
 
                 using (X509Store extraCerts = new X509Store(hStore))
@@ -254,7 +252,7 @@ namespace NuGet.Packaging.Signing
                         }
                     }
 
-                    return new Rfc3161TimestampToken(
+                    return Rfc3161TimestampTokenFactory.Create(
                         tstInfo,
                         signerCert,
                         additionalCertsColl,
@@ -423,6 +421,6 @@ namespace NuGet.Packaging.Signing
             _data = null;
             base.CopyFrom(asnEncodedData);
         }
-#endif
     }
 }
+#endif

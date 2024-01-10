@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestorePackageReferencesTask : Task
+    public class GetRestorePackageReferencesTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.
@@ -34,11 +34,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) PackageReferences '{string.Join(";", PackageReferences.Select(p => p.ItemSpec))}'");
-
             var entries = new List<ITaskItem>();
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -57,6 +52,7 @@ namespace NuGet.Build.Tasks
                 properties.Add("Type", "Dependency");
                 properties.Add("Id", packageId);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "VersionOverride");
 
                 if (!string.IsNullOrEmpty(TargetFrameworks))
                 {

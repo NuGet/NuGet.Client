@@ -18,10 +18,16 @@ namespace NuGet.ProjectManagement
         public const string RuntimeIdentifiers = nameof(RuntimeIdentifiers);
         public const string RuntimeSupports = nameof(RuntimeSupports);
         public const string TargetFramework = nameof(TargetFramework);
+        public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
         public const string TargetFrameworkMoniker = nameof(TargetFrameworkMoniker);
+        public const string TargetFrameworkProfile = nameof(TargetFrameworkProfile);
+        public const string TargetFrameworkVersion = nameof(TargetFrameworkVersion);
         public const string TargetFrameworks = nameof(TargetFrameworks);
         public const string TargetPlatformIdentifier = nameof(TargetPlatformIdentifier);
+        public const string TargetPlatformMoniker = nameof(TargetPlatformMoniker);
         public const string TargetPlatformMinVersion = nameof(TargetPlatformMinVersion);
+        public const string CLRSupport = nameof(CLRSupport);
+        public const string WindowsTargetPlatformMinVersion = nameof(WindowsTargetPlatformMinVersion);
         public const string TargetPlatformVersion = nameof(TargetPlatformVersion);
         public const string Version = nameof(Version);
         public const string RestorePackagesPath = nameof(RestorePackagesPath);
@@ -33,6 +39,7 @@ namespace NuGet.ProjectManagement
         public const string RestoreAdditionalProjectFallbackFoldersExcludes = nameof(RestoreAdditionalProjectFallbackFoldersExcludes);
         public const string NoWarn = nameof(NoWarn);
         public const string WarningsAsErrors = nameof(WarningsAsErrors);
+        public const string WarningsNotAsErrors = nameof(WarningsNotAsErrors);
         public const string TreatWarningsAsErrors = nameof(TreatWarningsAsErrors);
         public const string DotnetCliToolTargetFramework = nameof(DotnetCliToolTargetFramework);
         public const string RestorePackagesWithLockFile = nameof(RestorePackagesWithLockFile);
@@ -46,5 +53,12 @@ namespace NuGet.ProjectManagement
         public const string Clear = nameof(Clear);
         public const string RuntimeIdentifierGraphPath = nameof(RuntimeIdentifierGraphPath);
         public const string ManagePackageVersionsCentrally = nameof(ManagePackageVersionsCentrally);
+        public const string CentralPackageVersionOverrideEnabled = nameof(CentralPackageVersionOverrideEnabled);
+        public const string AssemblyName = nameof(AssemblyName);
+        public const string CentralPackageTransitivePinningEnabled = nameof(CentralPackageTransitivePinningEnabled);
+        public const string NuGetAudit = nameof(NuGetAudit);
+        public const string NuGetAuditLevel = nameof(NuGetAuditLevel);
+        public const string NuGetAuditMode = nameof(NuGetAuditMode);
+        public const string CentralPackageFloatingVersionsEnabled = nameof(CentralPackageFloatingVersionsEnabled);
     }
 }

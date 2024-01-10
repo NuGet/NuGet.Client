@@ -49,7 +49,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(data));
             }
 
-            string hash = null;
+            string hash;
 
             try
             {
@@ -108,7 +108,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(data));
             }
 
-            byte[] hash = null;
+            byte[] hash;
 
             try
             {
@@ -203,22 +203,7 @@ namespace NuGet.Common
                 nameof(hashAlgorithmName));
         }
 
-        public static HashAlgorithm GetSha1HashProvider()
-        {
 #if !IS_CORECLR
-            if (AllowFipsAlgorithmsOnly.Value)
-            {
-                return new SHA1CryptoServiceProvider();
-            }
-            else
-            {
-                return new SHA1Managed();
-            }
-#else
-            return SHA1.Create();
-#endif
-        }
-
         // Read this value once.
         private static Lazy<bool> AllowFipsAlgorithmsOnly = new Lazy<bool>(() => ReadFipsConfigValue());
 
@@ -230,7 +215,6 @@ namespace NuGet.Common
         /// </remarks>
         private static bool ReadFipsConfigValue()
         {
-#if !IS_CORECLR
             // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
             var cryptoConfig = typeof(CryptoConfig);
 
@@ -245,10 +229,8 @@ namespace NuGet.Common
             }
 
             return false;
-#else
-            return false;
-#endif
         }
+#endif
 
         /// <summary>
         /// Extension method to convert NuGet.Common.HashAlgorithmName to System.Security.Cryptography.HashAlgorithmName

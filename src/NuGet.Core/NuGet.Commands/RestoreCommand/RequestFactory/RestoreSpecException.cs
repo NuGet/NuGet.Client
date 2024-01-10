@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(files));
             }
 
-            files = files.Where(path => !string.IsNullOrEmpty(path)).Distinct(StringComparer.Ordinal).ToList();
+            files = files.Where(path => !string.IsNullOrEmpty(path)).Distinct(StringComparer.Ordinal);
 
             string completeMessage = null;
 

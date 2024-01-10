@@ -117,32 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AccountProvider_FailedToLoadAccountManager" xml:space="preserve">
-    <value>Could not get the account manager, unable to check the keychain.</value>
-  </data>
-  <data name="AccountProvider_FailedToLoadVSOAccountProvider" xml:space="preserve">
-    <value>Could not get the account provider, unable to check the keychain.</value>
-  </data>
-  <data name="AccountProvider_NoValidCrededentialsFound" xml:space="preserve">
-    <value>No valid credentials found for VSO account.</value>
-  </data>
-  <data name="AccountProvider_TriedToShowUIOnNonInteractive" xml:space="preserve">
-    <value>Unable to authenticate without prompting user.</value>
-  </data>
   <data name="CanNotCreateWindow" xml:space="preserve">
     <value>Can not create tool window.</value>
   </data>
-  <data name="DialogTitle" xml:space="preserve">
-    <value>NuGet Package Manager</value>
-  </data>
   <data name="ErrorDialogBoxTitle" xml:space="preserve">
     <value>Operation failed</value>
-  </data>
-  <data name="ManagePackageForSolutionLabel" xml:space="preserve">
-    <value>Manage NuGet Packages for &amp;Solution...</value>
-  </data>
-  <data name="ManagePackageLabel" xml:space="preserve">
-    <value>Manage &amp;NuGet Packages...</value>
   </data>
   <data name="NoProjectSelected" xml:space="preserve">
     <value>No project is selected for this operation.</value>
@@ -165,32 +144,8 @@
   <data name="ProjectHasAnInvalidNuGetConfiguration" xml:space="preserve">
     <value>{0} nuget configuration is invalid.</value>
   </data>
-  <data name="ProjectUpgradeAndRetargetErrorMessage" xml:space="preserve">
-    <value>Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}</value>
-  </data>
-  <data name="ProviderException_MalformedResponse" xml:space="preserve">
-    <value>Credential provider gave an invalid response.</value>
-  </data>
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
-  </data>
-  <data name="SolutionIsNotSavedPromptReopen" xml:space="preserve">
-    <value>Solution is not saved. Please save your solution and re-open solution before managing NuGet packages.</value>
-  </data>
-  <data name="CredentialProviderFailed_LegacyCredentialProvider" xml:space="preserve">
-    <value>The legacy NuGet credential provider failed to load.</value>
-  </data>
-  <data name="CredentialProviderFailed_VisualStudioCredentialProvider" xml:space="preserve">
-    <value>The Visual Studio credential provider failed to load.</value>
-  </data>
-  <data name="CredentialProviderFailed_VisualStudioAccountProvider" xml:space="preserve">
-    <value>The Visual Studio or VSTS account provider failed to load.</value>
-  </data>
-  <data name="CredentialProviderFailed_DefaultCredentialsCredentialProvider" xml:space="preserve">
-    <value>The default credentials credential provider failed to load.</value>
-  </data>
-  <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
-    <value>Failed to load credential provider from assembly {0}.</value>
   </data>
   <data name="DTE_ProjectUnsupported" xml:space="preserve">
     <value>The project '{0}' is unsupported</value>

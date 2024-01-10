@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.FuncTest
                         fileWriter.Write(expectedLine);
                     }
                 }
-                
+
                 // Run a program that just reads a file to stdout.
                 string fileName;
                 string args;
@@ -86,14 +86,13 @@ namespace NuGet.CommandLine.FuncTest
                 var result = CommandRunner.Run(
                     fileName,
                     Directory.GetCurrentDirectory(),
-                    args,
-                    waitForExit: true);
+                    args);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
 
                 var actualLineCount = 0;
-                using (var stringReader = new StringReader(result.Item2))
+                using (var stringReader = new StringReader(result.Output))
                 {
                     string actualLineContent;
                     while ((actualLineContent = stringReader.ReadLine()) != null)
@@ -130,12 +129,11 @@ namespace NuGet.CommandLine.FuncTest
             var result = CommandRunner.Run(
                 fileName,
                 Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
+                args);
 
             // Assert
-            Assert.Equal(0, result.Item1);
-            Assert.Contains(expected, result.Item2);
+            Assert.Equal(0, result.ExitCode);
+            Assert.Contains(expected, result.Output);
         }
     }
 }

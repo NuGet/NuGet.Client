@@ -11,6 +11,8 @@ namespace NuGet.Configuration
 
         public static readonly string AllowUntrustedRoot = "allowUntrustedRoot";
 
+        public static readonly string AllowInsecureConnections = "allowInsecureConnections";
+
         public static readonly string ApiKeys = "apikeys";
 
         public static readonly string Author = "author";
@@ -20,6 +22,8 @@ namespace NuGet.Configuration
         public static readonly string BindingRedirectsSection = "bindingRedirects";
 
         public static readonly string Certificate = "certificate";
+
+        public static readonly string Package = "package";
 
         public static readonly string Clear = "clear";
 
@@ -64,6 +68,8 @@ namespace NuGet.Configuration
         public static readonly string Fingerprint = "fingerprint";
 
         public static readonly string FingerprintAlgorithm = "fingerprintAlgorithm";
+
+        public static readonly string UpdatePackageLastAccessTime = "updatePackageLastAccessTime";
 
         public static readonly string GlobalPackagesFolder = "globalPackagesFolder";
 
@@ -117,6 +123,8 @@ namespace NuGet.Configuration
 
         public static readonly string TrustedSigners = "trustedSigners";
 
+        public static readonly string PackageSourceMapping = "packageSourceMapping";
+
         public static readonly string UserKey = "http_proxy.user";
 
         public static readonly string UsernameToken = "Username";
@@ -124,5 +132,7 @@ namespace NuGet.Configuration
         public static readonly string ValidAuthenticationTypesToken = "ValidAuthenticationTypes";
 
         public static readonly string ValueAttribute = "value";
+
+        public static readonly string PatternAttribute = "pattern";
     }
 }

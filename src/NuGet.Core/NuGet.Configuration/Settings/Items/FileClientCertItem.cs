@@ -27,7 +27,7 @@ namespace NuGet.Configuration
                    storePasswordInClearText,
                    string.IsNullOrWhiteSpace(settingsFilePath)
                        ? null
-                       : new SettingsFile(Path.GetDirectoryName(settingsFilePath), Path.GetFileName(settingsFilePath), false))
+                       : new SettingsFile(Path.GetDirectoryName(settingsFilePath), Path.GetFileName(settingsFilePath), isMachineWide: false, isReadOnly: false))
         {
         }
 
@@ -104,7 +104,7 @@ namespace NuGet.Configuration
                         }
                         catch (Exception e)
                         {
-                            throw new NuGetConfigurationException(string.Format(Resources.FileCertItemPasswordCannotBeDecrypted, PackageSource), e);
+                            throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.FileCertItemPasswordCannotBeDecrypted, PackageSource), e);
                         }
                     }
                 }
@@ -113,19 +113,22 @@ namespace NuGet.Configuration
             }
         }
 
-        protected override IReadOnlyCollection<string> AllowedAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.PathAttribute,
-            ConfigurationConstants.PasswordAttribute,
-            ConfigurationConstants.ClearTextPasswordAttribute
-        };
+        protected override IReadOnlyCollection<string> AllowedAttributes { get; }
+            = new HashSet<string>(new[]
+            {
+                ConfigurationConstants.PackageSourceAttribute,
+                ConfigurationConstants.PathAttribute,
+                ConfigurationConstants.PasswordAttribute,
+                ConfigurationConstants.ClearTextPasswordAttribute
+            });
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>
-        {
-            ConfigurationConstants.PackageSourceAttribute,
-            ConfigurationConstants.PathAttribute
-        };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = new HashSet<string>(new[]
+            {
+                ConfigurationConstants.PackageSourceAttribute,
+                ConfigurationConstants.PathAttribute
+            });
+
 
         internal override XNode AsXNode()
         {

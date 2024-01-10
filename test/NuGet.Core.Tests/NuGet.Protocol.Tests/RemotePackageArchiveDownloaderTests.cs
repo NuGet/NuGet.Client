@@ -16,6 +16,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RemotePackageArchiveDownloaderTests
     {
         private static readonly PackageIdentity _packageIdentity;
@@ -103,7 +104,7 @@ namespace NuGet.Protocol.Tests
                         It.IsNotNull<SourceCacheContext>(),
                         It.IsNotNull<ILogger>(),
                         It.IsAny<CancellationToken>()))
-                    .Callback<string, NuGetVersion, Stream, SourceCacheContext, ILogger, CancellationToken>(async 
+                    .Callback<string, NuGetVersion, Stream, SourceCacheContext, ILogger, CancellationToken>(async
                         (id, version, stream, cacheContext, logger, cancellationToken) =>
                         {
                             var remoteDirectoryPath = Path.Combine(test.TestDirectory.Path, "remote");
@@ -256,7 +257,7 @@ namespace NuGet.Protocol.Tests
 
                 var destinationFilePath = Path.Combine(test.TestDirectory.Path, "a");
 
-                test.Downloader.SetExceptionHandler(exception => Task.FromResult(true));
+                test.Downloader.SetExceptionHandler(exception => TaskResult.True);
 
                 var wasCopied = await test.Downloader.CopyNupkgFileToAsync(
                     destinationFilePath,

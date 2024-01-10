@@ -5,10 +5,11 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Internal.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem;
-using Microsoft.VisualStudio.ProjectSystem.VS;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
+using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 
@@ -45,7 +46,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override int Priority => AttachedItemPriority.Project;
 
-        public override ImageMoniker IconMoniker => ManagedImageMonikers.Application;
+        public override ImageMoniker IconMoniker => KnownMonikers.Application;
 
         protected override IContextMenuController? ContextMenuController => MenuController.TransitiveProject;
 
@@ -60,7 +61,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
 
         public override object? GetBrowseObject() => new BrowseObject(Library);
 
-        private sealed class BrowseObject : BrowseObjectBase
+        private sealed class BrowseObject : LocalizableProperties
         {
             private readonly AssetsFileTargetLibrary _library;
 

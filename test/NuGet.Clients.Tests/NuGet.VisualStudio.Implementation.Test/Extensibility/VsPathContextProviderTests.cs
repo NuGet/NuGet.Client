@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Common;
@@ -22,23 +23,17 @@ using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility.Threading;
+using NuGet.VisualStudio.Implementation.Exceptions;
+using NuGet.VisualStudio.Implementation.Extensibility;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.VisualStudio.Implementation.Test.Extensibility
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
     public class VsPathContextProviderTests
     {
-        private readonly JoinableTaskFactory _jtf;
-
-        public VsPathContextProviderTests(DispatcherThreadFixture fixture)
-        {
-            Assumes.Present(fixture);
-
-            _jtf = fixture.JoinableTaskFactory;
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
-        }
+        // known/expected errors should not be reported to telemetry, hence use MockBehavior.Strict
+        private Mock<INuGetTelemetryProvider> _telemetryProvider = new Mock<INuGetTelemetryProvider>(MockBehavior.Strict);
 
         [Fact]
         public void GetSolutionPathContext_WithConfiguredUserPackageFolder()
@@ -59,7 +54,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings,
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
             // Act
             var actual = target.GetSolutionPathContext();
@@ -90,7 +86,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings.Object,
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
             // Act
             var actual = target.GetSolutionPathContext();
@@ -157,7 +154,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                         };
 
                         return Task.FromResult(lockFile);
-                    });
+                    },
+                    _telemetryProvider.Object);
 
                 var project = Mock.Of<BuildIntegratedNuGetProject>();
 
@@ -209,7 +207,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     Mock.Of<IVsSolutionManager>(),
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 var project = new Mock<MSBuildNuGetProject>(
                     Mock.Of<IMSBuildProjectSystem>(), userPackageFolder, testDirectory.Path);
@@ -258,7 +257,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     Mock.Of<IVsSolutionManager>(),
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 var projectUniqueName = Guid.NewGuid().ToString();
 
@@ -279,10 +279,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                             NuGetFramework.AnyFramework)
                     });
 
-                // Act
-                var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
-
-                // Assert
+                // Act & Assert
+                var exception = await Assert.ThrowsAsync<ProjectNotRestoredException>(() => target.CreatePathContextAsync(project.Object, CancellationToken.None));
+                Assert.Equal(0, _telemetryProvider.Invocations.Count);
                 Assert.Contains(projectUniqueName, exception.Message);
             }
         }
@@ -301,7 +300,7 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     .Returns(() => new VirtualSettingSection("config",
                         new AddItem("globalPackagesFolder", "solution/packages")));
                 Mock.Get(settings);
- 
+
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager
@@ -312,7 +311,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings,
                     solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -351,7 +351,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     settings.Object,
                     solutionManager.Object,
                     Mock.Of<ILogger>(),
-                    getLockFileOrNullAsync: null);
+                    getLockFileOrNullAsync: null,
+                    _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -393,7 +394,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 settings,
                 solutionManager.Object,
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(out var actual);
@@ -418,7 +420,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: null);
+                getLockFileOrNullAsync: null,
+                _telemetryProvider.Object);
 
                 // Act
                 var result = target.TryCreateSolutionContext(testDirectory.Path, out var actual);
@@ -434,20 +437,41 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
         [Fact]
         public async Task CreatePathContextAsync_WithUnrestoredPackageReference_Throws()
         {
+            // Arrange
             var target = new VsPathContextProvider(
                 Mock.Of<ISettings>(),
                 Mock.Of<IVsSolutionManager>(),
                 Mock.Of<ILogger>(),
-                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile));
+                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile),
+                _telemetryProvider.Object);
 
             var projectUniqueName = Guid.NewGuid().ToString();
 
             var project = new TestPackageReferenceProject(projectUniqueName);
 
-            // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
-
+            // Assert
+            var exception = await Assert.ThrowsAsync<ProjectNotRestoredException>(() => target.CreatePathContextAsync(project, CancellationToken.None));
             Assert.Contains(projectUniqueName, exception.Message);
+        }
+
+        [Fact]
+        public async Task CreatePathContextAsync_CancellationToken_ThrowsAsync()
+        {
+            // Prepare
+            var target = new VsPathContextProvider(
+                Mock.Of<ISettings>(),
+                Mock.Of<IVsSolutionManager>(),
+                Mock.Of<ILogger>(),
+                getLockFileOrNullAsync: _ => Task.FromResult(null as LockFile),
+                _telemetryProvider.Object);
+            var project = new TestPackageReferenceProject(Guid.NewGuid().ToString()); // non-packages.config project
+            var cts = new CancellationTokenSource();
+
+            cts.Cancel();
+            var task = target.CreatePathContextAsync(project, cts.Token);
+
+            // Act and Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await task);
         }
 
         private class TestPackageReferenceProject : BuildIntegratedNuGetProject
@@ -513,6 +537,11 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
             }
 
             public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task<bool> UninstallPackageAsync(string packageId, BuildIntegratedInstallationContext installationContext, CancellationToken token)
             {
                 throw new NotImplementedException();
             }

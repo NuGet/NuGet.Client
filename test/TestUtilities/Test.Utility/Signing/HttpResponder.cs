@@ -11,7 +11,7 @@ namespace Test.Utility.Signing
     {
         public abstract Uri Url { get; }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public abstract void Respond(HttpListenerContext context);
 
         protected static bool IsGet(HttpListenerRequest request)

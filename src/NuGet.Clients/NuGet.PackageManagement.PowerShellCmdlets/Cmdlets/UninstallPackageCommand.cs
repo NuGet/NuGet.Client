@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Management.Automation;
 using System.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
-using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
@@ -26,8 +24,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         public UninstallPackageCommand()
         {
-            _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
-            _lockService = ServiceLocator.GetInstance<INuGetLockService>();
+            _deleteOnRestartManager = ServiceLocator.GetComponentModelService<IDeleteOnRestartManager>();
+            _lockService = ServiceLocator.GetComponentModelService<INuGetLockService>();
         }
 
         [Parameter(Mandatory = true, ValueFromPipelineByPropertyName = true, Position = 0)]
@@ -82,20 +80,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     WaitAndLogPackageActions();
                     UnsubscribeFromProgressEvents();
 
-                    return Task.FromResult(true);
+                    return TaskResult.True;
                 }, Token);
             });
 
             stopWatch.Stop();
+
+            var isPackageSourceMappingEnabled = PackageSourceMappingUtility.IsMappingEnabled(ConfigSettings);
             var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                 OperationId.ToString(),
                 new[] { Project },
-                NuGetOperationType.Uninstall,
+                NuGetProjectActionType.Uninstall,
                 OperationSource.PMC,
                 startTime,
                 _status,
                 _packageCount,
-                stopWatch.Elapsed.TotalSeconds);
+                stopWatch.Elapsed.TotalSeconds,
+                isPackageSourceMappingEnabled: isPackageSourceMappingEnabled);
 
             // emit telemetry event along with granular level events
             TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
