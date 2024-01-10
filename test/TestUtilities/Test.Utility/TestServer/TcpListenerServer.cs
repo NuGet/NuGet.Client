@@ -47,11 +47,15 @@ namespace NuGet.Test.Server
                     var tcpListener = new TcpListener(IPAddress.Loopback, port);
                     tcpListener.Start();
                     var serverTask = startServer(tcpListener, serverCts.Token);
-                    var address = $"http://localhost:{port}/";
+                    string address;
 
                     if (Mode == TestServerMode.InvalidTLSCertificate)
                     {
                         address = $"https://localhost:{port}/";
+                    }
+                    else
+                    {
+                        address = $"http://localhost:{port}/";
                     }
 
                     // execute the caller's action
@@ -76,12 +80,9 @@ namespace NuGet.Test.Server
             using (var rsa = RSA.Create(2048))
             {
                 var request = new CertificateRequest("cn=test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-
                 var start = DateTime.UtcNow;
                 var end = DateTime.UtcNow.AddYears(1);
-
                 var cert = request.CreateSelfSigned(start, end);
-
                 var certBytes = cert.Export(X509ContentType.Pfx, "password");
 
                 return new X509Certificate2(certBytes, "password", X509KeyStorageFlags.Exportable);
@@ -95,9 +96,7 @@ namespace NuGet.Test.Server
                 using (var client = await Task.Run(tcpListener.AcceptTcpClientAsync, token))
                 using (var sslStream = new SslStream(client.GetStream(), false))
                 {
-
                     sslStream.AuthenticateAsServer(_tlsCertificate, clientCertificateRequired: false, SslProtocols.Tls12, checkCertificateRevocation: true);
-
                     using (var reader = new StreamReader(sslStream, Encoding.ASCII, false, 1))
                     using (var writer = new StreamWriter(sslStream, Encoding.ASCII, 1, false))
                     {

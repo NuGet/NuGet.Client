@@ -1051,15 +1051,6 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Warning: Certificate validation is disabled for this connection..
-        /// </summary>
-        internal static string Warning_HttpsTLSCertificateValidationDisabled {
-            get {
-                return ResourceManager.GetString("Warning_HttpsTLSCertificateValidationDisabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Found symbols package &apos;{0}&apos;, but no API key was specified for the symbol server. To save an API Key, run &apos;NuGet.exe setApiKey [your API key from http://www.NuGet.org]&apos;..
         /// </summary>
         internal static string Warning_SymbolServerNotConfigured {
