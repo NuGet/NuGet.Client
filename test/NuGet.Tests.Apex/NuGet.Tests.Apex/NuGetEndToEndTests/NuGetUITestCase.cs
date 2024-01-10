@@ -894,7 +894,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
 
             // Assert
-            CommonUtility.WaitForDirectoryExists(installedPackageFolderPath);
+            CommonUtility.AssertDirectoryExists(installedPackageFolderPath, true);
         }
 
         [TestMethod]
@@ -959,6 +959,7 @@ namespace NuGet.Tests.Apex
             // Act
             _pathContext.Settings.DisableAutoRestore();
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
+            VisualStudio.ObjectModel.Shell.ToolWindows.ErrorHub.ShowErrors();
 
             // Assert
             VisualStudio.AssertErrorListContainsSpecificError("NuGet restore is currently disabled.");
@@ -989,12 +990,12 @@ namespace NuGet.Tests.Apex
             var installedPackageFolderPath = Path.Combine(_pathContext.UserPackagesFolder, TestPackageName);
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
             Directory.Delete(installedPackageFolderPath, true);
-            Directory.Exists(installedPackageFolderPath).Should().BeFalse();
+            CommonUtility.AssertDirectoryExists(installedPackageFolderPath, false);
 
             solutionService.Build();
 
             // Assert
-            Directory.Exists(installedPackageFolderPath).Should().BeFalse();
+            CommonUtility.AssertDirectoryExists(installedPackageFolderPath, false);
         }
     }
 }
