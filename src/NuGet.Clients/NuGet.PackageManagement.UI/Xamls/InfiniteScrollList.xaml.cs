@@ -738,8 +738,7 @@ namespace NuGet.PackageManagement.UI
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;
 
-                // Minus one to account for the loading indicator
-                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count - 1)
+                if (_scrollViewer.ViewportHeight > 0 && last >= PackageItems.Count())
                 {
                     NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() =>
                         LoadItemsAsync(selectedPackageItem: null, token: CancellationToken.None)
