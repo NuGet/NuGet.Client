@@ -42,6 +42,7 @@ namespace NuGet.Packaging.Test
                 { "GeneralizedTimeOutsideValidity", 1 << 16 },
                 { "NoValidTimestamp", 1 << 17 },
                 { "MultipleTimestamps", 1 << 18 },
+                { "UnknownBuildStatus", 1 << 19 },
                 { "Suspect", (int)(SignatureVerificationStatusFlags.IntegrityCheckFailed |
                     SignatureVerificationStatusFlags.CertificateRevoked) },
                 { "Illegal", (int)(SignatureVerificationStatusFlags.NoCertificate |
