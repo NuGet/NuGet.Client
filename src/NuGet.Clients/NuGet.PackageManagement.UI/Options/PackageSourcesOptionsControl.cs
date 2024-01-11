@@ -334,8 +334,9 @@ namespace NuGet.PackageManagement.UI.Options
 
             for (int i = 0; i < existingSources.Count; ++i)
             {
-                if (!existingSources[i].Equals(packageSources[i]) ||
-                     existingSources[i].IsEnabled != packageSources[i].IsEnabled)
+                if (!existingSources[i].Equals(packageSources[i])
+                     || existingSources[i].IsEnabled != packageSources[i].IsEnabled
+                     || existingSources[i].IsMachineWide != packageSources[i].IsMachineWide)
                 {
                     return true;
                 }
