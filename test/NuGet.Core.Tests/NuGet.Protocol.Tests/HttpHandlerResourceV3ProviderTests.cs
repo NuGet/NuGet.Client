@@ -130,7 +130,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task TryCreate_WhenCertificateValidationIsDisabled_HandlerShouldNotBeNull()
+        public async Task TryCreate_WhenCertificateValidationIsDisabled_HttpClientHandlerServerCertificateCustomValidationCallbackShouldNotBeNullAndReturnsTrue()
         {
             // Arrange
             Mock<IProxyCache> proxyCache = new();
@@ -160,7 +160,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task TryCreate_WhenCertificateValidationIsEnabled_HandlerShouldBeNull()
+        public async Task TryCreate_WhenCertificateValidationIsEnabled_HttpClientHandlerServerCertificateCustomValidationCallbackShouldBeNull()
         {
             // Arrange
             Mock<IProxyCache> proxyCache = new();
@@ -185,7 +185,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task TryCreate_WhenCertificateValidationIsNotDisabled_ClientHandlerThrowsAnException()
+        public async Task GetAsync_InvalidCertificateWithValidationEnabled_ClientHandlerThrowsAnException()
         {
             // Arrange
             TcpListenerServer server = new()
@@ -212,7 +212,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task TryCreate_WhenCertificateValidationIsDisabled_ClientHandlerDoesNotThrowAnException()
+        public async Task GetAsync_InvalidCertificateWithValidationDisabled_ClientHandlerDoesNotThrowAnException()
         {
             // Arrange
             TcpListenerServer server = new()
