@@ -976,7 +976,7 @@ namespace NuGet.Tests.Apex
 
             SolutionService solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
-            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ConsoleApplication, "TestProject");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -987,7 +987,7 @@ namespace NuGet.Tests.Apex
             // Act
             _pathContext.Settings.DisableAutomaticInPackageRestoreSection();
 
-            var installedPackageFolderPath = Path.Combine(_pathContext.UserPackagesFolder, TestPackageName);
+            var installedPackageFolderPath = Path.Combine(_pathContext.PackagesV2, "Contoso.A.1.0.0");
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
             Directory.Delete(installedPackageFolderPath, true);
             CommonUtility.AssertDirectoryExists(installedPackageFolderPath, false);
@@ -995,6 +995,7 @@ namespace NuGet.Tests.Apex
             solutionService.Build();
 
             // Assert
+            VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
             CommonUtility.AssertDirectoryExists(installedPackageFolderPath, false);
         }
     }
