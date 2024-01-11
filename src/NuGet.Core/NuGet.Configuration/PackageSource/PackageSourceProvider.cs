@@ -775,17 +775,20 @@ namespace NuGet.Configuration
             IEnumerable<SourceItem> existingSourceItems = sourcesSection?.Items.OfType<SourceItem>()
                 .Where(c => c.Origin != null);
 
-            if (!includeReadOnly)
+            if (existingSourceItems != null)
             {
-                existingSourceItems = existingSourceItems.Where(c => !c.Origin.IsReadOnly);
-            }
+                if (!includeReadOnly)
+                {
+                    existingSourceItems = existingSourceItems.Where(c => !c.Origin.IsReadOnly);
+                }
 
-            if (!includeIsMachineWide)
-            {
-                existingSourceItems = existingSourceItems.Where(c => !c.Origin.IsMachineWide);
-            }
+                if (!includeIsMachineWide)
+                {
+                    existingSourceItems = existingSourceItems.Where(c => !c.Origin.IsMachineWide);
+                }
 
-            existingSettings = existingSourceItems.ToList();
+                existingSettings = existingSourceItems.ToList();
+            }
 
             var existingSettingsLookup = new Dictionary<string, SourceItem>(StringComparer.OrdinalIgnoreCase);
             if (existingSettings != null)
