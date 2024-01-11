@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -78,23 +79,23 @@ namespace NuGet.ProjectModel
                 }
                 else if (reader.ValueTextEquals(CentralTransitiveDependencyGroupsPropertyName))
                 {
-                    var results = new List<CentralTransitiveDependencyGroup>();
+                    IList<CentralTransitiveDependencyGroup> results = null;
                     if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                     {
                         while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                         {
+                            results ??= new List<CentralTransitiveDependencyGroup>();
                             var frameworkPropertyName = reader.GetString();
                             NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
-                            var dependencies = new List<LibraryDependency>();
 
                             JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
                                 jsonReader: ref reader,
-                                results: dependencies,
+                                results: out var dependencies,
                                 packageSpecPath: string.Empty);
                             results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
                         }
                     }
-                    lockFile.CentralTransitiveDependencyGroups = results;
+                    lockFile.CentralTransitiveDependencyGroups = results ?? Array.Empty<CentralTransitiveDependencyGroup>();
                 }
                 else if (reader.ValueTextEquals(LogsPropertyName))
                 {
