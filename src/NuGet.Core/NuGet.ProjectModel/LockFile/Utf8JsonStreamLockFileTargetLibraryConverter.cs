@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -70,7 +69,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(FrameworkAssembliesPropertyName))
                 {
                     reader.Read();
-                    lockFileTargetLibrary.FrameworkAssemblies = reader.ReadStringArrayAsIList(new List<string>());
+                    lockFileTargetLibrary.FrameworkAssemblies = reader.ReadStringArrayAsIList() ?? Array.Empty<string>();
                 }
                 else if (reader.ValueTextEquals(RuntimePropertyName))
                 {
@@ -143,12 +142,11 @@ namespace NuGet.ProjectModel
                 return Array.Empty<PackageDependency>();
             }
 
-            var packageDependencies = new List<PackageDependency>();
+            var packageDependencies = new List<PackageDependency>(10);
             while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
             {
                 string propertyName = reader.GetString();
                 string versionString = reader.ReadNextTokenAsString();
-
                 packageDependencies.Add(new PackageDependency(
                     propertyName,
                     versionString == null ? null : JsonUtility.ParseVersionRange(versionString)));

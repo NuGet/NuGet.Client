@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 #nullable enable
 
-using System;
+using System.Globalization;
 
 namespace NuGet.ProjectModel
 {
@@ -14,11 +14,8 @@ namespace NuGet.ProjectModel
             {
                 return (s, null);
             }
-#if NETCOREAPP2_1_OR_GREATER
-            var index = s.IndexOf(separator, StringComparison.OrdinalIgnoreCase);
-#else
-            var index = s.IndexOf(separator.ToString(), StringComparison.OrdinalIgnoreCase);
-#endif
+            var index = CultureInfo.CurrentCulture.CompareInfo.IndexOf(s, separator, CompareOptions.Ordinal);
+
             if (index == -1)
             {
                 return (s, null);
