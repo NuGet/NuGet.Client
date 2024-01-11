@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel
             lockFileLibrary.Name = name;
             if (!string.IsNullOrWhiteSpace(version))
             {
-                lockFileLibrary.Version = NuGetVersion.Parse(version);
+                lockFileLibrary.Version = JsonUtility.ParseNugetVersion(version);
             }
 
             reader.Read();

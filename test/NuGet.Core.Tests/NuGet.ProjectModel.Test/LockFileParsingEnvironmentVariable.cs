@@ -2,12 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using NuGet.Common;
 using Test.Utility;
 
-namespace NuGet.ProjectModel
+namespace NuGet.ProjectModel.Test
 {
     public class LockFileParsingEnvironmentVariable
     {
+        public static readonly IEnvironmentVariableReader UseNjForProcessingEnvironmentVariable = new TestEnvironmentVariableReader(
+            new Dictionary<string, string>()
+            {
+                ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.TrueString
+            }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: true");
+
+        public static readonly IEnvironmentVariableReader UseStjForProcessingEnvironmentVariable = new TestEnvironmentVariableReader(
+            new Dictionary<string, string>()
+            {
+                ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.FalseString
+            }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: false");
+
         public static IEnumerable<object[]> TestEnvironmentVariableReader()
         {
             return GetTestEnvironmentVariableReader();
@@ -30,20 +43,8 @@ namespace NuGet.ProjectModel
 
         private static IEnumerable<object[]> GetTestEnvironmentVariableReader(params object[] objects)
         {
-            var UseNjForFileTrue = new List<object> {
-                new TestEnvironmentVariableReader(
-                    new Dictionary<string, string>()
-                    {
-                        ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.TrueString
-                    }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: true")
-                };
-            var UseNjForFileFalse = new List<object> {
-                new TestEnvironmentVariableReader(
-                    new Dictionary<string, string>()
-                    {
-                        ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.FalseString
-                    }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: false")
-                };
+            var UseNjForFileTrue = new List<object> { UseNjForProcessingEnvironmentVariable };
+            var UseNjForFileFalse = new List<object> { UseStjForProcessingEnvironmentVariable };
 
             if (objects != null)
             {

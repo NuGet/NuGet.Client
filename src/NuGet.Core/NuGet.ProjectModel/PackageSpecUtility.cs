@@ -27,7 +27,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return NuGetVersion.Parse(version);
+            return JsonUtility.ParseNugetVersion(version);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace NuGet.ProjectModel
             {
                 // Verify the version is valid
                 NuGetVersion parsed = null;
-                return NuGetVersion.TryParse(version.Substring(0, version.Length - 2), out parsed);
+                return JsonUtility.TryParseNugetVersion(version.Substring(0, version.Length - 2), out parsed);
             }
 
             return false;

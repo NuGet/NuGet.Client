@@ -14,6 +14,9 @@ namespace NuGet.ProjectModel
 {
     internal static class JsonUtility
     {
+        private static readonly Dictionary<string, NuGetVersion> NuGetVersionCache = new();
+        private static readonly Dictionary<string, VersionRange> VersionRangeCache = new();
+
         internal const string NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING = nameof(NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING);
         internal static bool? UseNewtonsoftJson = null;
         internal static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
@@ -57,7 +60,7 @@ namespace NuGet.ProjectModel
             var versionStr = json.Value<string>();
             return new PackageDependency(
                 property,
-                versionStr == null ? null : VersionRange.Parse(versionStr));
+                versionStr == null ? null : JsonUtility.ParseVersionRange(versionStr));
         }
 
         internal static bool UseNewstonSoftJsonForParsing(IEnvironmentVariableReader environmentVariableReader, bool bypassCache)
@@ -166,6 +169,37 @@ namespace NuGet.ProjectModel
         internal static JToken WriteString(string item)
         {
             return item != null ? new JValue(item) : JValue.CreateNull();
+        }
+
+        internal static NuGetVersion ParseNugetVersion(string value)
+        {
+            if (!NuGetVersionCache.ContainsKey(value))
+            {
+                var result = NuGetVersion.Parse(value);
+                NuGetVersionCache[value] = result;
+            }
+            return NuGetVersionCache[value];
+        }
+
+        internal static bool TryParseNugetVersion(string value, out NuGetVersion version)
+        {
+            if (!NuGetVersionCache.ContainsKey(value))
+            {
+                _ = NuGetVersion.TryParse(value, out version);
+                NuGetVersionCache[value] = version;
+            }
+            version = NuGetVersionCache[value];
+            return version is not null;
+        }
+
+        internal static VersionRange ParseVersionRange(string value)
+        {
+            if (!VersionRangeCache.ContainsKey(value))
+            {
+                var result = VersionRange.Parse(value);
+                VersionRangeCache[value] = result;
+            }
+            return VersionRangeCache[value];
         }
     }
 }

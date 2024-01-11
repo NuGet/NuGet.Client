@@ -93,7 +93,7 @@ namespace NuGet.ProjectModel
 
         internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
         {
-            if (JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
+            if (!JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
             {
                 return Utf8JsonRead(stream, log, path);
             }
@@ -284,7 +284,7 @@ namespace NuGet.ProjectModel
             library.Name = parts[0];
             if (parts.Length == 2)
             {
-                library.Version = NuGetVersion.Parse(parts[1]);
+                library.Version = JsonUtility.ParseNugetVersion(parts[1]);
             }
 
             library.Type = ReadString(json[TypeProperty]);
@@ -560,7 +560,7 @@ namespace NuGet.ProjectModel
             else
             {
                 library.Name = property.Substring(0, slashIndex);
-                library.Version = NuGetVersion.Parse(property.Substring(slashIndex + 1));
+                library.Version = JsonUtility.ParseNugetVersion(property.Substring(slashIndex + 1));
             }
 
             var jObject = json as JObject;

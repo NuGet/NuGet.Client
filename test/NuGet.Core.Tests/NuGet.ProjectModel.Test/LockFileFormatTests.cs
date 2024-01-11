@@ -2384,7 +2384,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expected.ToString(), output.ToString());
         }
 
-        private LockFile Read(string filePath, IEnvironmentVariableReader environmentVariableReader)
+        public static LockFile Read(string filePath, IEnvironmentVariableReader environmentVariableReader)
         {
             var reader = new LockFileFormat();
             using (var stream = File.OpenRead(filePath))
