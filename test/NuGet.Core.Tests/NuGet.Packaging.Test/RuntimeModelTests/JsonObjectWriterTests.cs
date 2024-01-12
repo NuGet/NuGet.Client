@@ -327,5 +327,73 @@ namespace NuGet.RuntimeModel.Test
 
             Assert.Equal($"{{\"{PropertyName}\":[null]", _stringWriter.ToString());
         }
+
+        [Fact]
+        public void WriteNonEmptyNameArray_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNonEmptyNameArray(name: null, values: new[] { "b", "c" }));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNonEmptyNameArray_WhenValuesIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNonEmptyNameArray(PropertyName, values: null));
+
+            Assert.Equal("values", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNonEmptyNameArray_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => _writer.WriteNonEmptyNameArray(PropertyName, values: Enumerable.Empty<string>()));
+        }
+
+        [Theory]
+        [InlineData(PropertyName, "b")]
+        public void WriteNonEmptyNameArray_WithNonEmptyValidValues_WritesNameArray(string name, string value)
+        {
+            IEnumerable<string> values = value == null ? Enumerable.Empty<string>() : new[] { value };
+
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNonEmptyNameArray(name, values);
+
+            string stringValues = values.Any() ? $"\"{values.SingleOrDefault()}\"" : "";
+
+            Assert.Equal($"{{\"{name}\":[{stringValues}]", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteNonEmptyNameArray_WithEmptyValues_DoesNotWriteNameArray()
+        {
+            IEnumerable<string> values = Enumerable.Empty<string>();
+            _writer.WriteObjectStart();
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNonEmptyNameArray(PropertyName, values);
+
+            Assert.Equal("{", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteNonEmptyNameArray_WithNullValue_WritesNameArray()
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNonEmptyNameArray(PropertyName, new string[] { null });
+
+            Assert.Equal($"{{\"{PropertyName}\":[null]", _stringWriter.ToString());
+        }
     }
 }
