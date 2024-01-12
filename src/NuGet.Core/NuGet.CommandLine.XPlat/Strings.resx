@@ -741,9 +741,6 @@ The search is a case-insensitive string comparison using the supplied value, whi
   <data name="Error_TrustFingerPrintAlreadyExist" xml:space="preserve">
     <value>The certificate finger you're trying to add is already in the certificate fingerprint list.</value>
   </data>
-  <data name="String1" xml:space="preserve">
-    <value />
-  </data>
   <data name="Warning_HttpServerUsage" xml:space="preserve">
     <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
     <comment>0 - The command name. Ex. Push/Delete. 1 - server uri.</comment>
@@ -911,5 +908,9 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   </data>
   <data name="ConfigGetCommandDescription" xml:space="preserve">
     <value>Gets the NuGet configuration settings that will be applied.</value>
+  </data>
+</root>
+  <data name="SourcesCommandAddForceDescription" xml:space="preserve">
+    <value>Replaces the source if it already exists.</value>
   </data>
 </root>

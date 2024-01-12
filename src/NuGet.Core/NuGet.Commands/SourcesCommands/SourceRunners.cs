@@ -52,13 +52,31 @@ namespace NuGet.Commands
             var existingSourceWithName = sourceProvider.GetPackageSourceByName(args.Name);
             if (existingSourceWithName != null)
             {
-                throw new CommandException(Strings.SourcesCommandUniqueName);
+                if (args.Force)
+                {
+                    getLogger().LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.SourcesCommandUniqueNameWithForce));
+                }
+                else
+                {
+                    throw new CommandException(Strings.SourcesCommandUniqueName);
+                }
             }
 
             var existingSourceWithSource = sourceProvider.GetPackageSourceBySource(args.Source);
             if (existingSourceWithSource != null)
             {
-                throw new CommandException(Strings.SourcesCommandUniqueSource);
+                if (args.Force)
+                {
+                    getLogger().LogWarning(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.SourcesCommandUniqueSourceWithForce));
+                }
+                else
+                {
+                    throw new CommandException(Strings.SourcesCommandUniqueSource);
+                }
             }
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);

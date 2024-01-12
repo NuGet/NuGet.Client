@@ -828,10 +828,10 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The source specified is invalid. Provide a valid source.</value>
   </data>
   <data name="SourcesCommandUniqueName" xml:space="preserve">
-    <value>The name specified has already been added to the list of available package sources. Provide a unique name.</value>
+    <value>The name specified already exists in the list of available package sources. Provide a unique name or use -Force option.</value>
   </data>
   <data name="SourcesCommandUniqueSource" xml:space="preserve">
-    <value>The source specified has already been added to the list of available package sources. Provide a unique source.</value>
+    <value>The source specified already exists in the list of available package sources. Provide a unique source or use -Force option.</value>
   </data>
   <data name="SourcesCommandSourceAddedSuccessfully" xml:space="preserve">
     <value>Package source with Name: {0} added successfully.</value>
@@ -1098,5 +1098,11 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   </data>
   <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
     <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
+  </data>
+  <data name="SourcesCommandUniqueNameWithForce" xml:space="preserve">
+    <value>The name specified already exists in the list of available package sources and will be overwritten.</value>
+  </data>
+  <data name="SourcesCommandUniqueSourceWithForce" xml:space="preserve">
+    <value>The source specified already exists in the list of available package sources and will be overwritten.</value>
   </data>
 </root>

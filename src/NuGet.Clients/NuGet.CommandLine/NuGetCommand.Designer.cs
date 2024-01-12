@@ -1729,6 +1729,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Applies to the add action. Replaces the source if it already exists..
+        /// </summary>
+        internal static string SourcesCommandAddForceDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandAddForceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to manage list of sources located in NuGet.config files..
         /// </summary>
         internal static string SourcesCommandDescription {

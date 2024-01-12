@@ -649,6 +649,122 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
         }
 
         [Fact]
+        public void Sources_Add_WhenSourceNameExists_WithForce_GotUpdated()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource packageSource = sources.Single();
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal("https://source.test.initial", packageSource.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    configFilePath,
+                    "--force"
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://source.test", sourceItem.Value);
+                Assert.Contains("warn : The name specified already exists in the list of available package sources and will be overwritten.", result.Output);
+            }
+        }
+
+        [Fact]
+        public void Sources_Add_WhenSourceUrlExists_WithForce_GotUpdated()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource packageSource = sources.Single();
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal("https://source.test", packageSource.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source_updated",
+                    "--configfile",
+                    configFilePath,
+                    "--force"
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("value", "https://source.test");
+                Assert.Equal("test_source", sourceItem.Key);
+                Assert.Contains("warn : The source specified already exists in the list of available package sources and will be overwritten.", result.Output);
+            }
+        }
+
+        [Fact]
         public void Sources_WhenUpdatingSourceWithProtocolVersion_WasUpdatedWithProtocolVersion()
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())

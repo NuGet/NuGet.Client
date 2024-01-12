@@ -2105,7 +2105,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Provide a unique name..
+        ///   Looks up a localized string similar to The name specified already exists in the list of available package sources. Provide a unique name or use -Force option..
         /// </summary>
         internal static string SourcesCommandUniqueName {
             get {
@@ -2114,7 +2114,16 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Provide a unique source..
+        ///   Looks up a localized string similar to The name specified already exists in the list of available package sources and will be overwritten..
+        /// </summary>
+        internal static string SourcesCommandUniqueNameWithForce {
+            get {
+                return ResourceManager.GetString("SourcesCommandUniqueNameWithForce", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified already exists in the list of available package sources. Provide a unique source or use -Force option..
         /// </summary>
         internal static string SourcesCommandUniqueSource {
             get {
@@ -2122,6 +2131,15 @@ namespace NuGet.Commands {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified already exists in the list of available package sources and will be overwritten..
+        /// </summary>
+        internal static string SourcesCommandUniqueSourceWithForce {
+            get {
+                return ResourceManager.GetString("SourcesCommandUniqueSourceWithForce", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Package source &quot;{0}&quot; was successfully updated..
         /// </summary>

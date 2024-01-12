@@ -593,6 +593,94 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
         }
 
         [Fact]
+        public void SourcesCommandTest_Add_WhenSourceNameExists_WithForce_GotUpdated()
+        {
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "https://source.test",
+                    "-ConfigFile",
+                    configFilePath,
+                    "-Force"
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
+                Assert.Contains("WARNING: The name specified already exists in the list of available package sources and will be overwritten.", result.Output);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_Add_WhenSourceUrlExists_WithForce_GotUpdated()
+        {
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source_initial"" value=""https://source.test"" />
+  </packageSources>
+</configuration>";
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "https://source.test",
+                    "-ConfigFile",
+                    configFilePath,
+                    "-Force"
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
+                Assert.Contains("WARNING: The source specified already exists in the list of available package sources and will be overwritten.", result.Output);
+            }
+        }
+
+
+        [Fact]
         public void SourcesCommandTest_UpdateWithProtocolVersion_WritesProtocolVersion()
         {
             using (TestDirectory configFileDirectory = TestDirectory.Create())
