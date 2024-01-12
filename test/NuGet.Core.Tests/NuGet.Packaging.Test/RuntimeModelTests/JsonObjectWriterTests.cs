@@ -356,6 +356,7 @@ namespace NuGet.RuntimeModel.Test
         }
 
         [Theory]
+        [InlineData("", null)]
         [InlineData(PropertyName, "b")]
         public void WriteNonEmptyNameArray_WithNonEmptyValidValues_WritesNameArray(string name, string value)
         {
@@ -367,21 +368,8 @@ namespace NuGet.RuntimeModel.Test
 
             _writer.WriteNonEmptyNameArray(name, values);
 
-            string stringValues = values.Any() ? $"\"{values.SingleOrDefault()}\"" : "";
-
-            Assert.Equal($"{{\"{name}\":[{stringValues}]", _stringWriter.ToString());
-        }
-
-        [Fact]
-        public void WriteNonEmptyNameArray_WithEmptyValues_DoesNotWriteNameArray()
-        {
-            IEnumerable<string> values = Enumerable.Empty<string>();
-            _writer.WriteObjectStart();
-            Assert.Equal("{", _stringWriter.ToString());
-
-            _writer.WriteNonEmptyNameArray(PropertyName, values);
-
-            Assert.Equal("{", _stringWriter.ToString());
+            var actualString = values.Any() ? $"{{\"{name}\":[\"{values.SingleOrDefault()}\"]" : "{";
+            Assert.Equal(actualString, _stringWriter.ToString());
         }
 
         [Fact]
