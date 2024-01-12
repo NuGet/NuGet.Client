@@ -356,7 +356,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : You are running the 'enable source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
+                Assert.Contains("warn : You are running the 'enable source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
             }
         }
 
@@ -419,7 +419,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.False(result.Output.Contains("warn :"));
+                Assert.DoesNotContain("warn :", result.Output);
             }
         }
 
@@ -643,7 +643,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                 {
                     // Assert error message
                     string expectedErrorMessage = "The protocol version specified is invalid.";
-                    Assert.True(result.Output.Contains(expectedErrorMessage), "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
+                    Assert.Contains(expectedErrorMessage, result.Output);
                 }
             }
         }
@@ -1169,7 +1169,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                 var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Output.StartsWith("Registered Sources:"));
+                Assert.StartsWith("Registered Sources:", result.Output);
                 Assert.Contains("encyclopaedia [Enabled]", result.Output);
                 Assert.Contains("encyclopædia [Enabled]", result.Output);
                 Assert.DoesNotContain("Encyclopaedia", result.Output);
@@ -1193,7 +1193,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
                 // Break the test if no proper command is found
                 if (commandSplit.Length < 1 || string.IsNullOrEmpty(commandSplit[0]))
-                    Assert.True(false, "command not found");
+                    Assert.Fail("command not found");
 
                 // 0th - "nuget"
                 // 1st - "source"
@@ -1216,7 +1216,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                     invalidMessage = ": Unrecognized command";
                 }
 
-                Assert.True(result.Output.Contains(invalidMessage), "Expected error is " + invalidMessage + ". Actual error is " + result.Output);
+                Assert.Contains(invalidMessage, result.Output);
                 // Verify traits of help message in stdout
                 Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
             }
