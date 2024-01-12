@@ -59,7 +59,8 @@ namespace NuGet.Packaging.Test
                     SignatureVerificationStatusFlags.ChainBuildingFailure |
                     SignatureVerificationStatusFlags.UnknownRevocation |
                     SignatureVerificationStatusFlags.UntrustedRoot |
-                    SignatureVerificationStatusFlags.GeneralizedTimeOutsideValidity) }
+                    SignatureVerificationStatusFlags.GeneralizedTimeOutsideValidity |
+                    SignatureVerificationStatusFlags.UnknownBuildStatus) }
             };
 
             var actualNames = Enum.GetNames(typeof(SignatureVerificationStatusFlags));
