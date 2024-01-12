@@ -144,7 +144,6 @@ namespace NuGet.Packaging.Signing
             X509Certificate2Collection certificateExtraStore)
         {
             settings = settings ?? SignatureVerifySettings.Default;
-            var flags = SignatureVerificationStatusFlags.NoErrors;
             var issues = new List<SignatureLog>();
             SignatureVerificationStatus status;
 
@@ -153,10 +152,8 @@ namespace NuGet.Packaging.Signing
             {
                 issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3010, string.Format(CultureInfo.CurrentCulture, Strings.Verify_ErrorNoCertificate, FriendlyName)));
 
-                flags |= SignatureVerificationStatusFlags.NoCertificate;
                 status = settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed;
-
-                return new SignatureVerificationSummary(Type, status, flags, issues);
+                return new SignatureVerificationSummary(Type, status, SignatureVerificationStatusFlags.NoCertificate, issues);
             }
 
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture,
@@ -175,21 +172,23 @@ namespace NuGet.Packaging.Signing
             {
                 issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyError_SignatureVerificationFailed, FriendlyName)));
                 issues.Add(SignatureLog.DebugLog(e.ToString()));
-                flags |= SignatureVerificationStatusFlags.SignatureCheckFailed;
                 status = settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed;
 
-                return new SignatureVerificationSummary(Type, status, flags, issues);
+                return new SignatureVerificationSummary(Type, status, SignatureVerificationStatusFlags.SignatureCheckFailed, issues);
             }
 
             DateTimeOffset? expirationTime = null;
             var certificateFlags = VerificationUtility.ValidateSigningCertificate(certificate, !settings.AllowIllegal, FriendlyName, issues);
             if (certificateFlags != SignatureVerificationStatusFlags.NoErrors)
             {
-                flags |= certificateFlags;
+                status = VerificationUtility.GetSignatureVerificationStatus(certificateFlags);
+                return new SignatureVerificationSummary(Type, status, certificateFlags, timestamp, expirationTime, issues);
             }
             else
             {
                 timestamp = timestamp ?? new Timestamp();
+                
+                SignatureVerificationStatusFlags flags = SignatureVerificationStatusFlags.NoErrors;
                 using (var chainHolder = new X509ChainHolder())
                 {
                     var chain = chainHolder.Chain;
@@ -218,8 +217,11 @@ namespace NuGet.Packaging.Signing
 
                     var chainBuildingHasIssues = false;
 
-                    if (!chainBuildingSucceeded)
+                    if (!chainBuildingSucceeded && chainStatuses.Length == 0)
                     {
+                        return new SignatureVerificationSummary(Type, SignatureVerificationStatus.Unknown, SignatureVerificationStatusFlags.UnknownBuildStatus, timestamp, issues);
+                    }
+
                         var statusFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
                         IEnumerable<string> messages;
@@ -305,6 +307,8 @@ namespace NuGet.Packaging.Signing
                             }
                         }
 
+                    if (!chainBuildingSucceeded)
+                    {
                         // Debug log any errors
                         issues.Add(SignatureLog.DebugLog(
                             string.Format(
@@ -335,11 +339,11 @@ namespace NuGet.Packaging.Signing
                         expirationTime = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
                     }
                 }
-            }
 
             status = VerificationUtility.GetSignatureVerificationStatus(flags);
 
             return new SignatureVerificationSummary(Type, status, flags, timestamp, expirationTime, issues);
+        }
         }
 
         public string GetSigningCertificateFingerprint(HashAlgorithmName algorithm)
