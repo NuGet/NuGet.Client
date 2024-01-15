@@ -894,7 +894,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
 
             // Assert
-            CommonUtility.AssertDirectoryExists(installedPackageFolderPath, true);
+            CommonUtility.WaitForDirectoryExists(installedPackageFolderPath);
         }
 
         [TestMethod]
@@ -933,7 +933,7 @@ namespace NuGet.Tests.Apex
 
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
 
-            // Act (we doesn't edit the "nuget.config" file by setting the "automatic" to "true" since it is enabled by default)
+            // Act
             Directory.Delete(packageFolderPath, true);
             Directory.Exists(packageFolderPath).Should().BeFalse();
             solutionService.Build();
@@ -990,13 +990,13 @@ namespace NuGet.Tests.Apex
             var installedPackageFolderPath = Path.Combine(_pathContext.PackagesV2, "Contoso.A.1.0.0");
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
             Directory.Delete(installedPackageFolderPath, true);
-            CommonUtility.AssertDirectoryExists(installedPackageFolderPath, false);
+            CommonUtility.WaitForDirectoryNotExists(installedPackageFolderPath);
 
             solutionService.Build();
 
             // Assert
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-            CommonUtility.AssertDirectoryExists(installedPackageFolderPath, false);
+            CommonUtility.WaitForDirectoryNotExists(installedPackageFolderPath);
         }
     }
 }
