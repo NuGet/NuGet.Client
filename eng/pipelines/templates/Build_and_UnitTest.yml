@@ -332,50 +332,50 @@ steps:
 #       }
 #   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
-  displayName: 'Generate .runsettings files'
-  inputs:
-    solution: 'build\runsettings.proj'
-    msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: MSBuild@1
+#   displayName: 'Generate .runsettings files'
+#   inputs:
+#     solution: 'build\runsettings.proj'
+#     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)"'
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
-  displayName: 'Copy VS integration test binaries'
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      try {
-        Write-Output "Copying NuGet.OptProf binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
-        Write-Output "Copying NuGet.Tests.Apex binaries"
-        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]$_"
-        exit 1
-      }
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: PowerShell@1
+#   displayName: 'Copy VS integration test binaries'
+#   inputs:
+#     scriptType: "inlineScript"
+#     inlineScript: |
+#       try {
+#         Write-Output "Copying NuGet.OptProf binaries"
+#         Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
+#         Write-Output "Copying NuGet.Tests.Apex binaries"
+#         Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
+#       } catch {
+#         Write-Host "##vso[task.LogIssue type=error;]$_"
+#         exit 1
+#       }
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: artifactDropTask@0
-  displayName: 'Publish the .runsettings files to artifact services'
-  inputs:
-    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-    sourcePath: 'artifacts\RunSettings'
-    toLowerCase: false
-    usePat: true
-    dropMetadataContainerName: 'DropMetadata-RunSettings'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+# - task: artifactDropTask@0
+#   displayName: 'Publish the .runsettings files to artifact services'
+#   inputs:
+#     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+#     buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+#     sourcePath: 'artifacts\RunSettings'
+#     toLowerCase: false
+#     usePat: true
+#     dropMetadataContainerName: 'DropMetadata-RunSettings'
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: artifactDropTask@0
-  displayName: 'OptProfV2:  publish profiling inputs to artifact services'
-  inputs:
-    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-    sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
-    toLowerCase: false
-    usePat: true
-    dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+# - task: artifactDropTask@0
+#   displayName: 'OptProfV2:  publish profiling inputs to artifact services'
+#   inputs:
+#     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+#     buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+#     sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
+#     toLowerCase: false
+#     usePat: true
+#     dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
+#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishBuildArtifacts@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
