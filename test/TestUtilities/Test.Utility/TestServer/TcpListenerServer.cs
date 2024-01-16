@@ -97,8 +97,8 @@ namespace NuGet.Test.Server
                 using (var sslStream = new SslStream(client.GetStream(), false))
                 {
                     sslStream.AuthenticateAsServer(_tlsCertificate, clientCertificateRequired: false, SslProtocols.Tls12, checkCertificateRevocation: true);
-                    using (var reader = new StreamReader(sslStream, Encoding.ASCII, false, 1))
-                    using (var writer = new StreamWriter(sslStream, Encoding.ASCII, 1, false))
+                    using (var reader = new StreamReader(sslStream, Encoding.ASCII, false, 128))
+                    using (var writer = new StreamWriter(sslStream, Encoding.ASCII, 128, false))
                     {
                         while (!string.IsNullOrEmpty(reader.ReadLine()))
                         {
