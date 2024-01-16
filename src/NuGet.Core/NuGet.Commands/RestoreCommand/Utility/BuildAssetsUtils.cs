@@ -490,15 +490,13 @@ namespace NuGet.Commands
                 // with no relevant assets.
                 List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages = new List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>>(sortedGraph.Count);
 
-                for (int i = 0; i < sortedGraph.Count; i++)
+                foreach (PackageDependencyInfo sortedPkg in sortedGraph.NoAllocEnumerate())
                 {
-                    PackageDependencyInfo sortedPkg = sortedGraph[i];
                     if (packageType.Contains(sortedPkg.Id))
                     {
-                        for (int j = 0; j < ridlessTarget.Libraries.Count; ++j)
+                        foreach (LockFileTargetLibrary assetsPkg in ridlessTarget.Libraries.NoAllocEnumerate())
                         {
-                            LockFileTargetLibrary assetsPkg = ridlessTarget.Libraries[j];
-                            if (sortedPkg.Version == ridlessTarget.Libraries[j].Version && sortedPkg.Id.Equals(assetsPkg.Name, StringComparison.OrdinalIgnoreCase))
+                            if (sortedPkg.Id.Equals(assetsPkg.Name, StringComparison.OrdinalIgnoreCase) && sortedPkg.Version == assetsPkg.Version)
                             {
                                 var packageSourceInfo = new Lazy<LocalPackageSourceInfo>(() =>
                                                             NuGetv3LocalRepositoryUtility.GetPackage(
@@ -513,45 +511,11 @@ namespace NuGet.Commands
                 }
 
                 // build/ {packageId}.targets
-                var buildTargetsGroup = new MSBuildRestoreItemGroup();
-                buildTargetsGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
-                buildTargetsGroup.Position = 2;
-
-                foreach (var pkg in sortedPackages)
-                {
-                    if (pkg.Value.Exists())
-                    {
-                        foreach (LockFileItem lockFileItem in pkg.Key.Build.WithExtension(TargetsExtension))
-                        {
-                            var absolutePath = pkg.Value.GetAbsolutePath(lockFileItem);
-                            var pathWithMacros = GetPathWithMacros(absolutePath, repositoryRoot);
-                            var import = GenerateImport(pathWithMacros);
-                            buildTargetsGroup.Items.Add(import);
-                        }
-                    }
-                }
-
+                var buildTargetsGroup = GenerateBuildGroup(repositoryRoot, sortedPackages);
                 targets.AddRange(GenerateGroupsWithConditions(buildTargetsGroup, isMultiTargeting, frameworkConditions));
 
                 // props/ {packageId}.props
-                var buildPropsGroup = new MSBuildRestoreItemGroup();
-                buildPropsGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
-                buildPropsGroup.Position = 2;
-
-                foreach (var pkg in sortedPackages)
-                {
-                    if (pkg.Value.Exists())
-                    {
-                        foreach (LockFileItem lockFileItem in pkg.Key.Build.WithExtension(TargetsExtension))
-                        {
-                            var absolutePath = pkg.Value.GetAbsolutePath(lockFileItem);
-                            var pathWithMacros = GetPathWithMacros(absolutePath, repositoryRoot);
-                            var import = GenerateImport(pathWithMacros);
-                            buildPropsGroup.Items.Add(import);
-                        }
-                    }
-                }
-
+                MSBuildRestoreItemGroup buildPropsGroup = GenerateBuildGroup(repositoryRoot, sortedPackages);
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
 
                 // Create an empty PropertyGroup for package properties
@@ -599,51 +563,11 @@ namespace NuGet.Commands
                 if (isMultiTargeting)
                 {
                     // buildMultiTargeting/ {packageId}.targets
-                    var buildCrossTargetsGroup = new MSBuildRestoreItemGroup();
-                    buildCrossTargetsGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
-                    buildCrossTargetsGroup.Position = 0;
-
-                    foreach (var pkg in sortedPackages)
-                    {
-                        if (pkg.Value.Exists())
-                        {
-                            foreach (var e in pkg.Key.BuildMultiTargeting.WithExtension(TargetsExtension))
-                            {
-                                var path = pkg.Value.GetAbsolutePath(e);
-                                if (multiTargetingImportsAdded.Add(path))
-                                {
-                                    var pathWithMacros = GetPathWithMacros(path, repositoryRoot);
-                                    var import = GenerateImport(pathWithMacros);
-                                    buildCrossTargetsGroup.Items.Add(import);
-                                }
-                            }
-                        }
-                    }
-
+                    var buildCrossTargetsGroup = GenerateMultiTargetingGroup(repositoryRoot, sortedPackages, multiTargetingImportsAdded);
                     targets.AddRange(GenerateGroupsWithConditions(buildCrossTargetsGroup, isMultiTargeting, CrossTargetingCondition));
 
                     // buildMultiTargeting/ {packageId}.props
-                    var buildCrossPropsGroup = new MSBuildRestoreItemGroup();
-                    buildCrossPropsGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
-                    buildCrossPropsGroup.Position = 0;
-
-                    foreach (var pkg in sortedPackages)
-                    {
-                        if (pkg.Value.Exists())
-                        {
-                            foreach (var e in pkg.Key.BuildMultiTargeting.WithExtension(PropsExtension))
-                            {
-                                var path = pkg.Value.GetAbsolutePath(e);
-                                if (multiTargetingImportsAdded.Add(path))
-                                {
-                                    var pathWithMacros = GetPathWithMacros(path, repositoryRoot);
-                                    var import = GenerateImport(pathWithMacros);
-                                    buildCrossPropsGroup.Items.Add(import);
-                                }
-                            }
-                        }
-                    }
-
+                    var buildCrossPropsGroup = GenerateMultiTargetingGroup(repositoryRoot, sortedPackages, multiTargetingImportsAdded);
                     props.AddRange(GenerateGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
                 }
 
@@ -652,17 +576,34 @@ namespace NuGet.Commands
                     && request.Project.RestoreMetadata?.SkipContentFileWrite != true)
                 {
                     // Create a group for every package, with the nearest from each of allLanguages
-                    props.AddRange(sortedPackages.Select(pkg =>
-                         pkg.Key.ContentFiles
-                                .Where(e => pkg.Value.Exists())
-                                .OrderBy(e => e.Path, StringComparer.Ordinal)
-                                .Select(e =>
-                                    ValueTuple.Create(
-                                        item1: pkg.Key,
-                                        item2: e,
-                                        item3: GetPathWithMacros(pkg.Value.GetAbsolutePath(e), repositoryRoot))))
-                         .SelectMany(e => GetLanguageGroups(e))
-                         .SelectMany(group => GenerateGroupsWithConditions(group, isMultiTargeting, frameworkConditions)));
+                    foreach (var pkg in sortedPackages)
+                    {
+                        var lockContentFiles = new List<LockFileContentFile>(pkg.Key.ContentFiles.Count);
+                        foreach (var contentFile in pkg.Key.ContentFiles)
+                        {
+                            if (pkg.Value.Exists())
+                            {
+                                lockContentFiles.Add(contentFile);
+                            }
+                        }
+
+                        lockContentFiles.Sort(static (x, y) => StringComparer.Ordinal.Compare(x.Path, y.Path));
+
+                        var currentItems = new List<(LockFileTargetLibrary, LockFileContentFile, string)>(lockContentFiles.Count);
+                        foreach (var e in lockContentFiles)
+                        {
+                            var tuple = ValueTuple.Create(item1: pkg.Key, item2: e, item3: GetPathWithMacros(pkg.Value.GetAbsolutePath(e), repositoryRoot));
+                            currentItems.Add(tuple);
+                        }
+
+                        foreach (var group in GetLanguageGroups(currentItems))
+                        {
+                            foreach (var item in GenerateGroupsWithConditions(group, isMultiTargeting, frameworkConditions))
+                            {
+                                props.Add(item);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -693,6 +634,55 @@ namespace NuGet.Commands
             AddNuGetPropertiesToFirstImport(files, packageFolders, repositoryRoot, request.ProjectStyle, assetsFilePath, restoreSuccess);
 
             return files;
+
+            static MSBuildRestoreItemGroup GenerateBuildGroup(string repositoryRoot, List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages)
+            {
+                var buildGroup = new MSBuildRestoreItemGroup();
+                buildGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
+                buildGroup.Position = 2;
+
+                foreach (var pkg in sortedPackages)
+                {
+                    if (pkg.Value.Exists())
+                    {
+                        foreach (LockFileItem lockFileItem in pkg.Key.Build.WithExtension(TargetsExtension))
+                        {
+                            var absolutePath = pkg.Value.GetAbsolutePath(lockFileItem);
+                            var pathWithMacros = GetPathWithMacros(absolutePath, repositoryRoot);
+                            var import = GenerateImport(pathWithMacros);
+                            buildGroup.Items.Add(import);
+                        }
+                    }
+                }
+
+                return buildGroup;
+            }
+
+            static MSBuildRestoreItemGroup GenerateMultiTargetingGroup(string repositoryRoot, List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages, HashSet<string> multiTargetingImportsAdded)
+            {
+                var buildCrossTargetsGroup = new MSBuildRestoreItemGroup();
+                buildCrossTargetsGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
+                buildCrossTargetsGroup.Position = 0;
+
+                foreach (var pkg in sortedPackages)
+                {
+                    if (pkg.Value.Exists())
+                    {
+                        foreach (var e in pkg.Key.BuildMultiTargeting.WithExtension(TargetsExtension))
+                        {
+                            var path = pkg.Value.GetAbsolutePath(e);
+                            if (multiTargetingImportsAdded.Add(path))
+                            {
+                                var pathWithMacros = GetPathWithMacros(path, repositoryRoot);
+                                var import = GenerateImport(pathWithMacros);
+                                buildCrossTargetsGroup.Items.Add(import);
+                            }
+                        }
+                    }
+                }
+
+                return buildCrossTargetsGroup;
+            }
         }
 
         private static IEnumerable<string> GetLanguageConditions(string language, SortedSet<string> allLanguages)
@@ -730,11 +720,9 @@ namespace NuGet.Commands
         }
 
         private static IEnumerable<MSBuildRestoreItemGroup> GetLanguageGroups(
-            IEnumerable<ValueTuple<LockFileTargetLibrary, LockFileContentFile, string>> items)
+            List<ValueTuple<LockFileTargetLibrary, LockFileContentFile, string>> currentItems)
         {
-            var currentItems = items.ToArray();
-
-            if (currentItems.Length == 0)
+            if (currentItems.Count == 0)
             {
                 // Noop fast if this does not have content files.
                 return Enumerable.Empty<MSBuildRestoreItemGroup>();
@@ -744,10 +732,16 @@ namespace NuGet.Commands
             var packageVersion = currentItems[0].Item1.Version.ToNormalizedString();
 
             // Find all languages used for the any group condition
-            var allLanguages = new SortedSet<string>(
-                currentItems.Select(e => e.Item2.CodeLanguage)
-                            .Where(s => !PackagingConstants.AnyCodeLanguage.Equals(s, StringComparison.OrdinalIgnoreCase)),
-                StringComparer.OrdinalIgnoreCase);
+            var allLanguages = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var e in currentItems)
+            {
+                var s = e.Item2.CodeLanguage;
+                if (!PackagingConstants.AnyCodeLanguage.Equals(s, StringComparison.OrdinalIgnoreCase))
+                {
+                    allLanguages.Add(s);
+                }
+            }
 
             // Convert content file items from a package into an ItemGroup with conditions.
             // Remove _._ entries

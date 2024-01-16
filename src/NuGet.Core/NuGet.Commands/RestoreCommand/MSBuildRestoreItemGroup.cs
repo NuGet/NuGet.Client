@@ -50,7 +50,7 @@ namespace NuGet.Commands
             }
         }
 
-        public static MSBuildRestoreItemGroup Create(
+        internal static MSBuildRestoreItemGroup Create(
             string rootName,
             int position)
         {
