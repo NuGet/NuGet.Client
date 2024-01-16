@@ -579,7 +579,7 @@ namespace NuGet.Commands
                     foreach (var pkg in sortedPackages)
                     {
                         var lockContentFiles = new List<LockFileContentFile>(pkg.Key.ContentFiles.Count);
-                        foreach (var contentFile in pkg.Key.ContentFiles)
+                        foreach (var contentFile in pkg.Key.ContentFiles.NoAllocEnumerate())
                         {
                             if (pkg.Value.Exists())
                             {
@@ -623,7 +623,7 @@ namespace NuGet.Commands
             var targetsXML = GenerateMSBuildFile(targets, request.ProjectStyle);
 
             // Return all files to write out or delete.
-            var files = new List<MSBuildOutputFile>(2)
+            var files = new List<MSBuildOutputFile>(capacity: 2)
             {
                 new MSBuildOutputFile(propsPath, propsXML),
                 new MSBuildOutputFile(targetsPath, targetsXML)
