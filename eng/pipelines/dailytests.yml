@@ -1,7 +1,7 @@
 resources:
   pipelines:
   - pipeline: ComponentBuildUnderTest
-    source: NuGet.Client-Official
+    source: NuGet.Client-PrivateDev
     trigger:
         branches:
           - dev-*
