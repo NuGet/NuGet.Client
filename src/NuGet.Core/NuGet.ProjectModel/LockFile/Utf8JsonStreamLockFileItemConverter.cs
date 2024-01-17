@@ -9,6 +9,14 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileItem"/>
     /// </summary>
+    /// <example>
+    /// "path/to/the.dll": {
+    ///     "property1": "val1",
+    ///     "property2": 2
+    ///     "property3": true
+    ///     "property4": false
+    /// }
+    /// </example>
     internal class Utf8JsonStreamLockFileItemConverter<T> : IUtf8JsonStreamReaderConverter<T> where T : LockFileItem
     {
         private Func<string, T> _lockFileItemCreator;

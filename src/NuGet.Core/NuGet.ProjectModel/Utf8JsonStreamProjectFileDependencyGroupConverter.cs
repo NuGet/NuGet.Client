@@ -9,6 +9,11 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow reading JSON into <see cref="ProjectFileDependencyGroup"/>
     /// </summary>
+    /// <example>
+    /// "net45": [
+    ///     "Json.Parser (>= 1.0.1)",
+    /// ]
+    /// </example>
     internal class Utf8JsonStreamProjectFileDependencyGroupConverter : IUtf8JsonStreamReaderConverter<ProjectFileDependencyGroup>
     {
         public ProjectFileDependencyGroup Read(ref Utf8JsonStreamReader reader)

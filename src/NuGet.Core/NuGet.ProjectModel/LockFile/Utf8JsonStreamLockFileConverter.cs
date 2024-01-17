@@ -7,13 +7,23 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 
 namespace NuGet.ProjectModel
 {
     /// <summary>
     /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFile"/>
     /// </summary>
+    /// <example>
+    /// {
+    ///     "version": 3,
+    ///     "targets": { <see cref="Utf8JsonStreamLockFileTargetConverter"/> },
+    ///     "libraries": { <see cref="Utf8JsonStreamLockFileLibraryConverter"/> },
+    ///     "projectFileDependencyGroups": { <see cref="Utf8JsonStreamProjectFileDependencyGroupConverter"/> },
+    ///     "packageFolders": { <see cref="Utf8JsonStreamLockFileItemConverter{T}"/> },
+    ///     "project": { <see cref="JsonPackageSpecReader.GetPackageSpec(ref Utf8JsonStreamReader, string, string, string)"/> },
+    ///     "logs": [ <see cref="Utf8JsonStreamAssetsLogMessageConverter"/> ]
+    /// }
+    /// </example>
     internal class Utf8JsonStreamLockFileConverter : IUtf8JsonStreamReaderConverter<LockFile>
     {
         private static readonly byte[] VersionPropertyName = Encoding.UTF8.GetBytes("version");

@@ -12,6 +12,23 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="AssetsLogMessage"/>
     /// </summary>
+    /// <example>
+    /// {
+    ///     "code": "<see cref="NuGetLogCode">",
+    ///     "level": "<see cref="LogLevel"/>",
+    ///     "message": "test log message",
+    ///     "warningLevel": <see cref="WarningLevel"/>,
+    ///     "filePath": "C:\a\file\path.txt",
+    ///     "startLineNumber": 1,
+    ///     "startColumnNumber": 2,
+    ///     "endLineNumber": 10,
+    ///     "endcolumnNumber": 20,
+    ///     "libraryId": "libraryId",
+    ///     "targetGraphs": [
+    ///         "targetGraph1"
+    ///     ]
+    /// }
+    /// </example>
     internal class Utf8JsonStreamAssetsLogMessageConverter : IUtf8JsonStreamReaderConverter<AssetsLogMessage>
     {
         private static readonly byte[] LevelPropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.LEVEL);

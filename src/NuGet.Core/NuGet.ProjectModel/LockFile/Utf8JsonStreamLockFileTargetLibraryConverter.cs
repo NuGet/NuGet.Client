@@ -13,6 +13,43 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTargetLibrary"/>
     /// </summary>
+    /// <example>
+    /// "Lirbary/1.0.0": {
+    ///     "type": "package",
+    ///     "framework": ".NETCoreApp,Version=v6.0",
+    ///     "dependencies": {
+    ///         "Library.Name": "1.0.1",
+    ///         "Parser.Json": "10.0.0",
+    ///     },
+    ///     "frameworkAssemblies": [
+    ///         "System"
+    ///     ],
+    ///     "compile": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "runtime": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "resource": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "contentFiles": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "runtimeTargets": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "tools": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "embed": {
+    ///         <see cref="Utf8JsonStreamLockFileItemConverter{T}"/>,
+    ///     },
+    ///     "frameworkReferences": [
+    ///         "Framework1",
+    ///     ]
+    /// }
+    /// </example>
     internal class Utf8JsonStreamLockFileTargetLibraryConverter : IUtf8JsonStreamReaderConverter<LockFileTargetLibrary>
     {
         private static readonly byte[] TypePropertyName = Encoding.UTF8.GetBytes("type");

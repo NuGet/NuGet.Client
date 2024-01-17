@@ -10,6 +10,20 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileLibrary"/>
     /// </summary>
+    /// <example>
+    /// "PackageA/1.0.0": {
+    ///     "sha512": "ASha512",
+    ///     "type": "package",
+    ///     "path": "C:\a\test\path",
+    ///     "files": [
+    ///         "PackageA.nuspec",
+    ///         "lib/netstandard2.0/PackageA.dll"
+    ///     ],
+    ///     "msbuildProject": "bar",
+    ///     "servicable": true,
+    ///     "hasTools": true,
+    /// }
+    /// </example>
     internal class Utf8JsonStreamLockFileLibraryConverter : IUtf8JsonStreamReaderConverter<LockFileLibrary>
     {
         private static readonly byte[] Sha512PropertyName = Encoding.UTF8.GetBytes("sha512");

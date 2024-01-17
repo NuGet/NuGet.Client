@@ -9,6 +9,11 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTarget"/>
     /// </summary>
+    /// <example>
+    /// "net45/win8": {
+    ///     <see cref="Utf8JsonStreamLockFileTargetLibraryConverter"/>,
+    /// }
+    /// </example>
     internal class Utf8JsonStreamLockFileTargetConverter : IUtf8JsonStreamReaderConverter<LockFileTarget>
     {
         public LockFileTarget Read(ref Utf8JsonStreamReader reader)
