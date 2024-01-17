@@ -86,16 +86,16 @@ namespace NuGet.Versioning
                     builder.Append(version.Metadata);
                     return;
                 case 'x':
-                    builder.Append(version.Major);
+                    AppendInt(builder, version.Major);
                     return;
                 case 'y':
-                    builder.Append(version.Minor);
+                    AppendInt(builder, version.Minor);
                     return;
                 case 'z':
-                    builder.Append(version.Patch);
+                    AppendInt(builder, version.Patch);
                     return;
                 case 'r':
-                    builder.Append(version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
+                    AppendInt(builder, version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
                     return;
 
                 default:
@@ -135,16 +135,122 @@ namespace NuGet.Versioning
 
         private static void AppendVersion(StringBuilder builder, SemanticVersion version)
         {
-            builder.Append(version.Major);
+            AppendInt(builder, version.Major);
             builder.Append('.');
-            builder.Append(version.Minor);
+            AppendInt(builder, version.Minor);
             builder.Append('.');
-            builder.Append(version.Patch);
+            AppendInt(builder, version.Patch);
 
             if (version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion)
             {
                 builder.Append('.');
-                builder.Append(nuGetVersion.Version.Revision);
+                AppendInt(builder, nuGetVersion.Version.Revision);
+            }
+        }
+
+        /// <summary>
+        /// Helper function to append an <see cref="int"/> to a <see cref="StringBuilder"/>. Calling
+        /// <see cref="StringBuilder.Append(int)"/> directly causes an allocation by first converting the
+        /// <see cref="int"/> to a string and then appending that result:
+        /// <code>
+        /// public StringBuilder Append(int value)
+        /// {
+        ///     return Append(value.ToString(CultureInfo.CurrentCulture));
+        /// }
+        /// </code>
+        ///
+        /// Note that this uses the current culture to do the conversion while <see cref="AppendInt(StringBuilder, int)"/> does
+        /// not do any cultural sensitive conversion.
+        /// </summary>
+        /// <param name="sb">The <see cref="StringBuilder"/> to append to.</param>
+        /// <param name="value">The <see cref="int"/> to append.</param>
+        private static void AppendInt(StringBuilder sb, int value)
+        {
+            const int one = 1;
+            const int ten = one * 10;
+            const int hundred = ten * 10;
+            const int thousand = hundred * 10;
+            const int tenThousand = thousand * 10;
+            const int hundredThousand = tenThousand * 10;
+            const int million = hundredThousand * 10;
+            const int tenMillion = million * 10;
+            const int hundredMillion = tenMillion * 10;
+            const int billion = hundredMillion * 10;
+
+            if (value < 0)
+            {
+                sb.Append('-');
+                value = -value;
+            }
+
+            if (value >= billion)
+            {
+                int billions = value / billion;
+                value %= billion;
+                sb.Append(ToChar(billions));
+            }
+
+            if (value >= hundredMillion)
+            {
+                int hundredMillions = value / hundredMillion;
+                value %= hundredMillion;
+                sb.Append(ToChar(hundredMillions));
+            }
+
+            if (value >= tenMillion)
+            {
+                int tenMillions = value / tenMillion;
+                value %= tenMillion;
+                sb.Append(ToChar(tenMillions));
+            }
+
+            if (value >= million)
+            {
+                int millions = value / million;
+                value %= million;
+                sb.Append(ToChar(millions));
+            }
+
+            if (value >= hundredThousand)
+            {
+                int hundredThousands = value / hundredThousand;
+                value %= hundredThousand;
+                sb.Append(ToChar(hundredThousands));
+            }
+
+            if (value >= tenThousand)
+            {
+                int tenThousands = value / tenThousand;
+                value %= tenThousand;
+                sb.Append(ToChar(tenThousands));
+            }
+
+            if (value >= thousand)
+            {
+                int thousands = value / thousand;
+                value %= thousand;
+                sb.Append(ToChar(thousands));
+            }
+
+            if (value >= hundred)
+            {
+                int hundreds = value / hundred;
+                value %= hundred;
+                sb.Append(ToChar(hundreds));
+            }
+
+            if (value >= ten)
+            {
+                int tens = value / ten;
+                sb.Append(ToChar(tens));
+            }
+
+            int ones = value % ten;
+            sb.Append(ToChar(ones));
+
+            static char ToChar(int digit)
+            {
+                return (char)('0' + digit);
             }
         }
     }
