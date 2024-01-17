@@ -7,7 +7,7 @@ using System.Text.Json;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileItem"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileItem"/>
     /// </summary>
     /// <example>
     /// "path/to/the.dll": {

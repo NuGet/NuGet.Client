@@ -7,7 +7,7 @@ using System.Text.Json;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow reading JSON into <see cref="ProjectFileDependencyGroup"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow reading JSON into <see cref="ProjectFileDependencyGroup"/>
     /// </summary>
     /// <example>
     /// "net45": [

@@ -11,7 +11,7 @@ using NuGet.Versioning;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTargetLibrary"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTargetLibrary"/>
     /// </summary>
     /// <example>
     /// "Lirbary/1.0.0": {

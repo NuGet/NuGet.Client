@@ -8,7 +8,7 @@ using NuGet.Versioning;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileLibrary"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileLibrary"/>
     /// </summary>
     /// <example>
     /// "PackageA/1.0.0": {

@@ -7,7 +7,7 @@ using NuGet.Frameworks;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="Utf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTarget"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="LockFileTarget"/>
     /// </summary>
     /// <example>
     /// "net45/win8": {

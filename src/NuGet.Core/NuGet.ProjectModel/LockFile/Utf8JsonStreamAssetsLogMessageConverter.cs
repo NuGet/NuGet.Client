@@ -10,11 +10,11 @@ using NuGet.Common;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="AssetsLogMessage"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="AssetsLogMessage"/>
     /// </summary>
     /// <example>
     /// {
-    ///     "code": "<see cref="NuGetLogCode">",
+    ///     "code": "<see cref="NuGetLogCode"/>",
     ///     "level": "<see cref="LogLevel"/>",
     ///     "message": "test log message",
     ///     "warningLevel": <see cref="WarningLevel"/>,
