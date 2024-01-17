@@ -43,7 +43,7 @@ namespace NuGet.ProjectModel
             var propertyName = reader.GetString();
             var (targetLibraryName, version) = propertyName.SplitInTwo('/');
             lockFileTargetLibrary.Name = targetLibraryName;
-            lockFileTargetLibrary.Version = version is null ? null : JsonUtility.ParseNugetVersion(version);
+            lockFileTargetLibrary.Version = version is null ? null : NuGetVersion.Parse(version);
 
             reader.Read();
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -149,7 +149,7 @@ namespace NuGet.ProjectModel
                 string versionString = reader.ReadNextTokenAsString();
                 packageDependencies.Add(new PackageDependency(
                     propertyName,
-                    versionString == null ? null : JsonUtility.ParseVersionRange(versionString)));
+                    versionString == null ? null : VersionRange.Parse(versionString)));
             }
             return packageDependencies;
         }

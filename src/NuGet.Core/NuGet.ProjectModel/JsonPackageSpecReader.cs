@@ -306,7 +306,7 @@ namespace NuGet.ProjectModel
                         filePath);
                 }
 
-                centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, JsonUtility.ParseVersionRange(version));
+                centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
             });
         }
 
@@ -449,7 +449,7 @@ namespace NuGet.ProjectModel
                                     {
                                         try
                                         {
-                                            versionOverride = JsonUtility.ParseVersionRange((string)jsonReader.Value);
+                                            versionOverride = VersionRange.Parse((string)jsonReader.Value);
                                         }
                                         catch (Exception ex)
                                         {
@@ -478,7 +478,7 @@ namespace NuGet.ProjectModel
                     {
                         try
                         {
-                            dependencyVersionRange = JsonUtility.ParseVersionRange(dependencyVersionValue);
+                            dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
                         }
                         catch (Exception ex)
                         {
@@ -620,7 +620,7 @@ namespace NuGet.ProjectModel
                     {
                         try
                         {
-                            dependencyVersionRange = JsonUtility.ParseVersionRange(dependencyVersionValue);
+                            dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
                         }
                         catch (Exception ex)
                         {
@@ -737,7 +737,7 @@ namespace NuGet.ProjectModel
                     {
                         try
                         {
-                            VersionRange version = JsonUtility.ParseVersionRange(singleVersionValue);
+                            VersionRange version = VersionRange.Parse(singleVersionValue);
 
                             downloadDependencies.Add(new DownloadDependency(name, version));
                         }
@@ -1502,7 +1502,7 @@ namespace NuGet.ProjectModel
             {
                 dependencies ??= new List<RuntimePackageDependency>();
 
-                var dependency = new RuntimePackageDependency(propertyName, JsonUtility.ParseVersionRange(jsonReader.ReadNextTokenAsString()));
+                var dependency = new RuntimePackageDependency(propertyName, VersionRange.Parse(jsonReader.ReadNextTokenAsString()));
 
                 dependencies.Add(dependency);
             });

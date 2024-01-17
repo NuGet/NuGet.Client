@@ -319,7 +319,7 @@ namespace NuGet.ProjectModel
             {
                 try
                 {
-                    dependencyVersionRange = JsonUtility.ParseVersionRange(dependencyVersionValue);
+                    dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
                 }
                 catch (Exception ex)
                 {
@@ -489,7 +489,7 @@ namespace NuGet.ProjectModel
                                         var versionPropValue = jsonReader.GetString();
                                         try
                                         {
-                                            versionOverride = JsonUtility.ParseVersionRange(versionPropValue);
+                                            versionOverride = VersionRange.Parse(versionPropValue);
                                         }
                                         catch (Exception ex)
                                         {
@@ -518,7 +518,7 @@ namespace NuGet.ProjectModel
                         {
                             try
                             {
-                                dependencyVersionRange = JsonUtility.ParseVersionRange(dependencyVersionValue);
+                                dependencyVersionRange = VersionRange.Parse(dependencyVersionValue);
                             }
                             catch (Exception ex)
                             {
@@ -628,7 +628,7 @@ namespace NuGet.ProjectModel
                         throw FileFormatException.Create("The version cannot be null or empty.", filePath);
                     }
 
-                    centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, JsonUtility.ParseVersionRange(version));
+                    centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
                 }
             }
         }
@@ -735,7 +735,7 @@ namespace NuGet.ProjectModel
 
                         try
                         {
-                            VersionRange version = JsonUtility.ParseVersionRange(singleVersionValue);
+                            VersionRange version = VersionRange.Parse(singleVersionValue);
 
                             downloadDependencies.Add(new DownloadDependency(name, version));
                         }
@@ -1494,7 +1494,7 @@ namespace NuGet.ProjectModel
                     var propertyName = jsonReader.GetString();
                     dependencies ??= [];
 
-                    var dependency = new RuntimePackageDependency(propertyName, JsonUtility.ParseVersionRange(jsonReader.ReadNextTokenAsString()));
+                    var dependency = new RuntimePackageDependency(propertyName, VersionRange.Parse(jsonReader.ReadNextTokenAsString()));
 
                     dependencies.Add(dependency);
                 }
