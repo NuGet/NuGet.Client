@@ -93,7 +93,7 @@ namespace NuGet.ProjectModel
 
         internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
         {
-            if (JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
+            if (!JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
             {
                 return Utf8JsonRead(stream, log, path);
             }
