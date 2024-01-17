@@ -1293,9 +1293,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             File.WriteAllText(
                 Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"),
                 @$"<Project>
-  <PropertyGroup>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
   <ItemGroup>
     <GlobalPackageReference Include=""PackageA"" Version=""1.2.3"" />
     <GlobalPackageReference Include=""PackageB"" Version=""4.5.6"" />
@@ -1373,6 +1370,58 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             result.Success.Should().BeTrue(because: result.AllOutput);
             var packagePath = Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version, PackagingCoreConstants.NupkgMetadataFileExtension);
             File.Exists(packagePath).Should().BeTrue();
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_ProjectWithWarnings_SkipsWritingAssetsFileWhenUpToDate()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var project = SimpleTestProjectContext.CreateLegacyPackageReference(
+                "a",
+                pathContext.SolutionRoot,
+                NuGetFramework.Parse("net472"));
+
+            var packageX150 = new SimpleTestPackageContext()
+            {
+                Id = "x",
+                Version = "1.5.0"
+            };
+
+            project.AddPackageToAllFrameworks(new SimpleTestPackageContext()
+            {
+                Id = "x",
+                Version = "1.0.0"
+            });
+            solution.Projects.Add(project);
+            solution.Create(pathContext.SolutionRoot);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                packageX150);
+
+            // Pre-Conditions
+            var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {project.ProjectPath}", ignoreExitCode: true);
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            DateTime assetsFileWriteTime = GetFileLastWriteTime(project.AssetsFileOutputPath);
+            var logMessages = project.AssetsFile.LogMessages;
+            logMessages.Should().HaveCount(1);
+            logMessages[0].Code.Should().Be(NuGetLogCode.NU1603);
+
+            // Act
+            result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreForce=true {project.ProjectPath}");
+
+            // Assert
+            var currentWriteTime = GetFileLastWriteTime(project.AssetsFileOutputPath);
+            currentWriteTime.Should().Be(assetsFileWriteTime);
+
+            static DateTime GetFileLastWriteTime(string path)
+            {
+                var fileInfo = new FileInfo(path);
+                fileInfo.Exists.Should().BeTrue();
+                return fileInfo.LastWriteTimeUtc;
+            }
         }
     }
 }
