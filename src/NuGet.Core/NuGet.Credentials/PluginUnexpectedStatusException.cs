@@ -3,7 +3,9 @@
 
 using System;
 using System.Globalization;
+#if IS_DESKTOP
 using System.Runtime.Serialization;
+#endif
 
 namespace NuGet.Credentials
 {

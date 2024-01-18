@@ -10,9 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+#if IS_SIGNING_SUPPORTED
 using NuGet.Packaging;
-using NuGet.Packaging.Signing;
 using NuGet.Protocol;
+#endif
+using NuGet.Packaging.Signing;
 using static NuGet.Commands.TrustedSignersArgs;
 
 namespace NuGet.Commands

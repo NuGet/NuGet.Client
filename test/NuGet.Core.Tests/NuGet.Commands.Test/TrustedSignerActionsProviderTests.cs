@@ -7,6 +7,9 @@ using System.Globalization;
 using System.Linq;
 #if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
+using NuGet.Packaging;
+using NuGet.Test.Utility;
+using Test.Utility.Signing;
 #endif
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,13 +18,9 @@ using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Configuration.Test;
-using NuGet.Packaging;
 using NuGet.Packaging.Signing;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Test.Utility;
 using Test.Utility;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test

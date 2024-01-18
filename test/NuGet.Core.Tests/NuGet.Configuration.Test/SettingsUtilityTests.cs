@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using FluentAssertions;
+#if IS_CORECLR
 using NuGet.Common;
+#endif
 using NuGet.Test.Utility;
 using Xunit;
 

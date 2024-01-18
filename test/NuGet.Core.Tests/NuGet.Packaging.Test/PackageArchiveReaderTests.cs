@@ -5,7 +5,10 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+#if IS_SIGNING_SUPPORTED
 using System.Text;
+using Test.Utility.Signing;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -15,7 +18,6 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test

@@ -5,11 +5,12 @@ using System;
 using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;
+#if IS_SIGNING_SUPPORTED
 using Org.BouncyCastle.Security;
+#endif
 using Test.Utility.Signing;
 using Xunit;
 using BcAlgorithmIdentifier = Org.BouncyCastle.Asn1.X509.AlgorithmIdentifier;

@@ -4,7 +4,9 @@
 using System;
 using System.Globalization;
 using System.IO;
+#if !IS_CORECLR
 using System.Reflection;
+#endif
 using System.Security.Cryptography;
 using System.Text;
 

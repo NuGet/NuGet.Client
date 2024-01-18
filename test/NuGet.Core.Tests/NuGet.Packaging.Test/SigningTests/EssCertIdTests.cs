@@ -3,14 +3,16 @@
 
 using System;
 using System.Security.Cryptography;
+#if IS_SIGNING_SUPPORTED
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Security;
 using Test.Utility.Signing;
-using Xunit;
 using BcEssCertId = Org.BouncyCastle.Asn1.Ess.EssCertID;
 using BcGeneralName = Org.BouncyCastle.Asn1.X509.GeneralName;
 using BcIssuerSerial = Org.BouncyCastle.Asn1.X509.IssuerSerial;
+#endif
+using Xunit;
 using EssCertId = NuGet.Packaging.Signing.EssCertId;
 
 namespace NuGet.Packaging.Test

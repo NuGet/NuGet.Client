@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
-using EnvDTE;
-using Microsoft.VisualStudio.ComponentModelHost;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
 

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Cryptography;
-using System.Text;
-using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Test.Utility.Signing;

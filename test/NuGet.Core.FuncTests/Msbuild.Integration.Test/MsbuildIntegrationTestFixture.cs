@@ -8,7 +8,6 @@ using System.IO;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Test.Utility;
-using Xunit;
 
 namespace Msbuild.Integration.Test
 {

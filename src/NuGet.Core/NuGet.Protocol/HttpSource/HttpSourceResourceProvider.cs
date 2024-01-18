@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+#if IS_DESKTOP
 using System.Net;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;

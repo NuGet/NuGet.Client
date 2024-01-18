@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Packaging.Signing;
 using Test.Utility;
+#if IS_SIGNING_SUPPORTED
 using Test.Utility.Signing;
+#endif
 using Xunit;
 
 namespace NuGet.Packaging.Test

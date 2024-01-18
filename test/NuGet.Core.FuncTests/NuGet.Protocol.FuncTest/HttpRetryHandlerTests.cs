@@ -9,7 +9,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+#if IS_CORECLR
 using NuGet.Common;
+#endif
 using NuGet.Protocol;
 using NuGet.Test.Server;
 using NuGet.Test.Utility;

@@ -4,10 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
-using Org.BouncyCastle.Asn1.X509;
 using Test.Utility.Signing;
 using Xunit;
 

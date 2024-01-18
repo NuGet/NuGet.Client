@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if NET5_0_OR_GREATER
 using System.Globalization;
+#endif
 using System.IO;
 using NuGet.Common;
 

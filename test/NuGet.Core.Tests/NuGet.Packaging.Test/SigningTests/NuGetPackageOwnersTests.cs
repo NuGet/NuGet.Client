@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using NuGet.Packaging.Signing;
 using Org.BouncyCastle.Asn1;
 using Xunit;
-using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;
 
 namespace NuGet.Packaging.Test
 {

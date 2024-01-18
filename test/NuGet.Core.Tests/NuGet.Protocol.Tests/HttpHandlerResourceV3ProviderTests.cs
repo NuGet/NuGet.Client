@@ -12,7 +12,9 @@ using FluentAssertions;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+#if IS_DESKTOP
 using NuGet.Test.Utility;
+#endif
 using Xunit;
 
 namespace NuGet.Protocol.Tests

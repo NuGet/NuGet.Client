@@ -7,7 +7,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.Versioning;
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Packaging.Signing;
+#endif
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +21,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
-using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility

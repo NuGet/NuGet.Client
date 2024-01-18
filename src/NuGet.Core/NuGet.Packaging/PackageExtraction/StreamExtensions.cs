@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if NETFRAMEWORK || NETSTANDARD2_0
 using System.Buffers;
+#endif
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using NuGet.Common;

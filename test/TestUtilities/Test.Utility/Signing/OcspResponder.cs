@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+#if IS_SIGNING_SUPPORTED
 using System.Net;
-using System.Threading.Tasks;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Ocsp;
+#endif
+using System.Threading.Tasks;
 using Org.BouncyCastle.X509;
 
 namespace Test.Utility.Signing

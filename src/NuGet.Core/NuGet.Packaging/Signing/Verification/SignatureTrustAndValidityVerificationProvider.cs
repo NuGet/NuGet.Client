@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+#if IS_SIGNING_SUPPORTED
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+#endif
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;

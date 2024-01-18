@@ -1,9 +1,10 @@
-
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+#if IS_DESKTOP
 using System.Reflection;
+#endif
 using NuGet.Common;
 
 namespace NuGet.Protocol.Plugins

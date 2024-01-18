@@ -3,16 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+#if IS_SIGNING_SUPPORTED
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
-#endif
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+#endif
+using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;

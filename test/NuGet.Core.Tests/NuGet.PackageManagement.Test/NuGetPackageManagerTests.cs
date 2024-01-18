@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if IS_DESKTOP
 using System.Collections.Concurrent;
+using NuGet.VisualStudio;
+#endif
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -28,9 +31,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-#if IS_DESKTOP
-using NuGet.VisualStudio;
-#endif
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;

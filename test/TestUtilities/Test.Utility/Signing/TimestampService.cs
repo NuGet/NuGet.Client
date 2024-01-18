@@ -3,24 +3,26 @@
 
 using System;
 using System.Collections.Generic;
+#if IS_SIGNING_SUPPORTED
 using System.Net;
-using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cmp;
 using Org.BouncyCastle.Asn1.Ess;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.Tsp;
-using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Cms;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Tsp;
-using Org.BouncyCastle.X509;
-using Org.BouncyCastle.X509.Extension;
 using Org.BouncyCastle.X509.Store;
 using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;
 using BcAttributeTable = Org.BouncyCastle.Asn1.Cms.AttributeTable;
 using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
+#endif
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.X509;
+using Org.BouncyCastle.X509.Extension;
 
 namespace Test.Utility.Signing
 {

@@ -4,13 +4,15 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+#if IS_SIGNING_SUPPORTED
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Operators;
-using Org.BouncyCastle.Math;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
-using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
+#endif
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.X509;
 
 namespace Test.Utility.Signing
 {

@@ -7,7 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+#if !IS_CORECLR // CORECLR_TODO: XmlSchema
 using System.Xml.Schema;
+#endif
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;

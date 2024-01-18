@@ -3,7 +3,6 @@
 
 using System;
 using System.Security.Cryptography;
-using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Math;

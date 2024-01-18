@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+#if !IS_CORECLR
 using System.Globalization;
+using System.Resources;
+#endif
 using System.IO;
 using System.Linq;
-using System.Resources;
 using FluentAssertions;
 using Moq;
 using NuGet.Common;

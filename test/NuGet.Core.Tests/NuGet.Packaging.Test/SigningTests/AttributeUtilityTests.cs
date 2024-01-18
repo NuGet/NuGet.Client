@@ -15,7 +15,6 @@ using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cms;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Cms;
-using Org.BouncyCastle.Crypto;
 using Test.Utility.Signing;
 using Xunit;
 using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;

@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+#if IS_SIGNING_SUPPORTED
 using System.Linq;
+#endif
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 

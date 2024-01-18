@@ -3,7 +3,9 @@
 
 using System;
 using System.IO;
+#if IS_SIGNING_SUPPORTED
 using System.IO.Compression;
+#endif
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
