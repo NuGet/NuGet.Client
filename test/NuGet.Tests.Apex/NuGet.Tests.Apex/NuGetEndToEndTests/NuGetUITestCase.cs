@@ -984,14 +984,13 @@ namespace NuGet.Tests.Apex
             NuGetUIProjectTestExtension uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
 
-            // Act
             _pathContext.Settings.DisableAutomaticInPackageRestoreSection();
 
             var installedPackageFolderPath = Path.Combine(_pathContext.PackagesV2, "Contoso.A.1.0.0");
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
             Directory.Delete(installedPackageFolderPath, true);
-            CommonUtility.WaitForDirectoryNotExists(installedPackageFolderPath);
 
+            // Act
             solutionService.Build();
 
             // Assert
