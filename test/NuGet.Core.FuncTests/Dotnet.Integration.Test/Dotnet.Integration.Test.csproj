@@ -3,9 +3,7 @@
     <TargetFrameworks>$(NETCoreTestTargetFrameworks)</TargetFrameworks>
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
   </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />

@@ -5,9 +5,7 @@
     <UseParallelXunit>true</UseParallelXunit>
     <Description>NuGet package signing cross framework test.</Description>
   </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
