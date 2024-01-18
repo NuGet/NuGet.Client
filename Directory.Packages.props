@@ -70,7 +70,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="17.2.0-beta1-20502-01" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.VS" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
-    <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.2.7" />
+    <PackageVersion Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" Version="17.6.32" />
     <PackageVersion Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.4.2244" />
     <PackageVersion Include="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
@@ -114,6 +114,8 @@
     <PackageVersion Include="xunit" Version="2.6.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.StaFact" Version="1.1.11" />
+    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
+
   </ItemGroup>
 
   <!--
