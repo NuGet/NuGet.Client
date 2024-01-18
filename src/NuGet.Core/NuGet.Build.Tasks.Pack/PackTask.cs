@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if DEBUG
 using System.Diagnostics;
+#endif
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Common;

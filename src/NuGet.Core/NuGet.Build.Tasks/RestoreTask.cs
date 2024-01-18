@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+#if DEBUG
 using System.Diagnostics;
+#endif
 using System.IO;
 using System.Linq;
 using System.Threading;
