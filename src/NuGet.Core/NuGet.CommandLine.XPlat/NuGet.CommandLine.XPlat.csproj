@@ -9,9 +9,6 @@
     <PackProject>true</PackProject>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
   </ItemGroup>

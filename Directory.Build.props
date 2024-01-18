@@ -12,7 +12,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <NoWarn>$(NoWarn);CS1591;IDE0076;CS1573;CS1574;CS1587;CS1570;CS1572;CS1584;CS1658;CS0419;</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;IDE0076;CS1573;CS1574;CS1587;CS1570;CS1572;CS1584;CS1658;CS0419;IDE0055;</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_WasCommonPropsImported)' != 'true'">
     <!-- Some legacy projects reference assemblies in GAC;AssemblyFolders. -->
