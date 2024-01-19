@@ -147,5 +147,4 @@ dotnet_naming_rule.private_field_rule.style = private_member_style
 dotnet_diagnostic.IDE0076.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
 
-# TODO: remove this - https://github.com/dotnet/aspnetcore/issues/47912
 dotnet_diagnostic.EnableGenerateDocumentationFile.severity = none
