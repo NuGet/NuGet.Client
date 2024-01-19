@@ -183,63 +183,72 @@ namespace NuGet.Versioning
                 value = -value;
             }
 
+            bool digitFound = false;
             if (value >= billion)
             {
                 int billions = value / billion;
                 value %= billion;
                 sb.Append(ToChar(billions));
+                digitFound = true;
             }
 
-            if (value >= hundredMillion)
+            if (digitFound || value >= hundredMillion)
             {
                 int hundredMillions = value / hundredMillion;
                 value %= hundredMillion;
                 sb.Append(ToChar(hundredMillions));
+                digitFound = true;
             }
 
-            if (value >= tenMillion)
+            if (digitFound || value >= tenMillion)
             {
                 int tenMillions = value / tenMillion;
                 value %= tenMillion;
                 sb.Append(ToChar(tenMillions));
+                digitFound = true;
             }
 
-            if (value >= million)
+            if (digitFound || value >= million)
             {
                 int millions = value / million;
                 value %= million;
                 sb.Append(ToChar(millions));
+                digitFound = true;
             }
 
-            if (value >= hundredThousand)
+            if (digitFound || value >= hundredThousand)
             {
                 int hundredThousands = value / hundredThousand;
                 value %= hundredThousand;
                 sb.Append(ToChar(hundredThousands));
+                digitFound = true;
             }
 
-            if (value >= tenThousand)
+            if (digitFound || value >= tenThousand)
             {
                 int tenThousands = value / tenThousand;
                 value %= tenThousand;
                 sb.Append(ToChar(tenThousands));
+                digitFound = true;
             }
 
-            if (value >= thousand)
+            if (digitFound || value >= thousand)
             {
                 int thousands = value / thousand;
                 value %= thousand;
                 sb.Append(ToChar(thousands));
+                digitFound = true;
             }
 
-            if (value >= hundred)
+            if (digitFound || value >= hundred)
             {
                 int hundreds = value / hundred;
                 value %= hundred;
                 sb.Append(ToChar(hundreds));
+                digitFound = true;
             }
 
-            if (value >= ten)
+            if (digitFound || value >= ten)
             {
                 int tens = value / ten;
                 sb.Append(ToChar(tens));
