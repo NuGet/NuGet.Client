@@ -14,7 +14,7 @@ namespace NuGet.ProjectModel
 {
     internal static class JsonUtility
     {
-        internal const string NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING = nameof(NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING);
+        internal static string NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING = nameof(NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING);
         internal static bool? UseNewtonsoftJson = null;
         internal static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
 
@@ -60,7 +60,7 @@ namespace NuGet.ProjectModel
                 versionStr == null ? null : VersionRange.Parse(versionStr));
         }
 
-        internal static bool UseNewstonSoftJsonForParsing(IEnvironmentVariableReader environmentVariableReader, bool bypassCache)
+        internal static bool UseNewtonsoftJsonForParsing(IEnvironmentVariableReader environmentVariableReader, bool bypassCache)
         {
             if (!UseNewtonsoftJson.HasValue || bypassCache)
             {

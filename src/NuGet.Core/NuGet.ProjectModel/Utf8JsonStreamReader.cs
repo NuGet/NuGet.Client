@@ -107,10 +107,14 @@ namespace NuGet.ProjectModel
 
         internal IList<T> ReadObjectAsList<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
         {
-            if (TokenType != JsonTokenType.StartObject)
+            if (TokenType == JsonTokenType.Null)
             {
                 return Array.Empty<T>();
+            }
 
+            if (TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException($"Expected start object token but instead found '{TokenType}'");
             }
             //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
             Read();
@@ -131,24 +135,27 @@ namespace NuGet.ProjectModel
             return listObjects;
         }
 
-        internal void ReadArrayOfObjects<T1, T2>(IList<T2> objectList, IUtf8JsonStreamReaderConverter<T1> streamReaderConverter) where T1 : T2
+        internal IList<T> ReadListOfObjects<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
         {
-            if (objectList is null)
+            if (TokenType != JsonTokenType.StartArray)
             {
-                return;
+                throw new JsonException($"Expected start array token but instead found '{TokenType}'");
             }
 
-            if (Read() && TokenType == JsonTokenType.StartArray)
+            IList<T> objectList = null;
+            if (TokenType == JsonTokenType.StartArray)
             {
                 while (Read() && TokenType != JsonTokenType.EndArray)
                 {
                     var convertedObject = streamReaderConverter.Read(ref this);
                     if (convertedObject != null)
                     {
+                        objectList ??= new List<T>();
                         objectList.Add(convertedObject);
                     }
                 }
             }
+            return objectList ?? Array.Empty<T>();
         }
 
         internal string ReadNextTokenAsString()

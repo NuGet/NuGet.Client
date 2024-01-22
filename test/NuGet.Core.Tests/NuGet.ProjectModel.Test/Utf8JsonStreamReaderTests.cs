@@ -798,6 +798,50 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void ReadObjectAsList_WithValidJson_ReturnsValue()
+        {
+            var json = "{ \"a\": { \"property1\": \"1\" },\"b\": { \"property1\": \"1\" }, \"c\": { \"property1\": \"1\" }}";
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
+            {
+                var results = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                Assert.Equal(3, results.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData("{}")]
+        [InlineData("null")]
+        public void ReadObjectAsList_WithEmptyValues_ReturnsEmptyArray(string json)
+        {
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
+            {
+                var results = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                Assert.Equal(0, results.Count);
+                Assert.IsType(Array.Empty<LockFileItem>().GetType(), results);
+            }
+        }
+
+        [Fact]
+        public void ReadObjectAsList_WithInvalidValue_ThrowsException()
+        {
+            var json = "\"a\": { \"property1\": \"1\" }";
+
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            Assert.Throws<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(encodedBytes))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                }
+            });
+        }
+
+        [Fact]
         public void ReadStringArrayAsReadOnlyListFromArrayStart_WhenValuesAreConvertibleToString_ReturnsReadOnlyList()
         {
             const string json = "[null, true, -2, 3.14, \"a\"]";

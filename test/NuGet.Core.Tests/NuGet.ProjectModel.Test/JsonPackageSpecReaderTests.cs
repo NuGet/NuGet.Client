@@ -197,7 +197,6 @@ namespace NuGet.ProjectModel.Test
 
         [Theory]
         [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
-        [MemberData(nameof(TestEnvironmentVariableReader), "{}", MemberType = typeof(LockFileParsingEnvironmentVariable))]
         [MemberData(nameof(TestEnvironmentVariableReader), @"{
                                 ""packOptions"": {}
                               }", MemberType = typeof(LockFileParsingEnvironmentVariable))]
@@ -1238,7 +1237,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("Unable to resolve dependency ''.", exception.Message);
             Assert.Null(exception.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(1, exception.Line);
                 Assert.Equal(21, exception.Column);
@@ -1291,7 +1290,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal($"Invalid dependency target value '{target}'.", exception.Message);
             Assert.Null(exception.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(1, exception.Line);
                 // The position is after the target name, which is of variable length.
@@ -1429,7 +1428,7 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 35 : 'b' is not a valid version string.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -1462,7 +1461,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<ArgumentException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 22 : Package dependencies must specify a version range.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -1694,7 +1693,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve central version ''.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -1718,7 +1717,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -1798,7 +1797,7 @@ namespace NuGet.ProjectModel.Test
 
             FileFormatException exception = Assert.Throws<FileFormatException>(() => GetPackageSpec(json, environmentVariableReader));
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve dependency ''.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -1858,7 +1857,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal($"Error reading '' at line 1 column 20 : Invalid dependency target value '{target}'.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -1908,7 +1907,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<InvalidCastException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Specified cast is not valid.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2009,7 +2008,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 54 : 'c' is not a valid version string.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2046,7 +2045,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 41 : Package dependencies must specify a version range.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2209,7 +2208,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve downloadDependency ''.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2246,7 +2245,7 @@ namespace NuGet.ProjectModel.Test
 
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : The version cannot be null or empty", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2273,7 +2272,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal($"Error reading '' at line 1 column 20 : Error reading '' at line 1 column {expectedColumn} : '{version}' is not a valid version string.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2385,7 +2384,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<ArgumentException>(exception.InnerException.InnerException);
             Assert.Null(exception.InnerException.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Error reading '' at line 1 column 48 : Package dependencies must specify a version range.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2452,7 +2451,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal("Error reading '' at line 1 column 20 : Unable to resolve frameworkReference.", exception.Message);
                 Assert.Equal(1, exception.Line);
@@ -2575,7 +2574,7 @@ namespace NuGet.ProjectModel.Test
             Assert.IsType<FileFormatException>(exception.InnerException);
             Assert.Null(exception.InnerException.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(
                     $"Error reading '' at line 1 column 20 : Imports contains an invalid framework: '{expectedImport}' in 'project.json'.",
@@ -2814,7 +2813,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Null(exception.InnerException);
             Assert.Equal("The pack options package type must be a string or array of strings in 'project.json'.", exception.Message);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(1, exception.Line);
                 Assert.Equal(expectedColumn, exception.Column);
@@ -3717,7 +3716,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("The value of a script in 'project.json' can only be a string or an array of strings", exception.Message);
             Assert.Null(exception.InnerException);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(1, exception.Line);
                 Assert.Equal(17, exception.Column);
@@ -3868,7 +3867,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var results = new List<CentralTransitiveDependencyGroup>();
-            if (environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING").Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+            if (environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING).Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
             {
                 using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
                 var reader = new Utf8JsonStreamReader(stream);
@@ -3946,7 +3945,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             var results = new List<CentralTransitiveDependencyGroup>();
-            if (environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING").Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
+            if (environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING).Equals(bool.FalseString, StringComparison.OrdinalIgnoreCase))
             {
                 Assert.ThrowsAny<System.Text.Json.JsonException>(() =>
                 {

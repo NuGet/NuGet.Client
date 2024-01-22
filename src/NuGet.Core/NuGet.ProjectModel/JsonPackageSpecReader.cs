@@ -78,7 +78,7 @@ namespace NuGet.ProjectModel
 
         internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
         {
-            if (!JsonUtility.UseNewstonSoftJsonForParsing(environmentVariableReader, bypassCache))
+            if (!JsonUtility.UseNewtonsoftJsonForParsing(environmentVariableReader, bypassCache))
             {
                 return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, snapshotValue);
             }

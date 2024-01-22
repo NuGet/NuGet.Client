@@ -10,7 +10,7 @@ using NuGet.Common;
 namespace NuGet.ProjectModel
 {
     /// <summary>
-    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="AssetsLogMessage"/>
+    /// A <see cref="IUtf8JsonStreamReaderConverter{T}"/> to allow read JSON into <see cref="IAssetsLogMessage"/>
     /// </summary>
     /// <example>
     /// {
@@ -29,7 +29,7 @@ namespace NuGet.ProjectModel
     ///     ]
     /// }
     /// </example>
-    internal class Utf8JsonStreamAssetsLogMessageConverter : IUtf8JsonStreamReaderConverter<AssetsLogMessage>
+    internal class Utf8JsonStreamIAssetsLogMessageConverter : IUtf8JsonStreamReaderConverter<IAssetsLogMessage>
     {
         private static readonly byte[] LevelPropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.LEVEL);
         private static readonly byte[] CodePropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.CODE);
@@ -43,7 +43,7 @@ namespace NuGet.ProjectModel
         private static readonly byte[] LibraryIdPropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.LIBRARY_ID);
         private static readonly byte[] TargetGraphsPropertyName = Encoding.UTF8.GetBytes(LogMessageProperties.TARGET_GRAPHS);
 
-        public AssetsLogMessage Read(ref Utf8JsonStreamReader reader)
+        public IAssetsLogMessage Read(ref Utf8JsonStreamReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {

@@ -6,7 +6,7 @@ using Test.Utility;
 
 namespace NuGet.ProjectModel
 {
-    public class LockFileParsingEnvironmentVariable
+    public static class LockFileParsingEnvironmentVariable
     {
         public static IEnumerable<object[]> TestEnvironmentVariableReader()
         {
@@ -34,14 +34,14 @@ namespace NuGet.ProjectModel
                 new TestEnvironmentVariableReader(
                     new Dictionary<string, string>()
                     {
-                        ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.TrueString
+                        [JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING] = bool.TrueString
                     }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: true")
                 };
             var UseNjForFileFalse = new List<object> {
                 new TestEnvironmentVariableReader(
                     new Dictionary<string, string>()
                     {
-                        ["NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING"] = bool.FalseString
+                        [JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING] = bool.FalseString
                     }, "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: false")
                 };
 

@@ -171,7 +171,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("Invalid dependency target value 'blah'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(5, exception.Line);
             }
@@ -213,7 +213,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("Invalid dependency target value 'winmd'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(5, exception.Line);
             }
@@ -255,7 +255,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("Invalid dependency target value 'package,project'.", exception.Message);
             Assert.EndsWith("project.json", exception.Path);
 
-            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING")))
+            if (string.Equals(bool.TrueString, environmentVariableReader.GetEnvironmentVariable(JsonUtility.NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING)))
             {
                 Assert.Equal(5, exception.Line);
             }

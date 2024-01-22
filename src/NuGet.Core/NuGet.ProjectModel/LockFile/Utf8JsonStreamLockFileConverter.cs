@@ -21,7 +21,7 @@ namespace NuGet.ProjectModel
     ///     "projectFileDependencyGroups": { <see cref="Utf8JsonStreamProjectFileDependencyGroupConverter"/> },
     ///     "packageFolders": { <see cref="Utf8JsonStreamLockFileItemConverter{T}"/> },
     ///     "project": { <see cref="JsonPackageSpecReader.GetPackageSpec(ref Utf8JsonStreamReader, string, string, string)"/> },
-    ///     "logs": [ <see cref="Utf8JsonStreamAssetsLogMessageConverter"/> ]
+    ///     "logs": [ <see cref="Utf8JsonStreamIAssetsLogMessageConverter"/> ]
     /// }
     /// </example>
     internal class Utf8JsonStreamLockFileConverter : IUtf8JsonStreamReaderConverter<LockFile>
@@ -109,7 +109,8 @@ namespace NuGet.ProjectModel
                 }
                 else if (reader.ValueTextEquals(LogsPropertyName))
                 {
-                    reader.ReadArrayOfObjects<AssetsLogMessage, IAssetsLogMessage>(lockFile.LogMessages, Utf8JsonReaderExtensions.AssetsLogMessageConverter);
+                    reader.Read();
+                    lockFile.LogMessages = reader.ReadListOfObjects<IAssetsLogMessage>(Utf8JsonReaderExtensions.IAssetsLogMessageConverter);
                 }
                 else
                 {
