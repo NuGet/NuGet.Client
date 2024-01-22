@@ -8,7 +8,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class DetailedVerbosityPackage : NormalVerbosityPackage
+    internal class ExactMatchDetailedVerbosityJsonFormatSearchResultPackage : ExactMatchNormalVerbosityJsonFormatSearchResultPackage
     {
         [JsonPropertyName("description")]
         public string Description { get; set; }
@@ -22,11 +22,11 @@ namespace NuGet.CommandLine.XPlat
         [JsonPropertyName("projectUrl")]
         public Uri ProjectUrl { get; set; }
 
-        public DetailedVerbosityPackage() : base()
+        public ExactMatchDetailedVerbosityJsonFormatSearchResultPackage() : base()
         {
         }
 
-        public DetailedVerbosityPackage(IPackageSearchMetadata packageSearchMetadata, string deprecation) : base(packageSearchMetadata)
+        public ExactMatchDetailedVerbosityJsonFormatSearchResultPackage(IPackageSearchMetadata packageSearchMetadata, string deprecation) : base(packageSearchMetadata)
         {
             Description = packageSearchMetadata.Description;
 

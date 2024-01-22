@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using NuGet.CommandLine.XPlat.Commands.PackageSearch;
 
 namespace NuGet.CommandLine.XPlat
 {

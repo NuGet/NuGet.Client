@@ -6,17 +6,17 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class NormalVerbosityPackage : MinimalVerbosityPackage
+    internal class NormalVerbosityJsonFormatSearchResultPackage : MinimalVerbosityJsonFormatSearchResultPackage
     {
-        [JsonPropertyName("total downloads")]
+        [JsonPropertyName("totalDownloads")]
         public long? Downloads { get; set; }
 
         [JsonPropertyName("owners")]
         public string Owners { get; set; }
 
-        public NormalVerbosityPackage() : base() { }
+        public NormalVerbosityJsonFormatSearchResultPackage() : base() { }
 
-        public NormalVerbosityPackage(IPackageSearchMetadata packageSearchMetadata) : base(packageSearchMetadata)
+        public NormalVerbosityJsonFormatSearchResultPackage(IPackageSearchMetadata packageSearchMetadata) : base(packageSearchMetadata)
         {
             Downloads = packageSearchMetadata.DownloadCount;
             Owners = packageSearchMetadata.Owners;
