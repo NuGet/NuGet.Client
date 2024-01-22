@@ -67,4 +67,8 @@
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\PackageSearch\JsonFormat\" />
+  </ItemGroup>
 </Project>
