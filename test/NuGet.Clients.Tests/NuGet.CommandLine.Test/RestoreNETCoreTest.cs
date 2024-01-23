@@ -344,7 +344,7 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var letter in projects.Keys)
                 {
-                    Assert.True(projects[letter].AssetsFile.Libraries.Select(e => e.Name).Contains($"package{letter}"));
+                    Assert.Contains($"package{letter}", projects[letter].AssetsFile.Libraries.Select(e => e.Name));
                 }
             }
         }
@@ -430,7 +430,7 @@ namespace NuGet.CommandLine.Test
                 var r = Util.Restore(pathContext, project.ProjectPath);
 
                 // Assert
-                Assert.True(project.AssetsFile.Libraries.Select(e => e.Name).Contains("packageB"));
+                Assert.Contains("packageB", project.AssetsFile.Libraries.Select(e => e.Name));
             }
         }
 

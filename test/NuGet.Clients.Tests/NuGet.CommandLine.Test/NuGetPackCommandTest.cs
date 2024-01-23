@@ -2532,7 +2532,7 @@ namespace " + projectName + @"
                     Assert.Equal("packageATitle", nuspecReader.GetTitle());
                     Assert.Equal("test1@microsoft.com", nuspecReader.GetAuthors());
                     Assert.Equal("testOwner", nuspecReader.GetOwners());
-                    Assert.Equal(false, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
                     Assert.Equal("the description", nuspecReader.GetDescription());
                     Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
                     Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
@@ -2630,7 +2630,7 @@ namespace " + projectName + @"
                     Assert.Equal("packageATitle", nuspecReader.GetTitle());
                     Assert.Equal("test1@microsoft.com", nuspecReader.GetAuthors());
                     Assert.Equal("testOwner", nuspecReader.GetOwners());
-                    Assert.Equal(false, nuspecReader.GetRequireLicenseAcceptance());
+                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
                     Assert.Equal("the description", nuspecReader.GetDescription());
                     Assert.Equal("Copyright (C) Microsoft 2013", nuspecReader.GetCopyright());
                     Assert.Equal("Microsoft,Sample,CustomTag", nuspecReader.GetTags());
@@ -2783,7 +2783,8 @@ namespace " + projectName + @"
 
         // Test that when -IncludeReferencedProjects is not specified,
         // pack command will not try to look for the output files of the
-        // referenced projects.
+        // referenced projects
+        [Fact]
         public void PackCommand_IncludeReferencedProjectsOff()
         {
             var msbuild = Path.Combine(
@@ -5691,6 +5692,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             Util.TestCommandInvalidArguments("pack a.nuspec b.nuspec");
         }
 
+        [Fact]
         public void PackCommand_PackageFromNuspecWithFrameworkReferences_MultiTargeting()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -6111,7 +6113,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     if (symbolPackageFormat == SymbolPackageFormat.Snupkg)
                     {
                         var nuspecReader = snupkg.NuspecReader;
-                        Assert.Equal(null, nuspecReader.GetIcon());
+                        Assert.Null(nuspecReader.GetIcon());
                     }
                 }
             }

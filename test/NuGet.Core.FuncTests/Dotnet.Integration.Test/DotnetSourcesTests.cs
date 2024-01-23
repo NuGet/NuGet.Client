@@ -1066,7 +1066,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
         /// </summary>
         /// <remarks>Checks invalid arguments message in stderr, check help message in stdout</remarks>
         /// <param name="commandName">The nuget.exe command name to verify, without "nuget.exe" at the beginning</param>
-        public void TestCommandInvalidArguments(string command, int badCommandIndex)
+        internal void TestCommandInvalidArguments(string command, int badCommandIndex)
         {
             using (var testDirectory = _fixture.CreateTestDirectory())
             {

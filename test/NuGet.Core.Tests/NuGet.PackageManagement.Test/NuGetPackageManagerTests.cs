@@ -2293,7 +2293,7 @@ namespace NuGet.Test
             }
         }
 
-        //[Fact]
+        [Fact(Skip = "Test is dependent on latest nuget.org packages, which means it's really difficult to get them to work.")]
         public async Task InstallPackageTargetingASPNetCore50()
         {
             // Arrange
@@ -3142,7 +3142,7 @@ namespace NuGet.Test
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType(typeof(InvalidOperationException), e);
+                    Assert.IsType<InvalidOperationException>(e);
                 }
             }
         }
@@ -3212,13 +3212,12 @@ namespace NuGet.Test
                 }
                 catch (Exception e)
                 {
-                    Assert.IsType(typeof(InvalidOperationException), e);
+                    Assert.IsType<InvalidOperationException>(e);
                 }
             }
         }
 
-        // [Fact] -- This test performs update but verifies for a specific version
-        //           This is not going to work as newer versions are uploaded
+        [Fact(Skip = "This test performs update but verifies for a specific version. This is not going to work as newer versions are uploaded.")]
         public async Task PreviewUpdatePackages()
         {
             // Arrange
@@ -3633,8 +3632,7 @@ namespace NuGet.Test
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(msBuildNuGetProject.ProjectSystem.TargetFramework, packagesInPackagesConfig[0].TargetFramework);
                 Assert.Equal(1, testNuGetProjectContext.TestExecutionContext.FilesOpened.Count);
-                Assert.True(string.Equals(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), "ReadMe.txt"),
-                    testNuGetProjectContext.TestExecutionContext.FilesOpened.First(), StringComparison.OrdinalIgnoreCase));
+                Assert.Equal(Path.Combine(packagePathResolver.GetInstallPath(packageIdentity), "ReadMe.txt"), testNuGetProjectContext.TestExecutionContext.FilesOpened.First(), ignoreCase: true);
             }
         }
 
@@ -4510,8 +4508,8 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(new PackageIdentity("a", new NuGetVersion(1, 0, 0))));
-                Assert.True(resultIdentities.Contains(new PackageIdentity("b", new NuGetVersion(3, 0, 0))));
+                Assert.Contains(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), resultIdentities);
+                Assert.Contains(new PackageIdentity("b", new NuGetVersion(3, 0, 0)), resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4568,8 +4566,8 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(new PackageIdentity("a", new NuGetVersion(2, 0, 0))));
-                Assert.True(resultIdentities.Contains(new PackageIdentity("b", new NuGetVersion(1, 0, 0))));
+                Assert.Contains(new PackageIdentity("a", new NuGetVersion(2, 0, 0)), resultIdentities);
+                Assert.Contains(new PackageIdentity("b", new NuGetVersion(1, 0, 0)), resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4610,7 +4608,7 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(new PackageIdentity("Umbraco", new NuGetVersion("5.1.0.175"))));
+                Assert.Contains(new PackageIdentity("Umbraco", new NuGetVersion("5.1.0.175")), resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4659,7 +4657,7 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(target));
+                Assert.Contains(target, resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4706,8 +4704,8 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(target));
-                Assert.True(resultIdentities.Contains(new PackageIdentity("DependencyTestB", NuGetVersion.Parse("1.0.0"))));
+                Assert.Contains(target, resultIdentities);
+                Assert.Contains(new PackageIdentity("DependencyTestB", NuGetVersion.Parse("1.0.0")), resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4754,8 +4752,8 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(target));
-                Assert.True(resultIdentities.Contains(new PackageIdentity("DependencyTestB", NuGetVersion.Parse("1.0.0-a"))));
+                Assert.Contains(target, resultIdentities);
+                Assert.Contains(new PackageIdentity("DependencyTestB", NuGetVersion.Parse("1.0.0-a")), resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4806,7 +4804,7 @@ namespace NuGet.Test
 
                 var resultIdentities = result.Select(p => p.PackageIdentity);
 
-                Assert.True(resultIdentities.Contains(target));
+                Assert.Contains(target, resultIdentities);
 
                 //  and all the actions are Install
                 foreach (var nugetProjectAction in result)
@@ -4902,7 +4900,7 @@ namespace NuGet.Test
                     null,
                     CancellationToken.None);
 
-                Assert.True(nugetProjectActions.Select(pa => pa.PackageIdentity.Id).Contains(target, StringComparer.OrdinalIgnoreCase));
+                Assert.Contains(target, nugetProjectActions.Select(pa => pa.PackageIdentity.Id), StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -4946,11 +4944,11 @@ namespace NuGet.Test
                     null,
                     CancellationToken.None);
 
-                Assert.True(nugetProjectActions.Select(pa => pa.PackageIdentity.Id).Contains(target, StringComparer.OrdinalIgnoreCase));
+                Assert.Contains(target, nugetProjectActions.Select(pa => pa.PackageIdentity.Id), StringComparer.OrdinalIgnoreCase);
             }
         }
 
-        // [Fact]
+        [Fact]
         public async Task UpdatePackagePreservePackagesConfigAttributes()
         {
             // Arrange
@@ -6028,6 +6026,7 @@ namespace NuGet.Test
             }
         }
 
+        [Fact]
         public async Task ExecuteNuGetProjectActionsAsync_MultipleBuildIntegratedProjects()
         {
             // Arrange
@@ -7112,14 +7111,14 @@ namespace NuGet.Test
 
             Assert.Single(resolvedActions);
             ResolvedAction resolvedAction = resolvedActions.Single();
-            Assert.IsType(typeof(BuildIntegratedProjectAction), resolvedAction.Action);
+            Assert.IsType<BuildIntegratedProjectAction>(resolvedAction.Action);
 
             BuildIntegratedProjectAction buildIntegratedProjectAction = resolvedAction.Action as BuildIntegratedProjectAction;
             RestoreSummaryRequest summaryRequest = buildIntegratedProjectAction.RestoreResultPair.SummaryRequest;
 
             // Request should have "*" Pattern Mapping for the requested new mapping source.
             PackageSourceMapping requestedSourceMapping = summaryRequest.Request.PackageSourceMapping;
-            Assert.Equal(true, requestedSourceMapping.IsEnabled);
+            Assert.True(requestedSourceMapping.IsEnabled);
             IReadOnlyList<string> mappedSources = requestedSourceMapping.GetConfiguredPackageSources(newMappingID);
             Assert.Contains(newMappingSource, mappedSources);
         }
@@ -7876,9 +7875,9 @@ namespace NuGet.Test
 
         private void VerifyPreviewActionsTelemetryEvents_PackagesConfig(IEnumerable<string> actual)
         {
-            Assert.True(actual.Contains(TelemetryConstants.GatherDependencyStepName));
-            Assert.True(actual.Contains(TelemetryConstants.ResolveDependencyStepName));
-            Assert.True(actual.Contains(TelemetryConstants.ResolvedActionsStepName));
+            Assert.Contains(TelemetryConstants.GatherDependencyStepName, actual);
+            Assert.Contains(TelemetryConstants.ResolveDependencyStepName, actual);
+            Assert.Contains(TelemetryConstants.ResolvedActionsStepName, actual);
         }
 
         private static void AddToPackagesFolder(PackageIdentity package, string root)

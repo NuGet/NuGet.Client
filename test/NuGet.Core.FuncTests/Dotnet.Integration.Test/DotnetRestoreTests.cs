@@ -2276,6 +2276,7 @@ EndGlobal";
             Assert.Contains($"Installed {packageY} {version} from {pathContext.PackageSource}", result.AllOutput);
         }
 
+        [Fact]
         public async Task DotnetRestore_WithDuplicatePackageVersion_WithTreatWarningsAsErrors_ErrorsWithNU1506()
         {
             using (SimpleTestPathContext pathContext = _msbuildFixture.CreateSimpleTestPathContext())

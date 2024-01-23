@@ -343,6 +343,7 @@ namespace NuGet.Resolver.Test
             Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (= 1.0.0)'. 'b' has an additional constraint (= 2.0.0) defined in packages.config.", message);
         }
 
+        [Fact]
         public void ResolverUtility_GetDiagnosticMessageForIncompatibleDependencyWithAllowedVersion()
         {
             // Install a 1.0.0 - which requires d 1.0.0 but d 2.0.0 is already installed.
@@ -372,6 +373,7 @@ namespace NuGet.Resolver.Test
             Assert.Equal("Unable to resolve dependencies. 'd 2.0.0' is not compatible with 'a 1.0.0 constraint: d (= 1.0.0)'.", message);
         }
 
+        [Fact]
         public void ResolverUtility_GetDiagnosticMessageForMissingTargetDependency()
         {
             // Install b 1.1.0 - which requires d 1.0.0 which is missing from any source.

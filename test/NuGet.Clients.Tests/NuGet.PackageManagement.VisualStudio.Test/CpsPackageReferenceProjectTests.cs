@@ -3652,7 +3652,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Assert
                 Assert.NotNull(exception);
-                Assert.True(exception.Message.StartsWith($"Package '{nonexistingPackage}' to be uninstalled could not be found in project"));
+                Assert.StartsWith($"Package '{nonexistingPackage}' to be uninstalled could not be found in project", exception.Message);
             }
         }
 

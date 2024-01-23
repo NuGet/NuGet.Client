@@ -3305,7 +3305,7 @@ namespace NuGet.Commands.FuncTest
                 Assert.False(result.Success);
                 Assert.Equal(1, logger.ErrorMessages.Count);
                 logger.ErrorMessages.TryDequeue(out var errorMessage);
-                Assert.True(errorMessage.Contains("Platform version"));
+                Assert.Contains("Platform version", errorMessage);
                 var messagesForNU1012 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1012);
                 Assert.Equal(1, messagesForNU1012.Count());
             }

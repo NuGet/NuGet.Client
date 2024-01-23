@@ -118,7 +118,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             try
             {
-                packagesTask.Wait();
+                await packagesTask;
             }
             catch (AggregateException e)
             {
