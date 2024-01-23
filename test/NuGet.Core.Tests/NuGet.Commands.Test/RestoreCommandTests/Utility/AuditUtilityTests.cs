@@ -42,7 +42,7 @@ public class AuditUtilityTests
     [InlineData("disable", false)]
     [InlineData("FALSE", false)]
     [InlineData("invalid", true, true)]
-    public void ParseEnableValue_WithValue_ReturnsExpected(string input, bool expected, bool expectLog = false)
+    public void ParseEnableValue_WithValue_ReturnsExpected(string? input, bool expected, bool expectLog = false)
     {
         // Arrange
         string projectPath = "my.csproj";
