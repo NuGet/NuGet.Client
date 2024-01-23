@@ -144,7 +144,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 }}";
 
             string detailedJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{
@@ -167,7 +167,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 }}";
 
             string normalJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{
@@ -186,7 +186,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 }}";
 
             string minimalJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{

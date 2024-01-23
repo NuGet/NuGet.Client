@@ -27,7 +27,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             printer.Start();
 
             var expectedZeroJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{
@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             printer.Start();
 
             var expectedOneJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{
@@ -113,7 +113,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             printer.Start();
 
             var expectedTwoJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{
@@ -154,7 +154,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Mock<PackageSource> mockSource = new Mock<PackageSource>("http://errorsource", "ErrorTestSource");
             string errorMessage = "An error occurred";
             var expectedJson = $@"{{
-  ""version"": 1,
+  ""version"": 2,
   ""problems"": [],
   ""searchResult"": [
     {{
