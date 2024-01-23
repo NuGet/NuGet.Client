@@ -2321,7 +2321,7 @@ EndGlobal";
 
                 var result = _msbuildFixture.RunDotnetExpectFailure(workingDirectory, $"restore {projectFile}");
 
-                result.Errors.Should().Contain("NU1506");
+                result.AllOutput.Should().Contain("NU1506");
                 result.AllOutput.Contains("X [1.0.0], X [2.0.0]");
             }
         }

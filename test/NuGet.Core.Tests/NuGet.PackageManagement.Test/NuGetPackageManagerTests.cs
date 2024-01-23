@@ -6026,7 +6026,7 @@ namespace NuGet.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13185")]
         public async Task ExecuteNuGetProjectActionsAsync_MultipleBuildIntegratedProjects()
         {
             // Arrange

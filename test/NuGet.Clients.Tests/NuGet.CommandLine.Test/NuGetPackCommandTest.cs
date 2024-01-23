@@ -2896,14 +2896,13 @@ namespace Proj2
 
                 // Assert
                 var package = new PackageArchiveReader(File.OpenRead(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg")));
-                var files = package.GetFiles().ToArray();
+                var files = package.GetNonPackageDefiningFiles().ToArray();
                 Array.Sort(files);
 
                 Assert.Equal(
-                    new string[]
-                    {
-                        Path.Combine("lib", "net40", "proj2.dll")
-                    },
+                    [
+                        "lib/net472/proj2.dll"
+                    ],
                     files);
             }
         }
