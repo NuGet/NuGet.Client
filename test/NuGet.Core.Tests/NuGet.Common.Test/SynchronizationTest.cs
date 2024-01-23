@@ -41,7 +41,7 @@ namespace NuGet.Common.Test
                             fileId,
                             tB => Task.FromResult(0),
                             ctsB.Token);
-                        Assert.False(true, "Waiting with a timeout for a lock that has not been released should fail.");
+                        Assert.Fail("Waiting with a timeout for a lock that has not been released should fail.");
                     }
                     catch (OperationCanceledException)
                     {

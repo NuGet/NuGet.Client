@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.Test
                         }
                     default:
                         {
-                            Assert.True(false, $"Unexpected package {package.Identity}");
+                            Assert.Fail($"Unexpected package {package.Identity}");
                             break;
                         }
                 }
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.Test
                             }
                         default:
                             {
-                                Assert.True(false, $"Unexpected package {package.Id}");
+                                Assert.Fail($"Unexpected package {package.Id}");
                                 break;
                             }
                     }
