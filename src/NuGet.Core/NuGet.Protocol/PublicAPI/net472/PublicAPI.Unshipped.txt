@@ -1,1 +1,7 @@
 #nullable enable
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.OwnersEnumerable.get -> System.Collections.Generic.IEnumerable<string>
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersEnumerable.get -> System.Collections.Generic.IEnumerable<string>
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersEnumerable.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.OwnersEnumerable.get -> System.Collections.Generic.IEnumerable<string>
+~NuGet.Protocol.PackageSearchMetadata.OwnersEnumerable.get -> System.Collections.Generic.IEnumerable<string>
+~NuGet.Protocol.PackageSearchMetadataV2Feed.OwnersEnumerable.get -> System.Collections.Generic.IEnumerable<string>

@@ -42,6 +42,8 @@ namespace NuGet.Protocol
 
         public Uri LicenseUrl => Convert(_nuspec.GetLicenseUrl());
 
+        public IEnumerable<string> OwnersEnumerable => null;
+
         public string Owners => _nuspec.GetOwners();
 
         public Uri ProjectUrl => Convert(_nuspec.GetProjectUrl());

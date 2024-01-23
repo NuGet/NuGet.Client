@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -84,6 +83,8 @@ namespace NuGet.Protocol
         public PackageIdentity Identity => new PackageIdentity(PackageId, Version);
 
         public Uri LicenseUrl { get; private set; }
+
+        public IEnumerable<string> OwnersEnumerable => null;
 
         public string Owners { get; private set; }
 

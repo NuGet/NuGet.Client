@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Moq;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -304,7 +303,10 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(new Uri("http://nuget.org/nuget.jpg"), package.IconUrl);
                 Assert.Equal("1.0.0-alpha.1.2+5", package.Identity.Version.ToFullString());
                 Assert.Equal(new Uri("http://nuget.org/license.txt"), package.LicenseUrl);
+
                 Assert.Equal("a,b", package.Owners);
+                Assert.Null(package.OwnersEnumerable);
+
                 Assert.Equal(new Uri("http://nuget.org/"), package.ProjectUrl);
                 Assert.NotNull(package.Published);
                 Assert.Null(package.ReportAbuseUrl);

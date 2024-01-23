@@ -111,6 +111,8 @@ namespace NuGet.Test.Utility
             }
 
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+
+            public IEnumerable<string> OwnersEnumerable => null;
         }
     }
 }

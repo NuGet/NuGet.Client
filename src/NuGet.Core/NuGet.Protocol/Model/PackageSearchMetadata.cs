@@ -63,8 +63,9 @@ namespace NuGet.Protocol
         public Uri LicenseUrl { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
-        [JsonConverter(typeof(MetadataFieldConverter))]
-        public string Owners { get; private set; }
+        public IEnumerable<string> OwnersEnumerable { get; private set; }
+
+        public string Owners => OwnersEnumerable != null ? string.Join(", ", OwnersEnumerable.Where(s => !string.IsNullOrWhiteSpace(s))) : null;
 
         [JsonProperty(PropertyName = JsonProperties.PackageId)]
         public string PackageId { get; private set; }
