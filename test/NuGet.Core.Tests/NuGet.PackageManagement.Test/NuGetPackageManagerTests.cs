@@ -4452,7 +4452,7 @@ namespace NuGet.Test
                 // Check the number of packages and packages returned by PackagesConfigProject after the installation
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, packagesInPackagesConfig.Count);
-                Assert.True(packagesInPackagesConfig.Any(p => p.PackageIdentity.Equals(sharpDXDXGIv263Package)));
+                Assert.Contains(packagesInPackagesConfig, p => p.PackageIdentity.Equals(sharpDXDXGIv263Package));
             }
         }
 
@@ -6310,8 +6310,7 @@ namespace NuGet.Test
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
 
-                Assert.True(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).
-                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+                Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
                 var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
                 Assert.Equal(2, projectFilePaths.Count());
@@ -6388,8 +6387,7 @@ namespace NuGet.Test
             Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
             Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
 
-            Assert.True(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).
-                Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+            Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
             Assert.True((string)telemetryEvents
                 .Where(p => p.Name == "ProjectRestoreInformation").
@@ -6473,8 +6471,7 @@ namespace NuGet.Test
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "CreateRestoreTargetGraph").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "NugetActionSteps").Count());
 
-                Assert.True(telemetryEvents.Where(p => p.Name == "NugetActionSteps").
-                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+                Assert.Contains(telemetryEvents.Where(p => p.Name == "NugetActionSteps"), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
@@ -6544,8 +6541,7 @@ namespace NuGet.Test
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
 
-                Assert.True(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).
-                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
+                Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
 
                 Assert.True((string)telemetryEvents
                     .Where(p => p.Name == "ProjectRestoreInformation").
@@ -6674,8 +6670,7 @@ namespace NuGet.Test
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackagePreFetcherInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
-                Assert.True(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).
-                     Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
+                Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName);
             }
         }
 
@@ -6742,10 +6737,8 @@ namespace NuGet.Test
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
 
-                Assert.True(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).
-                    Any(p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName));
-                Assert.True(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).
-                    Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
+                Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.PreviewBuildIntegratedStepName);
+                Assert.Contains(telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName), p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName);
 
                 var projectFilePaths = telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").SelectMany(x => x.GetPiiData()).Where(x => x.Key == "ProjectFilePath");
                 Assert.Equal(2, projectFilePaths.Count());

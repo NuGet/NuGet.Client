@@ -1657,8 +1657,8 @@ namespace NuGet.Commands.FuncTest
                     new[] { NuGetFramework.Parse("net40-client") });
 
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
-                Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
-                Assert.True(logger.Messages.Any(e => e.Contains(expectedIssue.Format())));
+                Assert.DoesNotContain(result.CompatibilityCheckResults, c => c.Success);
+                Assert.Contains(logger.Messages, e => e.Contains(expectedIssue.Format()));
 
                 Assert.Equal(6, logger.Errors);
                 Assert.Equal(2, installed.Count);
@@ -1843,7 +1843,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.True(brokenPackages.Length >= 1);
-                Assert.True(brokenPackages.Any(c => c.Package.Id.Equals("System.Runtime.WindowsRuntime") && c.AssemblyName.Equals("System.Runtime.WindowsRuntime")));
+                Assert.Contains(brokenPackages, c => c.Package.Id.Equals("System.Runtime.WindowsRuntime") && c.AssemblyName.Equals("System.Runtime.WindowsRuntime"));
             }
         }
 

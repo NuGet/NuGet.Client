@@ -156,15 +156,15 @@ namespace NuGet.PackageManagement.Test
                         case "a":
                             {
                                 Assert.Equal(2, package.Dependencies.Count());
-                                Assert.True(package.Dependencies.Any(e => e.Id == packageB100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageB100.Version))));
-                                Assert.True(package.Dependencies.Any(e => e.Id == packageC100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageC100.Version))));
+                                Assert.Contains(package.Dependencies, e => e.Id == packageB100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageB100.Version)));
+                                Assert.Contains(package.Dependencies, e => e.Id == packageC100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageC100.Version)));
 
                                 break;
                             }
                         case "b":
                             {
                                 Assert.Equal(1, package.Dependencies.Count());
-                                Assert.True(package.Dependencies.Any(e => e.Id == packageD100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageD100.Version))));
+                                Assert.Contains(package.Dependencies, e => e.Id == packageD100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageD100.Version)));
                                 break;
                             }
                         case "c":

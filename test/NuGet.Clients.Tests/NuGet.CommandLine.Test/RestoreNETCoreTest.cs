@@ -6149,9 +6149,9 @@ namespace NuGet.CommandLine.Test
                 {
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("x"));
                     Assert.NotNull(library);
-                    Assert.True(library.EmbedAssemblies.Any(embed => embed.Path.Equals("embed/net461/a.dll")));
-                    Assert.True(library.CompileTimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
-                    Assert.True(library.RuntimeAssemblies.Any(embed => embed.Path.Equals("lib/net461/a.dll")));
+                    Assert.Contains(library.EmbedAssemblies, embed => embed.Path.Equals("embed/net461/a.dll"));
+                    Assert.Contains(library.CompileTimeAssemblies, embed => embed.Path.Equals("lib/net461/a.dll"));
+                    Assert.Contains(library.RuntimeAssemblies, embed => embed.Path.Equals("lib/net461/a.dll"));
                 }
             }
         }
@@ -6358,7 +6358,7 @@ namespace NuGet.CommandLine.Test
                 {
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
                     Assert.NotNull(library);
-                    Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                    Assert.Contains(library.Build, build => build.Path.Equals("buildTransitive/y.targets"));
                 }
             }
         }
@@ -6420,7 +6420,7 @@ namespace NuGet.CommandLine.Test
                 {
                     var library = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("y"));
                     Assert.NotNull(library);
-                    Assert.False(library.Build.Any(build => build.Path.Equals("buildTransitive/y.targets")));
+                    Assert.DoesNotContain(library.Build, build => build.Path.Equals("buildTransitive/y.targets"));
                 }
             }
         }

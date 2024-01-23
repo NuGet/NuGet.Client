@@ -1668,7 +1668,7 @@ EndGlobal";
                 Assert.True(File.Exists(projectIntermed.AssetsFileOutputPath));
                 var lockFile = reader.Read(projectIntermed.AssetsFileOutputPath);
                 IList<LockFileTargetLibrary> libraries = lockFile.Targets[0].Libraries;
-                Assert.True(libraries.Any(l => l.Type == "package" && l.Name == projectA.ProjectName));
+                Assert.Contains(libraries, l => l.Type == "package" && l.Name == projectA.ProjectName);
 
                 projdir = Path.GetDirectoryName(projectMain.ProjectPath);
                 projfilename = Path.GetFileNameWithoutExtension(projectMain.ProjectName);
@@ -1681,8 +1681,8 @@ EndGlobal";
                 Assert.Equal(0, warnings.Count());
                 libraries = lockFile.Targets[0].Libraries;
                 Assert.Equal(2, libraries.Count);
-                Assert.True(libraries.Any(l => l.Type == "project" && l.Name == projectA.ProjectName));
-                Assert.True(libraries.Any(l => l.Type == "project" && l.Name == projectIntermed.ProjectName));
+                Assert.Contains(libraries, l => l.Type == "project" && l.Name == projectA.ProjectName);
+                Assert.Contains(libraries, l => l.Type == "project" && l.Name == projectIntermed.ProjectName);
             }
         }
 

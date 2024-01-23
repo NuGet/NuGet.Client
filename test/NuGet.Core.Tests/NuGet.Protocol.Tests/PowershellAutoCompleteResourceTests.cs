@@ -123,7 +123,7 @@ namespace NuGet.Protocol.Tests
             catch (AggregateException e)
             {
                 Assert.Equal(e.InnerExceptions.Count(), 1);
-                Assert.True(e.InnerExceptions.Any(item => item.GetType().Equals(typeof(TaskCanceledException))));
+                Assert.Contains(e.InnerExceptions, item => item.GetType().Equals(typeof(TaskCanceledException)));
             }
             Assert.NotEqual(0, logger.Messages.Count);
         }
