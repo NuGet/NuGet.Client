@@ -12,7 +12,7 @@ resources:
         - dev
         - release-*
         exclude:
-        -  release-6.0.x
+        - release-6.0.x
   - pipeline: DartLab
     source: DartLab
     branch: main
