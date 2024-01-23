@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext __,
             CancellationToken token)
         {
-            var dependency = new LibraryDependency
+            var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
             {
                 LibraryRange = new LibraryRange(
                     name: packageId,

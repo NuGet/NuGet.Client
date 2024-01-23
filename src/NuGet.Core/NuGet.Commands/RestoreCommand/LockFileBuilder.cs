@@ -550,7 +550,7 @@ namespace NuGet.Commands
                     // If all assets are suppressed then the dependency should not be added
                     if (suppressParent != LibraryIncludeFlags.All)
                     {
-                        yield return new LibraryDependency()
+                        yield return new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
                         {
                             LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
                             ReferenceType = LibraryDependencyReferenceType.Transitive,

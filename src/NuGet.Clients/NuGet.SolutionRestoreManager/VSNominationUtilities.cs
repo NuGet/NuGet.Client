@@ -419,7 +419,10 @@ namespace NuGet.SolutionRestoreManager
 
             TryGetVersionRange(item, "VersionOverride", out VersionRange versionOverrideRange);
 
-            var dependency = new LibraryDependency
+            // Get warning suppressions
+            List<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn)).ToList();
+
+            var dependency = new LibraryDependency(noWarn)
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
@@ -432,12 +435,6 @@ namespace NuGet.SolutionRestoreManager
                 Aliases = GetPropertyValueOrNull(item, "Aliases"),
                 VersionOverride = versionOverrideRange
             };
-
-            // Add warning suppressions
-            foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn)))
-            {
-                dependency.NoWarn.Add(code);
-            }
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,

@@ -305,7 +305,7 @@ namespace NuGet.Build.Tasks.Console
 
                 string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
 
-                libraryDependencies.Add(new LibraryDependency
+                libraryDependencies.Add(new LibraryDependency(MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList())
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
                     GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
@@ -315,7 +315,6 @@ namespace NuGet.Build.Tasks.Console
                         packageReferenceItem.Identity,
                         string.IsNullOrWhiteSpace(version) ? isCentralPackageVersionManagementEnabled ? null : VersionRange.All : VersionRange.Parse(version),
                         LibraryDependencyTarget.Package),
-                    NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
                 });
