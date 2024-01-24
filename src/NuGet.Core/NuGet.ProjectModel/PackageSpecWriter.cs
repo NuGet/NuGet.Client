@@ -663,9 +663,9 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name))
+                foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
+                    writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.OriginalString ?? dependency.VersionRange.ToNormalizedString());
                 }
             }
 
