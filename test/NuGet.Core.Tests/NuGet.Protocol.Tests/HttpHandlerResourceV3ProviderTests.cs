@@ -130,7 +130,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public async Task TryCreate_WhenCertificateValidationIsDisabled_HttpClientHandlerServerCertificateCustomValidationCallbackShouldNotBeNullAndReturnsTrue()
+        public async Task TryCreate_WhenCertificateValidationIsDisabled_HttpClientHandlerServerCertificateCustomValidationCallbackShouldNotBeNull()
         {
             // Arrange
             Mock<IProxyCache> proxyCache = new();
@@ -144,18 +144,36 @@ namespace NuGet.Protocol.Tests
 
             // Act
             var result = await target.TryCreate(sourceRepository, CancellationToken.None);
-
-            // Assert
-            result.Item1.Should().BeTrue();
             HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
-            resource.Should().NotBeNull();
             HttpClientHandler clientHandler = resource.ClientHandler;
 
+            // Assert
             clientHandler.ServerCertificateCustomValidationCallback.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task Invoke_WhenCertificateValidationIsDisabled_HttpClientHandlerServerCertificateCustomValidationCallbackReturnsTrue()
+        {
+            // Arrange
+            Mock<IProxyCache> proxyCache = new();
+            proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
+            PackageSource packageSource = new(_testPackageSourceURL, "source")
+            {
+                DisableTLSCertificateValidation = true
+            };
+            SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
+            HttpHandlerResourceV3Provider target = new(proxyCache.Object);
+            var result = await target.TryCreate(sourceRepository, CancellationToken.None);
+            HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
+            HttpClientHandler clientHandler = resource.ClientHandler;
+
+            // Act
             var callbackResult = clientHandler.ServerCertificateCustomValidationCallback.Invoke(null, null, null, SslPolicyErrors.RemoteCertificateChainErrors
                 & SslPolicyErrors.RemoteCertificateNameMismatch
                 & SslPolicyErrors.RemoteCertificateNotAvailable
                 & SslPolicyErrors.None);
+
+            // Assert
             callbackResult.Should().BeTrue();
         }
 
@@ -174,13 +192,10 @@ namespace NuGet.Protocol.Tests
 
             // Act
             var result = await target.TryCreate(sourceRepository, CancellationToken.None);
-
-            // Assert
-            result.Item1.Should().BeTrue();
             HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
-            resource.Should().NotBeNull();
             HttpClientHandler clientHandler = resource.ClientHandler;
 
+            // Assert
             clientHandler.ServerCertificateCustomValidationCallback.Should().BeNull();
         }
 
