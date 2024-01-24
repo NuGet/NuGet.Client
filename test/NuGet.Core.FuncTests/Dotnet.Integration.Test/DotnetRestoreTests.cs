@@ -2297,7 +2297,7 @@ EndGlobal";
                             <PackageVersion Include=""X"" Version=""[2.0.0]"" />
                         </ItemGroup>
                     </Project>";
-                File.WriteAllText(Path.Combine(workingDirectory, $"Directory.Packages.Props"), directoryPackagesPropsContent);
+                File.WriteAllText(Path.Combine(workingDirectory, $"Directory.Packages.props"), directoryPackagesPropsContent);
 
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
