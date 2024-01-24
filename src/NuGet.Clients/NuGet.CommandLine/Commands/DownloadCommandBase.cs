@@ -95,7 +95,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        protected IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(
+        internal IEnumerable<PackageReference> GetInstalledPackageReferences(
             string projectConfigFilePath,
             bool allowDuplicatePackageIds)
         {
