@@ -264,12 +264,49 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>(PackageReferenceComparer.Instance);
+            // EffectivePackageSaveMode is None when -PackageSaveMode is not provided by the user. None is treated as
+            // Defaultv3 for V3 restore and should be treated as Defaultv2 for V2 restore. This is the case in the
+            // actual V2 restore flow and should match in this preliminary missing packages check.
+            var packageSaveMode = EffectivePackageSaveMode == Packaging.PackageSaveMode.None ?
+                Packaging.PackageSaveMode.Defaultv2 :
+                EffectivePackageSaveMode;
+
+            List<PackageRestoreData> packageRestoreData = new();
+
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
-                installedPackageReferences.AddRange(packageRestoreInputs
-                    .PackagesConfigFiles
-                    .SelectMany(file => GetInstalledPackageReferences(file, allowDuplicatePackageIds: true)));
+                var configToProjectPath = new Dictionary<string, string>();
+                foreach (var project in packageRestoreInputs.ProjectReferenceLookup.Projects)
+                {
+                    if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
+                    {
+                        configToProjectPath.Add(((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath, project.FilePath);
+                    }
+                }
+
+                var packageReferenceToProjects = new Dictionary<PackageReference, List<string>>(PackageReferenceComparer.Instance);
+
+                foreach (string configFile in packageRestoreInputs.PackagesConfigFiles)
+                {
+                    foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile, allowDuplicatePackageIds: true))
+                    {
+                        if (packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
+                        {
+                            if (configToProjectPath.TryGetValue(configFile, out string projectPath))
+                            {
+                                projectPath = configFile;
+                            }
+                            value.Add(projectPath);
+                        }
+                    }
+                }
+
+                foreach (KeyValuePair<PackageReference, List<string>> package in packageReferenceToProjects)
+                {
+                    var exists = nuGetPackageManager.PackageExistsInPackagesFolder(package.Key.PackageIdentity, packageSaveMode);
+                    packageRestoreData.Add(new PackageRestoreData(package.Key, package.Value, !exists));
+                }
+
             }
             else if (packageRestoreInputs.PackagesConfigFiles.Count > 0)
             {
@@ -291,22 +328,18 @@ namespace NuGet.CommandLine
                     throw new InvalidOperationException(message);
                 }
 
-                installedPackageReferences.AddRange(
-                    GetInstalledPackageReferences(packageReferenceFile, allowDuplicatePackageIds: true));
+                foreach (PackageReference packageReference in GetInstalledPackageReferences(packageReferenceFile, allowDuplicatePackageIds: true))
+                {
+                    bool exists = nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity, packageSaveMode);
+                    packageRestoreData.Add(new PackageRestoreData(packageReference, [packageReferenceFile], !exists));
+                }
             }
 
-            // EffectivePackageSaveMode is None when -PackageSaveMode is not provided by the user. None is treated as
-            // Defaultv3 for V3 restore and should be treated as Defaultv2 for V2 restore. This is the case in the
-            // actual V2 restore flow and should match in this preliminary missing packages check.
-            var packageSaveMode = EffectivePackageSaveMode == Packaging.PackageSaveMode.None ?
-                Packaging.PackageSaveMode.Defaultv2 :
-                EffectivePackageSaveMode;
-
-            var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
+            var missingPackageReferences = packageRestoreData.Where(reference => reference.IsMissing).ToArray();
 
             if (missingPackageReferences.Length == 0)
             {
+                // Do the audit check.
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
@@ -329,14 +362,6 @@ namespace NuGet.CommandLine
 
                 return restoreSummaries;
             }
-
-            var packageRestoreData = missingPackageReferences.Select(reference =>
-                new PackageRestoreData(
-                    reference,
-                    new[] { packageRestoreInputs.RestoringWithSolutionFile
-                                ? packageRestoreInputs.DirectoryOfSolutionFile
-                                : packageRestoreInputs.PackagesConfigFiles[0] },
-                    isMissing: true));
 
             var packageSources = GetPackageSources(Settings);
 
