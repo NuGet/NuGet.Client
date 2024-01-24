@@ -290,14 +290,17 @@ namespace NuGet.CommandLine
                 {
                     foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile, allowDuplicatePackageIds: true))
                     {
-                        if (packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
+                        if (configToProjectPath.TryGetValue(configFile, out string projectPath))
                         {
-                            if (configToProjectPath.TryGetValue(configFile, out string projectPath))
-                            {
-                                projectPath = configFile;
-                            }
-                            value.Add(projectPath);
+                            projectPath = configFile;
                         }
+
+                        if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
+                        {
+                            value ??= [];
+                            packageReferenceToProjects.Add(packageReference, value);
+                        }
+                        value.Add(projectPath);
                     }
                 }
 

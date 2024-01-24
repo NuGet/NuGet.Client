@@ -418,12 +418,13 @@ namespace NuGet.Build.Tasks
         {
             string globalPackageFolder = null;
             string repositoryPath = null;
-            string firstPackagesConfigPath = null;
             IList<PackageSource> packageSources = null;
 
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>(PackageReferenceComparer.Instance);
+            List<PackageRestoreData> packageRestoreData = new();
 
             ISettings settings = null;
+
+            var packageReferenceToProjects = new Dictionary<PackageReference, List<string>>(PackageReferenceComparer.Instance);
 
             foreach (PackageSpec packageSpec in dgFile.Projects.Where(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
             {
@@ -445,13 +446,19 @@ namespace NuGet.Build.Tasks
                     packageSources.AddRange(pcRestoreMetadata.Sources);
                 }
 
-                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths);
+                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths); // TODO NK - Can this break something?
 
                 string packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
 
-                firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
-
-                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
+                foreach (PackageReference packageReference in GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true))
+                {
+                    if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
+                    {
+                        value ??= [];
+                        packageReferenceToProjects.Add(packageReference, value);
+                    }
+                    value.Add(packagesConfigPath);
+                }
             }
 
             if (string.IsNullOrEmpty(repositoryPath))
@@ -469,18 +476,12 @@ namespace NuGet.Build.Tasks
                 Packaging.PackageSaveMode.Defaultv2 :
                 effectivePackageSaveMode;
 
-            var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
+            var missingPackageReferences = packageRestoreData.Where(reference => reference.IsMissing).ToArray();
 
             if (missingPackageReferences.Length == 0)
             {
                 return new RestoreSummary(true);
             }
-            var packageRestoreData = missingPackageReferences.Select(reference =>
-                new PackageRestoreData(
-                    reference,
-                    new[] { firstPackagesConfigPath },
-                    isMissing: true));
 
             var repositories = sourceRepositoryProvider.GetRepositories().ToArray();
 
