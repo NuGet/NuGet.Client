@@ -18,6 +18,6 @@
         <MSBuild
             Projects="template.runsettingsproj"
             Properties="RunName=NuGet.Tests.Apex;
-            FileName=NuGet.Tests.Apex.dll;" />
+            FileName=NuGet.Tests.Apex.Daily.dll;" />
     </Target>
 </Project>
