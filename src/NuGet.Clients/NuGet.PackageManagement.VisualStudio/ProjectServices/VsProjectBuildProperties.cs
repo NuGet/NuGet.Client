@@ -82,6 +82,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
+        [Obsolete("New properties should use GetPropertyValue instead. Ideally we should migrate existing properties to stop using DTE as well.")]
         public string GetPropertyValueWithDteFallback(string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
