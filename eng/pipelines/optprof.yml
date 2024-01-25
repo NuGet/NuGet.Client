@@ -6,13 +6,6 @@ resources:
   pipelines:
   - pipeline: ComponentBuildUnderTest
     source: NuGet.Client-Official
-    trigger: 
-      branches:
-        include: 
-        - dev
-        - release-*
-        exclude:
-        - refs/heads/release-6.3.x
   - pipeline: DartLab
     source: DartLab
     branch: main
