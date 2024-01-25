@@ -272,6 +272,7 @@ namespace NuGet.CommandLine
                 EffectivePackageSaveMode;
 
             List<PackageRestoreData> packageRestoreData = new();
+            bool areAnyPackagesMissing = false;
 
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
@@ -308,6 +309,7 @@ namespace NuGet.CommandLine
                 {
                     var exists = nuGetPackageManager.PackageExistsInPackagesFolder(package.Key.PackageIdentity, packageSaveMode);
                     packageRestoreData.Add(new PackageRestoreData(package.Key, package.Value, !exists));
+                    areAnyPackagesMissing |= !exists;
                 }
 
             }
@@ -338,9 +340,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            var missingPackageReferences = packageRestoreData.Where(reference => reference.IsMissing).ToArray();
-
-            if (missingPackageReferences.Length == 0)
+            if (!areAnyPackagesMissing)
             {
                 // Do the audit check.
                 var message = string.Format(

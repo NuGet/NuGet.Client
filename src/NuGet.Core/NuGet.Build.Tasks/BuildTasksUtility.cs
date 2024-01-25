@@ -419,9 +419,6 @@ namespace NuGet.Build.Tasks
             string globalPackageFolder = null;
             string repositoryPath = null;
             IList<PackageSource> packageSources = null;
-
-            List<PackageRestoreData> packageRestoreData = new();
-
             ISettings settings = null;
 
             var packageReferenceToProjects = new Dictionary<PackageReference, List<string>>(PackageReferenceComparer.Instance);
@@ -446,7 +443,7 @@ namespace NuGet.Build.Tasks
                     packageSources.AddRange(pcRestoreMetadata.Sources);
                 }
 
-                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths); // TODO NK - Can this break something?
+                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths);
 
                 string packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
 
@@ -476,9 +473,16 @@ namespace NuGet.Build.Tasks
                 Packaging.PackageSaveMode.Defaultv2 :
                 effectivePackageSaveMode;
 
-            var missingPackageReferences = packageRestoreData.Where(reference => reference.IsMissing).ToArray();
+            List<PackageRestoreData> packageRestoreData = new(packageReferenceToProjects.Count);
+            bool areAnyPackagesMissing = false;
+            foreach (KeyValuePair<PackageReference, List<string>> package in packageReferenceToProjects)
+            {
+                var exists = nuGetPackageManager.PackageExistsInPackagesFolder(package.Key.PackageIdentity, packageSaveMode);
+                packageRestoreData.Add(new PackageRestoreData(package.Key, package.Value, !exists));
+                areAnyPackagesMissing |= !exists;
+            }
 
-            if (missingPackageReferences.Length == 0)
+            if (!areAnyPackagesMissing)
             {
                 return new RestoreSummary(true);
             }
