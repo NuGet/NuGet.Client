@@ -109,7 +109,7 @@
     <!-- Test inputs -->
     <PropertyGroup>
       <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex\NuGet.Tests.Apex.csproj</TestProjectPaths>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\NuGet.Tests.Apex.Daily.csproj</TestProjectPaths>
       <TestResultsFileName>ApexTestsVS15</TestResultsFileName>
     </PropertyGroup>
 
