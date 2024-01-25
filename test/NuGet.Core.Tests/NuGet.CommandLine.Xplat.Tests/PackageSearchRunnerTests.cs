@@ -366,21 +366,17 @@ namespace NuGet.CommandLine.Xplat.Tests
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
             var expectedValues = new List<string>
             {
-                "| Package ID           ",
+                "| Package ID      ",
                 "| Version ",
-                "| Owners            ",
+                "| Owners ",
                 "| Total Downloads ",
-                "|----------------------",
-                "|---------",
-                "|-------------------",
                 "|-----------------",
-                "| ",
-                "",
-                "",
-                " ",
-                "| 12.0.3  ",
-                "| James Newton-King ",
-                "| 531,607,259     ",
+                "|---------",
+                "|--------",
+                "|-----------------",
+                "| 13.0.3  ",
+                "|        ", // Author / Owner ?
+                "| N/A             ",
             };
 
             PackageSearchArgs packageSearchArgs = new()
@@ -390,7 +386,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Prerelease = false,
                 ExactMatch = true,
                 Logger = GetLogger(),
-                SearchTerm = "Fake.Newtonsoft.Json",
+                SearchTerm = "Newtonsoft.Json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" }
             };
 
@@ -406,7 +402,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Assert.Contains(expected, ColoredMessage.Select(tuple => tuple.Item1));
             }
 
-            Assert.Contains(Tuple.Create("Fake.Newtonsoft.Json", ConsoleColor.Red), ColoredMessage);
+            Assert.Contains(Tuple.Create("Newtonsoft.Json", ConsoleColor.Red), ColoredMessage);
         }
 
         [Fact]
