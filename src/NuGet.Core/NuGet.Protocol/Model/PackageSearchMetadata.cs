@@ -62,17 +62,17 @@ namespace NuGet.Protocol
         [JsonConverter(typeof(SafeUriConverter))]
         public Uri LicenseUrl { get; private set; }
 
-        private IEnumerable<string> _ownersEnumerable;
+        private List<string> _ownersList;
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
-        public IEnumerable<string> OwnersEnumerable
+        public List<string> OwnersList
         {
-            get { return _ownersEnumerable; }
+            get { return _ownersList; }
             private set
             {
-                if (_ownersEnumerable != value)
+                if (_ownersList != value)
                 {
-                    _ownersEnumerable = value;
+                    _ownersList = value;
                     _owners = null;
                 }
             }
@@ -85,7 +85,7 @@ namespace NuGet.Protocol
             {
                 if (_owners == null)
                 {
-                    _owners = OwnersEnumerable != null ? string.Join(", ", OwnersEnumerable.Where(s => !string.IsNullOrWhiteSpace(s))) : null;
+                    _owners = OwnersList != null ? string.Join(", ", OwnersList.Where(s => !string.IsNullOrWhiteSpace(s))) : null;
                 }
                 return _owners;
             }

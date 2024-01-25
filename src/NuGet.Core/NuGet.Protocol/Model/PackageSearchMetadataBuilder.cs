@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Core.Types
             public Uri IconUrl { get; set; }
             public PackageIdentity Identity { get; set; }
             public Uri LicenseUrl { get; set; }
-            public IEnumerable<string> OwnersEnumerable { get; set; }
+            public List<string> OwnersList { get; set; }
             public string Owners { get; set; }
             public Uri ProjectUrl { get; set; }
             public DateTimeOffset? Published { get; set; }
@@ -93,7 +93,7 @@ namespace NuGet.Protocol.Core.Types
                 IconUrl = _metadata.IconUrl,
                 Identity = _metadata.Identity,
                 LicenseUrl = _metadata.LicenseUrl,
-                OwnersEnumerable = _metadata.OwnersEnumerable,
+                OwnersList = _metadata.OwnersList,
                 Owners = _metadata.Owners,
                 ProjectUrl = _metadata.ProjectUrl,
                 Published = _metadata.Published,

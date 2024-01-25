@@ -42,7 +42,7 @@ namespace NuGet.Protocol
 
         public Uri LicenseUrl => Convert(_nuspec.GetLicenseUrl());
 
-        public IEnumerable<string> OwnersEnumerable => null;
+        public List<string> OwnersList => null;
 
         public string Owners => _nuspec.GetOwners();
 

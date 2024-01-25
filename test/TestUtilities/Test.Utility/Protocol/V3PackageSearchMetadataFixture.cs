@@ -87,6 +87,8 @@ namespace NuGet.Test.Utility
 
             public DateTimeOffset? Published => DateTimeOffset.Now;
 
+            public List<string> OwnersList => null;
+
             public string Owners => string.Empty;
 
             public bool RequireLicenseAcceptance => false;
@@ -111,8 +113,6 @@ namespace NuGet.Test.Utility
             }
 
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-
-            public IEnumerable<string> OwnersEnumerable => null;
         }
     }
 }

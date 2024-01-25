@@ -75,7 +75,7 @@ namespace NuGet.Protocol.Tests
 
             if (expectOwner)
             {
-                package.OwnersEnumerable.Should()
+                package.OwnersList.Should()
                     .NotBeNull()
                     .And.NotBeEmpty()
                     .And.HaveCount(3)
@@ -84,7 +84,7 @@ namespace NuGet.Protocol.Tests
             }
             else
             {
-                package.OwnersEnumerable.Should().BeNull();
+                package.OwnersList.Should().BeNull();
                 package.Owners.Should().BeNull();
             }
 

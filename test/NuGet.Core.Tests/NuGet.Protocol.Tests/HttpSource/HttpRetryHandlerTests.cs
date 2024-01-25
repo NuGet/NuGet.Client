@@ -237,7 +237,7 @@ namespace NuGet.Protocol.Tests
             // Assert
             Assert.True(
                 timer.Elapsed >= minTime,
-                $"Expected this to take at least: {minTime.TotalMilliseconds} But it finished in: {timer.Elapsed.TotalMilliseconds}");
+                $"Expected this to take at least: {minTime} But it finished in: {timer.Elapsed}");
         }
 
         [Fact]

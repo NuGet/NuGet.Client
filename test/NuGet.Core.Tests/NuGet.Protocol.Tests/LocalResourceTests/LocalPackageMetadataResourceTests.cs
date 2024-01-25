@@ -305,7 +305,7 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(new Uri("http://nuget.org/license.txt"), package.LicenseUrl);
 
                 Assert.Equal("a,b", package.Owners);
-                Assert.Null(package.OwnersEnumerable);
+                Assert.Null(package.OwnersList);
 
                 Assert.Equal(new Uri("http://nuget.org/"), package.ProjectUrl);
                 Assert.NotNull(package.Published);
