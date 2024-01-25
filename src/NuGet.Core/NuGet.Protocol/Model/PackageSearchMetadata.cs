@@ -62,10 +62,34 @@ namespace NuGet.Protocol
         [JsonConverter(typeof(SafeUriConverter))]
         public Uri LicenseUrl { get; private set; }
 
-        [JsonProperty(PropertyName = JsonProperties.Owners)]
-        public IEnumerable<string> OwnersEnumerable { get; private set; }
+        private IEnumerable<string> _ownersEnumerable;
 
-        public string Owners => OwnersEnumerable != null ? string.Join(", ", OwnersEnumerable.Where(s => !string.IsNullOrWhiteSpace(s))) : null;
+        [JsonProperty(PropertyName = JsonProperties.Owners)]
+        public IEnumerable<string> OwnersEnumerable
+        {
+            get { return _ownersEnumerable; }
+            private set
+            {
+                if (_ownersEnumerable != value)
+                {
+                    _ownersEnumerable = value;
+                    _owners = null;
+                }
+            }
+        }
+
+        private string _owners;
+        public string Owners
+        {
+            get
+            {
+                if (_owners == null)
+                {
+                    _owners = OwnersEnumerable != null ? string.Join(", ", OwnersEnumerable.Where(s => !string.IsNullOrWhiteSpace(s))) : null;
+                }
+                return _owners;
+            }
+        }
 
         [JsonProperty(PropertyName = JsonProperties.PackageId)]
         public string PackageId { get; private set; }
