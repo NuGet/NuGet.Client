@@ -375,7 +375,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 "|--------",
                 "|-----------------",
                 "| 13.0.3  ",
-                "|        ", // Author / Owner ?
+                "|        ",
                 "| N/A             ",
             };
 
