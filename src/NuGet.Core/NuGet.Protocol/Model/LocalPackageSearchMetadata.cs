@@ -42,7 +42,7 @@ namespace NuGet.Protocol
 
         public Uri LicenseUrl => Convert(_nuspec.GetLicenseUrl());
 
-        public IReadOnlyList<string> OwnersList => null;
+        public IReadOnlyList<string> OwnersList => throw new NotSupportedException();
 
         public string Owners => _nuspec.GetOwners();
 
