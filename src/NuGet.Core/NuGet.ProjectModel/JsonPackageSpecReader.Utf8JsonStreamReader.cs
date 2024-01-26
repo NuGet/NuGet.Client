@@ -112,19 +112,7 @@ namespace NuGet.ProjectModel
         internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
             var reader = new Utf8JsonStreamReader(stream);
-            PackageSpec packageSpec;
-            packageSpec = GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
-
-            if (!string.IsNullOrEmpty(name))
-            {
-                packageSpec.Name = name;
-                if (!string.IsNullOrEmpty(packageSpecPath))
-                {
-                    packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
-
-                }
-            }
-            return packageSpec;
+            return GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
         }
 
         internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, string snapshotValue)
@@ -277,9 +265,10 @@ namespace NuGet.ProjectModel
 
         internal static void ReadCentralTransitiveDependencyGroup(
             ref Utf8JsonStreamReader jsonReader,
-            IList<LibraryDependency> results,
+            out IList<LibraryDependency> results,
             string packageSpecPath)
         {
+            results = null;
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
@@ -295,10 +284,12 @@ namespace NuGet.ProjectModel
                     if (jsonReader.Read())
                     {
                         var libraryDependency = ReadLibraryDependency(ref jsonReader, packageSpecPath, libraryName);
+                        results ??= [];
                         results.Add(libraryDependency);
                     }
                 }
             }
+            results ??= Array.Empty<LibraryDependency>();
         }
 
         private static LibraryDependency ReadLibraryDependency(ref Utf8JsonStreamReader jsonReader, string packageSpecPath, string libraryName)
@@ -733,10 +724,15 @@ namespace NuGet.ProjectModel
                             packageSpecPath);
                     }
 
-                    string[] versions = versionValue.Split(VersionSeparators, StringSplitOptions.RemoveEmptyEntries);
+                    var versions = new LazyStringSplit(versionValue, VersionSeparator);
 
                     foreach (string singleVersionValue in versions)
                     {
+                        if (string.IsNullOrEmpty(singleVersionValue))
+                        {
+                            continue;
+                        }
+
                         try
                         {
                             VersionRange version = VersionRange.Parse(singleVersionValue);
@@ -938,7 +934,7 @@ namespace NuGet.ProjectModel
             RestoreLockProperties restoreLockProperties = null;
             var skipContentFileWrite = false;
             List<PackageSource> sources = null;
-            List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
+            IList<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
             RestoreAuditProperties auditProperties = null;
@@ -1294,7 +1290,7 @@ namespace NuGet.ProjectModel
                             packageTypes = new[] { packageType };
                             break;
                         case JsonTokenType.StartArray:
-                            var types = new List<PackageType>();
+                            List<PackageType> types = null;
 
                             while (jsonReader.Read() && jsonReader.TokenType != JsonTokenType.EndArray)
                             {
@@ -1309,8 +1305,10 @@ namespace NuGet.ProjectModel
                                 }
 
                                 packageType = CreatePackageType(ref jsonReader);
+                                types ??= [];
                                 types.Add(packageType);
                             }
+
                             packageTypes = types;
                             break;
                         case JsonTokenType.Null:
@@ -1541,14 +1539,14 @@ namespace NuGet.ProjectModel
 
         private static List<RuntimeDescription> ReadRuntimes(ref Utf8JsonStreamReader jsonReader)
         {
-            var runtimeDescriptions = new List<RuntimeDescription>();
+            List<RuntimeDescription> runtimeDescriptions = null;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
                 while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
                 {
                     RuntimeDescription runtimeDescription = ReadRuntimeDescription(ref jsonReader, jsonReader.GetString());
-
+                    runtimeDescriptions ??= [];
                     runtimeDescriptions.Add(runtimeDescription);
                 }
             }
@@ -1572,14 +1570,15 @@ namespace NuGet.ProjectModel
                         }
                         else if (jsonReader.TokenType == JsonTokenType.StartArray)
                         {
-                            var list = new List<string>();
+                            IList<string> list = null;
 
                             while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.String)
                             {
+                                list ??= [];
                                 list.Add(jsonReader.GetString());
                             }
 
-                            packageSpec.Scripts[propertyName] = list;
+                            packageSpec.Scripts[propertyName] = list ?? Enumerable.Empty<string>();
                         }
                         else
                         {
@@ -1594,7 +1593,7 @@ namespace NuGet.ProjectModel
 
         private static List<CompatibilityProfile> ReadSupports(ref Utf8JsonStreamReader jsonReader)
         {
-            var compatibilityProfiles = new List<CompatibilityProfile>();
+            List<CompatibilityProfile> compatibilityProfiles = null;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1602,7 +1601,7 @@ namespace NuGet.ProjectModel
                 {
                     var propertyName = jsonReader.GetString();
                     CompatibilityProfile compatibilityProfile = ReadCompatibilityProfile(ref jsonReader, propertyName);
-
+                    compatibilityProfiles ??= [];
                     compatibilityProfiles.Add(compatibilityProfile);
                 }
             }
@@ -1640,7 +1639,7 @@ namespace NuGet.ProjectModel
 
         private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(ref Utf8JsonStreamReader jsonReader)
         {
-            var targetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>();
+            List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1723,7 +1722,7 @@ namespace NuGet.ProjectModel
                                 jsonReader.Skip();
                             }
                         }
-
+                        targetFrameworks ??= [];
                         targetFrameworks.Add(frameworkGroup);
                     }
                 }

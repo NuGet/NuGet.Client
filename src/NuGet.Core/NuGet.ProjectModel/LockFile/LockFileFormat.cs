@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -60,11 +61,10 @@ namespace NuGet.ProjectModel
 
         public LockFile Parse(string lockFileContent, ILogger log, string path)
         {
-            using (var reader = new StringReader(lockFileContent))
+            byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
+            using (var stream = new MemoryStream(byteArray))
             {
-#pragma warning disable CS0612 // Type or member is obsolete
-                return Read(reader, log, path);
-#pragma warning restore CS0612 // Type or member is obsolete
+                return Read(stream, log, path);
             }
         }
 
@@ -88,21 +88,33 @@ namespace NuGet.ProjectModel
 
         public LockFile Read(Stream stream, ILogger log, string path)
         {
-            using (var textReader = new StreamReader(stream))
+            return Read(stream, log, path, EnvironmentVariableWrapper.Instance);
+        }
+
+        internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
+        {
+            if (!JsonUtility.UseNewtonsoftJsonForParsing(environmentVariableReader, bypassCache))
             {
-#pragma warning disable CS0612 // Type or member is obsolete
-                return Read(textReader, log, path);
-#pragma warning restore CS0612 // Type or member is obsolete
+                return Utf8JsonRead(stream, log, path);
+            }
+            else
+            {
+                using (var reader = new StreamReader(stream))
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    return Read(reader, log, path);
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
             }
         }
 
-        [Obsolete]
+        [Obsolete("This method is deprecated. Use Read(Stream, string) instead.")]
         public LockFile Read(TextReader reader, string path)
         {
             return Read(reader, NullLogger.Instance, path);
         }
 
-        [Obsolete]
+        [Obsolete("This method is deprecated. Use Read(Stream, ILogger, string) instead.")]
         public LockFile Read(TextReader reader, ILogger log, string path)
         {
             try
@@ -164,6 +176,29 @@ namespace NuGet.ProjectModel
             {
                 Write(writer, lockFile);
                 return writer.ToString();
+            }
+        }
+
+        private LockFile Utf8JsonRead(Stream stream, ILogger log, string path)
+        {
+            try
+            {
+                var lockFile = JsonUtility.LoadJson<LockFile>(stream, Utf8JsonReaderExtensions.LockFileConverter);
+                lockFile.Path = path;
+                return lockFile;
+            }
+            catch (Exception ex)
+            {
+                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingLockFile,
+                    path, ex.Message));
+
+                // Ran into parsing errors, mark it as unlocked and out-of-date
+                return new LockFile
+                {
+                    Version = int.MinValue,
+                    Path = path
+                };
             }
         }
 
