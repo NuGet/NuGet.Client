@@ -5,6 +5,7 @@
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:nugetStyles="clr-namespace:NuGet.PackageManagement.UI.Styles"
              mc:Ignorable="d"
              x:Name="_self"
              d:DesignHeight="300" d:DesignWidth="300">
@@ -13,11 +14,34 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
+      <DataTemplate x:Key="BeforeLastOwnerTemplate">
+        <TextBlock>
+          <Hyperlink
+            NavigateUri="{Binding Mode=OneWay}"
+            Style="{StaticResource HyperlinkStyle}">
+              <Run Text="{Binding Mode=OneTime}" />
+          </Hyperlink>
+          <TextBlock Margin="0,0,6,0">,</TextBlock>
+        </TextBlock>
+      </DataTemplate>
+      <DataTemplate x:Key="LastOwnerTemplate">
+        <TextBlock>
+          <Hyperlink
+            NavigateUri="{Binding Mode=OneWay}"
+            Style="{StaticResource HyperlinkStyle}">
+              <Run Text="{Binding Mode=OneTime}" />
+          </Hyperlink>
+        </TextBlock>
+      </DataTemplate>
+      <nugetStyles:OwnerHyperlinkDataTemplateSelector x:Key="OwnerHyperlinkDataTemplateSelector"
+                                                      BeforeLastTemplate="{StaticResource BeforeLastOwnerTemplate}"
+                                                      LastTemplate="{StaticResource LastOwnerTemplate}"/>
     </ResourceDictionary>
   </UserControl.Resources>
   <StackPanel Orientation="Horizontal">
     <!-- text "by owner" is shown here -->
-    <ItemsControl x:Name="_panelOwners" ItemsSource="{Binding TrustedOwners}" Visibility="Collapsed" Focusable="False">
+    <ItemsControl x:Name="_panelOwners" ItemsSource="{Binding TrustedOwners}" ItemTemplateSelector="{StaticResource OwnerHyperlinkDataTemplateSelector}"
+                  Visibility="Collapsed" Focusable="False">
       <ItemsControl.Template>
         <ControlTemplate>
           <StackPanel Orientation="Horizontal">
@@ -31,17 +55,6 @@
           <StackPanel Orientation="Horizontal"/>
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
-      <ItemsControl.ItemTemplate>
-        <DataTemplate>
-          <TextBlock Margin="6,0,0,0">
-            <Hyperlink
-              NavigateUri="{Binding Mode=OneWay}"
-              Style="{StaticResource HyperlinkStyle}">
-              <Run Text="{Binding Mode=OneTime}" />
-            </Hyperlink>
-          </TextBlock>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
     </ItemsControl>
 
     <!-- text "by author" is shown here when owner is unavailable -->
@@ -49,7 +62,7 @@
         x:Name="_textBlockAuthor" 
         Visibility="Collapsed"/>
 
-    <TextBlock 
+    <TextBlock
         x:Name="_separator" 
         xml:space="preserve" 
         Visibility="Collapsed">, </TextBlock>
