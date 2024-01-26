@@ -18,6 +18,11 @@ namespace NuGet.ProjectModel
     {
         private static readonly char[] DelimitedStringDelimiters = [' ', ','];
         private static readonly byte[] Utf8Bom = [0xEF, 0xBB, 0xBF];
+        private static readonly JsonReaderOptions DefaultJsonReaderOptions = new JsonReaderOptions
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip,
+        };
 
         private const int BufferSizeDefault = 16 * 1024;
         private const int MinBufferSize = 1024;
@@ -53,13 +58,9 @@ namespace NuGet.ProjectModel
                 _bufferUsed = 3;
             }
 
-            var iniialJsonReaderState = new JsonReaderState(new JsonReaderOptions
-            {
-                AllowTrailingCommas = true,
-                CommentHandling = JsonCommentHandling.Skip,
-            });
+            var initialJsonReaderState = new JsonReaderState(DefaultJsonReaderOptions);
 
-            ReadStreamIntoBuffer(iniialJsonReaderState);
+            ReadStreamIntoBuffer(initialJsonReaderState);
             _reader.Read();
         }
 
@@ -104,6 +105,59 @@ namespace NuGet.ProjectModel
             }
         }
 
+        internal IList<T> ReadObjectAsList<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
+        {
+            if (TokenType == JsonTokenType.Null)
+            {
+                return Array.Empty<T>();
+            }
+
+            if (TokenType != JsonTokenType.StartObject)
+            {
+                throw new JsonException($"Expected start object token but instead found '{TokenType}'");
+            }
+            //We use JsonObjects for the arrays so we advance to the first property in the object which is the name/ver of the first library
+            Read();
+
+            if (TokenType == JsonTokenType.EndObject)
+            {
+                return Array.Empty<T>();
+            }
+
+            var listObjects = new List<T>();
+            do
+            {
+                listObjects.Add(streamReaderConverter.Read(ref this));
+                //At this point we're looking at the EndObject token for the object, need to advance.
+                Read();
+            }
+            while (TokenType != JsonTokenType.EndObject);
+            return listObjects;
+        }
+
+        internal IList<T> ReadListOfObjects<T>(IUtf8JsonStreamReaderConverter<T> streamReaderConverter)
+        {
+            if (TokenType != JsonTokenType.StartArray)
+            {
+                throw new JsonException($"Expected start array token but instead found '{TokenType}'");
+            }
+
+            IList<T> objectList = null;
+            if (TokenType == JsonTokenType.StartArray)
+            {
+                while (Read() && TokenType != JsonTokenType.EndArray)
+                {
+                    var convertedObject = streamReaderConverter.Read(ref this);
+                    if (convertedObject != null)
+                    {
+                        objectList ??= new List<T>();
+                        objectList.Add(convertedObject);
+                    }
+                }
+            }
+            return objectList ?? Array.Empty<T>();
+        }
+
         internal string ReadNextTokenAsString()
         {
             ThrowExceptionIfDisposed();
@@ -124,7 +178,7 @@ namespace NuGet.ProjectModel
                 {
                     string value = _reader.ReadTokenAsString();
 
-                    strings = strings ?? new List<string>();
+                    strings ??= new List<string>();
 
                     strings.Add(value);
                 }
@@ -196,7 +250,7 @@ namespace NuGet.ProjectModel
             {
                 string value = _reader.ReadTokenAsString();
 
-                strings = strings ?? new List<string>();
+                strings ??= new List<string>();
 
                 strings.Add(value);
             }

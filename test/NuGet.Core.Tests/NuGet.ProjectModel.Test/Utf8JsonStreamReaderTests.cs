@@ -44,6 +44,33 @@ namespace NuGet.ProjectModel.Test
             });
         }
 
+
+        [Fact]
+        public void Utf8JsonStreamReaderCtr_WhenEmptyJson_Throws()
+        {
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                var json = "";
+
+                using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(json)))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                }
+            });
+        }
+
+        [Fact]
+        public void Utf8JsonStreamReaderCtr_WhenEmptySream_Throws()
+        {
+            Assert.ThrowsAny<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(Array.Empty<byte>()))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                }
+            });
+        }
+
         [Fact]
         public void Utf8JsonStreamReaderCtr_WhenStreamStartsWithUtf8Bom_SkipThem()
         {
@@ -82,7 +109,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Read_WhenReadingMalfornedJsonString_Throws()
+        public void Read_WhenReadingMalformedJsonString_Throws()
         {
             var json = Encoding.UTF8.GetBytes("{\"a\":\"string}");
 
@@ -101,7 +128,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Read_WhenReadingMalfornedJson_Throws()
+        public void Read_WhenReadingMalformedJson_Throws()
         {
             var json = Encoding.UTF8.GetBytes("{\"a\":\"string\"}ohno");
             Assert.ThrowsAny<JsonException>(() =>
@@ -179,6 +206,7 @@ namespace NuGet.ProjectModel.Test
             using (var stream = new MemoryStream(json))
             using (var reader = new Utf8JsonStreamReader(stream))
             {
+                Assert.True(reader.IsFinalBlock);
                 Assert.Equal(JsonTokenType.StartObject, reader.TokenType);
                 reader.Read();
                 Assert.Equal(JsonTokenType.PropertyName, reader.TokenType);
@@ -233,7 +261,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Read_WhenReadingWithLargeTokenReadPastFinal()
+        public void Read_WithLargeToken_WhenReadPastFinal_ReadReturnsFalse()
         {
             var json = Encoding.UTF8.GetBytes("{\"largeToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\",\"smallToken\":\"abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz\"}");
             var mock = SetupMockArrayBuffer();
@@ -767,6 +795,50 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(expectedResults, actualResults);
                 Assert.Equal(JsonTokenType.EndArray, reader.TokenType);
             }
+        }
+
+        [Fact]
+        public void ReadObjectAsList_WithValidJson_ReturnsValue()
+        {
+            var json = "{ \"a\": { \"property1\": \"1\" },\"b\": { \"property1\": \"1\" }, \"c\": { \"property1\": \"1\" }}";
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
+            {
+                var results = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                Assert.Equal(3, results.Count);
+            }
+        }
+
+        [Theory]
+        [InlineData("{}")]
+        [InlineData("null")]
+        public void ReadObjectAsList_WithEmptyValues_ReturnsEmptyArray(string json)
+        {
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            using (var stream = new MemoryStream(encodedBytes))
+            using (var reader = new Utf8JsonStreamReader(stream))
+            {
+                var results = reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                Assert.Equal(0, results.Count);
+                Assert.IsType(Array.Empty<LockFileItem>().GetType(), results);
+            }
+        }
+
+        [Fact]
+        public void ReadObjectAsList_WithInvalidValue_ThrowsException()
+        {
+            var json = "\"a\": { \"property1\": \"1\" }";
+
+            var encodedBytes = Encoding.UTF8.GetBytes(json);
+            Assert.Throws<JsonException>(() =>
+            {
+                using (var stream = new MemoryStream(encodedBytes))
+                using (var reader = new Utf8JsonStreamReader(stream))
+                {
+                    reader.ReadObjectAsList(Utf8JsonReaderExtensions.LockFileItemConverter);
+                }
+            });
         }
 
         [Fact]
