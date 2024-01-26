@@ -301,7 +301,7 @@ namespace NuGet.PackageManagement.UI
                     Version = metadata.Identity.Version,
                     IconUrl = metadata.IconUrl,
                     Owner = metadata.Owners,
-                    TrustedOwners = metadata.OwnerEnumerable,
+                    TrustedOwners = metadata.OwnersList,
                     Author = metadata.Authors,
                     DownloadCount = metadata.DownloadCount,
                     Summary = metadata.Summary,
