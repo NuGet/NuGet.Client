@@ -84,7 +84,7 @@ namespace NuGet.Protocol
 
         public Uri LicenseUrl { get; private set; }
 
-        public List<string> OwnersList => null;
+        public IReadOnlyList<string> OwnersList => null;
 
         public string Owners { get; private set; }
 

@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Core.Types
             public Uri IconUrl { get; set; }
             public PackageIdentity Identity { get; set; }
             public Uri LicenseUrl { get; set; }
-            public List<string> OwnersList { get; set; }
+            public IReadOnlyList<string> OwnersList { get; set; }
             public string Owners { get; set; }
             public Uri ProjectUrl { get; set; }
             public DateTimeOffset? Published { get; set; }

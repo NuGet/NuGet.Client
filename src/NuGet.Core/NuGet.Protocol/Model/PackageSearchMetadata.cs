@@ -62,10 +62,10 @@ namespace NuGet.Protocol
         [JsonConverter(typeof(SafeUriConverter))]
         public Uri LicenseUrl { get; private set; }
 
-        private List<string> _ownersList;
+        private IReadOnlyList<string> _ownersList;
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
-        public List<string> OwnersList
+        public IReadOnlyList<string> OwnersList
         {
             get { return _ownersList; }
             private set
