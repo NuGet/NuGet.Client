@@ -23,6 +23,7 @@ namespace NuGet.ProjectModel
     {
         private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
         private static readonly char[] VersionSeparators = new[] { ';' };
+        private const char VersionSeparator = ';';
         public static readonly string RestoreOptions = "restore";
         public static readonly string RestoreSettings = "restoreSettings";
         public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
@@ -75,10 +76,9 @@ namespace NuGet.ProjectModel
             return GetPackageSpec(jsonReader, name: null, packageSpecPath, snapshotValue: null, EnvironmentVariableWrapper.Instance);
         }
 
-        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader)
+        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
         {
-            var useNj = environmentVariableReader.GetEnvironmentVariable("NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING");
-            if (string.IsNullOrEmpty(useNj) || useNj.Equals("false", StringComparison.OrdinalIgnoreCase))
+            if (!JsonUtility.UseNewtonsoftJsonForParsing(environmentVariableReader, bypassCache))
             {
                 return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, snapshotValue);
             }
