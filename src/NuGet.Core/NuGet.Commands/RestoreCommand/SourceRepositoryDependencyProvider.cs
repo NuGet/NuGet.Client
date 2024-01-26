@@ -370,7 +370,7 @@ namespace NuGet.Commands
             {
                 lock (_dependencyInfoCache)
                 {
-                    result = GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken);
+                    result = Task.Run(() => GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken), cancellationToken);
                     _dependencyInfoCache[key] = result;
 
                 }
@@ -381,7 +381,7 @@ namespace NuGet.Commands
                 {
                     if (!_dependencyInfoCache.TryGetValue(key, out result))
                     {
-                        result = GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken);
+                        result = Task.Run(() => GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken), cancellationToken);
                         _dependencyInfoCache[key] = result;
                     }
                 }

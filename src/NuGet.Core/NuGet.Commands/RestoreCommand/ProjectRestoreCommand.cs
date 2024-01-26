@@ -271,7 +271,7 @@ namespace NuGet.Commands
             await _logger.LogAsync(LogLevel.Verbose, string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
-            return Task.Run(() => RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier));
+            return Task.Run(() => RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier), token);
         }
 
         private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
