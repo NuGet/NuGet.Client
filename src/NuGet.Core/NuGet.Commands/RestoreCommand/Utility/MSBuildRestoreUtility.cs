@@ -639,7 +639,7 @@ namespace NuGet.Commands
             foreach (var item in GetItemByType(items, "Dependency"))
             {
                 // Get warning suppressions
-                List<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn")).ToList();
+                IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn"));
 
                 var dependency = new LibraryDependency(noWarn)
                 {

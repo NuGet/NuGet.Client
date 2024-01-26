@@ -229,9 +229,9 @@ namespace NuGet.SolutionRestoreManager
         {
             return WarningProperties.GetWarningProperties(
                         treatWarningsAsErrors: GetSingleOrDefaultPropertyValue(targetFrameworks, ProjectBuildProperties.TreatWarningsAsErrors, e => e),
-                        warningsAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsAsErrors, e => MSBuildStringUtility.GetNuGetLogCodes(e)),
-                        noWarn: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.NoWarn, e => MSBuildStringUtility.GetNuGetLogCodes(e)),
-                        warningsNotAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsNotAsErrors, e => MSBuildStringUtility.GetNuGetLogCodes(e)));
+                        warningsAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsAsErrors, MSBuildStringUtility.GetNuGetLogCodes),
+                        noWarn: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.NoWarn, MSBuildStringUtility.GetNuGetLogCodes),
+                        warningsNotAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsNotAsErrors, MSBuildStringUtility.GetNuGetLogCodes));
         }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace NuGet.SolutionRestoreManager
             TryGetVersionRange(item, "VersionOverride", out VersionRange versionOverrideRange);
 
             // Get warning suppressions
-            List<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn)).ToList();
+            IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn));
 
             var dependency = new LibraryDependency(noWarn)
             {

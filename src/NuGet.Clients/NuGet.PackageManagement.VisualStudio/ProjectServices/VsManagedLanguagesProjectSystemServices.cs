@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static LibraryDependency ToPackageLibraryDependency(PackageReference reference, bool isCpvmEnabled)
         {
             // Get warning suppressions
-            List<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn)).ToList();
+            IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetReferenceMetadataValue(reference, ProjectItemProperties.NoWarn));
 
             var dependency = new LibraryDependency(noWarn)
             {

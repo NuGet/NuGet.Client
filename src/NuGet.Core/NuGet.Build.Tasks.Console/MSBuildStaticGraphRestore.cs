@@ -305,7 +305,9 @@ namespace NuGet.Build.Tasks.Console
 
                 string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
 
-                libraryDependencies.Add(new LibraryDependency(MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList())
+                IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn"));
+
+                libraryDependencies.Add(new LibraryDependency(noWarn)
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
                     GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
