@@ -109,13 +109,13 @@ namespace NuGet.ProjectModel
         private static readonly byte[] ProjectReferencesPropertyName = Encoding.UTF8.GetBytes("projectReferences");
         private static readonly byte[] EmptyStringPropertyName = Encoding.UTF8.GetBytes(string.Empty);
 
-        internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, string snapshotValue)
+        internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
             var reader = new Utf8JsonStreamReader(stream);
-            return GetPackageSpec(ref reader, name, packageSpecPath, snapshotValue);
+            return GetPackageSpec(ref reader, name, packageSpecPath, environmentVariableReader, snapshotValue);
         }
 
-        internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, string snapshotValue)
+        internal static PackageSpec GetPackageSpec(ref Utf8JsonStreamReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
             var packageSpec = new PackageSpec();
 
@@ -192,7 +192,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(RestorePropertyName))
                     {
-                        ReadMSBuildMetadata(ref jsonReader, packageSpec);
+                        ReadMSBuildMetadata(ref jsonReader, packageSpec, environmentVariableReader);
                     }
                     else if (jsonReader.ValueTextEquals(RuntimesPropertyName))
                     {
@@ -912,7 +912,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadMSBuildMetadata(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec)
+        private static void ReadMSBuildMetadata(ref Utf8JsonStreamReader jsonReader, PackageSpec packageSpec, IEnvironmentVariableReader environmentVariableReader)
         {
             var centralPackageVersionsManagementEnabled = false;
             var centralPackageVersionOverrideDisabled = false;
@@ -938,6 +938,8 @@ namespace NuGet.ProjectModel
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
             RestoreAuditProperties auditProperties = null;
+            bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
+            var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -959,6 +961,7 @@ namespace NuGet.ProjectModel
                     {
                         jsonReader.Read();
                         configFilePaths = jsonReader.ReadStringArrayAsIList() as List<string>;
+                        ExtractMacros(configFilePaths, userSettingsDirectory, useMacros);
                     }
                     else if (jsonReader.ValueTextEquals(CrossTargetingPropertyName))
                     {
@@ -968,6 +971,7 @@ namespace NuGet.ProjectModel
                     {
                         jsonReader.Read();
                         fallbackFolders = jsonReader.ReadStringArrayAsIList() as List<string>;
+                        ExtractMacros(fallbackFolders, userSettingsDirectory, useMacros);
                     }
                     else if (jsonReader.ValueTextEquals(FilesPropertyName))
                     {
@@ -1005,7 +1009,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(PackagesPathPropertyName))
                     {
-                        packagesPath = jsonReader.ReadNextTokenAsString();
+                        packagesPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
                     }
                     else if (jsonReader.ValueTextEquals(ProjectJsonPathPropertyName))
                     {
@@ -1031,7 +1035,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(ProjectUniqueNamePropertyName))
                     {
-                        projectUniqueName = jsonReader.ReadNextTokenAsString();
+                        projectUniqueName = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
                     }
                     else if (jsonReader.ValueTextEquals(RestoreLockPropertiesPropertyName))
                     {
