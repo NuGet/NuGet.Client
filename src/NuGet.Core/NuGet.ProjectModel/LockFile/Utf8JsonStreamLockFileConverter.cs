@@ -120,11 +120,13 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (!string.IsNullOrEmpty(lockFile.PackageSpec?.RestoreMetadata?.ProjectPath) && lockFile.LogMessages.Count > 0)
+            var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
+            if (!string.IsNullOrEmpty(projectPath) && lockFile.LogMessages.Count > 0)
             {
                 foreach (AssetsLogMessage message in lockFile.LogMessages.Where(x => string.IsNullOrEmpty(x.ProjectPath)))
                 {
-                    message.FilePath = lockFile.PackageSpec.RestoreMetadata.ProjectPath;
+                    message.ProjectPath = projectPath;
+                    message.FilePath = projectPath;
                 }
             }
 
