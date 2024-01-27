@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.ProjectModel
@@ -85,6 +86,7 @@ namespace NuGet.ProjectModel
                         ref reader,
                         name: null,
                         packageSpecPath: null,
+                        EnvironmentVariableWrapper.Instance,
                         snapshotValue: null);
                 }
                 else if (reader.ValueTextEquals(CentralTransitiveDependencyGroupsPropertyName))

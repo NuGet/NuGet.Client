@@ -80,7 +80,7 @@ namespace NuGet.ProjectModel
         {
             if (!JsonUtility.UseNewtonsoftJsonForParsing(environmentVariableReader, bypassCache))
             {
-                return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, snapshotValue);
+                return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, environmentVariableReader, snapshotValue);
             }
             else
             {
