@@ -66,14 +66,14 @@ namespace NuGet.ProjectModel
             using (var stringReader = new StringReader(rawPackageSpec.ToString()))
             using (var jsonReader = new JsonTextReader(stringReader))
             {
-                return GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue, EnvironmentVariableWrapper.Instance);
+                return GetPackageSpec(jsonReader, name, packageSpecPath, EnvironmentVariableWrapper.Instance, snapshotValue);
             }
         }
 
         [Obsolete]
         internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string packageSpecPath)
         {
-            return GetPackageSpec(jsonReader, name: null, packageSpecPath, snapshotValue: null, EnvironmentVariableWrapper.Instance);
+            return GetPackageSpec(jsonReader, name: null, packageSpecPath, EnvironmentVariableWrapper.Instance);
         }
 
         internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
@@ -88,14 +88,14 @@ namespace NuGet.ProjectModel
                 using (var jsonReader = new JsonTextReader(textReader))
                 {
 #pragma warning disable CS0612 // Type or member is obsolete
-                    return GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue, environmentVariableReader);
+                    return GetPackageSpec(jsonReader, name, packageSpecPath, environmentVariableReader, snapshotValue);
 #pragma warning restore CS0612 // Type or member is obsolete
                 }
             }
         }
 
         [Obsolete]
-        internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader)
+        internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
             var packageSpec = new PackageSpec();
 
