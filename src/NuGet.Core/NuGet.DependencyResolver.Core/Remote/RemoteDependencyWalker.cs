@@ -89,7 +89,6 @@ namespace NuGet.DependencyResolver
             }
 
             var rootItem = await ResolverUtility.FindLibraryCachedAsync(
-                _context.FindLibraryEntryCache,
                 libraryRange,
                 framework,
                 runtimeName,
