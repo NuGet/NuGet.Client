@@ -166,100 +166,48 @@ namespace NuGet.Versioning
         /// <param name="value">The <see cref="int"/> to append.</param>
         private static void AppendInt(StringBuilder sb, int value)
         {
-            const int one = 1;
-            const int ten = one * 10;
-            const int hundred = ten * 10;
-            const int thousand = hundred * 10;
-            const int tenThousand = thousand * 10;
-            const int hundredThousand = tenThousand * 10;
-            const int million = hundredThousand * 10;
-            const int tenMillion = million * 10;
-            const int hundredMillion = tenMillion * 10;
-            const int billion = hundredMillion * 10;
+            if (value == 0)
+            {
+                sb.Append('0');
+                return;
+            }
 
+            // special case min value since it'll overflow if we negate it
+            if (value == int.MinValue)
+            {
+                sb.Append("-2147483648");
+                return;
+            }
+
+            // do all math with positive integers
             if (value < 0)
             {
                 sb.Append('-');
                 value = -value;
             }
 
+            // upper range of int is 1 billion, so we start dividing by that to get the digit at that position
+            int divisor = 1_000_000_000;
+
+            // remember when we found our first digit so we can keep adding intermediate zeroes
             bool digitFound = false;
-            if (value >= billion)
+            while (divisor > 0)
             {
-                int billions = value / billion;
-                value %= billion;
-                sb.Append(ToChar(billions));
-                digitFound = true;
-            }
+                if (digitFound || value >= divisor)
+                {
+                    digitFound = true;
+                    int digit = value / divisor;
+                    value -= digit * divisor;
 
-            if (digitFound || value >= hundredMillion)
-            {
-                int hundredMillions = value / hundredMillion;
-                value %= hundredMillion;
-                sb.Append(ToChar(hundredMillions));
-                digitFound = true;
-            }
+                    // convert the digit to char by adding the value to '0'.
+                    // '0' + 0 = 48 + 0 = 48 = '0'
+                    // '0' + 1 = 48 + 1 = 49 = '1'
+                    // '0' + 2 = 48 + 2 = 50 = '2'
+                    // etc...
+                    sb.Append((char)('0' + digit));
+                }
 
-            if (digitFound || value >= tenMillion)
-            {
-                int tenMillions = value / tenMillion;
-                value %= tenMillion;
-                sb.Append(ToChar(tenMillions));
-                digitFound = true;
-            }
-
-            if (digitFound || value >= million)
-            {
-                int millions = value / million;
-                value %= million;
-                sb.Append(ToChar(millions));
-                digitFound = true;
-            }
-
-            if (digitFound || value >= hundredThousand)
-            {
-                int hundredThousands = value / hundredThousand;
-                value %= hundredThousand;
-                sb.Append(ToChar(hundredThousands));
-                digitFound = true;
-            }
-
-            if (digitFound || value >= tenThousand)
-            {
-                int tenThousands = value / tenThousand;
-                value %= tenThousand;
-                sb.Append(ToChar(tenThousands));
-                digitFound = true;
-            }
-
-            if (digitFound || value >= thousand)
-            {
-                int thousands = value / thousand;
-                value %= thousand;
-                sb.Append(ToChar(thousands));
-                digitFound = true;
-            }
-
-            if (digitFound || value >= hundred)
-            {
-                int hundreds = value / hundred;
-                value %= hundred;
-                sb.Append(ToChar(hundreds));
-                digitFound = true;
-            }
-
-            if (digitFound || value >= ten)
-            {
-                int tens = value / ten;
-                sb.Append(ToChar(tens));
-            }
-
-            int ones = value % ten;
-            sb.Append(ToChar(ones));
-
-            static char ToChar(int digit)
-            {
-                return (char)('0' + digit);
+                divisor /= 10;
             }
         }
     }
