@@ -60,6 +60,7 @@ stages:
     testLabPoolName: VS-Platform
     testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
     visualStudioSigning: Test
+    visualStudioRemoveOutOfSupportComponents: false
     ##### Step Hooks #####
     preTestMachineConfigurationStepList:
     - powershell: "Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize"
