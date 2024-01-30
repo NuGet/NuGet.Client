@@ -1048,4 +1048,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ToolTip_TrustedOwnerIndicator" xml:space="preserve">
     <value>Owner according to nuget.org</value>
   </data>
+  <data name="Text_By" xml:space="preserve">
+    <value>by</value>
+  </data>
 </root>
