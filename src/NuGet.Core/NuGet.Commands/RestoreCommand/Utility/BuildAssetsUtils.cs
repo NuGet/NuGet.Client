@@ -511,11 +511,11 @@ namespace NuGet.Commands
                 }
 
                 // build/ {packageId}.targets
-                var buildTargetsGroup = GenerateBuildGroup(repositoryRoot, sortedPackages);
+                var buildTargetsGroup = GenerateBuildGroup(repositoryRoot, sortedPackages, TargetsExtension);
                 targets.AddRange(GenerateGroupsWithConditions(buildTargetsGroup, isMultiTargeting, frameworkConditions));
 
                 // props/ {packageId}.props
-                MSBuildRestoreItemGroup buildPropsGroup = GenerateBuildGroup(repositoryRoot, sortedPackages);
+                MSBuildRestoreItemGroup buildPropsGroup = GenerateBuildGroup(repositoryRoot, sortedPackages, PropsExtension);
                 props.AddRange(GenerateGroupsWithConditions(buildPropsGroup, isMultiTargeting, frameworkConditions));
 
                 // Create an empty PropertyGroup for package properties
@@ -563,11 +563,11 @@ namespace NuGet.Commands
                 if (isMultiTargeting)
                 {
                     // buildMultiTargeting/ {packageId}.targets
-                    var buildCrossTargetsGroup = GenerateMultiTargetingGroup(repositoryRoot, sortedPackages, multiTargetingImportsAdded);
+                    var buildCrossTargetsGroup = GenerateMultiTargetingGroup(repositoryRoot, sortedPackages, multiTargetingImportsAdded, TargetsExtension);
                     targets.AddRange(GenerateGroupsWithConditions(buildCrossTargetsGroup, isMultiTargeting, CrossTargetingCondition));
 
                     // buildMultiTargeting/ {packageId}.props
-                    var buildCrossPropsGroup = GenerateMultiTargetingGroup(repositoryRoot, sortedPackages, multiTargetingImportsAdded);
+                    var buildCrossPropsGroup = GenerateMultiTargetingGroup(repositoryRoot, sortedPackages, multiTargetingImportsAdded, PropsExtension);
                     props.AddRange(GenerateGroupsWithConditions(buildCrossPropsGroup, isMultiTargeting, CrossTargetingCondition));
                 }
 
@@ -635,7 +635,7 @@ namespace NuGet.Commands
 
             return files;
 
-            static MSBuildRestoreItemGroup GenerateBuildGroup(string repositoryRoot, List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages)
+            static MSBuildRestoreItemGroup GenerateBuildGroup(string repositoryRoot, List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages, string extension)
             {
                 var buildGroup = new MSBuildRestoreItemGroup();
                 buildGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
@@ -645,7 +645,7 @@ namespace NuGet.Commands
                 {
                     if (pkg.Value.Exists())
                     {
-                        foreach (LockFileItem lockFileItem in pkg.Key.Build.WithExtension(TargetsExtension))
+                        foreach (LockFileItem lockFileItem in pkg.Key.Build.WithExtension(extension))
                         {
                             var absolutePath = pkg.Value.GetAbsolutePath(lockFileItem);
                             var pathWithMacros = GetPathWithMacros(absolutePath, repositoryRoot);
@@ -658,7 +658,7 @@ namespace NuGet.Commands
                 return buildGroup;
             }
 
-            static MSBuildRestoreItemGroup GenerateMultiTargetingGroup(string repositoryRoot, List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages, HashSet<string> multiTargetingImportsAdded)
+            static MSBuildRestoreItemGroup GenerateMultiTargetingGroup(string repositoryRoot, List<KeyValuePair<LockFileTargetLibrary, Lazy<LocalPackageSourceInfo>>> sortedPackages, HashSet<string> multiTargetingImportsAdded, string extension)
             {
                 var buildCrossTargetsGroup = new MSBuildRestoreItemGroup();
                 buildCrossTargetsGroup.RootName = MSBuildRestoreItemGroup.ImportGroup;
@@ -668,7 +668,7 @@ namespace NuGet.Commands
                 {
                     if (pkg.Value.Exists())
                     {
-                        foreach (var e in pkg.Key.BuildMultiTargeting.WithExtension(TargetsExtension))
+                        foreach (var e in pkg.Key.BuildMultiTargeting.WithExtension(extension))
                         {
                             var path = pkg.Value.GetAbsolutePath(e);
                             if (multiTargetingImportsAdded.Add(path))
