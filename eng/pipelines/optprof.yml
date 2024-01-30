@@ -14,7 +14,6 @@ resources:
         exclude:
         - release-6.0.x
         - release-6.3.x
-
   - pipeline: DartLab
     source: DartLab
     branch: main
