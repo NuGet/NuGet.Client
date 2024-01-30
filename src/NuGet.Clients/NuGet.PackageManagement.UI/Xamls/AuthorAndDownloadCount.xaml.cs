@@ -92,19 +92,6 @@ namespace NuGet.PackageManagement.UI
             control?.UpdateControl();
         }
 
-        public string Author
-        {
-            get
-            {
-                return GetValue(AuthorProperty) as string;
-            }
-            set
-            {
-                SetValue(AuthorProperty, value);
-                UpdateControl();
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
