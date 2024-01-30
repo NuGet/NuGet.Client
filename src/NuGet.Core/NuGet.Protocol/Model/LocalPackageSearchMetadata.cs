@@ -50,7 +50,7 @@ namespace NuGet.Protocol
             {
                 if (_ownersList is null)
                 {
-                    _ownersList = Owners != null ? Owners.Split(',').Select(s => s.Trim()).ToList() : null;
+                    _ownersList = Owners != null ? Owners.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList() : null;
                 }
 
                 return _ownersList;
