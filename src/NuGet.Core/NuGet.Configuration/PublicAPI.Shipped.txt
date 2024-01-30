@@ -29,9 +29,9 @@ NuGet.Configuration.ClientCertificateProvider
 ~NuGet.Configuration.ClientCertificateProvider.Remove(System.Collections.Generic.IReadOnlyList<NuGet.Configuration.ClientCertItem> items) -> void
 NuGet.Configuration.ConfigurationConstants
 NuGet.Configuration.ConfigurationDefaults
-~NuGet.Configuration.ConfigurationDefaults.DefaultPackageRestoreConsent.get -> string
-~NuGet.Configuration.ConfigurationDefaults.DefaultPackageSources.get -> System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource>
-~NuGet.Configuration.ConfigurationDefaults.DefaultPushSource.get -> string
+NuGet.Configuration.ConfigurationDefaults.DefaultPackageRestoreConsent.get -> string?
+NuGet.Configuration.ConfigurationDefaults.DefaultPackageSources.get -> System.Collections.Generic.IEnumerable<NuGet.Configuration.PackageSource!>!
+NuGet.Configuration.ConfigurationDefaults.DefaultPushSource.get -> string?
 NuGet.Configuration.CredentialRequestType
 NuGet.Configuration.CredentialRequestType.Forbidden = 2 -> NuGet.Configuration.CredentialRequestType
 NuGet.Configuration.CredentialRequestType.Proxy = 0 -> NuGet.Configuration.CredentialRequestType
@@ -401,7 +401,7 @@ override NuGet.Configuration.UnknownItem.IsEmpty() -> bool
 ~override NuGet.Configuration.VirtualSettingSection.Clone() -> NuGet.Configuration.SettingBase
 ~override sealed NuGet.Configuration.AddItem.Equals(object other) -> bool
 override sealed NuGet.Configuration.AddItem.GetHashCode() -> int
-~static NuGet.Configuration.ConfigurationDefaults.Instance.get -> NuGet.Configuration.ConfigurationDefaults
+static NuGet.Configuration.ConfigurationDefaults.Instance.get -> NuGet.Configuration.ConfigurationDefaults!
 ~static NuGet.Configuration.EncryptionUtility.DecryptString(string encryptedString) -> string
 ~static NuGet.Configuration.EncryptionUtility.EncryptString(string value) -> string
 ~static NuGet.Configuration.NuGetPathContext.Create(NuGet.Configuration.ISettings settings) -> NuGet.Configuration.NuGetPathContext
