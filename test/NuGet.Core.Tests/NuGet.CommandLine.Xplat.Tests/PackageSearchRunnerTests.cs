@@ -289,7 +289,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 Prerelease = false,
                 ExactMatch = true,
                 Logger = GetLogger(),
-                SearchTerm = "Fake.Newtonsoft.Json",
+                SearchTerm = "Newtonsoft.Json",
                 Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" }
             };
 
