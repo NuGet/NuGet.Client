@@ -2299,6 +2299,90 @@ namespace NuGet.Configuration.Test
             source.Name.Should().Be("s1");
         }
 
+        [Fact]
+        public void LoadAuditSources_ConfigWithoutAuditSources_ReturnsEmptyList()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            const string contents = @"<configuration />";
+            var path = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            File.WriteAllText(path, contents);
+
+            Settings settings = new Settings(testDirectory.Path);
+            var machineDefaultSources = Array.Empty<PackageSource>();
+
+            // Act
+            PackageSourceProvider psp = new PackageSourceProvider(settings, machineDefaultSources);
+            IReadOnlyList<PackageSource> auditSources = psp.LoadAuditSources();
+
+            // Assert
+            auditSources.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void LoadAuditSources_ConfigWithAuditSources_ReturnsAuditSources()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            const string contents = @"<configuration>
+    <auditSources>
+        <add key=""contoso"" value=""https://contoso.test/nuget/v3/index.json"" protocolVersion=""3"" />
+    </auditSources>
+</configuration>";
+            var path = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            File.WriteAllText(path, contents);
+
+            Settings settings = new Settings(testDirectory.Path);
+            var machineDefaultSources = Array.Empty<PackageSource>();
+
+            // Act
+            PackageSourceProvider psp = new PackageSourceProvider(settings, machineDefaultSources);
+            IReadOnlyList<PackageSource> auditSources = psp.LoadAuditSources();
+
+            // Assert
+            auditSources.Should().NotBeEmpty();
+            var auditSource = auditSources.Should().ContainSingle();
+            auditSource.Subject.Name.Should().Be("contoso");
+            auditSource.Subject.Source.Should().Be("https://contoso.test/nuget/v3/index.json");
+            auditSource.Subject.ProtocolVersion.Should().Be(3);
+            auditSource.Subject.IsEnabled.Should().BeTrue();
+        }
+
+        [Fact]
+        public void LoadAuditSources_ConfigWithDisabledAuditSources_ReturnsDisabledAuditSources()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            const string contents = @"<configuration>
+    <auditSources>
+        <add key=""contoso"" value=""https://contoso.test/nuget/v3/index.json"" protocolVersion=""3"" />
+    </auditSources>
+    <disabledPackageSources>
+        <add key=""contoso"" value=""true"" />
+    </disabledPackageSources>
+</configuration>";
+            var path = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            File.WriteAllText(path, contents);
+
+            Settings settings = new Settings(testDirectory.Path);
+            var machineDefaultSources = Array.Empty<PackageSource>();
+
+            // Act
+            PackageSourceProvider psp = new PackageSourceProvider(settings, machineDefaultSources);
+            IReadOnlyList<PackageSource> auditSources = psp.LoadAuditSources();
+
+            // Assert
+            auditSources.Should().NotBeEmpty();
+            var auditSource = auditSources.Should().ContainSingle();
+            auditSource.Subject.Name.Should().Be("contoso");
+            auditSource.Subject.Source.Should().Be("https://contoso.test/nuget/v3/index.json");
+            auditSource.Subject.ProtocolVersion.Should().Be(3);
+            auditSource.Subject.IsEnabled.Should().BeFalse();
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();
