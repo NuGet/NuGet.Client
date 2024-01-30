@@ -62,9 +62,13 @@ namespace NuGet.DependencyResolver
         /// <param name="additionalSpace">The count of additional items that will be added.</param>
         internal void EnsureInnerNodeCapacity(int additionalSpace)
         {
-            if (InnerNodes is List<GraphNode<TItem>> innerList && innerList.Capacity < innerList.Count + additionalSpace)
+            if (InnerNodes is List<GraphNode<TItem>> innerList)
             {
-                innerList.Capacity = innerList.Count + additionalSpace;
+                int requiredCapacity = innerList.Count + additionalSpace;
+                if (innerList.Capacity < requiredCapacity)
+                {
+                    innerList.Capacity = requiredCapacity;
+                }
             }
         }
 
