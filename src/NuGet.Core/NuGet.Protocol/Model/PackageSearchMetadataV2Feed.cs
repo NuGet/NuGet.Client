@@ -48,6 +48,7 @@ namespace NuGet.Protocol
             Description = package.Description;
             IconUrl = GetUriSafe(package.IconUrl);
             LicenseUrl = GetUriSafe(package.LicenseUrl);
+            _ownersList = (IReadOnlyList<string>)package.Owners;
             Owners = metadataCache.GetString(string.Join(", ", package.Owners));
             PackageId = package.Id;
             ProjectUrl = GetUriSafe(package.ProjectUrl);
@@ -84,7 +85,8 @@ namespace NuGet.Protocol
 
         public Uri LicenseUrl { get; private set; }
 
-        public IReadOnlyList<string> OwnersList => null;
+        private IReadOnlyList<string> _ownersList;
+        public IReadOnlyList<string> OwnersList => _ownersList;
 
         public string Owners { get; private set; }
 
