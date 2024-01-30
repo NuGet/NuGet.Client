@@ -23,6 +23,8 @@
     x:Key="EmptyEnumerableToVisibilityConverter" />
   <nuget:EnumerableToVisibilityConverter
     x:Key="EnumerableToVisibilityConverter" />
+  <nuget:LastItemToVisibilityConverter
+    x:Key="LastItemToVisibilityConverter" />
   <nuget:InverseBooleanConverter
     x:Key="InverseBooleanConverter" />
   <nuget:BooleanToGridRowHeightConverter
