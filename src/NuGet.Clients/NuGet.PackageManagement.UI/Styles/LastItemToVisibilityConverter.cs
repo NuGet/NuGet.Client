@@ -17,6 +17,11 @@ namespace NuGet.PackageManagement.UI
                 && values[0] is int currentIndex
                 && values[1] is int length)
             {
+                if (currentIndex < 0 || length < 1 || currentIndex >= length)
+                {
+                    return DependencyProperty.UnsetValue;
+                }
+
                 int lastIndex = length - 1;
                 return Equals(currentIndex, lastIndex) ? Visibility.Collapsed : Visibility.Visible;
             }
