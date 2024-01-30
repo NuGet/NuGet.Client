@@ -325,7 +325,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        internal static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio, ITestLogger logger)
+        public static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio, ITestLogger logger)
         {
             visualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
             WaitForCommandAvailable(visualStudio, "Project.ManageNuGetPackages", TimeSpan.FromMinutes(1), logger);

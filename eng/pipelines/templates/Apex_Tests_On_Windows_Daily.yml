@@ -1,8 +1,6 @@
 parameters:
   - name: DartLabEnvironment
     type: string
-  - name: condition
-    type: string
   - name: testExecutionJobTimeoutInMinutes
     type: number
   - name: testMachineCleanUpStrategy
@@ -20,7 +18,6 @@ stages:
     parameters:
       name: VS_Apex_Tests
       displayName: Apex Tests On Windows
-      condition: ${{parameters.condition}}
       variables:
         - name: VsBootstrapperUrl
           value: $[dependencies.TestMachineConfiguration.outputs['SetBootstrapperURI.BootstrapperUrl']]
@@ -186,7 +183,7 @@ stages:
                 $branchName = "$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)"
                 $branchName = $branchName.Replace('refs/heads/', '')
 
-                $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet-NuGet.Client-Trusted/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.runsettings"
+                $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet-NuGet.Client-Trusted/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.Daily.runsettings"
                 Write-Host "RunSettingsURI: $RunSettingsURI"
                 Set-AzurePipelinesVariable 'RunSettingsURI' $RunSettingsURI
                 Set-AzurePipelinesVariable -IsOutput 'RunSettingsURI' $RunSettingsURI

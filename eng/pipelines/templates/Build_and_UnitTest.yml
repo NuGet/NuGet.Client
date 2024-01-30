@@ -406,6 +406,8 @@ steps:
         Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
         Write-Output "Copying NuGet.Tests.Apex binaries"
         Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
+        Write-Output "Copying NuGet.Tests.Apex.Daily binaries"
+        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex.Daily\ -Recurse -ErrorAction Stop
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]$_"
         exit 1

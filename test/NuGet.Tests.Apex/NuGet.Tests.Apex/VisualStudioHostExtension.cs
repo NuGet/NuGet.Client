@@ -13,7 +13,7 @@ namespace NuGet.Tests.Apex
         /// <summary>
         /// Assert no errors in the error list or output window
         /// </summary>
-        internal static void AssertNoErrors(this VisualStudioHost host)
+        public static void AssertNoErrors(this VisualStudioHost host)
         {
             host.AssertNuGetOutputDoesNotHaveErrors();
             host.GetErrorListErrors().Should().BeEmpty("Empty errors in error list");
@@ -22,7 +22,7 @@ namespace NuGet.Tests.Apex
         /// <summary>
         /// Assert no errors in the error list
         /// </summary>
-        internal static List<string> GetErrorListErrors(this VisualStudioHost host)
+        public static List<string> GetErrorListErrors(this VisualStudioHost host)
         {
             var errors = new List<string>();
 
@@ -37,7 +37,7 @@ namespace NuGet.Tests.Apex
         /// <summary>
         /// Assert no errors in nuget output window
         /// </summary>
-        internal static void AssertNuGetOutputDoesNotHaveErrors(this VisualStudioHost host)
+        public static void AssertNuGetOutputDoesNotHaveErrors(this VisualStudioHost host)
         {
             host.GetErrorsInOutputWindows().Should().BeEmpty();
         }
