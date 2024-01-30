@@ -50,6 +50,11 @@ namespace NuGet.Configuration
             // This way, administrator will become aware of the failures when the ConfigurationDefaults file is not valid or permissions are not set properly
         }
 
+        internal ConfigurationDefaults(ISettings settingsManager)
+        {
+            _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
+        }
+
         public static ConfigurationDefaults Instance { get; } = InitializeInstance();
 
         private IReadOnlyList<PackageSource> GetSourceItems(string sectionName)
