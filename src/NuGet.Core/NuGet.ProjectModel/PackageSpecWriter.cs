@@ -65,7 +65,7 @@ namespace NuGet.ProjectModel
 #pragma warning restore CS0612 // Type or member is obsolete
 
 
-            if (packageSpec.Dependencies.Any())
+            if (packageSpec.Dependencies.Count > 0)
             {
                 SetDependencies(writer, packageSpec.Dependencies);
             }
@@ -553,7 +553,7 @@ namespace NuGet.ProjectModel
 
         private static void SetImports(IObjectWriter writer, IList<NuGetFramework> frameworks)
         {
-            if (frameworks?.Any() == true)
+            if (frameworks != null && frameworks.Count > 0)
             {
                 var imports = frameworks.Select(framework => framework.GetShortFolderName());
 
