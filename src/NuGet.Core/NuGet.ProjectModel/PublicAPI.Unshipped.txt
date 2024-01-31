@@ -1,4 +1,2 @@
 #nullable enable
-NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled.get -> bool
-NuGet.ProjectModel.ProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled.set -> void
 ~NuGet.ProjectModel.HashObjectWriter.WriteNonEmptyNameArray(string name, System.Collections.Generic.IEnumerable<string> values) -> void

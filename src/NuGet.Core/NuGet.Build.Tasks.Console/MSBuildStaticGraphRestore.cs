@@ -107,8 +107,33 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
+            static bool HasProjectToRestore(DependencyGraphSpec dgSpec, bool restorePackagesConfig)
+            {
+                if (dgSpec.Restore.Count > 0)
+                {
+                    return true;
+                }
+
+#if NETFRAMEWORK
+                if (restorePackagesConfig)
+                {
+                    for (int i = 0; i < dgSpec.Projects.Count; i++)
+                    {
+                        PackageSpec project = dgSpec.Projects[i];
+                        if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
+                        {
+                            return true;
+                        }
+                    }
+                }
+#endif
+
+                return false;
+            }
+
+            bool restorePackagesConfig = IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options);
             if (string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
-                    && dependencyGraphSpec.Restore.Count == 0)
+                    && !HasProjectToRestore(dependencyGraphSpec, restorePackagesConfig))
             {
                 MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
                 return true;
@@ -126,7 +151,7 @@ namespace NuGet.Build.Tasks.Console
                     force: IsOptionTrue(nameof(RestoreTaskEx.Force), options),
                     forceEvaluate: IsOptionTrue(nameof(RestoreTaskEx.ForceEvaluate), options),
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
-                    restorePC: IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options),
+                    restorePC: restorePackagesConfig,
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
                     log: MSBuildLogger,
                 cancellationToken: CancellationToken.None);
