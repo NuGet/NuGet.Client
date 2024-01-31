@@ -22,9 +22,6 @@ namespace NuGet.DependencyResolver
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
             PackageSourceMapping = packageSourceMapping ?? throw new ArgumentNullException(nameof(packageSourceMapping));
 
-            FindLibraryEntryCache = new TaskResultCache<LibraryRangeCacheKey, GraphItem<RemoteResolveResult>>();
-            ResolvePackageLibraryMatchCache = new TaskResultCache<LibraryRange, Tuple<LibraryRange, RemoteMatch>>();
-
             LockFileLibraries = new Dictionary<LockFileCacheKey, IList<LibraryIdentity>>();
         }
 
@@ -43,9 +40,9 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Library entry cache.
         /// </summary>
-        internal TaskResultCache<LibraryRangeCacheKey, GraphItem<RemoteResolveResult>> FindLibraryEntryCache { get; }
+        internal static TaskResultCache<LibraryRangeCacheKey, GraphItem<RemoteResolveResult>> FindLibraryEntryCache { get; } = new();
 
-        internal TaskResultCache<LibraryRange, Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchCache { get; }
+        internal static TaskResultCache<LibraryRange, Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchCache { get; } = new();
 
         /// <summary>
         /// True if this is a csproj or similar project. Xproj should be false.

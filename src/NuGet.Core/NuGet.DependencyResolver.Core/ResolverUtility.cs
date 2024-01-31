@@ -26,7 +26,7 @@ namespace NuGet.DependencyResolver
         {
             LibraryRangeCacheKey key = new(libraryRange, framework);
 
-            GraphItem<RemoteResolveResult> result = await context.FindLibraryEntryCache.GetOrAddAsync(key, () => FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken), cancellationToken);
+            GraphItem<RemoteResolveResult> result = await RemoteWalkContext.FindLibraryEntryCache.GetOrAddAsync(key, () => FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken), cancellationToken);
 
             return result;
         }
@@ -232,7 +232,7 @@ namespace NuGet.DependencyResolver
             RemoteWalkContext remoteWalkContext,
             CancellationToken cancellationToken)
         {
-            Tuple<LibraryRange, RemoteMatch> result = await remoteWalkContext.ResolvePackageLibraryMatchCache.GetOrAddAsync(libraryRange, () => ResolvePackageLibraryMatchAsync(libraryRange, remoteWalkContext, cancellationToken), cancellationToken);
+            Tuple<LibraryRange, RemoteMatch> result = await RemoteWalkContext.ResolvePackageLibraryMatchCache.GetOrAddAsync(libraryRange, () => ResolvePackageLibraryMatchAsync(libraryRange, remoteWalkContext, cancellationToken), cancellationToken);
 
             return result;
         }
