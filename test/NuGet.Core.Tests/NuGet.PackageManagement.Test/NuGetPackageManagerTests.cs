@@ -1317,15 +1317,16 @@ namespace NuGet.Test
             }
         }
 
+        //Need to select new packages for this test
         [Fact]
         public async Task InstallPackageWhichUpdatesParent()
         {
             // https://github.com/NuGet/Home/issues/127
             // Repro step:
-            // 1.Install-Package jquery.validation -Version 1.8
-            // 2.Update-package jquery -version 2.0.3
-            // Expected: jquery.validation was updated to 1.8.0.1
-            // jquery 1.8 is unique because it allows only a single version of jquery
+            // 1.Install-Package xunit.extensions -Version 1.9.1
+            // 2.Update-package xunit -version 1.9.2
+            // Expected: jquery.validation was updated to 1.9.2
+            // xunit.extensions 1.9.1 is unique because it allows only a single version of xunit
 
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
@@ -1345,8 +1346,9 @@ namespace NuGet.Test
                 var packagePathResolver = new PackagePathResolver(packagesFolderPath);
 
                 var projectA = testSolutionManager.AddNewMSBuildProject();
-                var jqueryValidation18 = new PackageIdentity("jquery.validation", NuGetVersion.Parse("1.8"));
-                var jquery203 = new PackageIdentity("jquery", NuGetVersion.Parse("2.0.3"));
+                //Validate this test still works
+                var jqueryValidation18 = new PackageIdentity("xunit.extensions", NuGetVersion.Parse("1.9.1"));
+                var jquery203 = new PackageIdentity("xunit", NuGetVersion.Parse("1.9.2"));
 
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(projectA, jqueryValidation18,
@@ -1365,7 +1367,7 @@ namespace NuGet.Test
                 // Assert
                 projectAInstalled = (await projectA.GetInstalledPackagesAsync(token)).ToList();
                 Assert.Equal(2, projectAInstalled.Count);
-                Assert.Equal(new PackageIdentity("jquery.validation", NuGetVersion.Parse("1.8.0.1")), projectAInstalled[1].PackageIdentity);
+                Assert.Equal(new PackageIdentity("xunit.extensions", NuGetVersion.Parse("1.9.2")), projectAInstalled[1].PackageIdentity);
                 Assert.False(File.Exists(packagePathResolver.GetInstalledPackageFilePath(jqueryValidation18)));
             }
         }

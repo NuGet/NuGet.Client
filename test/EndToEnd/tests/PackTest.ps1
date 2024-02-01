@@ -40,8 +40,8 @@ function Test-PackFromProjectWithDevelopmentDependencySet {
 
     install-package EntityFramework -version 5.0.0 -ignoreDependencies
     install-package jquery -version 1.8.2 -ignoreDependencies
-    install-package jquery.validation -version 1.10.0 -ignoreDependencies
-    install-package jquery.ui.combined -version 1.8.24 -ignoreDependencies
+    install-package jquery.validation -version 1.19.4 -ignoreDependencies
+    install-package jquery.ui.combined -version 1.12.0 -ignoreDependencies
     install-package Microsoft.jQuery.Unobtrusive.Validation -version 2.0.30116.0 -ignoreDependencies
     install-package Microsoft.jQuery.Unobtrusive.Ajax -version 2.0.30116.0 -ignoreDependencies
     install-package Modernizr -version 2.6.2 -ignoreDependencies
