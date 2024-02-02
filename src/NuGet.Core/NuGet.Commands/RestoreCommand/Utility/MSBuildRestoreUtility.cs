@@ -638,7 +638,10 @@ namespace NuGet.Commands
         {
             foreach (var item in GetItemByType(items, "Dependency"))
             {
-                var dependency = new LibraryDependency
+                // Get warning suppressions
+                IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn"));
+
+                var dependency = new LibraryDependency(noWarn)
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
@@ -650,12 +653,6 @@ namespace NuGet.Commands
                     Aliases = item.GetProperty("Aliases"),
                     VersionOverride = GetVersionRange(item, defaultValue: null, "VersionOverride")
                 };
-
-                // Add warning suppressions
-                foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn")))
-                {
-                    dependency.NoWarn.Add(code);
-                }
 
                 ApplyIncludeFlags(dependency, item);
 
