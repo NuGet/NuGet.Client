@@ -173,6 +173,10 @@ stages:
               Write-Host "DropName: $dropName"
               Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
 
+        - download: ComponentBuildUnderTest
+          artifact: BuildInfo
+          displayName: 'Download buildinfo.json'
+
         - task: PowerShell@2
           displayName: 'Set RunSettingsURI variable'
           name: SetRunSettingsURI
@@ -180,10 +184,13 @@ stages:
             targetType: 'inline'
             script: |
               try {
-                $branchName = "$(resources.pipeline.ComponentBuildUnderTest.sourceBranch)"
-                $branchName = $branchName.Replace('refs/heads/', '')
+                $buildInfoJsonFilePath = "$(Pipeline.Workspace)\ComponentBuildUnderTest\BuildInfo\buildinfo.json"
 
-                $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/NuGet/NuGet.Client/head/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.Daily.runsettings"
+                Write-Host "buildinfo.json drop URI:  $buildInfoJsonFilePath"
+                $buildInfoJson = (Get-Content $buildInfoJsonFilePath -Raw) | ConvertFrom-Json
+                $branchName = $buildInfoJson.BuildBranch
+
+                $RunSettingsURI = "https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$branchName/$(resources.pipeline.ComponentBuildUnderTest.runID);NuGet.Tests.Apex.Daily.runsettings"
                 Write-Host "RunSettingsURI: $RunSettingsURI"
                 Set-AzurePipelinesVariable 'RunSettingsURI' $RunSettingsURI
                 Set-AzurePipelinesVariable -IsOutput 'RunSettingsURI' $RunSettingsURI
