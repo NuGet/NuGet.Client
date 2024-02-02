@@ -2341,6 +2341,69 @@ namespace NuGet.Configuration.Test
             auditSource.Subject.IsEnabled.Should().BeFalse();
         }
 
+        [Fact]
+        public void LoadAuditSources_DefaultConfigWithAuditSources_ReturnsAuditSources()
+        {
+            // Arrange
+            Mock<ISettings> defaultSettings = new Mock<ISettings>();
+            defaultSettings.Setup(s => s.GetSection("auditSources"))
+                .Returns(new VirtualSettingSection("auditSources",
+                    new SourceItem("contoso", "https://contoso.test/nuget/v3/index.json", "3")));
+            ConfigurationDefaults configurationDefaults = new ConfigurationDefaults(defaultSettings.Object);
+
+            Mock<ISettings> solutionConfig = new Mock<ISettings>();
+
+            // Act
+            PackageSourceProvider psp = new PackageSourceProvider(solutionConfig.Object, configurationDefaults);
+            IReadOnlyList<PackageSource> auditSources = psp.LoadAuditSources();
+
+            // Assert
+            auditSources.Should().NotBeEmpty();
+            var auditSource = auditSources.Should().ContainSingle();
+            auditSource.Subject.Name.Should().Be("contoso");
+            auditSource.Subject.Source.Should().Be("https://contoso.test/nuget/v3/index.json");
+            auditSource.Subject.ProtocolVersion.Should().Be(3);
+            auditSource.Subject.IsEnabled.Should().BeTrue();
+        }
+
+        [Fact]
+        public void LoadAuditSources_LocalConfigDisablesDefaultAuditSource_DefaultSourceCannotBeDisabled()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+
+            Mock<ISettings> defaultSettings = new Mock<ISettings>();
+            defaultSettings.Setup(s => s.GetSection("auditSources"))
+                .Returns(new VirtualSettingSection("auditSources",
+                    new SourceItem("contoso", "https://contoso.test/nuget/v3/index.json", "3")));
+            ConfigurationDefaults configurationDefaults = new ConfigurationDefaults(defaultSettings.Object);
+
+            const string contents = @"<configuration>
+    <packageSources>
+        <add key=""contoso"" value=""https://contoso.test/nuget/v3/index.json"" />
+    </packageSources>
+    <disabledPackageSources>
+        <add key=""contoso"" value=""true"" />
+    </disabledPackageSources>
+</configuration>";
+            var path = Path.Combine(testDirectory.Path, Settings.DefaultSettingsFileName);
+            File.WriteAllText(path, contents);
+
+            Settings settings = new Settings(testDirectory.Path);
+
+            // Act
+            PackageSourceProvider psp = new PackageSourceProvider(settings, configurationDefaults);
+            IReadOnlyList<PackageSource> auditSources = psp.LoadAuditSources();
+
+            // Assert
+            auditSources.Should().NotBeEmpty();
+            var auditSource = auditSources.Should().ContainSingle();
+            auditSource.Subject.Name.Should().Be("contoso");
+            auditSource.Subject.Source.Should().Be("https://contoso.test/nuget/v3/index.json");
+            auditSource.Subject.ProtocolVersion.Should().Be(3);
+            auditSource.Subject.IsEnabled.Should().BeTrue();
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();

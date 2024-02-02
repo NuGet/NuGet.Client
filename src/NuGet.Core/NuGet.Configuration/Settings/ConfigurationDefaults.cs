@@ -70,11 +70,10 @@ namespace NuGet.Configuration
             List<PackageSource> sources = new();
             foreach (var source in sourceItems)
             {
-                // In a SettingValue representing a package source, the Key represents the name of the package source and the Value its source
-                sources.Add(new PackageSource(source.GetValueAsPath(),
-                    source.Key,
-                    isEnabled: !disabledPackageSources.Any(p => p.Key.Equals(source.Key, StringComparison.OrdinalIgnoreCase)),
-                    isOfficial: true));
+                bool isEnabled = !disabledPackageSources.Any(p => p.Key.Equals(source.Key, StringComparison.OrdinalIgnoreCase));
+                PackageSource packageSource = PackageSourceProvider.ReadPackageSource(source, isEnabled, _settingsManager);
+                packageSource.IsOfficial = true;
+                sources.Add(packageSource);
             }
 
             return sources;

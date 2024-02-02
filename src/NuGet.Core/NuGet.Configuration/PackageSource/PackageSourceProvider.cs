@@ -220,7 +220,7 @@ namespace NuGet.Configuration
             loadedPackageSources.InsertRange(defaultSourcesInsertIndex, defaultPackageSourcesToBeAdded);
         }
 
-        private static PackageSource ReadPackageSource(SourceItem setting, bool isEnabled, ISettings settings)
+        internal static PackageSource ReadPackageSource(SourceItem setting, bool isEnabled, ISettings settings)
         {
             var name = setting.Key;
             var packageSource = new PackageSource(setting.GetValueAsPath(), name, isEnabled)
