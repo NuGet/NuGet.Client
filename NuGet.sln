@@ -11,9 +11,21 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4A4623E9-CE1F-4DF2-A4C2-513CE8377D2A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		build\BannedSymbols.txt = build\BannedSymbols.txt
+		build\common.legacy.props = build\common.legacy.props
+		build\common.project.props = build\common.project.props
+		build\common.props = build\common.props
+		build\common.ps1 = build\common.ps1
+		build\common.targets = build\common.targets
+		build\config.props = build\config.props
 		Directory.Packages.props = Directory.Packages.props
+		build\DotNetSdkVersions.txt = build\DotNetSdkVersions.txt
 		build\NuGet.ruleset = build\NuGet.ruleset
+		build\NuGet.Tests.ruleset = build\NuGet.Tests.ruleset
+		build\sign.targets = build\sign.targets
 		spelling.dic = spelling.dic
+		build\test.targets = build\test.targets
+		build\vsts_build.yaml = build\vsts_build.yaml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core.UnitTests", "NuGet.Core.UnitTests", "{7323F93B-D141-4001-BB9E-7AF14031143E}"
