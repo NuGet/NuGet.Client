@@ -3,6 +3,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace NuGet
     internal sealed class TaskResultCache<TKey, TValue>
         where TKey : notnull
     {
-        private readonly Dictionary<TKey, Task<TValue>> _cache;
+        private readonly ConcurrentDictionary<TKey, Task<TValue>> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResultCache{TKey, TValue}" /> class with the specified key comparer.
@@ -93,34 +94,18 @@ namespace NuGet
                     return result;
                 }
 
-                result = valueFactory().ContinueWith(TaskComplete, state: null, cancellationToken, TaskContinuationOptions.RunContinuationsAsynchronously, TaskScheduler.Default);
+                result = valueFactory()
+                    .ContinueWith(
+                        (task, state) => task.GetAwaiter().GetResult(),
+                        state: null,
+                        cancellationToken,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+                        TaskScheduler.Default);
 
                 _cache[key] = result;
 
                 return result;
             }
-        }
-
-        private TValue TaskComplete(Task<TValue> task, object? state)
-        {
-            if (task.IsCanceled)
-            {
-                throw new TaskCanceledException();
-            }
-
-            if (task.IsFaulted)
-            {
-                if (task.Exception is AggregateException aggregateException)
-                {
-                    throw aggregateException.InnerException!;
-                }
-
-                throw task.Exception!;
-            }
-
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits does not apply since we are in a continuation and we already checked if the task is complete
-            return task.Result;
-#pragma warning restore VSTHRD002
         }
     }
 }
