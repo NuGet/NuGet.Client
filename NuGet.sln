@@ -345,6 +345,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateTestPackages", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ensure-nupkg-dependencies-on-source", "tools-local\ensure-nupkg-dependencies-on-source\ensure-nupkg-dependencies-on-source.csproj", "{719AC60C-59EF-4A63-AC9E-7841DF14179D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tests.Apex.Daily", "test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\NuGet.Tests.Apex.Daily.csproj", "{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -719,6 +721,10 @@ Global
 		{719AC60C-59EF-4A63-AC9E-7841DF14179D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{719AC60C-59EF-4A63-AC9E-7841DF14179D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{719AC60C-59EF-4A63-AC9E-7841DF14179D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -835,6 +841,7 @@ Global
 		{D792897C-D5D7-40A6-9565-8FA4ACE0EBFA} = {23CEFC88-9365-4464-A517-700224ECA033}
 		{1BCC177E-D529-4015-93E2-4C254FA015AA} = {23CEFC88-9365-4464-A517-700224ECA033}
 		{719AC60C-59EF-4A63-AC9E-7841DF14179D} = {CE4C7E1B-6883-49C3-A407-F807094777CC}
+		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275} = {3150445A-C422-4D40-B341-DE5AD063C632}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}
