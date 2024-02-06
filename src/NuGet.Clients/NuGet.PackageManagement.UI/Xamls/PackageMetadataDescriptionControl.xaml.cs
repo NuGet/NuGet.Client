@@ -13,16 +13,16 @@ namespace NuGet.PackageManagement.UI
 {
 
     /// <summary>
-    /// Interaction logic for PackageMetadataControl.xaml
+    /// Interaction logic for PackageMetadataDescriptionControl.xaml
     /// </summary>
-    public partial class PackageMetadataControl : UserControl
+    public partial class PackageMetadataDescriptionControl : UserControl
     {
-        public PackageMetadataControl()
+        public PackageMetadataDescriptionControl()
         {
             InitializeComponent();
 
             Visibility = Visibility.Collapsed;
-            DataContextChanged += PackageMetadataControl_DataContextChanged;
+            DataContextChanged += PackageMetadataDescriptionControl_DataContextChanged;
         }
 
         private void ViewLicense_Click(object sender, RoutedEventArgs e)
@@ -46,13 +46,13 @@ namespace NuGet.PackageManagement.UI
                     flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     (window.DataContext as LicenseFileData).LicenseText = flowDoc;
-                }).PostOnFailure(nameof(PackageMetadataControl), nameof(ViewLicense_Click));
+                }).PostOnFailure(nameof(PackageMetadataDescriptionControl), nameof(ViewLicense_Click));
 
                 window.ShowModal();
             }
         }
 
-        private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void PackageMetadataDescriptionControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (DataContext is DetailedPackageMetadata)
             {
@@ -67,20 +67,20 @@ namespace NuGet.PackageManagement.UI
         // capture each item as it is selected, so we can unselect when treeview lostfocus
         private void OnItemSelected(object sender, RoutedEventArgs e)
         {
-            //_dependencies.Tag = e.OriginalSource;
+            _dependencies.Tag = e.OriginalSource;
         }
 
         private void TreeView_LostFocus(object sender, RoutedEventArgs e)
         {
             // hide focus highlight when treeview lostfocus
-            //if (_dependencies.SelectedItem != null)
-            //{
-            //    TreeViewItem selectedTVI = _dependencies.Tag as TreeViewItem;
-            //    if (selectedTVI != null)
-            //    {
-            //        selectedTVI.IsSelected = false;
-            //    }
-            //}
+            if (_dependencies.SelectedItem != null)
+            {
+                TreeViewItem selectedTVI = _dependencies.Tag as TreeViewItem;
+                if (selectedTVI != null)
+                {
+                    selectedTVI.IsSelected = false;
+                }
+            }
         }
     }
 }
