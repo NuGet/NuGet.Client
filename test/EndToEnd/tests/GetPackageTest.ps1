@@ -13,7 +13,7 @@ function Test-GetPackageListsInstalledPackages {
 
     # Act
     Install-Package elmah -Project $p.Name -Version 1.1
-    Install-Package jQuery -Project $p.Name -Version 3.5.0
+    Install-Package jQuery -Project $p.Name -Version 3.5
     $packages = Get-Package
 
     # Assert
@@ -65,7 +65,7 @@ function Test-GetPackageWithUpdatesAcceptsSourceName {
 
     # Act
     Install-Package Antlr -Version 3.1.1 -Project $p.Name -Source $SourceNuGet
-    Install-Package jQuery -Version 3.5.0 -Project $p.Name -Source $SourceNuGet
+    Install-Package jQuery -Version 3.5 -Project $p.Name -Source $SourceNuGet
     $packages = Get-Package -Updates -Source $SourceNuGet
 
     # Assert
@@ -152,7 +152,7 @@ function Test-GetPackageForProjectReturnsEmptyProjectIfItHasNoInstalledPackage {
 function Test-GetPackageForProjectReturnsCorrectPackages {
     # Arrange
     $p = New-ConsoleApplication
-    Install-Package jQuery -Version 3.5.0 -Source $context.RepositoryPath
+    Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath
 
     # Act
     $result = @(Get-Package -ProjectName $p.Name)
@@ -168,7 +168,7 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
     $p1 = New-ConsoleApplication
     $p2 = New-ClassLibrary
 
-    Install-Package jQuery -Version 3.5.0 -Source $context.RepositoryPath -ProjectName $p1.Name
+    Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath -ProjectName $p1.Name
     Install-Package MyAwesomeLibrary -Version 1.0 -Source $context.RepositoryPath -ProjectName $p2.Name
 
     # Act

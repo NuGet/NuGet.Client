@@ -67,7 +67,7 @@ function Test-VsPackageInstallerServices {
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
 
     # Act
-    $p | Install-Package jquery -Version 3.5.0 -Source $context.RepositoryPath
+    $p | Install-Package jquery -Version 3.5 -Source $context.RepositoryPath
     $packages = @($installerServices.GetInstalledPackages())
     $package = $packages |  where Id -eq jquery
 
@@ -131,9 +131,9 @@ function Test-GetInstalledPackagesMultipleProjectsSameVersion {
 
     # Arrange
     $p = New-WebApplication
-    $p | Install-Package jquery -Version 3.5.0 -Source $context.RepositoryPath
+    $p | Install-Package jquery -Version 3.5 -Source $context.RepositoryPath
     $p = New-WebApplication
-    $p | Install-Package jquery -Version 3.5.0 -Source $context.RepositoryPath
+    $p | Install-Package jquery -Version 3.5 -Source $context.RepositoryPath
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
@@ -145,7 +145,7 @@ function Test-GetInstalledPackagesMultipleProjectsSameVersion {
     Assert-NotNull $packages
     Assert-AreEqual 1 $packages.Count
     Assert-AreEqual jQuery $packages[0].Id
-    Assert-AreEqual 3.5.0 $packages[0].VersionString
+    Assert-AreEqual 3.5 $packages[0].VersionString
 }
 
 function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
@@ -153,9 +153,9 @@ function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
 
     # Arrange
     $p = New-WebApplication
-    $p | Install-Package jquery -Version 3.5.0 -Source $context.RepositoryPath
+    $p | Install-Package jquery -Version 3.5 -Source $context.RepositoryPath
     $p = New-WebApplication
-    $p | Install-Package jquery -Version 3.6.0 -Source $context.RepositoryPath
+    $p | Install-Package jquery -Version 3.7 -Source $context.RepositoryPath
 
     $cm = Get-VsComponentModel
     $installerServices = $cm.GetService([NuGet.VisualStudio.IVsPackageInstallerServices])
@@ -167,9 +167,9 @@ function Test-GetInstalledPackagesMultipleProjectsDifferentVersion {
     Assert-NotNull $packages
     Assert-AreEqual 2 $packages.Count
     Assert-AreEqual jQuery $packages[0].Id
-    Assert-AreEqual 3.5.0 $packages[0].VersionString
+    Assert-AreEqual 3.5 $packages[0].VersionString
     Assert-AreEqual jQuery $packages[1].Id
-    Assert-AreEqual 3.6.0 $packages[1].VersionString
+    Assert-AreEqual 3.7 $packages[1].VersionString
 }
 <#
 function Test-GetInstalledPackagesMVCTemplate
@@ -296,7 +296,7 @@ function VsPackageInstallerEvents {
         $installerEvents.add_PackageUninstalled($uninstalledHandler)
 
         # Act
-        $p | Install-Package jquery -Version 3.5.0 -Source $context.RepositoryPath
+        $p | Install-Package jquery -Version 3.5 -Source $context.RepositoryPath
         $p | Uninstall-Package jquery
 
 
@@ -816,7 +816,7 @@ function Test-ExecuteInitScriptsPerSolution
 	Close-Solution
 
     $p = New-ClassLibrary
-    $p | Install-Package jquery -Version 3.5.0
+    $p | Install-Package jquery -Version 3.5
 
     $solutionFile2 = Get-SolutionFullName
     SaveAs-Solution($solutionFile2)
@@ -825,7 +825,7 @@ function Test-ExecuteInitScriptsPerSolution
     # Act
     Open-Solution $solutionFile1
 	$p = Get-Project
-    $p | Install-Package jquery -Version 3.5.0
+    $p | Install-Package jquery -Version 3.5
 
     # Assert
     Assert-True ($global:PackageInitPS1Var -eq 1)
@@ -844,7 +844,7 @@ function Test-ExecuteInitScriptsOnlyOnce
     Assert-True ($global:PackageInitPS1Var -eq 1)
 
     # Act
-    $p | Install-Package jquery -Version 3.5.0
+    $p | Install-Package jquery -Version 3.5
 
     # Assert
     Assert-True ($global:PackageInitPS1Var -eq 1)
