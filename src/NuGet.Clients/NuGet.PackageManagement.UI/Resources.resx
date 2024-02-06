@@ -181,7 +181,7 @@
     <value>Project URL:</value>
   </data>
   <data name="Label_Readme" xml:space="preserve">
-    <value>Readme:</value>
+    <value>README</value>
   </data>
   <data name="Label_Repository" xml:space="preserve">
     <value>Package source:</value>
@@ -1056,5 +1056,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="DialogTitle_HttpSource" xml:space="preserve">
     <value>HTTP Source</value>
+  </data>
+  <data name="Label_PackageDetails" xml:space="preserve">
+    <value>Package Details</value>
   </data>
 </root>
