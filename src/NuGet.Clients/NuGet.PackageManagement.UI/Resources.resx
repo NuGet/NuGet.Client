@@ -181,7 +181,7 @@
     <value>Project URL:</value>
   </data>
   <data name="Label_Readme" xml:space="preserve">
-    <value>Readme:</value>
+    <value>README</value>
   </data>
   <data name="Label_Repository" xml:space="preserve">
     <value>Package source:</value>
@@ -1041,5 +1041,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Error_SourceMapping_GPF_NotEnabled" xml:space="preserve">
     <value>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</value>
     <comment>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</comment>
+  </data>
+  <data name="Label_PackageDetails" xml:space="preserve">
+    <value>Package Details</value>
   </data>
 </root>
