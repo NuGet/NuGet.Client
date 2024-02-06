@@ -119,23 +119,7 @@ namespace NuGet.Shared
                 return sequenceComparer.Equals(self.First(), other.First());
             }
 
-            TSource[] selfCopy = new TSource[self.Count];
-            self.CopyTo(selfCopy, 0);
-            Array.Sort(selfCopy, orderComparer);
-
-            TSource[] otherCopy = new TSource[other.Count];
-            other.CopyTo(otherCopy, 0);
-            Array.Sort(otherCopy, orderComparer);
-
-            for (int i = 0; i < selfCopy.Length; ++i)
-            {
-                if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return CollectionsEqual(self, other, orderComparer, sequenceComparer);
         }
 
         /// <summary>
@@ -176,23 +160,7 @@ namespace NuGet.Shared
                 return sequenceComparer.Equals(self[0], other[0]);
             }
 
-            TSource[] selfCopy = new TSource[self.Count];
-            self.CopyTo(selfCopy, 0);
-            Array.Sort(selfCopy, orderComparer);
-
-            TSource[] otherCopy = new TSource[other.Count];
-            other.CopyTo(otherCopy, 0);
-            Array.Sort(otherCopy, orderComparer);
-
-            for (int i = 0; i < selfCopy.Length; ++i)
-            {
-                if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return CollectionsEqual(self, other, orderComparer, sequenceComparer);
         }
 
         /// <summary>
@@ -244,6 +212,24 @@ namespace NuGet.Shared
             Array.Sort(selfCopy, orderComparer);
             Array.Sort(otherCopy, orderComparer);
 
+            return ArraysEqual(sequenceComparer, selfCopy, otherCopy);
+        }
+
+        private static bool CollectionsEqual<TSource>(ICollection<TSource> self, ICollection<TSource> other, Comparison<TSource> orderComparer, IEqualityComparer<TSource> sequenceComparer)
+        {
+            TSource[] selfCopy = new TSource[self.Count];
+            self.CopyTo(selfCopy, 0);
+            Array.Sort(selfCopy, orderComparer);
+
+            TSource[] otherCopy = new TSource[other.Count];
+            other.CopyTo(otherCopy, 0);
+            Array.Sort(otherCopy, orderComparer);
+
+            return ArraysEqual(sequenceComparer, selfCopy, otherCopy);
+        }
+
+        private static bool ArraysEqual<TSource>(IEqualityComparer<TSource> sequenceComparer, TSource[] selfCopy, TSource[] otherCopy)
+        {
             for (int i = 0; i < selfCopy.Length; ++i)
             {
                 if (!sequenceComparer.Equals(selfCopy[i], otherCopy[i]))
