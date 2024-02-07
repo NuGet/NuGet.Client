@@ -40,9 +40,9 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Library entry cache.
         /// </summary>
-        internal static TaskResultCache<LibraryRangeCacheKey, GraphItem<RemoteResolveResult>> FindLibraryEntryCache { get; } = new();
+        internal TaskResultCache<LibraryRangeCacheKey, GraphItem<RemoteResolveResult>> FindLibraryEntryCache { get; } = new();
 
-        internal static TaskResultCache<LibraryRange, Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchCache { get; } = new();
+        internal TaskResultCache<LibraryRange, Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchCache { get; } = new();
 
         /// <summary>
         /// True if this is a csproj or similar project. Xproj should be false.
