@@ -107,7 +107,7 @@
                     Grid.Row="1"
                     Height="1"
                     Panel.ZIndex="-1"
-                    Margin="0,-1,0,0"
+                    Margin="0,0,0,0"
                     HorizontalAlignment="Stretch"
                     Fill="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>   
                   <ContentPresenter Grid.Row="2" x:Name="actualContentPresenter" ContentSource="SelectedContent" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
