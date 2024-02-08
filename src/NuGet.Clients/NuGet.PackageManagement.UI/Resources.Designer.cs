@@ -2313,15 +2313,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Owner according to nuget.org.
-        /// </summary>
-        public static string ToolTip_TrustedOwnerIndicator {
-            get {
-                return ResourceManager.GetString("ToolTip_TrustedOwnerIndicator", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Uninstall this package..
         /// </summary>
         public static string ToolTip_UninstallButton {

@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
 
         public LastItemToVisibilityConverterTests()
         {
-             _converter = new LastItemToVisibilityConverter();            
+             _converter = new LastItemToVisibilityConverter();
         }
 
         [Theory]
