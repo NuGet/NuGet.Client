@@ -191,7 +191,7 @@ namespace NuGet.Protocol
 
             // Try to get the NupkgEntry from the in-memory cache. If we find a match, we can open the cache file
             // and use that as the source stream, instead of going to the package source.
-            CacheEntry result = await _cacheEntries.GetOrAddAsync(
+            CacheEntry cacheEntry = await _cacheEntries.GetOrAddAsync(
                 url,
                 refresh: cacheContext.DirectDownload, // Don't read from the in-memory cache if we are doing a direct download.
                 () => ProcessStreamAndGetCacheEntryAsync(
@@ -204,7 +204,7 @@ namespace NuGet.Protocol
                 token);
 
             // Process the NupkgEntry
-            return await ProcessCacheEntryAsync(result, processStreamAsync, token);
+            return await ProcessCacheEntryAsync(cacheEntry, processStreamAsync, token);
         }
 
         private async Task<CacheEntry> ProcessStreamAndGetCacheEntryAsync(

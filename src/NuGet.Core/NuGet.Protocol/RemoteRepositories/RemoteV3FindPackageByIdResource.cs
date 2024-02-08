@@ -424,15 +424,13 @@ namespace NuGet.Protocol
             return packageInfos.FirstOrDefault(p => p.Identity.Version == version);
         }
 
-        private async Task<IEnumerable<RemoteSourceDependencyInfo>> EnsurePackagesAsync(
+        private Task<IEnumerable<RemoteSourceDependencyInfo>> EnsurePackagesAsync(
             string id,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            IEnumerable<RemoteSourceDependencyInfo> result = await _packageVersionsCache.GetOrAddAsync(id, cacheContext.RefreshMemoryCache, () => FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken), cancellationToken);
-
-            return result;
+            return _packageVersionsCache.GetOrAddAsync(id, cacheContext.RefreshMemoryCache, () => FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken), cancellationToken);
         }
 
         private async Task<IEnumerable<RemoteSourceDependencyInfo>> FindPackagesByIdAsyncCore(
