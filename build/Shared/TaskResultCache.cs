@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +19,7 @@ namespace NuGet
     internal sealed class TaskResultCache<TKey, TValue>
         where TKey : notnull
     {
-        private readonly ConcurrentDictionary<TKey, Task<TValue>> _cache;
+        private readonly ConcurrentDictionary<TKey, AsyncLazy<TValue>> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResultCache{TKey, TValue}" /> class with the specified key comparer.
@@ -80,32 +81,33 @@ namespace NuGet
         /// <param name="valueFactory">A <see cref="Func{TResult}" /> to execute asynchronously if a cached operation does not exist.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use for signaling that an operation should be cancelled.</param>
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
-        public Task<TValue> GetOrAddAsync(TKey key, bool refresh, Func<Task<TValue>> valueFactory, CancellationToken cancellationToken)
+        public async Task<TValue> GetOrAddAsync(TKey key, bool refresh, Func<Task<TValue>> valueFactory, CancellationToken cancellationToken)
         {
-            if (!refresh && _cache.TryGetValue(key, out Task<TValue>? result))
-            {
-                return result;
-            }
-
-            lock (_cache)
-            {
-                if (!refresh && _cache.TryGetValue(key, out result))
-                {
-                    return result;
-                }
-
-                result = valueFactory()
+            AsyncLazy<TValue> lazy = new(() => valueFactory()
                     .ContinueWith(
                         (task, state) => task.GetAwaiter().GetResult(),
                         state: null,
                         cancellationToken,
                         TaskContinuationOptions.RunContinuationsAsynchronously,
-                        TaskScheduler.Default);
+                        TaskScheduler.Default));
 
-                _cache[key] = result;
+            AsyncLazy<TValue> result = refresh
+                ? _cache.AddOrUpdate(key, lazy, (_, _) => lazy)
+                : _cache.GetOrAdd(key, lazy);
 
-                return result;
-            }
+            return await result;
         }
+
+#pragma warning disable VSTHRD011 // Lazy<Task<T>>.Value can deadlock. Use AsyncLazy<T> instead, which we are
+        public class AsyncLazy<T> : Lazy<Task<T>>
+        {
+            public AsyncLazy(Func<Task<T>> func)
+                : base(func)
+            {
+            }
+
+            public TaskAwaiter<T> GetAwaiter() => Value.GetAwaiter();
+        }
+#pragma warning restore VSTHRD011
     }
 }
