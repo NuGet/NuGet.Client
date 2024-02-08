@@ -19,9 +19,9 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class AuthorAndDownloadCount : UserControl, INotifyPropertyChanged
     {
-        public static readonly DependencyProperty TrustedOwnersProperty =
+        public static readonly DependencyProperty KnownOwnersProperty =
             DependencyProperty.Register(
-                nameof(TrustedOwners),
+                nameof(KnownOwners),
                 typeof(ImmutableList<string>),
                 typeof(AuthorAndDownloadCount),
                 new PropertyMetadata(OnPropertyChanged));
@@ -45,15 +45,15 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public ImmutableList<string> TrustedOwners
+        public ImmutableList<string> KnownOwners
         {
             get
             {
-                return GetValue(TrustedOwnersProperty) as ImmutableList<string>;
+                return GetValue(KnownOwnersProperty) as ImmutableList<string>;
             }
             set
             {
-                SetValue(TrustedOwnersProperty, value);
+                SetValue(KnownOwnersProperty, value);
                 UpdateControl();
             }
         }
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateControl()
         {
-            if (TrustedOwners != null && TrustedOwners.Count > 0)
+            if (KnownOwners != null && KnownOwners.Count > 0)
             {
                 _panelOwners.Visibility = Visibility.Visible;
                 _textBlockAuthor.Visibility = Visibility.Collapsed;

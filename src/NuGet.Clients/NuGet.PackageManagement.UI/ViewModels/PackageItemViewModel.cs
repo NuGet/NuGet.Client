@@ -65,7 +65,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public ImmutableList<string> TrustedOwners { get; set; }
+        public ImmutableList<string> KnownOwners { get; set; }
 
         private string _owner;
 
