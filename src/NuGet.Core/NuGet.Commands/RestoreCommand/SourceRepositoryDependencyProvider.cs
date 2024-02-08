@@ -306,7 +306,7 @@ namespace NuGet.Commands
         /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
-        public async Task<LibraryDependencyInfo> GetDependenciesAsync(
+        public Task<LibraryDependencyInfo> GetDependenciesAsync(
             LibraryIdentity libraryIdentity,
             NuGetFramework targetFramework,
             SourceCacheContext cacheContext,
@@ -337,9 +337,7 @@ namespace NuGet.Commands
 
             LibraryRangeCacheKey key = new(libraryIdentity, targetFramework);
 
-            LibraryDependencyInfo result = await _dependencyInfoCache.GetOrAddAsync(key, cacheContext.RefreshMemoryCache, () => GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken), cancellationToken);
-
-            return result;
+            return _dependencyInfoCache.GetOrAddAsync(key, cacheContext.RefreshMemoryCache, () => GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken), cancellationToken);
         }
 
         private async Task<LibraryDependencyInfo> GetDependenciesCoreAsync(

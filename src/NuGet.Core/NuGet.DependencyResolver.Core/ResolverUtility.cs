@@ -17,7 +17,7 @@ namespace NuGet.DependencyResolver
 {
     public static class ResolverUtility
     {
-        public static async Task<GraphItem<RemoteResolveResult>> FindLibraryCachedAsync(
+        public static Task<GraphItem<RemoteResolveResult>> FindLibraryCachedAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
             string runtimeIdentifier,
@@ -26,9 +26,7 @@ namespace NuGet.DependencyResolver
         {
             LibraryRangeCacheKey key = new(libraryRange, framework);
 
-            GraphItem<RemoteResolveResult> result = await context.FindLibraryEntryCache.GetOrAddAsync(key, () => FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken), cancellationToken);
-
-            return result;
+            return context.FindLibraryEntryCache.GetOrAddAsync(key, () => FindLibraryEntryAsync(key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken), cancellationToken);
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
@@ -227,14 +225,12 @@ namespace NuGet.DependencyResolver
         /// <param name="remoteWalkContext">remote Providers (all sources, including file sources)</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>The requested range and remote match.</returns>
-        public static async Task<Tuple<LibraryRange, RemoteMatch>> FindPackageLibraryMatchCachedAsync(
+        public static Task<Tuple<LibraryRange, RemoteMatch>> FindPackageLibraryMatchCachedAsync(
             LibraryRange libraryRange,
             RemoteWalkContext remoteWalkContext,
             CancellationToken cancellationToken)
         {
-            Tuple<LibraryRange, RemoteMatch> result = await remoteWalkContext.ResolvePackageLibraryMatchCache.GetOrAddAsync(libraryRange, () => ResolvePackageLibraryMatchAsync(libraryRange, remoteWalkContext, cancellationToken), cancellationToken);
-
-            return result;
+            return remoteWalkContext.ResolvePackageLibraryMatchCache.GetOrAddAsync(libraryRange, () => ResolvePackageLibraryMatchAsync(libraryRange, remoteWalkContext, cancellationToken), cancellationToken);
         }
 
         private static async Task<Tuple<LibraryRange, RemoteMatch>> ResolvePackageLibraryMatchAsync(LibraryRange libraryRange, RemoteWalkContext remoteWalkContext, CancellationToken cancellationToken)
