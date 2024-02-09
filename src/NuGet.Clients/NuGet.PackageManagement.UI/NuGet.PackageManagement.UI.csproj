@@ -43,6 +43,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <PackageReference Include="Microsoft.VisualStudio.Markdown.Platform" />
+    <PackageReference Include="Microsoft.NET.StringTools" />
   </ItemGroup>
 
   <ItemGroup>
