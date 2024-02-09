@@ -276,16 +276,8 @@ namespace NuGet.CommandLine
 
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
-                var configToProjectPath = new Dictionary<string, string>();
-                foreach (var project in packageRestoreInputs.ProjectReferenceLookup.Projects)
-                {
-                    if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
-                    {
-                        configToProjectPath.Add(((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath, project.FilePath);
-                    }
-                }
-
-                var packageReferenceToProjects = new Dictionary<PackageReference, List<string>>(PackageReferenceComparer.Instance);
+                Dictionary<string, string> configToProjectPath = GetPackagesConfigToProjectPath(packageRestoreInputs);
+                Dictionary<PackageReference, List<string>> packageReferenceToProjects = new(PackageReferenceComparer.Instance);
 
                 foreach (string configFile in packageRestoreInputs.PackagesConfigFiles)
                 {
@@ -343,7 +335,6 @@ namespace NuGet.CommandLine
 
             if (!areAnyPackagesMissing)
             {
-                // Do the audit check.
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
@@ -451,6 +442,20 @@ namespace NuGet.CommandLine
 
                 return restoreSummaries;
             }
+        }
+
+        private static Dictionary<string, string> GetPackagesConfigToProjectPath(PackageRestoreInputs packageRestoreInputs)
+        {
+            Dictionary<string, string> configToProjectPath = [];
+            foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
+            {
+                if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
+                {
+                    configToProjectPath.Add(((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath, project.FilePath);
+                }
+            }
+
+            return configToProjectPath;
         }
 
         /// <summary>

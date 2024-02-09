@@ -421,7 +421,7 @@ namespace NuGet.Build.Tasks
             IList<PackageSource> packageSources = null;
             ISettings settings = null;
 
-            var packageReferenceToProjects = new Dictionary<PackageReference, List<string>>(PackageReferenceComparer.Instance);
+            Dictionary<PackageReference, List<string>> packageReferenceToProjects = new(PackageReferenceComparer.Instance);
 
             foreach (PackageSpec packageSpec in dgFile.Projects.Where(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
             {
@@ -447,7 +447,7 @@ namespace NuGet.Build.Tasks
 
                 string packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
 
-                foreach (PackageReference packageReference in GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true))
+                foreach (PackageReference packageReference in GetInstalledPackageReferences(packagesConfigPath))
                 {
                     if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
                     {
@@ -596,7 +596,7 @@ namespace NuGet.Build.Tasks
         }
 
 
-        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
+        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath)
         {
             if (File.Exists(projectConfigFilePath))
             {
@@ -604,7 +604,7 @@ namespace NuGet.Build.Tasks
                 {
                     XDocument xDocument = Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
-                    return reader.GetPackages(allowDuplicatePackageIds);
+                    return reader.GetPackages(allowDuplicatePackageIds: true);
                 }
                 catch (XmlException ex)
                 {
