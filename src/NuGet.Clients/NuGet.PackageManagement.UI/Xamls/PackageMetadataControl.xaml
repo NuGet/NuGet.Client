@@ -109,7 +109,7 @@
                     Panel.ZIndex="-1"
                     Margin="0,0,0,0"
                     HorizontalAlignment="Stretch"
-                    Fill="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>   
+                    Fill="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
                   <ContentPresenter Grid.Row="2" x:Name="actualContentPresenter" ContentSource="SelectedContent" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
                 </Grid>
               </ControlTemplate>
@@ -117,13 +117,19 @@
           </Setter>
         </Style>
       </TabControl.Resources>
-      <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="False" />
+      <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="False" >
+        <nuget:PackageMetadataReadMeControl
+          Grid.Row="2"
+          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
+          Margin="0,12,0,0"
+          DataContext="{Binding }" />
+      </TabItem>
       <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}" IsSelected="True">
         <nuget:PackageMetadataDescriptionControl
-        Grid.Row="2"
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-        Margin="0,12,0,0"
-        DataContext="{Binding}" />
+          Grid.Row="2"
+          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
+          Margin="0,12,0,0"
+          DataContext="{Binding PackageMetadata}" />
       </TabItem>
     </TabControl>
   </Grid>

@@ -1,11 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using NuGet.Packaging;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
@@ -22,64 +26,33 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
 
             Visibility = Visibility.Collapsed;
-            DataContextChanged += PackageMetadataReadMeControl_DataContextChanged;
+            DataContextChanged += PackageMetadataReadMeControl_DataContextChangedAsync;
         }
 
-        private void ViewLicense_Click(object sender, RoutedEventArgs e)
+#pragma warning disable VSTHRD100 // Avoid async void methods
+        private async void PackageMetadataReadMeControl_DataContextChangedAsync(object sender, DependencyPropertyChangedEventArgs e)
+#pragma warning restore VSTHRD100 // Avoid async void methods
         {
-            if (DataContext is DetailedPackageMetadata metadata)
+            if (DataContext is DetailControlModel detailedPackage)
             {
-                var window = new LicenseFileWindow()
+                if (!string.IsNullOrEmpty(detailedPackage.PackagePath))
                 {
-                    DataContext = new LicenseFileData
+                    var fileInfo = new FileInfo(detailedPackage.PackagePath);
+                    if (fileInfo.Exists)
                     {
-                        LicenseHeader = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
-                        LicenseText = new FlowDocument(new Paragraph(new Run(UI.Resources.LicenseFile_Loading)))
+                        using var pfr = new PackageArchiveReader(fileInfo.OpenRead());
+                        var files = await pfr.GetFilesAsync(CancellationToken.None);
+                        var readmeFile = files.FirstOrDefault(file => file.IndexOf("readme.md", System.StringComparison.OrdinalIgnoreCase) >= 0);
+                        using var stream = new StreamReader(await pfr.GetStreamAsync(readmeFile, CancellationToken.None));
+                        var content = await stream.ReadToEndAsync();
+                        _description.Text = content;
                     }
-                };
-
-                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                {
-                    string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(new Packaging.Core.PackageIdentity(metadata.Id, metadata.Version), CancellationToken.None);
-
-                    var flowDoc = new FlowDocument();
-                    flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    (window.DataContext as LicenseFileData).LicenseText = flowDoc;
-                }).PostOnFailure(nameof(PackageMetadataReadMeControl), nameof(ViewLicense_Click));
-
-                window.ShowModal();
-            }
-        }
-
-        private void PackageMetadataReadMeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (DataContext is DetailedPackageMetadata)
-            {
+                }
                 Visibility = Visibility.Visible;
             }
             else
             {
                 Visibility = Visibility.Collapsed;
-            }
-        }
-
-        // capture each item as it is selected, so we can unselect when treeview lostfocus
-        private void OnItemSelected(object sender, RoutedEventArgs e)
-        {
-            _dependencies.Tag = e.OriginalSource;
-        }
-
-        private void TreeView_LostFocus(object sender, RoutedEventArgs e)
-        {
-            // hide focus highlight when treeview lostfocus
-            if (_dependencies.SelectedItem != null)
-            {
-                TreeViewItem selectedTVI = _dependencies.Tag as TreeViewItem;
-                if (selectedTVI != null)
-                {
-                    selectedTVI.IsSelected = false;
-                }
             }
         }
     }
