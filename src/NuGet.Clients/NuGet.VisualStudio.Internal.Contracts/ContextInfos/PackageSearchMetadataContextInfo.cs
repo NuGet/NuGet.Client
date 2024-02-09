@@ -67,7 +67,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 PackageDetailsUrl = packageSearchMetadata.PackageDetailsUrl,
                 PackagePath =
                     (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
-                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath,
+                    (packageSearchMetadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackagePath,
                 RequireLicenseAcceptance = packageSearchMetadata.RequireLicenseAcceptance,
                 Summary = packageSearchMetadata.Summary,
                 PrefixReserved = packageSearchMetadata.PrefixReserved,
