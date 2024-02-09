@@ -430,6 +430,7 @@ namespace NuGet.CommandLine.Test
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
             var nugetExe = Path.Combine(targetDir, "NuGet", fileName);
             // Revert to parent dir if not found under layout dir.
+            // TODO NK - check timestamps?
             if (!File.Exists(nugetExe)) nugetExe = Path.Combine(targetDir, fileName);
             if (!File.Exists(nugetExe)) throw new FileNotFoundException($"The NuGet executable is not present in '{targetDir}'", fileName);
             return nugetExe;

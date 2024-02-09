@@ -337,6 +337,7 @@ namespace NuGet.CommandLine
                 {
                     bool exists = nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity, packageSaveMode);
                     packageRestoreData.Add(new PackageRestoreData(packageReference, [packageReferenceFile], !exists));
+                    areAnyPackagesMissing |= !exists;
                 }
             }
 
