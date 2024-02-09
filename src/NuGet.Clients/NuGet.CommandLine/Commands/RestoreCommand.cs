@@ -281,7 +281,7 @@ namespace NuGet.CommandLine
 
                 foreach (string configFile in packageRestoreInputs.PackagesConfigFiles)
                 {
-                    foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile, allowDuplicatePackageIds: true))
+                    foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile))
                     {
                         if (configToProjectPath.TryGetValue(configFile, out string projectPath))
                         {
@@ -325,7 +325,7 @@ namespace NuGet.CommandLine
                     throw new InvalidOperationException(message);
                 }
 
-                foreach (PackageReference packageReference in GetInstalledPackageReferences(packageReferenceFile, allowDuplicatePackageIds: true))
+                foreach (PackageReference packageReference in GetInstalledPackageReferences(packageReferenceFile))
                 {
                     bool exists = nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity, packageSaveMode);
                     packageRestoreData.Add(new PackageRestoreData(packageReference, [packageReferenceFile], !exists));
