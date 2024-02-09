@@ -19,58 +19,6 @@ namespace NuGet.DependencyResolver
 {
     public class RemoteDependencyWalker
     {
-        /// <summary>
-        /// Captures state to begin or resume processing of a GraphNode
-        /// </summary>
-        private readonly struct GraphNodeStackState
-        {
-            /// <summary>
-            /// The <see cref="GraphNode{TItem}"/> that is currently being processed.
-            /// </summary>
-            public readonly GraphNode<RemoteResolveResult> GraphNode;
-
-            /// <summary>
-            /// The dependencies of the current <see cref="GraphNode{TItem}"/> that will be updated as a final step.
-            /// </summary>
-            public readonly LightweightList<GraphNode<RemoteResolveResult>> Dependencies;
-
-            /// <summary>
-            /// Where we are when processing dependencies. Also used to flag when we are done.
-            /// </summary>
-            public readonly int DependencyIndex;
-
-            /// <summary>
-            /// The <see cref="LibraryRange"/> for the current <see cref="GraphNode{TItem}"/>.
-            /// </summary>
-            public readonly LibraryRange LibraryRange;
-
-            /// <summary>
-            /// The <see cref="GraphEdge"/> for the current <see cref="GraphNode{TItem}"/>.
-            /// </summary>
-            public readonly GraphEdge<RemoteResolveResult> OuterEdge;
-
-            /// <summary>
-            /// A <see cref="bool"/> indicating parent node status for the current <see cref="GraphNode{TItem}"/>.
-            /// </summary>
-            public readonly bool HasParentNodes;
-
-            public GraphNodeStackState(
-                GraphNode<RemoteResolveResult> graphNode,
-                LightweightList<GraphNode<RemoteResolveResult>> unprocessedDependencies,
-                int dependencyIndex,
-                LibraryRange libraryRange,
-                GraphEdge<RemoteResolveResult> outerEdge,
-                bool hasParentNodes)
-            {
-                GraphNode = graphNode;
-                Dependencies = unprocessedDependencies;
-                DependencyIndex = dependencyIndex;
-                LibraryRange = libraryRange;
-                OuterEdge = outerEdge;
-                HasParentNodes = hasParentNodes;
-            }
-        }
-
         private readonly RemoteWalkContext _context;
 
         public RemoteDependencyWalker(RemoteWalkContext context)
@@ -133,12 +81,36 @@ namespace NuGet.DependencyResolver
             // recursive calls.
             var stackStates = new Stack<GraphNodeStackState>();
 
-            GraphNode<RemoteResolveResult> rootNode = await InitializeGraphNodeAsync(_context, libraryRange, framework, runtimeName, runtimeGraph, hasParentNodes);
-            var rootTasks = new LightweightList<GraphNode<RemoteResolveResult>>(rootNode.Item.Data.Dependencies.Count);
+            HashSet<LibraryDependency> rootRuntimeDependencies = null;
+
+            if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
+            {
+                EvaluateRuntimeDependencies(ref libraryRange, runtimeName, runtimeGraph, ref rootRuntimeDependencies);
+            }
+
+            var rootItem = await ResolverUtility.FindLibraryCachedAsync(
+                _context.FindLibraryEntryCache,
+                libraryRange,
+                framework,
+                runtimeName,
+                _context,
+                CancellationToken.None);
+
+            bool rootHasInnerNodes = (rootItem.Data.Dependencies.Count + (rootRuntimeDependencies == null ? 0 : rootRuntimeDependencies.Count)) > 0;
+            GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(libraryRange, rootHasInnerNodes, hasParentNodes)
+            {
+                Item = rootItem
+            };
+
+            LightweightList<GraphNodeCreationData> rootDependencies = new LightweightList<GraphNodeCreationData>(rootNode.Item.Data.Dependencies.Count);
+
+            Debug.Assert(rootNode.Item != null, "FindLibraryCached should return an unresolved item instead of null");
+            MergeRuntimeDependencies(rootRuntimeDependencies, rootNode);
 
             stackStates.Push(new GraphNodeStackState(
                 rootNode,
-                rootTasks,
+                null,
+                rootDependencies,
                 0,
                 libraryRange,
                 outerEdge,
@@ -148,174 +120,185 @@ namespace NuGet.DependencyResolver
             {
                 // Restore the state for the current "frame"
                 GraphNodeStackState currentState = stackStates.Pop();
-
+                GraphNode<RemoteResolveResult> node = currentState.GraphNode;
+                LightweightList<GraphNodeCreationData> dependencyNodeCreationData = currentState.DependencyData;
                 LibraryRange currentLibraryRange = currentState.LibraryRange;
                 GraphEdge<RemoteResolveResult> currentOuterEdge = currentState.OuterEdge;
                 bool currentHasParentNodes = currentState.HasParentNodes;
 
-                GraphNode<RemoteResolveResult> node = currentState.GraphNode;
-                LightweightList<GraphNode<RemoteResolveResult>> dependencies = currentState.Dependencies;
+                int index = currentState.DependencyIndex;
 
-                // do not add nodes for all the centrally managed package versions to the graph
-                // they will be added only if they are transitive
-                int index;
-                for (index = currentState.DependencyIndex; index < node.Item.Data.Dependencies.Count; index++)
+                // When index is 0, this is the first time we're starting to process this node. We want to schedule any async work needed to resolve the
+                // current node's dependencies so that long-running operations can happen in parallel.
+                if (index == 0)
                 {
-                    LibraryDependency dependency = node.Item.Data.Dependencies[index];
-                    if (!IsDependencyValidForGraph(dependency))
+                    // do not add nodes for all the centrally managed package versions to the graph
+                    // they will be added only if they are transitive
+                    for (var i = 0; i < node.Item.Data.Dependencies.Count; i++)
                     {
-                        continue;
-                    }
-
-                    // Skip dependencies if the dependency edge has 'all' excluded and
-                    // the node is not a direct dependency.
-                    if (currentOuterEdge == null
-                        || dependency.SuppressParent != LibraryIncludeFlags.All)
-                    {
-                        var result = WalkParentsAndCalculateDependencyResult(currentOuterEdge, dependency, predicate);
-
-                        // Check for a cycle, this is needed for A (project) -> A (package)
-                        // since the predicate will not be called for leaf nodes.
-                        if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, currentLibraryRange.Name))
+                        LibraryDependency dependency = node.Item.Data.Dependencies[i];
+                        if (!IsDependencyValidForGraph(dependency))
                         {
-                            result = (DependencyResult.Cycle, dependency);
+                            continue;
                         }
 
-                        if (result.dependencyResult == DependencyResult.Acceptable)
+                        // Skip dependencies if the dependency edge has 'all' excluded and
+                        // the node is not a direct dependency.
+                        if (currentOuterEdge == null
+                            || dependency.SuppressParent != LibraryIncludeFlags.All)
                         {
-                            // Dependency edge from the current node to the dependency
-                            var innerEdge = new GraphEdge<RemoteResolveResult>(currentOuterEdge, node.Item, dependency);
+                            var result = WalkParentsAndCalculateDependencyResult(currentOuterEdge, dependency, predicate);
 
-                            var dependencyLibraryRange = dependency.LibraryRange;
-
-                            GraphNode<RemoteResolveResult> newNode = await InitializeGraphNodeAsync(_context, dependencyLibraryRange, framework, runtimeName, runtimeGraph, false);
-
-                            dependencies.Add(newNode);
-
-                            // put parent node back on stack to either resume processing (index + 1) < node.Item.Data.Dependencies.Count
-                            // or skip over the loop (index + 1 >= node.Item.Data.Dependencies.Count) and update Inner/Outer nodes.
-                            stackStates.Push(new GraphNodeStackState(
-                                    node,
-                                    dependencies,
-                                    index + 1,
-                                    currentState.LibraryRange,
-                                    currentState.OuterEdge,
-                                    currentState.HasParentNodes));
-
-                            var newNodeDependencies = new LightweightList<GraphNode<RemoteResolveResult>>(newNode.Item.Data.Dependencies.Count);
-                            // We have a new dependency that we need to evaluate. Push necessary state onto the stack so it can be evaluated.
-                            stackStates.Push(new GraphNodeStackState(
-                                newNode,
-                                newNodeDependencies,
-                                0,
-                                dependencyLibraryRange,
-                                innerEdge,
-                                hasParentNodes: false));
-
-                            // leave current loop to evaluate latest dependency.
-                            break;
-                        }
-                        else
-                        {
-                            // In case of conflict because of a centrally managed version that is not direct dependency
-                            // the centrally managed package versions need to be added to the graph explicitly as they are not added otherwise
-                            if (result.conflictingDependency != null &&
-                                result.conflictingDependency.VersionCentrallyManaged &&
-                                result.conflictingDependency.ReferenceType == LibraryDependencyReferenceType.None)
+                            // Check for a cycle, this is needed for A (project) -> A (package)
+                            // since the predicate will not be called for leaf nodes.
+                            if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, currentLibraryRange.Name))
                             {
-                                MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions, node);
+                                result = (DependencyResult.Cycle, dependency);
                             }
 
-                            // Keep the node in the tree if we need to look at it later
-                            if (result.dependencyResult == DependencyResult.PotentiallyDowngraded ||
-                                result.dependencyResult == DependencyResult.Cycle)
+                            if (result.dependencyResult == DependencyResult.Acceptable)
                             {
-                                var dependencyNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
+                                // Dependency edge from the current node to the dependency
+                                var innerEdge = new GraphEdge<RemoteResolveResult>(currentOuterEdge, node.Item, dependency);
+
+                                var dependencyLibraryRange = dependency.LibraryRange;
+
+                                HashSet<LibraryDependency> runtimeDependencies = null;
+
+                                if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
                                 {
-                                    Disposition = result.dependencyResult == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded,
-                                    OuterNode = node
-                                };
+                                    EvaluateRuntimeDependencies(ref dependencyLibraryRange, runtimeName, runtimeGraph, ref runtimeDependencies);
+                                }
 
-                                node.EnsureInnerNodeCapacity(node.Item.Data.Dependencies.Count - index);
-                                node.InnerNodes.Add(dependencyNode);
+                                var newGraphItemTask = ResolverUtility.FindLibraryCachedAsync(
+                                _context.FindLibraryEntryCache,
+                                dependencyLibraryRange,
+                                framework,
+                                runtimeName,
+                                _context,
+                                CancellationToken.None);
+
+                                // store all the data needed to construct this dependency. The library resolution may take a long time to resolve, so we just want to start that operation.
+                                var graphNodeCreationData = new GraphNodeCreationData(newGraphItemTask, runtimeDependencies, dependencyLibraryRange, innerEdge, false);
+                                dependencyNodeCreationData.Add(graphNodeCreationData);
+                            }
+                            else
+                            {
+                                // In case of conflict because of a centrally managed version that is not direct dependency
+                                // the centrally managed package versions need to be added to the graph explicitly as they are not added otherwise
+                                if (result.conflictingDependency != null &&
+                                    result.conflictingDependency.VersionCentrallyManaged &&
+                                    result.conflictingDependency.ReferenceType == LibraryDependencyReferenceType.None)
+                                {
+                                    MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions, node);
+                                }
+
+                                // Keep the node in the tree if we need to look at it later
+                                if (result.dependencyResult == DependencyResult.PotentiallyDowngraded ||
+                                    result.dependencyResult == DependencyResult.Cycle)
+                                {
+                                    var dependencyNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
+                                    {
+                                        Disposition = result.dependencyResult == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded,
+                                        OuterNode = node
+                                    };
+
+                                    node.EnsureInnerNodeCapacity(node.Item.Data.Dependencies.Count - i);
+                                    node.InnerNodes.Add(dependencyNode);
+                                }
                             }
                         }
                     }
+
+                    // We know we'll need capacity for exactly this many items in the next block. We set it here once to avoid repeated checks.
+                    node.EnsureInnerNodeCapacity(dependencyNodeCreationData.Count);
                 }
 
-                // Once we finish processing all dependencies for the current node,
-                // we update the pointers.
-                if (index >= node.Item.Data.Dependencies.Count)
+                // This block evaluates one dependency at a time and index keeps track of which dependency we need to evaluate.
+                if (index < dependencyNodeCreationData.Count)
                 {
-                    node.EnsureInnerNodeCapacity(dependencies.Count);
-                    foreach (var dependency in dependencies)
+                    // It's time to actually construct the GraphNode that represents this dependency, so we need to wait for the GraphItem to be resolved.
+                    GraphNodeCreationData graphNodeCreationData = dependencyNodeCreationData[index];
+                    var dependencyItem = await graphNodeCreationData.GraphItemTask;
+
+                    bool hasInnerNodes = (dependencyItem.Data.Dependencies.Count + (graphNodeCreationData.RuntimeDependencies == null ? 0 : graphNodeCreationData.RuntimeDependencies.Count)) > 0;
+                    GraphNode<RemoteResolveResult> newNode = new GraphNode<RemoteResolveResult>(graphNodeCreationData.LibraryRange, hasInnerNodes, graphNodeCreationData.HasParentNodes)
                     {
-                        dependency.OuterNode = node;
-                        node.InnerNodes.Add(dependency);
-                    }
+                        Item = dependencyItem
+                    };
+
+                    Debug.Assert(newNode.Item != null, "FindLibraryCached should return an unresolved item instead of null");
+                    MergeRuntimeDependencies(graphNodeCreationData.RuntimeDependencies, newNode);
+
+                    node.InnerNodes.Add(newNode);
+
+                    // We want to update the connections starting from the leaves of the graph and working up to the root, so we advance the evaluation of the current
+                    // node (index + 1) and push that state onto our stack for future evaluation. If we're done processing all the dependencies, index will be >= dependencyNodeCreationData.Count
+                    // on the next iteration which will let us enter the final block.
+                    stackStates.Push(new GraphNodeStackState(
+                        node,
+                        currentState.ParentNode,
+                        dependencyNodeCreationData,
+                        index + 1,
+                        currentState.LibraryRange,
+                        currentState.OuterEdge,
+                        currentState.HasParentNodes));
+
+                    LightweightList<GraphNodeCreationData> newDependencies = new LightweightList<GraphNodeCreationData>(newNode.Item.Data.Dependencies.Count);
+
+                    //  We have a new dependency that we need to evaluate before its parent, so we push it onto the stack after the parent.
+                    stackStates.Push(new GraphNodeStackState(
+                        newNode,
+                        node,
+                        newDependencies,
+                        0,
+                        graphNodeCreationData.LibraryRange,
+                        graphNodeCreationData.OuterEdge,
+                        graphNodeCreationData.HasParentNodes));
+                }
+
+                // This block does the final edge connection after all dependencies are fully evaluated.
+                if (index >= dependencyNodeCreationData.Count)
+                {
+                    node.OuterNode = currentState.ParentNode;
                 }
             }
 
             return rootNode;
 
-            static async ValueTask<GraphNode<RemoteResolveResult>> InitializeGraphNodeAsync(RemoteWalkContext context, LibraryRange libraryRange, NuGetFramework framework, string runtimeName, RuntimeGraph runtimeGraph, bool hasParentNodes)
+            static void EvaluateRuntimeDependencies(ref LibraryRange libraryRange, string runtimeName, RuntimeGraph runtimeGraph, ref HashSet<LibraryDependency> runtimeDependencies)
             {
-                HashSet<LibraryDependency> runtimeDependencies = null;
+                // HACK(davidfowl): This is making runtime.json support package redirects
 
-                if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
+                // Look up any additional dependencies for this package
+                foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name).NoAllocEnumerate())
                 {
-                    // HACK(davidfowl): This is making runtime.json support package redirects
-
-                    // Look up any additional dependencies for this package
-                    foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name).NoAllocEnumerate())
+                    var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
                     {
-                        var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                        LibraryRange = new LibraryRange()
                         {
-                            LibraryRange = new LibraryRange()
-                            {
-                                Name = runtimeDependency.Id,
-                                VersionRange = runtimeDependency.VersionRange,
-                                TypeConstraint = LibraryDependencyTarget.PackageProjectExternal
-                            }
-                        };
-
-                        if (StringComparer.OrdinalIgnoreCase.Equals(runtimeDependency.Id, libraryRange.Name))
-                        {
-                            if (libraryRange.VersionRange != null &&
-                                runtimeDependency.VersionRange != null &&
-                                libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
-                            {
-                                libraryRange = libraryDependency.LibraryRange;
-                            }
+                            Name = runtimeDependency.Id,
+                            VersionRange = runtimeDependency.VersionRange,
+                            TypeConstraint = LibraryDependencyTarget.PackageProjectExternal
                         }
-                        else
+                    };
+
+                    if (StringComparer.OrdinalIgnoreCase.Equals(runtimeDependency.Id, libraryRange.Name))
+                    {
+                        if (libraryRange.VersionRange != null &&
+                            runtimeDependency.VersionRange != null &&
+                            libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
                         {
-                            // Otherwise it's a dependency of this node
-                            runtimeDependencies ??= new HashSet<LibraryDependency>(LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer);
-                            runtimeDependencies.Add(libraryDependency);
+                            libraryRange = libraryDependency.LibraryRange;
                         }
                     }
+                    else
+                    {
+                        // Otherwise it's a dependency of this node
+                        runtimeDependencies ??= new HashSet<LibraryDependency>(LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer);
+                        runtimeDependencies.Add(libraryDependency);
+                    }
                 }
-
-                // Resolve the dependency from the cache or sources
-                GraphItem<RemoteResolveResult> rootItem = await ResolverUtility.FindLibraryCachedAsync(
-                    context.FindLibraryEntryCache,
-                    libraryRange,
-                    framework,
-                    runtimeName,
-                    context,
-                    CancellationToken.None);
-
-                bool rootHasInnerNodes = (rootItem.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
-                GraphNode<RemoteResolveResult> node = new GraphNode<RemoteResolveResult>(libraryRange, hasInnerNodes: rootHasInnerNodes, hasParentNodes: hasParentNodes)
-                {
-                    Item = rootItem
-                };
-
-                Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
-                MergeRuntimeDependencies(runtimeDependencies, node);
-
-                return node;
             }
 
             static void MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphNode<RemoteResolveResult> node)
@@ -664,13 +647,112 @@ namespace NuGet.DependencyResolver
                 return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Name);
             }
         }
+
+        /// <summary>
+        /// Captures state to begin or resume processing of a GraphNode
+        /// </summary>
+        private readonly struct GraphNodeStackState
+        {
+            /// <summary>
+            /// The <see cref="GraphNode{TItem}"/> that is currently being processed.
+            /// </summary>
+            public readonly GraphNode<RemoteResolveResult> GraphNode;
+
+            /// <summary>
+            /// A reference to the parent <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly GraphNode<RemoteResolveResult> ParentNode;
+
+            /// <summary>
+            /// The dependencies of the current <see cref="GraphNode{TItem}"/> that will be updated as a final step.
+            /// </summary>
+            public readonly LightweightList<GraphNodeCreationData> DependencyData;
+
+            /// <summary>
+            /// Where we are when processing dependencies. Also used to flag where we are in processing the current <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly int DependencyIndex;
+
+            /// <summary>
+            /// The <see cref="LibraryRange"/> for the current <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly LibraryRange LibraryRange;
+
+            /// <summary>
+            /// The <see cref="GraphEdge"/> for the current <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly GraphEdge<RemoteResolveResult> OuterEdge;
+
+            /// <summary>
+            /// A <see cref="bool"/> indicating parent node status for the current <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly bool HasParentNodes;
+
+            public GraphNodeStackState(
+                GraphNode<RemoteResolveResult> graphNode,
+                GraphNode<RemoteResolveResult> parentNode,
+                LightweightList<GraphNodeCreationData> dependencies,
+                int dependencyIndex,
+                LibraryRange libraryRange,
+                GraphEdge<RemoteResolveResult> outerEdge,
+                bool hasParentNodes)
+            {
+                GraphNode = graphNode;
+                ParentNode = parentNode;
+                DependencyData = dependencies;
+                DependencyIndex = dependencyIndex;
+                LibraryRange = libraryRange;
+                OuterEdge = outerEdge;
+                HasParentNodes = hasParentNodes;
+            }
+        }
+
+        /// <summary>
+        /// Stores data that is required to create a <see cref="GraphNode{TItem}"/> for later use.
+        /// </summary>
+        private readonly struct GraphNodeCreationData
+        {
+            /// <summary>
+            /// A <see cref="Task{TResult}"/> that represents the retrieval of the necessary <see cref="GraphItem{TItem}"/> to complete construction of the <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly Task<GraphItem<RemoteResolveResult>> GraphItemTask;
+
+            /// <summary>
+            /// The set of <see cref="LibraryDependency"/> items used during creation.
+            /// </summary>
+            public readonly HashSet<LibraryDependency> RuntimeDependencies;
+
+            /// <summary>
+            /// The <see cref="LibraryRange"/> of this <see cref="GraphNode{TItem}"/> to construct.
+            /// </summary>
+            public readonly LibraryRange LibraryRange;
+
+            /// <summary>
+            /// Edge pointing to the parent <see cref="GraphNode{TItem}"/>.
+            /// </summary>
+            public readonly GraphEdge<RemoteResolveResult> OuterEdge;
+
+            /// <summary>
+            /// Indicates if this node should have parent nodes.
+            /// </summary>
+            public readonly bool HasParentNodes;
+
+            public GraphNodeCreationData(Task<GraphItem<RemoteResolveResult>> graphItemTask, HashSet<LibraryDependency> runtimeDependencies, LibraryRange libraryRange, GraphEdge<RemoteResolveResult> outerEdge, bool hasParentNodes)
+            {
+                GraphItemTask = graphItemTask;
+                RuntimeDependencies = runtimeDependencies;
+                LibraryRange = libraryRange;
+                OuterEdge = outerEdge;
+                HasParentNodes = hasParentNodes;
+            }
+        }
     }
 
     internal struct LightweightList<T>
     {
         private const int Fields = 10;
+        private readonly int _expectedCapacity;
         private int _count;
-        private int _expectedCapacity;
         private T _firstItem;
         private T _secondItem;
         private T _thirdItem;
@@ -689,6 +771,62 @@ namespace NuGet.DependencyResolver
         public LightweightList(int expectedCapacity)
         {
             _expectedCapacity = expectedCapacity;
+        }
+
+        public readonly T this[int index]
+        {
+            get
+            {
+                if ((uint)index >= (uint)_count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                if (index == 0)
+                {
+                    return _firstItem;
+                }
+                else if (index == 1)
+                {
+                    return _secondItem;
+                }
+                else if (index == 2)
+                {
+                    return _thirdItem;
+                }
+                else if (index == 3)
+                {
+                    return _fourthItem;
+                }
+                else if (index == 4)
+                {
+                    return _fifthItem;
+                }
+                else if (index == 5)
+                {
+                    return _sixthItem;
+                }
+                else if (index == 6)
+                {
+                    return _seventhItem;
+                }
+                else if (index == 7)
+                {
+                    return _eighthItem;
+                }
+                else if (index == 8)
+                {
+                    return _ninthItem;
+                }
+                else if (index == 9)
+                {
+                    return _tenthItem;
+                }
+                else
+                {
+                    return _additionalItems[index - Fields];
+                }
+            }
         }
 
         public void Add(T task)
