@@ -169,7 +169,6 @@ namespace NuGet.DependencyResolver
                                 }
 
                                 var newGraphItemTask = ResolverUtility.FindLibraryCachedAsync(
-                                _context.FindLibraryEntryCache,
                                 dependencyLibraryRange,
                                 framework,
                                 runtimeName,
