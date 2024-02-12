@@ -446,7 +446,7 @@ namespace NuGet.CommandLine
 
         private static Dictionary<string, string> GetPackagesConfigToProjectPath(PackageRestoreInputs packageRestoreInputs)
         {
-            Dictionary<string, string> configToProjectPath = [];
+            Dictionary<string, string> configToProjectPath = new();
             foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
