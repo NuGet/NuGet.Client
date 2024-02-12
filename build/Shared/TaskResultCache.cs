@@ -3,9 +3,7 @@
 #nullable enable
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +17,7 @@ namespace NuGet
     internal sealed class TaskResultCache<TKey, TValue>
         where TKey : notnull
     {
-        private readonly ConcurrentDictionary<TKey, AsyncLazy<TValue>> _cache;
+        private readonly Dictionary<TKey, Task<TValue>> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResultCache{TKey, TValue}" /> class with the specified key comparer.
@@ -49,6 +47,11 @@ namespace NuGet
             return GetOrAddAsync(key, refresh: false, valueFactory, CancellationToken.None);
         }
 
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, Func<TState, Task<TValue>> valueFactory, TState factoryState)
+        {
+            return GetOrAddAsync(key, refresh: false, valueFactory, factoryState, CancellationToken.None);
+        }
+
         /// <summary>
         /// Gets the cached async operation associated with the specified key, or runs the operation asynchronously and returns <see cref="Task{TValue}" /> that the caller can await.
         /// </summary>
@@ -59,6 +62,11 @@ namespace NuGet
         public Task<TValue> GetOrAddAsync(TKey key, Func<Task<TValue>> valueFactory, CancellationToken cancellationToken)
         {
             return GetOrAddAsync(key, refresh: false, valueFactory, cancellationToken);
+        }
+
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, Func<TState, Task<TValue>> valueFactory, TState factoryState, CancellationToken cancellationToken)
+        {
+            return GetOrAddAsync(key, refresh: false, valueFactory, factoryState, cancellationToken);
         }
 
         /// <summary>
@@ -73,6 +81,11 @@ namespace NuGet
             return GetOrAddAsync(key, refresh, valueFactory, CancellationToken.None);
         }
 
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState factoryState)
+        {
+            return GetOrAddAsync(key, refresh, valueFactory, factoryState, CancellationToken.None);
+        }
+
         /// <summary>
         /// Gets the cached async operation associated with the specified key, or runs the operation asynchronously and returns <see cref="Task{TValue}" /> that the caller can await, and optionally refreshes the cache.
         /// </summary>
@@ -81,33 +94,68 @@ namespace NuGet
         /// <param name="valueFactory">A <see cref="Func{TResult}" /> to execute asynchronously if a cached operation does not exist.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use for signaling that an operation should be cancelled.</param>
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
-        public async Task<TValue> GetOrAddAsync(TKey key, bool refresh, Func<Task<TValue>> valueFactory, CancellationToken cancellationToken)
+        public Task<TValue> GetOrAddAsync(TKey key, bool refresh, Func<Task<TValue>> valueFactory, CancellationToken cancellationToken)
         {
-            AsyncLazy<TValue> lazy = new(() => valueFactory()
-                    .ContinueWith(
-                        (task, state) => task.GetAwaiter().GetResult(),
-                        state: null,
-                        cancellationToken,
-                        TaskContinuationOptions.RunContinuationsAsynchronously,
-                        TaskScheduler.Default));
-
-            AsyncLazy<TValue> result = refresh
-                ? _cache.AddOrUpdate(key, lazy, (_, _) => lazy)
-                : _cache.GetOrAdd(key, lazy);
-
-            return await result;
-        }
-
-#pragma warning disable VSTHRD011 // Lazy<Task<T>>.Value can deadlock. Use AsyncLazy<T> instead, which we are
-        public class AsyncLazy<T> : Lazy<Task<T>>
-        {
-            public AsyncLazy(Func<Task<T>> func)
-                : base(func)
+            lock (_cache)
             {
+                if (refresh)
+                {
+                    var newTask = StartNewFactoryTask(valueFactory, cancellationToken);
+                    _cache[key] = newTask;
+                    return newTask;
+                }
+
+                if (!_cache.TryGetValue(key, out Task<TValue>? value))
+                {
+                    value = StartNewFactoryTask(valueFactory, cancellationToken);
+                    _cache[key] = value;
+                }
+
+                return value;
             }
 
-            public TaskAwaiter<T> GetAwaiter() => Value.GetAwaiter();
+            static Task<TValue> StartNewFactoryTask(Func<Task<TValue>> valueFactory, CancellationToken cancellationToken)
+            {
+                return Task.Run(valueFactory, cancellationToken)
+                    .ContinueWith(
+                    static (task, state) => task.Result,
+                    state: null,
+                    cancellationToken,
+                    TaskContinuationOptions.RunContinuationsAsynchronously,
+                    TaskScheduler.Default);
+            }
         }
-#pragma warning restore VSTHRD011
+
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState factoryState, CancellationToken cancellationToken)
+        {
+            lock (_cache)
+            {
+                if (refresh)
+                {
+                    var newTask = StartNewFactoryTask(valueFactory, factoryState, cancellationToken);
+                    _cache[key] = newTask;
+                    return newTask;
+                }
+
+                if (!_cache.TryGetValue(key, out Task<TValue>? value))
+                {
+                    value = StartNewFactoryTask(valueFactory, factoryState, cancellationToken);
+                    _cache[key] = value;
+                }
+
+                return value;
+            }
+
+            static Task<TValue> StartNewFactoryTask(Func<TState, Task<TValue>> valueFactory, TState factoryState, CancellationToken cancellationToken)
+            {
+                return Task.Run(() => valueFactory(factoryState), cancellationToken)
+                    .ContinueWith(
+                    static (task, state) => task.Result,
+                    state: null,
+                    cancellationToken,
+                    TaskContinuationOptions.RunContinuationsAsynchronously,
+                    TaskScheduler.Default);
+            }
+        }
     }
 }

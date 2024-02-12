@@ -440,7 +440,11 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            List<PackageInfo> result = await _packageVersionsCache.GetOrAddAsync(id, refresh: cacheContext.RefreshMemoryCache, () => FindPackagesByIdAsyncCore(id, cacheContext, logger, cancellationToken), cancellationToken);
+            List<PackageInfo> result = await _packageVersionsCache.GetOrAddAsync(
+                id,
+                refresh: cacheContext.RefreshMemoryCache,
+                static state => state.caller.FindPackagesByIdAsyncCore(state.id, state.cacheContext, state.logger, state.cancellationToken),
+                (caller: this, id, cacheContext, logger, cancellationToken), cancellationToken);
 
             return result;
         }
