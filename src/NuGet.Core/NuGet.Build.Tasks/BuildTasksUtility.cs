@@ -451,7 +451,7 @@ namespace NuGet.Build.Tasks
                 {
                     if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
                     {
-                        value ??= [];
+                        value ??= new();
                         packageReferenceToProjects.Add(packageReference, value);
                     }
                     value.Add(packagesConfigPath);
