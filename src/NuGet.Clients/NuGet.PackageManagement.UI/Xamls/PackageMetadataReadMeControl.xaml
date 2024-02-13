@@ -13,35 +13,21 @@
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">
-  <UserControl.Resources>
-    <ResourceDictionary>
-      <ResourceDictionary.MergedDictionaries>
-        <nuget:SharedResources />
-      </ResourceDictionary.MergedDictionaries>
-      <nuget:AccessibleConverter x:Key="AccNameWorkaround" />
-    </ResourceDictionary>
-  </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition
-        Height="Auto" />
-      <RowDefinition
-        Height="Auto" />
-    </Grid.RowDefinitions>
-
-    <!-- descriptions -->
+  <StackPanel>
     <TextBlock
       Grid.Row="0"
       x:Name="_descriptionLabel"
       Text="{x:Static nuget:Resources.Label_Description}"
       FontWeight="Bold" />
-    <TextBox
-      Style="{DynamicResource SelectableTextBlockStyle}" 
-      Grid.Row="1"
-      x:Name="_description"
-      AutomationProperties.LabeledBy="{Binding ElementName=_descriptionLabel}"
-      Margin="0,8,0,0"
-      TextWrapping="Wrap"
-      Text="hello" />
-  </Grid>
+    <ContentControl
+      x:Name="descriptionMarkdownPreview"
+      x:Uid="descriptionMarkdownPreview"
+      Content="{Binding MarkdownPreviewControl}"
+    />
+    <TextBlock
+      Grid.Row="0"
+      x:Name="_descriptionLabel22"
+      Text="{Binding PathString}"
+      FontWeight="Bold" />
+  </StackPanel>
 </UserControl>
