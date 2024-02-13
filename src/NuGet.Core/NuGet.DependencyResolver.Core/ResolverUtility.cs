@@ -27,7 +27,7 @@ namespace NuGet.DependencyResolver
             LibraryRangeCacheKey key = new(libraryRange, framework);
 
             return context.FindLibraryEntryCache.GetOrAddAsync(key,
-                state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken),
+                static state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken),
                 (key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken),
                 cancellationToken);
         }
@@ -234,7 +234,7 @@ namespace NuGet.DependencyResolver
             CancellationToken cancellationToken)
         {
             return remoteWalkContext.ResolvePackageLibraryMatchCache.GetOrAddAsync(libraryRange,
-                state => ResolvePackageLibraryMatchAsync(state.libraryRange, state.remoteWalkContext, state.cancellationToken),
+                static state => ResolvePackageLibraryMatchAsync(state.libraryRange, state.remoteWalkContext, state.cancellationToken),
                 (libraryRange, remoteWalkContext, cancellationToken),
                 cancellationToken);
         }
