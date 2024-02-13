@@ -249,26 +249,42 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<(IEnumerable<VersionInfo> versions,
             PackageDeprecationMetadata deprecationMetadata,
-            IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)> FetchAndMergeVersionsAndMetadataAsync(
+            IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata,
+            SourceRepository knownOwnersRepository)> FetchAndMergeVersionsAndMetadataAsync(
             PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskSafeAsync(
-                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+            List<Tuple<SourceRepository, Task<IPackageSearchMetadata>>> repositoryTasks = _sourceRepositories
+                .Select(r => Tuple.Create(r, GetMetadataTaskSafeAsync(
+                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken))))
                 .ToList();
 
             if (_localRepository != null)
             {
-                tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
+                repositoryTasks.Add(Tuple.Create(_localRepository, _localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken)));
             }
 
-            var metadatas = (await Task.WhenAll(tasks))
+            IEnumerable<IPackageSearchMetadata> metadatas = (await Task.WhenAll(repositoryTasks.Select(i => i.Item2)))
                 .Where(m => m != null);
 
             return (await MergeVersionsAsync(identity, metadatas),
                 await MergeDeprecationMetadataAsync(metadatas),
-                MergeVulnerabilityMetadata(metadatas));
+                MergeVulnerabilityMetadata(metadatas),
+                GetKnownOwnersRepository(repositoryTasks));
+        }
+
+        private SourceRepository GetKnownOwnersRepository(List<Tuple<SourceRepository, Task<IPackageSearchMetadata>>> repositoryTasks)
+        {
+            var knownOwnerRepository = repositoryTasks
+                .Where(repositoryTask => HasKnownOwner(repositoryTask.Item2.Result))
+                .Select(repositoryTask => repositoryTask.Item1);
+
+            return knownOwnerRepository.FirstOrDefault();
+        }
+
+        private bool HasKnownOwner(IPackageSearchMetadata result)
+        {
+            throw new NotImplementedException();
         }
 
         internal async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T : class

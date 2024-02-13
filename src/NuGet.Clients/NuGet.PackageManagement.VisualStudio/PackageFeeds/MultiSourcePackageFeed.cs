@@ -31,6 +31,21 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool IsMultiSource => _sourceRepositories.Length > 1;
 
+        private bool? _supportsKnownOwners;
+
+        public bool SupportsKnownOwners
+        {
+            get
+            {
+                if (_supportsKnownOwners == null)
+                {
+                    _supportsKnownOwners = !IsMultiSource && UriUtility.IsNuGetOrg(_sourceRepositories[0]?.PackageSource.Source);
+                }
+
+                return _supportsKnownOwners.Value;
+            }
+        }
+
         private class TelemetryState
         {
             private int _emittedFlag = 0;

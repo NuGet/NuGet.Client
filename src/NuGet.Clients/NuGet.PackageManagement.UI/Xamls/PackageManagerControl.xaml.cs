@@ -916,6 +916,7 @@ namespace NuGet.PackageManagement.UI
 
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(cancellationToken: _loadCts.Token);
+                //loader.IsMultiSource
                 // this will wait for searchResultTask to complete instead of creating a new task
                 await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
