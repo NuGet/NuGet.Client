@@ -216,7 +216,6 @@
             Visibility="{Binding Path=OptionsBlockedMessage,Converter={StaticResource InverseNullToVisibilityConverter}}" />
         </Grid>
       </Border>
-      
       <nuget:PackageMetadataControl
         Grid.Row="7"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"

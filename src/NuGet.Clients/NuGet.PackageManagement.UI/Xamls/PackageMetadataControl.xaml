@@ -99,7 +99,7 @@
                   <Grid.RowDefinitions>
                     <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
                     <RowDefinition x:Name="RowDefinition1" Height="Auto"/>
-                    <RowDefinition x:Name="RowDefinition2" Height="Auto"/>
+                    <RowDefinition x:Name="RowDefinition2" Height="400px"/>
                   </Grid.RowDefinitions>
                   <TabPanel x:Name="headerPanel" Background="Transparent" Grid.Column="0" IsItemsHost="true" Margin="0,0,0,-1" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"/>
                   <Rectangle
@@ -117,16 +117,14 @@
           </Setter>
         </Style>
       </TabControl.Resources>
-      <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="False" >
+      <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="True" >
         <nuget:PackageMetadataReadMeControl
-          Grid.Row="2"
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           Margin="0,12,0,0"
-          DataContext="{Binding }" />
+          DataContext="{Binding ReadMePreviewViewModel}" />
       </TabItem>
-      <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}" IsSelected="True">
+      <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}" IsSelected="False">
         <nuget:PackageMetadataDescriptionControl
-          Grid.Row="2"
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           Margin="0,12,0,0"
           DataContext="{Binding PackageMetadata}" />
