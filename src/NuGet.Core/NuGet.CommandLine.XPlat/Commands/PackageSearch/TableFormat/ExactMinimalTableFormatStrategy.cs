@@ -3,14 +3,14 @@
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class MinimalTableFormatStrategy : ITableFormatStrategy
+    internal class ExactMinimalTableFormatStrategy : ITableFormatStrategy
     {
-        private readonly string[] _minimalVerbosityTableHeader = { "Package ID", "Latest Version" };
+        private readonly string[] _minimalVerbosityTableHeaderForExactMatch = { "Package ID", "Version" };
         private readonly int[] _minimalColumnsToHighlight = { 0 };
 
         public Table CreateTable()
         {
-            return new Table(_minimalColumnsToHighlight, _minimalVerbosityTableHeader);
+            return new Table(_minimalColumnsToHighlight, _minimalVerbosityTableHeaderForExactMatch);
         }
     }
 }

@@ -32,8 +32,8 @@ namespace NuGet.CommandLine.XPlat
             _loggerWithColor.LogMinimal(SourceSeparator);
             _loggerWithColor.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
 
-            ITableFormatStrategy strategy = TableFormatStrategyFactory.GetStrategy(_verbosity);
-            Table table = strategy.CreateTable(completedSearch, _exactMatch);
+            ITableFormatStrategy strategy = TableFormatStrategyFactory.GetStrategy(_verbosity, _exactMatch);
+            Table table = strategy.CreateTable();
             PopulateTableWithResultsAsync(completedSearch, table, _verbosity);
             table.PrintResult(_searchTerm, _loggerWithColor);
         }

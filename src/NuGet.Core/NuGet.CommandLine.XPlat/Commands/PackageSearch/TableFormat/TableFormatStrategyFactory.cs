@@ -7,16 +7,16 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class TableFormatStrategyFactory
     {
-        public static ITableFormatStrategy GetStrategy(PackageSearchVerbosity verbosity)
+        public static ITableFormatStrategy GetStrategy(PackageSearchVerbosity verbosity, bool exactMatch)
         {
             switch (verbosity)
             {
                 case PackageSearchVerbosity.Minimal:
-                    return new MinimalTableFormatStrategy();
+                    return exactMatch ? new ExactMinimalTableFormatStrategy() : new MinimalTableFormatStrategy();
                 case PackageSearchVerbosity.Normal:
-                    return new NormalTableFormatStrategy();
+                    return exactMatch ? new ExactNormalTableFormatStrategy() : new NormalTableFormatStrategy();
                 case PackageSearchVerbosity.Detailed:
-                    return new DetailedTableFormatStrategy();
+                    return exactMatch ? new ExactDetailedTableFormatStrategy() : new DetailedTableFormatStrategy();
                 default:
                     throw new ArgumentException("Invalid verbosity level");
             }
