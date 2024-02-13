@@ -104,11 +104,11 @@ namespace NuGet
             {
                 return Task.Run(() => valueFactory(factoryState), cancellationToken)
                     .ContinueWith(
-                    static (task, state) => task.Result,
-                    state: null,
-                    cancellationToken,
-                    TaskContinuationOptions.RunContinuationsAsynchronously,
-                    TaskScheduler.Default);
+                        static (task, state) => task.GetAwaiter().GetResult(),
+                        state: null,
+                        cancellationToken,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+                        TaskScheduler.Default);
             }
         }
     }
