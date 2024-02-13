@@ -9,7 +9,7 @@
     <VSServicesVersion Condition="'$(VSServicesVersion)' == ''">16.153.0</VSServicesVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <!-- Default MSBuild version -->
-    <MicrosoftBuildVersion Condition="'$(MicrosoftBuildVersion)' == ''">17.7.2</MicrosoftBuildVersion>
+    <MicrosoftBuildVersion Condition="'$(MicrosoftBuildVersion)' == ''">17.8.3</MicrosoftBuildVersion>
     <!-- The last package version of MSBuild that works with netcoreapp3.1 or netstandard2.0 is 16.8.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'">16.8.0</MicrosoftBuildVersion>
     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
@@ -64,7 +64,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Interop" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed" Version="17.2.0-beta1-20502-01" />
-    <PackageVersion Include="Microsoft.VisualStudio.Markdown.Platform" Version="17.7.197" />
+    <PackageVersion Include="Microsoft.VisualStudio.Markdown.Platform" Version="17.8.224" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="17.2.0-beta1-20502-01" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.VS" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="$(VSFrameworkVersion)" />
@@ -74,7 +74,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.TemplateWizardInterface" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
-    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.0.1600" />
+    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.3.2093" />
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Moq" Version="4.18.1" />
     <PackageVersion Include="MSTest.TestAdapter" Version="2.2.10" />
@@ -122,7 +122,10 @@
     These individual package versions should be equal to or less than the package version within the VS SDK that our
     customers use, otherwise they might get NU1605 or MSB3277 warnings.
   -->
-  <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR&#xD;&#xA;              '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
+  <ItemGroup Condition=" '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.csproj' OR
+              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Contracts.csproj' OR
+              '$(MSBuildProjectFile)' == 'NuGet.VisualStudio.Interop.csproj' OR
+              '$(MSBuildProjectFile)' == 'NuGet.SolutionRestoreManager.Interop.csproj'">
     <PackageVersion Include="Microsoft.ServiceHub.Framework" Version="4.2.102" />
     <PackageVersion Include="Microsoft.VisualStudio.ComponentModelHost" Version="17.4.255" />
     <PackageVersion Update="Microsoft.VisualStudio.SDK" Version="" />

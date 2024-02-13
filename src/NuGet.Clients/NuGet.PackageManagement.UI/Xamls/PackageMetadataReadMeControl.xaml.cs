@@ -24,36 +24,6 @@ namespace NuGet.PackageManagement.UI
         public PackageMetadataReadMeControl()
         {
             InitializeComponent();
-
-            Visibility = Visibility.Collapsed;
-            DataContextChanged += PackageMetadataReadMeControl_DataContextChangedAsync;
-        }
-
-#pragma warning disable VSTHRD100 // Avoid async void methods
-        private async void PackageMetadataReadMeControl_DataContextChangedAsync(object sender, DependencyPropertyChangedEventArgs e)
-#pragma warning restore VSTHRD100 // Avoid async void methods
-        {
-            if (DataContext is DetailControlModel detailedPackage)
-            {
-                if (!string.IsNullOrEmpty(detailedPackage.PackagePath))
-                {
-                    var fileInfo = new FileInfo(detailedPackage.PackagePath);
-                    if (fileInfo.Exists)
-                    {
-                        using var pfr = new PackageArchiveReader(fileInfo.OpenRead());
-                        var files = await pfr.GetFilesAsync(CancellationToken.None);
-                        var readmeFile = files.FirstOrDefault(file => file.IndexOf("readme.md", System.StringComparison.OrdinalIgnoreCase) >= 0);
-                        using var stream = new StreamReader(await pfr.GetStreamAsync(readmeFile, CancellationToken.None));
-                        var content = await stream.ReadToEndAsync();
-                        _description.Text = content;
-                    }
-                }
-                Visibility = Visibility.Visible;
-            }
-            else
-            {
-                Visibility = Visibility.Collapsed;
-            }
         }
     }
 }

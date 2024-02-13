@@ -38,7 +38,12 @@ Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll
-System.Buffers.dll
-System.Memory.dll
 System.Numerics.Vectors.dll
-System.Runtime.CompilerServices.Unsafe.dll
+Markdig.Signed.dll
+Microsoft.VisualStudio.Markdown.Core.dll
+Microsoft.VisualStudio.Markdown.Platform.dll
+Microsoft.Web.WebView2.Core.dll
+Microsoft.Web.WebView2.WinForms.dll
+Microsoft.Web.WebView2.Wpf.dll
+System.Drawing.Common.dll
+Microsoft.VisualStudio.Markdown.Platform.resources.dll
