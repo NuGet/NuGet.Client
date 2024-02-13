@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
-
+            ReadMePreviewViewModel = new ReadMePreviewViewModel();
             _versions = new ItemsChangeObservableCollection<DisplayVersion>();
         }
 
@@ -92,6 +92,7 @@ namespace NuGet.PackageManagement.UI
             if (disposing)
             {
                 _selectedVersionCancellationTokenSource.Dispose();
+                ReadMePreviewViewModel.Dispose();
                 Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
                 CleanUp();
             }
@@ -149,7 +150,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconUrl));
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
-
+            await ReadMePreviewViewModel.UpdateMarkdownAsync(PackagePath);
             Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects);
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
@@ -492,6 +493,18 @@ namespace NuGet.PackageManagement.UI
         {
             public const string CriticalBugs = nameof(CriticalBugs);
             public const string Legacy = nameof(Legacy);
+        }
+
+        private ReadMePreviewViewModel _readMePreviewViewModel;
+
+        public ReadMePreviewViewModel ReadMePreviewViewModel
+        {
+            get { return _readMePreviewViewModel; }
+            set
+            {
+                _readMePreviewViewModel = value;
+                OnPropertyChanged(nameof(ReadMePreviewViewModel));
+            }
         }
 
         private DetailedPackageMetadata _packageMetadata;
