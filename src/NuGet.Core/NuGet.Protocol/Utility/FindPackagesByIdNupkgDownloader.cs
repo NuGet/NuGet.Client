@@ -194,13 +194,14 @@ namespace NuGet.Protocol
             CacheEntry cacheEntry = await _cacheEntries.GetOrAddAsync(
                 url,
                 refresh: cacheContext.DirectDownload, // Don't read from the in-memory cache if we are doing a direct download.
-                () => ProcessStreamAndGetCacheEntryAsync(
-                    identity,
-                    url,
-                    processStreamAsync,
-                    cacheContext,
-                    logger,
-                    token),
+                static state => state.caller.ProcessStreamAndGetCacheEntryAsync(
+                    state.identity,
+                    state.url,
+                    state.processStreamAsync,
+                    state.cacheContext,
+                    state.logger,
+                    state.token),
+                (caller: this, identity, url, processStreamAsync, cacheContext, logger, token),
                 token);
 
             // Process the NupkgEntry

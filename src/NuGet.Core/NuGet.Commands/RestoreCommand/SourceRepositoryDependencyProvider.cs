@@ -204,7 +204,11 @@ namespace NuGet.Commands
 
             try
             {
-                LibraryIdentity result = await _libraryMatchCache.GetOrAddAsync(libraryRange, cacheContext.RefreshMemoryCache, () => FindLibraryCoreAsync(libraryRange, cacheContext, logger, cancellationToken), cancellationToken);
+                LibraryIdentity result = await _libraryMatchCache.GetOrAddAsync(
+                    libraryRange,
+                    cacheContext.RefreshMemoryCache,
+                    static state => state.caller.FindLibraryCoreAsync(state.libraryRange, state.cacheContext, state.logger, state.cancellationToken),
+                    (caller: this, libraryRange, cacheContext, logger, cancellationToken), cancellationToken);
 
                 return result;
             }
@@ -337,7 +341,11 @@ namespace NuGet.Commands
 
             LibraryRangeCacheKey key = new(libraryIdentity, targetFramework);
 
-            return _dependencyInfoCache.GetOrAddAsync(key, cacheContext.RefreshMemoryCache, () => GetDependenciesCoreAsync(libraryIdentity, targetFramework, cacheContext, logger, cancellationToken), cancellationToken);
+            return _dependencyInfoCache.GetOrAddAsync(
+                key,
+                cacheContext.RefreshMemoryCache,
+                static state => state.caller.GetDependenciesCoreAsync(state.libraryIdentity, state.targetFramework, state.cacheContext, state.logger, state.cancellationToken),
+                (caller: this, libraryIdentity, targetFramework, cacheContext, logger, cancellationToken), cancellationToken);
         }
 
         private async Task<LibraryDependencyInfo> GetDependenciesCoreAsync(
