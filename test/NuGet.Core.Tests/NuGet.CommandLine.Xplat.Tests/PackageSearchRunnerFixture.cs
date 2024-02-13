@@ -152,14 +152,14 @@ namespace NuGet.CommandLine.Xplat.Tests
       ""problems"": null,
       ""packages"": [
         {{
-          ""description"": ""My description."",
-          ""vulnerable"": null,
-          ""deprecation"": ""This package has been deprecated"",
-          ""projectUrl"": ""http://myuri"",
+          ""id"": ""Fake.Newtonsoft.Json"",
+          ""latestVersion"": ""12.0.3"",
           ""totalDownloads"": 531607259,
           ""owners"": ""James Newton-King"",
-          ""id"": ""Fake.Newtonsoft.Json"",
-          ""latestVersion"": ""12.0.3""
+          ""description"": ""My description."",
+          ""vulnerable"": null,
+          ""projectUrl"": ""http://myuri/"",
+          ""deprecation"": ""This package has been deprecated""
         }}
       ]
     }}
@@ -175,10 +175,10 @@ namespace NuGet.CommandLine.Xplat.Tests
       ""problems"": null,
       ""packages"": [
         {{
-          ""totalDownloads"": 531607259,
-          ""owners"": ""James Newton-King"",
           ""id"": ""Fake.Newtonsoft.Json"",
-          ""latestVersion"": ""12.0.3""
+          ""latestVersion"": ""12.0.3"",
+          ""totalDownloads"": 531607259,
+          ""owners"": ""James Newton-King""
         }}
       ]
     }}

@@ -18,12 +18,12 @@ namespace NuGet.CommandLine.XPlat
         public List<PackageSearchProblem> Problems { get; set; }
 
         [JsonPropertyName("packages")]
-        public List<ISearchResultPackage> Packages { get; set; }
+        public List<SearchResultPackage> Packages { get; set; }
 
         public PackageSearchResult(string source)
         {
             SourceName = source;
-            Packages = new List<ISearchResultPackage>();
+            Packages = new List<SearchResultPackage>();
         }
     }
 }

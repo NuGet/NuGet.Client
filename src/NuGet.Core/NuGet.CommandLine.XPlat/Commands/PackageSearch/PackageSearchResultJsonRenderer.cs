@@ -1,7 +1,8 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -35,7 +36,10 @@ namespace NuGet.CommandLine.XPlat
                     deprecation = packageDeprecationMetadata.Message;
                 }
 
-                ISearchResultPackage package = JsonFormatFactorySearchResultPackage.GetPackage(metadata, _verbosity, _exactMatch, deprecation);
+                SearchResultPackage package = new SearchResultPackage();
+                package.DeprecationMessage = deprecation;
+                package.PackageSearchMetadata = metadata;
+
                 packageSearchResult.Packages.Add(package);
             }
 
@@ -56,7 +60,7 @@ namespace NuGet.CommandLine.XPlat
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                Converters = { new SearchResultPackageConverter() }
+                Converters = { new SearchResultPackagesConverter(_verbosity, _exactMatch) }
             };
             var json = JsonSerializer.Serialize(_packageSearchMainOutput, options);
             _logger.LogMinimal(json);
@@ -70,19 +74,6 @@ namespace NuGet.CommandLine.XPlat
         public void Start()
         {
             _packageSearchMainOutput = new PackageSearchMainOutput();
-        }
-    }
-
-    class SearchResultPackageConverter : JsonConverter<ISearchResultPackage>
-    {
-        public override ISearchResultPackage Read(ref Utf8JsonReader reader, Type typeToSerialize, JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(Utf8JsonWriter writer, ISearchResultPackage value, JsonSerializerOptions options)
-        {
-            JsonSerializer.Serialize(writer, value, value.GetType(), options);
         }
     }
 }

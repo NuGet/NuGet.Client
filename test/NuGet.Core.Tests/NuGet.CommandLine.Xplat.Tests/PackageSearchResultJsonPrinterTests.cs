@@ -74,10 +74,10 @@ namespace NuGet.CommandLine.Xplat.Tests
       ""problems"": null,
       ""packages"": [
         {{
-          ""totalDownloads"": 123456,
-          ""owners"": null,
           ""id"": ""NuGet.Versioning"",
-          ""latestVersion"": ""4.3.0""
+          ""latestVersion"": ""4.3.0"",
+          ""totalDownloads"": 123456,
+          ""owners"": null
         }}
       ]
     }}
@@ -121,16 +121,16 @@ namespace NuGet.CommandLine.Xplat.Tests
       ""problems"": null,
       ""packages"": [
         {{
-          ""totalDownloads"": 123456,
-          ""owners"": null,
           ""id"": ""NuGet.Versioning"",
-          ""latestVersion"": ""4.3.0""
+          ""latestVersion"": ""4.3.0"",
+          ""totalDownloads"": 123456,
+          ""owners"": null
         }},
         {{
-          ""totalDownloads"": 123456,
-          ""owners"": null,
           ""id"": ""NuGet.Versioning"",
-          ""latestVersion"": ""4.3.0""
+          ""latestVersion"": ""4.3.0"",
+          ""totalDownloads"": 123456,
+          ""owners"": null
         }}
       ]
     }}
