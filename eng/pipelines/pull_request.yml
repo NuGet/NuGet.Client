@@ -70,21 +70,52 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: true
+- name: isOfficialBuild
+  type: boolean
+  default: false
 
-extends:
-  template: templates/pipeline.yml
-  parameters:
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
-    E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
-    ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
-    NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
-    RunApexTests: ${{parameters.RunApexTests}}
-    RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-    RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-    RunEndToEndTests: ${{parameters.RunEndToEndTests}}
-    RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
-    RunSourceBuild: ${{parameters.RunSourceBuild}}
-    RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
-    RunTestsOnMac: ${{parameters.RunTestsOnMac}}
-    RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+resources:
+  pipelines:
+  - pipeline: DartLab
+    source: DartLab
+    branch: main
+  repositories:
+  - repository: DartLabTemplates
+    type: git
+    name: DartLab.Templates
+    ref: refs/heads/main
+
+variables:
+  BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
+  DOTNET_NOLOGO: 1
+  NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
+  Codeql.Enabled: ${{ parameters.isOfficialBuild }}
+  Codeql.TSAEnabled: ${{ parameters.isOfficialBuild }}
+  RunApexTests: ${{ parameters.RunApexTests }}
+  RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
+  RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
+  RunEndToEndTests: ${{ parameters.RunEndToEndTests }}
+  RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
+  RunSourceBuild: ${{ parameters.RunSourceBuild }}
+  RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
+  RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
+  RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
+
+stages:
+  - template: templates/pipeline.yml
+    parameters:
+      DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+      E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
+      E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
+      ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
+      NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
+      RunApexTests: ${{parameters.RunApexTests}}
+      RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+      RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
+      RunEndToEndTests: ${{parameters.RunEndToEndTests}}
+      RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+      RunSourceBuild: ${{parameters.RunSourceBuild}}
+      RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
+      RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+      RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+      isOfficialBuild: ${{parameters.isOfficialBuild}}

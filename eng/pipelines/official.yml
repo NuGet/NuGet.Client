@@ -64,7 +64,7 @@ parameters:
   type: boolean
   default: true
 
-extends:
+stages:
   template: templates/pipeline.yml
   parameters:
     isOfficialBuild: true

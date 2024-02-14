@@ -28,7 +28,7 @@ parameters:
   - delete
   - stop
 
-extends:
+stages:
   template: templates/pipeline.yml
   parameters:
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
