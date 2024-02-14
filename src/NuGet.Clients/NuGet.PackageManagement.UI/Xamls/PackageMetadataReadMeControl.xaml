@@ -4,30 +4,13 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
-  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-  xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
-  Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
-  Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">
-  <StackPanel>
-    <TextBlock
-      Grid.Row="0"
-      x:Name="_descriptionLabel"
-      Text="{x:Static nuget:Resources.Label_Description}"
-      FontWeight="Bold" />
     <ContentControl
       x:Name="descriptionMarkdownPreview"
       x:Uid="descriptionMarkdownPreview"
+      ClipToBounds="True"
       Content="{Binding MarkdownPreviewControl}"
     />
-    <TextBlock
-      Grid.Row="0"
-      x:Name="_descriptionLabel22"
-      Text="{Binding PathString}"
-      FontWeight="Bold" />
-  </StackPanel>
 </UserControl>
