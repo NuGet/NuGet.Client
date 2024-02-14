@@ -40,10 +40,12 @@ Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll
 System.Numerics.Vectors.dll
 Markdig.Signed.dll
+Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.Markdown.Core.dll
 Microsoft.VisualStudio.Markdown.Platform.dll
 Microsoft.Web.WebView2.Core.dll
 Microsoft.Web.WebView2.WinForms.dll
 Microsoft.Web.WebView2.Wpf.dll
 System.Drawing.Common.dll
+Microsoft.Internal.VisualStudio.Shell.Framework.resources.dll
 Microsoft.VisualStudio.Markdown.Platform.resources.dll

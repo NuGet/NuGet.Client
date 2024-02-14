@@ -30,6 +30,7 @@
     HorizontalScrollBarVisibility="Disabled"
     AutomationProperties.Name="{Binding Text, ElementName=_packageId}">
     <Grid
+      MinHeight="{Binding ActualHeight, ElementName=_self}"
       Margin="24,0,7,0">
       <Grid.RowDefinitions>
         <RowDefinition
@@ -46,11 +47,7 @@
         <RowDefinition
           Height="Auto" />
         <RowDefinition
-          Height="Auto" />
-        <RowDefinition
-          Height="Auto" />
-        <RowDefinition
-          Height="Auto" />
+          Height="*" />
       </Grid.RowDefinitions>
 
       <!-- Icon and Id -->
@@ -217,7 +214,7 @@
         </Grid>
       </Border>
       <nuget:PackageMetadataControl
-        Grid.Row="7"
+        Grid.Row="6"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
         Margin="0,12,0,0"
         DataContext="{Binding}" />

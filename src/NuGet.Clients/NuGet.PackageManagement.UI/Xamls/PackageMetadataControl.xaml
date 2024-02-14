@@ -21,36 +21,27 @@
       <nuget:AccessibleConverter x:Key="AccNameWorkaround" />
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition
-        Height="Auto" />
-      <RowDefinition
-        Height="Auto"/>
-      <RowDefinition
-        Height="Auto"/>
-    </Grid.RowDefinitions>
-    <TabControl Grid.Row="0" x:Name="tabsPackageDetails">
-      <TabControl.Resources>
-        <Style TargetType="TabItem">
-          <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}" />
-          <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"/>
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
-          <Setter Property="Padding" Value="20,0,20,0" />
-          <Setter Property="FocusVisualStyle" Value="{DynamicResource ControlsFocusVisualStyle}" />
-          <Setter Property="Template">
-            <Setter.Value>
-              <ControlTemplate TargetType="{x:Type TabItem}">
-                <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition Height="auto" />
-                  </Grid.RowDefinitions>
-                  <Border x:Name="mainBorder" Background="{TemplateBinding Background}" BorderThickness="0" Margin="0">
-                  </Border>
-                  <ContentPresenter Grid.Row="0" x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                  <!--the line under the text to indicate that this label is selected-->
-                  <Rectangle
+  <TabControl Grid.Row="0" x:Name="tabsPackageDetails">
+    <TabControl.Resources>
+      <Style TargetType="TabItem">
+        <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}" />
+        <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+        <Setter Property="Padding" Value="20,0,20,0" />
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource ControlsFocusVisualStyle}" />
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TabItem}">
+              <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="auto" />
+                  <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Border x:Name="mainBorder" Background="{TemplateBinding Background}" BorderThickness="0" Margin="0">
+                </Border>
+                <ContentPresenter Grid.Row="0" x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                <!--the line under the text to indicate that this label is selected-->
+                <Rectangle
                       x:Name="_underline"
                       Grid.Row="1"
                       Height="3"
@@ -58,51 +49,51 @@
                       Width="{Binding ActualWidth, ElementName=contentPresenter}"
                       HorizontalAlignment="Center"
                       Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedIndicatorBrushKey}}"/>
-                </Grid>
-                <ControlTemplate.Triggers>
-                  <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                      <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey}}" />
-                  </MultiDataTrigger>
-                  <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                      <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="true" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabTextFocusedBrushKey}}" />
-                  </MultiDataTrigger>
-                  <MultiDataTrigger>
-                    <MultiDataTrigger.Conditions>
-                      <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
-                    </MultiDataTrigger.Conditions>
-                    <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabTextHoverBrushKey}}" />
-                  </MultiDataTrigger>
-                </ControlTemplate.Triggers>
-              </ControlTemplate>
-            </Setter.Value>
-          </Setter>
-        </Style>
-        <Style TargetType="{x:Type TabControl}">
-          <Setter Property="Padding" Value="2"/>
-          <Setter Property="HorizontalContentAlignment" Value="Center"/>
-          <Setter Property="VerticalContentAlignment" Value="Center"/>
-          <Setter Property="Template" >
-            <Setter.Value>
-              <ControlTemplate TargetType="{x:Type TabControl}">
-                <Grid x:Name="templateRoot" ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition x:Name="ColumnDefinition0"/>
-                    <ColumnDefinition x:Name="ColumnDefinition1" Width="0"/>
-                  </Grid.ColumnDefinitions>
-                  <Grid.RowDefinitions>
-                    <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
-                    <RowDefinition x:Name="RowDefinition1" Height="Auto"/>
-                    <RowDefinition x:Name="RowDefinition2" Height="400px"/>
-                  </Grid.RowDefinitions>
-                  <TabPanel x:Name="headerPanel" Background="Transparent" Grid.Column="0" IsItemsHost="true" Margin="0,0,0,-1" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"/>
-                  <Rectangle
+              </Grid>
+              <ControlTemplate.Triggers>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
+                  <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey}}" />
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="true" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabTextFocusedBrushKey}}" />
+                </MultiDataTrigger>
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabTextHoverBrushKey}}" />
+                </MultiDataTrigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+      <Style TargetType="{x:Type TabControl}">
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template" >
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type TabControl}">
+              <Grid x:Name="templateRoot" ClipToBounds="True" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition x:Name="ColumnDefinition0"/>
+                  <ColumnDefinition x:Name="ColumnDefinition1" Width="0"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
+                  <RowDefinition x:Name="RowDefinition1" Height="Auto"/>
+                  <RowDefinition x:Name="RowDefinition2" Height="*"/>
+                </Grid.RowDefinitions>
+                <TabPanel x:Name="headerPanel" Background="Transparent" Grid.Column="0" IsItemsHost="true" Margin="0,0,0,-1" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"/>
+                <Rectangle
                     x:Name="gridBorder"
                     Grid.Row="1"
                     Height="1"
@@ -110,25 +101,33 @@
                     Margin="0,0,0,0"
                     HorizontalAlignment="Stretch"
                     Fill="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
-                  <ContentPresenter Grid.Row="2" x:Name="actualContentPresenter" ContentSource="SelectedContent" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
-                </Grid>
-              </ControlTemplate>
-            </Setter.Value>
-          </Setter>
-        </Style>
-      </TabControl.Resources>
-      <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="True" >
-        <nuget:PackageMetadataReadMeControl
+                <ContentPresenter
+                    Grid.Row="2"
+                    ClipToBounds="True"
+                    x:Name="actualContentPresenter"
+                    ContentSource="SelectedContent"
+                    Focusable="True"
+                    HorizontalAlignment="Stretch"
+                    Margin="{TemplateBinding Padding}"
+                    RecognizesAccessKey="True"
+                    SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                    VerticalAlignment="Stretch"/>
+              </Grid>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+      </Style>
+    </TabControl.Resources>
+    <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="True" >
+      <nuget:PackageMetadataReadMeControl
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-          Margin="0,12,0,0"
           DataContext="{Binding ReadMePreviewViewModel}" />
-      </TabItem>
-      <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}" IsSelected="False">
-        <nuget:PackageMetadataDescriptionControl
+    </TabItem>
+    <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}" IsSelected="False">
+      <nuget:PackageMetadataDescriptionControl
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           Margin="0,12,0,0"
           DataContext="{Binding PackageMetadata}" />
-      </TabItem>
-    </TabControl>
-  </Grid>
+    </TabItem>
+  </TabControl>
 </UserControl>
