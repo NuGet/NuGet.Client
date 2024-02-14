@@ -1,4 +1,5 @@
 # assemblies not to be included in VSIX
+
 Ben.Demystifier.dll
 Microsoft.DataAI.NuGetRecommender.Contracts.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.dll
@@ -83,7 +84,6 @@ System.IdentityModel.Tokens.Jwt.dll
 System.Management.Automation.dll
 System.Net.Http.Formatting.dll
 System.Reflection.MetadataLoadContext.dll
-System.Reflection.TypeExtensions.dll
 System.Resources.Extensions.dll
 System.Security.Permissions.dll
 System.Text.Encodings.Web.dll

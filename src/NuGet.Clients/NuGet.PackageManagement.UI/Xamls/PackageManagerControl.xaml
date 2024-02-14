@@ -80,8 +80,7 @@
           <Grid.ColumnDefinitions>
             <ColumnDefinition
               x:Name="_leftSideGridColumn"
-              Width="65*"
-              MinWidth="300">
+              Width="65*">
               <ColumnDefinition.MaxWidth>
                 <MultiBinding Converter="{StaticResource SubstractionConverter}">
                   <Binding Path="ActualWidth" ElementName="_root" />
@@ -93,8 +92,7 @@
             <ColumnDefinition Width="auto" />
             <ColumnDefinition
               x:Name="_rightSideGridColumn"
-              Width="35*"
-              MinWidth="382" />
+              Width="35*"/>
           </Grid.ColumnDefinitions>
 
           <!-- left side -->
