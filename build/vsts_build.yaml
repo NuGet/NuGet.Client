@@ -29,10 +29,10 @@ parameters:
   - stop
 
 stages:
-  template: templates/pipeline.yml
-  parameters:
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
-    E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
-    ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
-    NuGetLocalizationType: Full
+  - template: templates/pipeline.yml
+    parameters:
+      DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+      E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
+      E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
+      ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
+      NuGetLocalizationType: Full
