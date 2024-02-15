@@ -14,9 +14,9 @@
         NOTE: This package is maintained on behalf of the library owners by the NuGet Community Packages project at http://nugetpackages.codeplex.com/</description>
     <language>en-US</language>
     <tags>jQuery</tags>
-    <files>
-      <file src="Content\Scripts\jquery-3.7.js" target="Content\Scripts\jquery-3.7.js" />
-      <file src="Content\Scripts\jquery-3.7.min.js" target="Content\Scripts\jquery-3.7.min.js" />
-    </files>
   </metadata>
+  <files>
+    <file src="Content\Scripts\jquery-3.7.js" target="Content\Scripts\jquery-3.7.js" />
+    <file src="Content\Scripts\jquery-3.7.min.js" target="Content\Scripts\jquery-3.7.min.js" />
+  </files>
 </package>

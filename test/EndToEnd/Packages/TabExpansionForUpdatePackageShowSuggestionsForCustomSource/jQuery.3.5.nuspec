@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>jQuery</id>
-    <version>3.5.0</version>
+    <version>3.5</version>
     <title>jQuery</title>
     <authors>jQuery Foundation, Inc.</authors>
     <owners>jQuery Foundation, Inc.</owners>
@@ -15,4 +15,8 @@
     <language>en-US</language>
     <tags>jQuery</tags>
   </metadata>
+  <files>
+    <file src="Content\Scripts\jquery-3.5.js" target="Content\Scripts\jquery-3.5.js" />
+    <file src="Content\Scripts\jquery-3.5.min.js" target="Content\Scripts\jquery-3.5.min.js" />
+  </files>
 </package>
