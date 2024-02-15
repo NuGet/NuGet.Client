@@ -112,7 +112,6 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         /// <typeparam name="T">Expected resource type</typeparam>
         /// <returns>Null if the resource does not exist</returns>
-        [Obsolete("Use the overload that takes a CancellationToken. If you don't want to support cancelation, use CancellationToken.None.")]
         public virtual T GetResource<T>() where T : class, INuGetResource
         {
             return GetResource<T>(CancellationToken.None);
@@ -136,7 +135,6 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         /// <typeparam name="T">Expected resource type</typeparam>
         /// <returns>Null if the resource does not exist</returns>
-        [Obsolete("Use the overload that takes a CancellationToken. If you don't want to support cancelation, use CancellationToken.None.")]
         public virtual async Task<T> GetResourceAsync<T>() where T : class, INuGetResource
         {
             return await GetResourceAsync<T>(CancellationToken.None);
