@@ -27,6 +27,9 @@ parameters:
   values:
   - delete
   - stop
+- name: isOfficialBuild
+  type: boolean
+  default: false
 
 stages:
   - template: templates/pipeline.yml
@@ -36,3 +39,4 @@ stages:
       E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
       ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
       NuGetLocalizationType: Full
+      isOfficialBuild: ${{parameters.isOfficialBuild}}

@@ -70,6 +70,9 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: true
+- name: isOfficialBuild
+  type: boolean
+  default: false
 
 stages:
   - template: templates/pipeline.yml
@@ -88,3 +91,4 @@ stages:
       RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
       RunTestsOnMac: ${{parameters.RunTestsOnMac}}
       RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+      isOfficialBuild: ${{parameters.isOfficialBuild}}
