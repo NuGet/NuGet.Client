@@ -44,6 +44,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public async Task UpdateMarkdownAsync(string packagePath)
         {
             var markDown = string.Empty;
+            _markdownPreview.VisualElement.Visibility = Visibility.Collapsed;
             if (!string.IsNullOrEmpty(packagePath))
             {
                 var fileInfo = new FileInfo(packagePath);
@@ -51,11 +52,12 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 {
                     using var pfr = new PackageArchiveReader(fileInfo.OpenRead());
                     var files = await pfr.GetFilesAsync(CancellationToken.None);
-                    var readmeFile = files.FirstOrDefault(file => file.IndexOf("readme.md", System.StringComparison.OrdinalIgnoreCase) >= 0);
+                    var readmeFile = files.FirstOrDefault(file => file.IndexOf("readme.md", StringComparison.OrdinalIgnoreCase) >= 0);
                     if (!string.IsNullOrEmpty(readmeFile))
                     {
                         using var stream = new StreamReader(await pfr.GetStreamAsync(readmeFile, CancellationToken.None));
                         markDown = await stream.ReadToEndAsync();
+                        _markdownPreview.VisualElement.Visibility = Visibility.Visible;
                     }
                 }
             }
