@@ -3,6 +3,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace NuGet
     internal sealed class TaskResultCache<TKey, TValue>
         where TKey : notnull
     {
-        private readonly Dictionary<TKey, Task<TValue>> _cache;
+        private readonly ConcurrentDictionary<TKey, Task<TValue>> _cache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResultCache{TKey, TValue}" /> class with the specified key comparer.
@@ -82,33 +83,52 @@ namespace NuGet
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
         public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState factoryState, CancellationToken cancellationToken)
         {
-            lock (_cache)
+            if (refresh)
             {
-                if (refresh)
-                {
-                    var newTask = StartNewFactoryTask(valueFactory, factoryState, cancellationToken);
-                    _cache[key] = newTask;
-                    return newTask;
-                }
+                var newTask = StartNewFactoryTask(valueFactory, factoryState, cancellationToken);
+                _cache[key] = newTask;
+                return newTask;
+            }
 
-                if (!_cache.TryGetValue(key, out Task<TValue>? value))
-                {
-                    value = StartNewFactoryTask(valueFactory, factoryState, cancellationToken);
-                    _cache[key] = value;
-                }
-
+            if (_cache.TryGetValue(key, out Task<TValue>? value))
+            {
                 return value;
             }
+
+            return GetValueSlow(key, valueFactory, factoryState, cancellationToken);
 
             static Task<TValue> StartNewFactoryTask(Func<TState, Task<TValue>> valueFactory, TState factoryState, CancellationToken cancellationToken)
             {
                 return Task.Run(() => valueFactory(factoryState), cancellationToken)
+
                     .ContinueWith(
+
                         static (task, state) => task.GetAwaiter().GetResult(),
+
                         state: null,
+
                         cancellationToken,
+
                         TaskContinuationOptions.RunContinuationsAsynchronously,
+
                         TaskScheduler.Default);
+            }
+
+            Task<TValue> GetValueSlow(TKey key, Func<TState, Task<TValue>> valueFactory, TState factoryState, CancellationToken cancellationToken)
+            {
+                lock (_cache)
+                {
+                    if (_cache.TryGetValue(key, out Task<TValue>? value))
+                    {
+                        return value;
+                    }
+
+                    value = StartNewFactoryTask(valueFactory, factoryState, cancellationToken);
+
+                    _cache[key] = value;
+
+                    return value;
+                }
             }
         }
     }
