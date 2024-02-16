@@ -45,7 +45,7 @@ namespace NuGet.Configuration.Test
                                                                         @".\certificate.pfx",
                                                                         null,
                                                                         false,
-                                                                        string.Empty);
+                                                                        "\\fake\\path");
 
                 SettingsTestUtils.DeepEquals(fileClientCertItem, expectedFileClientCertItem).Should().BeTrue();
             }
@@ -86,7 +86,7 @@ namespace NuGet.Configuration.Test
                                                                         @".\certificate.pfx",
                                                                         "...",
                                                                         true,
-                                                                        string.Empty);
+                                                                        "\\fake\\path");
 
                 SettingsTestUtils.DeepEquals(fileClientCertItem, expectedFileClientCertItem).Should().BeTrue();
             }
