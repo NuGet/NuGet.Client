@@ -36,11 +36,7 @@ namespace NuGet.CommandLine.XPlat
                     deprecation = packageDeprecationMetadata.Message;
                 }
 
-                SearchResultPackage package = new SearchResultPackage();
-                package.DeprecationMessage = deprecation;
-                package.PackageSearchMetadata = metadata;
-
-                packageSearchResult.Packages.Add(package);
+                packageSearchResult.Packages.Add(metadata);
             }
 
             _packageSearchMainOutput.SearchResult.Add(packageSearchResult);

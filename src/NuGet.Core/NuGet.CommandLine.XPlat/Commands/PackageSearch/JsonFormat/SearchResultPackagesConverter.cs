@@ -6,10 +6,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class SearchResultPackagesConverter : JsonConverter<SearchResultPackage>
+    internal class SearchResultPackagesConverter : JsonConverter<IPackageSearchMetadata>
     {
         private readonly PackageSearchVerbosity _verbosity;
         private readonly bool _exactMatch;
@@ -20,44 +21,44 @@ namespace NuGet.CommandLine.XPlat
             _exactMatch = exactMatch;
         }
 
-        public override SearchResultPackage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override IPackageSearchMetadata Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
         }
 
-        public override void Write(Utf8JsonWriter writer, SearchResultPackage value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, IPackageSearchMetadata value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            writer.WriteString(JsonProperties.PackageId, value.PackageSearchMetadata.Identity.Id);
+            writer.WriteString(JsonProperties.PackageId, value.Identity.Id);
 
             if (_exactMatch)
             {
-                writer.WriteString(JsonProperties.Version, value.PackageSearchMetadata.Identity.Version.ToNormalizedString());
+                writer.WriteString(JsonProperties.Version, value.Identity.Version.ToNormalizedString());
             }
             else
             {
-                writer.WriteString(JsonProperties.LatestVersion, value.PackageSearchMetadata.Identity.Version.ToNormalizedString());
+                writer.WriteString(JsonProperties.LatestVersion, value.Identity.Version.ToNormalizedString());
             }
 
             if (_verbosity == PackageSearchVerbosity.Normal || _verbosity == PackageSearchVerbosity.Detailed)
             {
-                if (value.PackageSearchMetadata.DownloadCount.HasValue)
+                if (value.DownloadCount.HasValue)
                 {
-                    writer.WriteNumber(JsonProperties.DownloadCount, (decimal)value.PackageSearchMetadata.DownloadCount);
+                    writer.WriteNumber(JsonProperties.DownloadCount, (decimal)value.DownloadCount);
                 }
                 else
                 {
                     writer.WriteNull(JsonProperties.DownloadCount);
                 }
 
-                writer.WriteString(JsonProperties.Owners, value.PackageSearchMetadata.Owners);
+                writer.WriteString(JsonProperties.Owners, value.Owners);
             }
 
             if (_verbosity == PackageSearchVerbosity.Detailed)
             {
-                writer.WriteString(JsonProperties.Description, value.PackageSearchMetadata.Description);
+                writer.WriteString(JsonProperties.Description, value.Description);
 
-                if (value.PackageSearchMetadata.Vulnerabilities != null && value.PackageSearchMetadata.Vulnerabilities.Any())
+                if (value.Vulnerabilities != null && value.Vulnerabilities.Any())
                 {
                     writer.WriteBoolean("vulnerable", true);
                 }
@@ -66,8 +67,18 @@ namespace NuGet.CommandLine.XPlat
                     writer.WriteNull("vulnerable");
                 }
 
-                writer.WriteString(JsonProperties.ProjectUrl, value.PackageSearchMetadata.ProjectUrl.ToString());
-                writer.WriteString(JsonProperties.Deprecation, value.DeprecationMessage);
+                writer.WriteString(JsonProperties.ProjectUrl, value.ProjectUrl.ToString());
+
+                PackageDeprecationMetadata packageDeprecationMetadata = value.GetDeprecationMetadataAsync().Result;
+
+                if (packageDeprecationMetadata != null)
+                {
+                    writer.WriteString(JsonProperties.Deprecation, value.GetDeprecationMetadataAsync().Result.Message);
+                }
+                else
+                {
+                    writer.WriteNull(JsonProperties.Deprecation);
+                }
             }
 
             writer.WriteEndObject();
