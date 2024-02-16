@@ -97,7 +97,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
-                var output = result.Output;
+                var output = RemoveDeprecationWarning(result.Output);
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
@@ -122,7 +122,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
-                var output = r.Output;
+                var output = RemoveDeprecationWarning(r.Output);
                 string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
                 Assert.Equal(5, lines.Length);
@@ -172,7 +172,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.Equal(0, result.ExitCode);
-                var output = result.Output;
+                var output = RemoveDeprecationWarning(result.Output);
                 Assert.Equal($"testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", output);
             }
         }
@@ -224,7 +224,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveHttpWarning(result.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(result.Output)));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -280,7 +280,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
                     var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -341,7 +341,7 @@ namespace NuGet.CommandLine.Test
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -453,7 +453,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -512,7 +512,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveHttpWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -571,7 +571,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    RemoveHttpWarning(r1.Output).Should().Be(expectedOutput);
+                    RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)).Should().Be(expectedOutput);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -670,7 +670,7 @@ namespace NuGet.CommandLine.Test
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                             "testPackage2 2.1.0" + Environment.NewLine;
-                        Assert.Equal(expectedOutput, RemoveHttpWarning(result.Output));
+                        Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(result.Output)));
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
                         Assert.Contains("searchTerm='test", searchRequest);
@@ -1253,6 +1253,16 @@ namespace NuGet.CommandLine.Test
             );
 
             return string.Join(Environment.NewLine, lines.Select(e => e).Where(e => !e.StartsWith("WARNING: You are running the")));
+        }
+
+        private static string RemoveDeprecationWarning(string input)
+        {
+            string[] lines = input.Split(
+                new string[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None
+            );
+
+            return string.Join(Environment.NewLine, lines.Select(e => e).Where(e => !e.StartsWith("WARNING: 'NuGet list' is deprecated.")));
         }
     }
 }
