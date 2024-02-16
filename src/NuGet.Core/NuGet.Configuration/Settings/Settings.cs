@@ -460,7 +460,7 @@ namespace NuGet.Configuration
         /// </summary>
         internal static ISettings LoadSettings(
             DirectoryInfo root,
-            IMachineWideSettings machineWideSettings,
+            IMachineWideSettings? machineWideSettings,
             bool loadUserWideSettings,
             bool useTestingGlobalPath,
             SettingsLoadingContext? settingsLoadingContext = null)
