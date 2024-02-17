@@ -123,7 +123,29 @@ namespace NuGet.Frameworks
             }
             else if (reverse.ContainsKey(key))
             {
-                value = reverse.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Key, key)).Select(s => s.Key).Single();
+                bool found = false;
+                string? match = null;
+                foreach (var p in reverse)
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(p.Key, key))
+                    {
+                        if (found)
+                        {
+                            throw new InvalidOperationException();
+                        }
+
+                        match = p.Key;
+                        found = true;
+                    }
+                }
+
+                if (!found || match == null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                value = match;
+
                 return true;
             }
 
