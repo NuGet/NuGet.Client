@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -288,7 +289,11 @@ namespace NuGet.ProjectModel
 
         public void Save(Stream stream)
         {
+#if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(stream))
+#else
+            using (var textWriter = new NoAllocNewLineStreamWriter(stream))
+#endif
             using (var jsonWriter = new JsonTextWriter(textWriter))
             using (var writer = new RuntimeModel.JsonObjectWriter(jsonWriter))
             {
