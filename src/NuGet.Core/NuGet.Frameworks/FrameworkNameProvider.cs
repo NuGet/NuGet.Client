@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
@@ -235,23 +236,23 @@ namespace NuGet.Frameworks
                 if (partCount == 1)
                     partCount = 2;
 
-                sb.Append(major);
+                sb.AppendInt(major);
                 if (partCount > 1)
-                    sb.Append('.').Append(minor);
+                    sb.Append('.').AppendInt(minor);
                 if (partCount > 2)
-                    sb.Append('.').Append(build);
+                    sb.Append('.').AppendInt(build);
                 if (partCount > 3)
-                    sb.Append('.').Append(revision);
+                    sb.Append('.').AppendInt(revision);
             }
             else
             {
-                sb.Append(major);
+                sb.AppendInt(major);
                 if (partCount > 1)
-                    sb.Append(minor);
+                    sb.AppendInt(minor);
                 if (partCount > 2)
-                    sb.Append(build);
+                    sb.AppendInt(build);
                 if (partCount > 3)
-                    sb.Append(revision);
+                    sb.AppendInt(revision);
             }
 
             return StringBuilderPool.Shared.ToStringAndReturn(sb);
