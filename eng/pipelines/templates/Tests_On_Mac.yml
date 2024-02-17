@@ -35,12 +35,11 @@ steps:
     testRunTitle: "NuGet.Client $(TestRunDisplayName) On Mac"
   condition: "always()"
 
-- task: PublishBuildArtifacts@1
+- task: PublishPipelineArtifact@1
   displayName: "Publish Test Freeze Dump"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-    ArtifactName: "$(Agent.JobName)"
-    ArtifactType: "Container"
+    targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
+    artifactName: "$(Agent.JobName)"
   condition: "or(failed(), canceled())"
 
 - task: PowerShell@2

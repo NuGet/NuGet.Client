@@ -38,12 +38,11 @@ steps:
     arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(Build.SourceBranchName) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
   displayName: "Configure VSTS CI Environment"
 
-- task: PublishBuildArtifacts@1
+- task: PublishPipelineArtifact@1
   displayName: 'Publish buildinfo.json as an artifact'
   inputs:
-    ArtifactName: 'BuildInfo'
-    ArtifactType: 'Container'
-    PathToPublish: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
+    targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
+    artifactName: 'BuildInfo'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
@@ -195,12 +194,11 @@ steps:
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
-- task: PublishBuildArtifacts@1
+- task: PublishPipelineArtifact@1
   displayName: "Publish NuGet.CommandLine.Test as artifact"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
-    ArtifactName: "NuGet.CommandLine.Test"
-    ArtifactType: "Container"
+    targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
+    artifactName: "NuGet.CommandLine.Test"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -330,12 +328,11 @@ steps:
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: PublishBuildArtifacts@1
+- task: PublishPipelineArtifact@1
   displayName: 'Publish BootstrapperInfo.json as a build artifact'
   inputs:
-    PathtoPublish: $(Build.StagingDirectory)\MicroBuild\Output
-    ArtifactName: MicroBuildOutputs
-    ArtifactType: Container
+    targetPath: $(Build.StagingDirectory)\MicroBuild\Output
+    artifactName: MicroBuildOutputs
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
@@ -436,12 +433,11 @@ steps:
     dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PublishBuildArtifacts@1
+- task: PublishPipelineArtifact@1
   displayName: "Publish NuGet.exe VSIX and EndToEnd.zip as artifact"
   inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
-    ArtifactName: "$(VsixPublishDir)"
-    ArtifactType: "Container"
+    targetPath : "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    artifactName: "$(VsixPublishDir)"
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish localizationArtifacts artifact"
