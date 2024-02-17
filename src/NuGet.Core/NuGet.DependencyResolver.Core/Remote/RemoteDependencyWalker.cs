@@ -109,7 +109,6 @@ namespace NuGet.DependencyResolver
 
             stackStates.Push(new GraphNodeStackState(
                 rootNode,
-                null,
                 rootDependencies,
                 0,
                 outerEdge));
@@ -120,6 +119,7 @@ namespace NuGet.DependencyResolver
                 GraphNodeStackState currentState = stackStates.Pop();
                 GraphNode<RemoteResolveResult> node = currentState.GraphNode;
                 LightweightList<GraphNodeCreationData> dependencyNodeCreationData = currentState.DependencyData;
+                LibraryRange currentLibraryRange = node.Key;
                 GraphEdge<RemoteResolveResult> currentOuterEdge = currentState.OuterEdge;
 
                 int index = currentState.DependencyIndex;
@@ -147,7 +147,7 @@ namespace NuGet.DependencyResolver
 
                             // Check for a cycle, this is needed for A (project) -> A (package)
                             // since the predicate will not be called for leaf nodes.
-                            if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, node.Key.Name))
+                            if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, currentLibraryRange.Name))
                             {
                                 result = (DependencyResult.Cycle, dependency);
                             }
@@ -233,26 +233,20 @@ namespace NuGet.DependencyResolver
                     // on the next iteration which will let us enter the final block.
                     stackStates.Push(new GraphNodeStackState(
                         node,
-                        currentState.ParentNode,
                         dependencyNodeCreationData,
                         index + 1,
                         currentState.OuterEdge));
 
                     LightweightList<GraphNodeCreationData> newDependencies = new LightweightList<GraphNodeCreationData>(newNode.Item.Data.Dependencies.Count);
 
+                    newNode.OuterNode = node;
+
                     //  We have a new dependency that we need to evaluate before its parent, so we push it onto the stack after the parent.
                     stackStates.Push(new GraphNodeStackState(
                         newNode,
-                        node,
                         newDependencies,
                         0,
                         graphNodeCreationData.OuterEdge));
-                }
-
-                // This block does the final edge connection after all dependencies are fully evaluated.
-                if (index >= dependencyNodeCreationData.Count)
-                {
-                    node.OuterNode = currentState.ParentNode;
                 }
             }
 
@@ -651,11 +645,6 @@ namespace NuGet.DependencyResolver
             public readonly GraphNode<RemoteResolveResult> GraphNode;
 
             /// <summary>
-            /// A reference to the parent <see cref="GraphNode{TItem}"/>.
-            /// </summary>
-            public readonly GraphNode<RemoteResolveResult> ParentNode;
-
-            /// <summary>
             /// The dependencies of the current <see cref="GraphNode{TItem}"/> that will be updated as a final step.
             /// </summary>
             public readonly LightweightList<GraphNodeCreationData> DependencyData;
@@ -672,13 +661,11 @@ namespace NuGet.DependencyResolver
 
             public GraphNodeStackState(
                 GraphNode<RemoteResolveResult> graphNode,
-                GraphNode<RemoteResolveResult> parentNode,
                 LightweightList<GraphNodeCreationData> dependencies,
                 int dependencyIndex,
                 GraphEdge<RemoteResolveResult> outerEdge)
             {
                 GraphNode = graphNode;
-                ParentNode = parentNode;
                 DependencyData = dependencies;
                 DependencyIndex = dependencyIndex;
                 OuterEdge = outerEdge;
