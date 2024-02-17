@@ -112,7 +112,6 @@ namespace NuGet.DependencyResolver
                 null,
                 rootDependencies,
                 0,
-                libraryRange,
                 outerEdge));
 
             while (stackStates.Count > 0)
@@ -121,7 +120,6 @@ namespace NuGet.DependencyResolver
                 GraphNodeStackState currentState = stackStates.Pop();
                 GraphNode<RemoteResolveResult> node = currentState.GraphNode;
                 LightweightList<GraphNodeCreationData> dependencyNodeCreationData = currentState.DependencyData;
-                LibraryRange currentLibraryRange = currentState.LibraryRange;
                 GraphEdge<RemoteResolveResult> currentOuterEdge = currentState.OuterEdge;
 
                 int index = currentState.DependencyIndex;
@@ -149,7 +147,7 @@ namespace NuGet.DependencyResolver
 
                             // Check for a cycle, this is needed for A (project) -> A (package)
                             // since the predicate will not be called for leaf nodes.
-                            if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, currentLibraryRange.Name))
+                            if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, node.Key.Name))
                             {
                                 result = (DependencyResult.Cycle, dependency);
                             }
@@ -238,7 +236,6 @@ namespace NuGet.DependencyResolver
                         currentState.ParentNode,
                         dependencyNodeCreationData,
                         index + 1,
-                        currentState.LibraryRange,
                         currentState.OuterEdge));
 
                     LightweightList<GraphNodeCreationData> newDependencies = new LightweightList<GraphNodeCreationData>(newNode.Item.Data.Dependencies.Count);
@@ -249,7 +246,6 @@ namespace NuGet.DependencyResolver
                         node,
                         newDependencies,
                         0,
-                        graphNodeCreationData.LibraryRange,
                         graphNodeCreationData.OuterEdge));
                 }
 
@@ -670,11 +666,6 @@ namespace NuGet.DependencyResolver
             public readonly int DependencyIndex;
 
             /// <summary>
-            /// The <see cref="LibraryRange"/> for the current <see cref="GraphNode{TItem}"/>.
-            /// </summary>
-            public readonly LibraryRange LibraryRange;
-
-            /// <summary>
             /// The <see cref="GraphEdge"/> for the current <see cref="GraphNode{TItem}"/>.
             /// </summary>
             public readonly GraphEdge<RemoteResolveResult> OuterEdge;
@@ -684,14 +675,12 @@ namespace NuGet.DependencyResolver
                 GraphNode<RemoteResolveResult> parentNode,
                 LightweightList<GraphNodeCreationData> dependencies,
                 int dependencyIndex,
-                LibraryRange libraryRange,
                 GraphEdge<RemoteResolveResult> outerEdge)
             {
                 GraphNode = graphNode;
                 ParentNode = parentNode;
                 DependencyData = dependencies;
                 DependencyIndex = dependencyIndex;
-                LibraryRange = libraryRange;
                 OuterEdge = outerEdge;
             }
         }
