@@ -118,7 +118,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            var element = new XElement(XmlUtility.GetEncodedXMLName(ElementName));
+            var element = new XElement(ElementName);
 
             foreach (var attr in Attributes)
             {

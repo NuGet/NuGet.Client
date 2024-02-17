@@ -18,6 +18,9 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class CredentialsItem : SettingItem
     {
+        // The element name for credential items is the source name it's related to. But source names can have characters that are not allowed in XML element names.
+        // For example, a source name "Package Source" will be encoded as "Package_x0020_Source" in the XML element name.
+        // This property contains the decoded element name, and therefore needs to be encoded when it's written to the XML.
         public override string ElementName { get; }
 
         public string Username
@@ -118,6 +121,7 @@ namespace NuGet.Configuration
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(password));
             }
 
+            // ElementName is not being read from XML, so it's not decoded.
             ElementName = name;
 
             _username = new AddItem(ConfigurationConstants.UsernameToken, username);
@@ -136,6 +140,7 @@ namespace NuGet.Configuration
         internal CredentialsItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
+            // ElementName is read from XML file, so it must be decoded.
             ElementName = XmlConvert.DecodeName(element.Name.LocalName);
 
             var elementDescendants = element.Elements();
@@ -215,6 +220,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
+            // Always encode the element name, since it might contain characters that are not allowed in XML element names.
             var element = new XElement(XmlUtility.GetEncodedXMLName(ElementName),
                 _username.AsXNode(),
                 _password.AsXNode());
