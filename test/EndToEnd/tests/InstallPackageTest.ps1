@@ -1214,14 +1214,14 @@ function Test-InstallPackageAfterRenaming {
 
     # Act
     $p1.Name = "ProjectX"
-    Install-Package jquery -Version 1.5 -Source $context.RepositoryPath -project "Folder1\Folder2\ProjectX"
+    Install-Package jquery -Version 3.5 -Source $context.RepositoryPath -project "Folder1\Folder2\ProjectX"
 
     Rename-SolutionFolder "Folder1\Folder2" "Folder3"
-    Install-Package jquery -Version 1.5 -Source $context.RepositoryPath -project "Folder1\Folder3\ProjectB"
+    Install-Package jquery -Version 3.5 -Source $context.RepositoryPath -project "Folder1\Folder3\ProjectB"
 
     # Assert
-    Assert-NotNull (Get-ProjectItem $p1 scripts\jquery-1.5.js)
-    Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-1.5.js)
+    Assert-NotNull (Get-ProjectItem $p1 scripts\jquery-3.5.js)
+    Assert-NotNull (Get-ProjectItem $p2 scripts\jquery-3.5.js)
 }
 
 function Test-InstallingPackageWithDependencyThatFailsShouldRollbackSuccessfully {
@@ -2784,8 +2784,8 @@ function Test-InstallPackagesConfigLocal
     $p | Install-Package $pathToPackagesConfig
 
     # Assert
-    Assert-Package $p jQuery.validation 1.13.1
-    Assert-Package $p jQuery 2.1.3
+    Assert-Package $p jQuery.validation 1.19.4
+    Assert-Package $p jQuery 3.5
     Assert-Package $p EntityFramework 6.1.3-beta1
 }
 
