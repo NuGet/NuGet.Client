@@ -257,7 +257,7 @@ namespace NuGet.Commands
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            await EnsureResource();
+            await EnsureResource(cancellationToken);
 
             if (libraryRange.VersionRange?.MinVersion != null && libraryRange.VersionRange.IsMinInclusive && !libraryRange.VersionRange.IsFloating)
             {
@@ -400,7 +400,7 @@ namespace NuGet.Commands
             FindPackageByIdDependencyInfo packageInfo = null;
             try
             {
-                await EnsureResource();
+                await EnsureResource(cancellationToken);
 
                 if (_throttle != null)
                 {
@@ -494,7 +494,7 @@ namespace NuGet.Commands
 
             try
             {
-                await EnsureResource();
+                await EnsureResource(cancellationToken);
 
                 if (_throttle != null)
                 {
@@ -604,11 +604,11 @@ namespace NuGet.Commands
             return nuGetFramework;
         }
 
-        private async Task EnsureResource()
+        private async Task EnsureResource(CancellationToken cancellationToken)
         {
             if (_findPackagesByIdResource == null)
             {
-                var resource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
+                var resource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
 
                 lock (_lock)
                 {
