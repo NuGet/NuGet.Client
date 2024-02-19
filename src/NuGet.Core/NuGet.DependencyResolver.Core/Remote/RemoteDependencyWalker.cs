@@ -709,7 +709,7 @@ namespace NuGet.DependencyResolver
 
     internal struct LightweightList<T>
     {
-        private const int Fields = 10;
+        private const int Fields = 5;
         private readonly int _expectedCapacity;
         private int _count;
         private T _firstItem;
@@ -717,11 +717,6 @@ namespace NuGet.DependencyResolver
         private T _thirdItem;
         private T _fourthItem;
         private T _fifthItem;
-        private T _sixthItem;
-        private T _seventhItem;
-        private T _eighthItem;
-        private T _ninthItem;
-        private T _tenthItem;
 
         private List<T> _additionalItems;
 
@@ -761,26 +756,6 @@ namespace NuGet.DependencyResolver
                 {
                     return _fifthItem;
                 }
-                else if (index == 5)
-                {
-                    return _sixthItem;
-                }
-                else if (index == 6)
-                {
-                    return _seventhItem;
-                }
-                else if (index == 7)
-                {
-                    return _eighthItem;
-                }
-                else if (index == 8)
-                {
-                    return _ninthItem;
-                }
-                else if (index == 9)
-                {
-                    return _tenthItem;
-                }
                 else
                 {
                     return _additionalItems[index - Fields];
@@ -809,26 +784,6 @@ namespace NuGet.DependencyResolver
             else if (_count == 4)
             {
                 _fifthItem = task;
-            }
-            else if (_count == 5)
-            {
-                _sixthItem = task;
-            }
-            else if (_count == 6)
-            {
-                _seventhItem = task;
-            }
-            else if (_count == 7)
-            {
-                _eighthItem = task;
-            }
-            else if (_count == 8)
-            {
-                _ninthItem = task;
-            }
-            else if (_count == 9)
-            {
-                _tenthItem = task;
             }
             else
             {
@@ -893,26 +848,6 @@ namespace NuGet.DependencyResolver
                     else if (_index == 4)
                     {
                         _current = _itemList._fifthItem;
-                    }
-                    else if (_index == 5)
-                    {
-                        _current = _itemList._sixthItem;
-                    }
-                    else if (_index == 6)
-                    {
-                        _current = _itemList._seventhItem;
-                    }
-                    else if (_index == 7)
-                    {
-                        _current = _itemList._eighthItem;
-                    }
-                    else if (_index == 8)
-                    {
-                        _current = _itemList._ninthItem;
-                    }
-                    else if (_index == 9)
-                    {
-                        _current = _itemList._tenthItem;
                     }
                     else
                     {
