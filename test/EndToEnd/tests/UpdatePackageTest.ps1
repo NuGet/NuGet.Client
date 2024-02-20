@@ -804,12 +804,12 @@ function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     # Assert
     Assert-Package $p1 jQuery 3.7
     Assert-Package $p2 jQuery 3.5
-    Assert-Package $p1 jQuery.UI.Combined 1.19.5
-    Assert-Package $p2 jQuery.UI.Combined 1.19.4
+    Assert-Package $p1 jQuery.Validation 1.19.5
+    Assert-Package $p2 jQuery.Validation 1.19.4
     Assert-SolutionPackage jQuery 3.5
     Assert-SolutionPackage jQuery 3.7
-    Assert-SolutionPackage jQuery.UI.Combined 1.19.4
-    Assert-SolutionPackage jQuery.UI.Combined 1.19.5
+    Assert-SolutionPackage jQuery.Validation 1.19.4
+    Assert-SolutionPackage jQuery.Validation 1.19.5
 }
 
 function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
@@ -817,7 +817,7 @@ function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
     $p1 = New-WebApplication
     $p2 = New-WebApplication
     $p1, $p2 | Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath
-    $p1, $p2 | Install-Package jQuery.UI.Combined  -Version 1.19.4 -Source $context.RepositoryPath
+    $p1, $p2 | Install-Package jQuery.Validation  -Version 1.19.4 -Source $context.RepositoryPath
 
     # Act
     Update-Package -Safe -Source $context.RepositoryPath -ProjectName $p1.Name
@@ -825,12 +825,12 @@ function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
     # Assert
     Assert-Package $p1 jQuery 3.5.1
     Assert-Package $p2 jQuery 3.5
-    Assert-Package $p1 jQuery.UI.Combined 1.19.5
-    Assert-Package $p2 jQuery.UI.Combined 1.8.4
+    Assert-Package $p1 jQuery.Validation 1.19.5
+    Assert-Package $p2 jQuery.Validation 1.19.4
     Assert-SolutionPackage jQuery 3.5
     Assert-SolutionPackage jQuery 3.5.1
-    Assert-SolutionPackage jQuery.UI.Combined 1.19.4
-    Assert-SolutionPackage jQuery.UI.Combined 1.19.5
+    Assert-SolutionPackage jQuery.Validation 1.19.4
+    Assert-SolutionPackage jQuery.Validation 1.19.5
 }
 
 function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
