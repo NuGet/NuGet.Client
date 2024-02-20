@@ -70,7 +70,7 @@ namespace NuGet.ProjectModel
                 }
                 else
                 {
-                    UseNewtonsoftJson = false;
+                    UseNewtonsoftJson = true;
                 }
             }
 
