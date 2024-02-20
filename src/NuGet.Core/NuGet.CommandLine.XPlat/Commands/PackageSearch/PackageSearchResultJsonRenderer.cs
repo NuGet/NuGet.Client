@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using NuGet.Configuration;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
@@ -22,20 +21,12 @@ namespace NuGet.CommandLine.XPlat
             _verbosity = verbosity;
             _exactMatch = exactMatch;
         }
-        public async void Add(PackageSource source, IEnumerable<IPackageSearchMetadata> completedSearch)
+        public void Add(PackageSource source, IEnumerable<IPackageSearchMetadata> completedSearch)
         {
             PackageSearchResult packageSearchResult = new PackageSearchResult(source.Name);
 
             foreach (IPackageSearchMetadata metadata in completedSearch)
             {
-                string deprecation = "";
-
-                if (_verbosity == PackageSearchVerbosity.Detailed)
-                {
-                    PackageDeprecationMetadata packageDeprecationMetadata = await metadata.GetDeprecationMetadataAsync();
-                    deprecation = packageDeprecationMetadata.Message;
-                }
-
                 packageSearchResult.Packages.Add(metadata);
             }
 
