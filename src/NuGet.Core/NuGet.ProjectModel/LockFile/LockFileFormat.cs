@@ -189,7 +189,7 @@ namespace NuGet.ProjectModel
             }
             catch (Exception ex)
             {
-                log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                log.LogError(string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_ErrorReadingLockFile,
                     path, ex.Message));
 
