@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -1334,6 +1335,23 @@ namespace NuGet.ProjectModel.Test
 
         [Theory]
         [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void LockFileFormat_Read_WithMalformedJson_LogsErrorMesage(IEnvironmentVariableReader environmentVariableReader)
+        {
+            // Arrange
+            var lockFileContent = "{ corrupt_file: ";
+            var filePath = "a/file/path";
+            Mock<ILogger> logger = new Mock<ILogger>();
+            var lockFile = Parse(lockFileContent, filePath, environmentVariableReader, logger.Object);
+
+            Assert.NotNull(lockFile);
+            Assert.Equal(int.MinValue, lockFile.Version);
+            Assert.Equal(filePath, lockFile.Path);
+            logger.Verify(x => x.LogError(It.IsAny<string>()));
+        }
+
+
+        [Theory]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void LockFileFormat_ReadsMinimalErrorMessage(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
@@ -1653,7 +1671,6 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(3, logMessage.TargetGraphs.Count);
             Assert.Equal("test log message", logMessage.Message);
         }
-
 
         [Theory]
         [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
@@ -2393,13 +2410,13 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-        private LockFile Parse(string lockFileContent, string path, IEnvironmentVariableReader environmentVariableReader)
+        private LockFile Parse(string lockFileContent, string path, IEnvironmentVariableReader environmentVariableReader, ILogger logger = null)
         {
             var reader = new LockFileFormat();
             byte[] byteArray = Encoding.UTF8.GetBytes(lockFileContent);
             using (var stream = new MemoryStream(byteArray))
             {
-                return reader.Read(stream, NullLogger.Instance, path, environmentVariableReader, true);
+                return reader.Read(stream, logger ?? NullLogger.Instance, path, environmentVariableReader, true);
             }
         }
     }
