@@ -18,7 +18,15 @@ namespace NuGet
     internal sealed class TaskResultCache<TKey, TValue>
         where TKey : notnull
     {
+        /// <summary>
+        /// Represents the cache of async operations.
+        /// </summary>
         private readonly ConcurrentDictionary<TKey, Task<TValue>> _cache;
+
+        /// <summary>
+        /// Represents a dictionary of locks to synchronize access to individual async operations in the cache.
+        /// </summary>
+        private readonly ConcurrentDictionary<TKey, object> _perTaskLock;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResultCache{TKey, TValue}" /> class with the specified key comparer.
@@ -27,6 +35,7 @@ namespace NuGet
         public TaskResultCache(IEqualityComparer<TKey> comparer)
         {
             _cache = new(comparer);
+            _perTaskLock = new(comparer);
         }
 
         /// <summary>
@@ -35,6 +44,7 @@ namespace NuGet
         public TaskResultCache()
         {
             _cache = new();
+            _perTaskLock = new();
         }
 
         /// <summary>
@@ -66,19 +76,23 @@ namespace NuGet
                 return value;
             }
 
-            lock (_cache)
+            // Get a lock object for this one single key which allows other asynchronous tasks to be added and retrieved at the same time
+            // rather than locking the entire cache.
+            object lockObject = _perTaskLock.GetOrAdd(key, static () => new object());
+
+            lock (lockObject)
             {
                 if (!refresh && _cache.TryGetValue(key, out value))
                 {
                     return value;
                 }
 
-                return _cache[key] = value = Task.Run(() => valueFactory(state)).ContinueWith(
-                    static (task, _) => task.GetAwaiter().GetResult(),
-                    state: null,
-                    cancellationToken,
-                    TaskContinuationOptions.RunContinuationsAsynchronously,
-                    TaskScheduler.Default);
+                return _cache[key] = valueFactory(state)
+                    .ContinueWith(
+                        static task => task.GetAwaiter().GetResult(),
+                        cancellationToken,
+                        TaskContinuationOptions.RunContinuationsAsynchronously,
+                        TaskScheduler.Default);
             }
         }
     }
