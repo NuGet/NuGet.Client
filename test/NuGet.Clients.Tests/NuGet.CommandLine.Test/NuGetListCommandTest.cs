@@ -9,7 +9,6 @@ using System.Net;
 using System.Text;
 using FluentAssertions;
 using NuGet.Common;
-using NuGet.Configuration.Test;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Test.Utility;
@@ -1243,6 +1242,32 @@ namespace NuGet.CommandLine.Test
             var expectedOutput = "testPackage1 1.1.0";
             Assert.Contains(expectedOutput, result.Output);
             Assert.Contains("WARNING: You are running the 'list' operation with 'HTTP' sources", result.AllOutput);
+        }
+
+        [Fact]
+        public void ListCommand_CheckDeprecationMessage()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            string deprecation = string.Format(NuGetResources.Warning_CommandDeprecated, "NuGet", "list", "search");
+
+            using (var repositoryPath = TestDirectory.Create())
+            {
+                Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
+
+                string[] args = ["list", "-Source", repositoryPath];
+
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                Assert.Equal($"WARNING: {deprecation}{Environment.NewLine}testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", result.Output);
+            }
         }
 
         private static string RemoveHttpWarning(string input)

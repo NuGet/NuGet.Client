@@ -18,12 +18,6 @@ namespace NuGet.CommandLine
     public sealed class DeprecatedCommandAttribute : Attribute
     {
         /// <summary>
-        /// Placeholder for AlternativeCommand property
-        /// </summary>
-        /// <see cref="AlternativeCommand"/>
-        private Type _alternativeCommand;
-
-        /// <summary>
         /// The concrete Type that is an alternative to the command that has this DeprecatedCommand attribute.
         ///
         /// The Type must fully implement the ICommand interface
@@ -31,22 +25,7 @@ namespace NuGet.CommandLine
         /// If no alternative is provided in the attribute, this property will be null
         /// </summary>
         /// <see cref="ICommand">
-        public Type AlternativeCommand
-        {
-            get => _alternativeCommand;
-            private set
-            {
-                if (!typeof(ICommand).IsAssignableFrom(value))
-                {
-                    var msg = string.Format("{0} must be a {1} that implements {2} interface",
-                        nameof(AlternativeCommand),
-                        nameof(Type),
-                        typeof(ICommand).FullName);
-                    throw new ArgumentException(msg);
-                }
-                _alternativeCommand = value;
-            }
-        }
+        public Type AlternativeCommand { get; private set; }
 
         public DeprecatedCommandAttribute(Type AlternativeCommand)
         {
