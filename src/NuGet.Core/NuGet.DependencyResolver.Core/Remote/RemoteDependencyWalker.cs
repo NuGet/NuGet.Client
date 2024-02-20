@@ -113,8 +113,7 @@ namespace NuGet.DependencyResolver
                 rootDependencies,
                 0,
                 libraryRange,
-                outerEdge,
-                hasParentNodes));
+                outerEdge));
 
             while (stackStates.Count > 0)
             {
@@ -124,7 +123,6 @@ namespace NuGet.DependencyResolver
                 LightweightList<GraphNodeCreationData> dependencyNodeCreationData = currentState.DependencyData;
                 LibraryRange currentLibraryRange = currentState.LibraryRange;
                 GraphEdge<RemoteResolveResult> currentOuterEdge = currentState.OuterEdge;
-                bool currentHasParentNodes = currentState.HasParentNodes;
 
                 int index = currentState.DependencyIndex;
 
@@ -179,7 +177,7 @@ namespace NuGet.DependencyResolver
                                 CancellationToken.None);
 
                                 // store all the data needed to construct this dependency. The library resolution may take a long time to resolve, so we just want to start that operation.
-                                var graphNodeCreationData = new GraphNodeCreationData(newGraphItemTask, runtimeDependencies, dependencyLibraryRange, innerEdge, false);
+                                var graphNodeCreationData = new GraphNodeCreationData(newGraphItemTask, runtimeDependencies, dependencyLibraryRange, innerEdge);
                                 dependencyNodeCreationData.Add(graphNodeCreationData);
                             }
                             else
@@ -222,7 +220,7 @@ namespace NuGet.DependencyResolver
                     var dependencyItem = await graphNodeCreationData.GraphItemTask;
 
                     bool hasInnerNodes = (dependencyItem.Data.Dependencies.Count + (graphNodeCreationData.RuntimeDependencies == null ? 0 : graphNodeCreationData.RuntimeDependencies.Count)) > 0;
-                    GraphNode<RemoteResolveResult> newNode = new GraphNode<RemoteResolveResult>(graphNodeCreationData.LibraryRange, hasInnerNodes, graphNodeCreationData.HasParentNodes)
+                    GraphNode<RemoteResolveResult> newNode = new GraphNode<RemoteResolveResult>(graphNodeCreationData.LibraryRange, hasInnerNodes, false)
                     {
                         Item = dependencyItem
                     };
@@ -241,8 +239,7 @@ namespace NuGet.DependencyResolver
                         dependencyNodeCreationData,
                         index + 1,
                         currentState.LibraryRange,
-                        currentState.OuterEdge,
-                        currentState.HasParentNodes));
+                        currentState.OuterEdge));
 
                     LightweightList<GraphNodeCreationData> newDependencies = new LightweightList<GraphNodeCreationData>(newNode.Item.Data.Dependencies.Count);
 
@@ -253,8 +250,7 @@ namespace NuGet.DependencyResolver
                         newDependencies,
                         0,
                         graphNodeCreationData.LibraryRange,
-                        graphNodeCreationData.OuterEdge,
-                        graphNodeCreationData.HasParentNodes));
+                        graphNodeCreationData.OuterEdge));
                 }
 
                 // This block does the final edge connection after all dependencies are fully evaluated.
@@ -683,19 +679,13 @@ namespace NuGet.DependencyResolver
             /// </summary>
             public readonly GraphEdge<RemoteResolveResult> OuterEdge;
 
-            /// <summary>
-            /// A <see cref="bool"/> indicating parent node status for the current <see cref="GraphNode{TItem}"/>.
-            /// </summary>
-            public readonly bool HasParentNodes;
-
             public GraphNodeStackState(
                 GraphNode<RemoteResolveResult> graphNode,
                 GraphNode<RemoteResolveResult> parentNode,
                 LightweightList<GraphNodeCreationData> dependencies,
                 int dependencyIndex,
                 LibraryRange libraryRange,
-                GraphEdge<RemoteResolveResult> outerEdge,
-                bool hasParentNodes)
+                GraphEdge<RemoteResolveResult> outerEdge)
             {
                 GraphNode = graphNode;
                 ParentNode = parentNode;
@@ -703,7 +693,6 @@ namespace NuGet.DependencyResolver
                 DependencyIndex = dependencyIndex;
                 LibraryRange = libraryRange;
                 OuterEdge = outerEdge;
-                HasParentNodes = hasParentNodes;
             }
         }
 
@@ -732,18 +721,12 @@ namespace NuGet.DependencyResolver
             /// </summary>
             public readonly GraphEdge<RemoteResolveResult> OuterEdge;
 
-            /// <summary>
-            /// Indicates if this node should have parent nodes.
-            /// </summary>
-            public readonly bool HasParentNodes;
-
-            public GraphNodeCreationData(Task<GraphItem<RemoteResolveResult>> graphItemTask, HashSet<LibraryDependency> runtimeDependencies, LibraryRange libraryRange, GraphEdge<RemoteResolveResult> outerEdge, bool hasParentNodes)
+            public GraphNodeCreationData(Task<GraphItem<RemoteResolveResult>> graphItemTask, HashSet<LibraryDependency> runtimeDependencies, LibraryRange libraryRange, GraphEdge<RemoteResolveResult> outerEdge)
             {
                 GraphItemTask = graphItemTask;
                 RuntimeDependencies = runtimeDependencies;
                 LibraryRange = libraryRange;
                 OuterEdge = outerEdge;
-                HasParentNodes = hasParentNodes;
             }
         }
     }
