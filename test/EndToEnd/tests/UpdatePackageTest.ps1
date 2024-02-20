@@ -795,42 +795,42 @@ function Test-UpdateAllPackagesInASingleProjectWithMultipleProjects {
     # Arrange
     $p1 = New-WebApplication
     $p2 = New-WebApplication
-    $p1, $p2 | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
-    $p1, $p2 | Install-Package jQuery.UI.Combined  -Version 1.8.11 -Source $context.RepositoryPath
+    $p1, $p2 | Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath
+    $p1, $p2 | Install-Package jQuery.Validation  -Version 1.19.4 -Source $context.RepositoryPath
 
     # Act
     Update-Package -Source $context.RepositoryPath -ProjectName $p1.Name
 
     # Assert
-    Assert-Package $p1 jQuery 1.6.1
-    Assert-Package $p2 jQuery 1.5.1
-    Assert-Package $p1 jQuery.UI.Combined 1.8.13
-    Assert-Package $p2 jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery 1.5.1
-    Assert-SolutionPackage jQuery 1.6.1
-    Assert-SolutionPackage jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery.UI.Combined 1.8.13
+    Assert-Package $p1 jQuery 3.7
+    Assert-Package $p2 jQuery 3.5
+    Assert-Package $p1 jQuery.UI.Combined 1.19.5
+    Assert-Package $p2 jQuery.UI.Combined 1.19.4
+    Assert-SolutionPackage jQuery 3.5
+    Assert-SolutionPackage jQuery 3.7
+    Assert-SolutionPackage jQuery.UI.Combined 1.19.4
+    Assert-SolutionPackage jQuery.UI.Combined 1.19.5
 }
 
 function Test-UpdateAllPackagesInASingleProjectWithSafeFlagAndMultipleProjects {
     # Arrange
     $p1 = New-WebApplication
     $p2 = New-WebApplication
-    $p1, $p2 | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
-    $p1, $p2 | Install-Package jQuery.UI.Combined  -Version 1.8.11 -Source $context.RepositoryPath
+    $p1, $p2 | Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath
+    $p1, $p2 | Install-Package jQuery.UI.Combined  -Version 1.19.4 -Source $context.RepositoryPath
 
     # Act
     Update-Package -Safe -Source $context.RepositoryPath -ProjectName $p1.Name
 
     # Assert
-    Assert-Package $p1 jQuery 1.5.2
-    Assert-Package $p2 jQuery 1.5.1
-    Assert-Package $p1 jQuery.UI.Combined 1.8.13
-    Assert-Package $p2 jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery 1.5.1
-    Assert-SolutionPackage jQuery 1.5.2
-    Assert-SolutionPackage jQuery.UI.Combined 1.8.11
-    Assert-SolutionPackage jQuery.UI.Combined 1.8.13
+    Assert-Package $p1 jQuery 3.5.1
+    Assert-Package $p2 jQuery 3.5
+    Assert-Package $p1 jQuery.UI.Combined 1.19.5
+    Assert-Package $p2 jQuery.UI.Combined 1.8.4
+    Assert-SolutionPackage jQuery 3.5
+    Assert-SolutionPackage jQuery 3.5.1
+    Assert-SolutionPackage jQuery.UI.Combined 1.19.4
+    Assert-SolutionPackage jQuery.UI.Combined 1.19.5
 }
 
 function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
@@ -849,7 +849,7 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
 function Test-UpdatePackageThrowsWhenSourceIsInvalid {
     # Arrange
     $p = New-WebApplication
-    $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
+    $p | Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath
 
     # Act & Assert
     Assert-Throws { Update-Package jQuery -source "d:package" } "Unsupported type of source 'd:package'. Please provide an HTTP or local source."
@@ -862,14 +862,14 @@ function Test-UpdatePackageInOneProjectDoesNotCheckAllPackagesInSolution {
     # Arrange
     $p1 = New-ConsoleApplication
     $p2 = New-ConsoleApplication
-    $p1 | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
+    $p1 | Install-Package jQuery -Version 3.5 -Source $context.RepositoryPath
 
     # Act
     Update-Package -Source $context.RepositoryRoot -ProjectName $p2.Name
 
     # Assert
-    Assert-Package $p1 jQuery 1.5.1
-    Assert-SolutionPackage jQuery 1.5.1
+    Assert-Package $p1 jQuery 3.5
+    Assert-SolutionPackage jQuery 3.5
     Assert-Null (Get-ProjectPackage $p2 jQuery)
 }
 
