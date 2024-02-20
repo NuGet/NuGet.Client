@@ -20,9 +20,10 @@ namespace NuGet.ContentModel
         {
         }
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser)
+            MyParserDelegate parser)
             : this(name, parser, null, null, null, false)
         {
         }
@@ -36,14 +37,14 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            MyParserDelegate parser,
             Func<object, object, bool> compatibilityTest)
             : this(name, parser, compatibilityTest, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name,
-            Func<string, PatternTable, object> parser,
+            MyParserDelegate parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest)
             : this(name, parser, compatibilityTest, compareTest, null, false)
@@ -59,7 +60,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            MyParserDelegate parser,
             IEnumerable<string> fileExtensions)
             : this(name, parser, null, null, fileExtensions, false)
         {
@@ -75,7 +76,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            MyParserDelegate parser,
             IEnumerable<string> fileExtensions,
             bool allowSubfolders)
             : this(name, parser, null, null, fileExtensions, allowSubfolders)
@@ -84,7 +85,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            MyParserDelegate parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest,
             IEnumerable<string> fileExtensions,
@@ -104,11 +105,18 @@ namespace NuGet.ContentModel
 
         public bool FileExtensionAllowSubFolders { get; }
 
-        public Func<string, PatternTable, object> Parser { get; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public delegate object MyParserDelegate(ReadOnlyMemory<char> input, PatternTable table);
 
-        public virtual bool TryLookup(string name, PatternTable table, out object value)
+        public MyParserDelegate Parser { get; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+        public virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, out object value)
+#pragma warning restore RS0016 // Add public types and members to the declared API
         {
-            if (name == null)
+            if (name.IsEmpty)
             {
                 value = null;
                 return false;
@@ -120,11 +128,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var fileExtension in FileExtensions)
                     {
-                        if (name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
-                        {
-                            value = name;
-                            return true;
-                        }
+                        return TryGetFileName(name, fileExtension, out value);
                     }
                 }
             }
@@ -142,19 +146,35 @@ namespace NuGet.ContentModel
             return false;
         }
 
-        private static bool ContainsSlash(string name)
+        private static bool TryGetFileName(ReadOnlyMemory<char> name, string fileExtension, out object value)
         {
-            var containsSlash = false;
-            foreach (var ch in name)
+            value = null;
+            ReadOnlySpan<char> span = name.Span;
+            ReadOnlySpan<char> extensionSpan = fileExtension.AsSpan();
+
+            if (span.Length >= extensionSpan.Length &&
+                span.Slice(span.Length - extensionSpan.Length).Equals(extensionSpan, StringComparison.OrdinalIgnoreCase))
+            {
+                value = new string(span);
+                return true;
+            }
+
+            return false;
+        }
+
+
+        private static bool ContainsSlash(ReadOnlyMemory<char> name)
+        {
+            ReadOnlySpan<char> span = name.Span;
+            foreach (var ch in span)
             {
                 if (ch == '/' || ch == '\\')
                 {
-                    containsSlash = true;
-                    break;
+                    return true;
                 }
             }
 
-            return containsSlash;
+            return false;
         }
 
         public Func<object, object, bool> CompatibilityTest { get; }

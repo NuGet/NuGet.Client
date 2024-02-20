@@ -190,9 +190,11 @@ namespace NuGet.ContentModel.Infrastructure
                     {
                         break;
                     }
+                    ReadOnlyMemory<char> myPath = path.AsMemory();
+                    ReadOnlyMemory<char> mySub = myPath.Slice(startIndex, delimiterIndex - startIndex);
                     var substring = path.Substring(startIndex, delimiterIndex - startIndex);
                     object value;
-                    if (propertyDefinition.TryLookup(substring, _table, out value))
+                    if (propertyDefinition.TryLookup(mySub, _table, out value))
                     {
                         if (!_matchOnly)
                         {

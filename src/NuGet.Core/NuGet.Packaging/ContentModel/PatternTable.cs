@@ -12,8 +12,8 @@ namespace NuGet.ContentModel
     /// </summary>
     public class PatternTable
     {
-        private readonly Dictionary<string, Dictionary<string, object>> _table
-            = new Dictionary<string, Dictionary<string, object>>(StringComparer.Ordinal);
+        private readonly Dictionary<string, object> _table
+            = new Dictionary<string, object>(StringComparer.Ordinal);
 
         public PatternTable()
             : this(Enumerable.Empty<PatternTableEntry>())
@@ -29,14 +29,7 @@ namespace NuGet.ContentModel
 
             foreach (var entry in entries)
             {
-                Dictionary<string, object> byProp;
-                if (!_table.TryGetValue(entry.PropertyName, out byProp))
-                {
-                    byProp = new Dictionary<string, object>(StringComparer.Ordinal);
-                    _table.Add(entry.PropertyName, byProp);
-                }
-
-                byProp.Add(entry.Name, entry.Value);
+                _table.Add(entry.PropertyName, entry.Value);
             }
         }
 
@@ -46,7 +39,7 @@ namespace NuGet.ContentModel
         /// <param name="propertyName">Property moniker</param>
         /// <param name="name">Token name</param>
         /// <param name="value">Replacement value</param>
-        public bool TryLookup(string propertyName, string name, out object value)
+        public bool TryLookup(string propertyName, ReadOnlySpan<char> name, out object value)
         {
             if (propertyName == null)
             {
@@ -58,10 +51,9 @@ namespace NuGet.ContentModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            Dictionary<string, object> byProp;
-            if (_table.TryGetValue(propertyName, out byProp))
+            if (propertyName.Equals("tfm", StringComparison.CurrentCultureIgnoreCase))
             {
-                return byProp.TryGetValue(name, out value);
+                return _table.TryGetValue(name, out value);
             }
 
             value = null;

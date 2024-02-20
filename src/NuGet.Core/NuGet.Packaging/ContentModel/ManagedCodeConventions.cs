@@ -12,6 +12,31 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.Client
 {
+#pragma warning disable RS0016 // Add public types and members to the declared API
+    public class ReadOnlyMemoryComparer : IEqualityComparer<ReadOnlyMemory<char>>
+    {
+        public bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
+        {
+            return x.Span.SequenceEqual(y.Span);
+        }
+        public int GetHashCode(ReadOnlyMemory<char> obj)
+        {
+            ReadOnlySpan<char> span = obj.Span;
+            unchecked // overflow is fine
+            {
+                int hash = 17;
+                foreach (var c in span)
+                {
+                    hash = hash * 31 + c;
+                }
+                return hash;
+            }
+        }
+    }
+
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
+
     /// <summary>
     /// Defines all the package conventions used by Managed Code packages
     /// </summary>
@@ -69,8 +94,7 @@ namespace NuGet.Client
 
         private RuntimeGraph _runtimeGraph;
 
-        private Dictionary<string, NuGetFramework> _frameworkCache
-            = new Dictionary<string, NuGetFramework>(StringComparer.Ordinal);
+        private Dictionary<ReadOnlyMemory<char>, NuGetFramework> _dictionary = new Dictionary<ReadOnlyMemory<char>, NuGetFramework>(new ReadOnlyMemoryComparer());
 
         public ManagedCodeCriteria Criteria { get; }
         public IReadOnlyDictionary<string, ContentPropertyDefinition> Properties { get; }
@@ -125,68 +149,72 @@ namespace NuGet.Client
             }
         }
 
-        private static object CodeLanguage_Parser(string name, PatternTable table)
+        private static object CodeLanguage_Parser(ReadOnlyMemory<char> name, PatternTable table)
         {
             if (table != null)
             {
-                object val;
-                if (table.TryLookup(PropertyNames.CodeLanguage, name, out val))
-                {
-                    return val;
-                }
+                return null;
             }
 
             // Code language values must be alpha numeric.
-            return name.All(c => char.IsLetterOrDigit(c)) ? name : null;
+            return ValidateName(name).ToString();
         }
 
-        private static object Locale_Parser(string name, PatternTable table)
+        private static ReadOnlyMemory<char> ValidateName(ReadOnlyMemory<char> name)
+        {
+            foreach (var c in name.Span)
+            {
+                if (!char.IsLetterOrDigit(c))
+                {
+                    return ReadOnlyMemory<char>.Empty;
+                }
+            }
+            return name;
+        }
+
+
+        private static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table)
         {
             if (table != null)
             {
-                object val;
-                if (table.TryLookup(PropertyNames.Locale, name, out val))
-                {
-                    return val;
-                }
+                return null;
             }
 
             if (name.Length == 2)
             {
-                return name;
+                return name.ToString();
             }
-            else if (name.Length >= 4 && name[2] == '-')
+            else if (name.Length >= 4 && name.Span[2] == '-')
             {
-                return name;
+                return name.ToString();
             }
 
             return null;
         }
 
         private object TargetFrameworkName_Parser(
-            string name,
+            ReadOnlyMemory<char> name,
             PatternTable table)
         {
-            object obj = null;
 
             // Check for replacements
             if (table != null)
             {
-                if (table.TryLookup(PropertyNames.TargetFrameworkMoniker, name, out obj))
+                if (name.Span.SequenceEqual("any".AsSpan()))
                 {
-                    return obj;
+                    return FrameworkConstants.CommonFrameworks.DotNet;
                 }
             }
 
             // Check the cache for an exact match
-            if (!string.IsNullOrEmpty(name))
+            if (!(name.Span == null && name.Length > 0))
             {
                 NuGetFramework cachedResult;
-                if (!_frameworkCache.TryGetValue(name, out cachedResult))
+                if (!_dictionary.TryGetValue(name, out cachedResult))
                 {
                     // Parse and add the framework to the cache
                     cachedResult = TargetFrameworkName_ParserCore(name);
-                    _frameworkCache.Add(name, cachedResult);
+                    _dictionary.Add(name, cachedResult);
                 }
 
                 return cachedResult;
@@ -196,9 +224,9 @@ namespace NuGet.Client
             return TargetFrameworkName_ParserCore(name);
         }
 
-        private static NuGetFramework TargetFrameworkName_ParserCore(string name)
+        private static NuGetFramework TargetFrameworkName_ParserCore(ReadOnlyMemory<char> name)
         {
-            var result = NuGetFramework.ParseFolder(name);
+            var result = NuGetFramework.ParseFolder(name.ToString());
 
             if (!result.IsUnsupported)
             {
@@ -207,7 +235,7 @@ namespace NuGet.Client
 
             // Everything should be in the folder format, but fallback to
             // full parsing for legacy support.
-            result = NuGetFramework.ParseFrameworkName(name, DefaultFrameworkNameProvider.Instance);
+            result = NuGetFramework.ParseFrameworkName(name.ToString(), DefaultFrameworkNameProvider.Instance);
 
             if (!result.IsUnsupported)
             {
@@ -215,13 +243,17 @@ namespace NuGet.Client
             }
 
             // For unknown frameworks return the name as is.
-            return new NuGetFramework(name, FrameworkConstants.EmptyVersion);
+            return new NuGetFramework(name.ToString(), FrameworkConstants.EmptyVersion);
         }
 
-        private static object AllowEmptyFolderParser(string s, PatternTable table)
+        private static object AllowEmptyFolderParser(ReadOnlyMemory<char> s, PatternTable table)
         {
             // Accept "_._" as a pseudo-assembly
-            return PackagingCoreConstants.EmptyFolder.Equals(s, StringComparison.Ordinal) ? s : null;
+            if (s.Span.SequenceEqual(PackagingCoreConstants.EmptyFolder))
+            {
+                return s.ToString();
+            }
+            return null;
         }
 
         private static bool TargetFrameworkName_CompatibilityTest(object criteria, object available)
