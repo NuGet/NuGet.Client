@@ -35,7 +35,7 @@
         <DataTemplate>
           <TextBlock><Hyperlink
               NavigateUri="{Binding Mode=OneWay}"
-              Style="{StaticResource HyperlinkStyle}">
+              Style="{StaticResource HyperlinkSelectorAware}">
               <Run Text="{Binding Mode=OneTime}" />
             </Hyperlink><TextBlock Margin="0,0,2,0" Text=",">
               <TextBlock.Visibility>

@@ -188,7 +188,8 @@ namespace NuGet.PackageManagement.UI
             BorderBrush = VsBrushes.BrandedUIBorderKey;
             ComboBoxBorderKey = VsBrushes.ComboBoxBorderKey;
             ControlLinkTextHoverKey = VsBrushes.ControlLinkTextHoverKey;
-            ControlLinkTextKey = VsBrushes.ControlLinkTextKey;
+            //EnvironmentColors.PanelHyperlinkBrushKe
+            ControlLinkTextKey = EnvironmentColors.PanelHyperlinkBrushKey;
             DetailPaneBackground = isBgColorFlightEnabled ? CommonDocumentColors.PageBrushKey : VsBrushes.BrandedUIBackgroundKey;
             HeaderBackground = isBgColorFlightEnabled ? CommonDocumentColors.PageBrushKey : VsBrushes.BrandedUIBackgroundKey;
             InfoBackgroundKey = VsBrushes.InfoBackgroundKey;
