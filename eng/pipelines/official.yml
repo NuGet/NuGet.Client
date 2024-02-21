@@ -64,21 +64,32 @@ parameters:
   type: boolean
   default: true
 
+resources:
+  pipelines:
+  - pipeline: DartLab
+    source: DartLab
+    branch: main
+  repositories:
+  - repository: DartLabTemplates
+    type: git
+    name: DartLab.Templates
+    ref: refs/heads/main
+
 stages:
-  - template: templates/pipeline.yml
-    parameters:
-      isOfficialBuild: true
-      DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-      E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
-      E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
-      ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
-      NuGetLocalizationType: Full
-      RunApexTests: ${{parameters.RunApexTests}}
-      RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-      RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-      RunEndToEndTests: ${{parameters.RunEndToEndTests}}
-      RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
-      RunSourceBuild: ${{parameters.RunSourceBuild}}
-      RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
-      RunTestsOnMac: ${{parameters.RunTestsOnMac}}
-      RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+- template: templates/pipeline.yml
+  parameters:
+    isOfficialBuild: true
+    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+    E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
+    E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
+    ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
+    NuGetLocalizationType: Full
+    RunApexTests: ${{parameters.RunApexTests}}
+    RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+    RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
+    RunEndToEndTests: ${{parameters.RunEndToEndTests}}
+    RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+    RunSourceBuild: ${{parameters.RunSourceBuild}}
+    RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
+    RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+    RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
