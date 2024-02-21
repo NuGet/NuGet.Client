@@ -70,9 +70,6 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: true
-- name: isOfficialBuild
-  type: boolean
-  default: false
 
 resources:
   pipelines:
@@ -88,6 +85,7 @@ resources:
 stages:
 - template: templates/pipeline.yml
   parameters:
+    isOfficialBuild: false
     ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
@@ -102,4 +100,3 @@ stages:
     RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
     RunTestsOnMac: ${{parameters.RunTestsOnMac}}
     RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
-    isOfficialBuild: ${{parameters.isOfficialBuild}}
