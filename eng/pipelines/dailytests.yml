@@ -40,7 +40,7 @@ variables:
 
 stages:
 # Dartlab's template defines this in its own stage
-  template: templates/Apex_Tests_On_Windows_Daily.yml
+- template: templates/Apex_Tests_On_Windows_Daily.yml
   parameters:
     isOfficialBuild: ${{parameters.isOfficialBuild}}
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
