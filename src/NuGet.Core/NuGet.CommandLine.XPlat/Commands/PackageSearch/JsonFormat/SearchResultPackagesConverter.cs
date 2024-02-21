@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (packageDeprecationMetadata != null)
                 {
-                    writer.WriteString(JsonProperties.Deprecation, value.GetDeprecationMetadataAsync().Result.Message);
+                    writer.WriteString(JsonProperties.Deprecation, packageDeprecationMetadata.Message);
                 }
                 else
                 {
