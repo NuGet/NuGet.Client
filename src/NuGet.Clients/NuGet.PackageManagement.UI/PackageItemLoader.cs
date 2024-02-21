@@ -13,6 +13,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -44,6 +45,20 @@ namespace NuGet.PackageManagement.UI
         private INuGetPackageFileService _packageFileService;
 
         public bool IsMultiSource => _packageSources.Count > 1;
+        private bool? _supportsKnownOwners;
+
+        public bool SupportsKnownOwners
+        {
+            get
+            {
+                if (_supportsKnownOwners == null)
+                {
+                    _supportsKnownOwners = !IsMultiSource && UriUtility.IsNuGetOrg(_packageSources.FirstOrDefault()?.Source);
+                }
+
+                return _supportsKnownOwners.Value;
+            }
+        }
 
         private PackageItemLoader(
             IServiceBroker serviceBroker,
@@ -295,13 +310,20 @@ namespace NuGet.PackageManagement.UI
                     transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadata.Identity.Version, string.Join(", ", metadata.TransitiveOrigins));
                 }
 
+                ImmutableList<KnownOwner> knownOwners = null;
+                if (SupportsKnownOwners && metadata.PackageDetailsUrl != null && metadata.OwnersList != null)
+                {
+                    knownOwners = metadata.OwnersList.Select(owner => new KnownOwner(owner, metadata.PackageDetailsUrl)).ToImmutableList();
+                }
+
                 var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
                 {
                     Id = metadata.Identity.Id,
                     Version = metadata.Identity.Version,
                     IconUrl = metadata.IconUrl,
                     Owner = metadata.Owners,
-                    KnownOwners = metadata.OwnersList,
+                    OwnersList = metadata.OwnersList,
+                    KnownOwners = knownOwners,
                     Author = metadata.Authors,
                     DownloadCount = metadata.DownloadCount,
                     Summary = metadata.Summary,

@@ -12,6 +12,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -249,13 +250,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<(IEnumerable<VersionInfo> versions,
             PackageDeprecationMetadata deprecationMetadata,
-            IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)> FetchAndMergeVersionsAndMetadataAsync(
+            IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata,
+            bool supportsKnownOwners> FetchAndMergeVersionsAndMetadataAsync(
             PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
             var tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(
-                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
                 .ToList();
 
             if (_localRepository != null)
@@ -263,12 +266,42 @@ namespace NuGet.PackageManagement.VisualStudio
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
-            var metadatas = (await Task.WhenAll(tasks))
+            IEnumerable<IPackageSearchMetadata> metadatas = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
             return (await MergeVersionsAsync(identity, metadatas),
                 await MergeDeprecationMetadataAsync(metadatas),
-                MergeVulnerabilityMetadata(metadatas));
+                MergeVulnerabilityMetadata(metadatas),
+                SupportsKnownOwner(_sourceRepositories));
+        }
+
+        private bool SupportsKnownOwner(IEnumerable<SourceRepository> repository)
+        {
+            var remoteSourceRepositories = _sourceRepositories.Where(sourceRepository => sourceRepository.PackageSource.IsHttp).ToList();
+            var isSingleRemoteSource = remoteSourceRepositories.Count == 1;
+            var singleRemoteSource = remoteSourceRepositories[0];
+
+            if (isSingleRemoteSource && )
+            {
+                var metadata = singleRemoteSource.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+
+            }
+
+            if (repository?.PackageSource?.Source == null)
+            {
+                return false;
+            }
+
+            var packageSource = repository.PackageSource;
+            if (!packageSource.IsHttp)
+            {
+                return false;
+            }
+
+            var isNuGetOrg = UriUtility.IsNuGetOrg(packageSource.Source);
+            var isHttpV3 = TelemetryUtility.IsHttpV3(packageSource);
+
+            return isNuGetOrg && isHttpV3;
         }
 
         internal async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T : class

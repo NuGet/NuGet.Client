@@ -34,9 +34,9 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <TextBlock><Hyperlink
-              NavigateUri="{Binding Mode=OneWay}"
+              NavigateUri="{Binding Link, Mode=OneWay}"
               Style="{StaticResource HyperlinkSelectorAware}">
-              <Run Text="{Binding Mode=OneTime}" />
+              <Run Text="{Binding Name, Mode=OneTime}" />
             </Hyperlink><TextBlock Margin="0,0,2,0" Text=",">
               <TextBlock.Visibility>
                 <MultiBinding Converter="{StaticResource LastItemToVisibilityConverter}">

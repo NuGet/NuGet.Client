@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using NuGet.PackageManagement.UI.ViewModels;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
@@ -22,7 +23,7 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty KnownOwnersProperty =
             DependencyProperty.Register(
                 nameof(KnownOwners),
-                typeof(ImmutableList<string>),
+                typeof(ImmutableList<KnownOwner>),
                 typeof(AuthorAndDownloadCount),
                 new PropertyMetadata(OnPropertyChanged));
 
@@ -45,11 +46,11 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public ImmutableList<string> KnownOwners
+        public ImmutableList<KnownOwner> KnownOwners
         {
             get
             {
-                return GetValue(KnownOwnersProperty) as ImmutableList<string>;
+                return GetValue(KnownOwnersProperty) as ImmutableList<KnownOwner>;
             }
             set
             {

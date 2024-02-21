@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -65,7 +66,9 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public ImmutableList<string> KnownOwners { get; set; }
+        public ImmutableList<string> OwnersList { get; set; }
+
+        public ImmutableList<KnownOwner> KnownOwners { get; set; }
 
         private string _owner;
 
