@@ -89,7 +89,6 @@ namespace NuGet.DependencyResolver
             }
 
             var rootItem = await ResolverUtility.FindLibraryCachedAsync(
-                _context.FindLibraryEntryCache,
                 libraryRange,
                 framework,
                 runtimeName,
@@ -167,12 +166,11 @@ namespace NuGet.DependencyResolver
                                 }
 
                                 var newGraphItemTask = ResolverUtility.FindLibraryCachedAsync(
-                                _context.FindLibraryEntryCache,
-                                dependencyLibraryRange,
-                                framework,
-                                runtimeName,
-                                _context,
-                                CancellationToken.None);
+                                    dependencyLibraryRange,
+                                    framework,
+                                    runtimeName,
+                                    _context,
+                                    CancellationToken.None);
 
                                 // store all the data needed to construct this dependency. The library resolution may take a long time to resolve, so we just want to start that operation.
                                 var graphNodeCreationData = new GraphNodeCreationData(newGraphItemTask, runtimeDependencies, dependencyLibraryRange, innerEdge);
