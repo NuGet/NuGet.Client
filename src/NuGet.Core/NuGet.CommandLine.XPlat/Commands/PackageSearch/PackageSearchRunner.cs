@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
                 packageSearchResultRenderer.RenderProblem(new PackageSearchProblem(PackageSearchProblemType.Error, ex.Message));
                 packageSearchResultRenderer.Finish();
 
-                return 1;
+                return 0;
             }
 
             WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
@@ -61,7 +61,7 @@ namespace NuGet.CommandLine.XPlat
                 packageSearchResultRenderer.RenderProblem(new PackageSearchProblem(PackageSearchProblemType.Error, Strings.Error_NoSource));
                 packageSearchResultRenderer.Finish();
 
-                return 1;
+                return 0;
             }
 
             Func<PackageSource, Task<IEnumerable<IPackageSearchMetadata>>> searchPackageSourceAsync =

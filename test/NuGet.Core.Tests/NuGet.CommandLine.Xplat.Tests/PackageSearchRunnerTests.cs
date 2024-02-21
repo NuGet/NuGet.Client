@@ -434,7 +434,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 cancellationToken: System.Threading.CancellationToken.None);
 
             // Assert
-            Assert.Equal(1, exitCode);
+            Assert.Equal(0, exitCode);
             Assert.Contains(expectedError, StoredErrorMessage);
         }
 
