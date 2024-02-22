@@ -14,6 +14,7 @@ using System.Threading;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
+    [UseCulture("en-US")] // We are asserting English culture formatted numbers
     public class PackageSearchRunnerTests : PackageSearchTestInitializer, IClassFixture<PackageSearchRunnerFixture>
     {
         PackageSearchRunnerFixture _fixture;

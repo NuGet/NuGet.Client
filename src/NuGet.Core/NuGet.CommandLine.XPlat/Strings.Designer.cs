@@ -1845,6 +1845,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Replaces the source if it already exists..
+        /// </summary>
+        internal static string SourcesCommandAddForceDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandAddForceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The format of the list command output: `Detailed` (the default) and `Short`..
         /// </summary>
         internal static string SourcesCommandFormatDescription {
@@ -1922,15 +1931,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string SourcesCommandValidProtocolVersion {
             get {
                 return ResourceManager.GetString("SourcesCommandValidProtocolVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string String1 {
-            get {
-                return ResourceManager.GetString("String1", resourceCulture);
             }
         }
         

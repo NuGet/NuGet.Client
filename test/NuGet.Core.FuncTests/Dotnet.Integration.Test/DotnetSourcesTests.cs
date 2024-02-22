@@ -356,7 +356,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : You are running the 'enable source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
+                Assert.Contains("warn : You are running the 'enable source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
             }
         }
 
@@ -419,7 +419,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
 
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://source.test", source.Source);
-                Assert.False(result.Output.Contains("warn :"));
+                Assert.DoesNotContain("warn :", result.Output);
             }
         }
 
@@ -643,8 +643,124 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                 {
                     // Assert error message
                     string expectedErrorMessage = "The protocol version specified is invalid.";
-                    Assert.True(result.Output.Contains(expectedErrorMessage), "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
+                    Assert.Contains(expectedErrorMessage, result.Output);
                 }
+            }
+        }
+
+        [Fact]
+        public void Sources_Add_WhenSourceNameExists_WithForce_GotUpdated()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource packageSource = sources.Single();
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal("https://source.test.initial", packageSource.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    configFilePath,
+                    "--force"
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal("https://source.test", sourceItem.Value);
+                Assert.Contains("warn : The name specified already exists in the list of available package sources and will be overwritten.", result.Output);
+            }
+        }
+
+        [Fact]
+        public void Sources_Add_WhenSourceUrlExists_WithForce_GotUpdated()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""https://source.test"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource packageSource = sources.Single();
+                Assert.Equal("test_source", packageSource.Name);
+                Assert.Equal("https://source.test", packageSource.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source_updated",
+                    "--configfile",
+                    configFilePath,
+                    "--force"
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                Assert.True(result.Success, result.Output + " " + result.Errors);
+
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("value", "https://source.test");
+                Assert.Equal("test_source", sourceItem.Key);
+                Assert.Contains("warn : The source specified already exists in the list of available package sources and will be overwritten.", result.Output);
             }
         }
 
@@ -1053,7 +1169,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                 var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
-                Assert.True(result.Output.StartsWith("Registered Sources:"));
+                Assert.StartsWith("Registered Sources:", result.Output);
                 Assert.Contains("encyclopaedia [Enabled]", result.Output);
                 Assert.Contains("encyclopædia [Enabled]", result.Output);
                 Assert.DoesNotContain("Encyclopaedia", result.Output);
@@ -1100,7 +1216,7 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                     invalidMessage = ": Unrecognized command";
                 }
 
-                Assert.True(result.Output.Contains(invalidMessage), "Expected error is " + invalidMessage + ". Actual error is " + result.Output);
+                Assert.Contains(invalidMessage, result.Output);
                 // Verify traits of help message in stdout
                 Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
             }

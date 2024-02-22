@@ -13,6 +13,7 @@
       <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
       <SingleValueOption Name="protocol-Version" Help="SourcesCommandProtocolVersionDescription"/>
       <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+      <SwitchOption Name="force" Help="SourcesCommandAddForceDescription"/>
       <Example Title="Add `nuget.org` as a source:" Command="dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org" />
       <Example Title="Add `c:\packages` as a local source:" Command="dotnet nuget add source c:\packages" />
       <Example Title="Add a source that needs authentication:" Command="dotnet nuget add source https://contoso.com/litware -n myTeam -u myUsername -p myPassword --store-password-in-clear-text" />

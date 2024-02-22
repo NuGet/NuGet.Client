@@ -21,6 +21,7 @@ namespace NuGet.Commands
         public string ValidAuthenticationTypes { get; set; }
         public string ProtocolVersion { get; set; }
         public string Configfile { get; set; }
+        public bool Force { get; set; }
     }
 
     public partial class AddClientCertArgs
@@ -97,5 +98,4 @@ namespace NuGet.Commands
         public bool Force { get; set; }
         public string Configfile { get; set; }
     }
-
 }

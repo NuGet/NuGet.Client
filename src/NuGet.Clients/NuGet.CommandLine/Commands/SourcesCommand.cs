@@ -36,6 +36,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
 
+        [Option(typeof(NuGetCommand), "SourcesCommandAddForceDescription")]
+        public bool Force { get; set; }
 
         public override void ExecuteCommand()
         {
@@ -61,7 +63,7 @@ namespace NuGet.CommandLine
             switch (action)
             {
                 case SourcesAction.Add:
-                    var addArgs = new AddSourceArgs() { Name = Name, Source = Source, Username = Username, Password = Password, StorePasswordInClearText = StorePasswordInClearText, ValidAuthenticationTypes = ValidAuthenticationTypes, Configfile = ConfigFile, ProtocolVersion = ProtocolVersion };
+                    var addArgs = new AddSourceArgs() { Name = Name, Source = Source, Username = Username, Password = Password, StorePasswordInClearText = StorePasswordInClearText, ValidAuthenticationTypes = ValidAuthenticationTypes, Configfile = ConfigFile, ProtocolVersion = ProtocolVersion, Force = Force };
                     AddSourceRunner.Run(addArgs, () => Console);
                     break;
                 case SourcesAction.Update:

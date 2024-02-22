@@ -51,6 +51,10 @@ namespace NuGet.CommandLine.XPlat
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
+                    CommandOption force = SourceCmd.Option(
+                        "--force",
+                        Strings.SourcesCommandAddForceDescription,
+                        CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
                     SourceCmd.Description = Strings.AddSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
@@ -65,6 +69,7 @@ namespace NuGet.CommandLine.XPlat
                             ValidAuthenticationTypes = validAuthenticationTypes.Value(),
                             ProtocolVersion = protocolVersion.Value(),
                             Configfile = configfile.Value(),
+                            Force = force.HasValue(),
                         };
 
                         AddSourceRunner.Run(args, getLogger);
