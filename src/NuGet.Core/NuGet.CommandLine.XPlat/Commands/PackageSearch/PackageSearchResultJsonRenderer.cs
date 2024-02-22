@@ -13,7 +13,7 @@ namespace NuGet.CommandLine.XPlat
         private ILoggerWithColor _logger;
         private PackageSearchVerbosity _verbosity;
         private bool _exactMatch;
-        private PackageSearchMainOutput _packageSearchMainOutput;
+        private SearchMainOutput _packageSearchMainOutput;
 
         public PackageSearchResultJsonRenderer(ILoggerWithColor loggerWithColor, PackageSearchVerbosity verbosity, bool exactMatch)
         {
@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.XPlat
             _verbosity = verbosity;
             _exactMatch = exactMatch;
         }
+
         public void Add(PackageSource source, IEnumerable<IPackageSearchMetadata> completedSearch)
         {
             PackageSearchResult packageSearchResult = new PackageSearchResult(source.Name);
@@ -53,14 +54,14 @@ namespace NuGet.CommandLine.XPlat
             _logger.LogMinimal(json);
         }
 
-        public void RenderProblem(PackageSearchProblem packageSearchProblem)
+        public void Add(PackageSearchProblem packageSearchProblem)
         {
             _packageSearchMainOutput.Problems.Add(packageSearchProblem);
         }
 
         public void Start()
         {
-            _packageSearchMainOutput = new PackageSearchMainOutput();
+            _packageSearchMainOutput = new SearchMainOutput();
         }
     }
 }
