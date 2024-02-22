@@ -14,9 +14,11 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
@@ -833,6 +835,139 @@ namespace NuGet.PackageManagement.Test
             packagesWithReportedAdvisories[0].Should().Be(packageIdentity);
         }
 
-        // TODO NK - integration test calling CheckVulnerabiltiesAsync
+        [Fact]
+        public async Task CheckVulnerabiltiesAsync_WithoutEnabledProjects_SkipsVulnerabilityCheckingAltogether()
+        {
+            SetupPrerequisites(out AuditChecker auditChecker, out string projectPath, out List<PackageRestoreData> packages);
+
+            var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>()
+            {
+                { projectPath, new RestoreAuditProperties()
+                    {
+                        EnableAudit = "false"
+                    }
+                }
+            };
+
+            AuditCheckResult result = await auditChecker.CheckPackageVulnerabilitiesAsync(packages, restoreAuditProperties, CancellationToken.None);
+
+            result.Should().NotBeNull();
+            result.Warnings.Should().BeEmpty();
+            result.DownloadDurationInSeconds.Should().BeNull();
+            result.CheckPackagesDurationInSeconds.Should().BeNull(); ;
+
+            result.IsAuditEnabled.Should().BeFalse();
+            result.SourcesWithVulnerabilities.Should().BeNull();
+            result.Severity0VulnerabilitiesFound.Should().Be(0);
+            result.Severity1VulnerabilitiesFound.Should().Be(0);
+            result.Severity2VulnerabilitiesFound.Should().Be(0);
+            result.Severity3VulnerabilitiesFound.Should().Be(0);
+            result.InvalidSeverityVulnerabilitiesFound.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CheckVulnerabiltiesAsync_WithSeverityLowerThanVulnerabilitiesReported_RaisesWarnings()
+        {
+            SetupPrerequisites(out AuditChecker auditChecker, out string projectPath, out List<PackageRestoreData> packages);
+
+            var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>()
+            {
+                { projectPath, new RestoreAuditProperties()
+                    {
+                        EnableAudit = "true",
+                        AuditLevel = "low",
+                    }
+                }
+            };
+
+            AuditCheckResult result = await auditChecker.CheckPackageVulnerabilitiesAsync(packages, restoreAuditProperties, CancellationToken.None);
+
+            result.Should().NotBeNull();
+            result.Warnings.Should().HaveCount(1);
+            result.DownloadDurationInSeconds.Should().NotBeNull();
+            result.CheckPackagesDurationInSeconds.Should().NotBeNull(); ;
+
+            result.IsAuditEnabled.Should().BeTrue();
+            result.SourcesWithVulnerabilities.Should().Be(1);
+            result.Severity0VulnerabilitiesFound.Should().Be(0);
+            result.Severity1VulnerabilitiesFound.Should().Be(1);
+            result.Severity2VulnerabilitiesFound.Should().Be(0);
+            result.Severity3VulnerabilitiesFound.Should().Be(0);
+            result.InvalidSeverityVulnerabilitiesFound.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task CheckVulnerabiltiesAsync_WithSeverityHigherThanVulnerabilitiesReported_DoesNotRaiseWarnings()
+        {
+            SetupPrerequisites(out AuditChecker auditChecker, out string projectPath, out List<PackageRestoreData> packages);
+
+            var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>()
+            {
+                { projectPath, new RestoreAuditProperties()
+                    {
+                        EnableAudit = "true",
+                        AuditLevel = "high",
+                    }
+                }
+            };
+
+            AuditCheckResult result = await auditChecker.CheckPackageVulnerabilitiesAsync(packages, restoreAuditProperties, CancellationToken.None);
+
+            result.Should().NotBeNull();
+            result.Warnings.Should().HaveCount(0);
+            result.DownloadDurationInSeconds.Should().NotBeNull();
+            result.CheckPackagesDurationInSeconds.Should().NotBeNull(); ;
+
+            result.IsAuditEnabled.Should().BeTrue();
+            result.SourcesWithVulnerabilities.Should().Be(1);
+            result.Severity0VulnerabilitiesFound.Should().Be(0);
+            result.Severity1VulnerabilitiesFound.Should().Be(0);
+            result.Severity2VulnerabilitiesFound.Should().Be(0);
+            result.Severity3VulnerabilitiesFound.Should().Be(0);
+            result.InvalidSeverityVulnerabilitiesFound.Should().Be(0);
+        }
+
+        // Setup a test bed with multiple sources, 1 source with vulnerabilities, 1 vulnerable package wih a moderate vulnerability.
+        private static void SetupPrerequisites(out AuditChecker auditChecker, out string projectPath, out List<PackageRestoreData> packages)
+        {
+            string packageId = "A";
+            PackageIdentity packageIdentity = new(packageId, new NuGetVersion(1, 0, 0));
+            projectPath = "C:\\solution\\project\\project.csproj";
+
+            List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>> knownVulnerabilities = new List<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>()
+            {
+                new Dictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>
+                {
+                    {
+                        packageId,
+                        new PackageVulnerabilityInfo[] {
+                            new PackageVulnerabilityInfo(new Uri("https://vulnerability1"), PackageVulnerabilitySeverity.Moderate, VersionRange.Parse("[1.0.0,2.0.0)"))
+                        }
+                    }
+                }
+            };
+
+            string sourceWithVulnerabilityData = "https://contoso.com/vulnerability/v3/index.json";
+            Dictionary<string, GetVulnerabilityInfoResult> vulnerabilityResults = new()
+            {
+                { sourceWithVulnerabilityData, new GetVulnerabilityInfoResult(knownVulnerabilities, exceptions: null) }
+            };
+
+            var providers = new List<INuGetResourceProvider> { new VulnerabilityInfoResourceProvider(vulnerabilityResults) };
+            var sourceRepositories = new List<SourceRepository>
+            {
+                new SourceRepository(new PackageSource("https://contoso.com/v3/index.json"), providers),
+                new SourceRepository(new PackageSource(sourceWithVulnerabilityData), providers)
+            };
+
+            var logger = new TestLogger();
+
+            auditChecker = new AuditChecker(sourceRepositories, new SourceCacheContext(), logger);
+
+            packages = new List<PackageRestoreData>
+            {
+                new PackageRestoreData(new PackageReference(packageIdentity, CommonFrameworks.Net472), new string[]{ projectPath }, isMissing: true)
+            };
+        }
     }
 }

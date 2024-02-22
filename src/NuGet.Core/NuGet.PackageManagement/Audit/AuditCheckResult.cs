@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement
         internal List<PackageIdentity>? Packages { get; set; }
         internal double? DownloadDurationInSeconds { get; set; }
         internal double? CheckPackagesDurationInSeconds { get; set; }
-        internal int SourcesWithVulnerabilities { get; set; }
+        internal int? SourcesWithVulnerabilities { get; set; }
 
         private const string AuditVulnerabilitiesStatus = "PackagesConfig.Audit.Enabled";
         private const string AuditVulnerabilitiesCount = "PackagesConfig.Audit.Vulnerability.Count";
@@ -56,7 +56,6 @@ namespace NuGet.PackageManagement
             telemetryEvent[AuditVulnerabilitiesSev2Count] = Severity2VulnerabilitiesFound;
             telemetryEvent[AuditVulnerabilitiesSev3Count] = Severity3VulnerabilitiesFound;
             telemetryEvent[AuditVulnerabilitiesInvalidSeverityCount] = InvalidSeverityVulnerabilitiesFound;
-            telemetryEvent[SourcesWithVulnerabilitiesCount] = SourcesWithVulnerabilities;
             telemetryEvent[AuditVulnerabilitiesCount] = Packages?.Count ?? 0;
 
             if (DownloadDurationInSeconds.HasValue)
@@ -66,6 +65,11 @@ namespace NuGet.PackageManagement
             if (CheckPackagesDurationInSeconds.HasValue)
             {
                 telemetryEvent[AuditDurationCheck] = CheckPackagesDurationInSeconds;
+            }
+
+            if (SourcesWithVulnerabilities.HasValue)
+            {
+                telemetryEvent[SourcesWithVulnerabilitiesCount] = SourcesWithVulnerabilities;
             }
 
             if (Packages is not null)
