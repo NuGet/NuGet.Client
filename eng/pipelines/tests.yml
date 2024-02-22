@@ -1,3 +1,63 @@
+parameters:
+- name: isOfficialBuild
+    type: boolean
+    default: false
+- name: DartLabEnvironment
+    displayName: DartLab Environment
+    type: string
+    default: Production
+    values:
+    - Production
+    - Staging
+- name: E2EPart1AgentCleanup
+    displayName: Delete or keep E2E Part 1 machine for debugging
+    type: string
+    default: delete
+    values:
+    - delete
+    - stop
+- name: E2EPart2AgentCleanup
+    displayName: Delete or keep E2E Part 2 machine for debugging
+    type: string
+    default: delete
+    values:
+    - delete
+    - stop
+- name: ApexAgentCleanup
+    displayName: Delete or keep VS Apex test machine for debugging
+    type: string
+    default: delete
+    values:
+    - delete
+    - stop
+- name: RunApexTests
+    displayName: Run Apex tests
+    type: boolean
+    default: true
+- name: RunEndToEndTests
+    displayName: Run end-to-end tests
+    type: boolean
+    default: true
+resources:
+  pipelines:
+  - pipeline: DartLab
+    source: DartLab
+    branch: main
+  repositories:
+  - repository: DartLabTemplates
+    type: git
+    name: DartLab.Templates
+    ref: refs/heads/main
+
+variables:
+  BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
+  DOTNET_NOLOGO: 1
+  NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
+  Codeql.Enabled: false
+  Codeql.TSAEnabled: false
+  RunApexTests: ${{ parameters.RunApexTests }}
+  RunEndToEndTests: ${{ parameters.RunEndToEndTests }}
+
 stages:
 # Dartlab's template defines this in its own stage
 - template: End_To_End_Tests_On_Windows.yml
