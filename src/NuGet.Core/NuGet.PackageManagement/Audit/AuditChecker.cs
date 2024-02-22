@@ -246,11 +246,11 @@ namespace NuGet.PackageManagement
                                 }
                             }
                             counted = true;
-                        }
 
-                        var restoreLogMessage = LogMessage.CreateWarning(logCode, message);
-                        restoreLogMessage.ProjectPath = projectPath;
-                        warnings.Add(restoreLogMessage);
+                            var restoreLogMessage = LogMessage.CreateWarning(logCode, message);
+                            restoreLogMessage.ProjectPath = projectPath;
+                            warnings.Add(restoreLogMessage);
+                        }
                     }
                 }
                 if (isVulnerabilityReported)
