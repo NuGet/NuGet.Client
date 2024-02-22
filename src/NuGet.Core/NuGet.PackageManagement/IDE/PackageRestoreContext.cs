@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using NuGet.Common;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
@@ -19,6 +20,8 @@ namespace NuGet.PackageManagement
         public IEnumerable<SourceRepository> SourceRepositories { get; }
         public int MaxNumberOfParallelTasks { get; }
         public ILogger Logger { get; }
+        public bool DisableNuGetAudit { get; }
+        public Dictionary<string, RestoreAuditProperties> RestoreAuditProperties { get; }
 
         public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageRestoreData> packages,
@@ -27,6 +30,19 @@ namespace NuGet.PackageManagement
             EventHandler<PackageRestoreFailedEventArgs> packageRestoreFailedEvent,
             IEnumerable<SourceRepository> sourceRepositories,
             int maxNumberOfParallelTasks,
+            ILogger logger) : this(nuGetPackageManager, packages, token, packageRestoredEvent, packageRestoreFailedEvent, sourceRepositories, maxNumberOfParallelTasks, true, new Dictionary<string, RestoreAuditProperties>(), logger)
+        {
+        }
+
+        public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
+            IEnumerable<PackageRestoreData> packages,
+            CancellationToken token,
+            EventHandler<PackageRestoredEventArgs> packageRestoredEvent,
+            EventHandler<PackageRestoreFailedEventArgs> packageRestoreFailedEvent,
+            IEnumerable<SourceRepository> sourceRepositories,
+            int maxNumberOfParallelTasks,
+            bool disableNuGetAudit,
+            Dictionary<string, RestoreAuditProperties> restoreAuditProperties,
             ILogger logger)
         {
             if (maxNumberOfParallelTasks <= 0)
@@ -42,6 +58,8 @@ namespace NuGet.PackageManagement
             PackageRestoreFailedEvent = packageRestoreFailedEvent;
             SourceRepositories = sourceRepositories;
             MaxNumberOfParallelTasks = maxNumberOfParallelTasks;
+            DisableNuGetAudit = disableNuGetAudit;
+            RestoreAuditProperties = restoreAuditProperties ?? throw new ArgumentNullException(nameof(restoreAuditProperties));
         }
     }
 }
