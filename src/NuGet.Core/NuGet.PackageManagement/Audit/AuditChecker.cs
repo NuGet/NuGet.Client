@@ -205,7 +205,8 @@ namespace NuGet.PackageManagement
             var warnings = new List<LogMessage>();
             foreach ((PackageIdentity package, PackageAuditInfo auditInfo) in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
             {
-                bool counted = false;
+                bool isVulnerabilityReported = false; // TODO NK - Am I trying to count packages?
+
                 foreach (PackageVulnerabilityInfo vulnerability in auditInfo.Vulnerabilities)
                 {
                     (var severityLabel, NuGetLogCode logCode) = GetSeverityLabelAndCode(vulnerability.Severity);
@@ -221,39 +222,35 @@ namespace NuGet.PackageManagement
 
                         if (auditSetting == default || auditSetting.Item1 && (int)vulnerability.Severity >= (int)auditSetting.Item2)
                         {
-                            if (!counted)
+                            isVulnerabilityReported = true;
+                            switch (vulnerability.Severity)
                             {
-                                switch (vulnerability.Severity)
-                                {
-                                    case PackageVulnerabilitySeverity.Low:
-                                        Sev0Matches++;
-                                        break;
-                                    case PackageVulnerabilitySeverity.Moderate:
-                                        Sev1Matches++;
-                                        break;
-                                    case PackageVulnerabilitySeverity.High:
-                                        Sev2Matches++;
-                                        break;
-                                    case PackageVulnerabilitySeverity.Critical:
-                                        Sev3Matches++;
-                                        break;
-                                    default:
-                                        InvalidSevMatches++;
-                                        break;
-                                }
-                                counted = true;
+                                case PackageVulnerabilitySeverity.Low:
+                                    Sev0Matches++;
+                                    break;
+                                case PackageVulnerabilitySeverity.Moderate:
+                                    Sev1Matches++;
+                                    break;
+                                case PackageVulnerabilitySeverity.High:
+                                    Sev2Matches++;
+                                    break;
+                                case PackageVulnerabilitySeverity.Critical:
+                                    Sev3Matches++;
+                                    break;
+                                default:
+                                    InvalidSevMatches++;
+                                    break;
                             }
-
-                            var restoreLogMessage = LogMessage.CreateWarning(logCode, message);
-                            restoreLogMessage.ProjectPath = projectPath;
-                            warnings.Add(restoreLogMessage);
                         }
 
-                        if (counted)
-                        {
-                            packagesWithReportedAdvisories.Add(package);
-                        }
+                        var restoreLogMessage = LogMessage.CreateWarning(logCode, message);
+                        restoreLogMessage.ProjectPath = projectPath;
+                        warnings.Add(restoreLogMessage);
                     }
+                }
+                if (isVulnerabilityReported)
+                {
+                    packagesWithReportedAdvisories.Add(package);
                 }
             }
             return warnings;

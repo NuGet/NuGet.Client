@@ -405,7 +405,7 @@ namespace NuGet.Commands.Restore.Utility
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
         public static bool ParseEnableValue(RestoreAuditProperties? value, string projectFullPath, ILogger logger)
         {
-            if (value != null)
+            if (value == null)
             {
                 return true;
 

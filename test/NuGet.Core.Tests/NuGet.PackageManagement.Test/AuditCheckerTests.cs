@@ -533,12 +533,12 @@ namespace NuGet.PackageManagement.Test
                 {packageIdentity, packageAuditInfo }
             };
 
-            var auditSetings = new Dictionary<string, (bool, PackageVulnerabilitySeverity)>();
+            var auditSettings = new Dictionary<string, (bool, PackageVulnerabilitySeverity)>();
             int Sev0Matches = 0, Sev1Matches = 0, Sev2Matches = 0, Sev3Matches = 0, InvalidSevMatches = 0;
             List<PackageIdentity> packagesWithReportedAdvisories = new List<PackageIdentity>();
 
             List<LogMessage> warnings = AuditChecker.CreateWarnings(result!,
-                       auditSetings,
+                       auditSettings,
                        ref Sev0Matches,
                        ref Sev1Matches,
                        ref Sev2Matches,
@@ -547,10 +547,73 @@ namespace NuGet.PackageManagement.Test
                        ref packagesWithReportedAdvisories);
 
             warnings.Should().BeEmpty();
+            Sev0Matches.Should().Be(0);
+            Sev1Matches.Should().Be(0);
+            Sev2Matches.Should().Be(0);
+            Sev3Matches.Should().Be(0);
+            InvalidSevMatches.Should().Be(0);
+            packagesWithReportedAdvisories.Should().BeEmpty();
         }
 
         [Fact]
-        public void CreateWarnings_WithoutAuditSettings_RaisesWarningsForAllProjects_ReturnsNull()
+        public void CreateWarnings_WithoutAuditSettings_RaisesWarningsForAllProjects()
+        {
+            PackageIdentity packageIdentity = new("packageId", new NuGetVersion(2, 0, 0));
+            var projectPath1 = "C:\\solution\\project\\project1.csproj";
+            var projectPath2 = "C:\\solution\\project\\project2.csproj";
+            AuditChecker.PackageAuditInfo packageAuditInfo = new(packageIdentity, new string[] { projectPath1, projectPath2 });
+
+            packageAuditInfo.Vulnerabilities.Add(new PackageVulnerabilityInfo(
+                                    new Uri("https://contoso.com/random-vulnerability1"),
+                                    PackageVulnerabilitySeverity.Moderate,
+                                    VersionRange.Parse("[1.0.0, 3.0.0)")));
+
+            Dictionary<PackageIdentity, AuditChecker.PackageAuditInfo> result = new()
+            {
+                {packageIdentity, packageAuditInfo }
+            };
+
+            var auditSettings = new Dictionary<string, (bool, PackageVulnerabilitySeverity)>();
+            int Sev0Matches = 0, Sev1Matches = 0, Sev2Matches = 0, Sev3Matches = 0, InvalidSevMatches = 0;
+            List<PackageIdentity> packagesWithReportedAdvisories = new List<PackageIdentity>();
+
+            List<LogMessage> warnings = AuditChecker.CreateWarnings(result!,
+                       auditSettings,
+                       ref Sev0Matches,
+                       ref Sev1Matches,
+                       ref Sev2Matches,
+                       ref Sev3Matches,
+                       ref InvalidSevMatches,
+                       ref packagesWithReportedAdvisories);
+
+            warnings.Should().HaveCount(2);
+            warnings[0].Code.Should().Be(NuGetLogCode.NU1902);
+            warnings[0].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                               packageIdentity.Id,
+                               packageIdentity.Version.ToNormalizedString(),
+                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               packageAuditInfo.Vulnerabilities[0].Url));
+            warnings[0].ProjectPath.Should().Be(projectPath1);
+
+            warnings[1].Code.Should().Be(NuGetLogCode.NU1902);
+            warnings[1].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
+                               packageIdentity.Id,
+                               packageIdentity.Version.ToNormalizedString(),
+                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
+                               packageAuditInfo.Vulnerabilities[0].Url));
+            warnings[1].ProjectPath.Should().Be(projectPath2);
+
+            Sev0Matches.Should().Be(0);
+            Sev1Matches.Should().Be(1);
+            Sev2Matches.Should().Be(0);
+            Sev3Matches.Should().Be(0);
+            InvalidSevMatches.Should().Be(0);
+            packagesWithReportedAdvisories.Should().HaveCount(1);
+            packagesWithReportedAdvisories[0].Should().Be(packageIdentity);
+        }
+
+        [Fact]
+        public void CreateWarnings_WithoutAuditSettings_RaisesWarningsForAllSeverities()
         {
             PackageIdentity packageIdentity = new("packageId", new NuGetVersion(2, 0, 0));
             var projectPath = "C:\\solution\\project\\project.csproj";
@@ -566,12 +629,12 @@ namespace NuGet.PackageManagement.Test
                 {packageIdentity, packageAuditInfo }
             };
 
-            var auditSetings = new Dictionary<string, (bool, PackageVulnerabilitySeverity)>();
+            var auditSettings = new Dictionary<string, (bool, PackageVulnerabilitySeverity)>();
             int Sev0Matches = 0, Sev1Matches = 0, Sev2Matches = 0, Sev3Matches = 0, InvalidSevMatches = 0;
             List<PackageIdentity> packagesWithReportedAdvisories = new List<PackageIdentity>();
 
             List<LogMessage> warnings = AuditChecker.CreateWarnings(result!,
-                       auditSetings,
+                       auditSettings,
                        ref Sev0Matches,
                        ref Sev1Matches,
                        ref Sev2Matches,
@@ -583,10 +646,86 @@ namespace NuGet.PackageManagement.Test
             warnings[0].Code.Should().Be(NuGetLogCode.NU1902);
             warnings[0].Message.Should().Be(string.Format(Strings.Warning_PackageWithKnownVulnerability,
                                packageIdentity.Id,
-                               packageIdentity.Version.ToNormalizedString(), // TODO NK - Does this need to be a normalized version? Probably not?
-                               packageAuditInfo.Vulnerabilities[0].Severity.ToString().ToLower(),
+                               packageIdentity.Version.ToNormalizedString(),
+                               PackageVulnerabilitySeverity.Moderate.ToString().ToLowerInvariant(),
                                packageAuditInfo.Vulnerabilities[0].Url));
+            warnings[0].ProjectPath.Should().Be(projectPath);
+
+            Sev0Matches.Should().Be(0);
+            Sev1Matches.Should().Be(1);
+            Sev2Matches.Should().Be(0);
+            Sev3Matches.Should().Be(0);
+            InvalidSevMatches.Should().Be(0);
+            packagesWithReportedAdvisories.Should().HaveCount(1);
+            packagesWithReportedAdvisories[0].Should().Be(packageIdentity);
         }
+
+        [Fact]
+        public void CreateWarnings_WithVariousVulnerabilties_CountsSeverityMatchesCorrectly()
+        {
+            PackageIdentity packageA = new("a", new NuGetVersion(2, 0, 0));
+            PackageIdentity packageB = new("b", new NuGetVersion(1, 0, 0));
+            PackageIdentity packageC = new("c", new NuGetVersion(2, 5, 0));
+            var projectPath = "C:\\solution\\project\\project.csproj";
+
+            AuditChecker.PackageAuditInfo packageAuditInfoA = new(packageA, new string[] { projectPath });
+            packageAuditInfoA.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.High));
+            packageAuditInfoA.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Low));
+            packageAuditInfoA.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Low));
+            packageAuditInfoA.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Critical));
+
+            AuditChecker.PackageAuditInfo packageAuditInfoB = new(packageB, new string[] { projectPath });
+            packageAuditInfoB.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.High));
+            packageAuditInfoB.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Moderate));
+            packageAuditInfoB.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Moderate));
+
+            AuditChecker.PackageAuditInfo packageAuditInfoC = new(packageC, new string[] { projectPath });
+            packageAuditInfoC.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Low));
+            packageAuditInfoC.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Moderate));
+            packageAuditInfoC.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Low));
+            packageAuditInfoC.Vulnerabilities.Add(GetVulnerability(PackageVulnerabilitySeverity.Unknown));
+
+            Dictionary<PackageIdentity, AuditChecker.PackageAuditInfo> result = new()
+            {
+                {packageA, packageAuditInfoA },
+                {packageB, packageAuditInfoB },
+                {packageC, packageAuditInfoC },
+            };
+
+            var auditSettings = new Dictionary<string, (bool, PackageVulnerabilitySeverity)>();
+            int Sev0Matches = 0, Sev1Matches = 0, Sev2Matches = 0, Sev3Matches = 0, InvalidSevMatches = 0;
+            List<PackageIdentity> packagesWithReportedAdvisories = new List<PackageIdentity>();
+
+            List<LogMessage> warnings = AuditChecker.CreateWarnings(result!,
+                       auditSettings,
+                       ref Sev0Matches,
+                       ref Sev1Matches,
+                       ref Sev2Matches,
+                       ref Sev3Matches,
+                       ref InvalidSevMatches,
+                       ref packagesWithReportedAdvisories);
+
+            warnings.Should().HaveCount(11);
+
+            //Sev0Matches.Should().Be(1);
+            //Sev1Matches.Should().Be(2);
+            //Sev2Matches.Should().Be(3);
+            //Sev3Matches.Should().Be(4);
+            //InvalidSevMatches.Should().Be(1);
+            packagesWithReportedAdvisories.Should().HaveCount(3);
+            packagesWithReportedAdvisories[0].Should().Be(packageA);
+            packagesWithReportedAdvisories[1].Should().Be(packageA);
+            packagesWithReportedAdvisories[2].Should().Be(packageA);
+        }
+
+        private static PackageVulnerabilityInfo GetVulnerability(PackageVulnerabilitySeverity packageVulnerabilitySeverity)
+        {
+            return new PackageVulnerabilityInfo(
+                                                new Uri($"https://contoso.com/{Guid.NewGuid()}"),
+                                                packageVulnerabilitySeverity,
+                                                VersionRange.Parse("[1.0.0, 3.0.0)"));
+        }
+
         // TODO NK - Add more and more tests.
 
         //[Fact]
