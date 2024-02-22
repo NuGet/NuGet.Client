@@ -707,71 +707,26 @@ namespace NuGet.PackageManagement.Test
 
             warnings.Should().HaveCount(11);
 
-            //Sev0Matches.Should().Be(1);
-            //Sev1Matches.Should().Be(2);
-            //Sev2Matches.Should().Be(3);
-            //Sev3Matches.Should().Be(4);
-            //InvalidSevMatches.Should().Be(1);
+            Sev0Matches.Should().Be(4);
+            Sev1Matches.Should().Be(3);
+            Sev2Matches.Should().Be(2);
+            Sev3Matches.Should().Be(1);
+            InvalidSevMatches.Should().Be(1);
             packagesWithReportedAdvisories.Should().HaveCount(3);
             packagesWithReportedAdvisories[0].Should().Be(packageA);
-            packagesWithReportedAdvisories[1].Should().Be(packageA);
-            packagesWithReportedAdvisories[2].Should().Be(packageA);
+            packagesWithReportedAdvisories[1].Should().Be(packageB);
+            packagesWithReportedAdvisories[2].Should().Be(packageC);
+            static PackageVulnerabilityInfo GetVulnerability(PackageVulnerabilitySeverity packageVulnerabilitySeverity)
+            {
+                return new PackageVulnerabilityInfo(
+                                                    new Uri($"https://contoso.com/{Guid.NewGuid()}"),
+                                                    packageVulnerabilitySeverity,
+                                                    VersionRange.Parse("[1.0.0, 3.0.0)"));
+            }
         }
 
-        private static PackageVulnerabilityInfo GetVulnerability(PackageVulnerabilitySeverity packageVulnerabilitySeverity)
-        {
-            return new PackageVulnerabilityInfo(
-                                                new Uri($"https://contoso.com/{Guid.NewGuid()}"),
-                                                packageVulnerabilitySeverity,
-                                                VersionRange.Parse("[1.0.0, 3.0.0)"));
-        }
 
-        // TODO NK - Add more and more tests.
-
-        //[Fact]
-        //public void CreateWarningsForPackagesWithVulnerabilities_CreatesWarningsForAllVulnerabilities()
-        //{
-        //    var packageA = new PackageIdentity("A", new NuGetVersion(1, 0, 0));
-        //    var packageB = new PackageIdentity("B", new NuGetVersion(2, 0, 0));
-
-        //    var pva = new PackageAuditInfo(packageA,Array.Empty<string>());
-        //    pva.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability1"), PackageVulnerabilitySeverity.Low, VersionRange.Parse("[1.0.0,2.0.0)")));
-        //    pva.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability2"), PackageVulnerabilitySeverity.Moderate, VersionRange.Parse("[1.0.0,1.1.0)")));
-        //    var pvb = new PackageAuditInfo(packageB, Array.Empty<string>());
-        //    pvb.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability3"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[2.0.0,3.0.0)")));
-        //    pvb.Vulnerabilities.Add(new PackageVulnerabilityInfo(new Uri("https://vulnerability4"), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[2.0.0,2.1.0)")));
-
-        //    Dictionary<PackageIdentity, PackageAuditInfo> packagesWithKnownVulnerabilities = new()
-        //    {
-        //        { packageA, pva },
-        //        { packageB, pvb }
-        //    };
-
-        //    var testLogger = new TestLogger();
-        //    AuditChecker.CreateWarningsForPackagesWithVulnerabilities(packagesWithKnownVulnerabilities, testLogger);
-        //    testLogger.WarningMessages.Should().HaveCount(4);
-        //    testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
-        //                packageA.Id,
-        //                packageA.Version.ToNormalizedString(),
-        //                pva.Vulnerabilities[0].Severity.ToString().ToLower(),
-        //                pva.Vulnerabilities[0].Url));
-        //    testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
-        //                packageA.Id,
-        //                packageA.Version.ToNormalizedString(),
-        //                pva.Vulnerabilities[1].Severity.ToString().ToLower(),
-        //                pva.Vulnerabilities[1].Url));
-        //    testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
-        //                packageB.Id,
-        //                packageB.Version.ToNormalizedString(),
-        //                pvb.Vulnerabilities[0].Severity.ToString().ToLower(),
-        //                pvb.Vulnerabilities[0].Url));
-        //    testLogger.WarningMessages.Should().Contain(string.Format(Strings.Warning_PackageWithKnownVulnerability,
-        //                packageB.Id,
-        //                packageB.Version.ToNormalizedString(),
-        //                pvb.Vulnerabilities[1].Severity.ToString().ToLower(),
-        //                pvb.Vulnerabilities[1].Url));
-        //}
-
-        // TODO NK - integration test.
+        // TODO NK - Add tests with settings
+        // TODO NK - integration test calling CheckVulnerabiltiesAsync
     }
 }

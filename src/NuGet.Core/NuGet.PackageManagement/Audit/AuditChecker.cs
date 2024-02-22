@@ -216,6 +216,7 @@ namespace NuGet.PackageManagement
                         severityLabel,
                         vulnerability.Url);
 
+                    bool counted = false;
                     foreach (var projectPath in auditInfo.Projects)
                     {
                         auditSettings.TryGetValue(projectPath, out (bool, PackageVulnerabilitySeverity) auditSetting);
@@ -223,24 +224,28 @@ namespace NuGet.PackageManagement
                         if (auditSetting == default || auditSetting.Item1 && (int)vulnerability.Severity >= (int)auditSetting.Item2)
                         {
                             isVulnerabilityReported = true;
-                            switch (vulnerability.Severity)
+                            if (!counted)
                             {
-                                case PackageVulnerabilitySeverity.Low:
-                                    Sev0Matches++;
-                                    break;
-                                case PackageVulnerabilitySeverity.Moderate:
-                                    Sev1Matches++;
-                                    break;
-                                case PackageVulnerabilitySeverity.High:
-                                    Sev2Matches++;
-                                    break;
-                                case PackageVulnerabilitySeverity.Critical:
-                                    Sev3Matches++;
-                                    break;
-                                default:
-                                    InvalidSevMatches++;
-                                    break;
+                                switch (vulnerability.Severity)
+                                {
+                                    case PackageVulnerabilitySeverity.Low:
+                                        Sev0Matches++;
+                                        break;
+                                    case PackageVulnerabilitySeverity.Moderate:
+                                        Sev1Matches++;
+                                        break;
+                                    case PackageVulnerabilitySeverity.High:
+                                        Sev2Matches++;
+                                        break;
+                                    case PackageVulnerabilitySeverity.Critical:
+                                        Sev3Matches++;
+                                        break;
+                                    default:
+                                        InvalidSevMatches++;
+                                        break;
+                                }
                             }
+                            counted = true;
                         }
 
                         var restoreLogMessage = LogMessage.CreateWarning(logCode, message);
