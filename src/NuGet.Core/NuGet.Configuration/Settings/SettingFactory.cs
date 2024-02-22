@@ -176,7 +176,7 @@ namespace NuGet.Configuration
             if (xElement.Name.LocalName.Equals(ConfigurationConstants.PackageSourceMapping, StringComparison.OrdinalIgnoreCase) && duplicatedDescendants != null)
             {
                 var duplicatedKey = string.Join(", ", duplicatedDescendants.Select(d => d.Attributes["key"]));
-                var source = duplicatedDescendants.Select(d => d.Origin?.ConfigFilePath).Where(d => d is not null).First();
+                var source = duplicatedDescendants.Select(d => d.Origin?.ConfigFilePath).First(d => d is not null);
                 throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture, Resources.Error_DuplicatePackageSource, duplicatedKey, source));
             }
 

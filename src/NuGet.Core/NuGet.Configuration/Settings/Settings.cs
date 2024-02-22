@@ -475,8 +475,7 @@ namespace NuGet.Configuration
             validSettingFiles.AddRange(
                 settingsFiles
                     .Select(file => ReadSettings(file.DirectoryName!, file.FullName, settingsLoadingContext: settingsLoadingContext))
-                    .Where(file => file != null)
-                    .Cast<SettingsFile>());
+                    .OfType<SettingsFile>());
 
             return LoadSettingsForSpecificConfigs(
                 root.FullName,

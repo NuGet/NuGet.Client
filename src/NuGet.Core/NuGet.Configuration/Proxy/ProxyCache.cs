@@ -165,7 +165,7 @@ namespace NuGet.Configuration
         public void Add(IWebProxy? proxy)
         {
             var webProxy = proxy as WebProxy;
-            if (webProxy != null && webProxy.Credentials is not null)
+            if (webProxy?.Credentials is not null)
             {
                 _cachedCredentials.TryAdd(webProxy.ProxyAddress, webProxy.Credentials);
             }
