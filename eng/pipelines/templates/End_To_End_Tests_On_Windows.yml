@@ -5,8 +5,6 @@ parameters:
   type: string
 - name: stageDisplayName
   type: string
-- name: dependsOn
-  type: object
 - name: bootstrapperUrl
   type: string
 - name: baseBuildDrop
@@ -36,7 +34,6 @@ stages:
     name: ${{parameters.stageName}}
     displayName: 'E2E Tests ${{parameters.stageDisplayName}}'
     condition: ${{parameters.condition}}
-    dependsOn: ${{parameters.dependsOn}}
     testMachineConfigurationJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Configuration'
     testMachineDeploymentJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Machine Deployment'
     testExecutionJobDisplayName: 'E2E ${{parameters.stageDisplayName}} Test Execution'

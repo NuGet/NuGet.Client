@@ -1,6 +1,4 @@
 parameters:
-  - name: dependsOn
-    type: object
   - name: bootstrapperUrl
     type: string
   - name: baseBuildDrop
@@ -33,7 +31,6 @@ stages:
       name: VS_Apex_Tests
       displayName: Apex Tests On Windows
       condition: ${{parameters.condition}}
-      dependsOn: ${{parameters.dependsOn}}
       variables:
         - name: bootstrapperUrl
           value: ${{parameters.bootstrapperUrl}}
