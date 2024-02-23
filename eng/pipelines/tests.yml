@@ -60,7 +60,7 @@ variables:
 
 stages:
 # Dartlab's template defines this in its own stage
-- template: End_To_End_Tests_On_Windows.yml
+- template: templates/End_To_End_Tests_On_Windows.yml
   parameters:
     stageName: VS_EndToEnd_Part1
     stageDisplayName: Part 1
@@ -87,7 +87,7 @@ stages:
     testMachineCleanUpStrategy: ${{parameters.E2EPart1AgentCleanup}}
 
 # Dartlab's template defines this in its own stage
-- template: End_To_End_Tests_On_Windows.yml
+- template: templates/End_To_End_Tests_On_Windows.yml
   parameters:
     stageName: VS_EndToEnd_Part2
     stageDisplayName: Part 2
@@ -114,7 +114,7 @@ stages:
     testMachineCleanUpStrategy: ${{parameters.E2EPart2AgentCleanup}}
 
 # Dartlab's template defines this in its own stage
-- template: Apex_Tests_On_Windows.yml
+- template: templates/Apex_Tests_On_Windows.yml
   parameters:
     condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
     dependsOn:
