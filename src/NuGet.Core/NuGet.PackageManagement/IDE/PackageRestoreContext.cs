@@ -23,6 +23,7 @@ namespace NuGet.PackageManagement
         public bool DisableNuGetAudit { get; }
         public Dictionary<string, RestoreAuditProperties> RestoreAuditProperties { get; }
 
+        private static Dictionary<string, RestoreAuditProperties> EmptyDictionary = new Dictionary<string, RestoreAuditProperties>();
         public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
             IEnumerable<PackageRestoreData> packages,
             CancellationToken token,
@@ -30,7 +31,7 @@ namespace NuGet.PackageManagement
             EventHandler<PackageRestoreFailedEventArgs> packageRestoreFailedEvent,
             IEnumerable<SourceRepository> sourceRepositories,
             int maxNumberOfParallelTasks,
-            ILogger logger) : this(nuGetPackageManager, packages, token, packageRestoredEvent, packageRestoreFailedEvent, sourceRepositories, maxNumberOfParallelTasks, true, new Dictionary<string, RestoreAuditProperties>(), logger)
+            ILogger logger) : this(nuGetPackageManager, packages, token, packageRestoredEvent, packageRestoreFailedEvent, sourceRepositories, maxNumberOfParallelTasks, true, EmptyDictionary, logger)
         {
         }
 

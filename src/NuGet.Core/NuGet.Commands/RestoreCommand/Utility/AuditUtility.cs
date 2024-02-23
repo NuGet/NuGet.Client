@@ -411,7 +411,7 @@ namespace NuGet.Commands.Restore.Utility
 
             }
 
-            if (!value!.TryParseEnableAudit(out bool result))
+            if (value!.TryParseEnableAudit(out bool result))
             {
                 string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
                 RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);

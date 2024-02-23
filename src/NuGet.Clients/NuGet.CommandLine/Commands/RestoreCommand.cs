@@ -325,7 +325,7 @@ namespace NuGet.CommandLine
 
                     throw new InvalidOperationException(message);
                 }
-                restoreAuditProperties = new();
+                restoreAuditProperties = new(PathUtility.GetStringComparerBasedOnOS());
 
                 string referenceFile = packageReferenceFile;
                 // If restoring with a csproj directly, ensure we read the audit configuration.
