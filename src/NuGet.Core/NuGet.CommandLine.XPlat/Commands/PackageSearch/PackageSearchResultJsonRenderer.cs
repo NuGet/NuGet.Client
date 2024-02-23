@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
@@ -47,7 +48,8 @@ namespace NuGet.CommandLine.XPlat
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
-                Converters = { new SearchResultPackagesConverter(_verbosity, _exactMatch) }
+                Converters = { new SearchResultPackagesConverter(_verbosity, _exactMatch) },
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
             var json = JsonSerializer.Serialize(_packageSearchMainOutput, options);
             _logger.LogMinimal(json);
