@@ -222,24 +222,7 @@ namespace Test.Utility
                 JObject.Add(package.Key, packageObject);
             }
 
-            var req = new
-            {
-                request = new
-                {
-                    TestRequest = new
-                    {
-                        OrderID = new
-                        {
-                            orderNumber = "12345",
-                            category = "ABC"
-                        },
-                        SecondCategory = "DEF"
-                    }
-                }
-            };
-
             return JObject;
-
         }
     }
 }
