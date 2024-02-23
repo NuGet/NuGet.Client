@@ -278,7 +278,7 @@ namespace NuGet.PackageManagement
                 PackageRestoreFailedEvent,
                 sourceRepositories: SourceRepositoryProvider.GetRepositories(),
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
-                disableNuGetAudit: false,
+                enableNuGetAudit: true,
                 restoreAuditProperties: new Dictionary<string, RestoreAuditProperties>(),
                 logger: NullLogger.Instance);
 
@@ -416,7 +416,7 @@ namespace NuGet.PackageManagement
 
         private static async Task RunNuGetAudit(PackageRestoreContext packageRestoreContext, List<SourceRepository> sourceRepositories)
         {
-            if (!packageRestoreContext.DisableNuGetAudit)
+            if (packageRestoreContext.EnableNuGetAudit)
             {
                 using SourceCacheContext sourceCacheContext = new();
                 var auditUtility = new AuditChecker(

@@ -516,7 +516,7 @@ namespace NuGet.Build.Tasks
                 maxNumberOfParallelTasks: disableParallel
                     ? 1
                     : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
-                disableNuGetAudit: false,
+                enableNuGetAudit: true,
                 restoreAuditProperties,
                 logger: collectorLogger);
 

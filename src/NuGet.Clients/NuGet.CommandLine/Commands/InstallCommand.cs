@@ -190,7 +190,7 @@ namespace NuGet.CommandLine
                 packageRestoreFailedEvent: (sender, args) => { failedEvents.Enqueue(args); },
                 sourceRepositories: packageSources.Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
-                disableNuGetAudit: false,
+                enableNuGetAudit: true,
                 restoreAuditProperties: new(),
                 logger: Console);
 

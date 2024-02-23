@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement
         public IEnumerable<SourceRepository> SourceRepositories { get; }
         public int MaxNumberOfParallelTasks { get; }
         public ILogger Logger { get; }
-        public bool DisableNuGetAudit { get; }
+        public bool EnableNuGetAudit { get; }
         public Dictionary<string, RestoreAuditProperties> RestoreAuditProperties { get; }
 
         private static Dictionary<string, RestoreAuditProperties> EmptyDictionary = new Dictionary<string, RestoreAuditProperties>();
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement
             EventHandler<PackageRestoreFailedEventArgs> packageRestoreFailedEvent,
             IEnumerable<SourceRepository> sourceRepositories,
             int maxNumberOfParallelTasks,
-            ILogger logger) : this(nuGetPackageManager, packages, token, packageRestoredEvent, packageRestoreFailedEvent, sourceRepositories, maxNumberOfParallelTasks, true, EmptyDictionary, logger)
+            ILogger logger) : this(nuGetPackageManager, packages, token, packageRestoredEvent, packageRestoreFailedEvent, sourceRepositories, maxNumberOfParallelTasks, false, EmptyDictionary, logger)
         {
         }
 
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement
             EventHandler<PackageRestoreFailedEventArgs> packageRestoreFailedEvent,
             IEnumerable<SourceRepository> sourceRepositories,
             int maxNumberOfParallelTasks,
-            bool disableNuGetAudit,
+            bool enableNuGetAudit,
             Dictionary<string, RestoreAuditProperties> restoreAuditProperties,
             ILogger logger)
         {
@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement
             PackageRestoreFailedEvent = packageRestoreFailedEvent;
             SourceRepositories = sourceRepositories;
             MaxNumberOfParallelTasks = maxNumberOfParallelTasks;
-            DisableNuGetAudit = disableNuGetAudit;
+            EnableNuGetAudit = enableNuGetAudit;
             RestoreAuditProperties = restoreAuditProperties ?? throw new ArgumentNullException(nameof(restoreAuditProperties));
         }
     }
