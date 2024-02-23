@@ -40,6 +40,11 @@ parameters:
   default: true
 resources:
   pipelines:
+  - pipeline: ComponentBuildUnderTest
+    source: NuGet.Client-PrivateDev
+     trigger:
+        branches:
+          - dev
   - pipeline: DartLab
     source: DartLab
     branch: main
