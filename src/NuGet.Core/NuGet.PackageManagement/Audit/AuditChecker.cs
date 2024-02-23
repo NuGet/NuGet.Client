@@ -16,6 +16,7 @@ using NuGet.Versioning;
 using NuGet.Protocol.Core.Types;
 using System.Diagnostics;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.PackageManagement
 {
@@ -205,7 +206,7 @@ namespace NuGet.PackageManagement
             var warnings = new List<LogMessage>();
             foreach ((PackageIdentity package, PackageAuditInfo auditInfo) in packagesWithKnownVulnerabilities.OrderBy(p => p.Key.Id))
             {
-                bool isVulnerabilityReported = false; // TODO NK - Am I trying to count packages?
+                bool isVulnerabilityReported = false;
 
                 foreach (PackageVulnerabilityInfo vulnerability in auditInfo.Vulnerabilities)
                 {
@@ -217,8 +218,9 @@ namespace NuGet.PackageManagement
                         vulnerability.Url);
 
                     bool counted = false;
-                    foreach (var projectPath in auditInfo.Projects)
+                    for (int i = 0; i < auditInfo.Projects.Count; i++)
                     {
+                        string projectPath = auditInfo.Projects[i];
                         auditSettings.TryGetValue(projectPath, out (bool, PackageVulnerabilitySeverity) auditSetting);
 
                         if (auditSetting == default || auditSetting.Item1 && (int)vulnerability.Severity >= (int)auditSetting.Item2)
@@ -267,7 +269,7 @@ namespace NuGet.PackageManagement
         {
             Dictionary<PackageIdentity, PackageAuditInfo>? result = null;
 
-            foreach (PackageRestoreData packageRestoreData in packages)
+            foreach (PackageRestoreData packageRestoreData in packages.NoAllocEnumerate())
             {
                 PackageIdentity packageIdentity = packageRestoreData.PackageReference.PackageIdentity;
                 List<PackageVulnerabilityInfo>? knownVulnerabilitiesForPackage = GetKnownVulnerabilities(packageIdentity.Id, packageIdentity.Version, knownVulnerabilities);
@@ -280,7 +282,7 @@ namespace NuGet.PackageManagement
 
                         if (!result.TryGetValue(packageIdentity, out PackageAuditInfo? auditInfo))
                         {
-                            auditInfo = new(packageIdentity, packageRestoreData.ProjectNames);
+                            auditInfo = new(packageIdentity, packageRestoreData.ProjectNames.AsList());
                             result.Add(packageIdentity, auditInfo);
                         }
 
@@ -338,11 +340,11 @@ namespace NuGet.PackageManagement
         {
             public PackageIdentity Identity { get; }
 
-            public IEnumerable<string> Projects { get; }
+            public IList<string> Projects { get; }
 
             public List<PackageVulnerabilityInfo> Vulnerabilities { get; }
 
-            public PackageAuditInfo(PackageIdentity identity, IEnumerable<string> projects)
+            public PackageAuditInfo(PackageIdentity identity, IList<string> projects)
             {
                 Identity = identity;
                 Vulnerabilities = new();

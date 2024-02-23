@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement
         private const string AuditVulnerabilitiesPackages = "PackagesConfig.Audit.Vulnerability.Packages";
 
 
-        public AuditCheckResult(IReadOnlyList<ILogMessage> warnings)
+        internal AuditCheckResult(IReadOnlyList<ILogMessage> warnings)
         {
             if (warnings is null)
             {
