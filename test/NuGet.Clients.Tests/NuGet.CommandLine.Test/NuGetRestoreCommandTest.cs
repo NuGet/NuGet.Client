@@ -3306,7 +3306,7 @@ EndProject";
                 });
             pathContext.Settings.RemoveSource("source");
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
- 
+
             var workingPath = pathContext.WorkingDirectory;
             Util.CreateTestPackage("packageA", "1.1.0", pathContext.PackageSource);
             Util.CreateTestPackage("packageB", "2.2.0", pathContext.PackageSource);

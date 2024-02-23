@@ -2168,7 +2168,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             var a1Nupkg = pathResolver.GetInstalledPackageFilePath(a1.Identity);
-            
+
             r1.Success.Should().BeTrue();
             File.Exists(a1Nupkg).Should().BeFalse();
         }

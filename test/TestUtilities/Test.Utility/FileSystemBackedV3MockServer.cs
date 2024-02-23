@@ -153,7 +153,7 @@ namespace Test.Utility
                 }
                 else if (path.StartsWith("/vulnerability/"))
                 {
-                    if(path.EndsWith("index.json"))
+                    if (path.EndsWith("index.json"))
                     {
                         return new Action<HttpListenerResponse>(response =>
                         {
@@ -162,7 +162,7 @@ namespace Test.Utility
                             SetResponseContent(response, vulnerabilityJson.ToString());
                         });
                     }
-                    else if(path.EndsWith("/vulnerability.json"))
+                    else if (path.EndsWith("/vulnerability.json"))
                     {
                         return new Action<HttpListenerResponse>(response =>
                         {
