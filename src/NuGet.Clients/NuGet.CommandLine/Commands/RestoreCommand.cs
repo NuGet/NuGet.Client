@@ -283,7 +283,7 @@ namespace NuGet.CommandLine
                 {
                     foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile))
                     {
-                        if (configToProjectPath.TryGetValue(configFile, out string projectPath))
+                        if (!configToProjectPath.TryGetValue(configFile, out string projectPath))
                         {
                             projectPath = configFile;
                         }
