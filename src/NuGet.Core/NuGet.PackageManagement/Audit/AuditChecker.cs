@@ -221,9 +221,9 @@ namespace NuGet.PackageManagement
                     for (int i = 0; i < auditInfo.Projects.Count; i++)
                     {
                         string projectPath = auditInfo.Projects[i];
-                        auditSettings.TryGetValue(projectPath, out (bool, PackageVulnerabilitySeverity) auditSetting);
+                        auditSettings.TryGetValue(projectPath, out (bool IsAuditEnabled, PackageVulnerabilitySeverity MinimumSeverity) auditSetting);
 
-                        if (auditSetting == default || auditSetting.Item1 && (int)vulnerability.Severity >= (int)auditSetting.Item2)
+                        if (auditSetting == default || auditSetting.IsAuditEnabled && (int)vulnerability.Severity >= (int)auditSetting.MinimumSeverity)
                         {
                             isVulnerabilityReported = true;
                             if (!counted)
