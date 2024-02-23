@@ -3419,6 +3419,7 @@ EndProject";
                 proj1File,
                 @"<Project ToolsVersion='4.0' DefaultTargets='Build'
                     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
                   <PropertyGroup>
                     <OutputType>Library</OutputType>
                     <OutputPath>out</OutputPath>
@@ -3428,7 +3429,8 @@ EndProject";
                   <ItemGroup>
                     <None Include='packages.config' />
                   </ItemGroup>
-                </Project>");
+   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+               </Project>");
 
             Util.CreateFile(proj1Directory, "packages.config",
 @"<packages>
@@ -3443,6 +3445,60 @@ EndProject";
                 nugetexe,
                 proj1Directory,
                 "restore");
+            mockServer.Stop();
+
+            // Assert
+            r.Success.Should().BeTrue(because: r.AllOutput);
+            var packageFileA = Path.Combine(pathContext.SolutionRoot, "packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
+            var packageFileB = Path.Combine(pathContext.SolutionRoot, "packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
+            File.Exists(packageFileA).Should().BeTrue();
+            File.Exists(packageFileB).Should().BeTrue();
+            r.AllOutput.Should().NotContain($"Package 'packageA' 1.1.0 has a known high severity vulnerability");
+        }
+
+        [SkipMono()]
+        public void RestoreCommand_WithProjectWithPackagesConfig_WithNuGetAuditFalse_PackageWithVulnerabilities_DoesNotRaiseWarnings2()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            using var pathContext = new SimpleTestPathContext();
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+
+            mockServer.Vulnerabilities.Add(
+                "packageA",
+                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
+                    (new Uri("https://contoso.com/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)"))
+                });
+            pathContext.Settings.RemoveSource("source");
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
+
+            Util.CreateTestPackage("packageA", "1.1.0", pathContext.PackageSource);
+            Util.CreateTestPackage("packageB", "2.2.0", pathContext.PackageSource);
+
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var projectA = new SimpleTestProjectContext(
+                "a",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectA.Properties.Add("NuGetAudit", "false");
+
+            solution.Projects.Add(projectA);
+            solution.Create(pathContext.SolutionRoot);
+
+            var proj1Directory = Path.GetDirectoryName(projectA.ProjectPath);
+            Util.CreateFile(proj1Directory, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" />
+  <package id=""packageB"" version=""2.2.0"" />
+</packages>");
+
+            mockServer.Start();
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                proj1Directory,
+                $"restore {projectA.ProjectPath}");
             mockServer.Stop();
 
             // Assert

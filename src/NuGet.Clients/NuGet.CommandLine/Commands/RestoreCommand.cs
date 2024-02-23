@@ -325,6 +325,19 @@ namespace NuGet.CommandLine
 
                     throw new InvalidOperationException(message);
                 }
+                restoreAuditProperties = new();
+
+                string referenceFile = packageReferenceFile;
+                // If restoring with a csproj directly, ensure we read the audit configuration.
+                if (packageRestoreInputs.ProjectFiles.Count > 0)
+                {
+                    var packageSpec = packageRestoreInputs.ProjectReferenceLookup.GetProjectSpec(packageRestoreInputs.ProjectFiles.First());
+                    if (packageSpec != null)
+                    {
+                        referenceFile = packageSpec.FilePath;
+                        restoreAuditProperties.Add(referenceFile, packageSpec.RestoreMetadata.RestoreAuditProperties);
+                    }
+                }
 
                 foreach (PackageReference packageReference in GetInstalledPackageReferences(packageReferenceFile))
                 {
@@ -332,7 +345,6 @@ namespace NuGet.CommandLine
                     packageRestoreData.Add(new PackageRestoreData(packageReference, [packageReferenceFile], !exists));
                     areAnyPackagesMissing |= !exists;
                 }
-                restoreAuditProperties = new();
             }
 
             var packageSources = GetPackageSources(Settings);
