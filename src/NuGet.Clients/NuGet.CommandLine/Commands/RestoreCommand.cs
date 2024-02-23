@@ -342,7 +342,7 @@ namespace NuGet.CommandLine
                 foreach (PackageReference packageReference in GetInstalledPackageReferences(packageReferenceFile))
                 {
                     bool exists = nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity, packageSaveMode);
-                    packageRestoreData.Add(new PackageRestoreData(packageReference, [packageReferenceFile], !exists));
+                    packageRestoreData.Add(new PackageRestoreData(packageReference, [referenceFile], !exists));
                     areAnyPackagesMissing |= !exists;
                 }
             }

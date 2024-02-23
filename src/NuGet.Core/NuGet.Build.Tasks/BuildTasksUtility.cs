@@ -456,7 +456,7 @@ namespace NuGet.Build.Tasks
                         value ??= new();
                         packageReferenceToProjects.Add(packageReference, value);
                     }
-                    value.Add(packagesConfigPath);
+                    value.Add(pcRestoreMetadata.PackagesConfigPath);
                 }
                 restoreAuditProperties.Add(packageSpec.FilePath, packageSpec.RestoreMetadata.RestoreAuditProperties);
             }
