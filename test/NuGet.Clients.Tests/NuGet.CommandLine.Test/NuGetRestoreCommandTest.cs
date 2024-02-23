@@ -3498,8 +3498,6 @@ EndProject";
             r.AllOutput.Should().NotContain($"Package 'packageA' 1.1.0 has a known high severity vulnerability");
         }
 
-        // TODO NK - Solution, multiple projects and all settings are parsed correctly.
-
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
