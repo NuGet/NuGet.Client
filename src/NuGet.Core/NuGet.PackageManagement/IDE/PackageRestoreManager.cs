@@ -369,19 +369,10 @@ namespace NuGet.PackageManagement
 
             List<SourceRepository> sourceRepositories = packageRestoreContext.SourceRepositories.AsList();
 
-            if (!packageRestoreContext.DisableNuGetAudit)
-            {
-                using SourceCacheContext sourceCacheContext = new();
-                var auditUtility = new AuditChecker(
-                    sourceRepositories,
-                    sourceCacheContext,
-                    packageRestoreContext.Logger);
-                await auditUtility.CheckPackageVulnerabilitiesAsync(packageRestoreContext.Packages, packageRestoreContext.RestoreAuditProperties, packageRestoreContext.Token);
-            }
-
             var missingPackages = packageRestoreContext.Packages.Where(p => p.IsMissing).ToList();
             if (!missingPackages.Any())
             {
+                await RunNuGetAudit(packageRestoreContext, sourceRepositories);
                 return new PackageRestoreResult(true, Enumerable.Empty<PackageIdentity>());
             }
 
@@ -416,9 +407,24 @@ namespace NuGet.PackageManagement
                 packageRestoreContext,
                 nuGetProjectContext);
 
+            await RunNuGetAudit(packageRestoreContext, sourceRepositories);
+
             return new PackageRestoreResult(
                 attemptedPackages.All(p => p.Restored),
                 attemptedPackages.Select(p => p.Package.PackageIdentity).ToList());
+        }
+
+        private static async Task RunNuGetAudit(PackageRestoreContext packageRestoreContext, List<SourceRepository> sourceRepositories)
+        {
+            if (!packageRestoreContext.DisableNuGetAudit)
+            {
+                using SourceCacheContext sourceCacheContext = new();
+                var auditUtility = new AuditChecker(
+                    sourceRepositories,
+                    sourceCacheContext,
+                    packageRestoreContext.Logger);
+                await auditUtility.CheckPackageVulnerabilitiesAsync(packageRestoreContext.Packages, packageRestoreContext.RestoreAuditProperties, packageRestoreContext.Token);
+            }
         }
 
         /// <summary>
