@@ -65,9 +65,6 @@ stages:
     stageName: VS_EndToEnd_Part1
     stageDisplayName: Part 1
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Initialize
-    - Build_Insertable
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     baseBuildDrop: $(VsBaseBuildDrop)
@@ -92,9 +89,6 @@ stages:
     stageName: VS_EndToEnd_Part2
     stageDisplayName: Part 2
     condition: "and(succeeded(), ne(variables['RunEndToEndTests'], 'false'))"
-    dependsOn:
-    - Initialize
-    - Build_Insertable
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     baseBuildDrop: $(VsBaseBuildDrop)
