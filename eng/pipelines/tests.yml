@@ -42,9 +42,9 @@ resources:
   pipelines:
   - pipeline: ComponentBuildUnderTest
     source: NuGet.Client-PrivateDev
-     trigger:
-        branches:
-          - dev
+    trigger:
+     branches:
+      - dev
   - pipeline: DartLab
     source: DartLab
     branch: main
