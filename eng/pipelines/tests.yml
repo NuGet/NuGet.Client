@@ -1,3 +1,5 @@
+trigger: none  # Do not continuously run this pipeline whenever there is a change to the repo
+
 parameters:
 - name: isOfficialBuild
   type: boolean
@@ -73,7 +75,7 @@ stages:
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     baseBuildDrop: $(VsBaseBuildDrop)
-    runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runName);NuGet.Tests.Apex.runsettings
+    runSettingsURI:  https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
     - name: VsBootstrapperUrl
@@ -126,7 +128,7 @@ stages:
       - name: GitHubStatusName
         value: Apex Tests On Windows
     isOfficialBuild: ${{parameters.isOfficialBuild}}
-    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runName);NuGet.Tests.Apex.runsettings
+    runSettingsURI: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(resources.pipeline.ComponentBuildUnderTest.runId);NuGet.Tests.Apex.runsettings
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 150
     bootstrapperUrl: $(VsBootstrapperUrl)
