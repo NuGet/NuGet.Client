@@ -439,8 +439,7 @@ namespace NuGet.Configuration
                             }
                             return settingsLoadingContext.GetOrCreateSettingsFile(f);
                         })
-                        .Where(f => f != null)
-                        .Cast<SettingsFile>());
+                        .OfType<SettingsFile>());
             }
 
             return LoadSettingsForSpecificConfigs(

@@ -146,7 +146,7 @@ namespace NuGet.Configuration
             var elementDescendants = element.Elements();
             var countOfDescendants = elementDescendants.Count();
 
-            var parsedItems = elementDescendants.Select(e => (AddItem)SettingFactory.Parse(e, origin));
+            var parsedItems = elementDescendants.Select(e => SettingFactory.Parse(e, origin)).OfType<AddItem>();
 
             foreach (var item in parsedItems)
             {
