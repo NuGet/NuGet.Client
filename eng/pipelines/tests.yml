@@ -44,7 +44,7 @@ resources:
     source: NuGet.Client-PrivateDev
     trigger:
      branches:
-      - dev
+      - dev-donnie-msft-yamlExtends4
   - pipeline: DartLab
     source: DartLab
     branch: main
