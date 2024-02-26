@@ -70,9 +70,6 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: true
-- name: isOfficialBuild
-  type: boolean
-  default: false
 
 resources:
   pipelines:
