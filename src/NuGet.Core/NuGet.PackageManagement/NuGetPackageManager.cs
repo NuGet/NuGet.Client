@@ -14,7 +14,6 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.PackageManagement.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -3201,13 +3200,13 @@ namespace NuGet.PackageManagement
         {
             var frameworksWithResultingPackage = packageSpec
                 .TargetFrameworks
-                .Where(e => e.Dependencies.Any(a => a.Name == packageIdentityId))
+                .Where(e => e.Dependencies.Any(a => string.Equals(a.Name, packageIdentityId, StringComparison.OrdinalIgnoreCase)))
                 .Select(e => e.FrameworkName)
                 .Distinct();
 
             var frameworksWithoutResultingPackage = packageSpec
                 .TargetFrameworks
-                .Where(e => !e.Dependencies.Any(a => a.Name == packageIdentityId))
+                .Where(e => !e.Dependencies.Any(a => string.Equals(a.Name, packageIdentityId, StringComparison.OrdinalIgnoreCase)))
                 .Select(e => e.FrameworkName)
                 .Distinct();
 
@@ -3232,7 +3231,7 @@ namespace NuGet.PackageManagement
             {
                 foreach (var dependency in framework.Dependencies)
                 {
-                    if (dependency.Name == packageIdentityId)
+                    if (string.Equals(dependency.Name, packageIdentityId, StringComparison.OrdinalIgnoreCase))
                     {
                         versions ??= new();
                         versions.Add(dependency.LibraryRange.VersionRange);
@@ -3341,7 +3340,7 @@ namespace NuGet.PackageManagement
                                 pathResolver,
                                 originalAction.PackageIdentity);
 
-                            var framework = installationContext.SuccessfulFrameworks.FirstOrDefault();
+                            var framework = installationContext.SuccessfulFrameworks.First();
                             var resolvedAction = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.FrameworkName.Equals(framework))
                                 .Dependencies.First(dependency => dependency.Name.Equals(originalAction.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase));
 
