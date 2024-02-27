@@ -752,7 +752,7 @@ namespace NuGet.SolutionRestoreManager
         {
             var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>(PathUtility.GetStringComparerBasedOnOS());
 
-            foreach (var nuGetProject in projects)
+            foreach (var nuGetProject in projects.NoAllocEnumerate())
             {
                 if (nuGetProject.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
@@ -843,13 +843,14 @@ namespace NuGet.SolutionRestoreManager
                     ClientPolicyContext = ClientPolicyContext.GetClientPolicy(_settings, logger)
                 };
 
-                return await _packageRestoreManager.RestoreMissingPackagesAsync(
+                PackageRestoreResult packageRestoreResult = await _packageRestoreManager.RestoreMissingPackagesAsync(
                     solutionDirectory,
                     packages,
                     _nuGetProjectContext,
                     downloadContext,
                     logger,
                     token);
+                return packageRestoreResult;
             }
         }
 

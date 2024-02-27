@@ -185,8 +185,9 @@ namespace NuGet.PackageManagement
             {
                 return restoreAuditProperties;
             }
+            var allProjects = await SolutionManager.GetNuGetProjectsAsync();
 
-            foreach (var nuGetProject in (await SolutionManager.GetNuGetProjectsAsync()))
+            foreach (var nuGetProject in allProjects.NoAllocEnumerate())
             {
                 if (nuGetProject.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
