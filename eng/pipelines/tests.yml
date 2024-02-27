@@ -63,8 +63,7 @@ variables:
   RunApexTests: ${{ parameters.RunApexTests }}
   RunEndToEndTests: ${{ parameters.RunEndToEndTests }}
   TriggeredByBuildID: $(Build.TriggeredBy.BuildId)
-  TriggeredByBranchName: $[replace($(resources.pipeline.ComponentBuildUnderTest.sourceBranch), 'refs/heads/', '')]
-
+  TriggeredByBranchName: $[replace(variables['resources.pipeline.ComponentBuildUnderTest.sourceBranch'], 'refs/heads/', '')]
 stages:
 # Dartlab's template defines this in its own stage
 - template: templates/End_To_End_Tests_On_Windows.yml
