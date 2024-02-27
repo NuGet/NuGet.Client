@@ -8,6 +8,11 @@ namespace NuGet.PackageManagement
 {
     public class PackageRestoreResult
     {
+        public PackageRestoreResult(bool restored, IEnumerable<PackageIdentity> restoredPackages, AuditCheckResult auditCheckResult)
+            : this(restored, restoredPackages)
+        {
+        }
+
         public PackageRestoreResult(bool restored, IEnumerable<PackageIdentity> restoredPackages)
         {
             Restored = restored;
@@ -16,5 +21,6 @@ namespace NuGet.PackageManagement
 
         public bool Restored { get; }
         public IEnumerable<PackageIdentity> RestoredPackages { get; }
+        public AuditCheckResult AuditCheckResult { get; }
     }
 }
