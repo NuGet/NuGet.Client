@@ -39,10 +39,10 @@ stages:
         - name: bootstrapperUrl
           value: ${{parameters.bootstrapperUrl}}
         - name: runSettingsURI
-          ${{if gt(length(parameters.runSettingsURI), 0)}}:
-          value: ${{parameters.runSettingsURI}}
-          ${{elseif eq(length(parameters.runSettingsURI), 0)}}:
-          value: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(buildId);NuGet.Tests.Apex.runsettings
+          ${{ if gt(length(parameters.runSettingsURI), 0) }}:
+            value: ${{parameters.runSettingsURI}}
+          ${{ elseif eq(length(parameters.runSettingsURI), 0) }}:
+            value: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(buildId);NuGet.Tests.Apex.runsettings
         - ${{if gt(length(parameters.variables), 0)}}:
           - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
