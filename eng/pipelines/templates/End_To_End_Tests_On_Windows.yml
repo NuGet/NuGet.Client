@@ -1,4 +1,7 @@
 parameters:
+- name: buildId
+  type: string
+  default: '-1'
 - name: part
   type: string
 - name: stageName
@@ -52,7 +55,9 @@ stages:
       value: ${{parameters.part}}
     - ${{if gt(length(parameters.variables), 0)}}:
       - ${{parameters.variables}}
-    baseVisualStudioBootstrapperURI: https://vsdrop.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
+    - name: buildId
+      value: ${{parameters.buildId}}
+    baseVisualStudioBootstrapperURI: https://vsdrop.corp.microsoft.com/file/v1/$(VisualStudio.BaseBuild.ProductsDropName);bootstrappers/Enterprise/vs_enterprise.exe
     candidateBaselineBuilds: $(BaselineBuildCommitIds)
     visualStudioBootstrapperURI: $(bootstrapperUrl)
     visualStudioInstallationParameters: $(VisualStudio.InstallationUnderTest.SetupParameters)
@@ -146,7 +151,19 @@ stages:
 
     - task: DownloadBuildArtifacts@0
       displayName: "Download Build artifacts"
+      condition: not(gt(variables['buildId'], '-1'))
       inputs:
+        artifactName: "VS15"
+        downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+
+    - task: DownloadBuildArtifacts@0
+      displayName: "Download Build artifacts"
+      condition: gt(variables['buildId'], '-1'))
+      inputs:
+        buildType: "specific"
+        project: "DevDiv"
+        pipeline: "NuGet/"
+        buildId: variables['buildId']
         artifactName: "VS15"
         downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
