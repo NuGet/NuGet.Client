@@ -208,18 +208,18 @@ namespace NuGet.Protocol.Tests
                 Mode = TestServerMode.InvalidTLSCertificate
             };
 
-            Mock<IProxyCache> proxyCache = new();
-            proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
-            PackageSource packageSource = new(_testPackageSourceURL, "source");
-            SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
-            HttpHandlerResourceV3Provider target = new(proxyCache.Object);
-            var result = await target.TryCreate(sourceRepository, CancellationToken.None);
-            HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
-            HttpClientHandler clientHandler = resource.ClientHandler;
-            var client = new HttpClient(clientHandler);
-
             await server.ExecuteAsync(async uri =>
             {
+                Mock<IProxyCache> proxyCache = new();
+                proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
+                PackageSource packageSource = new(uri, "source");
+                SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
+                HttpHandlerResourceV3Provider target = new(proxyCache.Object);
+                var result = await target.TryCreate(sourceRepository, CancellationToken.None);
+                HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
+                HttpClientHandler clientHandler = resource.ClientHandler;
+                var client = new HttpClient(clientHandler);
+
                 // Act & Assert
                 var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await client.GetAsync(uri));
                 return 0;
@@ -234,21 +234,22 @@ namespace NuGet.Protocol.Tests
             {
                 Mode = TestServerMode.InvalidTLSCertificate
             };
-            Mock<IProxyCache> proxyCache = new();
-            proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
-            PackageSource packageSource = new(_testPackageSourceURL, "source")
-            {
-                DisableTLSCertificateValidation = true
-            };
-            SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
-            HttpHandlerResourceV3Provider target = new(proxyCache.Object);
-            var result = await target.TryCreate(sourceRepository, CancellationToken.None);
-            HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
-            HttpClientHandler clientHandler = resource.ClientHandler;
-            var client = new HttpClient(clientHandler);
 
             await server.ExecuteAsync(async uri =>
             {
+                Mock<IProxyCache> proxyCache = new();
+                proxyCache.Setup(pc => pc.GetProxy(It.IsAny<Uri>())).Returns((IWebProxy)null);
+                PackageSource packageSource = new(uri, "source")
+                {
+                    DisableTLSCertificateValidation = true
+                };
+                SourceRepository sourceRepository = new(packageSource, Array.Empty<INuGetResourceProvider>());
+                HttpHandlerResourceV3Provider target = new(proxyCache.Object);
+                var result = await target.TryCreate(sourceRepository, CancellationToken.None);
+                HttpHandlerResourceV3 resource = (HttpHandlerResourceV3)result.Item2;
+                HttpClientHandler clientHandler = resource.ClientHandler;
+                var client = new HttpClient(clientHandler);
+
                 // Act
                 var response = await client.GetAsync(uri);
 
