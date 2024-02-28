@@ -53,7 +53,7 @@ stages:
     - name: runSettingsURI
       ${{if gt(length(parameters.runSettingsURI), 0)}}:
       value: ${{parameters.runSettingsURI}}
-      ${{if eq(length(parameters.runSettingsURI), 0)}}:
+      ${{elseif eq(length(parameters.runSettingsURI), 0)}}:
       value: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(buildId);NuGet.Tests.Apex.runsettings
     - name: Part
       value: ${{parameters.part}}
