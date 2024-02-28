@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
                 packageSearchResultRenderer.RenderProblem(new PackageSearchProblem(PackageSearchProblemType.Error, ex.Message));
                 packageSearchResultRenderer.Finish();
 
-                return -1;
+                return ExitCodes.EXIT_COMMAND_EXECUTION_FAILURE;
             }
 
             WarnForHTTPSources(listEndpoints, packageSearchArgs.Logger);
@@ -61,7 +61,7 @@ namespace NuGet.CommandLine.XPlat
                 packageSearchResultRenderer.RenderProblem(new PackageSearchProblem(PackageSearchProblemType.Error, Strings.Error_NoSource));
                 packageSearchResultRenderer.Finish();
 
-                return -1;
+                return ExitCodes.EXIT_COMMAND_EXECUTION_FAILURE;
             }
 
             Func<PackageSource, Task<IEnumerable<IPackageSearchMetadata>>> searchPackageSourceAsync =
@@ -126,7 +126,7 @@ namespace NuGet.CommandLine.XPlat
             }
 
             packageSearchResultRenderer.Finish();
-            return 0;
+            return ExitCodes.EXIT_SUCCESS;
         }
 
         /// <summary>

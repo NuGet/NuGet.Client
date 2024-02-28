@@ -122,7 +122,7 @@ namespace NuGet.CommandLine.XPlat
                 catch (ArgumentException ex)
                 {
                     logger.LogError(ex.Message);
-                    return 1;
+                    return ExitCodes.EXIT_COMMANDLINE_ARGUMENT_PRSING_FAILURE;
                 }
             });
 
