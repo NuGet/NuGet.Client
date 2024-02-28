@@ -158,7 +158,7 @@ stages:
 
     - task: DownloadBuildArtifacts@0
       displayName: "Download Build artifacts"
-      condition: gt(variables['buildId'], '-1'))
+      condition: gt(variables['buildId'], '-1')
       inputs:
         buildType: "specific"
         project: "DevDiv"
