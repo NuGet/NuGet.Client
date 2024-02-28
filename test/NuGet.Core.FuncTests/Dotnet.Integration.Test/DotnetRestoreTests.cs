@@ -14,6 +14,8 @@ using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.XPlat.FuncTest;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
@@ -2671,6 +2673,62 @@ EndGlobal";
             var targetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", "a.csproj.nuget.g.props");
             var allTargets = File.ReadAllText(targetsFilePath);
             allTargets.Should().Contain(condition);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_withTLSCertificateValidationDisabled_DoesnotThrowException()
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA100);
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, packageA100, "net472");
+            var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
+            FileSystemBackedTcpListener tcpListenerServer = new FileSystemBackedTcpListener(pathContext.PackageSource);
+            var serverTask = tcpListenerServer.StartServer();
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source1"" value=""{tcpListenerServer.URI}"" disableTLSCertificateValidation=""true""/>
+    </packageSources>
+</configuration>
+";
+
+            // Act & Assert
+            File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), configFile);
+            _msbuildFixture.RunDotnetExpectSuccess(workingDirectory, $"restore {projectA.ProjectName}.csproj --configfile ./NuGet.config");
+            tcpListenerServer.StopServer();
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_withTLSCertificateValidationEnabled_ThrowException()
+        {
+            // Arrange
+            using var pathContext = _msbuildFixture.CreateSimpleTestPathContext();
+            var packageB100 = new SimpleTestPackageContext("myPackg", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageB100);
+            var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, packageB100, "net472");
+            var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectB.ProjectName);
+            FileSystemBackedTcpListener tcpListenerServer = new FileSystemBackedTcpListener(pathContext.PackageSource);
+            var serverTask = tcpListenerServer.StartServer();
+            var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""source1"" value=""{tcpListenerServer.URI}""/>
+    </packageSources>
+</configuration>
+";
+            File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), configFile);
+
+            // Act & Assert
+            _msbuildFixture.RunDotnetExpectFailure(workingDirectory, $"restore {projectB.ProjectName}.csproj --configfile ./NuGet.config");
+            tcpListenerServer.StopServer();
         }
 
         private void AssertRelatedProperty(IList<LockFileItem> items, string path, string related)
