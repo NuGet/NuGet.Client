@@ -58,10 +58,17 @@ namespace NuGet.Protocol
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate),
             };
 
+#if NETSTANDARD2_0
             if (packageSource.DisableTLSCertificateValidation)
             {
                 clientHandler.ServerCertificateCustomValidationCallback = (HttpRequestMessage message, X509Certificate2 cert, X509Chain chain, SslPolicyErrors errors) => true;
             }
+#else
+            if (packageSource.DisableTLSCertificateValidation)
+            {
+                clientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            }
+#endif
 
 #if IS_DESKTOP
             if (packageSource.MaxHttpRequestsPerSource > 0)
