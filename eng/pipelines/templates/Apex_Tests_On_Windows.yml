@@ -7,6 +7,7 @@ parameters:
     type: string
   - name: runSettingsURI
     type: string
+    default: ''
   - name: DartLabEnvironment
     type: string
   - name: condition
@@ -37,6 +38,11 @@ stages:
       variables:
         - name: bootstrapperUrl
           value: ${{parameters.bootstrapperUrl}}
+        - name: runSettingsURI
+          ${{if gt(length(parameters.runSettingsURI), 0)}}:
+          value: ${{parameters.runSettingsURI}}
+          ${{if eq(length(parameters.runSettingsURI), 0)}}:
+          value: https://vsdrop.corp.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(buildId);NuGet.Tests.Apex.runsettings
         - ${{if gt(length(parameters.variables), 0)}}:
           - ${{parameters.variables}}
       runSettingsURI: ${{parameters.runSettingsURI}}
