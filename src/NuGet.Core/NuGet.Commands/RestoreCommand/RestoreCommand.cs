@@ -323,7 +323,7 @@ namespace NuGet.Commands
 
                 telemetry.StartIntervalMeasure();
                 // Create assets file
-                if(NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
+                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
                 LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
                     _request.Project,
