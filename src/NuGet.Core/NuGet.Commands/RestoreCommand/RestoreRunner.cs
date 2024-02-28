@@ -417,7 +417,8 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Start
                 };
 
@@ -428,7 +429,8 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Stop
                 };
 
@@ -439,7 +441,8 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Start
                 };
 
@@ -450,7 +453,8 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Stop
                 };
 

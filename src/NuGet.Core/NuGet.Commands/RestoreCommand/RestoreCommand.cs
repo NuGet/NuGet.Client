@@ -193,9 +193,9 @@ namespace NuGet.Commands
                         bool noOp;
                         TimeSpan? cacheFileAge;
 
-                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcDependencySpecStart(_request.Project.FilePath);
+                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
                         (cacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
-                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcDependencySpecStop(_request.Project.FilePath);
+                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
 
                         telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
                         telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
@@ -1427,13 +1427,14 @@ namespace NuGet.Commands
         {
             private const string EventNameBuildAssetsFile = "RestoreCommand/BuildAssetsFile";
             private const string EventNameBuildRestoreGraph = "RestoreCommand/BuildRestoreGraph";
-            private const string EventNameCalcDependencySpec = "RestoreCommand/CalcDependencySpec";
+            private const string EventNameCalcNoOpRestore = "RestoreCommand/CalcNoOpRestore";
 
             public static void BuildAssetsFileStart(string filePath)
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Start
                 };
 
@@ -1444,7 +1445,8 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Stop
                 };
 
@@ -1455,7 +1457,8 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Start
                 };
 
@@ -1466,33 +1469,36 @@ namespace NuGet.Commands
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Stop
                 };
 
                 NuGetEventSource.Instance.Write(EventNameBuildRestoreGraph, eventOptions, new { FilePath = filePath });
             }
 
-            public static void CalcDependencySpecStart(string filePath)
+            public static void CalcNoOpRestoreStart(string filePath)
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Start
                 };
 
-                NuGetEventSource.Instance.Write(EventNameCalcDependencySpec, eventOptions, new { FilePath = filePath });
+                NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
             }
 
-            public static void CalcDependencySpecStop(string filePath)
+            public static void CalcNoOpRestoreStop(string filePath)
             {
                 var eventOptions = new EventSourceOptions
                 {
-                    Keywords = NuGetEventSource.Keywords.Performance,
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
                     Opcode = EventOpcode.Stop
                 };
 
-                NuGetEventSource.Instance.Write(EventNameCalcDependencySpec, eventOptions, new { FilePath = filePath });
+                NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
             }
         }
     }
