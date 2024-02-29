@@ -11,8 +11,10 @@ using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NuGet.Test.Server;
 
 namespace Test.Utility
 {
@@ -28,13 +30,17 @@ namespace Test.Utility
         {
             _packageDirectory = packageDirectory;
             _certificate = GenerateSelfSignedCertificate();
-            _tcpListener = new TcpListener(IPAddress.Loopback, 0);
-            URI = $"https://{_tcpListener.LocalEndpoint}/";
         }
 
         public async Task StartServer()
         {
+
+            var portReserver = new PortReserver();
+            var portNumber = await portReserver.ExecuteAsync((p, t) => Task.FromResult(p), CancellationToken.None);
+            _tcpListener = new TcpListener(IPAddress.Loopback, portNumber);
+            URI = $"https://{_tcpListener.LocalEndpoint}/";
             _tcpListener.Start();
+
             while (_runServer)
             {
                 var client = await _tcpListener.AcceptTcpClientAsync();
