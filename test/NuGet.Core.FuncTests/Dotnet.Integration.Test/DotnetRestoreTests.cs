@@ -2684,7 +2684,7 @@ EndGlobal";
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""source1"" value=""{tcpListenerServer.URI}"" disableTLSCertificateValidation=""true""/>
+        <add key=""source1"" value=""{tcpListenerServer.URI}v3/index.json"" disableTLSCertificateValidation=""true""/>
     </packageSources>
 </configuration>
 ";
@@ -2712,7 +2712,7 @@ EndGlobal";
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""source1"" value=""{tcpListenerServer.URI}""/>
+        <add key=""source1"" value=""{tcpListenerServer.URI}v3/index.json""/>
     </packageSources>
 </configuration>
 ";
