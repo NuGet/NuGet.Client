@@ -27,7 +27,9 @@ parameters:
     default: false
   - name: QBuildSessionId
     type: string
-
+  - name: preTestMachineConfigurationStepList
+    type: stepList
+    default: []
 stages:
   - template: stages\visual-studio\build-to-build-upgrade\single-runsettings.yml@DartLabTemplates
     parameters:
@@ -123,6 +125,7 @@ stages:
               $buildDrop = "${{parameters.baseBuildDrop}}" -split "/"
               $dropName = "Products/DevDiv/VS/$($buildDrop[-2])/$($buildDrop[-1])"
               Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
+        - ${{parameters.preTestMachineConfigurationStepList}}
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
