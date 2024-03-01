@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using NuGet.Protocol;
 using NuGet.Shared;
 
@@ -27,6 +28,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <value>direct, all</value>
         public string? AuditMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets values indicating which advisories to suppress.
+        /// </summary>
+        public IList<string> SuppressedAdvisories { get; set; } = new List<string>();
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
         public bool TryParseEnableAudit(out bool result)

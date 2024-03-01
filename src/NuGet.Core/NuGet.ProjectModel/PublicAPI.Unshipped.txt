@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.get -> System.Collections.Generic.IList<string!>!
+NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.set -> void

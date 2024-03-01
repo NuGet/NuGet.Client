@@ -272,6 +272,11 @@ namespace NuGet.Commands.Restore.Utility
                                 continue;
                             }
 
+                            if (_restoreAuditProperties != null && _restoreAuditProperties.SuppressedAdvisories.Contains(knownVulnerability.Url.ToString()))
+                            {
+                                continue;
+                            }
+
                             result ??= new();
 
                             if (!result.TryGetValue(packageIdentity, out PackageAuditInfo? auditInfo))
