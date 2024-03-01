@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -23,6 +24,8 @@ internal class NoAllocNewLineStreamWriter : StreamWriter
     }
 
     private string? _newLine;
+
+    [AllowNull]
     public override string NewLine
     {
         get
