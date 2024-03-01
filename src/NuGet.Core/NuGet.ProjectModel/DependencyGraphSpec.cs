@@ -300,7 +300,7 @@ namespace NuGet.ProjectModel
 
         public string GetHash()
         {
-            using (var hashFunc = new Sha512HashFunction())
+            using (var hashFunc = new FnvHash64Function())
             using (var writer = new HashObjectWriter(hashFunc))
             {
                 Write(writer, hashing: true, PackageSpecWriter.Write);
