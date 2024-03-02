@@ -2872,7 +2872,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["FallbackFoldersCount"] = value => value.Should().Be(0),
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
                 ["Audit.Level"] = value => value.Should().Be(0),
-                ["Audit.Mode"] = value => value.Should().Be("Unknown"),
+                ["Audit.Mode"] = value => value.Should().Be("Unknown"), // TODO: Add SuppressedAdvisories here?
                 ["Audit.Vulnerability.Direct.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity0"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity1"] = value => value.Should().Be(0),

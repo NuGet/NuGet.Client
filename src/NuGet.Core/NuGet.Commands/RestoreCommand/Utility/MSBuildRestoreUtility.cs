@@ -295,7 +295,7 @@ namespace NuGet.Commands
                         );
                     }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items)); // TODO: Need to verify PC restore
+                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, new List<string>()); // TODO: Need to implement PC restore
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)

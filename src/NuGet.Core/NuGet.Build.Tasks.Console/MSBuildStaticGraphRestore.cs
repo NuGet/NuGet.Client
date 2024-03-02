@@ -1064,7 +1064,7 @@ namespace NuGet.Build.Tasks.Console
         private static List<string> GetAuditSuppressions(IMSBuildProject project)
         {
             return GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
-                        .Select(i => i.GetProperty("Identity"))
+                        .Select(i => i.Identity)
                         .ToList();
         }
 

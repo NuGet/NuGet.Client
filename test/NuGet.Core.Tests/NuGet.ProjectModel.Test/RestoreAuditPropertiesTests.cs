@@ -105,5 +105,7 @@ namespace NuGet.ProjectModel.Test
             clone.Should().NotBeSameAs(property1);
             clone.Should().Be(property1);
         }
+
+        // TODO: Add something here?
     }
 }

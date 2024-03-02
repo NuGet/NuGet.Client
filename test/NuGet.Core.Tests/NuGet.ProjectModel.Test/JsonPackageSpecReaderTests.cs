@@ -4023,6 +4023,25 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WithRestoreAuditProperties_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
+            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":[\"d\",\"e\"]}}}}}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+
+            // Assert
+            packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().HaveCount(2);
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.First().Should().Be("d");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Last().Should().Be("e");
+        }
+
+        [Theory]
+        [MemberData(nameof(LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader), MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void GetPackageSpec_WithRestoreAuditPropertiesAndSuppressions_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
+        {
+            // Arrange
             var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\": \"a\", \"auditLevel\": \"b\", \"auditMode\": \"c\"}}}}}}";
 
             // Act

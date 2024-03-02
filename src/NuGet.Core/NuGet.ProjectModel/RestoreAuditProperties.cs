@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Protocol;
 using NuGet.Shared;
 
@@ -96,7 +97,8 @@ namespace NuGet.ProjectModel
 
             return EnableAudit == other.EnableAudit &&
                 AuditLevel == other.AuditLevel &&
-                AuditMode == other.AuditMode;
+                AuditMode == other.AuditMode &&
+                SuppressedAdvisories.SequenceEqual(other.SuppressedAdvisories); // This checks for order too. Do we care about checking for order?
         }
 
         public override bool Equals(object? obj)
@@ -123,6 +125,7 @@ namespace NuGet.ProjectModel
             hashCodeCombiner.AddObject(EnableAudit);
             hashCodeCombiner.AddObject(AuditLevel);
             hashCodeCombiner.AddObject(AuditMode);
+            hashCodeCombiner.AddObject(SuppressedAdvisories);
             return hashCodeCombiner.CombinedHash;
         }
 
@@ -133,6 +136,7 @@ namespace NuGet.ProjectModel
                 EnableAudit = EnableAudit,
                 AuditLevel = AuditLevel,
                 AuditMode = AuditMode,
+                SuppressedAdvisories = SuppressedAdvisories,
             };
             return clone;
         }
