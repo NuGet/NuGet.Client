@@ -190,7 +190,7 @@ namespace NuGet.ProjectModel
                    osStringComparer.Equals(OutputPath, other.OutputPath) &&
                    osStringComparer.Equals(ProjectName, other.ProjectName) &&
                    osStringComparer.Equals(ProjectUniqueName, other.ProjectUniqueName) &&
-                   Sources.OrderedEquals(other.Sources.Distinct(), source => source.Source, StringComparer.OrdinalIgnoreCase) &&
+                   Sources.Distinct().OrderedEquals(other.Sources.Distinct(), source => source.Source, StringComparer.OrdinalIgnoreCase) &&
                    osStringComparer.Equals(PackagesPath, other.PackagesPath) &&
                    ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, filePath => filePath, osStringComparer, osStringComparer) &&
                    FallbackFolders.OrderedEquals(other.FallbackFolders, fallbackFolder => fallbackFolder, osStringComparer, osStringComparer) &&
