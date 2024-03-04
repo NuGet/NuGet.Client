@@ -212,7 +212,11 @@ namespace NuGet.ProjectModel
 
         private HashSet<string> GetSources(IList<PackageSource> sources)
         {
+#if NETSTANDARD2_0
+            var setSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+#else
             var setSources = new HashSet<string>(sources.Count, StringComparer.OrdinalIgnoreCase);
+#endif
             for (var i = 0; i < sources.Count; i++)
             {
                 setSources.Add(sources[i].Source);
