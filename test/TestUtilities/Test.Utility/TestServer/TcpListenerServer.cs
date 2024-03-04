@@ -32,6 +32,7 @@ namespace NuGet.Test.Server
                     break;
                 case TestServerMode.InvalidTLSCertificate:
                     startServer = StartInvalidTlsCertificateServer;
+                    _tlsCertificate = GenerateSelfSignedCertificate();
                     break;
 
                 default:
@@ -71,9 +72,7 @@ namespace NuGet.Test.Server
         }
 
         public TcpListenerServer()
-        {
-            _tlsCertificate = GenerateSelfSignedCertificate();
-        }
+        { }
 
         private static X509Certificate2 GenerateSelfSignedCertificate()
         {
