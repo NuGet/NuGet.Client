@@ -153,7 +153,11 @@ namespace NuGet.ProjectModel
 
         public void Write(Stream stream, LockFile lockFile)
         {
+#if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(stream))
+#else
+            using (var textWriter = new NoAllocNewLineStreamWriter(stream))
+#endif
             {
                 Write(textWriter, lockFile);
             }
