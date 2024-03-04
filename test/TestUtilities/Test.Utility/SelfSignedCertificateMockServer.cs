@@ -18,7 +18,7 @@ using NuGet.Test.Server;
 
 namespace Test.Utility
 {
-    public class FileSystemBackedTcpListener
+    public class SelfSignedCertificateMockServer
     {
         private readonly X509Certificate2 _certificate;
         private readonly string _packageDirectory;
@@ -26,7 +26,7 @@ namespace Test.Utility
         private bool _runServer = true;
         public string URI;
 
-        public FileSystemBackedTcpListener(string packageDirectory)
+        public SelfSignedCertificateMockServer(string packageDirectory)
         {
             _packageDirectory = packageDirectory;
             _certificate = GenerateSelfSignedCertificate();
@@ -84,7 +84,7 @@ namespace Test.Utility
                         {
                             if (parts[1] == "package")
                             {
-                                if (parts.Length >= 4)
+                                if (parts.Length == 4)
                                 {
                                     ProcessPackageRequest(parts[2], writer);
                                 }
