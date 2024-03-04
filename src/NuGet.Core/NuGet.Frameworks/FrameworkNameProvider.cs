@@ -123,30 +123,14 @@ namespace NuGet.Frameworks
             }
             else if (reverse.ContainsKey(key))
             {
-                bool found = false;
-                string? match = null;
-                foreach (var p in reverse)
+                foreach (var item in reverse.NoAllocEnumerate())
                 {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(p.Key, key))
+                    if (StringComparer.OrdinalIgnoreCase.Equals(item.Key, key))
                     {
-                        if (found)
-                        {
-                            throw new InvalidOperationException();
-                        }
-
-                        match = p.Key;
-                        found = true;
+                        value = item.Key;
+                        return true;
                     }
                 }
-
-                if (!found || match == null)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                value = match;
-
-                return true;
             }
 
             value = null;
