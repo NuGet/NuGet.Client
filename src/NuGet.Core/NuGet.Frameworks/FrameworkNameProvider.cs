@@ -124,8 +124,14 @@ namespace NuGet.Frameworks
             }
             else if (reverse.ContainsKey(key))
             {
-                value = reverse.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Key, key)).Select(s => s.Key).Single();
-                return true;
+                foreach (var item in reverse.NoAllocEnumerate())
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(item.Key, key))
+                    {
+                        value = item.Key;
+                        return true;
+                    }
+                }
             }
 
             value = null;

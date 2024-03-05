@@ -893,7 +893,8 @@ namespace NuGet.ProjectModel
 
         private static void WritePathArray(JsonWriter writer, string property, IEnumerable<string> items)
         {
-            if (items.Any())
+            using var itemsEnumerator = items.NoAllocEnumerate().GetEnumerator();
+            if (itemsEnumerator.MoveNext())
             {
                 var orderedItems = items
                     .Select(f => GetPathWithForwardSlashes(f))
