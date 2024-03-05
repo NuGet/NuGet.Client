@@ -321,7 +321,8 @@ namespace NuGet.ProjectModel
 
         public string GetHash(Dictionary<string, string> projectNameToHashCode)
         {
-            using (var hashFunc = new Sha512HashFunction())
+            // Use the faster FNV hash function for hashing unless the user has specified to use the legacy SHA512 hash function
+            using (IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function())
             using (var writer = new HashObjectWriter(hashFunc))
             {
                 Write(writer, hashing: true, PackageSpecWriter.Write, projectNameToHashCode);
