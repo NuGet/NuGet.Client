@@ -98,7 +98,7 @@ namespace NuGet.ProjectModel
             return EnableAudit == other.EnableAudit &&
                 AuditLevel == other.AuditLevel &&
                 AuditMode == other.AuditMode &&
-                SuppressedAdvisories.SequenceEqual(other.SuppressedAdvisories); // This checks for order too. Do we care about checking for order?
+                SuppressedAdvisories.OrderedEquals(other.SuppressedAdvisories, advisory => advisory, StringComparer.Ordinal, EqualityComparer<string>.Default);
         }
 
         public override bool Equals(object? obj)
@@ -125,7 +125,7 @@ namespace NuGet.ProjectModel
             hashCodeCombiner.AddObject(EnableAudit);
             hashCodeCombiner.AddObject(AuditLevel);
             hashCodeCombiner.AddObject(AuditMode);
-            hashCodeCombiner.AddObject(SuppressedAdvisories);
+            hashCodeCombiner.AddUnorderedSequence(SuppressedAdvisories);
             return hashCodeCombiner.CombinedHash;
         }
 
