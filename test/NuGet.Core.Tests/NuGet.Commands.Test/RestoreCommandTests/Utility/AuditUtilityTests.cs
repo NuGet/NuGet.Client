@@ -443,7 +443,6 @@ public class AuditUtilityTests
     {
         // Arrange
         var context = new AuditTestContext();
-
         string cveUrl1 = "https://cve.test.suppressed/1";
         string cveUrl2 = "https://cve.test.suppressed/2";
 
@@ -478,7 +477,6 @@ public class AuditUtilityTests
         public string? Enabled { get; set; }
         public string? Level { get; set; }
         public string? Mode { get; set; }
-
         public IList<string> SuppressedAdvisories { get; set; } = new List<string>();
 
         public TestLogger Log { get; } = new();

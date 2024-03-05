@@ -4032,6 +4032,7 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
             packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
             packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().HaveCount(0);
         }
 
         [Theory]

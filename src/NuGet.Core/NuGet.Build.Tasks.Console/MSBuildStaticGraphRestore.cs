@@ -37,15 +37,11 @@ namespace NuGet.Build.Tasks.Console
         private static readonly Lazy<IMachineWideSettings> MachineWideSettingsLazy = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
         /// <summary>
-        /// Represents the small list of targets that must be executed in order for PackageReference, PackageDownload, and FrameworkReference items to be accurate.
+        /// Represents the small list of targets that must be executed in order for various restore input items to be accurate.
         /// </summary>
         private static readonly string[] TargetsToBuild =
         {
-            "CollectPackageReferences",
-            "CollectPackageDownloads",
-            "CollectFrameworkReferences",
-            "CollectCentralPackageVersions",
-            "CollectNuGetAuditSuppressions"
+            "CollectRestoreInputs"
         };
 
         private readonly Lazy<ConsoleLoggingQueue> _loggingQueueLazy;
@@ -1010,7 +1006,7 @@ namespace NuGet.Build.Tasks.Console
                             continue;
                         }
 
-                        // If the project supports restore, queue up a build of the 3 targets needed for restore
+                        // If the project supports restore, queue up a build of the targets needed for restore
                         BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
                             new BuildRequestData(
                                 projectInstance,

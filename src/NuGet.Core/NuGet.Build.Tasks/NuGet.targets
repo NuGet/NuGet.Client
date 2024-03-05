@@ -369,6 +369,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+    CollectRestoreInputs
+    Runs all the 'Collect' targets
+    ============================================================
+  -->
+  <Target Name="CollectRestoreInputs"
+          DependsOnTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences;CollectCentralPackageVersions;CollectNuGetAuditSuppressions">
+  </Target>
+
+  <!--
+    ============================================================
     _LoadRestoreGraphEntryPoints
     Find project entry points and load them into items.
     ============================================================
@@ -1036,7 +1046,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences;CollectCentralPackageVersions;CollectNuGetAuditSuppressions"
+    DependsOnTargets="_GetRestoreProjectStyle;CollectRestoreInputs"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
