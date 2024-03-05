@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
@@ -86,7 +87,7 @@ namespace NuGet.Commands
                 // Limiting to processor count reduces task context switching which is better
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
-
+            Dictionary<string, string> projectNameToPackageSpecHash = new Dictionary<string, string>(dgFile.Projects.Count, PathUtility.GetStringComparerBasedOnOS());
             using (var settingsLoadingContext = new SettingsLoadingContext())
             {
                 // Parallel.Foreach has an optimization for Arrays, so calling .ToArray() is better and adds almost no overhead
@@ -106,7 +107,8 @@ namespace NuGet.Commands
                         externalClosure,
                         restoreContext,
                         projectDependencyGraphSpec,
-                        settingsLoadingContext);
+                        settingsLoadingContext,
+                        projectNameToPackageSpecHash);
 
                     if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                     {
@@ -160,7 +162,8 @@ namespace NuGet.Commands
             HashSet<ExternalProjectReference> projectReferenceClosure,
             RestoreArgs restoreArgs,
             DependencyGraphSpec projectDgSpec,
-            SettingsLoadingContext settingsLoadingContext)
+            SettingsLoadingContext settingsLoadingContext,
+            Dictionary<string, string> projectNameToPackageSpecHash)
         {
             var projectPackageSpec = projectDgSpec.GetProjectSpec(projectNameToRestore);
             //fallback paths, global packages path and sources need to all be passed in the dg spec
@@ -202,6 +205,7 @@ namespace NuGet.Commands
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 AdditionalMessages = projectAdditionalMessages,
                 UpdatePackageLastAccessTime = updateLastAccess,
+                ProjectNameToPackageSpecHash = projectNameToPackageSpecHash,
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

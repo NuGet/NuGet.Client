@@ -9,6 +9,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.RuntimeModel;
 
 namespace NuGet.ProjectModel
 {
@@ -318,7 +319,17 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction)
+        public string GetHash(Dictionary<string, string> projectNameToHashCode)
+        {
+            using (var hashFunc = new Sha512HashFunction())
+            using (var writer = new HashObjectWriter(hashFunc))
+            {
+                Write(writer, hashing: true, PackageSpecWriter.Write, projectNameToHashCode);
+                return writer.GetHash();
+            }
+        }
+
+        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction, Dictionary<string, string> projectNameToHashCode = null)
         {
             writer.WriteObjectStart();
             writer.WriteNameValue("format", Version);
@@ -340,14 +351,49 @@ namespace NuGet.ProjectModel
             foreach (var pair in _projects)
             {
                 var project = pair.Value;
-
-                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                writeAction.Invoke(project, writer, hashing, EnvironmentVariableWrapper.Instance);
-                writer.WriteObjectEnd();
+                WriteProject(writer, hashing, writeAction, project, projectNameToHashCode);
             }
 
             writer.WriteObjectEnd();
             writer.WriteObjectEnd();
+        }
+
+        private static void WriteProject(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, PackageSpec project, Dictionary<string, string> projectNameToHashCode)
+        {
+            if (hashing && projectNameToHashCode != null)
+            {
+                string projectHash = null;
+
+                lock (projectNameToHashCode)
+                {
+                    projectNameToHashCode.TryGetValue(project.RestoreMetadata.ProjectUniqueName, out projectHash);
+                }
+
+                if (projectHash == null)
+                {
+                    using var hashFunc = new Sha512HashFunction();
+                    using var projectWriter = new HashObjectWriter(hashFunc);
+                    writeAction.Invoke(project, projectWriter, hashing, EnvironmentVariableWrapper.Instance);
+                    projectHash = projectWriter.GetHash();
+                }
+
+                lock (projectNameToHashCode)
+                {
+                    if (!projectNameToHashCode.ContainsKey(project.RestoreMetadata.ProjectUniqueName))
+                    {
+                        projectNameToHashCode[project.RestoreMetadata.ProjectUniqueName] = projectHash;
+                    }
+                }
+
+                writer.WriteObjectStart(projectHash);
+                writer.WriteObjectEnd();
+            }
+            else
+            {
+                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
+                writeAction.Invoke(project, writer, hashing, EnvironmentVariableWrapper.Instance);
+                writer.WriteObjectEnd();
+            }
         }
 
         /// <summary>
