@@ -132,13 +132,13 @@ namespace NuGet.ProjectModel
             }
 
             return EqualityUtility.EqualsWithNullCheck(FrameworkName, other.FrameworkName) &&
-                   EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dependency => dependency.Name, StringComparer.OrdinalIgnoreCase) &&
+                   EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name)) &&
                    Imports.SequenceEqualWithNullCheck(other.Imports) &&
                    Warn == other.Warn &&
                    AssetTargetFallback == other.AssetTargetFallback &&
-                   EqualityUtility.OrderedEquals(DownloadDependencies, other.DownloadDependencies, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
-                   EqualityUtility.OrderedEquals(FrameworkReferences, other.FrameworkReferences, e => e.Name, ComparisonUtility.FrameworkReferenceNameComparer) &&
-                   EqualityUtility.OrderedEquals(CentralPackageVersions.Values, other.CentralPackageVersions.Values, e => e.Name, StringComparer.OrdinalIgnoreCase) &&
+                   EqualityUtility.OrderedEquals(DownloadDependencies, other.DownloadDependencies, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name)) &&
+                   EqualityUtility.OrderedEquals(FrameworkReferences, other.FrameworkReferences, (a, b) => ComparisonUtility.FrameworkReferenceNameComparer.Compare(a.Name, b.Name)) &&
+                   EqualityUtility.OrderedEquals(CentralPackageVersions.Values, other.CentralPackageVersions.Values, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name)) &&
                    PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
                    StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
         }

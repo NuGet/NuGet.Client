@@ -154,7 +154,7 @@ namespace NuGet.Configuration.Test
 
             if (item1.Attributes.Count == item2.Attributes.Count)
             {
-                return item1.Attributes.OrderedEquals(item2.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase);
+                return EqualityUtility.DictionaryEquals(item1.Attributes, item2.Attributes, (a, b) => StringComparer.OrdinalIgnoreCase.Equals(a, b));
             }
 
             return false;
@@ -187,7 +187,7 @@ namespace NuGet.Configuration.Test
             if (section1.Attributes.Count == section2.Attributes.Count &&
                 section1.Items.Count == section2.Items.Count)
             {
-                var attributesEquals = section1.Attributes.OrderedEquals(section2.Attributes, data => data.Key, StringComparer.OrdinalIgnoreCase);
+                var attributesEquals = EqualityUtility.DictionaryEquals(section1.Attributes, section2.Attributes, (a, b) => StringComparer.OrdinalIgnoreCase.Equals(a, b));
                 var itemsEquals = true;
 
                 var items1 = section1.Items.ToList();
@@ -317,7 +317,7 @@ namespace NuGet.Configuration.Test
                 return false;
             }
 
-            return item1.Patterns.OrderedEquals(item2.Patterns, e => e.Pattern, StringComparer.OrdinalIgnoreCase);
+            return item1.Patterns.OrderedEquals(item2.Patterns, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Pattern, b.Pattern));
         }
 
     }

@@ -128,8 +128,7 @@ namespace NuGet.ProjectModel
 
                 if (!projectRuntimesKeys.OrderedEquals(
                             lockFileRuntimes,
-                            x => x,
-                            StringComparer.InvariantCultureIgnoreCase,
+                            (a, b) => StringComparer.InvariantCultureIgnoreCase.Compare(a, b),
                             StringComparer.InvariantCultureIgnoreCase))
                 {
                     invalidReasons.Add(string.Format(

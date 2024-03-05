@@ -310,8 +310,8 @@ namespace NuGet.RuntimeModel
                 return true;
             }
 
-            return Runtimes.OrderedEquals(other.Runtimes, pair => pair.Key, StringComparer.Ordinal)
-                && Supports.OrderedEquals(other.Supports, pair => pair.Key, StringComparer.Ordinal);
+            return EqualityUtility.DictionaryEquals(Runtimes, other.Runtimes)
+                && EqualityUtility.DictionaryEquals(Supports, other.Supports);
         }
 
         public override bool Equals(object? obj)
