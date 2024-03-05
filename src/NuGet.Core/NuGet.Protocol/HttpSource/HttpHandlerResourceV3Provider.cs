@@ -19,6 +19,11 @@ namespace NuGet.Protocol
     {
         private readonly IProxyCache _proxyCache;
 
+#if NETSTANDARD2_0
+        internal static Func<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> DangerousAcceptAnyServerCertificateValidator =
+            (message, certificate, chain, policyErrors) => true;
+#endif
+
         public HttpHandlerResourceV3Provider()
             : this(ProxyCache.Instance)
         {
@@ -61,7 +66,7 @@ namespace NuGet.Protocol
 #if NETSTANDARD2_0
             if (packageSource.DisableTLSCertificateValidation)
             {
-                clientHandler.ServerCertificateCustomValidationCallback = (HttpRequestMessage message, X509Certificate2 cert, X509Chain chain, SslPolicyErrors errors) => true;
+                clientHandler.ServerCertificateCustomValidationCallback = DangerousAcceptAnyServerCertificateValidator;
             }
 #else
             if (packageSource.DisableTLSCertificateValidation)

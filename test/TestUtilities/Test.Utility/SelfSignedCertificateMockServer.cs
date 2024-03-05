@@ -32,9 +32,8 @@ namespace Test.Utility
             _certificate = GenerateSelfSignedCertificate();
         }
 
-        public async Task StartServer()
+        public async Task StartServerAsync()
         {
-
             var portReserver = new PortReserver();
             var portNumber = await portReserver.ExecuteAsync((p, t) => Task.FromResult(p), CancellationToken.None);
             _tcpListener = new TcpListener(IPAddress.Loopback, portNumber);
@@ -59,7 +58,7 @@ namespace Test.Utility
             using (client)
             using (var sslStream = new SslStream(client.GetStream(), false))
             {
-                await sslStream.AuthenticateAsServerAsync(_certificate, clientCertificateRequired: false, enabledSslProtocols: SslProtocols.Tls12, checkCertificateRevocation: true);
+                await sslStream.AuthenticateAsServerAsync(_certificate, clientCertificateRequired: false, checkCertificateRevocation: true);
                 using (var reader = new StreamReader(sslStream, Encoding.ASCII, false, 128))
                 using (var writer = new StreamWriter(sslStream, Encoding.ASCII, 128, false))
                 {
