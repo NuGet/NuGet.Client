@@ -34,7 +34,7 @@ namespace Dotnet.Integration.Test
             var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, packageA100, "net472");
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
             SelfSignedCertificateMockServer tcpListenerServer = new SelfSignedCertificateMockServer(pathContext.PackageSource);
-            var serverTask = tcpListenerServer.StartServer();
+            var serverTask = tcpListenerServer.StartServerAsync();
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -62,7 +62,7 @@ namespace Dotnet.Integration.Test
             var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, packageB100, "net472");
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectB.ProjectName);
             SelfSignedCertificateMockServer tcpListenerServer = new SelfSignedCertificateMockServer(pathContext.PackageSource);
-            var serverTask = tcpListenerServer.StartServer();
+            var serverTask = tcpListenerServer.StartServerAsync();
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -92,8 +92,8 @@ namespace Dotnet.Integration.Test
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectB.ProjectName);
             SelfSignedCertificateMockServer tcpListenerServer1 = new SelfSignedCertificateMockServer(pathContext.PackageSource);
             SelfSignedCertificateMockServer tcpListenerServer2 = new SelfSignedCertificateMockServer(pathContext.PackageSource);
-            var serverTask = tcpListenerServer1.StartServer();
-            var serverTask2 = tcpListenerServer2.StartServer();
+            var serverTask = tcpListenerServer1.StartServerAsync();
+            var serverTask2 = tcpListenerServer2.StartServerAsync();
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
@@ -125,8 +125,8 @@ namespace Dotnet.Integration.Test
             var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectB.ProjectName);
             SelfSignedCertificateMockServer tcpListenerServer1 = new SelfSignedCertificateMockServer(pathContext.PackageSource);
             SelfSignedCertificateMockServer tcpListenerServer2 = new SelfSignedCertificateMockServer(pathContext.PackageSource);
-            var serverTask = tcpListenerServer1.StartServer();
-            var serverTask2 = tcpListenerServer2.StartServer();
+            var serverTask = tcpListenerServer1.StartServerAsync();
+            var serverTask2 = tcpListenerServer2.StartServerAsync();
             var configFile = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
