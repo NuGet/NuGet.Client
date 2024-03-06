@@ -295,7 +295,7 @@ namespace NuGet.Commands
                         );
                     }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, new List<string>()); // TODO: Need to implement PC restore
+                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, suppressionItems: new List<string>());
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -926,7 +926,8 @@ namespace NuGet.Commands
             string auditLevel = specItem.GetProperty("NuGetAuditLevel");
             string auditMode = specItem.GetProperty("NuGetAuditMode");
 
-            if (enableAudit != null || auditLevel != null || auditMode != null || suppressionItems.Count() > 0)
+            if (enableAudit != null || auditLevel != null || auditMode != null
+                || (suppressionItems != null && suppressionItems.Count() > 0))
             {
                 return new RestoreAuditProperties()
                 {
