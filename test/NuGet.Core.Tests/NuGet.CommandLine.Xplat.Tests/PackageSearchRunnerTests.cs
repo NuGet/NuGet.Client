@@ -507,5 +507,107 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.Equal(ExitCodes.Success, exitCode);
             Assert.Contains(expectedError, StoredErrorMessage);
         }
+
+        [Fact]
+        public async Task PackageSearchRunner_WhenPackageHasOnlyIdAndVersion_ReturnsValidNormalVerbosityOutput()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 10,
+                Prerelease = true,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "NullInfoPackage",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Normal,
+                Format = PackageSearchFormat.Json
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            string message = _fixture.NormalizeNewlines(Message);
+            Assert.Contains(_fixture.ExpectedSearchResultNullInfoPackage, message);
+        }
+
+        [Fact]
+        public async Task PackageSearchRunner_WhenPackageHasOnlyIdAndVersion_ReturnsValidMinimalVerbosityOutput()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 10,
+                Prerelease = true,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "NullInfoPackage",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Minimal,
+                Format = PackageSearchFormat.Json
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            string message = _fixture.NormalizeNewlines(Message);
+            Assert.Contains(_fixture.ExpectedSearchResultNullInfoPackage, message);
+        }
+
+        [Fact]
+        public async Task PackageSearchRunner_WhenPackageHasOnlyIdAndVersion_ReturnsValidDetailedVerbosityOutput()
+        {
+            // Arrange
+            ISettings settings = Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+
+            PackageSearchArgs packageSearchArgs = new()
+            {
+                Skip = 0,
+                Take = 10,
+                Prerelease = true,
+                ExactMatch = false,
+                Logger = GetLogger(),
+                SearchTerm = "NullInfoPackage",
+                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Verbosity = PackageSearchVerbosity.Detailed,
+                Format = PackageSearchFormat.Json
+            };
+
+            // Act
+            await PackageSearchRunner.RunAsync(
+                sourceProvider: sourceProvider,
+                packageSearchArgs,
+                cancellationToken: System.Threading.CancellationToken.None);
+
+            // Assert
+            string message = _fixture.NormalizeNewlines(Message);
+            Assert.Contains(_fixture.ExpectedSearchResultNullInfoPackage, message);
+        }
     }
 }
