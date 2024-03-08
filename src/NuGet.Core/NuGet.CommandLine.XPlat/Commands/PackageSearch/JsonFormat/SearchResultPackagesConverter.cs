@@ -23,6 +23,14 @@ namespace NuGet.CommandLine.XPlat
             _exactMatch = exactMatch;
         }
 
+        internal static void WriteStringIsNotNullOrWhiteSpace(Utf8JsonWriter writer, string name, string? value)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                writer.WriteString(name, value);
+            }
+        }
+
         public override IPackageSearchMetadata Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             throw new NotImplementedException();
@@ -52,18 +60,12 @@ namespace NuGet.CommandLine.XPlat
                     writer.WriteNumber(JsonProperties.DownloadCount, (decimal)value.DownloadCount);
                 }
 
-                if (value.Owners is not null)
-                {
-                    writer.WriteString(JsonProperties.Owners, value.Owners);
-                }
+                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Owners, value.Owners);
             }
 
             if (_verbosity == PackageSearchVerbosity.Detailed)
             {
-                if (value.Description is not null)
-                {
-                    writer.WriteString(JsonProperties.Description, value.Description);
-                }
+                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Description, value.Description);
 
                 if (value.Vulnerabilities != null && value.Vulnerabilities.Any())
                 {
