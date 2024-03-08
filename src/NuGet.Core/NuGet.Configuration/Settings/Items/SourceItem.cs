@@ -35,7 +35,7 @@ namespace NuGet.Configuration
             set => AddOrUpdateAttribute(ConfigurationConstants.AllowInsecureConnections, value);
         }
 
-        public string DisableTLSCertificateValidation
+        public string? DisableTLSCertificateValidation
         {
             get
             {
@@ -55,22 +55,16 @@ namespace NuGet.Configuration
         }
 
         public SourceItem(string key, string value, string? protocolVersion)
-            : this(key, value, protocolVersion, allowInsecureConnections: "")
-        {
-        }
-
-        public SourceItem(string key, string value, string? protocolVersion, string? allowInsecureConnections)
-        public SourceItem(string key, string value, string protocolVersion)
             : this(key, value, protocolVersion, allowInsecureConnections: "", disableTLSCertificateValidation: "")
         {
         }
 
-        public SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections)
+        public SourceItem(string key, string value, string? protocolVersion, string? allowInsecureConnections)
             : this(key, value, protocolVersion, allowInsecureConnections, disableTLSCertificateValidation: "")
         {
         }
 
-        public SourceItem(string key, string value, string protocolVersion, string allowInsecureConnections, string disableTLSCertificateValidation)
+        public SourceItem(string key, string value, string? protocolVersion, string? allowInsecureConnections, string? disableTLSCertificateValidation)
             : base(key, value)
         {
             if (!string.IsNullOrEmpty(protocolVersion))

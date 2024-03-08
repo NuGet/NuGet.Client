@@ -888,10 +888,8 @@ namespace NuGet.Configuration.Test
             Assert.Equal(bool.Parse(allowInsecureConnections), loadedSource.AllowInsecureConnections);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void LoadPackageSources_ReadsSourcesWithNullDisableTLSCertificateVerificationFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
+        [Fact]
+        public void LoadPackageSources_ReadsSourcesWithNullDisableTLSCertificateVerificationFromPackageSourceSections_LoadsDefault()
         {
             // Arrange
             var settings = new Mock<ISettings>();
@@ -905,7 +903,7 @@ namespace NuGet.Configuration.Test
                 .Returns(new List<string>());
 
             // Act
-            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+            List<PackageSource> values = LoadPackageSources(settings.Object);
 
             // Assert
             var loadedSource = values.Single();
@@ -914,10 +912,8 @@ namespace NuGet.Configuration.Test
             Assert.Equal(PackageSource.DefaultDisableTLSCertificateValidation, loadedSource.DisableTLSCertificateValidation);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void LoadPackageSources_ReadsSourcesWithInvalidDisableTLSCertificateVerificationFromPackageSourceSections_LoadsDefault(bool useStaticMethod)
+        [Fact]
+        public void LoadPackageSources_ReadsSourcesWithInvalidDisableTLSCertificateVerificationFromPackageSourceSections_LoadsDefault()
         {
             // Arrange
             var settings = new Mock<ISettings>();
@@ -931,7 +927,7 @@ namespace NuGet.Configuration.Test
                 .Returns(new List<string>());
 
             // Act
-            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+            List<PackageSource> values = LoadPackageSources(settings.Object);
 
             // Assert
             var loadedSource = values.Single();
@@ -941,13 +937,11 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData(true, "true")]
-        [InlineData(true, "TRUE")]
-        [InlineData(true, "false")]
-        [InlineData(false, "false")]
-        [InlineData(false, "fALSE")]
-        [InlineData(false, "true")]
-        public void LoadPackageSources_ReadsSourcesWithNotNullDisableTLSCertificateVerificationFromPackageSourceSections_LoadsValue(bool useStaticMethod, string disableTLSCertificateValidation)
+        [InlineData("true")]
+        [InlineData("TRUE")]
+        [InlineData("false")]
+        [InlineData("fALSE")]
+        public void LoadPackageSources_ReadsSourcesWithNotNullDisableTLSCertificateVerificationFromPackageSourceSections_LoadsValue(string disableTLSCertificateValidation)
         {
             // Arrange
             var settings = new Mock<ISettings>();
@@ -961,7 +955,7 @@ namespace NuGet.Configuration.Test
                 .Returns(new List<string>());
 
             // Act
-            List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
+            List<PackageSource> values = LoadPackageSources(settings.Object);
 
             // Assert
             var loadedSource = values.Single();
