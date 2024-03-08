@@ -41,16 +41,13 @@ namespace NuGet.CommandLine.XPlat
             writer.WriteStartObject();
             writer.WriteString(JsonProperties.PackageId, value.Identity.Id);
 
-            if (value.Identity.Version is not null)
+            if (_exactMatch)
             {
-                if (_exactMatch)
-                {
-                    writer.WriteString(JsonProperties.Version, value.Identity.Version.ToNormalizedString());
-                }
-                else
-                {
-                    writer.WriteString(JsonProperties.LatestVersion, value.Identity.Version.ToNormalizedString());
-                }
+                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Version, value.Identity.Version?.ToNormalizedString());
+            }
+            else
+            {
+                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.LatestVersion, value.Identity.Version?.ToNormalizedString());
             }
 
             if (_verbosity == PackageSearchVerbosity.Normal || _verbosity == PackageSearchVerbosity.Detailed)
@@ -72,17 +69,9 @@ namespace NuGet.CommandLine.XPlat
                     writer.WriteBoolean("vulnerable", true);
                 }
 
-                if (value.ProjectUrl is not null)
-                {
-                    writer.WriteString(JsonProperties.ProjectUrl, value.ProjectUrl.ToString());
-                }
-
+                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.ProjectUrl, value.ProjectUrl?.ToString());
                 PackageDeprecationMetadata packageDeprecationMetadata = value.GetDeprecationMetadataAsync().Result;
-
-                if (packageDeprecationMetadata != null)
-                {
-                    writer.WriteString(JsonProperties.Deprecation, packageDeprecationMetadata.Message);
-                }
+                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Deprecation, packageDeprecationMetadata?.Message);
             }
 
             writer.WriteEndObject();
