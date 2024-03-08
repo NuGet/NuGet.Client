@@ -2456,6 +2456,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Audit source &apos;{0}&apos; did not provide any vulnerability data..
+        /// </summary>
+        internal static string Warning_AuditSourceWithoutVulnerabilityData {
+            get {
+                return ResourceManager.GetString("Warning_AuditSourceWithoutVulnerabilityData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are {0} package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: {1}.
         /// </summary>
         internal static string Warning_CentralPackageVersions_MultipleSourcesWithoutPackageSourceMapping {
@@ -2537,15 +2546,6 @@ namespace NuGet.Commands {
         internal static string Warning_MinVersionNonInclusive {
             get {
                 return ResourceManager.GetString("Warning_MinVersionNonInclusive", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to NuGetAudit is enabled, but no package sources contain known vulnerability data..
-        /// </summary>
-        internal static string Warning_NoVulnerabilityData {
-            get {
-                return ResourceManager.GetString("Warning_NoVulnerabilityData", resourceCulture);
             }
         }
         
