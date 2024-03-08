@@ -41,7 +41,7 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         private static readonly string[] TargetsToBuild =
         {
-            "CollectRestoreInputs"
+            "_CollectRestoreInputs"
         };
 
         private readonly Lazy<ConsoleLoggingQueue> _loggingQueueLazy;

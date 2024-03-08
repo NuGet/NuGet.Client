@@ -369,11 +369,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-    CollectRestoreInputs
+    _CollectRestoreInputs
     Runs all the 'Collect' targets
     ============================================================
   -->
-  <Target Name="CollectRestoreInputs"
+  <Target Name="_CollectRestoreInputs"
           DependsOnTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences;CollectCentralPackageVersions;CollectNuGetAuditSuppressions">
   </Target>
 
@@ -1046,7 +1046,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle;CollectRestoreInputs"
+    DependsOnTargets="_GetRestoreProjectStyle;_CollectRestoreInputs"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
