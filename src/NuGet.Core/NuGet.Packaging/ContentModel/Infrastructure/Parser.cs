@@ -190,7 +190,7 @@ namespace NuGet.ContentModel.Infrastructure
                     {
                         break;
                     }
-                    var substring = path.Substring(startIndex, delimiterIndex - startIndex);
+                    ReadOnlyMemory<char> substring = path.AsMemory().Slice(startIndex, delimiterIndex - startIndex);
                     object value;
                     if (propertyDefinition.TryLookup(substring, _table, out value))
                     {
@@ -206,7 +206,7 @@ namespace NuGet.ContentModel.Infrastructure
                             }
                             if (StringComparer.Ordinal.Equals(_token, "tfm"))
                             {
-                                item.Properties.Add("tfm_raw", substring);
+                                item.Properties.Add("tfm_raw", substring.ToString());
                             }
                             item.Properties.Add(_token, value);
                         }

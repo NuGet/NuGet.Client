@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -22,7 +21,7 @@ namespace NuGet.Client
 
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(
             PropertyNames.AnyValue,
-            parser: (o, t) => o); // Identity parser, all strings are valid for any
+            parser: (o, t) => o.ToString()); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
             parser: AllowEmptyFolderParser,
             fileExtensions: new[] { ".dll", ".winmd", ".exe" });
@@ -90,7 +89,7 @@ namespace NuGet.Client
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
-                parser: (o, t) => o, // Identity parser, all strings are valid runtime ids :)
+                parser: (o, t) => o.ToString(), // Identity parser, all strings are valid runtime ids :)
                 compatibilityTest: RuntimeIdentifier_CompatibilityTest);
 
             props[PropertyNames.TargetFrameworkMoniker] = new ContentPropertyDefinition(
@@ -125,7 +124,7 @@ namespace NuGet.Client
             }
         }
 
-        private static object CodeLanguage_Parser(string name, PatternTable table)
+        private static object CodeLanguage_Parser(ReadOnlyMemory<char> name, PatternTable table)
         {
             if (table != null)
             {
@@ -138,17 +137,17 @@ namespace NuGet.Client
 
             // Code language values must be alpha numeric.
             // PERF: use foreach to avoid CharEnumerator allocation
-            foreach (char c in name)
+            foreach (char c in name.Span)
             {
                 if (!char.IsLetterOrDigit(c))
                 {
                     return null;
                 }
             }
-            return name;
+            return name.ToString();
         }
 
-        private static object Locale_Parser(string name, PatternTable table)
+        private static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table)
         {
             if (table != null)
             {
@@ -161,18 +160,18 @@ namespace NuGet.Client
 
             if (name.Length == 2)
             {
-                return name;
+                return name.ToString();
             }
-            else if (name.Length >= 4 && name[2] == '-')
+            else if (name.Length >= 4 && name.Span[2] == '-')
             {
-                return name;
+                return name.ToString();
             }
 
             return null;
         }
 
         private object TargetFrameworkName_Parser(
-            string name,
+            ReadOnlyMemory<char> name,
             PatternTable table)
         {
             object obj = null;
@@ -186,22 +185,24 @@ namespace NuGet.Client
                 }
             }
 
+            string frameworkString = name.ToString();
+
             // Check the cache for an exact match
-            if (!string.IsNullOrEmpty(name))
+            if (!string.IsNullOrEmpty(frameworkString))
             {
                 NuGetFramework cachedResult;
-                if (!_frameworkCache.TryGetValue(name, out cachedResult))
+                if (!_frameworkCache.TryGetValue(frameworkString, out cachedResult))
                 {
                     // Parse and add the framework to the cache
-                    cachedResult = TargetFrameworkName_ParserCore(name);
-                    _frameworkCache.Add(name, cachedResult);
+                    cachedResult = TargetFrameworkName_ParserCore(frameworkString);
+                    _frameworkCache.Add(frameworkString, cachedResult);
                 }
 
                 return cachedResult;
             }
 
             // Let the framework parser handle null/empty and create the error message.
-            return TargetFrameworkName_ParserCore(name);
+            return TargetFrameworkName_ParserCore(frameworkString);
         }
 
         private static NuGetFramework TargetFrameworkName_ParserCore(string name)
@@ -226,10 +227,15 @@ namespace NuGet.Client
             return new NuGetFramework(name, FrameworkConstants.EmptyVersion);
         }
 
-        private static object AllowEmptyFolderParser(string s, PatternTable table)
+        private static object AllowEmptyFolderParser(ReadOnlyMemory<char> s, PatternTable table)
         {
             // Accept "_._" as a pseudo-assembly
-            return PackagingCoreConstants.EmptyFolder.Equals(s, StringComparison.Ordinal) ? s : null;
+            if (MemoryExtensions.Equals(PackagingCoreConstants.EmptyFolder.AsSpan(), s.Span, StringComparison.Ordinal))
+            {
+                return s.ToString();
+            }
+
+            return null;
         }
 
         private static bool TargetFrameworkName_CompatibilityTest(object criteria, object available)

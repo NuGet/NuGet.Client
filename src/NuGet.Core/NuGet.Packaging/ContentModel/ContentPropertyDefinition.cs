@@ -22,7 +22,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser)
+            Func<ReadOnlyMemory<char>, PatternTable, object> parser)
             : this(name, parser, null, null, null, false)
         {
         }
@@ -36,14 +36,14 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest)
             : this(name, parser, compatibilityTest, null, null, false)
         {
         }
 
         public ContentPropertyDefinition(string name,
-            Func<string, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest)
             : this(name, parser, compatibilityTest, compareTest, null, false)
@@ -59,7 +59,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             IEnumerable<string> fileExtensions)
             : this(name, parser, null, null, fileExtensions, false)
         {
@@ -75,7 +75,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             IEnumerable<string> fileExtensions,
             bool allowSubfolders)
             : this(name, parser, null, null, fileExtensions, allowSubfolders)
@@ -84,7 +84,7 @@ namespace NuGet.ContentModel
 
         public ContentPropertyDefinition(
             string name,
-            Func<string, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest,
             IEnumerable<string> fileExtensions,
@@ -104,11 +104,11 @@ namespace NuGet.ContentModel
 
         public bool FileExtensionAllowSubFolders { get; }
 
-        public Func<string, PatternTable, object> Parser { get; }
+        public Func<ReadOnlyMemory<char>, PatternTable, object> Parser { get; }
 
-        public virtual bool TryLookup(string name, PatternTable table, out object value)
+        public virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, out object value)
         {
-            if (name == null)
+            if (name.IsEmpty)
             {
                 value = null;
                 return false;
@@ -120,9 +120,9 @@ namespace NuGet.ContentModel
                 {
                     foreach (var fileExtension in FileExtensions)
                     {
-                        if (name.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase))
+                        if (name.Span.EndsWith(fileExtension.AsSpan(), StringComparison.OrdinalIgnoreCase))
                         {
-                            value = name;
+                            value = name.ToString();
                             return true;
                         }
                     }
@@ -142,10 +142,10 @@ namespace NuGet.ContentModel
             return false;
         }
 
-        private static bool ContainsSlash(string name)
+        private static bool ContainsSlash(ReadOnlyMemory<char> name)
         {
             var containsSlash = false;
-            foreach (var ch in name)
+            foreach (var ch in name.Span)
             {
                 if (ch == '/' || ch == '\\')
                 {

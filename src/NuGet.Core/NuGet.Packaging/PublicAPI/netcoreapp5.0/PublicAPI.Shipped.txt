@@ -53,16 +53,9 @@ NuGet.ContentModel.ContentPropertyDefinition
 ~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Collections.Generic.IEnumerable<string> fileExtensions) -> void
 ~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Collections.Generic.IEnumerable<string> fileExtensions, bool allowSubfolders) -> void
 ~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<object, object, bool> compatibilityTest) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<string, NuGet.ContentModel.PatternTable, object> parser) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<string, NuGet.ContentModel.PatternTable, object> parser, System.Collections.Generic.IEnumerable<string> fileExtensions) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<string, NuGet.ContentModel.PatternTable, object> parser, System.Collections.Generic.IEnumerable<string> fileExtensions, bool allowSubfolders) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<string, NuGet.ContentModel.PatternTable, object> parser, System.Func<object, object, bool> compatibilityTest) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<string, NuGet.ContentModel.PatternTable, object> parser, System.Func<object, object, bool> compatibilityTest, System.Func<object, object, object, int> compareTest) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<string, NuGet.ContentModel.PatternTable, object> parser, System.Func<object, object, bool> compatibilityTest, System.Func<object, object, object, int> compareTest, System.Collections.Generic.IEnumerable<string> fileExtensions, bool allowSubfolders) -> void
 NuGet.ContentModel.ContentPropertyDefinition.FileExtensionAllowSubFolders.get -> bool
 ~NuGet.ContentModel.ContentPropertyDefinition.FileExtensions.get -> System.Collections.Generic.List<string>
 ~NuGet.ContentModel.ContentPropertyDefinition.Name.get -> string
-~NuGet.ContentModel.ContentPropertyDefinition.Parser.get -> System.Func<string, NuGet.ContentModel.PatternTable, object>
 NuGet.ContentModel.Infrastructure.PatternExpression
 ~NuGet.ContentModel.Infrastructure.PatternExpression.PatternExpression(NuGet.ContentModel.PatternDefinition pattern) -> void
 NuGet.ContentModel.PatternDefinition
@@ -81,7 +74,6 @@ NuGet.ContentModel.PatternSet
 NuGet.ContentModel.PatternTable
 NuGet.ContentModel.PatternTable.PatternTable() -> void
 ~NuGet.ContentModel.PatternTable.PatternTable(System.Collections.Generic.IEnumerable<NuGet.ContentModel.PatternTableEntry> entries) -> void
-~NuGet.ContentModel.PatternTable.TryLookup(string propertyName, string name, out object value) -> bool
 NuGet.ContentModel.PatternTableEntry
 ~NuGet.ContentModel.PatternTableEntry.Name.get -> string
 ~NuGet.ContentModel.PatternTableEntry.PatternTableEntry(string propertyName, string name, object value) -> void
@@ -1842,7 +1834,6 @@ static readonly NuGet.RuntimeModel.RuntimeGraph.Empty -> NuGet.RuntimeModel.Runt
 static readonly NuGet.RuntimeModel.RuntimeGraph.RuntimeGraphFileName -> string!
 ~virtual NuGet.ContentModel.ContentPropertyDefinition.Compare(object criteriaValue, object candidateValue1, object candidateValue2) -> int
 ~virtual NuGet.ContentModel.ContentPropertyDefinition.IsCriteriaSatisfied(object critieriaValue, object candidateValue) -> bool
-~virtual NuGet.ContentModel.ContentPropertyDefinition.TryLookup(string name, NuGet.ContentModel.PatternTable table, out object value) -> bool
 ~virtual NuGet.ContentModel.SelectionCriteriaBuilder.Add.get -> NuGet.ContentModel.SelectionCriteriaEntryBuilder
 ~virtual NuGet.ContentModel.SelectionCriteriaBuilder.Criteria.get -> NuGet.ContentModel.SelectionCriteria
 ~virtual NuGet.Packaging.Core.NuspecCoreReader.GetDependencies() -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency>

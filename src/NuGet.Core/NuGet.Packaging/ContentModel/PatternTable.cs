@@ -12,8 +12,8 @@ namespace NuGet.ContentModel
     /// </summary>
     public class PatternTable
     {
-        private readonly Dictionary<string, Dictionary<string, object>> _table
-            = new Dictionary<string, Dictionary<string, object>>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Dictionary<ReadOnlyMemory<char>, object>> _table
+            = new Dictionary<string, Dictionary<ReadOnlyMemory<char>, object>>(StringComparer.Ordinal);
 
         public PatternTable()
             : this(Enumerable.Empty<PatternTableEntry>())
@@ -29,14 +29,14 @@ namespace NuGet.ContentModel
 
             foreach (var entry in entries)
             {
-                Dictionary<string, object> byProp;
+                Dictionary<ReadOnlyMemory<char>, object> byProp;
                 if (!_table.TryGetValue(entry.PropertyName, out byProp))
                 {
-                    byProp = new Dictionary<string, object>(StringComparer.Ordinal);
+                    byProp = new Dictionary<ReadOnlyMemory<char>, object>(ReadOnlyMemoryCharComparerOrdinal.Instance);
                     _table.Add(entry.PropertyName, byProp);
                 }
 
-                byProp.Add(entry.Name, entry.Value);
+                byProp.Add(entry.Name.AsMemory(), entry.Value);
             }
         }
 
@@ -46,19 +46,14 @@ namespace NuGet.ContentModel
         /// <param name="propertyName">Property moniker</param>
         /// <param name="name">Token name</param>
         /// <param name="value">Replacement value</param>
-        public bool TryLookup(string propertyName, string name, out object value)
+        public bool TryLookup(string propertyName, ReadOnlyMemory<char> name, out object value)
         {
             if (propertyName == null)
             {
                 throw new ArgumentNullException(nameof(propertyName));
             }
 
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            Dictionary<string, object> byProp;
+            Dictionary<ReadOnlyMemory<char>, object> byProp;
             if (_table.TryGetValue(propertyName, out byProp))
             {
                 return byProp.TryGetValue(name, out value);
@@ -66,6 +61,55 @@ namespace NuGet.ContentModel
 
             value = null;
             return false;
+        }
+
+        /// <summary>
+        /// Represents a comparer of <see cref="ReadOnlyMemory{T}" /> that uses string ordinal comparison.
+        /// </summary>
+        private class ReadOnlyMemoryCharComparerOrdinal : IEqualityComparer<ReadOnlyMemory<char>>
+        {
+            public static ReadOnlyMemoryCharComparerOrdinal Instance { get; } = new ReadOnlyMemoryCharComparerOrdinal();
+
+            private ReadOnlyMemoryCharComparerOrdinal()
+            {
+            }
+
+            public bool Equals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
+            {
+                return x.Span.Equals(y.Span, StringComparison.Ordinal);
+            }
+
+            public unsafe int GetHashCode(ReadOnlyMemory<char> obj)
+            {
+                if (obj.Length == 0)
+                {
+                    return 0;
+                }
+
+                fixed (char* pSpan0 = obj.Span)
+                {
+                    int num1 = 0x15051505;
+                    int num2 = num1;
+
+                    int* pSpan = (int*)pSpan0;
+
+                    int charactersRemaining;
+
+                    for (charactersRemaining = obj.Length; charactersRemaining >= 4; charactersRemaining -= 4)
+                    {
+                        num1 = ((num1 << 5) + num1 + (num1 >> 27)) ^ *pSpan;
+                        num2 = ((num2 << 5) + num2 + (num2 >> 27)) ^ pSpan[1];
+                        pSpan += 2;
+                    }
+
+                    if (charactersRemaining > 0)
+                    {
+                        num1 = ((num1 << 5) + num1 + (num1 >> 27)) ^ pSpan0[obj.Length - 1];
+                    }
+
+                    return (num1 + (num2 * 0x5D588B65)) & 0x7FFFFFFF;
+                }
+            }
         }
     }
 }
