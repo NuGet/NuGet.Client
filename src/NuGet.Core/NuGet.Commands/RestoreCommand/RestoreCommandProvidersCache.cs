@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NuGet.Common;
@@ -39,7 +40,14 @@ namespace NuGet.Commands
             SourceCacheContext cacheContext,
             ILogger log)
         {
-            return GetOrCreate(globalPackagesPath, fallbackPackagesPaths, sources, cacheContext, log, updateLastAccess: false);
+            return GetOrCreate(
+                globalPackagesPath,
+                fallbackPackagesPaths,
+                sources,
+                auditSources: Array.Empty<SourceRepository>(),
+                cacheContext,
+                log,
+                updateLastAccess: false);
         }
 
         public RestoreCommandProviders GetOrCreate(
@@ -50,11 +58,30 @@ namespace NuGet.Commands
             ILogger log,
             bool updateLastAccess)
         {
+            return GetOrCreate(
+                globalPackagesPath,
+                fallbackPackagesPaths,
+                sources,
+                auditSources: Array.Empty<SourceRepository>(),
+                cacheContext,
+                log,
+                updateLastAccess);
+        }
+
+        public RestoreCommandProviders GetOrCreate(
+            string globalPackagesPath,
+            IReadOnlyList<string> fallbackPackagesPaths,
+            IReadOnlyList<SourceRepository> packageSources,
+            IReadOnlyList<SourceRepository> auditSources,
+            SourceCacheContext cacheContext,
+            ILogger log,
+            bool updateLastAccess)
+        {
             NuGetv3LocalRepository globalPackages = CreateGlobalPackagedRepository(globalPackagesPath, updateLastAccess);
             List<NuGetv3LocalRepository> fallbackFolders = GetFallbackFolderRepositories(fallbackPackagesPaths);
             List<IRemoteDependencyProvider> localProviders = CreateLocalProviders(globalPackagesPath, fallbackPackagesPaths, cacheContext, log);
-            List<IRemoteDependencyProvider> remoteProviders = CreateRemoveProviders(sources, cacheContext, log);
-            List<IVulnerabilityInformationProvider> vulnerabilityInformationProviders = CreateVulnerabilityProviders(sources, log);
+            List<IRemoteDependencyProvider> remoteProviders = CreateRemoveProviders(packageSources, cacheContext, log);
+            List<IVulnerabilityInformationProvider> vulnerabilityInformationProviders = CreateVulnerabilityProviders(packageSources, auditSources, log);
 
             return new RestoreCommandProviders(globalPackages, fallbackFolders, localProviders, remoteProviders, _fileCache, vulnerabilityInformationProviders);
         }
@@ -145,16 +172,46 @@ namespace NuGet.Commands
             return remoteProviders;
         }
 
-        private List<IVulnerabilityInformationProvider> CreateVulnerabilityProviders(IReadOnlyList<SourceRepository> sources, ILogger log)
+        private List<IVulnerabilityInformationProvider> CreateVulnerabilityProviders(
+            IReadOnlyList<SourceRepository> packageSources,
+            IReadOnlyList<SourceRepository> auditSources,
+            ILogger log)
         {
-            var vulnerabilityInformationProviders = new List<IVulnerabilityInformationProvider>(sources.Count);
-            foreach (SourceRepository source in sources)
+            var vulnerabilityInformationProviders = new List<IVulnerabilityInformationProvider>(packageSources.Count + auditSources.Count);
+
+            for (int i = 0; i < auditSources.Count; i++)
             {
-                IVulnerabilityInformationProvider provider = _vulnerabilityInformationProviders.GetOrAdd(source, s => new VulnerabilityInformationProvider(s, log));
+                SourceRepository source = auditSources[i];
+                IVulnerabilityInformationProvider provider = _vulnerabilityInformationProviders.GetOrAdd(source, s => new VulnerabilityInformationProvider(s, log, isAuditSource: true));
+                vulnerabilityInformationProviders.Add(provider);
+            }
+
+            for (int i = 0; i < packageSources.Count; i++)
+            {
+                SourceRepository source = packageSources[i];
+                if (IsAuditSource(source.PackageSource.Source, auditSources))
+                {
+                    continue;
+                }
+
+                IVulnerabilityInformationProvider provider = _vulnerabilityInformationProviders.GetOrAdd(source, s => new VulnerabilityInformationProvider(s, log, isAuditSource: false));
                 vulnerabilityInformationProviders.Add(provider);
             }
 
             return vulnerabilityInformationProviders;
+
+            static bool IsAuditSource(string source, IReadOnlyList<SourceRepository> auditSources)
+            {
+                for (int i = 0; i < auditSources.Count; i++)
+                {
+                    if (string.Equals(auditSources[i].PackageSource.Source, source, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
     }
 }
