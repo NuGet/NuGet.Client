@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Services.Common;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -210,6 +212,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
+            if (_globalLocalRepositories != null && _globalLocalRepositories.Any())
+            {
+                _globalLocalRepositories.ForEach(x =>
+                    tasks.Add(x.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken)));
+            }
+
             IEnumerable<IPackageSearchMetadata> completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
@@ -217,8 +225,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 ?? completed.FirstOrDefault()
                 ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
-            return master.WithVersions(
-                asyncValueFactory: () => MergeVersionsAsync(identity, completed));
+            var clonedResult = master.WithVersions(
+                asyncValueFactory: () => MergeVersionsAsync(identity, completed)) as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
+
+            clonedResult.PackagePath = MergePackagePath(completed);
+            return clonedResult;
         }
 
         private static async Task<IEnumerable<VersionInfo>> MergeVersionsAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)
@@ -245,6 +256,25 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             var vulnerabilityMetadatas = packages.Select(m => m.Vulnerabilities);
             return vulnerabilityMetadatas.FirstOrDefault(v => v != null && v.Any());
+        }
+
+        private static string MergePackagePath(IEnumerable<IPackageSearchMetadata> packages)
+        {
+            var packagePaths = packages
+                .Select(x =>
+                {
+                    if (x is LocalPackageSearchMetadata localPackageSearchMetadata)
+                    {
+                        return localPackageSearchMetadata.PackagePath;
+                    }
+                    if (x is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata clonedPackage)
+                    {
+                        return clonedPackage.PackagePath;
+                    }
+                    return string.Empty;
+                })
+                .Where(x => !string.IsNullOrWhiteSpace(x));
+            return packagePaths.FirstOrDefault();
         }
 
         private async Task<(IEnumerable<VersionInfo> versions,

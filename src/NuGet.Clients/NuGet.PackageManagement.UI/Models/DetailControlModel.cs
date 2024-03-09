@@ -150,7 +150,6 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconUrl));
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
-            await ReadMePreviewViewModel.UpdateMarkdownAsync(PackagePath);
             Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects);
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
@@ -270,7 +269,7 @@ namespace NuGet.PackageManagement.UI
                     searchResultPackage.DownloadCount);
 
                 _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
-
+                await ReadMePreviewViewModel.UpdateMarkdownAsync(detailedPackageMetadata.PackagePath, detailedPackageMetadata.Id);
                 PackageMetadata = detailedPackageMetadata;
             }
         }

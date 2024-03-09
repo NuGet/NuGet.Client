@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 #pragma warning disable CS0618 // Type or member is obsolete
             _markdownPreview = new PreviewBuilder().Build();
 #pragma warning restore CS0618 // Type or member is obsolete
-            _ = UpdateMarkdownAsync("");
+            _ = UpdateMarkdownAsync("", "");
             MarkdownPreviewControl = _markdownPreview.VisualElement;
         }
 
@@ -41,27 +42,57 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task UpdateMarkdownAsync(string packagePath)
+        public async Task UpdateMarkdownAsync(string packagePath, string packageName)
         {
-            var markDown = string.Empty;
             _markdownPreview.VisualElement.Visibility = Visibility.Collapsed;
+            await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
             if (!string.IsNullOrEmpty(packagePath))
             {
                 var fileInfo = new FileInfo(packagePath);
                 if (fileInfo.Exists)
                 {
-                    using var pfr = new PackageArchiveReader(fileInfo.OpenRead());
-                    var files = await pfr.GetFilesAsync(CancellationToken.None);
-                    var readmeFile = files.FirstOrDefault(file => file.IndexOf("readme.md", StringComparison.OrdinalIgnoreCase) >= 0);
-                    if (!string.IsNullOrEmpty(readmeFile))
+                    using var stream = fileInfo.OpenRead();
+                    var markDown = await GetReadMeMD(stream, packageName);
+                    if (!string.IsNullOrWhiteSpace(markDown))
                     {
-                        using var stream = new StreamReader(await pfr.GetStreamAsync(readmeFile, CancellationToken.None));
-                        markDown = await stream.ReadToEndAsync();
+                        await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
                         _markdownPreview.VisualElement.Visibility = Visibility.Visible;
                     }
                 }
             }
-            await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
+        }
+
+        public async Task<string> GetReadMeMD(Stream stream, string packageName)
+        {
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+            var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{packageName}.nuspec", StringComparison.OrdinalIgnoreCase));
+            if (nuspecZipArchiveEntry is not null)
+            {
+                using var nuspecFile = nuspecZipArchiveEntry.Open();
+                var nuspecReader = new NuspecReader(nuspecFile);
+                var readMePath = nuspecReader.GetReadme();
+                if (!string.IsNullOrEmpty(readMePath))
+                {
+                    var readmeZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.FullName), readMePath, StringComparison.OrdinalIgnoreCase));
+                    if (readmeZipArchiveEntry is not null)
+                    {
+                        using var readMeFile = readmeZipArchiveEntry.Open();
+                        using var readMeStreamReader = new StreamReader(readMeFile);
+                        var readMeContents = await readMeStreamReader.ReadToEndAsync();
+                        return readMeContents;
+                    }
+                }
+            }
+            return string.Empty;
+        }
+        private static string UnescapePath(string path)
+        {
+            if (path != null && path.IndexOf("%", StringComparison.Ordinal) > -1)
+            {
+                return Uri.UnescapeDataString(path);
+            }
+
+            return path;
         }
 
         public void Dispose()
