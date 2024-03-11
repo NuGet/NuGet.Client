@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.XPlat
             _exactMatch = exactMatch;
         }
 
-        internal static void WriteStringIsNotNullOrWhiteSpace(Utf8JsonWriter writer, string name, string? value)
+        internal static void WriteStringIfNotNullOrWhiteSpace(Utf8JsonWriter writer, string name, string? value)
         {
             if (!string.IsNullOrWhiteSpace(value))
             {
@@ -43,11 +43,11 @@ namespace NuGet.CommandLine.XPlat
 
             if (_exactMatch)
             {
-                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Version, value.Identity.Version?.ToNormalizedString());
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.Version, value.Identity.Version?.ToNormalizedString());
             }
             else
             {
-                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.LatestVersion, value.Identity.Version?.ToNormalizedString());
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.LatestVersion, value.Identity.Version?.ToNormalizedString());
             }
 
             if (_verbosity == PackageSearchVerbosity.Normal || _verbosity == PackageSearchVerbosity.Detailed)
@@ -57,21 +57,21 @@ namespace NuGet.CommandLine.XPlat
                     writer.WriteNumber(JsonProperties.DownloadCount, (decimal)value.DownloadCount);
                 }
 
-                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Owners, value.Owners);
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.Owners, value.Owners);
             }
 
             if (_verbosity == PackageSearchVerbosity.Detailed)
             {
-                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Description, value.Description);
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.Description, value.Description);
 
                 if (value.Vulnerabilities != null && value.Vulnerabilities.Any())
                 {
                     writer.WriteBoolean("vulnerable", true);
                 }
 
-                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.ProjectUrl, value.ProjectUrl?.ToString());
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.ProjectUrl, value.ProjectUrl?.ToString());
                 PackageDeprecationMetadata packageDeprecationMetadata = value.GetDeprecationMetadataAsync().Result;
-                WriteStringIsNotNullOrWhiteSpace(writer, JsonProperties.Deprecation, packageDeprecationMetadata?.Message);
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.Deprecation, packageDeprecationMetadata?.Message);
             }
 
             writer.WriteEndObject();
