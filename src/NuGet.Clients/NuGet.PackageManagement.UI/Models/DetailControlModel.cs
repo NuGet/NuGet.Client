@@ -269,7 +269,6 @@ namespace NuGet.PackageManagement.UI
                     searchResultPackage.DownloadCount);
 
                 _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
-                await ReadMePreviewViewModel.UpdateMarkdownAsync(detailedPackageMetadata.PackagePath, detailedPackageMetadata.Id);
                 PackageMetadata = detailedPackageMetadata;
             }
         }
@@ -535,7 +534,11 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
                     PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
-
+                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    {
+                        await ReadMePreviewViewModel.UpdateMarkdownAsync(_packageMetadata?.PackagePath, _packageMetadata?.Id);
+                    })
+                        .PostOnFailure(nameof(DetailControlModel));
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
@@ -625,19 +628,22 @@ namespace NuGet.PackageManagement.UI
                         {
                             PackageMetadata = detailedPackageMetadata;
                         }
-
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        else
                         {
-                            try
+
+                            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                             {
-                                await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
-                            }
-                            catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
-                            {
-                                // Expected
-                            }
-                        })
-                            .PostOnFailure(nameof(DetailControlModel));
+                                try
+                                {
+                                    await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
+                                }
+                                catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
+                                {
+                                    // Expected
+                                }
+                            })
+                                .PostOnFailure(nameof(DetailControlModel));
+                        }
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));
