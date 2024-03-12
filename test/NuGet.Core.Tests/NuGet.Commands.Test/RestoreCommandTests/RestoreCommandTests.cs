@@ -2807,7 +2807,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit = bool.TrueString;
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories = new List<string> { "https://cve-1" };
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories = new HashSet<string> { "https://cve-1" };
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -2874,7 +2874,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
                 ["Audit.Level"] = value => value.Should().Be(0),
                 ["Audit.Mode"] = value => value.Should().Be("Unknown"),
-                ["Audit.SuppressedAdvisories"] = value => value.Should().Be("https://cve-1"),
+                ["Audit.SuppressedAdvisories.Defined.Count"] = value => value.Should().Be(1),
+                ["Audit.SuppressedAdvisories.Used.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity0"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity1"] = value => value.Should().Be(0),

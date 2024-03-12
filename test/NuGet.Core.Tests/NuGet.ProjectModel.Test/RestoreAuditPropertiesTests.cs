@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Collections.Generic;
 using FluentAssertions;
 using Xunit;
 
@@ -87,7 +88,7 @@ namespace NuGet.ProjectModel.Test
             var properties1 = new RestoreAuditProperties()
             {
                 AuditLevel = "high",
-                SuppressedAdvisories = new[] {
+                SuppressedAdvisories = new HashSet<string> {
                     "cve-1",
                     "cve-2"
                 }
@@ -95,7 +96,7 @@ namespace NuGet.ProjectModel.Test
             var properties2 = new RestoreAuditProperties()
             {
                 AuditLevel = properties1.AuditLevel,
-                SuppressedAdvisories = new[] {
+                SuppressedAdvisories = new HashSet<string> {
                     "cve-1",
                     "cve-3"
                 }
@@ -115,7 +116,7 @@ namespace NuGet.ProjectModel.Test
             var properties1 = new RestoreAuditProperties()
             {
                 AuditLevel = "moderate",
-                SuppressedAdvisories = new[] {
+                SuppressedAdvisories = new HashSet<string> {
                     "cve-1",
                     "cve-2"
                 }
@@ -123,7 +124,7 @@ namespace NuGet.ProjectModel.Test
             var properties2 = new RestoreAuditProperties()
             {
                 AuditLevel = properties1.AuditLevel,
-                SuppressedAdvisories = new[] {
+                SuppressedAdvisories = new HashSet<string> {
                     "cve-2",
                     "cve-1"
                 }

@@ -347,7 +347,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <CheckForDuplicateNuGetItemsTask
-      Condition="'$(DisableCheckingDuplicateNuGetItems)' != 'true' "
       Items="@(NuGetAuditSuppress)"
       ItemName="NuGetAuditSuppress"
       LogCode="NU1505"

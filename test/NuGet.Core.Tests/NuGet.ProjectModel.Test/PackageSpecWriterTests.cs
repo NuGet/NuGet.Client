@@ -738,10 +738,10 @@ namespace NuGet.ProjectModel.Test
                         ""enableAudit"": ""true"",
                         ""auditLevel"": ""moderate"",
                         ""auditMode"": ""all"",
-                        ""suppressedAdvisories"": [
-                            ""https://github.com/advisories/example-cve-1"",
-                            ""https://github.com/advisories/example-cve-2""
-                        ],
+                        ""suppressedAdvisories"": {
+                            ""https://github.com/advisories/example-cve-1"": null,
+                            ""https://github.com/advisories/example-cve-2"": null
+                        },
                     }
                   }
                 }";

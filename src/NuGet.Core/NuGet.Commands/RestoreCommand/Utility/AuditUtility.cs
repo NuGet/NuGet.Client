@@ -30,7 +30,7 @@ namespace NuGet.Commands.Restore.Utility
 
         internal PackageVulnerabilitySeverity MinSeverity { get; }
         internal NuGetAuditMode AuditMode { get; }
-        internal HashSet<string> SuppressedAdvisories { get; }
+        internal HashSet<string>? SuppressedAdvisories { get; }
         internal List<string>? DirectPackagesWithAdvisory { get; private set; }
         internal List<string>? TransitivePackagesWithAdvisory { get; private set; }
         internal int Sev0DirectMatches { get; private set; }
@@ -47,6 +47,7 @@ namespace NuGet.Commands.Restore.Utility
         internal double? CheckPackagesDurationSeconds { get; private set; }
         internal double? GenerateOutputDurationSeconds { get; private set; }
         internal int SourcesWithVulnerabilityData { get; private set; }
+        internal int SuppressedAdvisoriesUsedCount { get; private set; }
 
         public AuditUtility(
             ProjectModel.RestoreAuditProperties? restoreAuditProperties,
@@ -63,7 +64,7 @@ namespace NuGet.Commands.Restore.Utility
 
             MinSeverity = ParseAuditLevel();
             AuditMode = ParseAuditMode();
-            SuppressedAdvisories = new HashSet<string>(restoreAuditProperties?.SuppressedAdvisories ?? new List<string>());
+            SuppressedAdvisories = restoreAuditProperties?.SuppressedAdvisories;
         }
 
         public async Task CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
@@ -274,8 +275,9 @@ namespace NuGet.Commands.Restore.Utility
                                 continue;
                             }
 
-                            if (SuppressedAdvisories.Contains(knownVulnerability.Url.ToString()))
+                            if (SuppressedAdvisories?.Contains(knownVulnerability.Url.OriginalString) == true)
                             {
+                                SuppressedAdvisoriesUsedCount++;
                                 continue;
                             }
 

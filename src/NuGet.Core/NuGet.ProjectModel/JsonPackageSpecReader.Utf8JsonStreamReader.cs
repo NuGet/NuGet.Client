@@ -1071,7 +1071,7 @@ namespace NuGet.ProjectModel
                     else if (jsonReader.ValueTextEquals(RestoreAuditPropertiesPropertyName))
                     {
                         string enableAudit = null, auditLevel = null, auditMode = null;
-                        var suppressedAdvisories = new List<string>();
+                        HashSet<string> suppressedAdvisories = null;
 
                         if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
                         {
@@ -1091,7 +1091,7 @@ namespace NuGet.ProjectModel
                                 }
                                 else if (jsonReader.ValueTextEquals(AuditSuppressionsPropertyName))
                                 {
-                                    suppressedAdvisories = jsonReader.ReadNextStringOrArrayOfStringsAsReadOnlyList().ToList();
+                                    suppressedAdvisories = ReadSuppressedAdvisories(ref jsonReader);
                                 }
                                 else
                                 {
@@ -1828,6 +1828,26 @@ namespace NuGet.ProjectModel
 #pragma warning disable CS0612 // Type or member is obsolete
             AddTargetFramework(packageSpec, frameworkName, secondaryFramework, targetFrameworkInformation);
 #pragma warning restore CS0612 // Type or member is obsolete
+        }
+
+        private static HashSet<string> ReadSuppressedAdvisories(ref Utf8JsonStreamReader jsonReader)
+        {
+            HashSet<string> suppressedAdvisories = null;
+
+            if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
+            {
+                while (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var advisoryUrl = jsonReader.GetString();
+
+                    suppressedAdvisories ??= new HashSet<string>();
+                    suppressedAdvisories.Add(advisoryUrl);
+
+                    jsonReader.Skip();
+                }
+            }
+
+            return suppressedAdvisories;
         }
     }
 }

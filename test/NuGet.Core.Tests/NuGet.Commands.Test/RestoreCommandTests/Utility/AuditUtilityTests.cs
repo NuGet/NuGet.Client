@@ -443,11 +443,11 @@ public class AuditUtilityTests
     {
         // Arrange
         var context = new AuditTestContext();
-        string cveUrl1 = "https://cve.test.suppressed/1";
-        string cveUrl2 = "https://cve.test.suppressed/2";
+        string cveUrl1 = "https://cve.test/suppressed/1";
+        string cveUrl2 = "https://cve.test/suppressed/2";
 
         context.Mode = "all";
-        context.SuppressedAdvisories = new List<string> { cveUrl2 }; // suppress one of the two advisories
+        context.SuppressedAdvisories = new HashSet<string> { cveUrl2 }; // suppress one of the two advisories
 
         var vulnerabilityProvider = context.WithVulnerabilityProvider();
         var knownVulnerabilities = vulnerabilityProvider.WithPackageVulnerability("pkga");
@@ -477,7 +477,7 @@ public class AuditUtilityTests
         public string? Enabled { get; set; }
         public string? Level { get; set; }
         public string? Mode { get; set; }
-        public IList<string> SuppressedAdvisories { get; set; } = new List<string>();
+        public HashSet<string>? SuppressedAdvisories { get; set; }
 
         public TestLogger Log { get; } = new();
 

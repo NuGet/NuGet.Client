@@ -32,7 +32,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Gets or sets values indicating which advisories to suppress.
         /// </summary>
-        public IList<string> SuppressedAdvisories { get; set; } = new List<string>();
+        public HashSet<string>? SuppressedAdvisories { get; set; }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
         public bool TryParseEnableAudit(out bool result)
@@ -135,7 +135,7 @@ namespace NuGet.ProjectModel
                 EnableAudit = EnableAudit,
                 AuditLevel = AuditLevel,
                 AuditMode = AuditMode,
-                SuppressedAdvisories = SuppressedAdvisories,
+                SuppressedAdvisories = SuppressedAdvisories == null ? null : new HashSet<string>(SuppressedAdvisories),
             };
             return clone;
         }

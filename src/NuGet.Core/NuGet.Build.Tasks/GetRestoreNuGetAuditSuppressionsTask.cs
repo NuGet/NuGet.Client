@@ -33,8 +33,10 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var entries = new List<ITaskItem>();
-            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (NuGetAuditSuppressions.Length == 0) return true;
+
+            var entries = new List<ITaskItem>(NuGetAuditSuppressions.Length);
+            var seenIds = new HashSet<string>(NuGetAuditSuppressions.Length, StringComparer.OrdinalIgnoreCase);
 
             foreach (var msbuildItem in NuGetAuditSuppressions)
             {

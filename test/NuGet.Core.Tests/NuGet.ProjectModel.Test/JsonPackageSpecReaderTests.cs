@@ -4032,7 +4032,7 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit.Should().Be("a");
             packageSpec.RestoreMetadata.RestoreAuditProperties.AuditLevel.Should().Be("b");
             packageSpec.RestoreMetadata.RestoreAuditProperties.AuditMode.Should().Be("c");
-            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().HaveCount(0);
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Should().BeNull();
         }
 
         [Theory]
@@ -4040,7 +4040,7 @@ namespace NuGet.ProjectModel.Test
         public void GetPackageSpec_WithRestoreAuditPropertiesAndSuppressions_ReturnsRestoreAuditProperties(IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
-            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":[\"d\",\"e\"]}}}}}}";
+            var json = $"{{\"restore\":{{\"restoreAuditProperties\":{{\"enableAudit\":\"a\",\"auditLevel\":\"b\",\"auditMode\":\"c\",\"suppressedAdvisories\":{{\"d\":null,\"e\":null}}}}}}}}";
 
             // Act
             PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);

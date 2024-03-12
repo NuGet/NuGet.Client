@@ -295,7 +295,7 @@ namespace NuGet.Commands
                         );
                     }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, suppressionItems: new List<string>());
+                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -927,14 +927,14 @@ namespace NuGet.Commands
             string auditMode = specItem.GetProperty("NuGetAuditMode");
 
             if (enableAudit != null || auditLevel != null || auditMode != null
-                || (suppressionItems != null && suppressionItems.Count() > 0))
+                || (suppressionItems != null && suppressionItems.Count > 0))
             {
                 return new RestoreAuditProperties()
                 {
                     EnableAudit = enableAudit,
                     AuditLevel = auditLevel,
                     AuditMode = auditMode,
-                    SuppressedAdvisories = suppressionItems
+                    SuppressedAdvisories = new HashSet<string>(suppressionItems)
                 };
             }
 
