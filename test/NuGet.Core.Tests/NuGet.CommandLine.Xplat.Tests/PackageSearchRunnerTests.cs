@@ -284,7 +284,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         [InlineData(0, 20, false)]
         [InlineData(5, 10, true)]
         [InlineData(10, 20, false)]
-        public async Task RunAync_JsonFormatMinimalVerbosity_OnePackageJsonOutputted(int skip, int take, bool prerelease)
+        public async Task RunAsync_JsonFormatMinimalVerbosity_OnePackageJsonOutputted(int skip, int take, bool prerelease)
         {
             // Arrange
             ISettings settings = Settings.LoadDefaultSettings(
