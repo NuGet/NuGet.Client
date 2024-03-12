@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         }
 
         [Fact]
-        public void PrintResult_ZeroRowsAdded_PrintsNoResultFound()
+        public void PrintWithHighlighting_ZeroRowsAdded_PrintsNoResultFound()
         {
             // Arrange
             string searchTerm = "TestPackage";
@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         [InlineData(130)]
         [InlineData(14)]
         [InlineData(100)]
-        public void PrintResult_NRowsAdded_PrintsNRows(int rows)
+        public void PrintWithHighlighting_NRowsAdded_PrintsNRows(int rows)
         {
             string searchTerm = "term";
             Dictionary<ConsoleColor, string> coloredMessage = new Dictionary<ConsoleColor, string>();
