@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 #pragma warning disable CS0618 // Type or member is obsolete
             _markdownPreview = new PreviewBuilder().Build();
 #pragma warning restore CS0618 // Type or member is obsolete
-            _ = UpdateMarkdownAsync("", "");
+            _ = UpdateMarkdownAsync("");
             MarkdownPreviewControl = _markdownPreview.VisualElement;
         }
 
@@ -42,23 +42,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task UpdateMarkdownAsync(string packagePath, string packageName)
+        public async Task UpdateMarkdownAsync(string markDown)
         {
             _markdownPreview.VisualElement.Visibility = Visibility.Collapsed;
             await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
-            if (!string.IsNullOrEmpty(packagePath))
+            if (!string.IsNullOrWhiteSpace(markDown))
             {
-                var fileInfo = new FileInfo(packagePath);
-                if (fileInfo.Exists)
-                {
-                    using var stream = fileInfo.OpenRead();
-                    var markDown = await GetReadMeMD(stream, packageName);
-                    if (!string.IsNullOrWhiteSpace(markDown))
-                    {
-                        await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
-                        _markdownPreview.VisualElement.Visibility = Visibility.Visible;
-                    }
-                }
+                await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
+                _markdownPreview.VisualElement.Visibility = Visibility.Visible;
             }
         }
 

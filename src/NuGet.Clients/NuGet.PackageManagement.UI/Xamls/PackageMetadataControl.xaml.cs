@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -32,11 +34,43 @@ namespace NuGet.PackageManagement.UI
         {
             if (DataContext is DetailControlModel detailControlModel)
             {
+                detailControlModel.PropertyChanged += PackageMetadataControl_DataContext_PropertyChanged;
+                if (string.IsNullOrWhiteSpace(detailControlModel.PackagePath))
+                {
+                    tabReadMe.Visibility = Visibility.Collapsed;
+                    tabPackageDetails.IsSelected = true;
+                }
+                else
+                {
+                    tabReadMe.Visibility = Visibility.Visible;
+                }
                 Visibility = Visibility.Visible;
             }
             else
             {
+                tabReadMe.Visibility = Visibility.Collapsed;
                 Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void PackageMetadataControl_DataContext_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender is DetailControlModel detailControlModel)
+            {
+                if (e.PropertyName == nameof(detailControlModel.IsReadMeAvailable))
+                {
+                    if (!detailControlModel.IsReadMeAvailable)
+                    {
+                        tabReadMe.Visibility = Visibility.Collapsed;
+                        tabPackageDetails.IsSelected = true;
+                    }
+                    else
+                    {
+                        tabReadMe.Visibility = Visibility.Visible;
+                    }
+
+                }
+
             }
         }
     }

@@ -118,12 +118,12 @@
         </Setter>
       </Style>
     </TabControl.Resources>
-    <TabItem Name="tabReadMe" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" IsSelected="True" >
+    <TabItem Name="tabReadMe" Visibility="{Binding Path=IsReadMeAvailable, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"  Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" >
       <nuget:PackageMetadataReadMeControl
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           DataContext="{Binding ReadMePreviewViewModel}" />
     </TabItem>
-    <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}" IsSelected="False">
+    <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}">
       <nuget:PackageMetadataDescriptionControl
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           Margin="0,12,0,0"
