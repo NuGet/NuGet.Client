@@ -33,9 +33,9 @@ namespace NuGet.CommandLine.XPlat
             _loggerWithColor.LogMinimal($"Source: {source.Name} ({source.SourceUri})");
 
             ITableFormatStrategy strategy = TableFormatStrategyFactory.GetStrategy(_verbosity, _exactMatch);
-            Table table = strategy.CreateTable();
+            WrappingTable table = strategy.CreateTable();
             PopulateTableWithResultsAsync(completedSearch, table, _verbosity);
-            table.PrintResult(_searchTerm, _loggerWithColor);
+            table.PrintWithHighlighting(_loggerWithColor, _searchTerm);
         }
 
         public void Add(PackageSource source, PackageSearchProblem packageSearchProblem)
@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="results">An enumerable of package search metadata to be processed and added to the table.</param>
         /// <param name="table">The table where the results will be added as rows.</param>
-        private static async void PopulateTableWithResultsAsync(IEnumerable<IPackageSearchMetadata> results, Table table, PackageSearchVerbosity verbosity)
+        private static async void PopulateTableWithResultsAsync(IEnumerable<IPackageSearchMetadata> results, WrappingTable table, PackageSearchVerbosity verbosity)
         {
             CultureInfo culture = CultureInfo.CurrentCulture;
             NumberFormatInfo nfi = (NumberFormatInfo)culture.NumberFormat.Clone();
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (verbosity == PackageSearchVerbosity.Minimal)
                 {
-                    table.AddRow(packageId, version);
+                    table.AddRow(new List<string> { packageId, version });
                 }
                 else if (verbosity == PackageSearchVerbosity.Detailed)
                 {
@@ -112,7 +112,7 @@ namespace NuGet.CommandLine.XPlat
                         deprecation = packageDeprecationMetadata.Message;
                     }
 
-                    table.AddRow(
+                    table.AddRow(new List<string> {
                         packageId,
                         version,
                         owners,
@@ -120,11 +120,11 @@ namespace NuGet.CommandLine.XPlat
                         vulnerable,
                         deprecation,
                         projectUri,
-                        result.Description);
+                        result.Description });
                 }
                 else
                 {
-                    table.AddRow(packageId, version, owners, downloads);
+                    table.AddRow(new List<string> { packageId, version, owners, downloads });
                 }
             }
         }
