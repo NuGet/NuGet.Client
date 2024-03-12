@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -400,6 +403,22 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
 
+        public bool IsReadMeAvailable => !string.IsNullOrWhiteSpace(_packageReadMePath);
+
+
+        private string _packageReadMePath;
+
+        public string PackageReadMe
+        {
+            get => _packageReadMePath;
+            set
+            {
+                _packageReadMePath = value;
+                OnPropertyChanged(nameof(PackageReadMe));
+                OnPropertyChanged(nameof(IsReadMeAvailable));
+            }
+        }
+
         private string _packageDeprecationReasons;
         public string PackageDeprecationReasons
         {
@@ -534,11 +553,17 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
                     PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                    if (_packageMetadata is not null)
                     {
-                        await ReadMePreviewViewModel.UpdateMarkdownAsync(_packageMetadata?.PackagePath, _packageMetadata?.Id);
-                    })
-                        .PostOnFailure(nameof(DetailControlModel));
+                        NuGetUIThreadHelper.JoinableTaskFactory
+                            .RunAsync(async () =>
+                            {
+                                var readMe = await GetReadMeMD();
+                                await ReadMePreviewViewModel.UpdateMarkdownAsync(readMe);
+                                PackageReadMe = readMe;
+                            })
+                            .PostOnFailure(nameof(DetailControlModel));
+                    }
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
@@ -952,6 +977,48 @@ namespace NuGet.PackageManagement.UI
                     _searchResultPackage.AutoReferenced = false;
                 }
             }
+        }
+
+        private async Task<string> GetReadMeMD()
+        {
+            if (!string.IsNullOrEmpty(_packageMetadata?.PackagePath))
+            {
+                var fileInfo = new FileInfo(_packageMetadata?.PackagePath);
+                if (fileInfo.Exists)
+                {
+                    using var stream = fileInfo.OpenRead();
+                    using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+                    var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{_packageMetadata.Id}.nuspec", StringComparison.OrdinalIgnoreCase));
+                    if (nuspecZipArchiveEntry is not null)
+                    {
+                        using var nuspecFile = nuspecZipArchiveEntry.Open();
+                        var nuspecReader = new NuspecReader(nuspecFile);
+                        var readMePath = nuspecReader.GetReadme();
+                        if (!string.IsNullOrEmpty(readMePath))
+                        {
+                            var readmeZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.FullName), readMePath, StringComparison.OrdinalIgnoreCase));
+                            if (readmeZipArchiveEntry is not null)
+                            {
+                                using var readMeFile = readmeZipArchiveEntry.Open();
+                                using var readMeStreamReader = new StreamReader(readMeFile);
+                                var readMeContents = await readMeStreamReader.ReadToEndAsync();
+                                return readMeContents;
+                            }
+                        }
+                    }
+                }
+            }
+            return string.Empty;
+        }
+
+        private static string UnescapePath(string path)
+        {
+            if (path != null && path.IndexOf("%", StringComparison.Ordinal) > -1)
+            {
+                return Uri.UnescapeDataString(path);
+            }
+
+            return path;
         }
     }
 }
