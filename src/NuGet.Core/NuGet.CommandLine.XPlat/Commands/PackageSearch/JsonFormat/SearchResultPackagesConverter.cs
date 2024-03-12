@@ -40,14 +40,15 @@ namespace NuGet.CommandLine.XPlat
         {
             writer.WriteStartObject();
             writer.WriteString(JsonProperties.PackageId, value.Identity.Id);
+            var version = value.Identity.Version?.ToNormalizedString();
 
             if (_exactMatch)
             {
-                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.Version, value.Identity.Version?.ToNormalizedString());
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.Version, version);
             }
             else
             {
-                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.LatestVersion, value.Identity.Version?.ToNormalizedString());
+                WriteStringIfNotNullOrWhiteSpace(writer, JsonProperties.LatestVersion, version);
             }
 
             if (_verbosity == PackageSearchVerbosity.Normal || _verbosity == PackageSearchVerbosity.Detailed)
