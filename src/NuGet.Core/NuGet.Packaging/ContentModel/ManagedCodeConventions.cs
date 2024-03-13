@@ -68,8 +68,7 @@ namespace NuGet.Client
 
         private RuntimeGraph _runtimeGraph;
 
-        private Dictionary<string, NuGetFramework> _frameworkCache
-            = new Dictionary<string, NuGetFramework>(StringComparer.Ordinal);
+        private Dictionary<ReadOnlyMemory<char>, NuGetFramework> _frameworkCache = new(ReadOnlyMemoryCharComparerOrdinal.Instance);
 
         public ManagedCodeCriteria Criteria { get; }
         public IReadOnlyDictionary<string, ContentPropertyDefinition> Properties { get; }
@@ -185,24 +184,22 @@ namespace NuGet.Client
                 }
             }
 
-            string frameworkString = name.ToString();
-
             // Check the cache for an exact match
-            if (!string.IsNullOrEmpty(frameworkString))
+            if (!name.IsEmpty)
             {
                 NuGetFramework cachedResult;
-                if (!_frameworkCache.TryGetValue(frameworkString, out cachedResult))
+                if (!_frameworkCache.TryGetValue(name, out cachedResult))
                 {
                     // Parse and add the framework to the cache
-                    cachedResult = TargetFrameworkName_ParserCore(frameworkString);
-                    _frameworkCache.Add(frameworkString, cachedResult);
+                    cachedResult = TargetFrameworkName_ParserCore(name.ToString());
+                    _frameworkCache.Add(name, cachedResult);
                 }
 
                 return cachedResult;
             }
 
             // Let the framework parser handle null/empty and create the error message.
-            return TargetFrameworkName_ParserCore(frameworkString);
+            return TargetFrameworkName_ParserCore(name.ToString());
         }
 
         private static NuGetFramework TargetFrameworkName_ParserCore(string name)
