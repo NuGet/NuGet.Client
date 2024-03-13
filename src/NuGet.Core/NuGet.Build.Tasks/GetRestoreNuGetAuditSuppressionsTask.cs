@@ -36,7 +36,7 @@ namespace NuGet.Build.Tasks
             if (NuGetAuditSuppressions.Length == 0) return true;
 
             var entries = new List<ITaskItem>(NuGetAuditSuppressions.Length);
-            var seenIds = new HashSet<string>(NuGetAuditSuppressions.Length, StringComparer.OrdinalIgnoreCase);
+            var seenIds = new HashSet<string>(NuGetAuditSuppressions.Length, StringComparer.Ordinal);
 
             foreach (var msbuildItem in NuGetAuditSuppressions)
             {

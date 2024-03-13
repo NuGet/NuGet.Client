@@ -57,5 +57,30 @@ namespace NuGet.Build.Tasks.Test
             Assert.Equal("https://cve.test/suppressed/1", task.RestoreGraphItems[0].GetMetadata("Id"));
             Assert.Equal("https://cve.test/suppressed/2", task.RestoreGraphItems[1].GetMetadata("Id"));
         }
+
+        [Fact]
+        public void Execute_DoesNotDeduplicateWhenOnlyCaseDiffers()
+        {
+            // Arrange
+            var task = new GetRestoreNuGetAuditSuppressionsTask()
+            {
+                BuildEngine = new TestBuildEngine(),
+                ProjectUniqueName = "MyProj",
+                TargetFrameworks = "netstandard2.0",
+                NuGetAuditSuppressions = new ITaskItem[] {
+                    new MockTaskItem("https://cve.test/suppressed"),
+                    new MockTaskItem("https://cve.test/SUPPRESSED"),
+                }
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            Assert.True(result, "Task failed");
+            Assert.Equal(2, task.RestoreGraphItems.Length);
+            Assert.Equal("https://cve.test/suppressed", task.RestoreGraphItems[0].GetMetadata("Id"));
+            Assert.Equal("https://cve.test/SUPPRESSED", task.RestoreGraphItems[1].GetMetadata("Id"));
+        }
     }
 }
