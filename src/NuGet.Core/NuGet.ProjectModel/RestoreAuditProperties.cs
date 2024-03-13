@@ -97,7 +97,7 @@ namespace NuGet.ProjectModel
             return EnableAudit == other.EnableAudit &&
                 AuditLevel == other.AuditLevel &&
                 AuditMode == other.AuditMode &&
-                SuppressedAdvisories.OrderedEquals(other.SuppressedAdvisories, advisory => advisory, StringComparer.Ordinal, EqualityComparer<string>.Default);
+                SuppressedAdvisories.SetEqualsWithNullCheck(other.SuppressedAdvisories);
         }
 
         public override bool Equals(object? obj)

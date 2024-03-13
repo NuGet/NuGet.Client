@@ -934,7 +934,7 @@ namespace NuGet.Commands
                     EnableAudit = enableAudit,
                     AuditLevel = auditLevel,
                     AuditMode = auditMode,
-                    SuppressedAdvisories = new HashSet<string>(suppressionItems)
+                    SuppressedAdvisories = suppressionItems?.Count > 0 ? new HashSet<string>(suppressionItems) : null
                 };
             }
 
