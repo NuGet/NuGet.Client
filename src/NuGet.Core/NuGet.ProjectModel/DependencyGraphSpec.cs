@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -49,10 +50,45 @@ namespace NuGet.ProjectModel
         /// </summary>
         public IReadOnlyList<string> Restore => _restore.ToList();
 
+        public class ListWrapperOverSortedDictionary<T> : IReadOnlyList<T>
+        {
+
+            private readonly SortedDictionary<string, T> _projects;
+            private List<T> _values;
+            public ListWrapperOverSortedDictionary(SortedDictionary<string, T> projects)
+            {
+                _projects = projects;
+            }
+
+            public T this[int index]
+            {
+                get
+                {
+                    if (_values == null)
+                    {
+                        _values = _projects.Values.ToList();
+                    }
+                    return _values[index];
+                }
+            }
+
+            public int Count => _projects.Count;
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return _projects.Values.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _projects.Values.GetEnumerator();
+            }
+        }
+
         /// <summary>
         /// All project specs.
         /// </summary>
-        public IReadOnlyList<PackageSpec> Projects => _projects.Values.ToList();
+        public IReadOnlyList<PackageSpec> Projects => new ListWrapperOverSortedDictionary<PackageSpec>(_projects);
 
         public PackageSpec GetProjectSpec(string projectUniqueName)
         {
@@ -71,7 +107,7 @@ namespace NuGet.ProjectModel
         {
             var parents = new List<PackageSpec>();
 
-            foreach (var project in Projects)
+            foreach ((string name, PackageSpec project) in _projects.NoAllocEnumerate())
             {
                 if (!StringComparer.OrdinalIgnoreCase.Equals(
                     project.RestoreMetadata.ProjectUniqueName,
@@ -204,6 +240,8 @@ namespace NuGet.ProjectModel
 
         public void AddProject(PackageSpec projectSpec)
         {
+            if (projectSpec == null) throw new ArgumentNullException(nameof(projectSpec));
+
             // Find the unique name in the spec, otherwise generate a new one.
             string projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
@@ -214,6 +252,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete("This is unused in production code and as such will be removed in a future release.")]
         public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)
         {
             var projects =
@@ -414,7 +453,7 @@ namespace NuGet.ProjectModel
         {
             var newSpec = new DependencyGraphSpec();
 
-            foreach (var project in Projects)
+            foreach ((string _, PackageSpec project) in _projects.NoAllocEnumerate())
             {
                 newSpec.AddProject(project);
             }
@@ -424,11 +463,13 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec WithReplacedSpec(PackageSpec project)
         {
+            if (project == null) throw new ArgumentNullException(nameof(project));
+
             var newSpec = new DependencyGraphSpec();
             newSpec.AddProject(project);
             newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
 
-            foreach (var child in Projects)
+            foreach ((string _, PackageSpec child) in _projects.NoAllocEnumerate())
             {
                 newSpec.AddProject(child);
             }
@@ -446,7 +487,7 @@ namespace NuGet.ProjectModel
                 newSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
             }
 
-            foreach (var child in Projects)
+            foreach ((string _, PackageSpec child) in _projects.NoAllocEnumerate())
             {
                 newSpec.AddProject(child);
             }
@@ -458,7 +499,7 @@ namespace NuGet.ProjectModel
         {
             var newSpec = new DependencyGraphSpec();
 
-            foreach (var project in Projects)
+            foreach ((string _, PackageSpec project) in _projects.NoAllocEnumerate())
             {
                 if (project.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 {
