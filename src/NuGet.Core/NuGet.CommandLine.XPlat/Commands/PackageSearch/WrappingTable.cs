@@ -16,6 +16,7 @@ namespace NuGet.CommandLine.XPlat
     }
     internal class WrappingTable
     {
+        const int DefaultWindowWidth = 115;
         const int MinimumCharactersInAColumn = 4;
         internal readonly List<Column> _columns = new List<Column>();
         internal readonly List<List<string>> _rows = new List<List<string>>();
@@ -27,7 +28,8 @@ namespace NuGet.CommandLine.XPlat
         public WrappingTable(int[] columnsToHighlight, params string[] headers)
         {
             _columnsToHighlight = columnsToHighlight;
-            int windowWidth = 1000;
+            int windowWidth = -1;
+
             try
             {
                 windowWidth = Console.WindowWidth;
@@ -37,7 +39,14 @@ namespace NuGet.CommandLine.XPlat
                 // Ignore any exception
             }
 
-            _maxColumnWidth = Math.Max(MinimumCharactersInAColumn, (windowWidth - MinimumCharactersInAColumn * headers.Length) / headers.Length);
+            if (windowWidth <= 0)
+            {
+                _maxColumnWidth = DefaultWindowWidth;
+            }
+            else
+            {
+                _maxColumnWidth = Math.Max(MinimumCharactersInAColumn, (windowWidth - MinimumCharactersInAColumn * headers.Length) / headers.Length);
+            }
 
             foreach (var header in headers)
             {
