@@ -1,7 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-  </PropertyGroup>
 
   <ItemGroup>
     <ItemsToPushToBlobFeed Include="$(ArtifactsDir)nupkgs/*.nupkg"
