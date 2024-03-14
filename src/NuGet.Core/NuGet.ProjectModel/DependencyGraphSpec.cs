@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -45,59 +46,52 @@ namespace NuGet.ProjectModel
             _isReadOnly = isReadOnly;
         }
 
+        private bool _refreshRestoreList = false;
+        private IReadOnlyList<string>? _restoreList = null;
+
         /// <summary>
         /// Projects to restore.
         /// </summary>
-        public IReadOnlyList<string> Restore => _restore.ToList();
-
-        public class ListWrapperOverSortedDictionary<T> : IReadOnlyList<T>
+        public IReadOnlyList<string> Restore
         {
-
-            private readonly SortedDictionary<string, T> _projects;
-            private List<T> _values;
-            public ListWrapperOverSortedDictionary(SortedDictionary<string, T> projects)
+            get
             {
-                _projects = projects;
-            }
-
-            public T this[int index]
-            {
-                get
+                if (_restoreList == null || _refreshRestoreList)
                 {
-                    if (_values == null)
-                    {
-                        _values = _projects.Values.ToList();
-                    }
-                    return _values[index];
+                    _restoreList = _restore.ToList();
+                    _refreshRestoreList = false;
                 }
-            }
-
-            public int Count => _projects.Count;
-
-            public IEnumerator<T> GetEnumerator()
-            {
-                return _projects.Values.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return _projects.Values.GetEnumerator();
+                return _restoreList;
             }
         }
+
+        private bool _refreshProjectsList = false;
+        private IReadOnlyList<PackageSpec>? _restoreProjectList = null;
 
         /// <summary>
         /// All project specs.
         /// </summary>
-        public IReadOnlyList<PackageSpec> Projects => new ListWrapperOverSortedDictionary<PackageSpec>(_projects);
+        public IReadOnlyList<PackageSpec> Projects
+        {
+            get
+            {
+                if (_restoreProjectList == null || _refreshProjectsList)
+                {
+                    _restoreProjectList = _projects.Values.ToList();
+                    _refreshProjectsList = false;
+                }
+                return _restoreProjectList;
+            }
+        }
 
-        public PackageSpec GetProjectSpec(string projectUniqueName)
+        public PackageSpec? GetProjectSpec(string? projectUniqueName)
         {
             if (projectUniqueName == null)
             {
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            PackageSpec project;
+            PackageSpec? project;
             _projects.TryGetValue(projectUniqueName, out project);
 
             return project;
@@ -184,7 +178,7 @@ namespace NuGet.ProjectModel
         /// Retrieve the full project closure including the root project itself.
         /// </summary>
         /// <remarks>Results are not sorted in any form.</remarks>
-        public IReadOnlyList<PackageSpec> GetClosure(string rootUniqueName)
+        public IReadOnlyList<PackageSpec> GetClosure(string? rootUniqueName)
         {
             if (rootUniqueName == null)
             {
@@ -197,7 +191,11 @@ namespace NuGet.ProjectModel
             var toWalk = new Stack<PackageSpec>();
 
             // Start with the root
-            toWalk.Push(GetProjectSpec(rootUniqueName));
+            var rootSpec = GetProjectSpec(rootUniqueName);
+            if (rootSpec != null)
+            {
+                toWalk.Push(rootSpec);
+            }
 
             while (toWalk.Count > 0)
             {
@@ -213,7 +211,11 @@ namespace NuGet.ProjectModel
                     {
                         if (added.Add(projectName))
                         {
-                            toWalk.Push(GetProjectSpec(projectName));
+                            var projectSpec = GetProjectSpec(projectName);
+                            if (projectSpec != null)
+                            {
+                                toWalk.Push(projectSpec);
+                            }
                         }
                     }
                 }
@@ -271,6 +273,8 @@ namespace NuGet.ProjectModel
 
         public static DependencyGraphSpec Load(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var streamReader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(streamReader);
@@ -325,6 +329,8 @@ namespace NuGet.ProjectModel
 
         public void Save(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             using (var fileStream = new FileStream(path, FileMode.Create))
             {
                 Save(fileStream);
@@ -333,6 +339,7 @@ namespace NuGet.ProjectModel
 
         public void Save(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 #if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(stream))
 #else
@@ -369,7 +376,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction, Dictionary<string, string> projectNameToHashCode = null)
+        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction, Dictionary<string, string>? projectNameToHashCode = null)
         {
             writer.WriteObjectStart();
             writer.WriteNameValue("format", Version);
@@ -398,11 +405,11 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
-        private static void WriteProject(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, PackageSpec project, Dictionary<string, string> projectNameToHashCode)
+        private static void WriteProject(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, PackageSpec project, Dictionary<string, string>? projectNameToHashCode)
         {
             if (hashing && projectNameToHashCode != null)
             {
-                string projectHash = null;
+                string? projectHash = null;
 
                 lock (projectNameToHashCode)
                 {
@@ -495,6 +502,7 @@ namespace NuGet.ProjectModel
             return newSpec;
         }
 
+        [Obsolete("This is unused in production code and as such will be removed in a future release.")]
         public DependencyGraphSpec WithoutTools()
         {
             var newSpec = new DependencyGraphSpec();
