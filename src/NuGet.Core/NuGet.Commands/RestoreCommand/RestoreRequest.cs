@@ -90,8 +90,6 @@ namespace NuGet.Commands
         /// </summary>
         public IList<ExternalProjectReference> ExternalProjects { get; set; }
 
-        public Dictionary<string, string> ProjectNameToPackageSpecHash { get; internal set; }
-
         /// <summary>
         /// The path to the lock file to read/write. If not specified, uses the file 'project.lock.json' in the same
         /// directory as the provided PackageSpec.

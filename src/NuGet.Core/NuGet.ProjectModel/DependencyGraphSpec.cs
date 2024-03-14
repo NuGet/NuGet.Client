@@ -365,7 +365,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public string GetHash(Dictionary<string, string> projectNameToHashCode)
+        internal string GetHash(Dictionary<string, string> projectNameToHashCode)
         {
             // Use the faster FNV hash function for hashing unless the user has specified to use the legacy SHA512 hash function
             using (IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function())
@@ -376,7 +376,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction, Dictionary<string, string>? projectNameToHashCode = null)
+        private void Write(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, Dictionary<string, string>? projectNameToHashCode = null)
         {
             writer.WriteObjectStart();
             writer.WriteNameValue("format", Version);
