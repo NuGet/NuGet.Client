@@ -97,8 +97,10 @@ namespace NuGet.ProjectModel
             return project;
         }
 
-        public IReadOnlyList<string> GetParents(string rootUniqueName)
+        public IReadOnlyList<string> GetParents(string? rootUniqueName)
         {
+            if (rootUniqueName == null) throw new ArgumentNullException(nameof(rootUniqueName));
+
             var parents = new List<PackageSpec>();
 
             foreach ((string name, PackageSpec project) in _projects.NoAllocEnumerate())
@@ -237,6 +239,8 @@ namespace NuGet.ProjectModel
 
         public void AddRestore(string projectUniqueName)
         {
+            if (projectUniqueName == null) throw new ArgumentNullException(nameof(projectUniqueName));
+
             _restore.Add(projectUniqueName);
         }
 
