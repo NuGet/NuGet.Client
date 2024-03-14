@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
@@ -86,6 +87,7 @@ namespace NuGet.Commands
                 // Limiting to processor count reduces task context switching which is better
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
+            var dictionary = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
 
             using (var settingsLoadingContext = new SettingsLoadingContext())
             {
@@ -94,6 +96,7 @@ namespace NuGet.Commands
                 {
                     IReadOnlyList<PackageSpec> closure = dgFile.GetClosure(projectNameToRestore);
                     DependencyGraphSpec projectDependencyGraphSpec = dgFile.CreateFromClosure(projectNameToRestore, closure);
+                    projectDependencyGraphSpec.SetProjectNameToHashCode(dictionary);
 
                     var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
 

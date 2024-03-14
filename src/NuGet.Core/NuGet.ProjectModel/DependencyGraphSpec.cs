@@ -30,6 +30,13 @@ namespace NuGet.ProjectModel
         private const int Version = 1;
 
         private readonly bool _isReadOnly;
+        private Dictionary<string, string>? _projectNameToHashCode;
+
+        public void SetProjectNameToHashCode(Dictionary<string, string> projectNameToHashCode)
+        {
+            if (projectNameToHashCode == null) throw new ArgumentNullException(nameof(projectNameToHashCode));
+            _projectNameToHashCode = projectNameToHashCode;
+        }
 
         public static string GetDGSpecFileName(string projectName)
         {
@@ -241,6 +248,7 @@ namespace NuGet.ProjectModel
         {
             if (projectUniqueName == null) throw new ArgumentNullException(nameof(projectUniqueName));
 
+            _refreshRestoreList = true;
             _restore.Add(projectUniqueName);
         }
 
@@ -254,6 +262,7 @@ namespace NuGet.ProjectModel
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
+                _refreshProjectsList = true;
                 _projects.Add(projectUniqueName, projectSpec);
             }
         }
@@ -360,22 +369,17 @@ namespace NuGet.ProjectModel
 
         public string GetHash()
         {
-            // Use the faster FNV hash function for hashing unless the user has specified to use the legacy SHA512 hash function
             using (IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, hashing: true, PackageSpecWriter.Write);
-                return writer.GetHash();
-            }
-        }
-
-        internal string GetHash(Dictionary<string, string> projectNameToHashCode)
-        {
-            // Use the faster FNV hash function for hashing unless the user has specified to use the legacy SHA512 hash function
-            using (IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function())
-            using (var writer = new HashObjectWriter(hashFunc))
-            {
-                Write(writer, hashing: true, PackageSpecWriter.Write, projectNameToHashCode);
+                if (_projectNameToHashCode != null)
+                {
+                    Write(writer, hashing: true, PackageSpecWriter.Write, _projectNameToHashCode);
+                }
+                else
+                {
+                    Write(writer, hashing: true, PackageSpecWriter.Write);
+                }
                 return writer.GetHash();
             }
         }
