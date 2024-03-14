@@ -1099,4 +1099,12 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
     <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
   </data>
+  <data name="Error_HttpSources_Multiple" xml:space="preserve">
+    <value>You are running the '{0}' operation with 'HTTP' sources: {1}. To continue with the HTTP source, enable the `-allowInsecureConnections` option.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - list of server URIs</comment>
+  </data>
+  <data name="Error_HttpSource_Single" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'HTTP' source: {1}. To continue with the HTTP source, enable the `-allowInsecureConnections` option.</value>
+    <comment>0 - The command name. Ex. Push/Delete. 1 - server URI.</comment>
+  </data>
 </root>

@@ -385,6 +385,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source: {1}. To continue with the HTTP source, enable the `-allowInsecureConnections` option..
+        /// </summary>
+        internal static string Error_HttpSource_Single {
+            get {
+                return ResourceManager.GetString("Error_HttpSource_Single", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with &apos;HTTP&apos; sources: {1}. To continue with the HTTP source, enable the `-allowInsecureConnections` option..
+        /// </summary>
+        internal static string Error_HttpSources_Multiple {
+            get {
+                return ResourceManager.GetString("Error_HttpSources_Multiple", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package {0} {1} has a package type {2} that is incompatible with this project..
         /// </summary>
         internal static string Error_IncompatiblePackageType {
