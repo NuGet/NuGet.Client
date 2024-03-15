@@ -411,7 +411,7 @@ steps:
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- job: 'DGTEST Publish the .runsettings files to artifact services'
+- step: 'DGTEST Publish the .runsettings files to artifact services'
   templateContext:
     outputs:
     - output: artifactsDrop
