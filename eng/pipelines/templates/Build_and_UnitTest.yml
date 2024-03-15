@@ -411,15 +411,16 @@ steps:
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: artifactDropTask@0
-  displayName: 'Publish the .runsettings files to artifact services'
-  inputs:
-    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-    sourcePath: 'artifacts\RunSettings'
-    toLowerCase: false
-    usePat: true
-    dropMetadataContainerName: 'DropMetadata-RunSettings'
+- job: 'DGTEST Publish the .runsettings files to artifact services'
+  templateContext:
+    outputs:
+    - output: artifactsDrop
+      sourcePath: 'artifacts/RunSettings'
+      dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+      buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+      toLowerCase: false
+      usePat: true
+      dropMetadataContainerName: 'DropMetadata-RunSettings'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: artifactDropTask@0
