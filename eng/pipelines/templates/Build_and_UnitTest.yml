@@ -7,6 +7,7 @@ parameters:
 jobs:
 - job:
   displayName:  '001'
+  timeoutInMinutes: 170
   steps:
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
@@ -416,6 +417,7 @@ jobs:
 
 - job:
   displayName: 'DGTEST Publish the .runsettings files to artifact services'
+  timeoutInMinutes: 170
   templateContext:
     outputs:
     - output: artifactsDrop
@@ -429,6 +431,7 @@ jobs:
 
 - job: 
   displayName:  '003'
+  timeoutInMinutes: 170
   steps:
   - task: artifactDropTask@0
     displayName: 'OptProfV2:  publish profiling inputs to artifact services'
