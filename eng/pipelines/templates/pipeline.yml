@@ -113,6 +113,8 @@ stages:
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
   dependsOn: Initialize
+  pool:
+      name: VSEngSS-MicroBuild2022-1ES
   jobs:
   - job: Build_and_UnitTest_NonRTM
     timeoutInMinutes: 170
@@ -124,8 +126,6 @@ stages:
       VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
-    pool:
-      name: VSEngSS-MicroBuild2022-1ES
   - template: Build_and_UnitTest.yml
     parameters:
       BuildRTM: false
@@ -134,6 +134,8 @@ stages:
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
   dependsOn: Initialize
+  pool:
+      name: VSEngSS-MicroBuild2022-1ES
   jobs:
   - job: Build_and_UnitTest_RTM
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
@@ -145,8 +147,6 @@ stages:
       VsTargetChannelForTests: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetChannelForTests']]
       VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
       BuildRTM: "true"
-    pool:
-      name: VSEngSS-MicroBuild2022-1ES
   - template: Build_and_UnitTest.yml
     parameters:
       BuildRTM: true
