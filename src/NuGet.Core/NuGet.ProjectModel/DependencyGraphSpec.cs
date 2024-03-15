@@ -413,7 +413,7 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
-        private static void WriteProject(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, PackageSpec project, Dictionary<string, string>? projectNameToHashCode)
+        private void WriteProject(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, PackageSpec project, Dictionary<string, string>? projectNameToHashCode)
         {
             if (hashing && projectNameToHashCode != null)
             {
@@ -426,7 +426,7 @@ namespace NuGet.ProjectModel
 
                 if (projectHash == null)
                 {
-                    using var hashFunc = new Sha512HashFunction();
+                    using IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function();
                     using var projectWriter = new HashObjectWriter(hashFunc);
                     writeAction.Invoke(project, projectWriter, hashing, EnvironmentVariableWrapper.Instance);
                     projectHash = projectWriter.GetHash();
