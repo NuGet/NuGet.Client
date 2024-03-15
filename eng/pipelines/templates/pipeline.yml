@@ -115,6 +115,9 @@ stages:
   dependsOn: Initialize
   pool:
       name: VSEngSS-MicroBuild2022-1ES
+  parameters:
+    BuildRTM: false
+    NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
   jobs:
   - job: Build_and_UnitTest_NonRTM
     timeoutInMinutes: 170
@@ -127,15 +130,15 @@ stages:
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
   - template: Build_and_UnitTest.yml
-    parameters:
-      BuildRTM: false
-      NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
   dependsOn: Initialize
   pool:
       name: VSEngSS-MicroBuild2022-1ES
+  parameters:
+      BuildRTM: true
+      NuGetLocalizationType: Full
   jobs:
   - job: Build_and_UnitTest_RTM
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
@@ -148,9 +151,6 @@ stages:
       VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
       BuildRTM: "true"
   - template: Build_and_UnitTest.yml
-    parameters:
-      BuildRTM: true
-      NuGetLocalizationType: Full
   - job: Validate_Publishing_Artifacts
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
     displayName: 'Validate Publishing build artifacts'
