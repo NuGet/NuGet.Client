@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
+using NuGet.Commands.Test;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -674,6 +677,182 @@ namespace NuGet.ProjectModel.Test
                     Assert.True(expectedResult.Equals(actualResult));
                     Assert.NotSame(expectedResult, actualResult);
                 });
+        }
+
+        [Fact]
+        public void SetProjectNameToHashCode_SetsCollection()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            Dictionary<string, string> hashes = new(PathUtility.GetStringComparerBasedOnOS());
+
+            // Act
+            dependencyGraph.SetProjectNameToHashCode(hashes);
+
+            // Assert
+            dependencyGraph._projectNameToHashCode.Should().BeSameAs(hashes);
+        }
+
+        [Fact]
+        public void GetHash_WithProjectNameToHashCache_CachesOnFirstRun()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            Dictionary<string, string> hashes = new(PathUtility.GetStringComparerBasedOnOS());
+            dependencyGraph.SetProjectNameToHashCode(hashes);
+
+            // Act
+            _ = dependencyGraph.GetHash();
+
+            // Assert
+            dependencyGraph._projectNameToHashCode.Should().HaveCount(3);
+            dependencyGraph._projectNameToHashCode.Should().ContainKey(a.RestoreMetadata.ProjectUniqueName);
+            dependencyGraph._projectNameToHashCode.Should().ContainKey(b.RestoreMetadata.ProjectUniqueName);
+            dependencyGraph._projectNameToHashCode.Should().ContainKey(c.RestoreMetadata.ProjectUniqueName);
+        }
+
+        [Fact]
+        public void GetHash_WithProjectNameToHashCache_IsRepeatable()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            Dictionary<string, string> hashes = new(PathUtility.GetStringComparerBasedOnOS());
+            dependencyGraph.SetProjectNameToHashCode(hashes);
+
+            // Act
+            string originalHash = dependencyGraph.GetHash();
+            string secondHash = dependencyGraph.GetHash();
+
+            // Assert
+            secondHash.Should().Be(originalHash);
+        }
+
+        [Fact]
+        public void ProjectsGet_ReturnsCachedCollection()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            // Act
+            var first = dependencyGraph.Projects;
+            var second = dependencyGraph.Projects;
+
+            // Assert
+            second.Should().BeSameAs(first);
+        }
+
+        [Fact]
+        public void ProjectsGet_AddProjectInvalidatesCollection()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            // Act #1
+            var first = dependencyGraph.Projects;
+
+            // Arrange #2
+            var d = ProjectTestHelpers.GetPackageSpec("d");
+
+            // Act #2
+            dependencyGraph.AddProject(d);
+            var second = dependencyGraph.Projects;
+
+            // Assert
+            first.Should().HaveCount(3);
+            second.Should().NotBeSameAs(first);
+            second.Should().HaveCount(4);
+        }
+
+        [Fact]
+        public void RestoreGet_ReturnsCachedCollection()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            // Act
+            var first = dependencyGraph.Restore;
+            var second = dependencyGraph.Restore;
+
+            // Assert
+            second.Should().BeSameAs(first);
+        }
+
+        [Fact]
+        public void RestoreGet_AddProjectInvalidatesCollection()
+        {
+            // Arrange
+            var c = ProjectTestHelpers.GetPackageSpec("c");
+            var b = ProjectTestHelpers.GetPackageSpec("b").WithTestProjectReference(c);
+            var a = ProjectTestHelpers.GetPackageSpec("a").WithTestProjectReference(b);
+
+            var dependencyGraph = new DependencyGraphSpec();
+            dependencyGraph.AddRestore("a");
+            dependencyGraph.AddProject(a);
+            dependencyGraph.AddProject(b);
+            dependencyGraph.AddProject(c);
+
+            // Act #1
+            var first = dependencyGraph.Restore;
+
+            // Act #2
+            dependencyGraph.AddRestore("b");
+            var second = dependencyGraph.Restore;
+
+            // Assert
+            first.Should().HaveCount(1);
+            second.Should().NotBeSameAs(first);
+            second.Should().HaveCount(2);
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpec()

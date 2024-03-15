@@ -30,7 +30,8 @@ namespace NuGet.ProjectModel
         private const int Version = 1;
 
         private readonly bool _isReadOnly;
-        private Dictionary<string, string>? _projectNameToHashCode;
+        // Internal for testing purposes
+        internal Dictionary<string, string>? _projectNameToHashCode;
 
         public void SetProjectNameToHashCode(Dictionary<string, string> projectNameToHashCode)
         {
