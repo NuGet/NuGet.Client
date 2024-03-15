@@ -10,7 +10,7 @@ parameters:
   - Staging
 
 steps:
-- task: DownloadBuildArtifacts@1
+- task: DownloadPipelineArtifact@2
   displayName: "Download nupkgs"
   name: DownloadNupkgs
   inputs:
