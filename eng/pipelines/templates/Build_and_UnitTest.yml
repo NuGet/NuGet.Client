@@ -5,7 +5,8 @@ parameters:
   type: string
 
 jobs:
-- job: 001
+- job:
+  displayName:  '001'
   steps:
   - task: MicroBuildLocalizationPlugin@1
     displayName: "Install Localization Plugin"
@@ -413,7 +414,8 @@ jobs:
         }
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- job: 'DGTEST Publish the .runsettings files to artifact services'
+- job:
+  displayName: 'DGTEST Publish the .runsettings files to artifact services'
   templateContext:
     outputs:
     - output: artifactsDrop
@@ -425,7 +427,8 @@ jobs:
       dropMetadataContainerName: 'DropMetadata-RunSettings'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- job: 003
+- job: 
+  displayName:  '003'
   steps:
   - task: artifactDropTask@0
     displayName: 'OptProfV2:  publish profiling inputs to artifact services'
