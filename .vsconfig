@@ -27,7 +27,8 @@
     "Microsoft.VisualStudio.ComponentGroup.VisualStudioExtension.Prerequisites",
     "Microsoft.VisualStudio.Workload.VisualStudioExtension",
     "Microsoft.NetCore.Component.Runtime.3.1",
-    "Microsoft.NetCore.Component.Runtime.5.0"
+    "Microsoft.NetCore.Component.Runtime.5.0",
+    "Microsoft.NetCore.Component.Runtime.7.0"
   ],
   "extensions": []
 }
