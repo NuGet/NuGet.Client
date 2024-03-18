@@ -192,7 +192,7 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
-  condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
   inputs:
@@ -224,21 +224,21 @@ steps:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 - task: MSBuild@1
   displayName: "Create EndToEnd Test Package"
   inputs:
     solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.Repository.LocalPath)\\artifacts\\VS15 /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\16.CreateEndToEndTestPackage.binlog"
-  condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 - task: NuGetCommand@2
   displayName: 'Add the VSEng package source'
   inputs:
@@ -337,7 +337,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:IsSymbolBuild=true /property:BuildRTM=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\18.CollectBuildSymbols.binlog"
     maximumCpuCount: true
-  condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 - task: MSBuild@1
   displayName: "LocValidation: Verify VSIX"
   inputs:
@@ -361,4 +361,4 @@ steps:
   env:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
-  condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+  condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"

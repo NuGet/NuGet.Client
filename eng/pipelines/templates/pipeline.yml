@@ -140,27 +140,27 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish buildinfo.json as an artifact'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
         artifactName: 'BuildInfo'
       - output: pipelineArtifact
         displayName: 'Publish NuGet.CommandLine.Test as artifact'
-        condition: and(succeeded(),eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
         targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
         artifactName: "NuGet.CommandLine.Test"
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
-        condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))
+        condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
         artifactName: "nupkgs - $(RtmLabel)"
       - output: pipelineArtifact
         displayName: 'Publish BootstrapperInfo.json as a build artifact'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         targetPath: $(Build.StagingDirectory)\MicroBuild\Output
         artifactName: MicroBuildOutputs
       - output: artifactsDrop
         displayName: 'Publish the .runsettings files to artifact services'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
         buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
         sourcePath: 'artifacts\RunSettings'
@@ -169,7 +169,7 @@ stages:
         dropMetadataContainerName: 'DropMetadata-RunSettings'
       - output: artifactsDrop
         displayName: 'OptProfV2:  publish profiling inputs to artifact services'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
         buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
         sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
@@ -182,17 +182,17 @@ stages:
         artifactName: "$(VsixPublishDir)"
       - output: pipelineArtifact
         displayName: 'Publish localizationArtifacts artifact'
-        condition: and(eq(variables['BuildRTM'], 'false'), or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true'))))
+        condition: "and(eq(variables['BuildRTM'], 'false'), or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true'))))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
         artifactName: "localizationArtifacts"
       - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
-        condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
         artifactName: "symbols - $(RtmLabel)"
       - output: artifactsDrop
         displayName: 'Upload VSTS Drop'
-        condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+        condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
         buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
         sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
@@ -201,12 +201,12 @@ stages:
         dropMetadataContainerName: "DropMetadata-Product"
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))""
         artifactName: LocValidationLogs
         targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
@@ -245,27 +245,27 @@ stages:
           AccessToken: $(System.AccessToken)
       - output: pipelineArtifact
         displayName: 'Publish buildinfo.json as an artifact'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
         artifactName: 'BuildInfo'
       - output: pipelineArtifact
         displayName: 'Publish NuGet.CommandLine.Test as artifact'
-        condition: and(succeeded(),eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
         targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
         artifactName: "NuGet.CommandLine.Test"
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
-        condition: and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))
+        condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)"
         artifactName: "nupkgs - $(RtmLabel)"
       - output: pipelineArtifact
         displayName: 'Publish BootstrapperInfo.json as a build artifact'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         targetPath: $(Build.StagingDirectory)\MicroBuild\Output
         artifactName: MicroBuildOutputs
       - output: artifactsDrop
         displayName: 'Publish the .runsettings files to artifact services'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
         buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
         sourcePath: 'artifacts\RunSettings'
@@ -274,7 +274,7 @@ stages:
         dropMetadataContainerName: 'DropMetadata-RunSettings'
       - output: artifactsDrop
         displayName: 'OptProfV2:  publish profiling inputs to artifact services'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
         buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
         sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
@@ -287,17 +287,17 @@ stages:
         artifactName: "$(VsixPublishDir)"
       - output: pipelineArtifact
         displayName: 'Publish localizationArtifacts artifact'
-        condition: and(eq(variables['BuildRTM'], 'false'), or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true'))))
+        condition: "and(eq(variables['BuildRTM'], 'false'), or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true'))))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
         artifactName: "localizationArtifacts"
       - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
-        condition: " and(succeeded(), eq(variables['IsOfficialBuild'], 'true')) "
+        condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
         artifactName: "symbols - $(RtmLabel)"
       - output: artifactsDrop
         displayName: 'Upload VSTS Drop'
-        condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+        condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
         dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
         buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
         sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
@@ -306,12 +306,12 @@ stages:
         dropMetadataContainerName: "DropMetadata-Product"
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: and(succeeded(), eq(variables['BuildRTM'], 'false'))
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         artifactName: LocValidationLogs
         targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
@@ -348,7 +348,7 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Upload source-build log'
-        condition: or(failed(), eq(variables['System.debug'], 'true'))
+        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         targetPath: "artifacts/sb/log/source-build.binlog"
         artifactName: "Source-build log"
     steps:
@@ -377,12 +377,12 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish Test Freeze Dump'
-        condition: or(failed(), canceled())
+        condition: "or(failed(), canceled())""
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
         artifactName: "$(Agent.JobName)"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
@@ -410,12 +410,12 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish Test Freeze Dump'
-        condition: or(failed(), canceled())
+        condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
         artifactName: "$(Agent.JobName)"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(TestRunDisplayName) On Linux - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
@@ -442,12 +442,12 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish Test Freeze Dump'
-        condition: or(failed(), canceled())
+        condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
         artifactName: "$(Agent.JobName)"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
@@ -465,12 +465,12 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish Test Freeze Dump'
-        condition: or(failed(), canceled())
+        condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
         artifactName: "$(Agent.JobName)"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
@@ -495,12 +495,12 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish Test Freeze Dump'
-        condition: or(failed(), canceled())
+        condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
         artifactName: "$(Agent.JobName)"
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
-        condition: " or(failed(), eq(variables['System.debug'], 'true')) "
+        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
