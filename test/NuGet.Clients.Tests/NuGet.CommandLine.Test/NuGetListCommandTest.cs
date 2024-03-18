@@ -188,7 +188,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -213,21 +213,13 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(randomTestFolder, "nuget.config"), configFile);
+                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + server.Uri + "nuget";
                     var result = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        config.WorkingDirectory,
                         args);
                     server.Stop();
 
@@ -253,7 +245,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -278,20 +270,13 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(randomTestFolder, "nuget.config"), configFile);
+                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        config.WorkingDirectory,
                         args);
                     server.Stop();
 
@@ -321,7 +306,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -346,20 +331,13 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(randomTestFolder, "nuget.config"), configFile);
+                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -IncludeDelisted -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        config.WorkingDirectory,
                         args);
                     server.Stop();
 
@@ -386,7 +364,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -411,20 +389,13 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(randomTestFolder, "nuget.config"), configFile);
+                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Verbosity detailed -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        config.WorkingDirectory,
                         args);
                     server.Stop();
 
@@ -450,7 +421,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (var randomTestFolder = TestDirectory.Create())
+            using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -475,20 +446,13 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(randomTestFolder, "nuget.config"), configFile);
+                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -AllVersions -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        randomTestFolder,
+                        config.WorkingDirectory,
                         args);
                     server.Stop();
 
@@ -542,14 +506,7 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(solutionFolder, "nuget.config"), configFile);
+                    pathContext.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Prerelease -Source " + server.Uri + "nuget";
@@ -609,14 +566,7 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{server.Uri}nuget\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(solutionFolder, "nuget.config"), configFile);
+                    pathContext.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
@@ -714,14 +664,7 @@ namespace NuGet.CommandLine.Test
 
                         serverV3.Start();
                         serverV2.Start();
-                        string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{serverV3.Uri}index.json\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                        File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "nuget.config"), configFile);
+                        pathContext.Settings.AddSource("mockServer", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
 
                         // Act
                         var args = "list test -Source " + serverV3.Uri + "index.json";
@@ -782,14 +725,7 @@ namespace NuGet.CommandLine.Test
                     });
 
                     serverV3.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{serverV3.Uri}index.json\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "nuget.config"), configFile);
+                    pathContext.Settings.AddSource("mockServer", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + serverV3.Uri + "index.json";
@@ -844,14 +780,7 @@ namespace NuGet.CommandLine.Test
                     });
 
                     serverV3.Start();
-                    string configFile =
-                        $"<configuration>" +
-                        $"<packageSources>" +
-                        $"<clear />" +
-                        $"<add key=\"mockServer\" value=\"{serverV3.Uri}index.json\" allowInsecureConnections='true'/>" +
-                        $"</packageSources>" +
-                        $"</configuration>";
-                    File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "nuget.config"), configFile);
+                    pathContext.Settings.AddSource("mockServer", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + serverV3.Uri + "index.json";
@@ -1222,9 +1151,9 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using var packageDirectory = TestDirectory.Create();
+            using var pathContext = new SimpleTestPathContext();
             using var server = new MockServer();
-            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.WorkingDirectory);
 
             server.Get.Add("/nuget/$metadata", r =>
                 Util.GetMockServerResource());
@@ -1241,13 +1170,9 @@ namespace NuGet.CommandLine.Test
             server.Start();
 
             // create the config file
-            Util.CreateFile(packageDirectory, "nuget.config", $@"
-<configuration>
-    <packageSources>
-        <add key='http-feed' value='{server.Uri}nuget' allowInsecureConnections=""{allowInsecureConnections}"" />
-    </packageSources>
-</configuration>");
-            var configFile = Path.Combine(packageDirectory, "nuget.config");
+            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: allowInsecureConnections);
+
+            var configFile = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
             PackageSource source = new PackageSource(server.Uri + "nuget", "http-feed");
             string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "list", source);
 
@@ -1255,7 +1180,7 @@ namespace NuGet.CommandLine.Test
             var args = "list test -ConfigFile " + configFile;
             var result = CommandRunner.Run(
                 nugetexe,
-                packageDirectory,
+                pathContext.WorkingDirectory,
                 args);
             server.Stop();
 
