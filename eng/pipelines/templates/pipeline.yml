@@ -105,6 +105,8 @@ stages:
           enabled: true
         optprof:
           enabled: true
+          OptimizationInputsLookupMethod: DropPrefix
+          DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
           ShouldSkipOptimize: $(ShouldSkipOptimize)
           AccessToken: $(System.AccessToken)
       outputs:
