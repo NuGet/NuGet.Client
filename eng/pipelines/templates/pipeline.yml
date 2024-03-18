@@ -104,7 +104,9 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: true
+          enabled: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+          OptimizationInputsLookupMethod: DropPrefix
+          DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
           ShouldSkipOptimize: $(ShouldSkipOptimize)
           AccessToken: $(System.AccessToken)
       outputs:
@@ -215,15 +217,17 @@ stages:
       name: VSEngSS-MicroBuild2022-1ES
     templateContext:
       mb:
-      - localization:
+        localization:
           enabled: true
-      - signing:
+        signing:
           enabled: true
           signType: "$(SigningType)"
-      - swix:
+        swix:
           enabled: true
-      - optprof:
-          enabled: true
+        optprof:
+          enabled: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+          OptimizationInputsLookupMethod: DropPrefix
+          DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
           ShouldSkipOptimize: $(ShouldSkipOptimize)
           AccessToken: $(System.AccessToken)
       outputs:
