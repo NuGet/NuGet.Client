@@ -1,3 +1,6 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Upload source-build log' in the templateContext section.
 steps:
 - task: PowerShell@2
   displayName: "Build source-build"
@@ -6,18 +9,8 @@ steps:
     script: |
       ./eng/source-build/build.sh
   condition: "always()"
-
-- task: PublishPipelineArtifact@1
-  displayName: Upload source-build log
-  condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-  continueOnError: true
-  inputs:
-    targetPath: "artifacts/sb/log/source-build.binlog"
-    artifactName: "Source-build log"
-
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
-
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:

@@ -1,3 +1,5 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
 parameters:
 - name: isOfficialBuild
   type: boolean
@@ -73,7 +75,6 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: false
-
 stages:
 - stage: Initialize
   jobs:
@@ -83,8 +84,7 @@ stages:
     pool:
       vmImage: windows-latest
     steps:
-    - template: Initialize_Build_SemanticVersion.yml
-
+    - template: /eng/pipelines/templates/Initialize_Build_SemanticVersion.yml@self
   - job: Initialize_Build
     dependsOn: GetSemanticVersion
     timeoutInMinutes: 10
@@ -94,8 +94,7 @@ stages:
     pool:
       vmImage: windows-latest
     steps:
-    - template: Initialize_Build.yml
-
+    - template: /eng/pipelines/templates/Initialize_Build.yml@self
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
   dependsOn: []
@@ -106,10 +105,9 @@ stages:
     pool:
       vmImage: windows-latest
     steps:
-    - template: Static_Source_Analysis.yml
+    - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
       parameters:
         isOfficialBuild: ${{ parameters.isOfficialBuild }}
-
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
   dependsOn: Initialize
@@ -212,11 +210,10 @@ stages:
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
-    - template: Build_and_UnitTest.yml
+    - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: false
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
-
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
   dependsOn: Initialize
@@ -318,7 +315,7 @@ stages:
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
-    - template: Build_and_UnitTest.yml
+    - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: true
         NuGetLocalizationType: Full
@@ -330,10 +327,9 @@ stages:
     pool:
       vmImage: windows-latest
     steps:
-    - template: Validate_Build_Output.yml
+    - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
       parameters:
         isOfficialBuild: ${{ parameters.isOfficialBuild }}
-
 - stage: Source_Build
   dependsOn: Initialize
   jobs:
@@ -356,8 +352,7 @@ stages:
         targetPath: "artifacts/sb/log/source-build.binlog"
         artifactName: "Source-build log"
     steps:
-    - template: Source_Build.yml
-
+    - template: /eng/pipelines/templates/Source_Build.yml@self
 - stage: Tests
   displayName: "Run Unit and Functional Tests"
   dependsOn: Initialize
@@ -368,7 +363,6 @@ stages:
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
     condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
     pool:
@@ -392,15 +386,13 @@ stages:
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
-    - template: Functional_Tests_On_Windows.yml
-
+    - template: /eng/pipelines/templates/Functional_Tests_On_Windows.yml@self
   - job: Tests_On_Linux
     displayName: "Linux"
     timeoutInMinutes: 45
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       MSBUILDDISABLENODEREUSE: 1
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
       DOTNET_NUGET_SIGNATURE_VERIFICATION: true
     condition: "and(succeeded(), ne(variables['RunTestsOnLinux'], 'false'))"
@@ -427,15 +419,13 @@ stages:
         artifactName: binlog - $(TestRunDisplayName) On Linux - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
-    - template: Tests_On_Linux.yml
-
+    - template: /eng/pipelines/templates/Tests_On_Linux.yml@self
   - job: Tests_On_Mac
     displayName: "Mac"
     timeoutInMinutes: 45
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       MSBUILDDISABLENODEREUSE: 1
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
     condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
     pool:
@@ -461,8 +451,7 @@ stages:
         artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
-    - template: Tests_On_Mac.yml
-
+    - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
   - job: CrossFramework_Tests_On_Windows
     displayName: "Windows CrossFrameworkTests"
     condition: "and(succeeded(), ne(variables['RunCrossFrameworkTestsOnWindows'], 'false'))"
@@ -485,8 +474,7 @@ stages:
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
-    - template: CrossFramework_Tests_On_Windows.yml
-
+    - template: /eng/pipelines/templates/CrossFramework_Tests_On_Windows.yml@self
 - stage: MacTests
   displayName: "Mac Mono Tests"
   dependsOn:
@@ -498,7 +486,6 @@ stages:
     timeoutInMinutes: 90
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
       TestRunDisplayName: "Mono Tests"
       TestRunCommandLineArguments: "--mono-tests"
@@ -517,10 +504,8 @@ stages:
         artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
-    - template: Tests_On_Mac.yml
-
-# Dartlab's template defines this in its own stage
-- template: End_To_End_Tests_On_Windows.yml
+    - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
+- template: /eng/pipelines/templates/End_To_End_Tests_On_Windows.yml@self
   parameters:
     stageName: VS_EndToEnd_Part1
     stageDisplayName: Part 1
@@ -531,7 +516,7 @@ stages:
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     baseBuildDrop: $(VsBaseBuildDrop)
-    runSettingsURI:  https://vsdrop.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
+    runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
     - name: VsBootstrapperUrl
@@ -545,9 +530,7 @@ stages:
     QBuildSessionId: $(QBuildSessionId)
     part: "InstallPackageTest.ps1,UninstallPackageTest.ps1,UpdatePackageTest.ps1"
     testMachineCleanUpStrategy: ${{parameters.E2EPart1AgentCleanup}}
-
-# Dartlab's template defines this in its own stage
-- template: End_To_End_Tests_On_Windows.yml
+- template: /eng/pipelines/templates/End_To_End_Tests_On_Windows.yml@self
   parameters:
     stageName: VS_EndToEnd_Part2
     stageDisplayName: Part 2
@@ -558,7 +541,7 @@ stages:
     testExecutionJobTimeoutInMinutes: 100
     bootstrapperUrl: $(VsBootstrapperUrl)
     baseBuildDrop: $(VsBaseBuildDrop)
-    runSettingsURI:  https://vsdrop.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
+    runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     DartLabEnvironment: ${{parameters.DartLabEnvironment}}
     variables:
     - name: VsBootstrapperUrl
@@ -572,23 +555,21 @@ stages:
     QBuildSessionId: $(QBuildSessionId)
     part: "A-TopDownloadedPackages.ps1,BuildIntegratedTest.ps1,ExecuteInitScriptTest.ps1,FindPackageTest.ps1,GetPackageTest.ps1,GetProjectTest.ps1,LegacyPackageRefProjectTest.ps1,NativeProjectTest.ps1,NetCoreProjectTest.ps1,PackTest.ps1,ProjectRetargeting.ps1,ServicesTest.ps1,Settings.ps1,SyncPackageTest.ps1,TabExpansionTest.ps1,UniversalWindowsProjectTest.ps1"
     testMachineCleanUpStrategy: ${{parameters.E2EPart2AgentCleanup}}
-
-# Dartlab's template defines this in its own stage
-- template: Apex_Tests_On_Windows.yml
+- template: /eng/pipelines/templates/Apex_Tests_On_Windows.yml@self
   parameters:
     condition: "and(succeeded(), ne(variables['RunApexTests'], 'false'))"
     dependsOn:
-      - Initialize
-      - Build_Insertable
+    - Initialize
+    - Build_Insertable
     variables:
-      - name: VsBootstrapperUrl
-        value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
-      - name: VsBaseBuildDrop
-        value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['setbasebuilddrop.BaseBuildDrop']]
-      - name: QBuildSessionId
-        value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['setcloudbuildsessionid.QBuildSessionId']]
-      - name: GitHubStatusName
-        value: Apex Tests On Windows
+    - name: VsBootstrapperUrl
+      value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['vsbootstrapper.bootstrapperUrl']]
+    - name: VsBaseBuildDrop
+      value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['setbasebuilddrop.BaseBuildDrop']]
+    - name: QBuildSessionId
+      value: $[stageDependencies.Build_Insertable.Build_and_UnitTest_NonRTM.outputs['setcloudbuildsessionid.QBuildSessionId']]
+    - name: GitHubStatusName
+      value: Apex Tests On Windows
     isOfficialBuild: ${{parameters.isOfficialBuild}}
     runSettingsURI: https://vsdrop.microsoft.com/file/v1/RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId);NuGet.Tests.Apex.runsettings
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}

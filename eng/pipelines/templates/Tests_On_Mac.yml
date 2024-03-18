@@ -1,3 +1,7 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish Test Freeze Dump' in the templateContext section.
+# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish binlogs' in the templateContext section.
 steps:
 - task: DownloadPipelineArtifact@2
   displayName: "Download NuGet.CommandLine.Test artifacts"
@@ -5,7 +9,6 @@ steps:
     artifactName: "NuGet.CommandLine.Test"
     downloadPath: "$(Build.Repository.LocalPath)/artifacts"
   condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
-
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (continue on error)"
   continueOnError: "true"
@@ -15,7 +18,6 @@ steps:
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
-
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (stop on error)"
   continueOnError: "false"
@@ -25,7 +27,6 @@ steps:
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
-
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
   inputs:
@@ -34,14 +35,6 @@ steps:
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
     testRunTitle: "NuGet.Client $(TestRunDisplayName) On Mac"
   condition: "always()"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish Test Freeze Dump"
-  inputs:
-    targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-    artifactName: "$(Agent.JobName)"
-  condition: "or(failed(), canceled())"
-
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
@@ -51,13 +44,5 @@ steps:
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(TestRunDisplayName) On Mac"
     failOnStderr: "true"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
-  inputs:
-    artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
-    targetPath: $(Build.StagingDirectory)/binlog
-  condition: " or(failed(), eq(variables['System.debug'], 'true')) "
-
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
