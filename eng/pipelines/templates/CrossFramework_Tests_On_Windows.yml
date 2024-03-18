@@ -1,3 +1,7 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish Test Freeze Dump' in the templateContext section.
+# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish binlogs' in the templateContext section.
 steps:
 - task: PowerShell@2
   displayName: "Print Environment Variables"
@@ -6,28 +10,23 @@ steps:
     script: |
       Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
 - task: PowerShell@1
   displayName: "Disable strong name verification"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\DisableStrongNameVerification.ps1"
-
 - task: PowerShell@1
   displayName: "Run Configure.ps1"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
     arguments: "-Force -CleanCache"
-
 - task: MSBuild@1
   displayName: "Restore for VS2019"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
-
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
-
 - task: MSBuild@1
   displayName: "BuildNoVSIX"
   continueOnError: "true"
@@ -35,7 +34,6 @@ steps:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=false /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
-
 - task: DotNetCoreCLI@2
   displayName: "Run Cross Verify Tests (.NET Framework)"
   continueOnError: ${{ eq(variables['IsOfficialBuild'], 'true') }}
@@ -44,7 +42,6 @@ steps:
     projects: '$(Build.Repository.LocalPath)\test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj'
     arguments: '--no-restore --no-build --framework net472 --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings /noautorsp /property:Configuration=$(BuildConfiguration) "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.Test-net472.binlog"'
     testRunTitle: 'NuGet.Client Cross Verify Tests On Windows (.NET Framework)'
-
 - task: DotNetCoreCLI@2
   displayName: "Run Cross Verify Tests (.NET 7.0)"
   continueOnError: ${{ eq(variables['IsOfficialBuild'], 'true') }}
@@ -54,7 +51,6 @@ steps:
     arguments: '--no-restore --no-build --framework net7.0 --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings /noautorsp /property:Configuration=$(BuildConfiguration) "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.Test-net7.0.binlog"'
     testRunTitle: 'NuGet.Client Cross Verify Tests On Windows (.NET 7.0)'
     condition: "succeededOrFailed()"
-
 - task: DotNetCoreCLI@2
   displayName: "Run Cross Verify Tests (.NET 8.0)"
   continueOnError: ${{ eq(variables['IsOfficialBuild'], 'true') }}
@@ -64,14 +60,6 @@ steps:
     arguments: '--no-restore --no-build --framework net8.0 --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings /noautorsp /property:Configuration=$(BuildConfiguration) "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.Test-net8.0.binlog"'
     testRunTitle: 'NuGet.Client Cross Verify Tests On Windows (.NET 8.0)'
     condition: "succeededOrFailed()"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish Test Freeze Dump"
-  inputs:
-    targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-    artifactName: "$(Agent.JobName)"
-  condition: "or(failed(), canceled())"
-
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
@@ -80,10 +68,3 @@ steps:
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(System.AccessToken) -TestName "$env:AGENT_JOBNAME"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
-  inputs:
-    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: $(Build.StagingDirectory)\binlog
-  condition: " or(failed(), eq(variables['System.debug'], 'true')) "

@@ -1,3 +1,5 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
 parameters:
 - name: isOfficialBuild
   type: boolean
@@ -8,7 +10,6 @@ parameters:
   values:
   - Production
   - Staging
-
 steps:
 - task: DownloadPipelineArtifact@2
   displayName: "Download nupkgs"
@@ -16,7 +17,6 @@ steps:
   inputs:
     artifactName: "nupkgs - RTM"
     downloadPath: "$(System.ArtifactsDirectory)/nupkgs"
-
 - task: PowerShell@2
   name: check_nupkg_dependencies
   displayName: Check package dependencies

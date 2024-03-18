@@ -1,3 +1,5 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
 steps:
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
@@ -7,7 +9,6 @@ steps:
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
 - task: PowerShell@1
   displayName: "Set Semantic Version"
   name: "setsemanticversion"
@@ -24,7 +25,5 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set product version: $_"
         exit 1
       }
-
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
-

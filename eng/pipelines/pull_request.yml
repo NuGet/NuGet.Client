@@ -1,3 +1,6 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# This pipeline will be extended to the MicroBuild template
 parameters:
 - name: DartLabEnvironment
   displayName: DartLab Environment
@@ -70,7 +73,6 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: true
-
 resources:
   pipelines:
   - pipeline: DartLab
@@ -81,7 +83,10 @@ resources:
     type: git
     name: DartLab.Templates
     ref: refs/heads/main
-
+  - repository: MicroBuildTemplate
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
 variables:
   BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
   DOTNET_NOLOGO: 1
@@ -97,21 +102,31 @@ variables:
   RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
   RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
-
-stages:
-- template: templates/pipeline.yml
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
-    E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
-    ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
-    NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
-    RunApexTests: ${{parameters.RunApexTests}}
-    RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-    RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-    RunEndToEndTests: ${{parameters.RunEndToEndTests}}
-    RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
-    RunSourceBuild: ${{parameters.RunSourceBuild}}
-    RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
-    RunTestsOnMac: ${{parameters.RunTestsOnMac}}
-    RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+    sdl:
+      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+    pool:
+      name: AzurePipelines-EO
+      image: AzurePipelinesWindows2022compliantGPT
+      os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - template: /eng/pipelines/templates/pipeline.yml@self
+      parameters:
+        DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+        E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
+        E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
+        ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
+        NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
+        RunApexTests: ${{parameters.RunApexTests}}
+        RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+        RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
+        RunEndToEndTests: ${{parameters.RunEndToEndTests}}
+        RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+        RunSourceBuild: ${{parameters.RunSourceBuild}}
+        RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
+        RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+        RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
