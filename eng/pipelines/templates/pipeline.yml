@@ -201,7 +201,7 @@ stages:
         dropMetadataContainerName: "DropMetadata-Product"
       - output: pipelineArtifact
         displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))""
+        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
         artifactName: LocValidationLogs
         targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
       - output: pipelineArtifact
