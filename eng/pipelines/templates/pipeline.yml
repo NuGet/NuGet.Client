@@ -377,7 +377,7 @@ stages:
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish Test Freeze Dump'
-        condition: "or(failed(), canceled())""
+        condition: "or(failed(), canceled())"
         targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
         artifactName: "$(Agent.JobName)"
       - output: pipelineArtifact
