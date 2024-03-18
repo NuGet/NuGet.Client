@@ -20,8 +20,8 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. To continue with the HTTP source, enable the `-allowInsecureConnections` option.";
-        string _httpErrorMultiple = "You are running the '{0}' operation with 'HTTP' sources: {1}. To continue with the HTTP source, enable the `-allowInsecureConnections` option.";
+        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
+        string _httpErrorMultiple = "You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         [Fact]
         public void ListCommand_WithNugetShowStack_ShowsStack()
