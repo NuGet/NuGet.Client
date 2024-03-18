@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using NuGet.CommandLine.Test;
 using NuGet.Configuration;
@@ -26,14 +25,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -140,14 +132,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -260,14 +245,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -380,14 +358,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -500,14 +471,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -668,14 +632,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -784,14 +741,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -900,14 +850,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (SimpleTestPathContext config = new SimpleTestPathContext())
             {
                 // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='mockSource' value='{server.Uri}v3/index.json' allowInsecureConnections='true' />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json", allowInsecureConnectionsValue: "true");
 
                 string index = $@"
                 {{
@@ -1038,7 +981,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [Theory]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public void SearchCommand_WhenSearchWithHttpSourcesWithAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
+        public void SearchCommand_WhenSearchWithHttpSourcesWithAllowInsecureConnections_DisplaysErrorCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             // Arrange
             string nugetexe = Util.GetNuGetExePath();
@@ -1051,15 +994,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using SimpleTestPathContext config = new SimpleTestPathContext();
 
             // Arrange the NuGet.Config file
-            string nugetConfigContent =
-$@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='http-feed1' value='{server1.Uri}v3/index.json' allowInsecureConnections=""{allowInsecureConnections}"" />
-        <add key='http-feed2' value='{server2.Uri}v3/index.json' allowInsecureConnections=""{allowInsecureConnections}"" />
-    </packageSources>
-</configuration>";
-            File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+            config.Settings.AddSource("http-feed1", $"{server1.Uri}v3/index.json", allowInsecureConnectionsValue: allowInsecureConnections);
+            config.Settings.AddSource("http-feed2", $"{server2.Uri}v3/index.json", allowInsecureConnectionsValue: allowInsecureConnections);
 
             string index = $@"
                 {{
