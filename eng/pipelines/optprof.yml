@@ -154,7 +154,7 @@ stages:
         !VS15/*.exe
         !VS15/*.pdb
       displayName: 'Download VS15 files from official build'
-    - task: MicroBuildSigningPlugin@1
+    - task: MicroBuildSigningPlugin@4
       inputs:
         signType: "real"
         esrpSigning: "true"
