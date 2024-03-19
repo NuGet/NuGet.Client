@@ -42,6 +42,10 @@ resources:
     type: git
     name: DartLab.Templates
     ref: refs/heads/main
+  - repository: MicroBuildTemplate
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
 
 variables:
   BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
@@ -57,16 +61,27 @@ variables:
   RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
   RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
 
-stages:
-- template: templates/pipeline.yml
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
-    isOfficialBuild: true
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    NuGetLocalizationType: Full
-    RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-    RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-    RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
-    RunSourceBuild: ${{parameters.RunSourceBuild}}
-    RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
-    RunTestsOnMac: ${{parameters.RunTestsOnMac}}
-    RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+    sdl:
+      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+    pool:
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - template: /eng/pipelines/templates/pipeline.yml@self
+      parameters:
+        isOfficialBuild: true
+        DartLabEnvironment: ${{parameters.DartLabEnvironment}}
+        NuGetLocalizationType: Full
+        RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+        RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
+        RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+        RunSourceBuild: ${{parameters.RunSourceBuild}}
+        RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
+        RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+        RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
