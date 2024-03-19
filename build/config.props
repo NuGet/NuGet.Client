@@ -37,7 +37,7 @@
     <!-- Specifies the SDK version to download to use for testing. The first value represents the channel, the second value represents the exact SDK version to be download. If a version is not specified, the latest version from the channel will be downloaded.
     Note that multiple SDKs can be downloaded by using `;` as a separator.
     -->
-    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">release/5.0.2xx:5.0.200-servicing.21120.4</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(CliBranchForTesting)' == ''">5.0</CliBranchForTesting>
   </PropertyGroup>
 
   <!-- Config -->
