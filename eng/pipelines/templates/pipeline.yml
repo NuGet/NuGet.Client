@@ -104,7 +104,7 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: true
+          enabled: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
           OptimizationInputsLookupMethod: DropPrefix
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
           ShouldSkipOptimize: $(ShouldSkipOptimize)
@@ -225,7 +225,7 @@ stages:
       - swix:
           enabled: true
       - optprof:
-          enabled: true
+          enabled: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
           ShouldSkipOptimize: $(ShouldSkipOptimize)
           AccessToken: $(System.AccessToken)
       outputs:
