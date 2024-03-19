@@ -173,7 +173,7 @@ stages:
       inputs:
         filePath: $(DartLab.Path)\Scripts\VisualStudio\Bootstrapper\Get-BootstrapperURL.ps1
         # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-        arguments: -BootstrapperInfoJsonURI '${env:MicroBuildOutputFolderOverride}\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
+        arguments: -BootstrapperInfoJsonURI '${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\BootstrapperInfo.json' -VSBranch '$(VSBranch)' -OutVariableName 'VisualStudio.InstallationUnderTest.BootstrapperURL'
     - task: artifactDropTask@0
       displayName: "Upload VSTS Drop"
       inputs:
