@@ -32,8 +32,9 @@ namespace NuGet.ProjectModel
         private readonly bool _isReadOnly;
         // Internal for testing purposes
         internal Dictionary<string, string>? _projectNameToHashCodeCache;
+        internal Dictionary<string, string>? _projectNameToHashCodeCacheForChildSpecs;
 
-        public void SetProjectNameToHashCodeCache(Dictionary<string, string> projectNameToHashCodeCache)
+        internal void SetProjectNameToHashCodeCache(Dictionary<string, string> projectNameToHashCodeCache)
         {
             if (projectNameToHashCodeCache == null) throw new ArgumentNullException(nameof(projectNameToHashCodeCache));
             _projectNameToHashCodeCache = projectNameToHashCodeCache;
@@ -179,6 +180,12 @@ namespace NuGet.ProjectModel
             foreach (PackageSpec packageSpec in closure)
             {
                 dgSpec.AddProject(_isReadOnly ? packageSpec : packageSpec.Clone());
+            }
+
+            if (_isReadOnly)
+            {
+                _projectNameToHashCodeCacheForChildSpecs ??= new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
+                dgSpec.SetProjectNameToHashCodeCache(_projectNameToHashCodeCacheForChildSpecs);
             }
 
             return dgSpec;
