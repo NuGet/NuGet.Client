@@ -264,9 +264,10 @@ steps:
   name: "vsbootstrapper"
   inputs:
     scriptType: "inlineScript"
+    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
     inlineScript: |
       try {
-        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\Bootstrapperinfo.json" | ConvertFrom-Json
         $bootstrapperUrl = $json[0].bootstrapperUrl;
         Write-Host "Bootstrapper URL: $bootstrapperUrl"
         Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
@@ -281,9 +282,10 @@ steps:
   continueOnError: true
   inputs:
     scriptType: "inlineScript"
+    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
     inlineScript: |
       try {
-        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\Bootstrapperinfo.json" | ConvertFrom-Json
         $qBuildSessionId = $json[0].QBuildSessionId;
         Write-Host "CloudBuild Session ID: $qBuildSessionId"
         Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
@@ -297,9 +299,10 @@ steps:
   continueOnError: true
   inputs:
     scriptType: "inlineScript"
+    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
     inlineScript: |
       try {
-        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+        $json = Get-Content "${env:MicroBuildOutputFolderOverride}\Bootstrapperinfo.json" | ConvertFrom-Json
         $buildDrop = $json[0].BuildDrop;
         Write-Host "Base Build Drop: $buildDrop"
         Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
