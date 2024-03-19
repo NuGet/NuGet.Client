@@ -87,7 +87,7 @@ namespace NuGet.Commands
                 // Limiting to processor count reduces task context switching which is better
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
-            var dictionary = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
+            var projectNameToHashCodeCache = new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
 
             using (var settingsLoadingContext = new SettingsLoadingContext())
             {
@@ -96,7 +96,7 @@ namespace NuGet.Commands
                 {
                     IReadOnlyList<PackageSpec> closure = dgFile.GetClosure(projectNameToRestore);
                     DependencyGraphSpec projectDependencyGraphSpec = dgFile.CreateFromClosure(projectNameToRestore, closure);
-                    projectDependencyGraphSpec.SetProjectNameToHashCode(dictionary);
+                    projectDependencyGraphSpec.SetProjectNameToHashCodeCache(projectNameToHashCodeCache);
 
                     var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
 

@@ -696,10 +696,10 @@ namespace NuGet.ProjectModel.Test
             Dictionary<string, string> hashes = new(PathUtility.GetStringComparerBasedOnOS());
 
             // Act
-            dependencyGraph.SetProjectNameToHashCode(hashes);
+            dependencyGraph.SetProjectNameToHashCodeCache(hashes);
 
             // Assert
-            dependencyGraph._projectNameToHashCode.Should().BeSameAs(hashes);
+            dependencyGraph._projectNameToHashCodeCache.Should().BeSameAs(hashes);
         }
 
         [Fact]
@@ -717,16 +717,16 @@ namespace NuGet.ProjectModel.Test
             dependencyGraph.AddProject(c);
 
             Dictionary<string, string> hashes = new(PathUtility.GetStringComparerBasedOnOS());
-            dependencyGraph.SetProjectNameToHashCode(hashes);
+            dependencyGraph.SetProjectNameToHashCodeCache(hashes);
 
             // Act
             _ = dependencyGraph.GetHash();
 
             // Assert
-            dependencyGraph._projectNameToHashCode.Should().HaveCount(3);
-            dependencyGraph._projectNameToHashCode.Should().ContainKey(a.RestoreMetadata.ProjectUniqueName);
-            dependencyGraph._projectNameToHashCode.Should().ContainKey(b.RestoreMetadata.ProjectUniqueName);
-            dependencyGraph._projectNameToHashCode.Should().ContainKey(c.RestoreMetadata.ProjectUniqueName);
+            dependencyGraph._projectNameToHashCodeCache.Should().HaveCount(3);
+            dependencyGraph._projectNameToHashCodeCache.Should().ContainKey(a.RestoreMetadata.ProjectUniqueName);
+            dependencyGraph._projectNameToHashCodeCache.Should().ContainKey(b.RestoreMetadata.ProjectUniqueName);
+            dependencyGraph._projectNameToHashCodeCache.Should().ContainKey(c.RestoreMetadata.ProjectUniqueName);
         }
 
         [Fact]
@@ -744,7 +744,7 @@ namespace NuGet.ProjectModel.Test
             dependencyGraph.AddProject(c);
 
             Dictionary<string, string> hashes = new(PathUtility.GetStringComparerBasedOnOS());
-            dependencyGraph.SetProjectNameToHashCode(hashes);
+            dependencyGraph.SetProjectNameToHashCodeCache(hashes);
 
             // Act
             string originalHash = dependencyGraph.GetHash();

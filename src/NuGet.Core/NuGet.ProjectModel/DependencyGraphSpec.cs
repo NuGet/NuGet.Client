@@ -31,12 +31,12 @@ namespace NuGet.ProjectModel
 
         private readonly bool _isReadOnly;
         // Internal for testing purposes
-        internal Dictionary<string, string>? _projectNameToHashCode;
+        internal Dictionary<string, string>? _projectNameToHashCodeCache;
 
-        public void SetProjectNameToHashCode(Dictionary<string, string> projectNameToHashCode)
+        public void SetProjectNameToHashCodeCache(Dictionary<string, string> projectNameToHashCodeCache)
         {
-            if (projectNameToHashCode == null) throw new ArgumentNullException(nameof(projectNameToHashCode));
-            _projectNameToHashCode = projectNameToHashCode;
+            if (projectNameToHashCodeCache == null) throw new ArgumentNullException(nameof(projectNameToHashCodeCache));
+            _projectNameToHashCodeCache = projectNameToHashCodeCache;
         }
 
         public static string GetDGSpecFileName(string projectName)
@@ -373,9 +373,9 @@ namespace NuGet.ProjectModel
             using (IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                if (_projectNameToHashCode != null)
+                if (_projectNameToHashCodeCache != null)
                 {
-                    Write(writer, hashing: true, PackageSpecWriter.Write, _projectNameToHashCode);
+                    Write(writer, hashing: true, PackageSpecWriter.Write, _projectNameToHashCodeCache);
                 }
                 else
                 {
@@ -431,13 +431,13 @@ namespace NuGet.ProjectModel
                     using var projectWriter = new HashObjectWriter(hashFunc);
                     writeAction.Invoke(project, projectWriter, hashing, EnvironmentVariableWrapper.Instance);
                     projectHash = projectWriter.GetHash();
-                }
 
-                lock (projectNameToHashCode)
-                {
-                    if (!projectNameToHashCode.ContainsKey(project.RestoreMetadata.ProjectUniqueName))
+                    lock (projectNameToHashCode)
                     {
-                        projectNameToHashCode[project.RestoreMetadata.ProjectUniqueName] = projectHash;
+                        if (!projectNameToHashCode.ContainsKey(project.RestoreMetadata.ProjectUniqueName))
+                        {
+                            projectNameToHashCode[project.RestoreMetadata.ProjectUniqueName] = projectHash;
+                        }
                     }
                 }
 
