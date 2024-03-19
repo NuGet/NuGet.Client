@@ -7,10 +7,6 @@ parameters:
   displayName: Run cross framweork tests on Windows
   type: boolean
   default: true
-- name: RunEndToEndTests
-  displayName: Run end-to-end tests
-  type: boolean
-  default: true
 - name: RunFunctionalTestsOnWindows
   displayName: Run functional tests on Windows
   type: boolean
@@ -33,15 +29,7 @@ parameters:
   default: true
 
 resources:
-  pipelines:
-  - pipeline: DartLab
-    source: DartLab
-    branch: main
   repositories:
-  - repository: DartLabTemplates
-    type: git
-    name: DartLab.Templates
-    ref: refs/heads/main
   - repository: MicroBuildTemplate
     type: git
     name: 1ESPipelineTemplates/MicroBuildTemplate
@@ -76,7 +64,6 @@ extends:
     - template: /eng/pipelines/templates/pipeline.yml@self
       parameters:
         isOfficialBuild: true
-        DartLabEnvironment: ${{parameters.DartLabEnvironment}}
         NuGetLocalizationType: Full
         RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
         RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
