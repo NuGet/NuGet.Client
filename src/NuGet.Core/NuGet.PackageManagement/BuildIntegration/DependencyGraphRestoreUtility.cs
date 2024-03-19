@@ -333,7 +333,7 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
-            var dgSpec = new DependencyGraphSpec();
+            var dgSpec = new DependencyGraphSpec(isReadOnly: true);
             List<IAssetsLogMessage> allAdditionalMessages = null;
 
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
