@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using FluentAssertions;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Test.Utility;
@@ -20,9 +18,6 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
-        string _httpErrorMultiple = "You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
-
         [Fact]
         public void ListCommand_WithNugetShowStack_ShowsStack()
         {
@@ -188,7 +183,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -213,13 +208,12 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + server.Uri + "nuget";
                     var result = CommandRunner.Run(
                         nugetexe,
-                        config.WorkingDirectory,
+                        randomTestFolder,
                         args);
                     server.Stop();
 
@@ -229,7 +223,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only package id & version is displayed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(result.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(result.Output)));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -245,7 +239,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -270,13 +264,12 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        config.WorkingDirectory,
+                        randomTestFolder,
                         args);
                     server.Stop();
 
@@ -286,7 +279,7 @@ namespace NuGet.CommandLine.Test
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
                     var expectedOutput = "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -306,7 +299,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -331,13 +324,12 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -IncludeDelisted -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        config.WorkingDirectory,
+                        randomTestFolder,
                         args);
                     server.Stop();
 
@@ -348,7 +340,7 @@ namespace NuGet.CommandLine.Test
                     var expectedOutput =
                         "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -364,7 +356,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -389,13 +381,12 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Verbosity detailed -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        config.WorkingDirectory,
+                        randomTestFolder,
                         args);
                     server.Stop();
 
@@ -421,7 +412,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestDirectory.Create())
-            using (SimpleTestPathContext config = new SimpleTestPathContext())
+            using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -446,13 +437,12 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    config.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -AllVersions -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        config.WorkingDirectory,
+                        randomTestFolder,
                         args);
                     server.Stop();
 
@@ -462,7 +452,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -506,7 +496,6 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    pathContext.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Prerelease -Source " + server.Uri + "nuget";
@@ -522,7 +511,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(r1.Output));
+                    Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)));
 
                     Assert.Contains("$filter=IsAbsoluteLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -566,7 +555,6 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
-                    pathContext.Settings.AddSource("mockServer", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
@@ -582,7 +570,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    RemoveDeprecationWarning(r1.Output).Should().Be(expectedOutput);
+                    RemoveDeprecationWarning(RemoveHttpWarning(r1.Output)).Should().Be(expectedOutput);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -664,7 +652,6 @@ namespace NuGet.CommandLine.Test
 
                         serverV3.Start();
                         serverV2.Start();
-                        pathContext.Settings.AddSource("mockServer", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
 
                         // Act
                         var args = "list test -Source " + serverV3.Uri + "index.json";
@@ -682,7 +669,7 @@ namespace NuGet.CommandLine.Test
                         // verify that only package id & version is displayed
                         var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                             "testPackage2 2.1.0" + Environment.NewLine;
-                        Assert.Equal(expectedOutput, RemoveDeprecationWarning(result.Output));
+                        Assert.Equal(expectedOutput, RemoveDeprecationWarning(RemoveHttpWarning(result.Output)));
 
                         Assert.Contains("$filter=IsLatestVersion", searchRequest);
                         Assert.Contains("searchTerm='test", searchRequest);
@@ -725,7 +712,6 @@ namespace NuGet.CommandLine.Test
                     });
 
                     serverV3.Start();
-                    pathContext.Settings.AddSource("mockServer", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + serverV3.Uri + "index.json";
@@ -780,7 +766,6 @@ namespace NuGet.CommandLine.Test
                     });
 
                     serverV3.Start();
-                    pathContext.Settings.AddSource("mockServer", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
 
                     // Act
                     var args = "list test -Source " + serverV3.Uri + "index.json";
@@ -1016,7 +1001,7 @@ namespace NuGet.CommandLine.Test
 
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, "vsts", source, additionalAtrributeName: "protocolVersion", additionalAttributeValue: "3", additionalAtrributeName2: "allowInsecureConnections", additionalAttributeValue2: "true");
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, "vsts", source, additionalAtrributeName: "protocolVersion", additionalAttributeValue: "3");
 
                     //var packageSourceCredentialsSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSourceCredentials");
                     SimpleTestSettingsContext.AddPackageSourceCredentialsSection(settings.XML, "vsts", "user", "password", clearTextPassword: true);
@@ -1118,7 +1103,7 @@ namespace NuGet.CommandLine.Test
 
                     var source = $"{serverV3.Uri}api/v2";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, "vsts", source, additionalAtrributeName: "protocolVersion", additionalAttributeValue: "2", additionalAtrributeName2: "allowInsecureConnections", additionalAttributeValue2: "true");
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, "vsts", source, additionalAtrributeName: "protocolVersion", additionalAttributeValue: "2");
 
                     SimpleTestSettingsContext.AddPackageSourceCredentialsSection(settings.XML, "vsts", "user", "password", clearTextPassword: true);
                     settings.Save();
@@ -1146,14 +1131,14 @@ namespace NuGet.CommandLine.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnections_ProducesAnErrorCorrectly(string allowInsecureConnections, bool isHttpErrorExpected)
+        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             var nugetexe = Util.GetNuGetExePath();
 
             // Arrange
-            using var pathContext = new SimpleTestPathContext();
+            using var packageDirectory = TestDirectory.Create();
             using var server = new MockServer();
-            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.WorkingDirectory);
+            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
 
             server.Get.Add("/nuget/$metadata", r =>
                 Util.GetMockServerResource());
@@ -1170,38 +1155,40 @@ namespace NuGet.CommandLine.Test
             server.Start();
 
             // create the config file
-            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: allowInsecureConnections);
-
-            var configFile = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
-            PackageSource source = new PackageSource(server.Uri + "nuget", "http-feed");
-            string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "list", source);
+            Util.CreateFile(packageDirectory, "nuget.config", $@"
+<configuration>
+    <packageSources>
+        <add key='http-feed' value='{server.Uri}nuget' allowInsecureConnections=""{allowInsecureConnections}"" />
+    </packageSources>
+</configuration>");
+            var configFile = Path.Combine(packageDirectory, "nuget.config");
 
             // Act
             var args = "list test -ConfigFile " + configFile;
             var result = CommandRunner.Run(
                 nugetexe,
-                pathContext.WorkingDirectory,
+                packageDirectory,
                 args);
             server.Stop();
 
             // Assert
-            if (isHttpErrorExpected)
+            Assert.Equal(0, result.ExitCode);
+
+            // verify that only package id & version is displayed
+            var expectedOutput = "testPackage1 1.1.0";
+            Assert.Contains(expectedOutput, result.Output);
+            if (isHttpWarningExpected)
             {
-                Assert.False(result.Success);
-                Assert.Contains(expectedError, result.AllOutput);
+                Assert.Contains("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
             }
             else
             {
-                Assert.Equal(0, result.ExitCode);
-                Assert.DoesNotContain(expectedError, result.AllOutput);
-                // verify that only package id & version is displayed
-                var expectedOutput = "testPackage1 1.1.0";
-                Assert.Contains(expectedOutput, result.Output);
+                Assert.DoesNotContain("WARNING: You are running the 'list' operation with an 'HTTP' source", result.AllOutput);
             }
         }
 
         [Fact]
-        public void ListCommand_WhenListWithHttpSources_DisplaysAnError()
+        public void ListCommand_WhenListWithHttpSources_Warns()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -1239,16 +1226,8 @@ namespace NuGet.CommandLine.Test
 
             server2.Start();
 
-            PackageSource source1 = new PackageSource(server1.Uri + "nuget", "http-feed1");
-            PackageSource source2 = new PackageSource(server2.Uri + "nuget", "http-feed2");
-            List<PackageSource> sources = new List<PackageSource>() { source1, source2 };
-            string expectedError = string.Format(CultureInfo.CurrentCulture,
-                        _httpErrorMultiple,
-                        "list",
-                        Environment.NewLine + string.Join(Environment.NewLine, sources.Select(e => e.SourceUri)));
-
             // Act
-            var args = "list test -Source " + server1.Uri + "nuget" + " -Source " + server2.Uri + "nuget";
+            var args = "list test -Source " + server1.Uri + "nuget" + " -Source " + server1.Uri + "nuget";
             var result = CommandRunner.Run(
                 nugetexe,
                 packageDirectory,
@@ -1257,9 +1236,12 @@ namespace NuGet.CommandLine.Test
             server2.Stop();
 
             // Assert
-            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(0, result.ExitCode);
 
-            Assert.Contains(expectedError, result.AllOutput);
+            // verify that only package id & version is displayed
+            var expectedOutput = "testPackage1 1.1.0";
+            Assert.Contains(expectedOutput, result.Output);
+            Assert.Contains("WARNING: You are running the 'list' operation with 'HTTP' sources", result.AllOutput);
         }
 
         [Fact]
@@ -1286,6 +1268,16 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal($"WARNING: {deprecation}{Environment.NewLine}testPackage1 1.1.0{Environment.NewLine}testPackage2 2.0.0{Environment.NewLine}", result.Output);
             }
+        }
+
+        private static string RemoveHttpWarning(string input)
+        {
+            string[] lines = input.Split(
+                new string[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None
+            );
+
+            return string.Join(Environment.NewLine, lines.Select(e => e).Where(e => !e.StartsWith("WARNING: You are running the")));
         }
 
         private static string RemoveDeprecationWarning(string input)
