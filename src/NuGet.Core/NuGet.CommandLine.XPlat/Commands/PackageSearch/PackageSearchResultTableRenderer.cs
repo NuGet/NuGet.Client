@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (verbosity == PackageSearchVerbosity.Minimal)
                 {
-                    table.AddRow(packageId, version );
+                    table.AddRow(packageId, version);
                 }
                 else if (verbosity == PackageSearchVerbosity.Detailed)
                 {
