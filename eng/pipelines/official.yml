@@ -61,6 +61,9 @@ extends:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
       os: windows
+    sbom:
+      enabled: true
+      buildComponentPath: '$(Build.SourcesDirectory)/MicroBuild/Output/artifacts'
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
