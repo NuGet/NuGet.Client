@@ -64,13 +64,13 @@ extends:
       binskim:
         enabled: true
         scanOutputDirectoryOnly: true
+      sbom:
+        enabled: true
+        buildComponentPath: '$(Build.SourcesDirectory)/MicroBuild/Output/artifacts'
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
       os: windows
-    sbom:
-      enabled: true
-      buildComponentPath: '$(Build.SourcesDirectory)/MicroBuild/Output/artifacts'
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
