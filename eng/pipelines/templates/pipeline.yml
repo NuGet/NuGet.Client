@@ -196,9 +196,8 @@ stages:
 
       - output: pipelineArtifact
         displayName: Publish SBOM manifest
-        continueOnError: ${{parameters.sbomContinueOnError}}
         artifactName: $(ARTIFACT_NAME)
-        targetPath: '${{parameters.manifestDirPath}}'
+        targetPath: '$(Build.ArtifactStagingDirectory)/sbom'
 
     steps:
     - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
