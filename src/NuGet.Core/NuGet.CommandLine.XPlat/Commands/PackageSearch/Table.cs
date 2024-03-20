@@ -15,7 +15,7 @@ namespace NuGet.CommandLine.XPlat
         public bool Highlight { get; set; }
     }
 
-    internal class WrappingTable
+    internal class Table
     {
         // This is the default window width if we cannot get the actual window width
         const int DefaultWindowWidth = 115;
@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat
         // This is the list of columns in the table
         internal readonly List<Column> _columns = new List<Column>();
         // This is the list of rows in the table
-        internal readonly List<List<string>> _rows = new List<List<string>>();
+        internal List<string[]> _rows = new List<string[]>();
         // This is the list of columns to highlight
         private int[] _columnsToHighlight;
         // This is the highlighter color
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.XPlat
         // This is the default console color
         private readonly ConsoleColor _consoleColor = Console.ForegroundColor;
 
-        public WrappingTable(int[] columnsToHighlight, params string[] headers)
+        public Table(int[] columnsToHighlight, params string[] headers)
         {
             _columnsToHighlight = columnsToHighlight;
             int windowWidth = -1;
@@ -69,14 +69,14 @@ namespace NuGet.CommandLine.XPlat
         /* Add a row to the table
          * row: The list of values in the row
          */
-        public void AddRow(List<string> row)
+        public void AddRow(params string[] row)
         {
-            if (row.Count != _columns.Count)
+            if (row.Length != _columns.Count)
             {
                 throw new InvalidOperationException("Row column count does not match header column count.");
             }
 
-            for (int i = 0; i < row.Count; i++)
+            for (int i = 0; i < row.Length; i++)
             {
                 _columns[i].Width = Math.Min(_maxColumnWidth, Math.Max(_columns[i].Width, row[i]?.Length ?? 0));
             }
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.XPlat
          * logger: The logger to use for printing
          * highlightTerm: The term to highlight in the table
          */
-        public void PrintWithHighlighting(ILoggerWithColor logger, string highlightTerm)
+        public void PrintResult(string highlightTerm, ILoggerWithColor logger)
         {
             if (_rows.Count == 0)
             {
@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.XPlat
             // Print a separator line
             PrintRow(logger, _columns.Select(c => "".PadRight(c.Width, '-')).ToList(), "");
 
-            foreach (List<string> row in _rows)
+            foreach (string[] row in _rows)
             {
                 // Sanitize the values to remove new lines and tabs
                 List<string> sanitizedValues = row.Select(v => SanitizeString(v)).ToList();

@@ -5,6 +5,6 @@ namespace NuGet.CommandLine.XPlat
 {
     internal interface ITableFormatStrategy
     {
-        WrappingTable CreateTable();
+        Table CreateTable();
     }
 }

@@ -8,9 +8,9 @@ namespace NuGet.CommandLine.XPlat
         private readonly string[] _normalVerbosityTableHeader = { "Package ID", "Latest Version", "Owners", "Total Downloads" };
         private readonly int[] _normalColumnsToHighlight = { 0, 2 };
 
-        public WrappingTable CreateTable()
+        public Table CreateTable()
         {
-            return new WrappingTable(_normalColumnsToHighlight, _normalVerbosityTableHeader);
+            return new Table(_normalColumnsToHighlight, _normalVerbosityTableHeader);
         }
     }
 }

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace NuGet.CommandLine.Xplat.Tests
 {
-    public class WrappingTableTests
+    public class TableTests
     {
         [Theory]
         [InlineData(1)]
@@ -25,15 +25,15 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void AddRow_AddNColumnedRowInAnNColumnedTable_AddsRow(int columns)
         {
             // Arrange
-            WrappingTable myTable = new WrappingTable(Array.Empty<int>(), Enumerable.Repeat("Header", columns).ToArray());
-            List<List<string>> expectedTable =
+            Table myTable = new Table(Array.Empty<int>(), Enumerable.Repeat("Header", columns).ToArray());
+            List<string[]> expectedTable =
             [
-                Enumerable.Repeat("row 1", columns).ToList(),
+                Enumerable.Repeat("row 1", columns).ToArray(),
             ];
             List<string> header = Enumerable.Repeat("Header", columns).ToList();
 
             // Act
-            myTable.AddRow(Enumerable.Repeat("row 1", columns).ToList());
+            myTable.AddRow(Enumerable.Repeat("row 1", columns).ToArray());
 
             // Assert
             Assert.Equal(expectedTable, myTable._rows);
@@ -50,10 +50,10 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void AddRow_AddTwoColumnedRowInANotTwoColumnedTable_ThrowsAnException(int columns)
         {
             // Arrange
-            WrappingTable myTable = new WrappingTable(Array.Empty<int>(), Enumerable.Repeat("Header", columns).ToArray());
+            Table myTable = new Table(Array.Empty<int>(), Enumerable.Repeat("Header", columns).ToArray());
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => myTable.AddRow(new List<string> { "row", "row column2" }));
+            var exception = Assert.Throws<InvalidOperationException>(() => myTable.AddRow("row", "row column2" ));
 
             // Assert
             Assert.Equal("Row column count does not match header column count.", exception.Message);
@@ -65,10 +65,10 @@ namespace NuGet.CommandLine.Xplat.Tests
             // Arrange
             string searchTerm = "TestPackage";
             Mock<ILoggerWithColor> mockLoggerWithColor = new Mock<ILoggerWithColor>();
-            WrappingTable table = new WrappingTable(Array.Empty<int>(), Enumerable.Repeat("header", 4).ToArray());
+            Table table = new Table(Array.Empty<int>(), Enumerable.Repeat("header", 4).ToArray());
 
             // Act
-            table.PrintWithHighlighting(mockLoggerWithColor.Object, searchTerm);
+            table.PrintResult(searchTerm, mockLoggerWithColor.Object);
 
             // Assert
             mockLoggerWithColor.Verify(x => x.LogMinimal("No results found."), Times.Once);
@@ -94,20 +94,20 @@ namespace NuGet.CommandLine.Xplat.Tests
                     }
                     coloredMessage[color] += message;
                 });
-            WrappingTable table = new WrappingTable(new int[] { 0, 1, 2, 3 }, new string[] { "column1", "column2", "column3", "column4" });
+            Table table = new Table(new int[] { 0, 1, 2, 3 }, new string[] { "column1", "column2", "column3", "column4" });
             var expectedRedColoredMessage = string.Concat(Enumerable.Repeat(searchTerm, rows));
             var expectedDefaultColoredMessage =
                 "| column1 | column2 | column3 | column4 |" +
                 "| ------- | ------- | ------- | ------- |";
             for (int i = 0; i < rows; i++)
             {
-                table.AddRow(new List<string> { "column1", searchTerm, "column3", "column4" });
+                table.AddRow("column1", searchTerm, "column3", "column4" );
                 expectedDefaultColoredMessage += $"| column1 |     | column3 | column4 |";
                 expectedDefaultColoredMessage += "| ------- | ------- | ------- | ------- |";
             }
 
             // Act
-            table.PrintWithHighlighting(mockLoggerWithColor.Object, searchTerm);
+            table.PrintResult(searchTerm, mockLoggerWithColor.Object);
 
             // Assert
             Assert.Equal(expectedRedColoredMessage, coloredMessage[ConsoleColor.Red]);
