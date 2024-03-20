@@ -200,44 +200,11 @@ Function Install-DotnetCLI {
             $arch = "x86";
         }
 
-        if ($Version -eq 'latest') {
+        Trace-Log "The version of SDK should be installed is : $Version"
 
-            # When installing latest, we firstly check the latest version from the server against what we have installed locally. This also allows us to check the SDK was correctly installed.
-            # Get the latest specific version number for a certain channel from url like : https://dotnetcli.blob.core.windows.net/dotnet/Sdk/release/3.0.1xx/latest.version
-            $latestVersionLink = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $Channel + "/latest.version"
-            $latestVersionFile = Invoke-RestMethod -Method Get -Uri $latestVersionLink
-
-            $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $latestVersionFile
-            [int]$count = 0
-            while ( $line = $stringReader.ReadLine() ) {
-                if ($count -eq 1) {
-                    $expectedVersion = $line.trim()
-                }
-                $count += 1
-            }
-
-            $httpGetUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $expectedVersion + "/productVersion.txt"
-            $versionFile = Invoke-RestMethod -Method Get -Uri $httpGetUrl
-
-            $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $versionFile
-            [int]$count = 0
-            while ( $line = $stringReader.ReadLine() ) {
-                if ($count -eq 1) {
-                    $specificVersion = $line.trim()
-                }
-                $count += 1
-            }
-        }
-        else {
-            $specificVersion = $Version
-        }
-
-        Trace-Log "The version of SDK should be installed is : $specificVersion"
-
-        $probeDotnetPath = Join-Path (Join-Path $cli.Root sdk)  $specificVersion
+        $probeDotnetPath = Join-Path (Join-Path $cli.Root sdk) $Version
 
         Trace-Log "Probing folder : $probeDotnetPath"
-
         #If "-force" is specified, or folder with specific version doesn't exist, the download command will run"
         if ($Force -or -not (Test-Path $probeDotnetPath)) {
             $channelMainVersion = ""
@@ -268,12 +235,6 @@ Function Install-DotnetCLI {
         if (-not (Test-Path $DotNetExe)) {
             Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
         }
-        if (-not(Test-Path $probeDotnetPath)) {
-            Error-Log "Unable to find specific version of sdk. The CLI install may have failed." -Fatal
-        }
-
-        # Display build info
-        & $DotNetExe --info
     }
 
     # Install the 2.x runtime because our tests target netcoreapp2x
@@ -285,6 +246,18 @@ Function Install-DotnetCLI {
     if ($LASTEXITCODE -ne 0)
     {
         throw "dotnet-install.ps1 exited with non-zero exit code"
+    }
+
+    if ($env:CI -eq "true") {
+        Write-Host "##vso[task.setvariable variable=DOTNET_ROOT;isOutput=false;issecret=false;]$CLIRoot"
+        Write-Host "##vso[task.setvariable variable=DOTNET_MULTILEVEL_LOOKUP;isOutput=false;issecret=false;]0"
+        Write-Host "##vso[task.prependpath]$CLIRoot"
+    } else {
+        $env:DOTNET_ROOT=$CLIRoot
+        $env:DOTNET_MULTILEVEL_LOOKUP=0
+        if (-not $env:path.Contains($CLIRoot)) {
+            $env:path = $CLIRoot + ";" + $env:path
+        }
     }
 
     # Display build info
