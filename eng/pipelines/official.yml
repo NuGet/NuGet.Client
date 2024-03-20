@@ -58,8 +58,7 @@ extends:
         enabled: true
         scanOutputDirectoryOnly: true
       sbom:
-        enabled: true
-        buildComponentPath: '$(Build.SourcesDirectory)/MicroBuild/Output/artifacts'
+        enabled: false
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
