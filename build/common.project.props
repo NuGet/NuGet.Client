@@ -58,6 +58,7 @@
     <NoWarn>$(NoWarn);NU5105;MSB3277</NoWarn>
     <!-- additional warnings new in .NET 6 that we need to disable when building with source-build -->
     <NoWarn Condition="'$(DotNetBuildFromSource)' == 'true'">$(NoWarn);CS1998;CA1416;CS0618;CS1574</NoWarn>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <!-- Defaults -->
