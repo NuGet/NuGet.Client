@@ -61,8 +61,9 @@ extends:
   parameters:
     sdl:
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
-      git:
-        submodules: false
+      binskim:
+        enabled: true
+        scanOutputDirectoryOnly: true
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
