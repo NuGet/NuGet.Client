@@ -64,6 +64,8 @@ extends:
       binskim:
         enabled: true
         scanOutputDirectoryOnly: true
+      sbom:
+        enabled: false
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
