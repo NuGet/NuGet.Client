@@ -33,7 +33,7 @@ namespace NuGet.Commands
             if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections &&
                 (packageSource.ProtocolVersion == 3 || packageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase)))
             {
-                logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "delete", packageSource.Source));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "delete", packageSource.Source));
             }
             var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource, CancellationToken.None);
 

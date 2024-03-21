@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
@@ -15,6 +16,7 @@ namespace NuGet.CommandLine.Test
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
+        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         // Tests deleting a package from a source that is a file system directory.
         [Fact]
@@ -181,11 +183,15 @@ namespace NuGet.CommandLine.Test
                     deleteRequestIsCalled = true;
                     return HttpStatusCode.OK;
                 });
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                    "-Source", server.Uri + "nuget", "-NonInteractive", "-ConfigFile " + configFilePath };
 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -218,6 +224,10 @@ namespace NuGet.CommandLine.Test
                 });
 
                 server.Start();
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 var args = new[] {
@@ -227,7 +237,8 @@ namespace NuGet.CommandLine.Test
                     testApiKey,
                     "-Source",
                     server.Uri + "nuget",
-                    "-NonInteractive"
+                    "-NonInteractive",
+                    "-ConfigFile " + configFilePath
                 };
 
                 var result = CommandRunner.Run(
@@ -263,6 +274,10 @@ namespace NuGet.CommandLine.Test
                 });
 
                 server.Start();
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 var args = new[]
@@ -275,7 +290,8 @@ namespace NuGet.CommandLine.Test
                     testApiKey,
                     "-Source",
                     server.Uri + "nuget",
-                    "-NonInteractive"
+                    "-NonInteractive",
+                    "-ConfigFIle " + configFilePath
                 };
 
                 var result = CommandRunner.Run(
@@ -336,7 +352,7 @@ namespace NuGet.CommandLine.Test
 
                 var source = server.Uri + "index.json";
                 var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
-                SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"MockServer", source);
+                SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"MockServer", source, "AllowInsecureConnections", "true");
 
                 var configKey = string.Format(configKeyFormatString, server.Uri);
                 var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
@@ -380,7 +396,10 @@ namespace NuGet.CommandLine.Test
             using (var server = new MockServer())
             {
                 server.Start();
-
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
                 server.Delete.Add("/nuget/testPackage1/1.1", request => HttpStatusCode.OK);
 
                 server.AddServerWarnings(serverWarnings);
@@ -388,7 +407,7 @@ namespace NuGet.CommandLine.Test
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                    "-Source", server.Uri + "nuget", "-NonInteractive", "-ConfigFile " + configFilePath };
 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -417,7 +436,7 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnections_DisplayesErrorCorrectly(string allowInsecureConnections, bool shouldFail)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -444,6 +463,7 @@ namespace NuGet.CommandLine.Test
     </packageSources>
 </configuration>";
                 File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "delete", $"{server.Uri}nuget");
 
                 // Act
                 string[] args = new string[] {
@@ -451,23 +471,22 @@ namespace NuGet.CommandLine.Test
                     "-Source", server.Uri + "nuget",
                     "-ConfigFile", config.NuGetConfig, "-NonInteractive" };
 
-                var r = CommandRunner.Run(
+                var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, r.ExitCode);
-                Assert.True(deleteRequestIsCalled);
-
-                string expectedWarning = "WARNING: You are running the 'delete' operation with an 'HTTP' source";
-                if (isHttpWarningExpected)
+                if (shouldFail)
                 {
-                    Assert.Contains(expectedWarning, r.AllOutput);
+                    Assert.Equal(1, result.ExitCode);
+                    Assert.Contains(expectedError, result.AllOutput);
                 }
                 else
                 {
-                    Assert.DoesNotContain(expectedWarning, r.AllOutput);
+                    Assert.Equal(0, result.ExitCode);
+                    Assert.True(deleteRequestIsCalled);
+                    Assert.DoesNotContain(expectedError, result.AllOutput);
                 }
             }
         }
