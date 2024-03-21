@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Principal;
@@ -21,6 +22,7 @@ namespace NuGet.CommandLine.Test
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
+        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         // Tests pushing to a source that is a v2 file system directory.
         [Fact]
@@ -1301,7 +1303,7 @@ namespace NuGet.CommandLine.Test
 
                             return HttpStatusCode.Created;
                         });
-
+                        pathContext.Settings.AddSource("http-feed", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
                         serverV3.Start();
                         serverV2.Start();
 
@@ -1540,7 +1542,7 @@ namespace NuGet.CommandLine.Test
 
                         return HttpStatusCode.Created;
                     });
-
+                    pathContext.Settings.AddSource("http-feed", $"{serverV3.Uri}index.json", allowInsecureConnectionsValue: "true");
                     serverV3.Start();
 
                     // Act
@@ -1623,7 +1625,7 @@ namespace NuGet.CommandLine.Test
                     var settings = pathContext.Settings;
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"nuget.org", source);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"nuget.org", source, "allowInsecureConnections", "true");
 
                     var configKey = string.Format(configKeyFormatString, serverV3.Uri);
                     var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
@@ -1723,7 +1725,7 @@ namespace NuGet.CommandLine.Test
                     var settings = pathContext.Settings;
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source, "allowInsecureConnections", "true");
 
                     // set api key
                     var configKey = string.Format(configKeyFormatString, serverV3.Uri);
@@ -1821,7 +1823,7 @@ namespace NuGet.CommandLine.Test
                     var settings = pathContext.Settings;
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source, "allowInsecureConnections", "true");
                     settings.Save();
 
                     // set symbol api key
@@ -1917,7 +1919,7 @@ namespace NuGet.CommandLine.Test
                     var settings = pathContext.Settings;
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source, "allowInsecureConnections", "true");
                     settings.Save();
 
                     // set api key
@@ -2008,7 +2010,7 @@ namespace NuGet.CommandLine.Test
                     var settings = pathContext.Settings;
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source, "allowInsecureConnections", "true");
                     settings.Save();
 
                     // set api key
@@ -2100,7 +2102,7 @@ namespace NuGet.CommandLine.Test
                     var settings = pathContext.Settings;
                     var source = serverV3.Uri + "index.json";
                     var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, ConfigurationConstants.PackageSources);
-                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source);
+                    SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"contoso.org", source, "allowInsecureConnections", "true");
                     settings.Save();
 
                     // Act
@@ -2585,7 +2587,7 @@ $@"<configuration>
             }
         }
         [Fact]
-        public void PushCommand_WhenPushingToAnHttpServerV3_Warns()
+        public void PushCommand_WhenPushingToAnHttpServerV3_ThrowsAnException()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -2633,6 +2635,7 @@ $@"<configuration>
 
                             return HttpStatusCode.Created;
                         });
+                        string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", $"{serverV3.Uri}index.json");
 
                         serverV3.Start();
                         serverV2.Start();
@@ -2652,11 +2655,8 @@ $@"<configuration>
                                         string.Join(" ", args));
 
                         // Assert
-                        result.Success.Should().BeTrue(result.AllOutput);
-                        result.AllOutput.Should().Contain("Your package was pushed");
-                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{serverV3.Uri}index.json'");
-                        result.AllOutput.Should().Contain($"WARNING: You are running the 'push' operation with an 'HTTP' source, '{serverV2.Uri}push/'");
-                        AssertFileEqual(packageFileName, outputFileName);
+                        result.Success.Should().BeFalse(result.AllOutput);
+                        result.AllOutput.Should().Contain(expectedError);
                     }
                 }
             }
