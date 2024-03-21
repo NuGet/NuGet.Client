@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             Table myTable = new Table(Array.Empty<int>(), Enumerable.Repeat("Header", columns).ToArray());
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => myTable.AddRow("row", "row column2" ));
+            var exception = Assert.Throws<InvalidOperationException>(() => myTable.AddRow("row", "row column2"));
 
             // Assert
             Assert.Equal("Row column count does not match header column count.", exception.Message);
@@ -101,7 +101,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 "| ------- | ------- | ------- | ------- |";
             for (int i = 0; i < rows; i++)
             {
-                table.AddRow("column1", searchTerm, "column3", "column4" );
+                table.AddRow("column1", searchTerm, "column3", "column4");
                 expectedDefaultColoredMessage += $"| column1 |     | column3 | column4 |";
                 expectedDefaultColoredMessage += "| ------- | ------- | ------- | ------- |";
             }
