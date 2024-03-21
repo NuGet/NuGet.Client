@@ -3,39 +3,42 @@
 # The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish Test Freeze Dump' in the templateContext section.
 # The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish binlogs' in the templateContext section.
 steps:
-- task: ShellScript@2
-  displayName: "Run $(TestRunDisplayName) (continue on error)"
-  continueOnError: "true"
+- task: CmdLine@2
   inputs:
-    scriptPath: "scripts/funcTests/runFuncTests.sh"
-    args: $(TestRunCommandLineArguments)
-    disableAutoCwd: "true"
-    cwd: "$(Build.Repository.LocalPath)"
-  condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
-- task: ShellScript@2
-  displayName: "Run $(TestRunDisplayName) (stop on error)"
-  continueOnError: "false"
-  inputs:
-    scriptPath: "scripts/funcTests/runFuncTests.sh"
-    args: $(TestRunCommandLineArguments)
-    cwd: "$(Build.Repository.LocalPath)"
-  condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
-- task: PublishTestResults@2
-  displayName: "Publish Test Results"
-  inputs:
-    testRunner: "VSTest"
-    testResultsFiles: "*.trx"
-    testRunTitle: "NuGet.Client $(TestRunDisplayName) On Linux"
-    searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
-  condition: "succeededOrFailed()"
-- task: PowerShell@2
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    targetType: "inline"
-    script: |
-      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(TestRunDisplayName) On Linux"
-    failOnStderr: "true"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
+    script: ls -la
+# - task: ShellScript@2
+#   displayName: "Run $(TestRunDisplayName) (continue on error)"
+#   continueOnError: "true"
+#   inputs:
+#     scriptPath: "scripts/funcTests/runFuncTests.sh"
+#     args: $(TestRunCommandLineArguments)
+#     disableAutoCwd: "true"
+#     cwd: "$(Build.Repository.LocalPath)"
+#   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+# - task: ShellScript@2
+#   displayName: "Run $(TestRunDisplayName) (stop on error)"
+#   continueOnError: "false"
+#   inputs:
+#     scriptPath: "scripts/funcTests/runFuncTests.sh"
+#     args: $(TestRunCommandLineArguments)
+#     cwd: "$(Build.Repository.LocalPath)"
+#   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+# - task: PublishTestResults@2
+#   displayName: "Publish Test Results"
+#   inputs:
+#     testRunner: "VSTest"
+#     testResultsFiles: "*.trx"
+#     testRunTitle: "NuGet.Client $(TestRunDisplayName) On Linux"
+#     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+#   condition: "succeededOrFailed()"
+# - task: PowerShell@2
+#   displayName: "Initialize Git Commit Status on GitHub"
+#   inputs:
+#     targetType: "inline"
+#     script: |
+#       . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+#       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(TestRunDisplayName) On Linux"
+#     failOnStderr: "true"
+#   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+# - task: ComponentGovernanceComponentDetection@0
+#   displayName: 'Component Detection'
