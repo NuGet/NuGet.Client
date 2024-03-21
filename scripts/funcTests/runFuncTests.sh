@@ -55,8 +55,8 @@ fi
 
 if [ "$MONO_TESTS" == "1" ]; then
     # Run mono test
-    TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-    VsTestConsole="$DIR/artifacts/NuGet.CommandLine.Test/vstest/vstest.console.exe"
+    TestDir="$DIR/artifacts/"
+    VsTestConsole="$DIR/artifacts/vstest/vstest.console.exe"
     TestResultsDir="$DIR/build/TestResults"
     VsTestVerbosity="minimal"
 
