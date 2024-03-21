@@ -9,6 +9,14 @@ steps:
     artifactName: "NuGet.CommandLine.Test"
     downloadPath: "$(Build.Repository.LocalPath)/artifacts"
   condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
+- task: CmdLine@2
+  displayName: "ls -la CWD"
+  inputs:
+    script: ls -la
+- task: CmdLine@2
+  displayName: "ls -la LocalPath/artifacts"
+  inputs:
+    script: ls -la "$(Build.Repository.LocalPath)/artifacts"
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (continue on error)"
   continueOnError: "true"
