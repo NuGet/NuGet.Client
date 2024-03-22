@@ -3,23 +3,33 @@ parameters:
   type: boolean
 - name: NuGetLocalizationType
   type: string
+
 steps:
+
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
     arguments: "-Force"
   displayName: "Run Configure.ps1"
+
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\ConfigureVstsBuild.ps1"
     arguments: "-BuildRTM $(BuildRTM) -RepositoryPath $(Build.Repository.LocalPath) -BranchName $(Build.SourceBranchName) -CommitHash $(Build.SourceVersion) -BuildNumber $(Build.BuildNumber)"
   displayName: "Configure VSTS CI Environment"
+
 - task: PowerShell@1
   displayName: "Print Environment Variables"
   inputs:
     scriptType: "inlineScript"
     inlineScript: |
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
+# NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
+# However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
+# won't be able to determine the URL to embed in the pdbs.
+# Therefore, we need to add the GitHub repo URL as a remote, and tell SourceLink.GitHub what that remote name is.
+# We do this even when github is the origin URL, to avoid warnings in the CI logs.
 - task: PowerShell@1
   displayName: "Prepare for source link"
   inputs:
@@ -50,15 +60,18 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
         exit 1
       }
+
 - task: CodeQL3000Init@0
   displayName: Initialize CodeQL
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+
 - task: MSBuild@1
   displayName: "Restore"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+
 - task: PowerShell@1
   displayName: "Set IncludeApex variable"
   name: "includeapex"
@@ -73,35 +86,42 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set IncludeApex: $_"
         exit 1
       }
+
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
+
 - task: MSBuild@1
   displayName: "Build"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
+
 - task: CodeQL3000Finalize@0
   displayName: Finalize CodeQL
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+
 - task: MSBuild@1
   displayName: "Localize Assemblies"
   inputs:
     solution: "build\\loc.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
+
 - task: MSBuild@1
   displayName: "Build NuGet.exe Localized"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
+
 - task: MSBuild@1
   displayName: "ILMerge NuGet.exe"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:ILMergeNuGetExe /binarylogger:$(Build.StagingDirectory)\\binlog\\05.ILMergeNuGetExe.binlog"
+
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
   inputs:
@@ -109,6 +129,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:CopyFinalNuGetExeToOutputPath /binarylogger:$(Build.StagingDirectory)\\binlog\\06.CopyFinalNuGetExeToOutputPath.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Run unit tests (stop on error)"
   continueOnError: "false"
@@ -117,6 +138,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:CoreUnitTests;UnitTestsVS /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /binarylogger:$(Build.StagingDirectory)\\binlog\\07.RunUnitTests.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
+
 - task: MSBuild@1
   displayName: "Run unit tests (continue on error)"
   continueOnError: "true"
@@ -125,6 +147,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:CoreUnitTests;UnitTestsVS /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.RunUnitTests.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
+
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
   inputs:
@@ -134,6 +157,7 @@ steps:
     searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
     publishRunAttachments: "false"
   condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
@@ -142,24 +166,28 @@ steps:
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Sign Assemblies"
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
+
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\09.Pack.binlog /property:MicroBuild_SigningEnabled=false"
+
 - task: MSBuild@1
   displayName: "Ensure all Nupkgs and Symbols are created"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:EnsurePackagesExist /property:ExcludeTestProjects=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\10.EnsurePackagesExist.binlog"
+
 - task: MSBuild@1
   displayName: "Pack VSIX"
   inputs:
@@ -172,6 +200,7 @@ steps:
     parameters:
       PackageName: 'NuGet.Client'
       PackageVersion: "$(SemanticVersion)"
+
 - task: MSBuild@1
   displayName: "Generate Build Tools package"
   inputs:
@@ -179,31 +208,37 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
+
 - task: NuGetToolInstaller@1
   displayName: Use NuGet 6.x
   inputs:
     versionSpec: 6.x
+
 - task: NuGetCommand@2
   displayName: "Verify Nupkg Signatures"
   inputs:
     command: "custom"
     arguments: "verify -Signatures $(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)\\*.nupkg"
-# - task: MicroBuildCodesignVerify@3
-#   displayName: Verify Assembly Signatures and StrongName for the nupkgs
-#   inputs:
-#     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
-# - task: MicroBuildCodesignVerify@3
-#   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
-#   inputs:
-#     TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
-#     ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
-#     ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+
+- task: MicroBuildCodesignVerify@3
+  displayName: Verify Assembly Signatures and StrongName for the nupkgs
+  inputs:
+    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'
+
+- task: MicroBuildCodesignVerify@3
+  displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
+  inputs:
+    TargetFolders: '$(Build.Repository.LocalPath)\\artifacts\\VS15'
+    ApprovalListPathForCerts: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+    ApprovalListPathForSigs: '$(Build.Repository.LocalPath)\\build\\ignorecodesign.csv'
+
 - task: MSBuild@1
   displayName: "Generate VSMAN file for NuGet Core VSIX"
   inputs:
@@ -211,6 +246,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
@@ -218,6 +254,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Create EndToEnd Test Package"
   inputs:
@@ -225,18 +262,21 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.Repository.LocalPath)\\artifacts\\VS15 /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\16.CreateEndToEndTestPackage.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+
 - task: NuGetCommand@2
   displayName: 'Add the VSEng package source'
   inputs:
     command: 'custom'
     arguments: 'sources add -Name VS -Source $(VsPackageFeedUrl) -UserName $(VsPackageFeedUsername) -Password $(VsPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: NuGetCommand@2
   displayName: 'Install the NuGet package for building .runsettingsproj files'
   inputs:
     command: 'custom'
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: MicroBuildBuildVSBootstrapper@3
   displayName: 'Build a Visual Studio bootstrapper for tests'
   inputs:
@@ -245,6 +285,7 @@ steps:
     manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: PowerShell@1
   displayName: "Set Bootstrapper URL variable for tests"
   name: "vsbootstrapper"
@@ -262,6 +303,7 @@ steps:
         exit 1
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: PowerShell@1
   displayName: "Set CloudBuild Session ID variable for tests"
   name: "setcloudbuildsessionid"
@@ -279,6 +321,7 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: PowerShell@1
   displayName: "Set Base Build Drop variable for tests"
   name: "setbasebuilddrop"
@@ -296,12 +339,14 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: 'Generate .runsettings files'
   inputs:
     solution: 'build\runsettings.proj'
     msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: PowerShell@1
   displayName: 'Copy VS integration test binaries'
   inputs:
@@ -319,6 +364,7 @@ steps:
         exit 1
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
   inputs:
@@ -327,6 +373,7 @@ steps:
     msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:IsSymbolBuild=true /property:BuildRTM=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\18.CollectBuildSymbols.binlog"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+
 - task: MSBuild@1
   displayName: "LocValidation: Verify VSIX"
   inputs:
@@ -334,6 +381,7 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/target:ValidateVsix /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\19.ValidateVsixLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: MSBuild@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
@@ -341,6 +389,11 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/target:ValidateArtifacts /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
+  # Use dotnet msbuild instead of MSBuild CLI.
+  # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
+  # The Microsoft.DotNet.Build.Tasks.Feed package includes NuGet.Common 4.9.0.6 and a binding redirection in Microsoft.DotNet.Build.Tasks.Feed.dll.config but the binding redirection is not processed.
+  # This would probably solve it:  https://github.com/Microsoft/msbuild/issues/1309
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
