@@ -3,7 +3,7 @@ steps:
   displayName: "Download NuGet.CommandLine.Test artifacts"
   inputs:
     artifactName: "NuGet.CommandLine.Test"
-    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+    downloadPath: "$(Build.Repository.LocalPath)/artifacts/NuGet.CommandLine.Test"
   condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
 
 - task: ShellScript@2
