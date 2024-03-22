@@ -920,7 +920,7 @@ namespace NuGet.Commands
                 IsPropertyTrue(specItem, "RestoreLockedMode"));
         }
 
-        public static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem, IList<string> suppressionItems)
+        public static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem, HashSet<string> suppressionItems)
         {
             string enableAudit = specItem.GetProperty("NuGetAudit");
             string auditLevel = specItem.GetProperty("NuGetAuditLevel");
@@ -934,18 +934,19 @@ namespace NuGet.Commands
                     EnableAudit = enableAudit,
                     AuditLevel = auditLevel,
                     AuditMode = auditMode,
-                    SuppressedAdvisories = suppressionItems?.Count > 0 ? new HashSet<string>(suppressionItems) : null
+                    SuppressedAdvisories = suppressionItems?.Count > 0 ? suppressionItems : null
                 };
             }
 
             return null;
         }
 
-        private static List<string> GetAuditSuppressions(IEnumerable<IMSBuildItem> items)
+        private static HashSet<string> GetAuditSuppressions(IEnumerable<IMSBuildItem> items)
         {
-            return GetItemByType(items, "NuGetAuditSuppress")
-                        .Select(i => i.GetProperty("Id"))
-                        .ToList();
+            IEnumerable<string> suppressions = GetItemByType(items, "NuGetAuditSuppress")
+                                                    .Select(i => i.GetProperty("Id"));
+
+            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
         }
 
         /// <summary>

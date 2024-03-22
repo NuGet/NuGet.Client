@@ -1057,11 +1057,12 @@ namespace NuGet.Build.Tasks.Console
             }
         }
 
-        private static List<string> GetAuditSuppressions(IMSBuildProject project)
+        private static HashSet<string> GetAuditSuppressions(IMSBuildProject project)
         {
-            return GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
-                        .Select(i => i.Identity)
-                        .ToList();
+            IEnumerable<string> suppressions = GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
+                                                    .Select(i => i.Identity);
+
+            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
         }
 
         /// <summary>
