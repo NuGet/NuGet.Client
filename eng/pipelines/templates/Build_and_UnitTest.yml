@@ -253,8 +253,6 @@ steps:
     # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
     inlineScript: |
       try {
-        Write-Host "DGTEST output directory ${env:MicroBuildOutputFolderOverride}"
-        Get-ChildItem -Path "${env:MicroBuildOutputFolderOverride}" -Recurse
         $json = Get-Content "${env:MicroBuildOutputFolderOverride}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
         $bootstrapperUrl = $json[0].bootstrapperUrl;
         Write-Host "Bootstrapper URL: $bootstrapperUrl"
