@@ -79,4 +79,8 @@ extends:
         RunSourceBuild: ${{parameters.RunSourceBuild}}
         RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
         RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+<<<<<<< HEAD
         RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+=======
+        RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+>>>>>>> cc7772af2 (Use 1ES Templates in CI Pipelines (#5706))

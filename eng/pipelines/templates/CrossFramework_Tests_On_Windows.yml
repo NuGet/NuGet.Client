@@ -30,7 +30,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+    msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
 - task: MSBuild@1
   displayName: "BuildNoVSIX"
@@ -70,12 +70,11 @@ steps:
   displayName: "Publish Test Results"
   continueOnError: "true"
   inputs:
-    testRunner: "VSTest"
-    testResultsFiles: "*.trx"
-    searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-    mergeTestResults: "true"
-    testRunTitle: "NuGet.Client Cross Verify Tests On Windows"
-  condition: "succeededOrFailed()"
+    command: 'test'
+    projects: '$(Build.Repository.LocalPath)\test\NuGet.Core.FuncTests\NuGet.Signing.CrossFramework.Test\NuGet.Signing.CrossFramework.Test.csproj'
+    arguments: '--no-restore --no-build --framework net8.0 --settings:$(Build.Repository.LocalPath)\build\xunit.runsettings /noautorsp /property:Configuration=$(BuildConfiguration) "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.Test-net8.0.binlog"'
+    testRunTitle: 'NuGet.Client Cross Verify Tests On Windows (.NET 8.0)'
+    condition: "succeededOrFailed()"
 
 - task: PowerShell@1
   displayName: "Initialize Git Commit Status on GitHub"

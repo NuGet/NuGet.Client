@@ -24,27 +24,6 @@ steps:
     inlineScript: |
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-- task: MicroBuildLocalizationPlugin@1
-  displayName: "Install Localization Plugin"
-
-- task: MicroBuildSigningPlugin@1
-  inputs:
-    signType: "$(SigningType)"
-    esrpSigning: "true"
-  displayName: "Install Signing Plugin"
-
-- task: MicroBuildSwixPlugin@4
-  displayName: "Install Swix Plugin"
-
-- task: MicroBuildOptProfPlugin@6
-  displayName: 'OptProfV2:  install the plugin'
-  inputs:
-    getDropNameByDrop: true
-    optimizationInputsDropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-    ShouldSkipOptimize: $(ShouldSkipOptimize)
-    AccessToken: $(System.AccessToken)
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
 # NuGet.Client's official repo is on github, hence the source link metadata should use the github URL.
 # However, our official builds are built from a mirror in Azure DevOps, hence without any extra help, the SourceLink.GitHub package
 # won't be able to determine the URL to embed in the pdbs.
@@ -86,7 +65,22 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+    msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+
+- task: PowerShell@1
+  displayName: "Set IncludeApex variable"
+  name: "includeapex"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $IncludeApex = -not [bool]::Parse($env:BuildRTM)
+        Write-Host "IncludeApex URL: $IncludeApex"
+        Write-Host "##vso[task.setvariable variable=IncludeApex]$IncludeApex"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set IncludeApex: $_"
+        exit 1
+      }
 
 - task: MSBuild@1
   displayName: "Build"
@@ -367,7 +361,7 @@ steps:
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "LocValidation: Verify VSIX"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
@@ -377,8 +371,9 @@ steps:
 - task: PowerShell@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
-    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -RepoRoot $(Build.Repository.LocalPath) -OutputLogsBasePath $(Build.Repository.LocalPath)\\logs"
+    solution: "build\\BuildValidator.proj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/target:ValidateArtifacts /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   # Use dotnet msbuild instead of MSBuild CLI.

@@ -28,7 +28,14 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+    msbuildArguments: "/target:restore /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+
+- task: MSBuild@1
+  displayName: "Build"
+  inputs:
+    solution: "NuGet.sln"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/restore:false /target:Build /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
 - task: MSBuild@1
   displayName: "Run Functional Tests (continue on error)"
@@ -66,4 +73,8 @@ steps:
     inlineScript: |
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(System.AccessToken) -TestName "$env:AGENT_JOBNAME"
+<<<<<<< HEAD
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+=======
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+>>>>>>> cc7772af2 (Use 1ES Templates in CI Pipelines (#5706))
