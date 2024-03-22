@@ -25,9 +25,6 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=false /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-
 - task: MSBuild@1
   displayName: "BuildNoVSIX"
   continueOnError: "true"

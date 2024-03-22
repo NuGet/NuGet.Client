@@ -86,9 +86,6 @@ steps:
         exit 1
       }
 
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-
 - task: MSBuild@1
   displayName: "Build"
   inputs:

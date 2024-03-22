@@ -7,9 +7,6 @@ steps:
       ./eng/source-build/build.sh
   condition: "always()"
 
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:

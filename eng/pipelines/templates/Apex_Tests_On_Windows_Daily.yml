@@ -232,6 +232,3 @@ stages:
           displayName: "SetupFunctionalTests.ps1"
           inputs:
             scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
-      postDeployAndRunTestsStepList:
-        - task: ComponentGovernanceComponentDetection@0
-          displayName: 'Component Detection'

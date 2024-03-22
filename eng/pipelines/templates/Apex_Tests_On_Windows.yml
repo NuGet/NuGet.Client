@@ -154,6 +154,3 @@ stages:
               . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
               SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
           condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-        - task: ComponentGovernanceComponentDetection@0
-          displayName: 'Component Detection'
