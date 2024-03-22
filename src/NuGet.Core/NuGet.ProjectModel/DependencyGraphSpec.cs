@@ -300,7 +300,7 @@ namespace NuGet.ProjectModel
             using var streamReader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(streamReader);
 
-            var dgspec = new DependencyGraphSpec();
+            var dgspec = new DependencyGraphSpec(isReadOnly: true); // TODO NK - this potentially fixes things.
             bool wasObjectRead;
 
             try
@@ -474,7 +474,7 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec WithoutRestores()
         {
-            var newSpec = new DependencyGraphSpec();
+            var newSpec = new DependencyGraphSpec(_isReadOnly);
 
             foreach ((string _, PackageSpec project) in _projects.NoAllocEnumerate())
             {
@@ -488,7 +488,7 @@ namespace NuGet.ProjectModel
         {
             if (project == null) throw new ArgumentNullException(nameof(project));
 
-            var newSpec = new DependencyGraphSpec();
+            var newSpec = new DependencyGraphSpec(_isReadOnly);
             newSpec.AddProject(project);
             newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
 
@@ -502,7 +502,7 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec WithPackageSpecs(IEnumerable<PackageSpec> packageSpecs)
         {
-            var newSpec = new DependencyGraphSpec();
+            var newSpec = new DependencyGraphSpec(_isReadOnly);
 
             foreach (var packageSpec in packageSpecs)
             {
