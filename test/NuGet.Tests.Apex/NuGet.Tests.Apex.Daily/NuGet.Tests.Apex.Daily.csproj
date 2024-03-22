@@ -42,6 +42,9 @@
     <!-- Make sure VSIX is deployed to experimental instance -->
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NuGetEndToEndTests\" />
+  </ItemGroup>
 
   <PropertyGroup>
     <Platform>x86</Platform>
