@@ -1,37 +1,82 @@
 parameters:
-- name: DartLabEnvironment
-  displayName: DartLab Environment
+- name: NuGetLocalizationType
+  displayName: Whether to do production-ready localization (Full), or pseudo-localization, aka PLOC, (Pseudo) for testing.
   type: string
-  default: Production
+  default: Full
   values:
-  - Production
-  - Staging
-- name: E2EPart1AgentCleanup
-  displayName: Delete or keep E2E Part 1 machine for debugging
-  type: string
-  default: delete
-  values:
-  - delete
-  - stop
-- name: E2EPart2AgentCleanup
-  displayName: Delete or keep E2E Part 2 machine for debugging
-  type: string
-  default: delete
-  values:
-  - delete
-  - stop
-- name: ApexAgentCleanup
-  displayName: Delete or keep VS Apex test machine for debugging
-  type: string
-  default: delete
-  values:
-  - delete
-  - stop
-
+  - Full
+  - Pseudo
+- name: RunBuildForPublishing
+  displayName: Build bits for publishing
+  type: boolean
+  default: true
+- name: RunCrossFrameworkTestsOnWindows
+  displayName: Run cross framweork tests on Windows
+  type: boolean
+  default: true
+- name: RunFunctionalTestsOnWindows
+  displayName: Run functional tests on Windows
+  type: boolean
+  default: true
+- name: RunSourceBuild
+  displayName: Run source build
+  type: boolean
+  default: true
+- name: RunTestsOnLinux
+  displayName: Run tests on Linux
+  type: boolean
+  default: true
+- name: RunTestsOnMac
+  displayName: Run tests on Mac
+  type: boolean
+  default: true
+- name: RunMonoTestsOnMac
+  displayName: Run Mono tests on Mac
+  type: boolean
+  default: true
+resources:
+  repositories:
+  - repository: MicroBuildTemplate
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
+variables:
+  BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
+  DOTNET_NOLOGO: 1
+  NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
+  Codeql.Enabled: false
+  Codeql.TSAEnabled: false
+  RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
+  RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
+  RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
+  RunSourceBuild: ${{ parameters.RunSourceBuild }}
+  RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
+  RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
+  RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
 extends:
-  template: templates/pipeline.yml
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
-    DartLabEnvironment: ${{parameters.DartLabEnvironment}}
-    E2EPart1AgentCleanup: ${{parameters.E2EPart1AgentCleanup}}
-    E2EPart2AgentCleanup: ${{parameters.E2EPart2AgentCleanup}}
-    ApexAgentCleanup: ${{parameters.ApexAgentCleanup}}
+    sdl:
+      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
+      binskim:
+        enabled: true
+        scanOutputDirectoryOnly: true
+      sbom:
+        enabled: false
+    pool:
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
+      os: windows
+    customBuildTags:
+    - ES365AIMigrationTooling
+    stages:
+    - template: /eng/pipelines/templates/pipeline.yml@self
+      parameters:
+        NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
+        RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
+        RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
+        RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
+        RunSourceBuild: ${{parameters.RunSourceBuild}}
+        RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
+        RunTestsOnMac: ${{parameters.RunTestsOnMac}}
+        RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
