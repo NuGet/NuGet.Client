@@ -1,17 +1,3 @@
-# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
-# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish buildinfo.json as an artifact' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish NuGet.CommandLine.Test as artifact' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish nupkgs' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish BootstrapperInfo.json as a build artifact' in the templateContext section.
-# The Task 'artifactDropTask@0' has been converted to an output named 'Publish the .runsettings files to artifact services' in the templateContext section.
-# The Task 'artifactDropTask@0' has been converted to an output named 'OptProfV2:  publish profiling inputs to artifact services' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish NuGet.exe VSIX and EndToEnd.zip as artifact' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish localizationArtifacts artifact' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish symbols as pipeline artifacts' in the templateContext section.
-# The Task 'artifactDropTask@0' has been converted to an output named 'Upload VSTS Drop' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'LocValidation: Publish Logs as an artifact' in the templateContext section.
-# The Task 'PublishPipelineArtifact@1' has been converted to an output named 'Publish binlogs' in the templateContext section.
 parameters:
 - name: BuildRTM
   type: boolean
