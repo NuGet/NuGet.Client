@@ -7,6 +7,7 @@ steps:
       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
       InitializeAllTestsToPending -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion)
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+
 - task: PowerShell@1
   displayName: "Set Semantic Version"
   name: "setsemanticversion"
@@ -23,5 +24,7 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set product version: $_"
         exit 1
       }
+
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
+
