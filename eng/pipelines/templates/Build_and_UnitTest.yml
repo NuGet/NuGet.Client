@@ -5,7 +5,6 @@ parameters:
   type: string
 
 steps:
-
 - task: PowerShell@1
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"

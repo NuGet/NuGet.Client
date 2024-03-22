@@ -232,24 +232,8 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-          OptimizationInputsLookupMethod: DropPrefix
-          DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: $(ShouldSkipOptimize)
-          AccessToken: $(System.AccessToken)
+          enabled: false
       outputs:
-      - output: pipelineArtifact
-        displayName: 'Publish buildinfo.json as an artifact'
-        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-        targetPath: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
-        artifactName: 'BuildInfo'
-
-      - output: pipelineArtifact
-        displayName: 'Publish NuGet.CommandLine.Test as artifact'
-        condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
-        targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
-        artifactName: "NuGet.CommandLine.Test"
-
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
         condition: "and(succeeded(), or(eq(variables['IsOfficialBuild'], 'true'), eq(variables['BuildRTM'], 'true')))"
@@ -257,63 +241,15 @@ stages:
         artifactName: "nupkgs - $(RtmLabel)"
 
       - output: pipelineArtifact
-        displayName: 'Publish BootstrapperInfo.json as a build artifact'
-        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-        targetPath: $(Build.StagingDirectory)\MicroBuild\Output
-        artifactName: MicroBuildOutputs
-
-      - output: artifactsDrop
-        displayName: 'Publish the .runsettings files to artifact services'
-        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-        sourcePath: 'artifacts\RunSettings'
-        toLowerCase: false
-        usePat: true
-        dropMetadataContainerName: 'DropMetadata-RunSettings'
-
-      - output: artifactsDrop
-        displayName: 'OptProfV2:  publish profiling inputs to artifact services'
-        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
-        sourcePath: '$(Build.ArtifactStagingDirectory)\OptProf\ProfilingInputs'
-        toLowerCase: false
-        usePat: true
-        dropMetadataContainerName: 'DropMetadata-ProfilingInputs'
-
-      - output: pipelineArtifact
         displayName: 'Publish NuGet.exe VSIX and EndToEnd.zip as artifact'
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
         artifactName: "$(VsixPublishDir)"
-
-      - output: pipelineArtifact
-        displayName: 'Publish localizationArtifacts artifact'
-        condition: "and(eq(variables['BuildRTM'], 'false'), or(eq(variables['OverridePublishLocalizationArtifact'], 'true'), and(succeededOrFailed(), eq(variables['IsOfficialBuild'], 'true'))))"
-        targetPath: "$(Build.Repository.LocalPath)\\artifacts\\localizationArtifacts\\"
-        artifactName: "localizationArtifacts"
 
       - output: pipelineArtifact
         displayName: 'Publish symbols as pipeline artifacts'
         condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
         targetPath: "$(Build.Repository.LocalPath)\\artifacts\\symbolstoindex"
         artifactName: "symbols - $(RtmLabel)"
-
-      - output: artifactsDrop
-        displayName: 'Upload VSTS Drop'
-        condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
-        dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-        buildNumber: 'Products/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)'
-        sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
-        toLowerCase: false
-        usePat: true
-        dropMetadataContainerName: "DropMetadata-Product"
-
-      - output: pipelineArtifact
-        displayName: 'LocValidation: Publish Logs as an artifact'
-        condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-        artifactName: LocValidationLogs
-        targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
 
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
@@ -325,6 +261,7 @@ stages:
       parameters:
         BuildRTM: true
         NuGetLocalizationType: Full
+
   - job: Validate_Publishing_Artifacts
     condition: "and(succeeded(), ne(variables['RunBuildForPublishing'], 'false'))"
     displayName: 'Validate Publishing build artifacts'
