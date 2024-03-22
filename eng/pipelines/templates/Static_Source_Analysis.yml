@@ -1,7 +1,8 @@
 parameters:
-- name: isOfficialBuild
-  type: boolean
-  default: false
+  - name: isOfficialBuild
+    type: boolean
+    default: false
+
 steps:
 - task: PowerShell@1
   displayName: "Print Environment Variables"
@@ -9,11 +10,13 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
 - task: CredScan@2
   inputs:
     toolMajorVersion: "V2"
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
+
 - task: PowerShell@2
   displayName: "Analyze CredScan artifact"
   inputs:
@@ -22,11 +25,13 @@ steps:
       try {
         $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\_sdt\logs\CredentialScanner CredentialScanner-matches.xml
         $credScannerXml = [xml](Get-Content $credentialScannerMatches)
+
         if($credScannerXml.DEFECTS -eq $null)
         {
           Write-Host "Unable to verify CodeAnalysisLogs artifact content, please manually verify it."
           exit 1
         }
+
         if ($credScannerXml.DEFECTS.DEFECT -ne $null) {
           Write-Host "CredentialScanner found following credential in this PR, please revoke this credential immediately:"
           $credScannerXml.DEFECTS.DEFECT
@@ -40,6 +45,7 @@ steps:
       }
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
+
 - task: PowerShell@2
   displayName: "Ensure all projects are in NuGet.sln"
   inputs:
@@ -64,13 +70,16 @@ steps:
       }
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
+
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
+
 - script: dotnet format whitespace --verify-no-changes NuGet.sln
   name: dotnetFormatWhitespace
   displayName: Check whitespace formatting
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
+
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:

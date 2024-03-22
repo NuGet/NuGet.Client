@@ -8,6 +8,7 @@ steps:
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (stop on error)"
   continueOnError: "false"
@@ -16,6 +17,7 @@ steps:
     args: $(TestRunCommandLineArguments)
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
   inputs:
@@ -24,6 +26,7 @@ steps:
     testRunTitle: "NuGet.Client $(TestRunDisplayName) On Linux"
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
   condition: "succeededOrFailed()"
+
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
@@ -33,5 +36,6 @@ steps:
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(TestRunDisplayName) On Linux"
     failOnStderr: "true"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
