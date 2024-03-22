@@ -5,6 +5,7 @@ steps:
     artifactName: "NuGet.CommandLine.Test"
     downloadPath: "$(Build.Repository.LocalPath)/artifacts"
   condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
+
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (continue on error)"
   continueOnError: "true"
@@ -14,6 +15,7 @@ steps:
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
+
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (stop on error)"
   continueOnError: "false"
@@ -23,6 +25,7 @@ steps:
     disableAutoCwd: "true"
     cwd: "$(Build.Repository.LocalPath)"
   condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
+
 - task: PublishTestResults@2
   displayName: "Publish Test Results"
   inputs:
@@ -31,6 +34,7 @@ steps:
     searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
     testRunTitle: "NuGet.Client $(TestRunDisplayName) On Mac"
   condition: "always()"
+
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
@@ -40,5 +44,6 @@ steps:
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(TestRunDisplayName) On Mac"
     failOnStderr: "true"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'

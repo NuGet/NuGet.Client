@@ -15,6 +15,7 @@ steps:
   inputs:
     artifactName: "nupkgs - RTM"
     downloadPath: "$(System.ArtifactsDirectory)/nupkgs"
+
 - task: PowerShell@2
   name: check_nupkg_dependencies
   displayName: Check package dependencies

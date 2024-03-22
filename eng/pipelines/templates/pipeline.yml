@@ -37,6 +37,7 @@ parameters:
   displayName: Run Mono tests on Mac
   type: boolean
   default: false
+
 stages:
 - stage: Initialize
   jobs:
@@ -49,6 +50,7 @@ stages:
       os: windows
     steps:
     - template: /eng/pipelines/templates/Initialize_Build_SemanticVersion.yml@self
+
   - job: Initialize_Build
     dependsOn: GetSemanticVersion
     timeoutInMinutes: 10
@@ -61,6 +63,7 @@ stages:
       os: windows
     steps:
     - template: /eng/pipelines/templates/Initialize_Build.yml@self
+
 - stage: StaticSourceAnalysis
   displayName: Static Source Analysis
   dependsOn: []
@@ -76,6 +79,7 @@ stages:
     - template: /eng/pipelines/templates/Static_Source_Analysis.yml@self
       parameters:
         isOfficialBuild: ${{ parameters.isOfficialBuild }}
+
 - stage: Build_Insertable
   displayName: Build NuGet inserted into VS and .NET SDK
   dependsOn: Initialize
@@ -108,7 +112,6 @@ stages:
           ShouldSkipOptimize: $(ShouldSkipOptimize)
           AccessToken: $(System.AccessToken)
       outputs:
-
       - output: pipelineArtifact
         displayName: 'Publish buildinfo.json as an artifact'
         condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
@@ -202,6 +205,7 @@ stages:
       parameters:
         BuildRTM: false
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
+
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
   dependsOn: Initialize
@@ -316,7 +320,6 @@ stages:
         condition: "or(failed(), eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['System.debug'], 'true'))"
         artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
         targetPath: $(Build.StagingDirectory)\binlog
-
     steps:
     - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
@@ -335,6 +338,7 @@ stages:
     - template: /eng/pipelines/templates/Validate_Build_Output.yml@self
       parameters:
         isOfficialBuild: ${{ parameters.isOfficialBuild }}
+
 - stage: Source_Build
   dependsOn: Initialize
   jobs:
@@ -360,6 +364,7 @@ stages:
         artifactName: "Source-build log"
     steps:
     - template: /eng/pipelines/templates/Source_Build.yml@self
+
 - stage: Tests
   displayName: "Run Unit and Functional Tests"
   dependsOn: Initialize
@@ -370,6 +375,7 @@ stages:
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
     condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
     pool:
@@ -395,12 +401,14 @@ stages:
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
     - template: /eng/pipelines/templates/Functional_Tests_On_Windows.yml@self
+
   - job: Tests_On_Linux
     displayName: "Linux"
     timeoutInMinutes: 45
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       MSBUILDDISABLENODEREUSE: 1
+      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
       DOTNET_NUGET_SIGNATURE_VERIFICATION: true
     condition: "and(succeeded(), ne(variables['RunTestsOnLinux'], 'false'))"
@@ -431,12 +439,14 @@ stages:
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
     - template: /eng/pipelines/templates/Tests_On_Linux.yml@self
+
   - job: Tests_On_Mac
     displayName: "Mac"
     timeoutInMinutes: 45
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
       MSBUILDDISABLENODEREUSE: 1
+      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
     condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
     pool:
@@ -466,6 +476,7 @@ stages:
         targetPath: $(Build.StagingDirectory)/binlog
     steps:
     - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
+
   - job: CrossFramework_Tests_On_Windows
     displayName: "Windows CrossFrameworkTests"
     condition: "and(succeeded(), ne(variables['RunCrossFrameworkTestsOnWindows'], 'false'))"
@@ -492,6 +503,7 @@ stages:
         targetPath: $(Build.StagingDirectory)\binlog
     steps:
     - template: /eng/pipelines/templates/CrossFramework_Tests_On_Windows.yml@self
+
 - stage: MacTests
   displayName: "Mac Mono Tests"
   dependsOn:
@@ -503,6 +515,7 @@ stages:
     timeoutInMinutes: 90
     variables:
       FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
       TestRunDisplayName: "Mono Tests"
       TestRunCommandLineArguments: "--mono-tests"
