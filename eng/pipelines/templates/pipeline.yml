@@ -133,7 +133,7 @@ stages:
       - output: pipelineArtifact
         displayName: 'Publish BootstrapperInfo.json as a build artifact'
         condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-        targetPath: ${MicroBuildOutputFolderOverride}\MicroBuild\Output
+        targetPath: $(env:MicroBuildOutputFolderOverride)\MicroBuild\Output
         artifactName: MicroBuildOutputs
 
       - output: artifactsDrop
