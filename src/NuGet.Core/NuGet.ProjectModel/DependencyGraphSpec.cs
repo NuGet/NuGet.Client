@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,6 +11,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.RuntimeModel;
 
 namespace NuGet.ProjectModel
 {
@@ -27,6 +30,15 @@ namespace NuGet.ProjectModel
         private const int Version = 1;
 
         private readonly bool _isReadOnly;
+        // Internal for testing purposes
+        internal Dictionary<string, string>? _projectNameToHashCodeCache;
+        internal Dictionary<string, string>? _projectNameToHashCodeCacheForChildSpecs;
+
+        internal void SetProjectNameToHashCodeCache(Dictionary<string, string> projectNameToHashCodeCache)
+        {
+            if (projectNameToHashCodeCache == null) throw new ArgumentNullException(nameof(projectNameToHashCodeCache));
+            _projectNameToHashCodeCache = projectNameToHashCodeCache;
+        }
 
         public static string GetDGSpecFileName(string projectName)
         {
@@ -43,34 +55,64 @@ namespace NuGet.ProjectModel
             _isReadOnly = isReadOnly;
         }
 
+        private bool _refreshRestoreList = false;
+        private IReadOnlyList<string>? _restoreList = null;
+
         /// <summary>
         /// Projects to restore.
         /// </summary>
-        public IReadOnlyList<string> Restore => _restore.ToList();
+        public IReadOnlyList<string> Restore
+        {
+            get
+            {
+                if (_restoreList == null || _refreshRestoreList)
+                {
+                    _restoreList = _restore.ToList();
+                    _refreshRestoreList = false;
+                }
+                return _restoreList;
+            }
+        }
+
+        private bool _refreshProjectsList = false;
+        private IReadOnlyList<PackageSpec>? _restoreProjectList = null;
 
         /// <summary>
         /// All project specs.
         /// </summary>
-        public IReadOnlyList<PackageSpec> Projects => _projects.Values.ToList();
+        public IReadOnlyList<PackageSpec> Projects
+        {
+            get
+            {
+                if (_restoreProjectList == null || _refreshProjectsList)
+                {
+                    _restoreProjectList = _projects.Values.ToList();
+                    _refreshProjectsList = false;
+                }
+                return _restoreProjectList;
+            }
+        }
 
-        public PackageSpec GetProjectSpec(string projectUniqueName)
+        public PackageSpec? GetProjectSpec(string? projectUniqueName)
         {
             if (projectUniqueName == null)
             {
                 throw new ArgumentNullException(nameof(projectUniqueName));
             }
 
-            PackageSpec project;
+            PackageSpec? project;
             _projects.TryGetValue(projectUniqueName, out project);
 
             return project;
         }
 
-        public IReadOnlyList<string> GetParents(string rootUniqueName)
+        public IReadOnlyList<string> GetParents(string? rootUniqueName)
         {
+            if (rootUniqueName == null) throw new ArgumentNullException(nameof(rootUniqueName));
+
             var parents = new List<PackageSpec>();
 
-            foreach (var project in Projects)
+            foreach ((string name, PackageSpec project) in _projects.NoAllocEnumerate())
             {
                 if (!StringComparer.OrdinalIgnoreCase.Equals(
                     project.RestoreMetadata.ProjectUniqueName,
@@ -140,6 +182,12 @@ namespace NuGet.ProjectModel
                 dgSpec.AddProject(_isReadOnly ? packageSpec : packageSpec.Clone());
             }
 
+            if (_isReadOnly)
+            {
+                _projectNameToHashCodeCacheForChildSpecs ??= new Dictionary<string, string>(PathUtility.GetStringComparerBasedOnOS());
+                dgSpec.SetProjectNameToHashCodeCache(_projectNameToHashCodeCacheForChildSpecs);
+            }
+
             return dgSpec;
         }
 
@@ -147,7 +195,7 @@ namespace NuGet.ProjectModel
         /// Retrieve the full project closure including the root project itself.
         /// </summary>
         /// <remarks>Results are not sorted in any form.</remarks>
-        public IReadOnlyList<PackageSpec> GetClosure(string rootUniqueName)
+        public IReadOnlyList<PackageSpec> GetClosure(string? rootUniqueName)
         {
             if (rootUniqueName == null)
             {
@@ -160,7 +208,11 @@ namespace NuGet.ProjectModel
             var toWalk = new Stack<PackageSpec>();
 
             // Start with the root
-            toWalk.Push(GetProjectSpec(rootUniqueName));
+            var rootSpec = GetProjectSpec(rootUniqueName);
+            if (rootSpec != null)
+            {
+                toWalk.Push(rootSpec);
+            }
 
             while (toWalk.Count > 0)
             {
@@ -176,7 +228,11 @@ namespace NuGet.ProjectModel
                     {
                         if (added.Add(projectName))
                         {
-                            toWalk.Push(GetProjectSpec(projectName));
+                            var projectSpec = GetProjectSpec(projectName);
+                            if (projectSpec != null)
+                            {
+                                toWalk.Push(projectSpec);
+                            }
                         }
                     }
                 }
@@ -198,21 +254,28 @@ namespace NuGet.ProjectModel
 
         public void AddRestore(string projectUniqueName)
         {
+            if (projectUniqueName == null) throw new ArgumentNullException(nameof(projectUniqueName));
+
+            _refreshRestoreList = true;
             _restore.Add(projectUniqueName);
         }
 
         public void AddProject(PackageSpec projectSpec)
         {
+            if (projectSpec == null) throw new ArgumentNullException(nameof(projectSpec));
+
             // Find the unique name in the spec, otherwise generate a new one.
             string projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
+                _refreshProjectsList = true;
                 _projects.Add(projectUniqueName, projectSpec);
             }
         }
 
+        [Obsolete("This is unused in production code and as such will be removed in a future release.")]
         public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)
         {
             var projects =
@@ -231,11 +294,13 @@ namespace NuGet.ProjectModel
 
         public static DependencyGraphSpec Load(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             using var streamReader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(streamReader);
 
-            var dgspec = new DependencyGraphSpec();
+            var dgspec = new DependencyGraphSpec(isReadOnly: true); // TODO NK - this potentially fixes things.
             bool wasObjectRead;
 
             try
@@ -285,6 +350,8 @@ namespace NuGet.ProjectModel
 
         public void Save(string path)
         {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             using (var fileStream = new FileStream(path, FileMode.Create))
             {
                 Save(fileStream);
@@ -293,6 +360,7 @@ namespace NuGet.ProjectModel
 
         public void Save(Stream stream)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
 #if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(stream))
 #else
@@ -309,16 +377,22 @@ namespace NuGet.ProjectModel
 
         public string GetHash()
         {
-            // Use the faster FNV hash function for hashing unless the user has specified to use the legacy SHA512 hash function
             using (IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function())
             using (var writer = new HashObjectWriter(hashFunc))
             {
-                Write(writer, hashing: true, PackageSpecWriter.Write);
+                if (_projectNameToHashCodeCache != null)
+                {
+                    Write(writer, hashing: true, PackageSpecWriter.Write, _projectNameToHashCodeCache);
+                }
+                else
+                {
+                    Write(writer, hashing: true, PackageSpecWriter.Write);
+                }
                 return writer.GetHash();
             }
         }
 
-        private void Write(RuntimeModel.IObjectWriter writer, bool hashing, Action<PackageSpec, RuntimeModel.IObjectWriter, bool, IEnvironmentVariableReader> writeAction)
+        private void Write(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, Dictionary<string, string>? projectNameToHashCode = null)
         {
             writer.WriteObjectStart();
             writer.WriteNameValue("format", Version);
@@ -340,14 +414,49 @@ namespace NuGet.ProjectModel
             foreach (var pair in _projects)
             {
                 var project = pair.Value;
-
-                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
-                writeAction.Invoke(project, writer, hashing, EnvironmentVariableWrapper.Instance);
-                writer.WriteObjectEnd();
+                WriteProject(writer, hashing, writeAction, project, projectNameToHashCode);
             }
 
             writer.WriteObjectEnd();
             writer.WriteObjectEnd();
+        }
+
+        private void WriteProject(IObjectWriter writer, bool hashing, Action<PackageSpec, IObjectWriter, bool, IEnvironmentVariableReader> writeAction, PackageSpec project, Dictionary<string, string>? projectNameToHashCode)
+        {
+            if (hashing && projectNameToHashCode != null)
+            {
+                string? projectHash = null;
+
+                lock (projectNameToHashCode)
+                {
+                    projectNameToHashCode.TryGetValue(project.RestoreMetadata.ProjectUniqueName, out projectHash);
+                }
+
+                if (projectHash == null)
+                {
+                    using IHashFunction hashFunc = UseLegacyHashFunction ? new Sha512HashFunction() : new FnvHash64Function();
+                    using var projectWriter = new HashObjectWriter(hashFunc);
+                    writeAction.Invoke(project, projectWriter, hashing, EnvironmentVariableWrapper.Instance);
+                    projectHash = projectWriter.GetHash();
+
+                    lock (projectNameToHashCode)
+                    {
+                        if (!projectNameToHashCode.ContainsKey(project.RestoreMetadata.ProjectUniqueName))
+                        {
+                            projectNameToHashCode[project.RestoreMetadata.ProjectUniqueName] = projectHash;
+                        }
+                    }
+                }
+
+                writer.WriteObjectStart(projectHash);
+                writer.WriteObjectEnd();
+            }
+            else
+            {
+                writer.WriteObjectStart(project.RestoreMetadata.ProjectUniqueName);
+                writeAction.Invoke(project, writer, hashing, EnvironmentVariableWrapper.Instance);
+                writer.WriteObjectEnd();
+            }
         }
 
         /// <summary>
@@ -365,9 +474,9 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec WithoutRestores()
         {
-            var newSpec = new DependencyGraphSpec();
+            var newSpec = new DependencyGraphSpec(_isReadOnly);
 
-            foreach (var project in Projects)
+            foreach ((string _, PackageSpec project) in _projects.NoAllocEnumerate())
             {
                 newSpec.AddProject(project);
             }
@@ -377,11 +486,13 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec WithReplacedSpec(PackageSpec project)
         {
-            var newSpec = new DependencyGraphSpec();
+            if (project == null) throw new ArgumentNullException(nameof(project));
+
+            var newSpec = new DependencyGraphSpec(_isReadOnly);
             newSpec.AddProject(project);
             newSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
 
-            foreach (var child in Projects)
+            foreach ((string _, PackageSpec child) in _projects.NoAllocEnumerate())
             {
                 newSpec.AddProject(child);
             }
@@ -391,7 +502,7 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec WithPackageSpecs(IEnumerable<PackageSpec> packageSpecs)
         {
-            var newSpec = new DependencyGraphSpec();
+            var newSpec = new DependencyGraphSpec(_isReadOnly);
 
             foreach (var packageSpec in packageSpecs)
             {
@@ -399,7 +510,7 @@ namespace NuGet.ProjectModel
                 newSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
             }
 
-            foreach (var child in Projects)
+            foreach ((string _, PackageSpec child) in _projects.NoAllocEnumerate())
             {
                 newSpec.AddProject(child);
             }
@@ -407,11 +518,12 @@ namespace NuGet.ProjectModel
             return newSpec;
         }
 
+        [Obsolete("This is unused in production code and as such will be removed in a future release.")]
         public DependencyGraphSpec WithoutTools()
         {
             var newSpec = new DependencyGraphSpec();
 
-            foreach (var project in Projects)
+            foreach ((string _, PackageSpec project) in _projects.NoAllocEnumerate())
             {
                 if (project.RestoreMetadata.ProjectStyle != ProjectStyle.DotnetCliTool)
                 {

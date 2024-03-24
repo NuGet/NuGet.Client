@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
