@@ -184,7 +184,7 @@ namespace NuGet.CommandLine.Test
                     return HttpStatusCode.OK;
                 });
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
@@ -225,7 +225,7 @@ namespace NuGet.CommandLine.Test
 
                 server.Start();
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
@@ -275,7 +275,7 @@ namespace NuGet.CommandLine.Test
 
                 server.Start();
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
@@ -397,7 +397,7 @@ namespace NuGet.CommandLine.Test
             {
                 server.Start();
                 using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget");
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
                 server.Delete.Add("/nuget/testPackage1/1.1", request => HttpStatusCode.OK);
@@ -436,7 +436,7 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnections_DisplayesErrorCorrectly(string allowInsecureConnections, bool shouldFail)
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnections_DisplaysErrorCorrectly(string allowInsecureConnections, bool shouldFail)
         {
             var nugetexe = Util.GetNuGetExePath();
 
