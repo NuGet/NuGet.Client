@@ -775,7 +775,6 @@ namespace NuGet.CommandLine
                         NuGetLogCode.NU5126));
                 }
 
-
                 VersionRange versionRange = null;
                 if (dependencies.ContainsKey(builder.Id))
                 {
