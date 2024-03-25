@@ -2,14 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.VisualStudio.Markdown.Platform;
-using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
@@ -51,39 +46,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
                 _markdownPreview.VisualElement.Visibility = Visibility.Visible;
             }
-        }
-
-        public async Task<string> GetReadMeMD(Stream stream, string packageName)
-        {
-            using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
-            var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{packageName}.nuspec", StringComparison.OrdinalIgnoreCase));
-            if (nuspecZipArchiveEntry is not null)
-            {
-                using var nuspecFile = nuspecZipArchiveEntry.Open();
-                var nuspecReader = new NuspecReader(nuspecFile);
-                var readMePath = nuspecReader.GetReadme();
-                if (!string.IsNullOrEmpty(readMePath))
-                {
-                    var readmeZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.FullName), readMePath, StringComparison.OrdinalIgnoreCase));
-                    if (readmeZipArchiveEntry is not null)
-                    {
-                        using var readMeFile = readmeZipArchiveEntry.Open();
-                        using var readMeStreamReader = new StreamReader(readMeFile);
-                        var readMeContents = await readMeStreamReader.ReadToEndAsync();
-                        return readMeContents;
-                    }
-                }
-            }
-            return string.Empty;
-        }
-        private static string UnescapePath(string path)
-        {
-            if (path != null && path.IndexOf("%", StringComparison.Ordinal) > -1)
-            {
-                return Uri.UnescapeDataString(path);
-            }
-
-            return path;
         }
 
         public void Dispose()
