@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -63,12 +62,12 @@ namespace NuGet.Commands
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
 
-            if (newPackageSource.IsHttp && !newPackageSource.IsHttps && !newPackageSource.AllowInsecureConnections)
+            if (newPackageSource.IsHttp && !newPackageSource.IsHttps)
             {
-                getLogger().LogWarning(
+                throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
-                        "add source",
+                        Strings.Error_HttpSource_Single_Short,
+                        "source add",
                         args.Source));
             }
 
@@ -161,8 +160,6 @@ namespace NuGet.Commands
                                 source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
                             getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, "{0}{1}", sourcePadding, source.Source));
                         }
-
-                        WarnForHttpSources(sourcesList, getLogger);
                     }
                     break;
                 case SourcesListFormat.Short:
@@ -187,49 +184,11 @@ namespace NuGet.Commands
                             legend += " ";
                             getLogger().LogMinimal(legend + source.Source);
                         }
-
-                        WarnForHttpSources(sourcesList, getLogger);
                     }
                     break;
                 case SourcesListFormat.None:
                     // This validation could move to the Command or Args and be code-generated.
                     throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Source_InvalidFormatValue, args.Format));
-            }
-        }
-
-        private static void WarnForHttpSources(IEnumerable<PackageSource> sources, Func<ILogger> getLogger)
-        {
-            List<PackageSource> httpPackageSources = null;
-            foreach (PackageSource packageSource in sources)
-            {
-                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
-                {
-                    if (httpPackageSources == null)
-                    {
-                        httpPackageSources = new();
-                    }
-                    httpPackageSources.Add(packageSource);
-                }
-            }
-
-            if (httpPackageSources != null && httpPackageSources.Count != 0)
-            {
-                if (httpPackageSources.Count == 1)
-                {
-                    getLogger().LogWarning(
-                    string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
-                        "list source",
-                        httpPackageSources[0]));
-                }
-                else
-                {
-                    getLogger().LogWarning(
-                            string.Format(CultureInfo.CurrentCulture,
-                            Strings.Warning_HttpServerUsage_MultipleSources,
-                            "list source",
-                            Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
-                }
             }
         }
     }
@@ -283,10 +242,10 @@ namespace NuGet.Commands
 
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
 
-                // If the existing source is not http, warn the user
+                // If the new source is not http, throw an error
                 if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections)
                 {
-                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "source update", args.Source));
                 }
             }
 
@@ -380,7 +339,7 @@ namespace NuGet.Commands
                     Strings.SourcesCommandSourceEnabledSuccessfully, name));
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
-                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "enable source", packageSource.Source));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "source enable", packageSource.Source));
                 }
             }
             else

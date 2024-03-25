@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -17,6 +17,8 @@ namespace Dotnet.Integration.Test
     public class DotnetSourcesTests
     {
         private readonly DotnetIntegrationTestFixture _fixture;
+        string _httpErrorSingleShort = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere.";
+        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         public DotnetSourcesTests(DotnetIntegrationTestFixture fixture)
         {
@@ -105,7 +107,7 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("http://source.test", true)]
         [InlineData("https://source.test", false)]
-        public void Sources_WarnWhenAdding(string source, bool shouldWarn)
+        public void Sources_DisplaysErrorWhenAddingHttpSource(string source, bool shouldFail)
         {
             using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
@@ -125,23 +127,35 @@ namespace Dotnet.Integration.Test
                     settings.ConfigPath
                 };
 
-                // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+                if (shouldFail)
+                {
+                    // Act
+                    CommandRunnerResult result = _fixture.RunDotnetExpectFailure(workingPath, string.Join(" ", args));
 
-                // Assert
-                ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                    // Assert
+                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingleShort, "source add", source);
+                    Assert.Contains(expectedError, result.AllOutput);
 
-                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal(source, sourceItem.GetValueAsPath());
-                Assert.Equal(shouldWarn, result.Output.Contains("warn : You are running the 'add source' operation with an 'HTTP' source"));
+                }
+                else
+                {
+                    // Act
+                    CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+
+                    // Assert
+                    ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+
+                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                    Assert.Equal(source, sourceItem.GetValueAsPath());
+                }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("http://source.test", true)]
         [InlineData("https://source.test", false)]
-        public void Sources_WarnWhenUpdatingHttpSource(string updateSource, bool shouldWarn)
+        public void Sources_WarnWhenUpdatingHttpSource(string updateSource, bool shouldFail)
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -183,24 +197,34 @@ namespace Dotnet.Integration.Test
                     configFilePath
                 };
 
-                // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+                if (shouldFail)
+                {
+                    // Act
+                    CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
 
-                // Assert
-                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                    // Assert
+                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source update", updateSource);
+                    Assert.Contains(expectedError, result.AllOutput);
+                }
+                else
+                {
+                    // Act
+                    CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
-                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal(updateSource, sourceItem.GetValueAsPath());
-                Assert.Equal(shouldWarn, result.Output.Contains("warn : You are running the 'update source' operation with an 'HTTP' source"));
+                    // Assert
+                    ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                    Assert.Equal(updateSource, sourceItem.GetValueAsPath());
+                }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("http://source.test", "http://source.test.2", true, "warn : You are running the 'list source' operation with 'HTTP' source")]
-        [InlineData("https://source.test", "http://source.test.2", true, "warn : You are running the 'list source' operation with an 'HTTP' source")]
-        [InlineData("https://source.test", "https://source.test.2", false, "warn")]
-        public void Sources_WarnWhenListHttpSource(string initialSource, string secondSource, bool shouldWarn, string warningMessage)
+        [InlineData("http://source.test", "http://source.test.2")]
+        [InlineData("https://source.test", "http://source.test.2")]
+        [InlineData("https://source.test", "https://source.test.2")]
+        public void Sources_WhenListHttpSource(string initialSource, string secondSource)
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -235,31 +259,28 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(shouldWarn, result.Output.Contains(warningMessage));
+                Assert.Contains(initialSource, result.AllOutput);
+                Assert.Contains(secondSource, result.AllOutput);
             }
         }
 
-        [Fact]
-        public void SourcesList_WithAllowInsecureConnections_WarnsCorrectly()
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WhenEnableHttpSource()
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
                 string configFileName = "nuget.config";
                 string configFilePath = Path.Combine(configFileDirectory, configFileName);
-                string nugetConfig =
+
+                var nugetConfig =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""source1"" value=""http://source.test1"" />
-    <add key=""source2"" value=""http://source.test2"" allowInsecureConnections=""""/>
-    <add key=""source3"" value=""http://source.test3"" allowInsecureConnections=""false""/>
-    <add key=""source4"" value=""http://source.test4"" allowInsecureConnections=""FASLE""/>
-    <add key=""source5"" value=""http://source.test5"" allowInsecureConnections=""invalidString""/>
-    <add key=""source6"" value=""http://source.test6"" allowInsecureConnections=""true""/>
-    <add key=""source7"" value=""http://source.test7"" allowInsecureConnections=""TRUE""/>
-    <add key=""source8"" value=""https://source.test8"" allowInsecureConnections=""true""/>
-    <add key=""source9"" value=""https://source.test9"" allowInsecureConnections=""false""/>
+    <add key=""test_source"" value=""https://source.test"" />
   </packageSources>
+  <disabledPackageSources>
+    <add key=""test_source"" value=""true"" />
+  </disabledPackageSources>
 </configuration>";
                 CreateXmlFile(configFilePath, nugetConfig);
 
@@ -267,8 +288,9 @@ namespace Dotnet.Integration.Test
                 var args = new string[]
                 {
                     "nuget",
-                    "list",
+                    "enable",
                     "source",
+                    "test_source",
                 };
 
                 // Act
@@ -277,25 +299,39 @@ namespace Dotnet.Integration.Test
                     configFileName,
                     null);
 
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("https://source.test", source.Source);
+                Assert.False(source.IsEnabled);
+
                 // Act
                 CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                // http source with false allowInsecureConnections have warnings.
-                string expectedWarning = SettingsTestUtils.RemoveWhitespace(@"
-warn : You are running the 'list source' operation with 'HTTP' sources: 
-warn : source1
-warn : source2
-warn : source3
-warn : source4
-warn : source5
-warn : Non-HTTPS access will be removed in a future version. Consider migrating to 'HTTPS' sources.");
-                Assert.Contains(expectedWarning, SettingsTestUtils.RemoveWhitespace(result.Output));
+                settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                packageSourceProvider = new PackageSourceProvider(settings);
+                sources = packageSourceProvider.LoadPackageSources().ToList();
+
+                var testSources = sources.Where(s => s.Name == "test_source");
+                Assert.Single(testSources);
+                source = testSources.Single();
+
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("https://source.test", source.Source);
+                Assert.True(source.IsEnabled);
             }
         }
 
         [PlatformFact(Platform.Windows)]
-        public void Sources_WarnWhenEnableHttpSource()
+        public void Sources_ErrorWhenEnableHttpSource()
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -339,24 +375,12 @@ warn : Non-HTTPS access will be removed in a future version. Consider migrating 
                 Assert.False(source.IsEnabled);
 
                 // Act
-                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+                CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                settings = Settings.LoadDefaultSettings(
-                    configFileDirectory,
-                    configFileName,
-                    null);
-
-                packageSourceProvider = new PackageSourceProvider(settings);
-                sources = packageSourceProvider.LoadPackageSources().ToList();
-
-                var testSources = sources.Where(s => s.Name == "test_source");
-                Assert.Single(testSources);
-                source = testSources.Single();
-
-                Assert.Equal("test_source", source.Name);
-                Assert.Equal("http://source.test", source.Source);
-                Assert.True(result.Output.Contains("warn : You are running the 'enable source' operation with an 'HTTP' source, 'http://source.test'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source."));
+                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source enable", "http://source.test");
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains(expectedError, result.AllOutput);
             }
         }
 
