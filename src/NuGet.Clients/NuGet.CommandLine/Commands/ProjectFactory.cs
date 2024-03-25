@@ -763,6 +763,7 @@ namespace NuGet.CommandLine
 
 #pragma warning disable CS0612 // Type or member is obsolete
                 if (!projectFactory.ProcessJsonFile(builder, project.DirectoryPath, null))
+#pragma warning restore CS0612 // Type or member is obsolete
                 {
                     projectFactory.ProcessNuspec(builder, null);
                 }
@@ -773,7 +774,7 @@ namespace NuGet.CommandLine
                         string.Format(CultureInfo.CurrentCulture, NuGetResources.ProjectJsonPack_Deprecated, builder.Id),
                         NuGetLogCode.NU5126));
                 }
-#pragma warning restore CS0612 // Type or member is obsolete
+
 
                 VersionRange versionRange = null;
                 if (dependencies.ContainsKey(builder.Id))
