@@ -108,10 +108,10 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
+          enabled: ${{ variables['isOfficialBuild'] }}
           OptimizationInputsLookupMethod: DropPrefix
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: $(ShouldSkipOptimize)
+          ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
           AccessToken: $(System.AccessToken)
       outputs:
       - output: pipelineArtifact
