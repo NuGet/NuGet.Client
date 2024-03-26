@@ -107,10 +107,10 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: $(IsOfficialBuild)
+          enabled: true
           OptimizationInputsLookupMethod: DropPrefix
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: $(ShouldSkipOptimize)
+          ShouldSkipOptimize: false
           AccessToken: $(System.AccessToken)
       outputs:
       - output: pipelineArtifact
