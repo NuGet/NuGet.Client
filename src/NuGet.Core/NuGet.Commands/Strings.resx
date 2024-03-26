@@ -1086,10 +1086,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
 {0} - is the value from the customer's project file
 {1} is the list of valid values "direct, all"</comment>
   </data>
-  <data name="Warning_NoVulnerabilityData" xml:space="preserve">
-    <value>NuGetAudit is enabled, but no package sources contain known vulnerability data.</value>
-    <comment>Do not translate NuGetAudit</comment>
-  </data>
   <data name="Error_InvalidNuGetAuditValue" xml:space="preserve">
     <value>Invalid NuGetAudit value '{0}'. Valid values: {1}</value>
     <comment>Don't translate 'NuGetAudit'
@@ -1098,5 +1094,9 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   </data>
   <data name="SourcesCommandValidProtocolVersion" xml:space="preserve">
     <value>The protocol version specified is invalid. Valid protocol versions are from {0} to {1}.</value>
+  </data>
+  <data name="Warning_AuditSourceWithoutVulnerabilityData" xml:space="preserve">
+    <value>Audit source '{0}' did not provide any vulnerability data.</value>
+    <comment>{0} is the source name</comment>
   </data>
 </root>
