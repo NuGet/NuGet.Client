@@ -112,8 +112,6 @@ stages:
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
           ShouldSkipOptimize: $(ShouldSkipOptimize)
           AccessToken: $(System.AccessToken)
-        ${{ else }}:
-          enabled: false
       outputs:
       - output: pipelineArtifact
         displayName: 'Publish buildinfo.json as an artifact'
