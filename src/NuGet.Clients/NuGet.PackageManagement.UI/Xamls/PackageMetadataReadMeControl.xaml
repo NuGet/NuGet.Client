@@ -4,13 +4,73 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+  xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">
+  <UserControl.Resources>
+    <ui:BrushToColorConverter
+      x:Key="BrushToColorConverter" />
+    <BooleanToVisibilityConverter
+      x:Key="BooleanToVisibilityConverter" />
+    <Style
+      x:Key="StatusMessageTextBlockStyle"
+      TargetType="TextBlock">
+        <Setter Property="TextTrimming" 
+              Value="WordEllipsis"/>
+        <Setter Property="TextOptions.TextFormattingMode" 
+              Value="Display"/>
+        <Setter Property="VerticalAlignment" 
+              Value="Center"/>
+        <Setter Property="Margin" 
+              Value="3,0"/>
+        <Setter Property="FontFamily" 
+              Value="SegoeUI"/>
+        <Setter Property="FontSize" 
+              Value="12" />
+        <Setter Property="HorizontalAlignment" 
+              Value="Left"/>
+      <Setter Property="Foreground" 
+              Value="{DynamicResource {x:Static nuget:Brushes.InfoTextKey}}" />
+    </Style>
+  </UserControl.Resources>
+  <Grid>
     <ContentControl
       x:Name="descriptionMarkdownPreview"
       x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
       Content="{Binding MarkdownPreviewControl}"
     />
+    <Grid
+    Background="{DynamicResource {x:Static nuget:Brushes.InfoBackgroundKey}}"
+    VerticalAlignment="Top"
+    Visibility="{Binding Path=IsErrorWithReadMe, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+    Margin="0"
+    Height="22">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="16"/>
+        <ColumnDefinition Width="16"/>
+        <ColumnDefinition Width="*" MinWidth="50"/>
+      </Grid.ColumnDefinitions>
+      <imaging:CrispImage Grid.Column="1"
+           Moniker="{x:Static catalog:KnownMonikers.StatusError}"
+           Stretch="Uniform">
+      </imaging:CrispImage>
+      <TextBlock
+        Grid.Column="2"
+        TextWrapping="Wrap"
+        Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
+      >
+        <TextBlock.Style>
+          <Style TargetType="TextBlock"
+               BasedOn="{StaticResource StatusMessageTextBlockStyle}">
+          </Style>
+        </TextBlock.Style>
+      </TextBlock>
+    </Grid>
+  </Grid>
 </UserControl>
