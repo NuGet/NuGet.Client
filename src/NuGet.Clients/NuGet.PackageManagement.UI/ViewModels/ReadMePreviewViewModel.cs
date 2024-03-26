@@ -37,14 +37,36 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
+        private bool _isErrorWithReadMe;
+
+        public bool IsErrorWithReadMe
+        {
+            get => _isErrorWithReadMe;
+            set
+            {
+                _isErrorWithReadMe = value;
+                RaisePropertyChanged(nameof(IsErrorWithReadMe));
+            }
+        }
+
         public async Task UpdateMarkdownAsync(string markDown)
         {
-            _markdownPreview.VisualElement.Visibility = Visibility.Collapsed;
-            await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
-            if (!string.IsNullOrWhiteSpace(markDown))
+            try
             {
-                await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
-                _markdownPreview.VisualElement.Visibility = Visibility.Visible;
+                IsErrorWithReadMe = false;
+                _markdownPreview.VisualElement.Visibility = Visibility.Collapsed;
+                await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
+                if (!string.IsNullOrWhiteSpace(markDown))
+                {
+                    await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
+                    _markdownPreview.VisualElement.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception)
+            {
+                IsErrorWithReadMe = true;
+                //ErrorMessage = Resources.Error_ProjectNotInCache ex.Message;
+                //need to log ex somewhere?
             }
         }
 

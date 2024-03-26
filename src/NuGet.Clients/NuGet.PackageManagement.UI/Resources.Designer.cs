@@ -781,6 +781,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occured while trying to load the ReadMe..
+        /// </summary>
+        public static string Error_UnableToLoadReadme {
+            get {
+                return ResourceManager.GetString("Error_UnableToLoadReadme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operation failed.
         /// </summary>
         public static string ErrorDialogBoxTitle {

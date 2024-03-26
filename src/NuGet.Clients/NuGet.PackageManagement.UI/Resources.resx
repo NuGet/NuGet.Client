@@ -1045,4 +1045,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_PackageDetails" xml:space="preserve">
     <value>Package Details</value>
   </data>
+  <data name="Error_UnableToLoadReadme" xml:space="preserve">
+    <value>An error occured while trying to load the ReadMe.</value>
+  </data>
 </root>

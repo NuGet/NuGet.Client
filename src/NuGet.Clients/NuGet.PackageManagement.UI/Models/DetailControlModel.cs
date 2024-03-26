@@ -403,18 +403,15 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
 
-        public bool IsReadMeAvailable => !string.IsNullOrWhiteSpace(_packageReadMePath);
+        private bool _isReadMeAvailable;
 
 
-        private string _packageReadMePath;
-
-        public string PackageReadMe
+        public bool IsReadMeAvailable
         {
-            get => _packageReadMePath;
+            get => _isReadMeAvailable;
             set
             {
-                _packageReadMePath = value;
-                OnPropertyChanged(nameof(PackageReadMe));
+                _isReadMeAvailable = value;
                 OnPropertyChanged(nameof(IsReadMeAvailable));
             }
         }
@@ -558,9 +555,18 @@ namespace NuGet.PackageManagement.UI
                         NuGetUIThreadHelper.JoinableTaskFactory
                             .RunAsync(async () =>
                             {
-                                var readMe = await GetReadMeMD();
-                                await ReadMePreviewViewModel.UpdateMarkdownAsync(readMe);
-                                PackageReadMe = readMe;
+                                try
+                                {
+                                    var readMe = await GetReadMeMD();
+                                    await ReadMePreviewViewModel.UpdateMarkdownAsync(readMe);
+                                    IsReadMeAvailable = !string.IsNullOrWhiteSpace(readMe);
+                                }
+                                catch (Exception)
+                                {
+                                    await ReadMePreviewViewModel.UpdateMarkdownAsync("");
+                                    ReadMePreviewViewModel.IsErrorWithReadMe = true;
+                                    IsReadMeAvailable = true;
+                                }
                             })
                             .PostOnFailure(nameof(DetailControlModel));
                     }
