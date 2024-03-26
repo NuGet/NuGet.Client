@@ -108,7 +108,7 @@ stages:
         swix:
           enabled: true
         optprof:
-          enabled: true
+          enabled: ${{ variables['isOfficialBuild'] }}
           OptimizationInputsLookupMethod: DropPrefix
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
           ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
