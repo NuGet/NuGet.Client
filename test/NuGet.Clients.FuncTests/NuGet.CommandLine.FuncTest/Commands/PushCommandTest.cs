@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -24,6 +25,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const string ADVERTISE_SKIPDUPLICATE_OPTION = "To skip already published packages, use the option -SkipDuplicate"; //PushCommandSkipDuplicateAdvertiseNuGetExe
         private const string WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST = "File does not exist";
         private const string MESSAGE_FILE_DOES_NOT_EXIST = WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST + " ({0})";
+        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         /// <summary>
         /// 100 seconds is significant because that is the default timeout on <see cref="HttpClient"/>.
@@ -33,11 +35,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_AllowsTimeoutToBeSpecifiedHigherThan100Seconds()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
-                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", packageDirectory);
-                var outputPath = Path.Combine(packageDirectory, "pushed.nupkg");
+                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", pathContext.WorkingDirectory);
+                var outputPath = Path.Combine(pathContext.WorkingDirectory, "pushed.nupkg");
                 CommandRunnerResult result = null;
 
                 using (var server = new MockServer())
@@ -54,13 +56,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                         return HttpStatusCode.Created;
                     });
-
+                    pathContext.Settings.AddSource("http-feed", $"{server.Uri}push", "true");
                     server.Start();
 
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
                 }
@@ -76,11 +78,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_AllowsTimeoutToBeSpecifiedLowerThan100Seconds()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
-                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", packageDirectory);
-                var outputPath = Path.Combine(packageDirectory, "pushed.nupkg");
+                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", pathContext.WorkingDirectory);
+                var outputPath = Path.Combine(pathContext.WorkingDirectory, "pushed.nupkg");
                 CommandRunnerResult result = null;
 
                 using (var server = new MockServer())
@@ -97,13 +99,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                         return HttpStatusCode.Created;
                     });
-
+                    pathContext.Settings.AddSource("http-feed", $"{server.Uri}push", "true");
                     server.Start();
 
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 1",
                         timeOutInMilliseconds: 20 * 1000); // 20 seconds
                 }
@@ -119,14 +121,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_SkipDuplicate_NotSpecified_PushHalts()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
-                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", packageDirectory);
-                var outputPath = Path.Combine(packageDirectory, "pushed.nupkg");
+                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", pathContext.WorkingDirectory);
+                var outputPath = Path.Combine(pathContext.WorkingDirectory, "pushed.nupkg");
 
-                var sourcePath2 = Util.CreateTestPackage("PackageB", "1.1.0", packageDirectory);
-                var outputPath2 = Path.Combine(packageDirectory, "pushed2.nupkg");
+                var sourcePath2 = Util.CreateTestPackage("PackageB", "1.1.0", pathContext.WorkingDirectory);
+                var outputPath2 = Path.Combine(pathContext.WorkingDirectory, "pushed2.nupkg");
 
                 CommandRunnerResult result = null;
                 CommandRunnerResult result2 = null;
@@ -139,24 +141,24 @@ namespace NuGet.CommandLine.FuncTest.Commands
                                                       FuncStatusDuplicate_OccursOnSecondPush());
 
                     server.Start();
-
+                    pathContext.Settings.AddSource("http-feed", $"{server.Uri}push", "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     //Run again so that it will be a duplicate push.
                     result2 = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110",
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     result3 = CommandRunner.Run(
                        nuget,
-                       packageDirectory,
+                       pathContext.WorkingDirectory,
                        $"push {sourcePath2} -Source {server.Uri}push -Timeout 110",
                        timeOutInMilliseconds: 120 * 1000); // 120 seconds
                 }
@@ -182,14 +184,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_SkipDuplicate_IsSpecified_PushProceeds()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
-                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", packageDirectory);
-                var outputPath = Path.Combine(packageDirectory, "pushed.nupkg");
+                var sourcePath = Util.CreateTestPackage("PackageA", "1.1.0", pathContext.WorkingDirectory);
+                var outputPath = Path.Combine(pathContext.WorkingDirectory, "pushed.nupkg");
 
-                var sourcePath2 = Util.CreateTestPackage("PackageB", "1.1.0", packageDirectory);
-                var outputPath2 = Path.Combine(packageDirectory, "pushed2.nupkg");
+                var sourcePath2 = Util.CreateTestPackage("PackageB", "1.1.0", pathContext.WorkingDirectory);
+                var outputPath2 = Path.Combine(pathContext.WorkingDirectory, "pushed2.nupkg");
 
                 CommandRunnerResult result = null;
                 CommandRunnerResult result2 = null;
@@ -200,27 +202,27 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     SetupMockServerForSkipDuplicate(server,
                                                       FuncOutputPath_SwitchesOnThirdPush(outputPath, outputPath2),
                                                       FuncStatusDuplicate_OccursOnSecondPush());
-
+                    pathContext.Settings.AddSource("http-feed", $"{server.Uri}push", "true");
                     server.Start();
 
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     //Run again so that it will be a duplicate push but use the option to skip duplicate packages.
                     result2 = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
 
                     //Third run with a different package.
                     result3 = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {sourcePath2} -Source {server.Uri}push -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120 * 1000); // 120 seconds
                 }
@@ -254,18 +256,19 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Snupkg_ByFilename_DoesNotExist_FileNotFoundError()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
                 string snupkgToPush = "nonExistingPackage.snupkg";
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {snupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -287,7 +290,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Snupkg_ByWildcard_FindsNothing_FileNotFoundError()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
 
                 var nuget = Util.GetNuGetExePath();
@@ -295,12 +298,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {snupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -320,7 +324,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByFilename_FindsNothing_FileNotFoundError()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
 
                 var nuget = Util.GetNuGetExePath();
@@ -328,12 +332,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {nupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -353,7 +358,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByWildcard_FindsNothing_FileNotFoundError()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
 
                 var nuget = Util.GetNuGetExePath();
@@ -361,12 +366,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {nupkgToPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -386,7 +392,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByFilename_SnupkgDoesNotExist_NoFileNotFoundError()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -394,22 +400,22 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 string version = "1.1.0";
 
                 //Create Nupkg in test directory.
-                string nupkgFullPath = Util.CreateTestPackage(packageId, version, packageDirectory);
+                string nupkgFullPath = Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
 
                 string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     SetupMockServerAlwaysCreate(server);
-
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -429,7 +435,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByWildcard_SnupkgDoesNotExist_NoFileNotFoundError()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -437,19 +443,19 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 string version = "1.1.0";
 
                 //Create Nupkg in test directory.
-                string nupkgFullPath = Util.CreateTestPackage(packageId, version, packageDirectory);
+                string nupkgFullPath = Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
 
                 string pushArgument = "*.nupkg";
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     SetupMockServerAlwaysCreate(server);
-
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {pushArgument} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -472,7 +478,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByFilename_SnupkgExists_Conflict()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -480,34 +486,34 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 //Create nupkg in test directory.
                 string version = "1.1.0";
-                string nupkgFullPath = Util.CreateTestPackage(packageId, version, packageDirectory);
+                string nupkgFullPath = Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
 
                 CommandRunnerResult result = null;
                 CommandRunnerResult result2 = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     //Configure push to alternate returning Created and Conflict responses, which correspond to pushing the nupkg and snupkg, respectively.
-                    SetupMockServerCreateNupkgDuplicateSnupkg(server, packageDirectory, FuncStatus_Alternates_CreatedAndDuplicate());
-
+                    SetupMockServerCreateNupkgDuplicateSnupkg(server, pathContext.WorkingDirectory, FuncStatus_Alternates_CreatedAndDuplicate());
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
 
                     //Since this is V3, this will trigger 2 pushes: one for nupkgs, and one for snupkgs.
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
 
                     //Second run with SkipDuplicate
                     result2 = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {nupkgFullPath} -Source {sourceName} -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -540,7 +546,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByWildcard_FindsMatchingSnupkgs_Conflict()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -548,10 +554,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 //Create a nupkg in test directory.
                 string version = "1.1.0";
-                Util.CreateTestPackage(packageId, version, packageDirectory);
+                Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
 
@@ -559,17 +565,17 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     //Configure push to return a Conflict for the first push, then Created for all remaining pushes.
-                    SetupMockServerCreateNupkgDuplicateSnupkg(server, packageDirectory, FuncStatus_Duplicate_ThenAlwaysCreated());
-
+                    SetupMockServerCreateNupkgDuplicateSnupkg(server, pathContext.WorkingDirectory, FuncStatus_Duplicate_ThenAlwaysCreated());
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
 
                     //Since this is V3, this will trigger 2 pushes: one for nupkgs, and one for snupkgs.
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -SymbolSource {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -595,7 +601,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Nupkg_ByWildcard_FindsMatchingSnupkgs_SkipDuplicate()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -603,19 +609,19 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 //Create a nupkg in test directory.
                 string version = "1.1.0";
-                Util.CreateTestPackage(packageId, version, packageDirectory);
+                Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
 
                 //Create another nupkg in test directory.
                 version = "2.12.1";
-                Util.CreateTestPackage(packageId, version, packageDirectory);
+                Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName2 = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName2 = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath2 = Path.Combine(packageDirectory, snupkgFileName2);
+                string snupkgFullPath2 = Path.Combine(pathContext.WorkingDirectory, snupkgFileName2);
                 //Create another snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath2);
 
@@ -623,16 +629,16 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     SetupMockServerAlwaysDuplicate(server);
-
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
 
                     //Since this is V3, this will trigger 2 pushes: one for nupkgs, and one for snupkgs.
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -661,7 +667,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Snupkg_ByWildcard_FindsMatchingSnupkgs_Conflict()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -669,10 +675,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 //Create a nupkg in test directory.
                 string version = "1.1.0";
-                Util.CreateTestPackage(packageId, version, packageDirectory);
+                Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
 
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
@@ -681,17 +687,17 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     //Configure push to return a Conflict for the first push, then Created for all remaining pushes.
-                    SetupMockServerCreateNupkgDuplicateSnupkg(server, packageDirectory, FuncStatus_Duplicate_ThenAlwaysCreated());
-
+                    SetupMockServerCreateNupkgDuplicateSnupkg(server, pathContext.WorkingDirectory, FuncStatus_Duplicate_ThenAlwaysCreated());
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
 
                     //Since this is V3, this will trigger 2 pushes: one for nupkgs, and one for snupkgs.
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -717,7 +723,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Snupkg_ByWildcard_FindsMatchingSnupkgs_SkipDuplicate()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
@@ -725,19 +731,19 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 //Create a nupkg in test directory.
                 string version = "1.1.0";
-                Util.CreateTestPackage(packageId, version, packageDirectory);
+                Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
 
                 //Create another nupkg in test directory.
                 version = "2.12.1";
-                Util.CreateTestPackage(packageId, version, packageDirectory);
+                Util.CreateTestPackage(packageId, version, pathContext.WorkingDirectory);
                 string nupkgFileName2 = Util.BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
                 string snupkgFileName2 = Util.BuildPackageString(packageId, version, NuGetConstants.SnupkgExtension);
-                string snupkgFullPath2 = Path.Combine(packageDirectory, snupkgFileName2);
+                string snupkgFullPath2 = Path.Combine(pathContext.WorkingDirectory, snupkgFileName2);
                 //Create another snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath2);
 
@@ -745,15 +751,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 CommandRunnerResult result = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     SetupMockServerAlwaysDuplicate(server);
-
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
 
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {wildcardPush} -Source {sourceName} -Timeout 110 -SkipDuplicate",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -785,33 +791,33 @@ namespace NuGet.CommandLine.FuncTest.Commands
         public void PushCommand_Server_Snupkg_ByFilename_SnupkgExists_Conflict_ServerMessage()
         {
             // Arrange
-            using (var packageDirectory = TestDirectory.Create())
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nuget = Util.GetNuGetExePath();
 
                 string snupkgFileName = "fileName.snupkg";
-                string snupkgFullPath = Path.Combine(packageDirectory, snupkgFileName);
+                string snupkgFullPath = Path.Combine(pathContext.WorkingDirectory, snupkgFileName);
                 //Create snupkg in test directory.
                 WriteSnupkgFile(snupkgFullPath);
 
                 CommandRunnerResult result = null;
                 CommandRunnerResult result2 = null;
 
-                using (var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName))
+                using (var server = CreateAndStartMockV3Server(pathContext.WorkingDirectory, out string sourceName))
                 {
                     SetupMockServerAlwaysDuplicate(server);
-
+                    pathContext.Settings.AddSource(sourceName, sourceName, "true");
                     // Act
 
                     result = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
                         timeOutInMilliseconds: 120000); // 120 seconds
 
                     result2 = CommandRunner.Run(
                         nuget,
-                        packageDirectory,
+                        pathContext.WorkingDirectory,
                         $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -SkipDuplicate -Verbosity detailed",
                         timeOutInMilliseconds: 120000); // 120 seconds
                 }
@@ -838,7 +844,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             CommandRunnerResult result = null;
             using var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName);
-
+            string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", sourceName);
             SetupMockServerAlwaysCreate(server);
             // Act
             result = CommandRunner.Run(
@@ -848,8 +854,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 timeOutInMilliseconds: 120000); // 120 seconds
 
             // Assert
-            Assert.True(result.Success, result.AllOutput);
-            Assert.Contains("WARNING: You are running the 'push' operation with an 'HTTP' source", result.AllOutput);
+            Assert.False(result.Success, result.AllOutput);
+            Assert.Contains(expectedError, result.AllOutput);
         }
 
         #region Helpers
