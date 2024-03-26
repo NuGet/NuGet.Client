@@ -110,7 +110,7 @@ stages:
           enabled: true
           OptimizationInputsLookupMethod: DropPrefix
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: false
+          ShouldSkipOptimize: ${{ parameters.ShouldSkipOptimize }}
           AccessToken: $(System.AccessToken)
       outputs:
       - output: pipelineArtifact
