@@ -1,4 +1,3 @@
-
 parameters:
 - name: isOfficialBuild
   type: boolean
