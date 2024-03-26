@@ -93,6 +93,7 @@ stages:
       VsTargetChannelForTests: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetChannelForTests']]
       VsTargetMajorVersion: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
       isOfficialBuild: ${{ parameters.isOfficialBuild }}
+      ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
     pool:
@@ -110,7 +111,7 @@ stages:
           enabled: true
           OptimizationInputsLookupMethod: DropPrefix
           DropNamePrefix: OptimizationInputs/$(System.TeamProject)/$(Build.Repository.Name)
-          ShouldSkipOptimize: ${{ parameters.ShouldSkipOptimize }}
+          ShouldSkipOptimize: ${{ variables['ShouldSkipOptimize'] }}
           AccessToken: $(System.AccessToken)
       outputs:
       - output: pipelineArtifact
