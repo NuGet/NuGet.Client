@@ -114,7 +114,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         PackageVersion="$(PackageVersion)"
         IncludeSymbols="$(IncludeSymbols)"
         IncludeSource="$(IncludeSource)"
-        SymbolPackageFormat="$(SymbolPackageFormat)">
+        SymbolPackageFormat="$(SymbolPackageFormat)"
+        OutputFileNamesWithoutVersion="$(OutputFileNamesWithoutVersion)">
 
       <Output
         TaskParameter="OutputPackItems"
@@ -456,7 +457,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_GetDebugSymbolsWithTfm"
-          DependsOnTargets="DebugSymbolsProjectOutputGroup;$(TargetsForTfmSpecificDebugSymbolsInPackage)" 
+          DependsOnTargets="DebugSymbolsProjectOutputGroup;$(TargetsForTfmSpecificDebugSymbolsInPackage)"
           Returns="@(_TargetPathsToSymbolsWithTfm)">
     <ItemGroup Condition="'$(IncludeBuildOutput)' == 'true'">
       <_TargetPathsToSymbolsWithTfm Include="@(DebugSymbolsProjectOutputGroupOutput)">
