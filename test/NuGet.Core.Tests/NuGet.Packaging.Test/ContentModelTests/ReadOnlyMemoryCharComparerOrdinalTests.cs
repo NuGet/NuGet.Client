@@ -15,9 +15,22 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [InlineData("ABCDEFG", "abcdefg", false)]
         [InlineData("ref/four/foo.dll", "lib/four/bar.dll", true, 4, 4)]
         [InlineData("ref/four/foo.dll", "lib/five/bar.dll", false, 4, 4)]
-        public void ReadOnlyMemoryCharComparerOrdinal_ReturnsExpectedValue(string x, string y, bool expected, int? start = default, int? length = default)
+        public void Equals_ReturnsExpectedValue(string x, string y, bool expected, int? start = default, int? length = default)
         {
             ReadOnlyMemoryCharComparerOrdinal.Instance.Equals(x.AsMemory(start ?? 0, length ?? x.Length), y.AsMemory(start ?? 0, length ?? y.Length)).Should().Be(expected);
+        }
+
+        [Theory]
+        [InlineData("ABCDEFG", "ABCDEFG", true)]
+        [InlineData("ABCDEFGH", "ABCDefgH", false)]
+        [InlineData("ref/four/foo.dll", "lib/four/bar.dll", true, 4, 4)]
+        [InlineData("ref/four/foo.dll", "lib/five/bar.dll", false, 4, 4)]
+        public void GetHashCode_ReturnsExpectedValue(string x, string y, bool expected, int? start = default, int? length = default)
+        {
+            int hashX = ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(x.AsMemory(start ?? 0, length ?? x.Length));
+            int hashY = ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(y.AsMemory(start ?? 0, length ?? y.Length));
+
+            hashX.Equals(hashY).Should().Be(expected, $"hashX is {hashX} and hashY is {hashY}");
         }
     }
 }
