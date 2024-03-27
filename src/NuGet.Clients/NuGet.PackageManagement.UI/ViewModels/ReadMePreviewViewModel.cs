@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.VisualStudio.Markdown.Platform;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
@@ -62,11 +63,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     _markdownPreview.VisualElement.Visibility = Visibility.Visible;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 IsErrorWithReadMe = true;
-                //ErrorMessage = Resources.Error_ProjectNotInCache ex.Message;
-                //need to log ex somewhere?
+                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
             }
         }
 
