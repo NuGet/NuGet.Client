@@ -190,7 +190,7 @@ namespace NuGet.ContentModel.Infrastructure
                     {
                         break;
                     }
-                    ReadOnlyMemory<char> substring = path.AsMemory().Slice(startIndex, delimiterIndex - startIndex);
+                    ReadOnlyMemory<char> substring = path.AsMemory(startIndex, delimiterIndex - startIndex);
                     object value;
                     if (propertyDefinition.TryLookup(substring, _table, out value))
                     {
