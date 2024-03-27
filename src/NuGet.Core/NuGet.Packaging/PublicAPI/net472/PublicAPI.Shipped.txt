@@ -49,10 +49,6 @@ NuGet.ContentModel.ContentItemGroup.ContentItemGroup() -> void
 NuGet.ContentModel.ContentPropertyDefinition
 ~NuGet.ContentModel.ContentPropertyDefinition.CompareTest.get -> System.Func<object, object, object, int>
 ~NuGet.ContentModel.ContentPropertyDefinition.CompatibilityTest.get -> System.Func<object, object, bool>
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Collections.Generic.IEnumerable<string> fileExtensions) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Collections.Generic.IEnumerable<string> fileExtensions, bool allowSubfolders) -> void
-~NuGet.ContentModel.ContentPropertyDefinition.ContentPropertyDefinition(string name, System.Func<object, object, bool> compatibilityTest) -> void
 NuGet.ContentModel.ContentPropertyDefinition.FileExtensionAllowSubFolders.get -> bool
 ~NuGet.ContentModel.ContentPropertyDefinition.FileExtensions.get -> System.Collections.Generic.List<string>
 ~NuGet.ContentModel.ContentPropertyDefinition.Name.get -> string

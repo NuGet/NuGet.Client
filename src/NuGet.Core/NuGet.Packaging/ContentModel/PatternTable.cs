@@ -46,7 +46,7 @@ namespace NuGet.ContentModel
         /// <param name="propertyName">Property moniker</param>
         /// <param name="name">Token name</param>
         /// <param name="value">Replacement value</param>
-        public bool TryLookup(string propertyName, ReadOnlyMemory<char> name, out object value)
+        internal bool TryLookup(string propertyName, ReadOnlyMemory<char> name, out object value)
         {
             if (propertyName == null)
             {

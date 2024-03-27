@@ -15,26 +15,26 @@ namespace NuGet.ContentModel
     {
         private static readonly Func<object, object, bool> EqualsTest = (left, right) => Equals(left, right);
 
-        public ContentPropertyDefinition(string name)
+        internal ContentPropertyDefinition(string name)
             : this(name, null, null, null, null, false)
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             Func<ReadOnlyMemory<char>, PatternTable, object> parser)
             : this(name, parser, null, null, null, false)
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             Func<object, object, bool> compatibilityTest)
             : this(name, null, compatibilityTest, null, null, false)
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest)
@@ -42,7 +42,7 @@ namespace NuGet.ContentModel
         {
         }
 
-        public ContentPropertyDefinition(string name,
+        internal ContentPropertyDefinition(string name,
             Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest)
@@ -50,14 +50,14 @@ namespace NuGet.ContentModel
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             IEnumerable<string> fileExtensions)
             : this(name, null, null, null, fileExtensions, false)
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             IEnumerable<string> fileExtensions)
@@ -65,7 +65,7 @@ namespace NuGet.ContentModel
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             IEnumerable<string> fileExtensions,
             bool allowSubfolders)
@@ -73,7 +73,7 @@ namespace NuGet.ContentModel
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             IEnumerable<string> fileExtensions,
@@ -82,7 +82,7 @@ namespace NuGet.ContentModel
         {
         }
 
-        public ContentPropertyDefinition(
+        internal ContentPropertyDefinition(
             string name,
             Func<ReadOnlyMemory<char>, PatternTable, object> parser,
             Func<object, object, bool> compatibilityTest,
@@ -104,9 +104,9 @@ namespace NuGet.ContentModel
 
         public bool FileExtensionAllowSubFolders { get; }
 
-        public Func<ReadOnlyMemory<char>, PatternTable, object> Parser { get; }
+        internal Func<ReadOnlyMemory<char>, PatternTable, object> Parser { get; }
 
-        public virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, out object value)
+        internal virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, out object value)
         {
             if (name.IsEmpty)
             {
