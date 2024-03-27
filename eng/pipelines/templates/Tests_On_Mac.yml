@@ -2,15 +2,16 @@ steps:
 - task: UseDotNet@2
   displayName: 'Use .NET Core sdk'
   inputs:
-<<<<<<< HEAD
     packageType: sdk
     version: 7.x
     installationPath: $(Agent.TempDirectory)/dotnet
-=======
+
+- task: DownloadPipelineArtifact@2
+  displayName: "Download NuGet.CommandLine.Test artifacts"
+  inputs:
     artifactName: "NuGet.CommandLine.Test"
-    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+    downloadPath: "$(Build.Repository.LocalPath)/artifacts/NuGet.CommandLine.Test"
   condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
->>>>>>> 017074bee (Split hosted build test running up for unit tests, functional tests, and Mono tests (#5152))
 
 - task: ShellScript@2
   displayName: "Run $(TestRunDisplayName) (continue on error)"
