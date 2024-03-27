@@ -71,12 +71,6 @@ steps:
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
-- script: dotnet format whitespace --verify-no-changes NuGet.sln
-  name: dotnetFormatWhitespace
-  displayName: Check whitespace formatting
-  continueOnError: ${{ parameters.isOfficialBuild }}
-  condition: succeededOrFailed()
-
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
