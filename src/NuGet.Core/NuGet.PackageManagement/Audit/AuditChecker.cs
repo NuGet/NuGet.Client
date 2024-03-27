@@ -21,11 +21,13 @@ using NuGet.Shared;
 namespace NuGet.PackageManagement
 {
     public class AuditChecker(
-        List<SourceRepository> sourceRepositories,
+        List<SourceRepository> packageSources,
+        List<SourceRepository> auditSources,
         SourceCacheContext sourceCacheContext,
         ILogger logger)
     {
-        private readonly List<SourceRepository> _sourceRepositories = sourceRepositories;
+        private readonly List<SourceRepository> _packageSources = packageSources;
+        private readonly List<SourceRepository>? _auditSources = auditSources;
         private readonly ILogger _logger = logger;
         private readonly SourceCacheContext _sourceCacheContext = sourceCacheContext;
 
@@ -55,7 +57,7 @@ namespace NuGet.PackageManagement
             }
 
             Stopwatch stopwatch = Stopwatch.StartNew();
-            (int sourceWithVulnerabilityCount, GetVulnerabilityInfoResult? allVulnerabilityData) = await GetAllVulnerabilityDataAsync(_sourceRepositories, _sourceCacheContext, _logger, cancellationToken);
+            (int sourceWithVulnerabilityCount, GetVulnerabilityInfoResult? allVulnerabilityData) = await GetAllVulnerabilityDataAsync(_packageSources, _sourceCacheContext, _logger, cancellationToken);
             stopwatch.Stop();
             double downloadDurationInSeconds = stopwatch.Elapsed.TotalSeconds;
 
@@ -127,12 +129,13 @@ namespace NuGet.PackageManagement
             }
         }
 
-        internal static async Task<(int, GetVulnerabilityInfoResult?)> GetAllVulnerabilityDataAsync(List<SourceRepository> sourceRepositories, SourceCacheContext sourceCacheContext, ILogger logger, CancellationToken cancellationToken)
+        internal static async Task<(int, GetVulnerabilityInfoResult?)> GetAllVulnerabilityDataAsync(List<SourceRepository> packageSources, List<SourceRepository> auditSources, SourceCacheContext sourceCacheContext, ILogger logger, CancellationToken cancellationToken)
         {
             int SourcesWithVulnerabilityData = 0;
-            List<Task<GetVulnerabilityInfoResult?>>? results = new(sourceRepositories.Count);
+            bool usingAuditSources = auditSources.Count > 0;
+            List<Task<GetVulnerabilityInfoResult?>> results = new(usingAuditSources ? auditSources.Count : packageSources.Count);
 
-            foreach (SourceRepository source in sourceRepositories)
+            foreach (SourceRepository source in usingAuditSources ? auditSources : packageSources)
             {
                 Task<GetVulnerabilityInfoResult?> getVulnerabilityInfoResult = GetVulnerabilityInfoAsync(source, sourceCacheContext, logger);
                 if (getVulnerabilityInfoResult != null)
@@ -160,6 +163,12 @@ namespace NuGet.PackageManagement
                     knownVulnerabilities ??= new();
 
                     knownVulnerabilities.AddRange(result.KnownVulnerabilities);
+                }
+                else if (usingAuditSources)
+                {
+                    string message = "Audit source didn't provide vulnerability information";
+                    RestoreLogMessage restoreLogMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1905, message);
+
                 }
 
                 if (result.Exceptions != null)
