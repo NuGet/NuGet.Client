@@ -566,6 +566,7 @@ namespace NuGet.PackageManagement.UI
                                     await ReadMePreviewViewModel.UpdateMarkdownAsync("");
                                     ReadMePreviewViewModel.IsErrorWithReadMe = true;
                                     IsReadMeAvailable = true;
+                                    throw;
                                 }
                             })
                             .PostOnFailure(nameof(DetailControlModel));
