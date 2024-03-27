@@ -445,7 +445,6 @@ stages:
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
       FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-    condition: "and(succeeded(),eq(variables['RunCrossFrameworkTestsOnWindows'], 'true')) "
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
