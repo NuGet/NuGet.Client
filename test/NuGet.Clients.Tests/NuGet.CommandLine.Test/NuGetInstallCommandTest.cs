@@ -2013,7 +2013,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task Install_WithPackagesConfigAndHttpSource_Warns()
+        public async Task Install_WithPackagesConfigAndHttpSource_ThrowsAnError()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -2050,9 +2050,9 @@ namespace NuGet.CommandLine.Test
             var result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
-            result.Success.Should().BeTrue();
-            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            result.AllOutput.Should().Contain("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/api/v2'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.");
+            string formatString = "You are running the 'restore' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
+            string errorForHttpSource = string.Format(formatString, "http://api.source/api/v2");
+            result.Errors.Should().Contain(errorForHttpSource);
         }
 
         [Theory]
@@ -2062,7 +2062,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("", true)]
         [InlineData("true", false)]
         [InlineData("TRUE", false)]
-        public async Task Install_PackagesConfigWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
+        public async Task Install_PackagesConfigWithHttpSourceAndAllowInsecureConnections_ThrowsAnErrorCorrectly(string allowInsecureConnections, bool shouldFail)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -2099,20 +2099,20 @@ namespace NuGet.CommandLine.Test
             CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
-            string formatString = "You are running the 'restore' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS'";
-            string warningForHttpSource = string.Format(formatString, "http://api.source/index.json");
-            string warningForHttpsSource = string.Format(formatString, "https://api.source/index.json");
+            string formatString = "You are running the 'restore' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
+            string errorForHttpSource = string.Format(formatString, "http://api.source/index.json");
+            string errorForHttpsSource = string.Format(formatString, "https://api.source/index.json");
 
-            result.Success.Should().BeTrue();
-            result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            Assert.DoesNotContain(warningForHttpsSource, result.Output);
-            if (hasHttpWarning)
+            if (shouldFail)
             {
-                Assert.Contains(warningForHttpSource, result.Output);
+                Assert.Contains(errorForHttpSource, result.Errors);
+                Assert.DoesNotContain(errorForHttpsSource, result.Errors);
             }
             else
             {
-                Assert.DoesNotContain(warningForHttpSource, result.Output); ;
+                result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
+                Assert.DoesNotContain(errorForHttpSource, result.Errors);
+                Assert.DoesNotContain(errorForHttpsSource, result.Errors);
             }
         }
 
