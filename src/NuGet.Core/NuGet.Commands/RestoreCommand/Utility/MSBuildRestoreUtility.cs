@@ -946,7 +946,9 @@ namespace NuGet.Commands
             IEnumerable<string> suppressions = GetItemByType(items, "NuGetAuditSuppress")
                                                     .Select(i => i.GetProperty("Id"));
 
-            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
+            return (suppressions != null && suppressions.Any())
+                    ? new HashSet<string>(suppressions)
+                    : null;
         }
 
         /// <summary>
