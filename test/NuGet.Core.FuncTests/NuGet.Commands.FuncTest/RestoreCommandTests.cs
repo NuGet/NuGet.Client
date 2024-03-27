@@ -4068,7 +4068,7 @@ namespace NuGet.Commands.FuncTest
         [Theory]
         [InlineData("true", false)]
         [InlineData("false", true)]
-        public async Task Restore_WithHttpSource_Warns(string allowInsecureConnections, bool isHttpWarningExpected)
+        public async Task Restore_WithHttpSource_ThrowsError(string allowInsecureConnections, bool isHttpErrorExpected)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -4089,20 +4089,19 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
-            result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.Libraries.Should().HaveCount(0);
+            string expectedError = $"You are running the 'restore' operation with an 'HTTP' source: {httpSourceUrl}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
-            string expectedWarning = $"You are running the 'restore' operation with an 'HTTP' source, '{httpSourceUrl}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.";
-
-            if (isHttpWarningExpected)
+            if (isHttpErrorExpected)
             {
+                result.Success.Should().BeFalse(because: logger.ShowMessages());
                 result.LockFile.LogMessages.Should().HaveCount(1);
                 IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
-                logMessage.Code.Should().Be(NuGetLogCode.NU1803);
-                Assert.Equal(expectedWarning, logMessage.Message);
+                logMessage.Code.Should().Be(NuGetLogCode.NU1804);
+                Assert.Equal(expectedError, logMessage.Message);
             }
             else
             {
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
                 result.LockFile.LogMessages.Should().HaveCount(0);
             }
         }
