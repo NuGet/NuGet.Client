@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI.Options
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
                     var sourceMessage = string.Concat(
-                        Resources.Warning_HTTPSource,
+                        Resources.Error_HttpSource_Single,
                         packageSource.Source);
                     return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, sourceMessage);
                 }

@@ -754,6 +754,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere..
+        /// </summary>
+        public static string Error_HttpSource_Single {
+            get {
+                return ResourceManager.GetString("Error_HttpSource_Single", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find metadata of {0}.
         /// </summary>
         public static string Error_MetadataNotFound {

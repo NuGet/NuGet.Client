@@ -1042,4 +1042,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>The package `{0}` is available in the Global packages folder, but the source it came from `{1}` is not one of the configured sources.</value>
     <comment>{0} is the package ID. {1} is the URI of the package source found in the Global packages folder.</comment>
   </data>
+  <data name="Error_HttpSource_Single" xml:space="preserve">
+    <value>You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.</value>
+  </data>
 </root>

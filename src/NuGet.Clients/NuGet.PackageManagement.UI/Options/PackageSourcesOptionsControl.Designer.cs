@@ -291,7 +291,7 @@ namespace NuGet.PackageManagement.UI.Options
         private ImageList images64px;
         private TableLayoutPanel tableLayoutPanel3;
         private TableLayoutPanel tableLayoutPanel4;
-        private Label HttpWarning;
-        private PictureBox HttpWarningIcon;
+        private Label HttpError;
+        private PictureBox HttpErrorIcon;
     }
 }
