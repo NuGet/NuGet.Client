@@ -1,6 +1,8 @@
 parameters:
 - name: BuildRTM
   type: boolean
+- name: NuGetLocalizationType
+  type: string
 
 steps:
 - task: PowerShell@1
