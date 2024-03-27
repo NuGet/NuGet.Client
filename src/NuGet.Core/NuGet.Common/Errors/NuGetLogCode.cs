@@ -347,6 +347,11 @@ namespace NuGet.Common
         NU1803 = 1803,
 
         /// <summary>
+        /// HTTP Source specified.
+        /// </summary>
+        NU1804 = 1804,
+
+        /// <summary>
         /// Server/package source vulnerability issue
         /// </summary>
         NU1900 = 1900,

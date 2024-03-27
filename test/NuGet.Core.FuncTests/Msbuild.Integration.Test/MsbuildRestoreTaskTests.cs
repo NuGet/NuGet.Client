@@ -1184,7 +1184,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 Assert.Contains("Added package 'x.1.0.0' to folder", result.AllOutput);
-                Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+                Assert.Contains("You are running the 'restore' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere. will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
             }
         }
 
