@@ -11,18 +11,13 @@ namespace NuGet.Packaging.Test.ContentModelTests
     public class ReadOnlyMemoryCharComparerOrdinalTests
     {
         [Theory]
-        [InlineData("AbCDeFg", "AbCDeFg", true)]
-        [InlineData("AbCDeFG", "abcdefg", false)]
-        public void ReadOnlyMemoryCharComparerOrdinal_ReturnsExpectedValue(string x, string y, bool expected)
+        [InlineData("ABCDEFG", "ABCDEFG", true)]
+        [InlineData("ABCDEFG", "abcdefg", false)]
+        [InlineData("ref/four/foo.dll", "lib/four/bar.dll", true, 4, 4)]
+        [InlineData("ref/four/foo.dll", "lib/five/bar.dll", false, 4, 4)]
+        public void ReadOnlyMemoryCharComparerOrdinal_ReturnsExpectedValue(string x, string y, bool expected, int? start = default, int? length = default)
         {
-            if (expected)
-            {
-                ReadOnlyMemoryCharComparerOrdinal.Instance.Equals(x.AsMemory(), y.AsMemory()).Should().BeTrue();
-            }
-            else
-            {
-                ReadOnlyMemoryCharComparerOrdinal.Instance.Equals(x.AsMemory(), y.AsMemory()).Should().BeFalse();
-            }
+            ReadOnlyMemoryCharComparerOrdinal.Instance.Equals(x.AsMemory(start ?? 0, length ?? x.Length), y.AsMemory(start ?? 0, length ?? y.Length)).Should().Be(expected);
         }
     }
 }

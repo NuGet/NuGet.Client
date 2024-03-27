@@ -7,7 +7,7 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using Xunit;
 
-namespace NuGet.Client.Test
+namespace NuGet.Packaging.Test.ContentModelTests
 {
     public class PatternTableTests
     {
