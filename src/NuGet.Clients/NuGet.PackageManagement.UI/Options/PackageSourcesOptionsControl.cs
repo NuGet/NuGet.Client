@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.UI.Options
             }
         }
 
-        public static Image WarningIcon
+        public static Image ErrorIcon
         {
             get
             {
@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.UI.Options
                     Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
                 };
 
-                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusError, attributes);
 
                 return (Image)GelUtilities.GetObjectData(uIObj);
             }
@@ -94,8 +94,8 @@ namespace NuGet.PackageManagement.UI.Options
 
             UpdateDPI();
 
-            HttpWarningIcon.Image = WarningIcon;
-            HttpWarning.Text = Resources.Warning_NewHTTPSource_VSOptions;
+            HttpErrorIcon.Image = ErrorIcon;
+            HttpError.Text = Resources.Error_HttpSource_Single;
         }
 
         private void UpdateDPI()
@@ -153,14 +153,14 @@ namespace NuGet.PackageManagement.UI.Options
                 addButton.Enabled = true;
             }
 
-            // Show HttpWarning for the selected source if needed
+            // Show HttpError for the selected source if needed
             if (selectedSource != null)
             {
-                SetHttpWarningVisibilityForSelectSource(selectedSource);
+                SetHttpErrorVisibilityForSelectSource(selectedSource);
             }
             else if (selectedMachineSource != null)
             {
-                SetHttpWarningVisibilityForSelectSource(selectedMachineSource);
+                SetHttpErrorVisibilityForSelectSource(selectedMachineSource);
             }
         }
 
@@ -487,7 +487,7 @@ namespace NuGet.PackageManagement.UI.Options
             selectedPackageSource.Source = source;
             _packageSources.ResetCurrentItem();
 
-            SetHttpWarningVisibilityForSelectSource(selectedPackageSource);
+            SetHttpErrorVisibilityForSelectSource(selectedPackageSource);
 
             return TryUpdateSourceResults.Successful;
         }
@@ -715,21 +715,21 @@ namespace NuGet.PackageManagement.UI.Options
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
         }
 
-        private void SetHttpWarningVisibilityForSelectSource(PackageSourceContextInfo selectedSource)
+        private void SetHttpErrorVisibilityForSelectSource(PackageSourceContextInfo selectedSource)
         {
             var source = new PackageSource(selectedSource.Source, selectedSource.Name);
             source.AllowInsecureConnections = selectedSource.AllowInsecureConnections;
 
-            // Warn if the selected source is http, and the AllowInsecureConnections for this source is set to false. 
+            // Error if the selected source is http, and the AllowInsecureConnections for this source is set to false. 
             if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
             {
-                HttpWarning.Visible = true;
-                HttpWarningIcon.Visible = true;
+                HttpError.Visible = true;
+                HttpErrorIcon.Visible = true;
             }
             else
             {
-                HttpWarning.Visible = false;
-                HttpWarningIcon.Visible = false;
+                HttpError.Visible = false;
+                HttpErrorIcon.Visible = false;
             }
         }
     }

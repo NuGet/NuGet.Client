@@ -754,6 +754,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file..
+        /// </summary>
+        public static string Error_HttpSource_Single {
+            get {
+                return ResourceManager.GetString("Error_HttpSource_Single", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to find metadata of {0}.
         /// </summary>
         public static string Error_MetadataNotFound {
