@@ -12,7 +12,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class WhyPackageCommandRunner : IWhyPackageCommandRunner
+    internal class WhyCommandRunner : IWhyCommandRunner
     {
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
@@ -20,21 +20,21 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Use CLI arguments to execute why command.
         /// </summary>
-        /// <param name="whyPackageArgs">CLI arguments.</param>
+        /// <param name="whyCommandArgs">CLI arguments.</param>
         /// <returns></returns>
-        public Task ExecuteCommandAsync(WhyPackageArgs whyPackageArgs)
+        public Task ExecuteCommandAsync(WhyCommandArgs whyCommandArgs)
         {
             //TODO: figure out how to use current directory if path is not passed in
-            var projectsPaths = Path.GetExtension(whyPackageArgs.Path).Equals(".sln") ?
-                           MSBuildAPIUtility.GetProjectsFromSolution(whyPackageArgs.Path).Where(f => File.Exists(f)) :
-                           new List<string>(new string[] { whyPackageArgs.Path });
+            var projectPaths = Path.GetExtension(whyCommandArgs.Path).Equals(".sln") ?
+                           MSBuildAPIUtility.GetProjectsFromSolution(whyCommandArgs.Path).Where(f => File.Exists(f)) :
+                           new List<string>(new string[] { whyCommandArgs.Path });
 
             // the package you want to print the dependency paths for
-            var package = whyPackageArgs.Package;
+            var package = whyCommandArgs.Package;
 
-            var msBuild = new MSBuildAPIUtility(whyPackageArgs.Logger);
+            var msBuild = new MSBuildAPIUtility(whyCommandArgs.Logger);
 
-            foreach (var projectPath in projectsPaths)
+            foreach (var projectPath in projectPaths)
             {
                 //Open project to evaluate properties for the assets
                 //file and the name of the project
@@ -73,8 +73,7 @@ namespace NuGet.CommandLine.XPlat
                     {
 
                         // Get all the packages that are referenced in a project
-                        // TODO: for now, just passing in true for the last two args (hardcoded) so I need to change that
-                        var packages = msBuild.GetResolvedVersions(project.FullPath, whyPackageArgs.Frameworks, assetsFile, true, true);
+                        var packages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true);
 
                         // If packages equals null, it means something wrong happened
                         // with reading the packages and it was handled and message printed
@@ -84,7 +83,7 @@ namespace NuGet.CommandLine.XPlat
                             // No packages means that no package references at all were found in the current framework
                             if (!packages.Any())
                             {
-                                Console.WriteLine(string.Format(Strings.WhyPkg_NoPackagesFoundForFrameworks, projectName));
+                                Console.WriteLine(string.Format(Strings.WhyCommand_Error_NoPackagesFoundForFrameworks, projectName));
                             }
                             else
                             {
@@ -168,9 +167,9 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// DFS from root node until destination is found (if destination ID exists)
         /// </summary>
-        /// <param name="rootPackage">Top level packahe.</param>
+        /// <param name="rootPackage">Top level package.</param>
         /// <param name="libraries">All libraries in the target framework.</param>
-        /// <param name="visited">A set to keep track of all nodes that have been visisted.</param>
+        /// <param name="visited">A set to keep track of all nodes that have been visited.</param>
         /// <param name="path">Keep track of path as DFS happens.</param>
         /// <param name="listOfPaths">List of all dependency paths that lead to destination.</param>
         /// <param name="destination">CLI argument with the package that is passed in.</param>

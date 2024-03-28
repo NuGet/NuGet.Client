@@ -7,27 +7,26 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class WhyPackageArgs
+    internal class WhyCommandArgs
     {
         public ILogger Logger { get; }
         public string Path { get; }
         public string Package { get; }
-        public IEnumerable<string> Frameworks { get; }
-
+        public List<string> Frameworks { get; }
 
         /// <summary>
-        /// A constructor for the arguments of Why package
+        /// A constructor for the arguments of the 'why'
         /// command. This is used to execute the runner's
         /// method
         /// </summary>
         /// <param name="path"> The path to the solution or project file </param>
-        /// <param name="package">The package to look up the dependency paths for </param>
-        /// <param name="frameworks"> The user inputted frameworks to look up for their packages </param>
+        /// <param name="package">The package for which we show the dependency graph </param>
+        /// <param name="frameworks">The target frameworks for which we show the dependency graph </param>
         /// <param name="logger"></param>
-        public WhyPackageArgs(
+        public WhyCommandArgs(
             string path,
             string package,
-            IEnumerable<string> frameworks,
+            List<string> frameworks,
             ILogger logger)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));

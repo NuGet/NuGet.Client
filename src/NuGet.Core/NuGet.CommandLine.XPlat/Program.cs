@@ -255,7 +255,7 @@ namespace NuGet.CommandLine.XPlat
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
                 TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
                 SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
-                WhyCommand.Register(app, getHidePrefixLogger, () => new WhyPackageCommandRunner());
+                WhyCommand.Register(app, getHidePrefixLogger, () => new WhyCommandRunner());
             }
 
             app.FullName = Strings.App_FullName;

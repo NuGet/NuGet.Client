@@ -912,19 +912,23 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigGetCommandDescription" xml:space="preserve">
     <value>Gets the NuGet configuration settings that will be applied.</value>
   </data>
-  <data name="WhyCommandPackageDescription" xml:space="preserve">
+  <data name="WhyCommand_PackageArgument_Description" xml:space="preserve">
     <value>A package name to look-up in the dependency graph.</value>
   </data>
-  <data name="WhyFrameworkDescription" xml:space="preserve">
+  <data name="WhyCommand_FrameworkArgument_Description" xml:space="preserve">
     <value>Specifies the target framework to look-up in the dependency graph while searching for a package.</value>
   </data>
-  <data name="Why_Description" xml:space="preserve">
-    <value>Lists the dependency graph for a particular pakage for a project or solution.</value>
+  <data name="WhyCommand_Description" xml:space="preserve">
+    <value>Lists the dependency graph for a particular package for a given project or solution.</value>
   </data>
-  <data name="Why_PathDescription" xml:space="preserve">
+  <data name="WhyCommand_PathArgument_Description" xml:space="preserve">
     <value>A path to a project, solution file or directory.</value>
   </data>
-  <data name="WhyPkg_NoPackagesFoundForFrameworks" xml:space="preserve">
+  <data name="WhyCommand_Error_NoPackagesFoundForFrameworks" xml:space="preserve">
     <value>No packages were found for this framework.</value>
+  </data>
+  <data name="WhyCommand_Error_ArgumentCannotBeEmpty" xml:space="preserve">
+    <value>Unable to run 'dotnet nuget why'. The '{0}' argument cannot be empty.</value>
+    <comment>{0} - Argument which was not provided</comment>
   </data>
 </root>
