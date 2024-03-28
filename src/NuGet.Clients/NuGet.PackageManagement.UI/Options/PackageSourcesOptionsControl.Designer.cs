@@ -52,8 +52,8 @@ namespace NuGet.PackageManagement.UI.Options
             this.MachineWidePackageSourcesListBox = new NuGet.PackageManagement.UI.Options.PackageSourceCheckedListBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
-            this.HttpWarning = new System.Windows.Forms.Label();
-            this.HttpWarningIcon = new System.Windows.Forms.PictureBox();
+            this.HttpError = new System.Windows.Forms.Label();
+            this.HttpErrorIcon = new System.Windows.Forms.PictureBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
             this.images64px = new System.Windows.Forms.ImageList(this.components);
             this.PackageSourcesContextMenu.SuspendLayout();
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Options
             this.tableLayoutPanel2.SuspendLayout();
             this.tableLayoutPanel3.SuspendLayout();
             this.tableLayoutPanel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.HttpWarningIcon)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HttpErrorIcon)).BeginInit();
             this.SuspendLayout();
             // 
             // HeaderLabel
@@ -212,21 +212,21 @@ namespace NuGet.PackageManagement.UI.Options
             // tableLayoutPanel4
             // 
             resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
-            this.tableLayoutPanel4.Controls.Add(this.HttpWarning, 1, 0);
-            this.tableLayoutPanel4.Controls.Add(this.HttpWarningIcon, 0, 0);
+            this.tableLayoutPanel4.Controls.Add(this.HttpError, 1, 0);
+            this.tableLayoutPanel4.Controls.Add(this.HttpErrorIcon, 0, 0);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
             // HttpWarning
             // 
-            resources.ApplyResources(this.HttpWarning, "HttpWarning");
-            this.HttpWarning.Name = "HttpWarning";
+            resources.ApplyResources(this.HttpError, "HttpWarning");
+            this.HttpError.Name = "HttpWarning";
             // 
             // HttpWarningIcon
             // 
-            resources.ApplyResources(this.HttpWarningIcon, "HttpWarningIcon");
-            this.HttpWarningIcon.AccessibleRole = System.Windows.Forms.AccessibleRole.Alert;
-            this.HttpWarningIcon.Name = "HttpWarningIcon";
-            this.HttpWarningIcon.TabStop = false;
+            resources.ApplyResources(this.HttpErrorIcon, "HttpWarningIcon");
+            this.HttpErrorIcon.AccessibleRole = System.Windows.Forms.AccessibleRole.Alert;
+            this.HttpErrorIcon.Name = "HttpWarningIcon";
+            this.HttpErrorIcon.TabStop = false;
             // 
             // images32px
             // 
@@ -261,7 +261,7 @@ namespace NuGet.PackageManagement.UI.Options
             this.tableLayoutPanel3.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.HttpWarningIcon)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.HttpErrorIcon)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
