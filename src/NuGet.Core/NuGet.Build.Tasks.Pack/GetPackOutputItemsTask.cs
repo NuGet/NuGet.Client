@@ -33,7 +33,7 @@ namespace NuGet.Build.Tasks.Pack
 
         public string SymbolPackageFormat { get; set; }
 
-        public bool OutputFileNamesWithoutVersion  { get; set; }
+        public bool OutputFileNamesWithoutVersion { get; set; }
 
         /// <summary>
         /// Output items
