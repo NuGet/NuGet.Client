@@ -2213,5 +2213,60 @@ namespace NuGet.CommandLine.XPlat {
                 return ResourceManager.GetString("Warning_HttpServerUsage_MultipleSources", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Lists the dependency graph for a particular pakage for a project or solution..
+        /// </summary>
+        internal static string Why_Description
+        {
+            get
+            {
+                return ResourceManager.GetString("Why_Description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A path to a project, solution file or directory..
+        /// </summary>
+        internal static string Why_PathDescription
+        {
+            get
+            {
+                return ResourceManager.GetString("Why_PathDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A package name to look-up in the dependency graph..
+        /// </summary>
+        internal static string WhyCommandPackageDescription
+        {
+            get
+            {
+                return ResourceManager.GetString("WhyCommandPackageDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the target framework to look-up in the dependency graph while searching for a package..
+        /// </summary>
+        internal static string WhyFrameworkDescription
+        {
+            get
+            {
+                return ResourceManager.GetString("WhyFrameworkDescription", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No packages were found for this framework..
+        /// </summary>
+        internal static string WhyPkg_NoPackagesFoundForFrameworks
+        {
+            get
+            {
+                return ResourceManager.GetString("WhyPkg_NoPackagesFoundForFrameworks", resourceCulture);
+            }
+        }
     }
 }
