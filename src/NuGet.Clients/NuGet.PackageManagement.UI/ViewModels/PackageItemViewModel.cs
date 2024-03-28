@@ -541,6 +541,23 @@ namespace NuGet.PackageManagement.UI
             return _detailedPackageSearchMetadata.Value;
         }
 
+        // This Lazy/AsyncLazy is just because DetailControlModel calls GetDetailedPackageSearchMetadataAsync directly,
+        // and there are tests that don't mock IServiceBroker and INuGetSearchService. It's called via a jtf.RunAsync that is
+        // not awaited. By keeping this AsyncLazy, we ensure that the exception is thrown in an async continuation. Whereas
+        // if we get rid of it and have GetDetailedPackageSearchMetadataAsync call _searchService directly, then the exception
+        // will not be thrown in a continuation, and the test will fail.
+        private Lazy<Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>> DetailedPackageSearchLocalMetadata =>
+            new Common.AsyncLazy<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)>(async () =>
+            {
+                var identity = new PackageIdentity(Id, Version);
+                return await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
+            });
+
+        public Task<(PackageSearchMetadataContextInfo, PackageDeprecationMetadataContextInfo)> GetDetailedPackageSearchLocalMetadataAsync()
+        {
+            return DetailedPackageSearchLocalMetadata.Value;
+        }
+
         private PackageDeprecationMetadataContextInfo _deprecationMetadata;
         public PackageDeprecationMetadataContextInfo DeprecationMetadata
         {

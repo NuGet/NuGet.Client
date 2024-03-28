@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -68,7 +71,7 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
-
+            ReadMePreviewViewModel = new ReadMePreviewViewModel();
             _versions = new ItemsChangeObservableCollection<DisplayVersion>();
         }
 
@@ -92,6 +95,7 @@ namespace NuGet.PackageManagement.UI
             if (disposing)
             {
                 _selectedVersionCancellationTokenSource.Dispose();
+                ReadMePreviewViewModel.Dispose();
                 Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
                 CleanUp();
             }
@@ -149,7 +153,6 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconUrl));
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
-
             Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects);
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
@@ -269,7 +272,6 @@ namespace NuGet.PackageManagement.UI
                     searchResultPackage.DownloadCount);
 
                 _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
-
                 PackageMetadata = detailedPackageMetadata;
             }
         }
@@ -401,6 +403,19 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsPackageDeprecated => _packageMetadata?.DeprecationMetadata != null;
 
+        private bool _isReadMeAvailable;
+
+
+        public bool IsReadMeAvailable
+        {
+            get => _isReadMeAvailable;
+            set
+            {
+                _isReadMeAvailable = value;
+                OnPropertyChanged(nameof(IsReadMeAvailable));
+            }
+        }
+
         private string _packageDeprecationReasons;
         public string PackageDeprecationReasons
         {
@@ -494,6 +509,18 @@ namespace NuGet.PackageManagement.UI
             public const string Legacy = nameof(Legacy);
         }
 
+        private ReadMePreviewViewModel _readMePreviewViewModel;
+
+        public ReadMePreviewViewModel ReadMePreviewViewModel
+        {
+            get { return _readMePreviewViewModel; }
+            set
+            {
+                _readMePreviewViewModel = value;
+                OnPropertyChanged(nameof(ReadMePreviewViewModel));
+            }
+        }
+
         private DetailedPackageMetadata _packageMetadata;
 
         public DetailedPackageMetadata PackageMetadata
@@ -523,7 +550,27 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
                     PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
-
+                    if (_packageMetadata is not null)
+                    {
+                        NuGetUIThreadHelper.JoinableTaskFactory
+                            .RunAsync(async () =>
+                            {
+                                try
+                                {
+                                    var readMe = await GetReadMeMD();
+                                    await ReadMePreviewViewModel.UpdateMarkdownAsync(readMe);
+                                    IsReadMeAvailable = !string.IsNullOrWhiteSpace(readMe);
+                                }
+                                catch (Exception)
+                                {
+                                    await ReadMePreviewViewModel.UpdateMarkdownAsync("");
+                                    ReadMePreviewViewModel.IsErrorWithReadMe = true;
+                                    IsReadMeAvailable = true;
+                                    throw;
+                                }
+                            })
+                            .PostOnFailure(nameof(DetailControlModel));
+                    }
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                     OnPropertyChanged(nameof(IsPackageVulnerable));
@@ -613,19 +660,22 @@ namespace NuGet.PackageManagement.UI
                         {
                             PackageMetadata = detailedPackageMetadata;
                         }
-
-                        NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                        else
                         {
-                            try
+
+                            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                             {
-                                await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
-                            }
-                            catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
-                            {
-                                // Expected
-                            }
-                        })
-                            .PostOnFailure(nameof(DetailControlModel));
+                                try
+                                {
+                                    await SelectedVersionChangedAsync(_searchResultPackage, _selectedVersion.Version, loadCts.Token).AsTask();
+                                }
+                                catch (OperationCanceledException) when (loadCts.IsCancellationRequested)
+                                {
+                                    // Expected
+                                }
+                            })
+                                .PostOnFailure(nameof(DetailControlModel));
+                        }
                     }
 
                     OnPropertyChanged(nameof(SelectedVersion));
@@ -934,6 +984,48 @@ namespace NuGet.PackageManagement.UI
                     _searchResultPackage.AutoReferenced = false;
                 }
             }
+        }
+
+        private async Task<string> GetReadMeMD()
+        {
+            if (!string.IsNullOrEmpty(_packageMetadata?.PackagePath))
+            {
+                var fileInfo = new FileInfo(_packageMetadata?.PackagePath);
+                if (fileInfo.Exists)
+                {
+                    using var stream = fileInfo.OpenRead();
+                    using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+                    var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{_packageMetadata.Id}.nuspec", StringComparison.OrdinalIgnoreCase));
+                    if (nuspecZipArchiveEntry is not null)
+                    {
+                        using var nuspecFile = nuspecZipArchiveEntry.Open();
+                        var nuspecReader = new NuspecReader(nuspecFile);
+                        var readMePath = nuspecReader.GetReadme();
+                        if (!string.IsNullOrEmpty(readMePath))
+                        {
+                            var readmeZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.FullName), readMePath, StringComparison.OrdinalIgnoreCase));
+                            if (readmeZipArchiveEntry is not null)
+                            {
+                                using var readMeFile = readmeZipArchiveEntry.Open();
+                                using var readMeStreamReader = new StreamReader(readMeFile);
+                                var readMeContents = await readMeStreamReader.ReadToEndAsync();
+                                return readMeContents;
+                            }
+                        }
+                    }
+                }
+            }
+            return string.Empty;
+        }
+
+        private static string UnescapePath(string path)
+        {
+            if (path != null && path.IndexOf("%", StringComparison.Ordinal) > -1)
+            {
+                return Uri.UnescapeDataString(path);
+            }
+
+            return path;
         }
     }
 }
