@@ -9,6 +9,7 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
   </PropertyGroup>
 
@@ -39,6 +40,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
