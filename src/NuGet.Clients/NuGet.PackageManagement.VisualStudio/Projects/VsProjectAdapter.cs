@@ -209,8 +209,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetFramework.UnsupportedFramework;
         }
 
-        public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)
+        public IEnumerable<(string ItemId, string[] ItemMetadata)> GetBuildItemInformation(string itemName, params string[] metadataNames)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (itemName == null)
             {
                 throw new ArgumentNullException(nameof(itemName));
@@ -220,18 +222,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(itemName));
             }
 
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var itemStorage = (IVsBuildItemStorage)VsHierarchy;
+            var callback = new VisualStudioBuildItemStorageCallback();
+            itemStorage.FindItems(itemName, metadataNames.Length, metadataNames, callback);
 
-            var itemStorage = VsHierarchy as IVsBuildItemStorage;
-            if (itemStorage != null)
-            {
-                var callback = new VisualStudioBuildItemStorageCallback();
-                itemStorage.FindItems(itemName, metadataNames.Length, metadataNames, callback);
-
-                return callback.Items;
-            }
-
-            return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
+            return callback.Items;
         }
 
         private async Task<string> GetTargetFrameworkStringAsync()
