@@ -1,0 +1,85 @@
+steps:
+- task: PowerShell@1
+  displayName: 'Run Configure.ps1'
+  inputs:
+    scriptName: '$(Build.Repository.LocalPath)\\configure.ps1'
+    arguments: '-Force -CleanCache'
+
+- task: PowerShell@1
+  displayName: 'Print Environment Variables'
+  inputs:
+    scriptType: 'inlineScript'
+    inlineScript: |
+      Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
+- task: MSBuild@1
+  displayName: 'Restore $(TestType) Test Projects'
+  inputs:
+    solution: 'NuGet.sln'
+    msbuildArguments: '/target:restore /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog'
+
+- task: MSBuild@1
+  displayName: 'Build $(TestType) Test Projects'
+  inputs:
+    solution: 'NuGet.sln'
+    msbuildArguments: '/restore:false /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run $(TestType) Tests (.NET Framework)'
+  condition: 'succeededOrFailed()'
+  inputs:
+    command: 'test'
+    solution: 'NuGet.sln'
+    arguments: '--no-restore --restore:false --no-build --framework net472 --logger trx --results-directory "$(Agent.TempDirectory)\TestResults\net472" "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.FunctionalTests-net472.binlog"'
+    publishTestResults: false
+
+- task: PublishTestResults@2
+  displayName: 'Publish $(TestType) Tests Results (.NET Framework)'
+  condition: 'succeededOrFailed()'
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**/*.trx'
+    searchFolder: '$(Agent.TempDirectory)\TestResults\net472'
+    mergeTestResults: true
+    failTaskOnMissingResultsFile: true
+    testRunTitle: 'Windows $(TestType) Tests (.NET Framework)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run $(TestType) Tests (.NET 8.0)'
+  condition: 'succeededOrFailed()'
+  inputs:
+    command: 'test'
+    solution: 'NuGet.sln'
+    arguments: '--no-restore --restore:false --no-build --framework net8.0 -m:1 --logger trx --results-directory "$(Agent.TempDirectory)\TestResults\net8.0" "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.FunctionalTests-net8.0.binlog"'
+    publishTestResults: false
+
+- task: PublishTestResults@2
+  displayName: 'Publish $(TestType) Tests Results (.NET 8.0)'
+  condition: 'succeededOrFailed()'
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**/*.trx'
+    searchFolder: '$(Agent.TempDirectory)\TestResults\net8.0'
+    mergeTestResults: true
+    failTaskOnMissingResultsFile: true
+    testRunTitle: 'Windows $(TestType) Tests (.NET 8.0)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Run $(TestType) Tests (.NET Core 3.1)'
+  condition: 'succeededOrFailed()'
+  inputs:
+    command: 'test'
+    solution: 'NuGet.sln'
+    arguments: '--no-restore --restore:false --no-build --framework netcoreapp3.1 --logger trx --results-directory "$(Agent.TempDirectory)\TestResults\netcoreapp3.1" "/binarylogger:$(Build.StagingDirectory)\\binlog\\03.FunctionalTests-netcoreapp3.1.binlog"'
+    publishTestResults: false
+
+- task: PublishTestResults@2
+  displayName: 'Publish $(TestType) Tests Results (.NET Core 3.1)'
+  condition: 'succeededOrFailed()'
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**/*.trx'
+    searchFolder: '$(Agent.TempDirectory)\TestResults\netcoreapp3.1'
+    mergeTestResults: true
+    failTaskOnMissingResultsFile: true
+    testRunTitle: 'Windows $(TestType) Tests (.NET Core 3.1)'

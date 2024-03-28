@@ -1,0 +1,169 @@
+<Project>
+  <!--
+  TODO:
+    Restore
+    Comments
+    Try it out!
+  -->
+  <PropertyGroup>
+    <VSTestNoLogo Condition="'$(VSTestNoLogo)' == ''">true</VSTestNoLogo>
+    <VSTestVerbosity Condition="'$(SYSTEM_DEBUG)' == 'true'">detailed</VSTestVerbosity>
+    <VSTestVerbosity Condition="'$(VSTestVerbosity)' == ''">quiet</VSTestVerbosity>
+    <VSTestSetting Condition="'$(VSTestSetting)' == '' And '$(CI)' == 'true'">$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', 'build', 'xunit.runsettings'))</VSTestSetting>
+
+    <VSTestDependsOn Condition="'$(TargetFramework)' == ''">VSTestAllTargetFrameworks</VSTestDependsOn>
+    <VSTestDependsOn Condition="'$(TargetFramework)' != ''">VSTestSingleTargetFramework</VSTestDependsOn>
+
+    <BuildTestsDependsOn Condition="'$(TargetFramework)' == ''">BuildTestsForAllTargetFrameworks</BuildTestsDependsOn>
+    <BuildTestsDependsOn Condition="'$(TargetFramework)' != ''">BuildTestsForSingleTargetFramework</BuildTestsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="VSTest" DependsOnTargets="$(VSTestDependsOn)" />
+
+  <Target Name="BuildTests"
+          Condition="'$(VSTestNoBuild)' != 'true'"
+          DependsOnTargets="$(BuildTestsDependsOn)" />
+
+  <Target Name="GetTestProjects">
+    <PropertyGroup>
+      <TestType Condition="'$(TestType)' == ''">Unit</TestType>
+    </PropertyGroup>
+
+    <MSBuild Projects="@(ProjectReference)"
+             BuildInParallel="true"
+             Targets="IsTestProject"
+             RemoveProperties="TargetFramework">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="_TestProject" />
+    </MSBuild>
+
+    <ItemGroup>
+      <UnitTestProject Include="@(_TestProject->WithMetadataValue('TestType', 'Unit'))" />
+      <FunctionalTestProject Include="@(_TestProject->WithMetadataValue('TestType', 'Functional'))" />
+
+      <TestProject Include="@(UnitTestProject)" Condition="'$(TestType)' == 'Unit'" />
+      <TestProject Include="@(FunctionalTestProject)" Condition="'$(TestType)' == 'Functional'" />
+    </ItemGroup>
+
+    <Error Text="Invalid TestType value '$(TestType)'.  Valid values are 'Unit', 'Functional'." Condition="@(TestProject->Count()) == 0" />
+  </Target>
+
+  <Target Name="BuildTestsForAllTargetFrameworks"
+          DependsOnTargets="GetTestProjects"
+          Condition="'$(VSTestNoBuild)' != 'true'">
+    <Message Text="Building test projects for all frameworks (specify --no-restore to skip building projects)" Importance="High" />
+    <MSBuild Projects="@(TestProject)"
+             Condition="true"
+             BuildInParallel="true"
+             Targets="Build"
+             RemoveProperties="TargetFramework"
+             Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+
+  <Target Name="BuildTestsForSingleTargetFramework"
+          DependsOnTargets="GetTestProjects"
+          Condition="'$(VSTestNoBuild)' != 'true'">
+    <Message Text="Building test projects for framework '$(TargetFramework)' (specify --no-restore to skip building projects)" Importance="High" />
+
+    <MSBuild Projects="@(TestProject)"
+         Targets="DoesProjectSupportTargetFramework"
+         BuildInParallel="$(BuildInParallel)"
+         RemoveProperties="TargetFramework"
+         Properties="ProjectTargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestProjectForFramework" />
+    </MSBuild>
+
+    <MSBuild Projects="@(TestProjectForFramework)"
+             Condition="true"
+             BuildInParallel="true"
+             Targets="Build"
+             Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath)" />
+  </Target>
+
+  <Target Name="VSTestAllTargetFrameworks"
+          DependsOnTargets="GetTestProjects;BuildTests">
+    <MSBuild Projects="@(TestProject)"
+             Targets="GetProjectTargetFrameworks"
+             BuildInParallel="$(BuildInParallel)"
+             RemoveProperties="TargetFramework">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="ProjectTargetFramework" />
+    </MSBuild>
+
+    <MSBuild Projects="$(SolutionPath)"
+             Condition="true"
+             BuildInParallel="false"
+             Targets="VSTestSingleTargetFramework"
+             ContinueOnError="ErrorAndContinue"
+             Properties="TargetFramework=%(ProjectTargetFramework.Identity);Platform=$(Platform);Configuration=$(Configuration)" />
+  </Target>
+
+  <Target Name="VSTestSingleTargetFramework"
+          DependsOnTargets="GetTestProjects;BuildTests">
+    <Message Text="Running $(TestType.ToLower()) tests for framework '$(TargetFramework)'..." Importance="High" />
+
+    <MSBuild Projects="@(TestProject)"
+             Targets="DoesProjectSupportTargetFramework"
+             BuildInParallel="$(BuildInParallel)"
+             RemoveProperties="TargetFramework"
+             Properties="ProjectTargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestProjectForFramework" />
+    </MSBuild>
+
+    <MSBuild Projects="@(TestProject)"
+             Targets="GetProjectTargetFrameworks"
+             BuildInParallel="$(BuildInParallel)"
+             RemoveProperties="TargetFramework"
+             Condition="@(TestProjectForFramework->Count()) == 0">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="ProjectTargetFramework" />
+    </MSBuild>
+
+    <Error Text="There are no tests that target '$(TargetFramework)', available target frameworks are '@(ProjectTargetFramework->Distinct(), '%27, %27')' " Condition="@(TestProjectForFramework->Count()) == 0" />
+
+    <MSBuild Projects="@(TestProjectForFramework)"
+             BuildInParallel="true"
+             Targets="VSTest"
+             Properties="VSTestNoBuild=true;VSTestNoLogo=$(VSTestNoLogo);VSTestVerbosity=$(VSTestVerbosity);Platform=$(Platform);Configuration=$(Configuration);BuildingSolutionFile=true;CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents);SolutionDir=$(SolutionDir);SolutionExt=$(SolutionExt);SolutionFileName=$(SolutionFileName);SolutionName=$(SolutionName);SolutionPath=$(SolutionPath)" />
+
+    <Message Text="Finished $(TestType.ToLower()) tests for '$(TargetFramework)'" Importance="High" />
+
+    <OnError ExecuteTargets="LogTestRunError" Condition="@(TestProjectForFramework->Count()) > 0" />
+  </Target>
+
+  <Target Name="LogTestRunError">
+    <Error Text="$(TestType) test run failed for framework '$(TargetFramework)'." />
+  </Target>
+
+  <Target Name="_SetRestoreGraphEntryPointsToTestProjects"
+          BeforeTargets="_LoadRestoreGraphEntryPoints"
+          DependsOnTargets="GetTestProjects"
+          Condition="'$(VSTestSessionCorrelationId)' != '' Or '$(TestType)' != ''">
+    <MSBuild Projects="@(TestProject)"
+         Targets="DoesProjectSupportTargetFramework"
+         BuildInParallel="$(BuildInParallel)"
+         RemoveProperties="TargetFramework"
+         Properties="ProjectTargetFramework=$(TargetFramework)"
+         Condition="'$(TargetFramework)' != ''">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestProjectForFramework" />
+    </MSBuild>
+
+    <ItemGroup>
+      <RestoreGraphProjectInputItems Include="@(TestProjectForFramework)" Condition="@(TestProjectForFramework->Count()) != 0"/>
+      <RestoreGraphProjectInputItems Include="@(TestProject)" Condition="@(TestProjectForFramework->Count()) == 0"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_SetBuildProjectReferencesToTestProjects"
+          BeforeTargets="Build"
+          DependsOnTargets="GetTestProjects"
+          Condition="'$(TestType)' != ''">
+    <ItemGroup>
+      <ProjectReference Remove="@(ProjectReference)" />
+      <ProjectReference Include="@(TestProject)" />
+    </ItemGroup>
+  </Target>
+</Project>

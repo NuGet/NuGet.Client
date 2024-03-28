@@ -1,4 +1,26 @@
 <Project>
   <Import Project="build\common.targets" Condition="'$(IsCrossTargetingBuild)' == 'true' And '$(_WasCommonPropsImported)' != 'true'" />
   <Import Project="eng\source-build\ExcludeFromSourceBuild.AfterCommonTargets.targets" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+
+  <Target Name="GetProjectTargetFrameworks" Returns="@(ProjectTargetFramework)">
+    <ItemGroup>
+      <ProjectTargetFramework Include="$(TargetFramework);$(TargetFrameworks)" ProjectFile="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="IsTestProject"
+          Returns="@(TestProject)"
+          Condition="'$(TestProject)' == 'true'">
+    <ItemGroup>
+      <TestProject Include="$(MSBuildProjectFullPath)" TestType="$(TestProjectType)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="DoesProjectSupportTargetFramework"
+          DependsOnTargets="GetProjectTargetFrameworks"
+          Returns="@(_SupportedProject)">
+    <ItemGroup>
+      <_SupportedProject Include="%(ProjectTargetFramework.ProjectFile)" Condition="'%(Identity)' == '$(ProjectTargetFramework)'" />
+    </ItemGroup>
+  </Target>
 </Project>

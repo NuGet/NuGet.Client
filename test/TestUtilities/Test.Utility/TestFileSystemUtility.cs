@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace NuGet.Test.Utility
@@ -53,6 +51,8 @@ namespace NuGet.Test.Utility
                 {
                     File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.props"), "<Project />");
                     File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.targets"), "<Project />");
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Solution.props"), "<Project />");
+                    File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Solution.targets"), "<Project />");
                     File.WriteAllText(Path.Combine(testDirectory.FullName, "Directory.Build.rsp"), string.Empty);
                     File.WriteAllText(
                         Path.Combine(testDirectory.FullName, "Directory.Packages.props"),
@@ -127,22 +127,26 @@ namespace NuGet.Test.Utility
 
         public static string GetDotnetCli()
         {
-            var cliDirName = "cli";
-            var dir = TestFileSystemUtility.ParentDirectoryLookup()
-                .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, cliDirName)));
+            DirectoryInfo dir = GetDirectoryOfPathAbove(Path.Combine(".test", "dotnet"));
+
             if (dir != null)
             {
-                var dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliExe);
+                var dotnetCli = Path.Combine(dir.FullName, DotnetCliExe);
                 if (File.Exists(dotnetCli))
                 {
                     return dotnetCli;
                 }
 
-                dotnetCli = Path.Combine(dir.FullName, cliDirName, DotnetCliBinary);
+                dotnetCli = Path.Combine(dir.FullName, dir.FullName, DotnetCliBinary);
                 if (File.Exists(dotnetCli))
                 {
                     return dotnetCli;
                 }
+            }
+
+            if (dir == null)
+            {
+                throw new Exception("Failed to determine the path to the .NET SDK");
             }
 
             return null;
@@ -150,10 +154,7 @@ namespace NuGet.Test.Utility
 
         public static string GetArtifactsDirectoryInRepo()
         {
-            var repositoryRootDir = ParentDirectoryLookup()
-                .FirstOrDefault(d => Directory.Exists(Path.Combine(d.FullName, "artifacts")));
-
-            return Path.Combine(repositoryRootDir?.FullName, "artifacts");
+            return GetDirectoryOfPathAbove("artifacts")?.FullName;
         }
 
         public static string GetNuGetExeDirectoryInRepo()
@@ -222,16 +223,23 @@ namespace NuGet.Test.Utility
             };
         }
 
-        public static IEnumerable<DirectoryInfo> ParentDirectoryLookup()
+        public static DirectoryInfo GetDirectoryOfPathAbove(string relativePath)
         {
             var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+
             while (currentDirInfo != null)
             {
-                yield return currentDirInfo;
+                DirectoryInfo candidateDir = new DirectoryInfo(Path.Combine(currentDirInfo.FullName, relativePath));
+
+                if (candidateDir.Exists)
+                {
+                    return candidateDir;
+                }
+
                 currentDirInfo = currentDirInfo.Parent;
             }
 
-            yield break;
+            return null;
         }
     }
 }

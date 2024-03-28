@@ -1,82 +1,63 @@
 parameters:
-- name: NuGetLocalizationType
-  displayName: Whether to do production-ready localization (Full), or pseudo-localization, aka PLOC, (Pseudo) for testing.
-  type: string
-  default: Full
-  values:
-  - Full
-  - Pseudo
-- name: RunBuildForPublishing
-  displayName: Build bits for publishing
-  type: boolean
-  default: true
-- name: RunCrossFrameworkTestsOnWindows
-  displayName: Run cross framweork tests on Windows
+- name: RunUnitTestsOnWindows
+  displayName: 'Run unit tests on Windows'
   type: boolean
   default: true
 - name: RunFunctionalTestsOnWindows
   displayName: Run functional tests on Windows
   type: boolean
   default: true
-- name: RunSourceBuild
-  displayName: Run source build
+- name: RunUnitTestsOnLinux
+  displayName: 'Run unit tests on Linux'
   type: boolean
-  default: true
-- name: RunTestsOnLinux
-  displayName: Run tests on Linux
+  default: false
+- name: RunFunctionalTestsOnLinux
+  displayName: Run functional tests on Linux
   type: boolean
-  default: true
-- name: RunTestsOnMac
-  displayName: Run tests on Mac
-  type: boolean
-  default: true
-- name: RunMonoTestsOnMac
-  displayName: Run Mono tests on Mac
-  type: boolean
-  default: true
-resources:
-  repositories:
-  - repository: MicroBuildTemplate
-    type: git
-    name: 1ESPipelineTemplates/MicroBuildTemplate
-    ref: refs/tags/release
+  default: false
+
 variables:
+  BuildPlatform: 'Any CPU'
+  BuildConfiguration: 'Debug'
   BINLOG_DIRECTORY: $(Build.StagingDirectory)/binlog
   DOTNET_NOLOGO: 1
   NUGET_EXPERIMENTAL_CHAIN_BUILD_RETRY_POLICY: 3,1000
-  Codeql.Enabled: false
-  Codeql.TSAEnabled: false
-  RunBuildForPublishing: ${{ parameters.RunBuildForPublishing }}
-  RunCrossFrameworkTestsOnWindows: ${{ parameters.RunCrossFrameworkTestsOnWindows }}
+  RunUnitTestsOnWindows: ${{ parameters.RunUnitTestsOnWindows }}
   RunFunctionalTestsOnWindows: ${{ parameters.RunFunctionalTestsOnWindows }}
-  RunSourceBuild: ${{ parameters.RunSourceBuild }}
-  RunTestsOnLinux: ${{ parameters.RunTestsOnLinux }}
-  RunTestsOnMac: ${{ parameters.RunTestsOnMac }}
-  RunMonoTestsOnMac: ${{ parameters.RunMonoTestsOnMac }}
-extends:
-  template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
-  parameters:
-    sdl:
-      sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
-      binskim:
-        enabled: true
-        scanOutputDirectoryOnly: true
-      sbom:
-        enabled: false
-    pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
-      os: windows
-    customBuildTags:
-    - ES365AIMigrationTooling
-    stages:
-    - template: /eng/pipelines/templates/pipeline.yml@self
-      parameters:
-        NuGetLocalizationType: ${{parameters.NuGetLocalizationType}}
-        RunBuildForPublishing: ${{parameters.RunBuildForPublishing}}
-        RunCrossFrameworkTestsOnWindows: ${{parameters.RunCrossFrameworkTestsOnWindows}}
-        RunFunctionalTestsOnWindows: ${{parameters.RunFunctionalTestsOnWindows}}
-        RunSourceBuild: ${{parameters.RunSourceBuild}}
-        RunTestsOnLinux: ${{parameters.RunTestsOnLinux}}
-        RunTestsOnMac: ${{parameters.RunTestsOnMac}}
-        RunMonoTestsOnMac: ${{parameters.RunMonoTestsOnMac}}
+
+jobs:
+- ${{ if eq(parameters.RunUnitTestsOnWindows, true) }}:
+  - template: pull_request.job.yml
+    parameters:
+      name: UnitTestsWindows
+      displayName: 'Run Unit Tests on Windows'
+      osName: Windows
+      vmImage: windows-latest
+      testType: Unit
+
+- ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
+  - template: pull_request.job.yml
+    parameters:
+      name: FunctionalTestsWindows
+      displayName: 'Run Functional Tests on Windows'
+      osName: Windows
+      vmImage: windows-latest
+      testType: Functional
+
+- ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
+  - template: pull_request.job.yml
+    parameters:
+      name: UnitTestsLinux
+      displayName: 'Run Unit Tests on Linux'
+      osName: Linux
+      vmImage: ubuntu-latest
+      testType: Unit
+
+- ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
+  - template: pull_request.job.yml
+    parameters:
+      name: FunctionalTestsLinux
+      displayName: 'Run Functional Tests on Linux'
+      osName: Linux
+      vmImage: ubuntu-latest
+      testType: Functional

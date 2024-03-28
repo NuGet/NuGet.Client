@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(MinimalTargetFrameworksExeSigning)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(MinimalTargetFrameworksExe)</TargetFrameworks>
+    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">$(NETFXTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
@@ -16,11 +17,6 @@
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RollForward>LatestMajor</RollForward>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
-    <TargetFrameworks />
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

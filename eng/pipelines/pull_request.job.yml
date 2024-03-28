@@ -1,0 +1,32 @@
+parameters:
+- name: name
+- name: displayName
+- name: osName
+- name: vmImage
+- name: testType
+
+jobs:
+- job: ${{ parameters.name }}
+  displayName: ${{ parameters.displayName }}
+  variables:
+    TestType: ${{ parameters.TestType }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+  steps:
+  - ${{ if eq(parameters.osName, 'Windows') }}:
+    - task: PowerShell@2
+      displayName: 'Run configure.ps1'
+      inputs:
+        filePath: 'configure.ps1'
+  - ${{ else }}:
+    - task: ShellScript@2
+      displayName: 'Run configure.sh'
+      inputs:
+        filePath: 'configure.sh'
+
+  - ${{ if eq(parameters.osName, 'Windows') }}:
+    - task: MSBuild@1
+      displayName: 'Restore $(TestType) Test Projects'
+      inputs:
+        solution: 'NuGet.sln'
+        msbuildArguments: '/target:restore'

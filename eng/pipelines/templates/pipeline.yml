@@ -13,8 +13,8 @@ parameters:
   displayName: Build bits for publishing
   type: boolean
   default: true
-- name: RunCrossFrameworkTestsOnWindows
-  displayName: Run cross framweork tests on Windows
+- name: RunUnitTestsOnWindows
+  displayName: Run unit  tests on Windows
   type: boolean
   default: true
 - name: RunFunctionalTestsOnWindows
@@ -308,172 +308,24 @@ stages:
   displayName: "Run Unit and Functional Tests"
   dependsOn: Initialize
   jobs:
-  - job: Functional_Tests_On_Windows
-    displayName: "Windows FunctionalTests"
+  - job: WindowsUnitTests
+    displayName: "Windows Unit Tests"
+    timeoutInMinutes: 60
+    variables:
+      TestType: Unit
+    condition: "and(succeeded(), ne(variables['RunUnitTestsOnWindows'], 'false'))"
+    pool:
+      name: VSEngSS-MicroBuild2022-1ES
+    steps:
+    - template: /eng/pipelines/templates/Tests.yml@self
+
+  - job: WindowsFunctionalTests
+    displayName: "Windows Functional Tests"
     timeoutInMinutes: 120
     variables:
-      BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-      FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
+      TestType: Functional
     condition: "and(succeeded(), ne(variables['RunFunctionalTestsOnWindows'], 'false'))"
     pool:
       name: VSEngSS-MicroBuild2022-1ES
-    strategy:
-      matrix:
-        IsDesktop:
-          SkipCoreAssemblies: "true"
-        IsCore:
-          SkipDesktopAssemblies: "true"
-    templateContext:
-      outputs:
-      - output: pipelineArtifact
-        displayName: 'Publish Test Freeze Dump'
-        condition: "or(failed(), canceled())"
-        targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
-
-      - output: pipelineArtifact
-        displayName: 'Publish binlogs'
-        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-        artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-        targetPath: $(Build.StagingDirectory)\binlog
     steps:
-    - template: /eng/pipelines/templates/Functional_Tests_On_Windows.yml@self
-
-  - job: Tests_On_Linux
-    displayName: "Linux"
-    timeoutInMinutes: 45
-    variables:
-      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      MSBUILDDISABLENODEREUSE: 1
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
-      DOTNET_NUGET_SIGNATURE_VERIFICATION: true
-    condition: "and(succeeded(), ne(variables['RunTestsOnLinux'], 'false'))"
-    pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Ubuntu22.04
-      os: linux
-    strategy:
-      matrix:
-        UnitTests:
-          TestRunDisplayName: "Unit Tests"
-          TestRunCommandLineArguments: "--unit-tests"
-        FunctionalTests:
-          TestRunDisplayName: "Functional Tests"
-          TestRunCommandLineArguments: "--functional-tests"
-    templateContext:
-      outputs:
-      - output: pipelineArtifact
-        displayName: 'Publish Test Freeze Dump'
-        condition: "or(failed(), canceled())"
-        targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
-
-      - output: pipelineArtifact
-        displayName: 'Publish binlogs'
-        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-        artifactName: binlog - $(TestRunDisplayName) On Linux - Attempt $(System.JobAttempt)
-        targetPath: $(Build.StagingDirectory)/binlog
-    steps:
-    - template: /eng/pipelines/templates/Tests_On_Linux.yml@self
-
-  - job: Tests_On_Mac
-    displayName: "Mac"
-    timeoutInMinutes: 45
-    variables:
-      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      MSBUILDDISABLENODEREUSE: 1
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
-    condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
-    pool:
-      name: 'Azure Pipelines'
-      vmImage: macos-13
-      os: macOS
-    strategy:
-      matrix:
-        UnitTests:
-          TestRunDisplayName: "Unit Tests"
-          TestRunCommandLineArguments: "--unit-tests"
-        FunctionalTests:
-          TestRunDisplayName: "Functional Tests"
-          TestRunCommandLineArguments: "--functional-tests"
-    templateContext:
-      outputs:
-      - output: pipelineArtifact
-        displayName: 'Publish Test Freeze Dump'
-        condition: "or(failed(), canceled())"
-        targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
-
-      - output: pipelineArtifact
-        displayName: 'Publish binlogs'
-        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-        artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
-        targetPath: $(Build.StagingDirectory)/binlog
-    steps:
-    - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
-
-  - job: CrossFramework_Tests_On_Windows
-    displayName: "Windows CrossFrameworkTests"
-    condition: "and(succeeded(), ne(variables['RunCrossFrameworkTestsOnWindows'], 'false'))"
-    timeoutInMinutes: 30
-    variables:
-      BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-      FullVstsBuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-    pool:
-      name: AzurePipelines-EO
-      image: 1ESPT-Windows2022
-      os: windows
-    templateContext:
-      outputs:
-      - output: pipelineArtifact
-        displayName: 'Publish Test Freeze Dump'
-        condition: "or(failed(), canceled())"
-        targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
-
-      - output: pipelineArtifact
-        displayName: 'Publish binlogs'
-        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-        artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-        targetPath: $(Build.StagingDirectory)\binlog
-    steps:
-    - template: /eng/pipelines/templates/CrossFramework_Tests_On_Windows.yml@self
-
-- stage: MacTests
-  displayName: "Mac Mono Tests"
-  dependsOn:
-  - Initialize
-  - Build_Insertable
-  jobs:
-  - job: MonoTests_On_Mac
-    condition: "and(succeeded(), ne(variables['RunMonoTestsOnMac'], 'false'))"
-    timeoutInMinutes: 90
-    variables:
-      FULLVSTSBUILDNUMBER: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
-      # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
-      MSBuildEnableWorkloadResolver: false
-      TestRunDisplayName: "Mono Tests"
-      TestRunCommandLineArguments: "--mono-tests"
-    pool:
-      name: 'Azure Pipelines'
-      vmImage: macos-13
-      os: macOS
-    templateContext:
-      outputs:
-      - output: pipelineArtifact
-        displayName: 'Publish Test Freeze Dump'
-        condition: "or(failed(), canceled())"
-        targetPath: "$(Build.Repository.LocalPath)/build/TestResults"
-        artifactName: "$(Agent.JobName)"
-
-      - output: pipelineArtifact
-        displayName: 'Publish binlogs'
-        condition: "or(failed(), eq(variables['System.debug'], 'true'))"
-        artifactName: binlog - $(TestRunDisplayName) On Mac - Attempt $(System.JobAttempt)
-        targetPath: $(Build.StagingDirectory)/binlog
-    steps:
-    - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
+    - template: /eng/pipelines/templates/Tests.yml@self
