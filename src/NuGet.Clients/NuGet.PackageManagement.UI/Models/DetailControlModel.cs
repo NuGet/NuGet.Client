@@ -633,7 +633,6 @@ namespace NuGet.PackageManagement.UI
                         }
                         else
                         {
-
                             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                             {
                                 try
