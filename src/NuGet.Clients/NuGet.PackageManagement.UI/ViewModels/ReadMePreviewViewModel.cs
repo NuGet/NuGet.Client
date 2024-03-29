@@ -43,13 +43,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private string _rawReadMe;
 
-        public string RawReadMe
+        public string ReadMeMarkdown
         {
             get => _rawReadMe;
             set
             {
                 _rawReadMe = value;
-                RaisePropertyChanged(nameof(RawReadMe));
+                RaisePropertyChanged(nameof(ReadMeMarkdown));
             }
         }
 
@@ -99,7 +99,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 IsReadMeAvailable = isReadMeAvailable;
                 IsErrorWithReadMe = isErrorWithReadMe;
-                RawReadMe = newReadMeValue;
+                ReadMeMarkdown = newReadMeValue;
             }
         }
 
