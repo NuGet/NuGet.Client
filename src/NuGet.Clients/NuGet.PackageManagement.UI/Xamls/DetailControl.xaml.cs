@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
     /// The DataContext of this control is <see cref="DetailControlModel" />, i.e. either
     /// <see cref="PackageSolutionDetailControlModel" /> or <see cref="PackageDetailControlModel"/>
     /// </summary>
-    public partial class DetailControl : UserControl
+    public partial class DetailControl : UserControl, IDisposable
     {
         public PackageManagerControl Control { get; set; }
 
@@ -203,6 +203,20 @@ namespace NuGet.PackageManagement.UI
                         nugetUi.TopLevelVulnerablePackagesMaxSeverities = new List<int>() { model.PackageVulnerabilityMaxSeverity };
                     }
                 });
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _packageMetadataControl.Dispose();
+            }
         }
     }
 }

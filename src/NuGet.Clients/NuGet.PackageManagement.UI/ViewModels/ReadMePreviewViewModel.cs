@@ -2,40 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using Microsoft.VisualStudio.Markdown.Platform;
+using NuGet.Packaging;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class ReadMePreviewViewModel : ViewModelBase, IDisposable
+    public sealed class ReadMePreviewViewModel : ViewModelBase
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        private IMarkdownPreview _markdownPreview;
-#pragma warning restore CS0618 // Type or member is obsolete
-
         public ReadMePreviewViewModel()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            _markdownPreview = new PreviewBuilder().Build();
-#pragma warning restore CS0618 // Type or member is obsolete
-            _ = UpdateMarkdownAsync("");
-            MarkdownPreviewControl = _markdownPreview.VisualElement;
-        }
-
-        private FrameworkElement _markdownPreviewControl;
-        /// <summary>
-        /// The markdown preview control if it's available
-        /// </summary>
-        public FrameworkElement MarkdownPreviewControl
-        {
-            get => _markdownPreviewControl;
-            private set
-            {
-                _markdownPreviewControl = value;
-                RaisePropertyChanged(nameof(MarkdownPreviewControl));
-            }
         }
 
         private bool _isErrorWithReadMe;
@@ -50,30 +29,88 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task UpdateMarkdownAsync(string markDown)
+        private bool _isReadMeAvailable;
+
+        public bool IsReadMeAvailable
         {
+            get => _isReadMeAvailable;
+            set
+            {
+                _isReadMeAvailable = value;
+                RaisePropertyChanged(nameof(IsReadMeAvailable));
+            }
+        }
+
+        private string _rawReadMe;
+
+        public string RawReadMe
+        {
+            get => _rawReadMe;
+            set
+            {
+                _rawReadMe = value;
+                RaisePropertyChanged(nameof(RawReadMe));
+            }
+        }
+
+        public async Task UpdateReadMe(string packagePath, string packageId)
+        {
+            var newReadMeValue = string.Empty;
+            var isReadMeAvailable = false;
+            var isErrorWithReadMe = false;
             try
             {
-                IsErrorWithReadMe = false;
-                _markdownPreview.VisualElement.Visibility = Visibility.Collapsed;
-                await _markdownPreview.UpdateContentAsync("", ScrollHint.None);
-                if (!string.IsNullOrWhiteSpace(markDown))
+                if (!string.IsNullOrEmpty(packagePath))
                 {
-                    await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
-                    _markdownPreview.VisualElement.Visibility = Visibility.Visible;
+                    var fileInfo = new FileInfo(packagePath);
+                    if (fileInfo.Exists)
+                    {
+                        using var stream = fileInfo.OpenRead();
+                        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+                        var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{packageId}.nuspec", StringComparison.OrdinalIgnoreCase));
+                        if (nuspecZipArchiveEntry is not null)
+                        {
+                            using var nuspecFile = nuspecZipArchiveEntry.Open();
+                            var nuspecReader = new NuspecReader(nuspecFile);
+                            var readMePath = nuspecReader.GetReadme();
+                            if (!string.IsNullOrEmpty(readMePath))
+                            {
+                                var readmeZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.FullName), readMePath, StringComparison.OrdinalIgnoreCase));
+                                if (readmeZipArchiveEntry is not null)
+                                {
+                                    using var readMeFile = readmeZipArchiveEntry.Open();
+                                    using var readMeStreamReader = new StreamReader(readMeFile);
+                                    var readMeContents = await readMeStreamReader.ReadToEndAsync();
+                                    newReadMeValue = readMeContents;
+                                    isReadMeAvailable = true;
+                                }
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
-                IsErrorWithReadMe = true;
+                isErrorWithReadMe = true;
+                isReadMeAvailable = true;
                 await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
+            }
+            finally
+            {
+                IsReadMeAvailable = isReadMeAvailable;
+                IsErrorWithReadMe = isErrorWithReadMe;
+                RawReadMe = newReadMeValue;
             }
         }
 
-        public void Dispose()
+        private static string UnescapePath(string path)
         {
-            _markdownPreview?.Dispose();
-            _markdownPreview = null;
+            if (path != null && path.IndexOf("%", StringComparison.Ordinal) > -1)
+            {
+                return Uri.UnescapeDataString(path);
+            }
+
+            return path;
         }
     }
 }
