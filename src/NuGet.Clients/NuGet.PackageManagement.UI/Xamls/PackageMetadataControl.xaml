@@ -21,7 +21,9 @@
       <nuget:AccessibleConverter x:Key="AccNameWorkaround" />
     </ResourceDictionary>
   </UserControl.Resources>
-  <TabControl Grid.Row="0" x:Name="tabsPackageDetails">
+  <TabControl
+    Grid.Row="0"
+    x:Name="tabsPackageDetails">
     <TabControl.Resources>
       <Style TargetType="TabItem">
         <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}" />
@@ -118,12 +120,22 @@
         </Setter>
       </Style>
     </TabControl.Resources>
-    <TabItem Name="tabReadMe" Visibility="{Binding Path=IsReadMeAvailable, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"  Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Readme}" >
+    <TabItem
+      IsVisibleChanged="TabReadMe_IsVisibleChanged"
+      x:Name="tabReadMe"
+      Visibility="{Binding Path=ReadMePreviewViewModel.IsReadMeAvailable, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+      Tag="{x:Static nuget:ItemFilter.All}"
+      Header="{x:Static nuget:Resources.Label_Readme}" >
       <nuget:PackageMetadataReadMeControl
+          x:Name="_packageMetadataReadMeControl"
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           DataContext="{Binding ReadMePreviewViewModel}" />
     </TabItem>
-    <TabItem Name="tabPackageDetails" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_PackageDetails}">
+    <TabItem
+      IsSelected="True"
+      x:Name="tabPackageDetails"
+      Tag="{x:Static nuget:ItemFilter.All}"
+      Header="{x:Static nuget:Resources.Label_PackageDetails}">
       <nuget:PackageMetadataDescriptionControl
           AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
           Margin="0,12,0,0"
