@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.Common;
@@ -306,19 +305,19 @@ namespace NuGet.PackageManagement.VisualStudio
         private static string MergePackagePath(IEnumerable<IPackageSearchMetadata> packages)
         {
             var packagePaths = packages
-                .Select(x =>
+                .Select(packageMetadata =>
                 {
-                    if (x is LocalPackageSearchMetadata localPackageSearchMetadata)
+                    if (packageMetadata is LocalPackageSearchMetadata localPackageSearchMetadata)
                     {
                         return localPackageSearchMetadata.PackagePath;
                     }
-                    if (x is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata clonedPackage)
+                    if (packageMetadata is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata clonedPackage)
                     {
                         return clonedPackage.PackagePath;
                     }
                     return string.Empty;
                 })
-                .Where(x => !string.IsNullOrWhiteSpace(x));
+                .Where(packagePath => !string.IsNullOrWhiteSpace(packagePath));
             return packagePaths.FirstOrDefault();
         }
 

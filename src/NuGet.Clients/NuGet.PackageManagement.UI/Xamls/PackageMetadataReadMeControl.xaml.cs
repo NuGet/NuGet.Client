@@ -22,6 +22,8 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore CS0618 // Type or member is obsolete
         private bool _disposed = false;
 
+        private ReadMePreviewViewModel ReadMeViewModel { get => (ReadMePreviewViewModel)DataContext; }
+
         [Obsolete]
         public PackageMetadataReadMeControl()
         {
@@ -53,24 +55,27 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageMetadataReadMeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            var viewModel = (ReadMePreviewViewModel)DataContext;
-            viewModel.PropertyChanged += ViewModel_PropertyChangedAsync;
+            var oldViewModel = (ReadMePreviewViewModel)e.OldValue;
+            if (oldViewModel != null)
+            {
+                oldViewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
+            }
+            ReadMeViewModel.PropertyChanged += ViewModel_PropertyChangedAsync;
         }
 
 #pragma warning disable VSTHRD100 // Avoid async void methods
         private async void ViewModel_PropertyChangedAsync(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 #pragma warning restore VSTHRD100 // Avoid async void methods
         {
-            var viewModel = (ReadMePreviewViewModel)DataContext;
-            if (viewModel is not null && e.PropertyName == nameof(viewModel.RawReadMe))
+            if (ReadMeViewModel is not null && e.PropertyName == nameof(ReadMeViewModel.ReadMeMarkdown))
             {
                 try
                 {
-                    await UpdateMarkdownAsync(viewModel.RawReadMe);
+                    await UpdateMarkdownAsync(ReadMeViewModel.ReadMeMarkdown);
                 }
                 catch (Exception ex)
                 {
-                    viewModel.IsErrorWithReadMe = true;
+                    ReadMeViewModel.IsErrorWithReadMe = true;
                     await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
                 }
             }

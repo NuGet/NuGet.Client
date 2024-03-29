@@ -4,7 +4,6 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using NuGet.PackageManagement.UI.ViewModels;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,8 +13,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageMetadataControl : UserControl, IDisposable
     {
-        public ReadMePreviewViewModel ReadMePreviewViewModel { get; set; }
-
         private bool _initialVisibilitySet = false;
 
         public PackageMetadataControl()
@@ -56,7 +53,6 @@ namespace NuGet.PackageManagement.UI
             if (!_initialVisibilitySet && tabReadMe.IsVisible)
             {
                 tabReadMe.IsSelected = true;
-                tabPackageDetails.IsSelected = false;
             }
             if (!tabReadMe.IsVisible)
             {
