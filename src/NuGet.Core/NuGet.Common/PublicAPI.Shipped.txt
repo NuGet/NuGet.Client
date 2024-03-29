@@ -188,6 +188,7 @@ NuGet.Common.NuGetLogCode.NU1106 = 1106 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1107 = 1107 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1108 = 1108 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1109 = 1109 -> NuGet.Common.NuGetLogCode
+NuGet.Common.NuGetLogCode.NU1110 = 1110 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1201 = 1201 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1202 = 1202 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1203 = 1203 -> NuGet.Common.NuGetLogCode
@@ -503,6 +504,7 @@ const NuGet.Common.NuGetEventSource.Keywords.Common = (System.Diagnostics.Tracin
 const NuGet.Common.NuGetEventSource.Keywords.Configuration = (System.Diagnostics.Tracing.EventKeywords)2 -> System.Diagnostics.Tracing.EventKeywords
 const NuGet.Common.NuGetEventSource.Keywords.Logging = (System.Diagnostics.Tracing.EventKeywords)4 -> System.Diagnostics.Tracing.EventKeywords
 const NuGet.Common.NuGetEventSource.Keywords.Performance = (System.Diagnostics.Tracing.EventKeywords)8 -> System.Diagnostics.Tracing.EventKeywords
+const NuGet.Common.NuGetEventSource.Keywords.Restore = (System.Diagnostics.Tracing.EventKeywords)32 -> System.Diagnostics.Tracing.EventKeywords
 const NuGet.Common.NuGetEventSource.Keywords.SdkResolver = (System.Diagnostics.Tracing.EventKeywords)16 -> System.Diagnostics.Tracing.EventKeywords
 override NuGet.Common.LogMessage.ToString() -> string!
 override NuGet.Common.NullLogger.Log(NuGet.Common.ILogMessage! message) -> void
@@ -529,7 +531,6 @@ static NuGet.Common.CryptoHashUtility.ConvertToOid(this NuGet.Common.HashAlgorit
 static NuGet.Common.CryptoHashUtility.ConvertToOidString(this NuGet.Common.HashAlgorithmName hashAlgorithmName) -> string!
 static NuGet.Common.CryptoHashUtility.ConvertToOidString(this NuGet.Common.SignatureAlgorithmName signatureAlgorithmName) -> string!
 static NuGet.Common.CryptoHashUtility.ConvertToSystemSecurityHashAlgorithmName(this NuGet.Common.HashAlgorithmName hashAlgorithmName) -> System.Security.Cryptography.HashAlgorithmName
-static NuGet.Common.CryptoHashUtility.GenerateUniqueToken(string! caseInsensitiveKey) -> string!
 static NuGet.Common.CryptoHashUtility.GetHashAlgorithm(NuGet.Common.HashAlgorithmName hashAlgorithmName) -> System.Security.Cryptography.HashAlgorithm!
 static NuGet.Common.CryptoHashUtility.GetHashAlgorithm(string! hashAlgorithmName) -> System.Security.Cryptography.HashAlgorithm!
 static NuGet.Common.CryptoHashUtility.GetHashAlgorithmName(string! hashAlgorithm) -> NuGet.Common.HashAlgorithmName
@@ -566,7 +567,7 @@ static NuGet.Common.LoggingExtensions.TryGetName(this NuGet.Common.NuGetLogCode 
 static NuGet.Common.MSBuildStringUtility.Convert(string? value) -> string?
 static NuGet.Common.MSBuildStringUtility.GetBooleanOrNull(string? value) -> bool?
 static NuGet.Common.MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(System.Collections.Generic.IEnumerable<System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode>!>! nugetLogCodeLists) -> System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode>!
-static NuGet.Common.MSBuildStringUtility.GetNuGetLogCodes(string! s) -> System.Collections.Generic.IEnumerable<NuGet.Common.NuGetLogCode>!
+static NuGet.Common.MSBuildStringUtility.GetNuGetLogCodes(string! s) -> System.Collections.Generic.IList<NuGet.Common.NuGetLogCode>!
 static NuGet.Common.MSBuildStringUtility.IsTrue(string? value) -> bool
 static NuGet.Common.MSBuildStringUtility.IsTrueOrEmpty(string? value) -> bool
 static NuGet.Common.MSBuildStringUtility.Split(string! s) -> string![]!

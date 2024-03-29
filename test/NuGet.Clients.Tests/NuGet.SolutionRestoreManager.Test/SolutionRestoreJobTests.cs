@@ -40,11 +40,12 @@ namespace NuGet.SolutionRestoreManager.Test
             ISourceRepositoryProvider sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             _globalProvider.AddService(typeof(ISourceRepositoryProvider), sourceRepositoryProvider);
 
-            var infoBar = Mock.Of<Lazy<IVulnerabilitiesNotificationService>>();
+            var infoBar = new Lazy<IVulnerabilitiesNotificationService>(() => Mock.Of<IVulnerabilitiesNotificationService>());
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
             var nuGetProgressReporter = Mock.Of<IVsNuGetProgressReporter>();
+            var auditCheckResultCachingService = Mock.Of<IAuditCheckResultCachingService>();
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
@@ -62,7 +63,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 restoreEventsPublisher: eventsPublisher,
                 settings: settings,
                 solutionRestoreChecker: restoreChecker,
-                nuGetProgressReporter: nuGetProgressReporter);
+                nuGetProgressReporter: nuGetProgressReporter,
+                auditCheckResultCachingService);
 
             var restoreRequest = new SolutionRestoreRequest(
                 forceRestore: true,
@@ -95,6 +97,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var eventsPublisher = Mock.Of<IRestoreEventsPublisher>();
             var settings = Mock.Of<ISettings>();
             var nuGetProgressReporter = Mock.Of<IVsNuGetProgressReporter>();
+            var auditCheckResultCachingService = Mock.Of<IAuditCheckResultCachingService>();
 
             Mock.Get(settings)
                 .Setup(x => x.GetSection("packageRestore"))
@@ -112,7 +115,8 @@ namespace NuGet.SolutionRestoreManager.Test
                 restoreEventsPublisher: eventsPublisher,
                 settings: settings,
                 solutionRestoreChecker: restoreChecker,
-                nuGetProgressReporter: nuGetProgressReporter);
+                nuGetProgressReporter: nuGetProgressReporter,
+                auditCheckResultCachingService);
 
             var restoreRequest = new SolutionRestoreRequest(
                 forceRestore: true,

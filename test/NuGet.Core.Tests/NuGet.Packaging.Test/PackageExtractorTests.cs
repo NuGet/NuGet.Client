@@ -499,8 +499,8 @@ namespace NuGet.Packaging.Test
                                                                            CancellationToken.None);
 
                     // Assert
-                    Assert.True(files.Any(p => p.EndsWith(".nupkg")));
-                    Assert.False(files.Any(p => p.EndsWith(".nuspec")));
+                    Assert.Contains(files, p => p.EndsWith(".nupkg"));
+                    Assert.DoesNotContain(files, p => p.EndsWith(".nuspec"));
                 }
             }
         }
@@ -534,8 +534,8 @@ namespace NuGet.Packaging.Test
                                                                          CancellationToken.None);
 
                     // Assert
-                    Assert.False(files.Any(p => p.EndsWith(".nupkg")));
-                    Assert.True(files.Any(p => p.EndsWith(".nuspec")));
+                    Assert.DoesNotContain(files, p => p.EndsWith(".nupkg"));
+                    Assert.Contains(files, p => p.EndsWith(".nuspec"));
                 }
             }
         }
@@ -569,8 +569,8 @@ namespace NuGet.Packaging.Test
                                                                          CancellationToken.None);
 
                     // Assert
-                    Assert.True(files.Any(p => p.EndsWith(".nupkg")));
-                    Assert.True(files.Any(p => p.EndsWith(".nuspec")));
+                    Assert.Contains(files, p => p.EndsWith(".nupkg"));
+                    Assert.Contains(files, p => p.EndsWith(".nuspec"));
                 }
             }
         }
@@ -1301,7 +1301,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13339")]
         public async Task ExtractPackageAsync_SetsFilePermissionsAsync()
         {
             if (RuntimeEnvironmentHelper.IsWindows)
@@ -5004,7 +5004,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
                     var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
-                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} to {Path.Combine(resolver.RootPath, resolver.GetPackageDirectory(identity.Id, identity.Version))} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
         }
@@ -5099,15 +5099,9 @@ namespace NuGet.Packaging.Test
                     // Assert
                     File.Exists(resolver.GetPackageFilePath(identity.Id, identity.Version)).Should().BeTrue();
                     var nupkgMetadata = NupkgMetadataFileFormat.Read(resolver.GetNupkgMetadataPath(identity.Id, identity.Version));
-                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} with content hash {nupkgMetadata.ContentHash}.");
+                    testLogger.InformationMessages.Should().Contain($"Installed {identity.Id} {identity.Version} from {source} to {Path.Combine(resolver.RootPath, resolver.GetPackageDirectory(identity.Id, identity.Version))} with content hash {nupkgMetadata.ContentHash}.");
                 }
             }
-        }
-
-        private static bool FileExistsRecursively(string directoryPath, string fileNamePattern)
-        {
-            return Directory.GetFiles(directoryPath, fileNamePattern, SearchOption.AllDirectories)
-                .Any();
         }
 
         private static bool FileExistsCaseSensitively(string expectedFilePath)

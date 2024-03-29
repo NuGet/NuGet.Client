@@ -30,9 +30,19 @@ namespace NuGet.Commands
         private const string DoubleSlash = "//";
 
         /// <summary>
-        /// Convert MSBuild items to a DependencyGraphSpec.
+        /// Creates a <see cref="DependencyGraphSpec" /> from the specified MSBuild items.
         /// </summary>
+        /// <param name="items">An <see cref="IEnumerable{T}" /> of <see cref="IMSBuildItem" /> objects representing the MSBuild items gathered for restore.</param>
         public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items)
+        {
+            return GetDependencySpec(items, readOnly: false);
+        }
+        /// <summary>
+        /// Creates a <see cref="DependencyGraphSpec" /> from the specified MSBuild items.
+        /// </summary>
+        /// <param name="items">An <see cref="IEnumerable{T}" /> of <see cref="IMSBuildItem" /> objects representing the MSBuild items gathered for restore.</param>
+        /// <param name="readOnly"><see langword="true" /> to indicate that the <see cref="DependencyGraphSpec" /> is considered read-only and won't be changed, otherwise <see langword="false" />.</param>
+        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly)
         {
             if (items == null)
             {
@@ -44,7 +54,7 @@ namespace NuGet.Commands
             // To workaround this unique names should be compared based on the OS.
             var uniqueNameComparer = PathUtility.GetStringComparerBasedOnOS();
 
-            var graphSpec = new DependencyGraphSpec();
+            var graphSpec = new DependencyGraphSpec(readOnly);
             var itemsById = new Dictionary<string, List<IMSBuildItem>>(uniqueNameComparer);
             var restoreSpecs = new HashSet<string>(uniqueNameComparer);
             var validForRestore = new HashSet<string>(uniqueNameComparer);
@@ -161,7 +171,7 @@ namespace NuGet.Commands
             {
                 ProjectStyle restoreType = GetProjectStyle(specItem);
 
-                (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(specItem, restoreType);
+                (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = GetCentralPackageManagementSettings(specItem, restoreType);
 
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -267,7 +277,7 @@ namespace NuGet.Commands
                     result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
 
                     // NuGet audit properties
-                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem);
+                    result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -285,7 +295,7 @@ namespace NuGet.Commands
                         );
                     }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperties(specItem);
-
+                    pcRestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -296,6 +306,7 @@ namespace NuGet.Commands
 
                 result.RestoreMetadata.CentralPackageVersionsEnabled = isCentralPackageManagementEnabled;
                 result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
+                result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
             }
 
@@ -419,6 +430,17 @@ namespace NuGet.Commands
             var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
             var message = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1503, text);
             message.FilePath = path;
+            message.ProjectPath = path;
+
+            return message;
+        }
+
+        public static RestoreLogMessage GetMessageForUnsupportedProject(string path)
+        {
+            var text = string.Format(CultureInfo.CurrentCulture, Strings.UnsupportedProject, path);
+            var message = new RestoreLogMessage(LogLevel.Information, text);
+            message.FilePath = path;
+            message.ProjectPath = path;
 
             return message;
         }
@@ -626,7 +648,10 @@ namespace NuGet.Commands
         {
             foreach (var item in GetItemByType(items, "Dependency"))
             {
-                var dependency = new LibraryDependency
+                // Get warning suppressions
+                IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn"));
+
+                var dependency = new LibraryDependency(noWarn)
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
@@ -638,12 +663,6 @@ namespace NuGet.Commands
                     Aliases = item.GetProperty("Aliases"),
                     VersionOverride = GetVersionRange(item, defaultValue: null, "VersionOverride")
                 };
-
-                // Add warning suppressions
-                foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(item.GetProperty("NoWarn")))
-                {
-                    dependency.NoWarn.Add(code);
-                }
 
                 ApplyIncludeFlags(dependency, item);
 
@@ -901,23 +920,35 @@ namespace NuGet.Commands
                 IsPropertyTrue(specItem, "RestoreLockedMode"));
         }
 
-        public static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem)
+        public static RestoreAuditProperties GetRestoreAuditProperties(IMSBuildItem specItem, HashSet<string> suppressionItems)
         {
             string enableAudit = specItem.GetProperty("NuGetAudit");
             string auditLevel = specItem.GetProperty("NuGetAuditLevel");
             string auditMode = specItem.GetProperty("NuGetAuditMode");
 
-            if (enableAudit != null || auditLevel != null || auditMode != null)
+            if (enableAudit != null || auditLevel != null || auditMode != null
+                || (suppressionItems != null && suppressionItems.Count > 0))
             {
                 return new RestoreAuditProperties()
                 {
                     EnableAudit = enableAudit,
                     AuditLevel = auditLevel,
                     AuditMode = auditMode,
+                    SuppressedAdvisories = suppressionItems?.Count > 0 ? suppressionItems : null
                 };
             }
 
             return null;
+        }
+
+        private static HashSet<string> GetAuditSuppressions(IEnumerable<IMSBuildItem> items)
+        {
+            IEnumerable<string> suppressions = GetItemByType(items, "NuGetAuditSuppress")
+                                                    .Select(i => i.GetProperty("Id"));
+
+            return (suppressions != null && suppressions.Any())
+                    ? new HashSet<string>(suppressions)
+                    : null;
         }
 
         /// <summary>
@@ -957,7 +988,7 @@ namespace NuGet.Commands
             return s;
         }
 
-        private static bool IsPropertyFalse(IMSBuildItem item, string propertyName, bool defaultValue = false)
+        internal static bool IsPropertyFalse(IMSBuildItem item, string propertyName, bool defaultValue = false)
         {
             string value = item.GetProperty(propertyName);
 
@@ -969,7 +1000,7 @@ namespace NuGet.Commands
             return string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static bool IsPropertyTrue(IMSBuildItem item, string propertyName, bool defaultValue = false)
+        internal static bool IsPropertyTrue(IMSBuildItem item, string propertyName, bool defaultValue = false)
         {
             string value = item.GetProperty(propertyName);
 
@@ -1055,11 +1086,24 @@ namespace NuGet.Commands
             return restoreType;
         }
 
-        internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled) GetCentralPackageManagementSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
+        /// <summary>
+        /// Determines the current settings for central package management for the specified project.
+        /// </summary>
+        /// <param name="projectSpecItem">The <see cref="IMSBuildItem" /> to get the central package management settings from.</param>
+        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <see langword="null" /> when the project does not define a restore style.</param>
+        /// <returns>A <see cref="Tuple{T1, T2, T3, T4}" /> containing values indicating whether or not central package management is enabled, if the ability to override a package version 
+        public static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) GetCentralPackageManagementSettings(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
         {
-            return (IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference,
-                IsPropertyFalse(projectSpecItem, "CentralPackageVersionOverrideEnabled"),
-                IsPropertyTrue(projectSpecItem, "CentralPackageTransitivePinningEnabled"));
+            if (projectStyle == ProjectStyle.PackageReference)
+            {
+                bool isEnabled = IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled");
+                bool isVersionOverrideDisabled = IsPropertyFalse(projectSpecItem, "CentralPackageVersionOverrideEnabled");
+                bool isCentralPackageTransitivePinningEnabled = IsPropertyTrue(projectSpecItem, "CentralPackageTransitivePinningEnabled");
+                bool isCentralPackageFloatingVersionsEnabled = IsPropertyTrue(projectSpecItem, "CentralPackageFloatingVersionsEnabled");
+                return (isEnabled, isVersionOverrideDisabled, isCentralPackageTransitivePinningEnabled, isCentralPackageFloatingVersionsEnabled);
+            }
+
+            return (false, false, false, false);
         }
 
         private static void AddCentralPackageVersions(PackageSpec spec, IEnumerable<IMSBuildItem> items)

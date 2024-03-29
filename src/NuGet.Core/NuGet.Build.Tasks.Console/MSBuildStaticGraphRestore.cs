@@ -37,14 +37,11 @@ namespace NuGet.Build.Tasks.Console
         private static readonly Lazy<IMachineWideSettings> MachineWideSettingsLazy = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
         /// <summary>
-        /// Represents the small list of targets that must be executed in order for PackageReference, PackageDownload, and FrameworkReference items to be accurate.
+        /// Represents the small list of targets that must be executed in order for various restore input items to be accurate.
         /// </summary>
         private static readonly string[] TargetsToBuild =
         {
-            "CollectPackageReferences",
-            "CollectPackageDownloads",
-            "CollectFrameworkReferences",
-            "CollectCentralPackageVersions"
+            "_CollectRestoreInputs"
         };
 
         private readonly Lazy<ConsoleLoggingQueue> _loggingQueueLazy;
@@ -107,8 +104,33 @@ namespace NuGet.Build.Tasks.Console
                 return false;
             }
 
+            static bool HasProjectToRestore(DependencyGraphSpec dgSpec, bool restorePackagesConfig)
+            {
+                if (dgSpec.Restore.Count > 0)
+                {
+                    return true;
+                }
+
+#if NETFRAMEWORK
+                if (restorePackagesConfig)
+                {
+                    for (int i = 0; i < dgSpec.Projects.Count; i++)
+                    {
+                        PackageSpec project = dgSpec.Projects[i];
+                        if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
+                        {
+                            return true;
+                        }
+                    }
+                }
+#endif
+
+                return false;
+            }
+
+            bool restorePackagesConfig = IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options);
             if (string.Equals(Path.GetExtension(entryProjectFilePath), ".sln", StringComparison.OrdinalIgnoreCase)
-                    && dependencyGraphSpec.Restore.Count == 0)
+                    && !HasProjectToRestore(dependencyGraphSpec, restorePackagesConfig))
             {
                 MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_NoProjectsForRestore));
                 return true;
@@ -126,12 +148,12 @@ namespace NuGet.Build.Tasks.Console
                     force: IsOptionTrue(nameof(RestoreTaskEx.Force), options),
                     forceEvaluate: IsOptionTrue(nameof(RestoreTaskEx.ForceEvaluate), options),
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
-                    restorePC: IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options),
+                    restorePC: restorePackagesConfig,
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
                     log: MSBuildLogger,
                 cancellationToken: CancellationToken.None);
 
-                LogFilesToEmbedInBinlog(dependencyGraphSpec);
+                LogFilesToEmbedInBinlog(dependencyGraphSpec, options);
 
                 return result;
             }
@@ -280,7 +302,9 @@ namespace NuGet.Build.Tasks.Console
 
                 string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
 
-                libraryDependencies.Add(new LibraryDependency
+                IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn"));
+
+                libraryDependencies.Add(new LibraryDependency(noWarn)
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
                     GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
@@ -290,7 +314,6 @@ namespace NuGet.Build.Tasks.Console
                         packageReferenceItem.Identity,
                         string.IsNullOrWhiteSpace(version) ? isCentralPackageVersionManagementEnabled ? null : VersionRange.All : VersionRange.Parse(version),
                         LibraryDependencyTarget.Package),
-                    NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
                 });
@@ -806,23 +829,13 @@ namespace NuGet.Build.Tasks.Console
 
             string outputPath = GetRestoreOutputPath(project);
 
-            ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
+            (ProjectStyle projectStyle, string packagesConfigFilePath) = GetProjectStyle(project, projectsByTargetFramework, MSBuildLogger);
 
-            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled) = GetCentralPackageManagementSettings(project, projectStyleOrNull);
+            (bool isCentralPackageManagementEnabled, bool isCentralPackageVersionOverrideDisabled, bool isCentralPackageTransitivePinningEnabled, bool isCentralPackageFloatingVersionsEnabled) = MSBuildRestoreUtility.GetCentralPackageManagementSettings(project, projectStyle);
 
-            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project);
+            RestoreAuditProperties auditProperties = MSBuildRestoreUtility.GetRestoreAuditProperties(project, GetAuditSuppressions(project));
 
             List<TargetFrameworkInformation> targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCentralPackageManagementEnabled);
-
-            (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
-                restoreProjectStyle: projectStyleOrNull,
-                hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
-                projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
-                projectDirectory: project.Directory,
-                projectName: project.GetProperty("MSBuildProjectName"),
-                log: MSBuildLogger);
-
-            ProjectStyle projectStyle = projectStyleResult.ProjectStyle;
 
             List<IMSBuildProject> innerNodes = projectsByTargetFramework.Values.ToList();
 
@@ -832,8 +845,9 @@ namespace NuGet.Build.Tasks.Console
             {
                 restoreMetadata = new PackagesConfigProjectRestoreMetadata
                 {
-                    PackagesConfigPath = projectStyleResult.PackagesConfigFilePath,
-                    RepositoryPath = GetRepositoryPath(project, settings)
+                    PackagesConfigPath = packagesConfigFilePath,
+                    RepositoryPath = GetRepositoryPath(project, settings),
+                    RestoreAuditProperties = auditProperties,
                 };
             }
             else
@@ -854,6 +868,7 @@ namespace NuGet.Build.Tasks.Console
                     SkipContentFileWrite = IsLegacyProject(project),
                     ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
                     CentralPackageVersionsEnabled = isCentralPackageManagementEnabled && projectStyle == ProjectStyle.PackageReference,
+                    CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled,
                     CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled,
                     CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled,
                     RestoreAuditProperties = auditProperties
@@ -879,6 +894,21 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
 
             return (restoreMetadata, targetFrameworkInfos);
+
+            static (ProjectStyle, string packagesConfigPath) GetProjectStyle(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> tfms, Common.ILogger log)
+            {
+                ProjectStyle? projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
+                bool hasPackageReferenceItems = tfms.Values.Any(p => p.GetItems("PackageReference").Any());
+                (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
+                    restoreProjectStyle: projectStyleOrNull,
+                    hasPackageReferenceItems: hasPackageReferenceItems,
+                    projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
+                    projectDirectory: project.Directory,
+                    projectName: project.GetProperty("MSBuildProjectName"),
+                    log: log);
+
+                return (projectStyleResult.ProjectStyle, projectStyleResult.PackagesConfigFilePath);
+            }
         }
 
         /// <summary>
@@ -971,10 +1001,12 @@ namespace NuGet.Build.Tasks.Console
                             // In rare cases, users can set an empty TargetFramework value in a project-to-project reference.  Static Graph will respect that
                             // but NuGet does not need to do anything with that instance of the project since the actual project is still loaded correctly
                             // with its actual TargetFramework.
+                            var message = MSBuildRestoreUtility.GetMessageForUnsupportedProject(projectInstance.FullPath);
+                            MSBuildLogger.Log(message);
                             continue;
                         }
 
-                        // If the project supports restore, queue up a build of the 3 targets needed for restore
+                        // If the project supports restore, queue up a build of the targets needed for restore
                         BuildSubmission buildSubmission = BuildManager.DefaultBuildManager.PendBuildRequest(
                             new BuildRequestData(
                                 projectInstance,
@@ -1025,20 +1057,12 @@ namespace NuGet.Build.Tasks.Console
             }
         }
 
-        /// <summary>
-        /// Determines the current settings for central package management for the specified project.
-        /// </summary>
-        /// <param name="project">The <see cref="IMSBuildProject" /> to get the central package management settings for.</param>
-        /// <param name="projectStyle">The <see cref="ProjectStyle?" /> of the specified project.  Specify <see langword="null" /> when the project does not define a restore style.</param>
-        /// <returns>A <see cref="Tuple{T1, T2}" /> containing values indicating whether or not central package management is enabled and if the ability to override a package version is disabled.</returns>
-        internal static (bool IsEnabled, bool IsVersionOverrideDisabled, bool IsCentralPackageTransitivePinningEnabled) GetCentralPackageManagementSettings(IMSBuildProject project, ProjectStyle? projectStyle)
+        private static HashSet<string> GetAuditSuppressions(IMSBuildProject project)
         {
-            if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
-            {
-                return (project.IsPropertyTrue("_CentralPackageVersionsEnabled"), project.IsPropertyFalse("CentralPackageVersionOverrideEnabled"), project.IsPropertyTrue("CentralPackageTransitivePinningEnabled"));
-            }
+            IEnumerable<string> suppressions = GetDistinctItemsOrEmpty(project, "NuGetAuditSuppress")
+                                                    .Select(i => i.Identity);
 
-            return (false, false, false);
+            return suppressions?.Count() > 0 ? new HashSet<string>(suppressions) : null;
         }
 
         /// <summary>
@@ -1094,10 +1118,14 @@ namespace NuGet.Build.Tasks.Console
         /// Logs the list of files to embed in the MSBuild binary log.
         /// </summary>
         /// <param name="dependencyGraphSpec"></param>
-        private void LogFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec)
+        private void LogFilesToEmbedInBinlog(DependencyGraphSpec dependencyGraphSpec, IReadOnlyDictionary<string, string> options)
         {
-            // If the MSBuildBinaryLoggerEnabled environment variable is not set, don't log the paths to the files.
-            if (!string.Equals(Environment.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            // Determines what the user wants embedded in the binary log where 0 or false disables embedding anything, 2 embeds everything, and 1 or true embeds just the assets file, g.props, and g.targets.
+            options.TryGetValue(nameof(RestoreTaskEx.EmbedFilesInBinlog), out string embedFilesInBinlog);
+
+            int embedInBinlogSelection = BuildTasksUtility.GetFilesToEmbedInBinlogValue(embedFilesInBinlog);
+
+            if (embedInBinlogSelection == 0)
             {
                 return;
             }
@@ -1109,9 +1137,14 @@ namespace NuGet.Build.Tasks.Console
                 if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference)
                 {
                     LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName)));
-                    LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
                     LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.PropsExtension)));
                     LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.TargetsExtension)));
+
+                    // Only include the dgspec if the user wants everything embedded in the binlog.
+                    if (embedInBinlogSelection == 2)
+                    {
+                        LoggingQueue.Enqueue(new ConsoleOutLogEmbedInBinlog(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath)))));
+                    }
                 }
                 else if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig)
                 {

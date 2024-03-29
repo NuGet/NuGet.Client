@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.Test
                         }
                     default:
                         {
-                            Assert.True(false, $"Unexpected package {package.Identity}");
+                            Assert.Fail($"Unexpected package {package.Identity}");
                             break;
                         }
                 }
@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.Test
                 var packageDependencyInfos = await PackageGraphAnalysisUtilities.GetDependencyInfoForPackageIdentitiesAsync(
                     packageIdentities: installedList,
                     nuGetFramework: CommonFrameworks.Net45,
-                    dependencyInfoResource: await sourceReposistory.GetResourceAsync<DependencyInfoResource>(),
+                    dependencyInfoResource: await sourceReposistory.GetResourceAsync<DependencyInfoResource>(CancellationToken.None),
                     sourceCacheContext: new SourceCacheContext(),
                     includeUnresolved: true,
                     logger: NullLogger.Instance,
@@ -156,15 +156,15 @@ namespace NuGet.PackageManagement.Test
                         case "a":
                             {
                                 Assert.Equal(2, package.Dependencies.Count());
-                                Assert.True(package.Dependencies.Any(e => e.Id == packageB100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageB100.Version))));
-                                Assert.True(package.Dependencies.Any(e => e.Id == packageC100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageC100.Version))));
+                                Assert.Contains(package.Dependencies, e => e.Id == packageB100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageB100.Version)));
+                                Assert.Contains(package.Dependencies, e => e.Id == packageC100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageC100.Version)));
 
                                 break;
                             }
                         case "b":
                             {
                                 Assert.Equal(1, package.Dependencies.Count());
-                                Assert.True(package.Dependencies.Any(e => e.Id == packageD100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageD100.Version))));
+                                Assert.Contains(package.Dependencies, e => e.Id == packageD100.Id && e.VersionRange.MinVersion.Equals(NuGetVersion.Parse(packageD100.Version)));
                                 break;
                             }
                         case "c":
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.Test
                             }
                         default:
                             {
-                                Assert.True(false, $"Unexpected package {package.Id}");
+                                Assert.Fail($"Unexpected package {package.Id}");
                                 break;
                             }
                     }

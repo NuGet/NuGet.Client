@@ -265,8 +265,8 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Identity.Id == package.Id
-                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                    Assert.Contains(allPackages, p => p.Identity.Id == package.Id
+                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString());
                 }
             }
         }
@@ -395,8 +395,8 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Identity.Id == package.Id
-                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                    Assert.Contains(allPackages, p => p.Identity.Id == package.Id
+                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString());
                 }
             }
         }
@@ -524,8 +524,8 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Identity.Id == package.Id
-                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                    Assert.Contains(allPackages, p => p.Identity.Id == package.Id
+                        && p.Identity.Version.ToNormalizedString() == package.Version.ToNormalizedString());
                 }
             }
         }
@@ -1553,23 +1553,23 @@ namespace NuGet.CommandLine.Test
 
             Util.CreateFile(proj3Dir, "project.json",
                                             @"{
-                                            'dependencies': {
-                                                'packageD': '1.0.0',
-                                                'packageE': '1.0.*'
+                                            ""dependencies"": {
+                                                ""packageD"": ""1.0.0"",
+                                                ""packageE"": ""1.0.*""
                                             },
-                                            'frameworks': {
-                                                        'uap10.0': { }
+                                            ""frameworks"": {
+                                                        ""uap10.0"": { }
                                                     }
                                             }");
 
             Util.CreateFile(proj4Dir, "project.json",
                                             @"{
-                                            'dependencies': {
-                                                'packageE': '1.0.0',
-                                                'packageF': '*'
+                                            ""dependencies"": {
+                                                ""packageE"": ""1.0.0"",
+                                                ""packageF"": ""*""
                                             },
-                                            'frameworks': {
-                                                        'uap10.0': { }
+                                            ""frameworks"": {
+                                                        ""uap10.0"": { }
                                                     }
                                             }");
 

@@ -1351,7 +1351,7 @@ namespace NuGet.PackageManagement
             {
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
-                return await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities, targetFramework, includeUnresolved);
+                return await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities, targetFramework, includeUnresolved, token);
             }
             else
             {
@@ -1370,7 +1370,9 @@ namespace NuGet.PackageManagement
             var installedPackages = await nuGetProject.GetInstalledPackagesAsync(token);
             var installedPackageIdentities = installedPackages.Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities,
-                targetFramework);
+                targetFramework,
+                includeUnresolved: false,
+                token);
 
             // dependencyInfoFromPackagesFolder can be null when NuGetProtocolException is thrown
             var resolverPackages = dependencyInfoFromPackagesFolder?.Select(package =>
@@ -2021,7 +2023,7 @@ namespace NuGet.PackageManagement
             else
             {
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                var sourceRepository = await GetSourceRepository(packageIdentity, effectiveSources, resolutionContext.SourceCacheContext, logger);
+                var sourceRepository = await GetSourceRepository(packageIdentity, effectiveSources, resolutionContext.SourceCacheContext, logger, token);
                 nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository, nuGetProject));
             }
 
@@ -2048,7 +2050,8 @@ namespace NuGet.PackageManagement
         private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity,
             IEnumerable<SourceRepository> sourceRepositories,
             SourceCacheContext sourceCacheContext,
-            ILogger logger)
+            ILogger logger,
+            CancellationToken cancellationToken)
         {
             SourceRepository source = null;
 
@@ -2062,7 +2065,7 @@ namespace NuGet.PackageManagement
             foreach (var sourceRepository in sourceRepositories)
             {
                 // TODO: fetch the resource in parallel also
-                var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>();
+                var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
                 if (metadataResource != null)
                 {
                     var task = Task.Run(() => metadataResource.Exists(packageIdentity, sourceCacheContext, logger, tokenSource.Token), tokenSource.Token);
@@ -2375,7 +2378,9 @@ namespace NuGet.PackageManagement
             var log = new LoggerAdapter(nuGetProjectContext);
             var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities,
-                packageReferenceTargetFramework);
+                packageReferenceTargetFramework,
+                includeUnresolved: false,
+                token);
 
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.ResolvingActionsToUninstallPackage, packageIdentity);
             // Step-2 : Determine if the package can be uninstalled based on the metadata resources
@@ -2391,10 +2396,11 @@ namespace NuGet.PackageManagement
 
         private async Task<IEnumerable<PackageDependencyInfo>> GetDependencyInfoFromPackagesFolderAsync(IEnumerable<PackageIdentity> packageIdentities,
             NuGetFramework nuGetFramework,
-            bool includeUnresolved = false)
+            bool includeUnresolved,
+            CancellationToken cancellationToken)
         {
-            var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
-            return await PackageGraphAnalysisUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, includeUnresolved, NullLogger.Instance, CancellationToken.None);
+            var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>(cancellationToken);
+            return await PackageGraphAnalysisUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, includeUnresolved, NullLogger.Instance, cancellationToken);
         }
 
         /// <summary>
@@ -3102,7 +3108,7 @@ namespace NuGet.PackageManagement
                         NuGetProjectActionType.Uninstall => originalPackageSpec,
                         _ => throw new InvalidOperationException("Unknown NuGetProjectActionType"),
                     };
-                    BuildIntegratedInstallationContext installationContext = CreateInstallationContextForPackageId(action.PackageIdentity.Id, referencePackageSpec, unsuccessfulFrameworks, originalFrameworks);
+                    BuildIntegratedInstallationContext installationContext = CreateInstallationContextForPackageId(action.PackageIdentity.Id, referencePackageSpec, originalPackageSpec, unsuccessfulFrameworks, originalFrameworks);
                     projectActionsAndInstallationContexts.Add((action, installationContext));
                 }
 
@@ -3196,17 +3202,17 @@ namespace NuGet.PackageManagement
         /// The "successful" frameworks are the ones that contain the package and are not part of the failed list.
         /// The "unsuccessful" frameworks are the ones that never had the package or are part of the unsuccessful list.
         /// </summary>>
-        internal static BuildIntegratedInstallationContext CreateInstallationContextForPackageId(string packageIdentityId, PackageSpec packageSpec, List<NuGetFramework> unsuccessfulFrameworks, Dictionary<NuGetFramework, string> originalFrameworks)
+        internal static BuildIntegratedInstallationContext CreateInstallationContextForPackageId(string packageIdentityId, PackageSpec packageSpec, PackageSpec originalPackageSpec, List<NuGetFramework> unsuccessfulFrameworks, Dictionary<NuGetFramework, string> originalFrameworks)
         {
             var frameworksWithResultingPackage = packageSpec
-                                .TargetFrameworks
-                                .Where(e => e.Dependencies.Any(a => a.Name == packageIdentityId))
-                                .Select(e => e.FrameworkName)
-                                .Distinct();
+                .TargetFrameworks
+                .Where(e => e.Dependencies.Any(a => string.Equals(a.Name, packageIdentityId, StringComparison.OrdinalIgnoreCase)))
+                .Select(e => e.FrameworkName)
+                .Distinct();
 
             var frameworksWithoutResultingPackage = packageSpec
                 .TargetFrameworks
-                .Where(e => !e.Dependencies.Any(a => a.Name == packageIdentityId))
+                .Where(e => !e.Dependencies.Any(a => string.Equals(a.Name, packageIdentityId, StringComparison.OrdinalIgnoreCase)))
                 .Select(e => e.FrameworkName)
                 .Distinct();
 
@@ -3214,10 +3220,32 @@ namespace NuGet.PackageManagement
                 .Except(unsuccessfulFrameworks)
                 .ToList();
 
+            var areAllPackagesConditional = DoesPackageAppearWithDifferentVersions(packageIdentityId, originalPackageSpec);
+
             return new BuildIntegratedInstallationContext(
                 successfulFrameworksWithPackage,
                 unsuccessfulFrameworks.Union(frameworksWithoutResultingPackage).Distinct(),
-                originalFrameworks);
+                originalFrameworks,
+                areAllPackagesConditional);
+        }
+
+        private static bool DoesPackageAppearWithDifferentVersions(string packageIdentityId, PackageSpec packageSpec)
+        {
+            HashSet<VersionRange> versions = default;
+
+            foreach (var framework in packageSpec.TargetFrameworks)
+            {
+                foreach (var dependency in framework.Dependencies)
+                {
+                    if (string.Equals(dependency.Name, packageIdentityId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        versions ??= new();
+                        versions.Add(dependency.LibraryRange.VersionRange);
+                        break;
+                    }
+                }
+            }
+            return versions?.Count > 1;
         }
 
         /// <summary>
@@ -3318,7 +3346,7 @@ namespace NuGet.PackageManagement
                                 pathResolver,
                                 originalAction.PackageIdentity);
 
-                            var framework = installationContext.SuccessfulFrameworks.FirstOrDefault();
+                            var framework = installationContext.SuccessfulFrameworks.First();
                             var resolvedAction = projectAction.RestoreResult.LockFile.PackageSpec.TargetFrameworks.FirstOrDefault(fm => fm.FrameworkName.Equals(framework))
                                 .Dependencies.First(dependency => dependency.Name.Equals(originalAction.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase));
 
@@ -3337,8 +3365,8 @@ namespace NuGet.PackageManagement
                     else if (originalAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                     {
                         await buildIntegratedProject.UninstallPackageAsync(
-                            originalAction.PackageIdentity,
-                            nuGetProjectContext: nuGetProjectContext,
+                            originalAction.PackageIdentity.Id,
+                            installationContext,
                             token: token);
                     }
                 }
@@ -3863,7 +3891,7 @@ namespace NuGet.PackageManagement
             Common.ILogger log,
             CancellationToken token)
         {
-            var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();
+            var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>(token);
 
             // Resolve the package for the project framework and cache the results in the
             // resolution context for the gather to use during the next step.

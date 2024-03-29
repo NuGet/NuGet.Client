@@ -19,11 +19,11 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public static class JsonPackageSpecReader
+    public static partial class JsonPackageSpecReader
     {
         private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
         private static readonly char[] VersionSeparators = new[] { ';' };
-
+        private const char VersionSeparator = ';';
         public static readonly string RestoreOptions = "restore";
         public static readonly string RestoreSettings = "restoreSettings";
         public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
@@ -49,19 +49,15 @@ namespace NuGet.ProjectModel
             }
         }
 
+        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
+        {
+            return GetPackageSpec(stream, name, packageSpecPath, snapshotValue, EnvironmentVariableWrapper.Instance);
+        }
+
         [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static PackageSpec GetPackageSpec(JObject json)
         {
             return GetPackageSpec(json, name: null, packageSpecPath: null, snapshotValue: null);
-        }
-
-        public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
-        {
-            using (var streamReader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(streamReader))
-            {
-                return GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue);
-            }
         }
 
         [Obsolete("This method is obsolete and will be removed in a future release.")]
@@ -70,16 +66,36 @@ namespace NuGet.ProjectModel
             using (var stringReader = new StringReader(rawPackageSpec.ToString()))
             using (var jsonReader = new JsonTextReader(stringReader))
             {
-                return GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue);
+                return GetPackageSpec(jsonReader, name, packageSpecPath, EnvironmentVariableWrapper.Instance, snapshotValue);
             }
         }
 
+        [Obsolete]
         internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string packageSpecPath)
         {
-            return GetPackageSpec(jsonReader, name: null, packageSpecPath, snapshotValue: null);
+            return GetPackageSpec(jsonReader, name: null, packageSpecPath, EnvironmentVariableWrapper.Instance);
         }
 
-        private static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string name, string packageSpecPath, string snapshotValue)
+        internal static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false)
+        {
+            if (!JsonUtility.UseNewtonsoftJsonForParsing(environmentVariableReader, bypassCache))
+            {
+                return GetPackageSpecUtf8JsonStreamReader(stream, name, packageSpecPath, environmentVariableReader, snapshotValue);
+            }
+            else
+            {
+                using (var textReader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(textReader))
+                {
+#pragma warning disable CS0612 // Type or member is obsolete
+                    return GetPackageSpec(jsonReader, name, packageSpecPath, environmentVariableReader, snapshotValue);
+#pragma warning restore CS0612 // Type or member is obsolete
+                }
+            }
+        }
+
+        [Obsolete]
+        internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
             var packageSpec = new PackageSpec();
 
@@ -156,7 +172,7 @@ namespace NuGet.ProjectModel
 #pragma warning restore CS0612 // Type or member is obsolete
 
                     case "restore":
-                        ReadMSBuildMetadata(jsonReader, packageSpec);
+                        ReadMSBuildMetadata(jsonReader, packageSpec, environmentVariableReader);
                         break;
 
                     case "runtimes":
@@ -237,6 +253,7 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
+        [Obsolete]
         private static PackageType CreatePackageType(JsonTextReader jsonReader)
         {
             var name = (string)jsonReader.Value;
@@ -258,6 +275,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static void ReadCentralPackageVersions(
             JsonTextReader jsonReader,
             IDictionary<string, CentralPackageVersion> centralPackageVersions,
@@ -292,6 +310,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static CompatibilityProfile ReadCompatibilityProfile(JsonTextReader jsonReader, string profileName)
         {
             List<FrameworkRuntimePair> sets = null;
@@ -308,6 +327,7 @@ namespace NuGet.ProjectModel
             return new CompatibilityProfile(profileName, sets ?? Enumerable.Empty<FrameworkRuntimePair>());
         }
 
+        [Obsolete]
         private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(JsonTextReader jsonReader, string compatibilitySetName)
         {
             NuGetFramework framework = NuGetFramework.Parse(compatibilitySetName);
@@ -320,7 +340,8 @@ namespace NuGet.ProjectModel
             }
         }
 
-        internal static void ReadDependencies(
+        [Obsolete]
+        private static void ReadDependencies(
             JsonTextReader jsonReader,
             IList<LibraryDependency> results,
             string packageSpecPath,
@@ -355,7 +376,7 @@ namespace NuGet.ProjectModel
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-                    List<NuGetLogCode> noWarn = null;
+                    IList<NuGetLogCode> noWarn = Array.Empty<NuGetLogCode>();
 
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
@@ -489,7 +510,7 @@ namespace NuGet.ProjectModel
 
                     // the dependency flags are: Include flags - Exclude flags
                     var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-                    var libraryDependency = new LibraryDependency()
+                    var libraryDependency = new LibraryDependency(noWarn)
                     {
                         LibraryRange = new LibraryRange()
                         {
@@ -509,16 +530,12 @@ namespace NuGet.ProjectModel
                         VersionOverride = versionOverride
                     };
 
-                    if (noWarn != null)
-                    {
-                        libraryDependency.NoWarn = noWarn;
-                    }
-
                     results.Add(libraryDependency);
                 }
             });
         }
 
+        [Obsolete]
         internal static void ReadCentralTransitiveDependencyGroup(
             JsonTextReader jsonReader,
             IList<LibraryDependency> results,
@@ -621,7 +638,7 @@ namespace NuGet.ProjectModel
 
                     // the dependency flags are: Include flags - Exclude flags
                     var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-                    var libraryDependency = new LibraryDependency()
+                    var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
                     {
                         LibraryRange = new LibraryRange()
                         {
@@ -641,6 +658,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static void ReadDownloadDependencies(
             JsonTextReader jsonReader,
             IList<DownloadDependency> downloadDependencies,
@@ -731,6 +749,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete]
         private static IReadOnlyList<string> ReadEnumerableOfString(JsonTextReader jsonReader)
         {
             string value = jsonReader.ReadNextTokenAsString();
@@ -738,6 +757,7 @@ namespace NuGet.ProjectModel
             return value.Split(DelimitedStringSeparators, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        [Obsolete]
         private static void ReadFrameworkReferences(
             JsonTextReader jsonReader,
             ISet<FrameworkDependency> frameworkReferences,
@@ -773,6 +793,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static void ReadFrameworks(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             jsonReader.ReadObject(_ =>
@@ -791,6 +812,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static void ReadImports(PackageSpec packageSpec, JsonTextReader jsonReader, TargetFrameworkInformation targetFrameworkInformation)
         {
             int lineNumber = jsonReader.LineNumber;
@@ -822,6 +844,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete]
         private static void ReadMappings(JsonTextReader jsonReader, string mappingKey, IDictionary<string, IncludeExcludeFiles> mappings)
         {
             if (jsonReader.ReadNextToken())
@@ -899,9 +922,11 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadMSBuildMetadata(JsonTextReader jsonReader, PackageSpec packageSpec)
+        [Obsolete]
+        private static void ReadMSBuildMetadata(JsonTextReader jsonReader, PackageSpec packageSpec, IEnvironmentVariableReader environmentVariableReader)
         {
             var centralPackageVersionsManagementEnabled = false;
+            var centralPackageFloatingVersionsEnabled = false;
             var centralPackageVersionOverrideDisabled = false;
             var CentralPackageTransitivePinningEnabled = false;
             List<string> configFilePaths = null;
@@ -926,6 +951,8 @@ namespace NuGet.ProjectModel
             var validateRuntimeAssets = false;
             WarningProperties warningProperties = null;
             RestoreAuditProperties auditProperties = null;
+            bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
+            var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
 
             jsonReader.ReadObject(propertyName =>
             {
@@ -933,6 +960,10 @@ namespace NuGet.ProjectModel
                 {
                     case "centralPackageVersionsManagementEnabled":
                         centralPackageVersionsManagementEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "centralPackageFloatingVersionsEnabled":
+                        centralPackageFloatingVersionsEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                         break;
 
                     case "centralPackageVersionOverrideDisabled":
@@ -945,6 +976,7 @@ namespace NuGet.ProjectModel
 
                     case "configFilePaths":
                         configFilePaths = jsonReader.ReadStringArrayAsList();
+                        ExtractMacros(configFilePaths, userSettingsDirectory, useMacros);
                         break;
 
                     case "crossTargeting":
@@ -953,6 +985,7 @@ namespace NuGet.ProjectModel
 
                     case "fallbackFolders":
                         fallbackFolders = jsonReader.ReadStringArrayAsList();
+                        ExtractMacros(fallbackFolders, userSettingsDirectory, useMacros);
                         break;
 
                     case "files":
@@ -985,7 +1018,7 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "packagesPath":
-                        packagesPath = jsonReader.ReadNextTokenAsString();
+                        packagesPath = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
                         break;
 
                     case "projectJsonPath":
@@ -1011,7 +1044,7 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "projectUniqueName":
-                        projectUniqueName = jsonReader.ReadNextTokenAsString();
+                        projectUniqueName = ExtractMacro(jsonReader.ReadNextTokenAsString(), userSettingsDirectory, useMacros);
                         break;
 
                     case "restoreLockProperties":
@@ -1042,9 +1075,10 @@ namespace NuGet.ProjectModel
 
                     case "restoreAuditProperties":
                         string enableAudit = null, auditLevel = null, auditMode = null;
+                        HashSet<string> suppressedAdvisories = null;
+
                         jsonReader.ReadObject(auditPropertyName =>
                         {
-
                             switch (auditPropertyName)
                             {
                                 case "enableAudit":
@@ -1058,6 +1092,10 @@ namespace NuGet.ProjectModel
                                 case "auditMode":
                                     auditMode = jsonReader.ReadNextTokenAsString();
                                     break;
+
+                                case "suppressedAdvisories":
+                                    suppressedAdvisories = ReadSuppressedAdvisories(jsonReader);
+                                    break;
                             }
                         });
                         auditProperties = new RestoreAuditProperties()
@@ -1065,6 +1103,7 @@ namespace NuGet.ProjectModel
                             EnableAudit = enableAudit,
                             AuditLevel = auditLevel,
                             AuditMode = auditMode,
+                            SuppressedAdvisories = suppressedAdvisories
                         };
                         break;
 
@@ -1131,6 +1170,7 @@ namespace NuGet.ProjectModel
             }
 
             msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
+            msbuildMetadata.CentralPackageFloatingVersionsEnabled = centralPackageFloatingVersionsEnabled;
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
             msbuildMetadata.RestoreAuditProperties = auditProperties;
@@ -1199,6 +1239,23 @@ namespace NuGet.ProjectModel
             packageSpec.RestoreMetadata = msbuildMetadata;
         }
 
+        private static string ExtractMacro(string value, string userSettingsDirectory, bool useMacros)
+        {
+            if (useMacros)
+            {
+                return MacroStringsUtility.ExtractMacro(value, userSettingsDirectory, MacroStringsUtility.UserMacro);
+            }
+            return value;
+        }
+
+        private static void ExtractMacros(List<string> paths, string userSettingsDirectory, bool useMacros)
+        {
+            if (useMacros)
+            {
+                MacroStringsUtility.ExtractMacros(paths, userSettingsDirectory, MacroStringsUtility.UserMacro);
+            }
+        }
+
         private static bool ReadNextTokenAsBoolOrFalse(JsonTextReader jsonReader, string filePath)
         {
             if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.Boolean)
@@ -1216,6 +1273,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
+        [Obsolete]
         private static void ReadNuGetLogCodes(JsonTextReader jsonReader, HashSet<NuGetLogCode> hashCodes)
         {
             if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.StartArray)
@@ -1230,9 +1288,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static List<NuGetLogCode> ReadNuGetLogCodesList(JsonTextReader jsonReader)
+        private static IList<NuGetLogCode> ReadNuGetLogCodesList(JsonTextReader jsonReader)
         {
-            List<NuGetLogCode> items = null;
+            IList<NuGetLogCode> items = null;
 
             if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.StartArray)
             {
@@ -1247,9 +1305,10 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return items;
+            return items ?? Array.Empty<NuGetLogCode>();
         }
 
+        [Obsolete]
         private static void ReadPackageTypes(PackageSpec packageSpec, JsonTextReader jsonReader)
         {
             var errorLine = 0;
@@ -1454,7 +1513,8 @@ namespace NuGet.ProjectModel
             return wasMappingsRead;
         }
 
-        private static RuntimeDependencySet ReadRuntimeDependencySet(JsonTextReader jsonReader, string dependencySetName)
+        [Obsolete]
+        static RuntimeDependencySet ReadRuntimeDependencySet(JsonTextReader jsonReader, string dependencySetName)
         {
             List<RuntimePackageDependency> dependencies = null;
 
@@ -1472,6 +1532,7 @@ namespace NuGet.ProjectModel
                 dependencies);
         }
 
+        [Obsolete]
         private static RuntimeDescription ReadRuntimeDescription(JsonTextReader jsonReader, string runtimeName)
         {
             List<string> inheritedRuntimes = null;
@@ -1499,6 +1560,7 @@ namespace NuGet.ProjectModel
                 additionalDependencies);
         }
 
+        [Obsolete]
         private static List<RuntimeDescription> ReadRuntimes(JsonTextReader jsonReader)
         {
             var runtimeDescriptions = new List<RuntimeDescription>();
@@ -1547,6 +1609,7 @@ namespace NuGet.ProjectModel
             });
         }
 
+        [Obsolete]
         private static string[] ReadStringArray(JsonTextReader jsonReader)
         {
             List<string> list = jsonReader.ReadStringArrayAsList();
@@ -1554,6 +1617,7 @@ namespace NuGet.ProjectModel
             return list?.ToArray();
         }
 
+        [Obsolete]
         private static List<CompatibilityProfile> ReadSupports(JsonTextReader jsonReader)
         {
             var compatibilityProfiles = new List<CompatibilityProfile>();
@@ -1568,6 +1632,7 @@ namespace NuGet.ProjectModel
             return compatibilityProfiles;
         }
 
+        [Obsolete]
         private static LibraryDependencyTarget ReadTarget(
             JsonTextReader jsonReader,
             string packageSpecPath,
@@ -1598,6 +1663,7 @@ namespace NuGet.ProjectModel
             return targetFlagsValue;
         }
 
+        [Obsolete]
         private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(JsonTextReader jsonReader)
         {
             var targetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>();
@@ -1671,6 +1737,7 @@ namespace NuGet.ProjectModel
             return targetFrameworks;
         }
 
+        [Obsolete]
         private static void ReadTargetFrameworks(PackageSpec packageSpec, JsonTextReader jsonReader, out int frameworkLine, out int frameworkColumn)
         {
             frameworkLine = 0;
@@ -1751,6 +1818,12 @@ namespace NuGet.ProjectModel
                 }
             }, out frameworkLine, out frameworkColumn);
 
+            AddTargetFramework(packageSpec, frameworkName, secondaryFramework, targetFrameworkInformation);
+        }
+
+        [Obsolete]
+        private static void AddTargetFramework(PackageSpec packageSpec, NuGetFramework frameworkName, NuGetFramework secondaryFramework, TargetFrameworkInformation targetFrameworkInformation)
+        {
             NuGetFramework updatedFramework = frameworkName;
 
             if (targetFrameworkInformation.Imports.Count > 0)
@@ -1776,6 +1849,8 @@ namespace NuGet.ProjectModel
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
         }
 
+
+        [Obsolete]
         private static NuGetFramework GetDualCompatibilityFrameworkIfNeeded(NuGetFramework frameworkName, NuGetFramework secondaryFramework)
         {
             if (secondaryFramework != default)
@@ -1786,6 +1861,7 @@ namespace NuGet.ProjectModel
             return frameworkName;
         }
 
+        [Obsolete]
         private static bool ValidateDependencyTarget(LibraryDependencyTarget targetValue)
         {
             var isValid = false;
@@ -1800,6 +1876,19 @@ namespace NuGet.ProjectModel
             }
 
             return isValid;
+        }
+
+        private static HashSet<string> ReadSuppressedAdvisories(JsonTextReader jsonReader)
+        {
+            HashSet<string> suppressedAdvisories = null;
+
+            jsonReader.ReadObject(advisoryUrl =>
+            {
+                suppressedAdvisories ??= new HashSet<string>();
+                suppressedAdvisories.Add(advisoryUrl);
+            });
+
+            return suppressedAdvisories;
         }
     }
 }

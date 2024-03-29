@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine.XPlat.Utility;
 using NuGet.Common;
@@ -50,7 +51,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Asert
                 Assert.Equal(2, result.Count);
-                Assert.NotEqual(null, result[0].Credentials);
+                Assert.NotNull(result[0].Credentials);
             }
         }
 
@@ -80,7 +81,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var logger = NullLogger.Instance;
-                var result = await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, package, prerelease);
+                var result = await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, package, prerelease, CancellationToken.None);
 
                 //Asert
                 Assert.Equal(new NuGetVersion(expectedVersion), result);
@@ -100,7 +101,7 @@ namespace NuGet.XPlat.FuncTest
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                // Arange
+                // Arrange
                 var sourceAPath = await GetSourceWithPackages(sourceA, testDirectory, "SourceA");
                 var sourceBPath = await GetSourceWithPackages(sourceB, testDirectory, "SourceB");
 
@@ -108,10 +109,10 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var logger = NullLogger.Instance;
-                var result = await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, package, prerelease);
+                var result = await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, package, prerelease, CancellationToken.None);
 
-                //Asert
-                Assert.Equal(null, result);
+                // Assert
+                Assert.Null(result);
             }
         }
 
@@ -152,7 +153,7 @@ namespace NuGet.XPlat.FuncTest
 
                 // Act
                 var logger = NullLogger.Instance;
-                var result = await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packages.Last().Id, false);
+                var result = await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packages.Last().Id, false, CancellationToken.None);
 
                 // Assert
                 Assert.Equal(packages.Last().Identity.Version, result);

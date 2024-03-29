@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -28,10 +29,10 @@ namespace NuGet.ProjectModel
         /// <param name="writer">An <c>NuGet.Common.IObjectWriter</c> instance.</param>
         public static void Write(PackageSpec packageSpec, IObjectWriter writer)
         {
-            Write(packageSpec, writer, hashing: false);
+            Write(packageSpec, writer, hashing: false, EnvironmentVariableWrapper.Instance);
         }
 
-        internal static void Write(PackageSpec packageSpec, IObjectWriter writer, bool hashing)
+        internal static void Write(PackageSpec packageSpec, IObjectWriter writer, bool hashing, IEnvironmentVariableReader environmentVariableReader)
         {
             if (packageSpec == null)
             {
@@ -59,13 +60,13 @@ namespace NuGet.ProjectModel
             SetDictionaryValue(writer, "packInclude", packageSpec.PackInclude);
             SetPackOptions(writer, packageSpec);
 #pragma warning restore CS0612 // Type or member is obsolete
-            SetMSBuildMetadata(writer, packageSpec);
+            SetMSBuildMetadata(writer, packageSpec, environmentVariableReader);
 #pragma warning disable CS0612 // Type or member is obsolete
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 #pragma warning restore CS0612 // Type or member is obsolete
 
 
-            if (packageSpec.Dependencies.Any())
+            if (packageSpec.Dependencies.Count > 0)
             {
                 SetDependencies(writer, packageSpec.Dependencies);
             }
@@ -93,7 +94,11 @@ namespace NuGet.ProjectModel
             }
 
             using (var fileStream = new FileStream(filePath, FileMode.Create))
+#if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(fileStream))
+#else
+            using (var textWriter = new NoAllocNewLineStreamWriter(fileStream))
+#endif
             using (var jsonWriter = new JsonTextWriter(textWriter))
             using (var writer = new JsonObjectWriter(jsonWriter))
             {
@@ -123,7 +128,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// This method sets the msbuild metadata that's important for restore. Ensures that frameworks regardless of which way they're stores in the metadata(full name or short tfm name) are written out the same.
         /// </summary>
-        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec)
+        private static void SetMSBuildMetadata(IObjectWriter writer, PackageSpec packageSpec, IEnvironmentVariableReader environmentVariableReader)
         {
             var msbuildMetadata = packageSpec.RestoreMetadata;
 
@@ -132,13 +137,16 @@ namespace NuGet.ProjectModel
                 return;
             }
 
+            bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
+            var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
             writer.WriteObjectStart(JsonPackageSpecReader.RestoreOptions);
 
             SetValue(writer, "projectUniqueName", msbuildMetadata.ProjectUniqueName);
             SetValue(writer, "projectName", msbuildMetadata.ProjectName);
             SetValue(writer, "projectPath", msbuildMetadata.ProjectPath);
             SetValue(writer, "projectJsonPath", msbuildMetadata.ProjectJsonPath);
-            SetValue(writer, "packagesPath", msbuildMetadata.PackagesPath);
+            SetValue(writer, "packagesPath", ApplyMacro(msbuildMetadata.PackagesPath, userSettingsDirectory, useMacros));
             SetValue(writer, "outputPath", msbuildMetadata.OutputPath);
 
             if (msbuildMetadata.ProjectStyle != ProjectStyle.Unknown)
@@ -148,8 +156,22 @@ namespace NuGet.ProjectModel
 
             WriteMetadataBooleans(writer, msbuildMetadata);
 
-            SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
-            SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
+            if (useMacros)
+            {
+                var fallbackFolderCopy = msbuildMetadata.FallbackFolders.ToList();
+                var configFilePathsCopy = msbuildMetadata.ConfigFilePaths.ToList();
+                MacroStringsUtility.ApplyMacros(fallbackFolderCopy, userSettingsDirectory, MacroStringsUtility.UserMacro, PathUtility.GetStringComparisonBasedOnOS());
+                MacroStringsUtility.ApplyMacros(configFilePathsCopy, userSettingsDirectory, MacroStringsUtility.UserMacro, PathUtility.GetStringComparisonBasedOnOS());
+
+                SetArrayValue(writer, "fallbackFolders", fallbackFolderCopy);
+                SetArrayValue(writer, "configFilePaths", configFilePathsCopy);
+            }
+            else
+            {
+                SetArrayValue(writer, "fallbackFolders", msbuildMetadata.FallbackFolders);
+                SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
+            }
+
             // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
             SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy(c => c, StringComparer.Ordinal));
 
@@ -169,6 +191,15 @@ namespace NuGet.ProjectModel
             writer.WriteObjectEnd();
         }
 
+        private static string ApplyMacro(string value, string userSettingsDirectory, bool useMacros)
+        {
+            if (useMacros)
+            {
+                return MacroStringsUtility.ApplyMacro(value, userSettingsDirectory, MacroStringsUtility.UserMacro, PathUtility.GetStringComparisonBasedOnOS());
+            }
+            return value;
+        }
+
         private static void WriteMetadataBooleans(IObjectWriter writer, ProjectRestoreMetadata msbuildMetadata)
         {
             SetValueIfTrue(writer, "crossTargeting", msbuildMetadata.CrossTargeting);
@@ -176,6 +207,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
             SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
             SetValueIfTrue(writer, "centralPackageVersionsManagementEnabled", msbuildMetadata.CentralPackageVersionsEnabled);
+            SetValueIfTrue(writer, "centralPackageFloatingVersionsEnabled", msbuildMetadata.CentralPackageFloatingVersionsEnabled);
             SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
             SetValueIfTrue(writer, "CentralPackageTransitivePinningEnabled", msbuildMetadata.CentralPackageTransitivePinningEnabled);
         }
@@ -207,6 +239,18 @@ namespace NuGet.ProjectModel
             SetValueIfNotNull(writer, "enableAudit", auditProperties.EnableAudit);
             SetValueIfNotNull(writer, "auditLevel", auditProperties.AuditLevel);
             SetValueIfNotNull(writer, "auditMode", auditProperties.AuditMode);
+
+            if (auditProperties.SuppressedAdvisories?.Count > 0)
+            {
+                writer.WriteObjectStart("suppressedAdvisories");
+
+                foreach (string advisory in auditProperties.SuppressedAdvisories)
+                {
+                    writer.WriteNameValue(advisory, null);
+                }
+
+                writer.WriteObjectEnd();
+            }
 
             writer.WriteObjectEnd();
         }
@@ -313,7 +357,6 @@ namespace NuGet.ProjectModel
                     SetArrayValue(writer, "noWarn", msbuildMetadata
                        .ProjectWideWarningProperties
                        .NoWarn
-                       .ToArray()
                        .OrderBy(c => c)
                        .Select(c => c.GetName())
                        .Where(c => !string.IsNullOrEmpty(c)));
@@ -324,7 +367,6 @@ namespace NuGet.ProjectModel
                     SetArrayValue(writer, "warnAsError", msbuildMetadata
                         .ProjectWideWarningProperties
                         .WarningsAsErrors
-                        .ToArray()
                         .OrderBy(c => c)
                         .Select(c => c.GetName())
                         .Where(c => !string.IsNullOrEmpty(c)));
@@ -335,7 +377,6 @@ namespace NuGet.ProjectModel
                     SetArrayValue(writer, "warnNotAsError", msbuildMetadata
                         .ProjectWideWarningProperties
                         .WarningsNotAsErrors
-                        .ToArray()
                         .OrderBy(c => c)
                         .Select(c => c.GetName())
                         .Where(c => !string.IsNullOrEmpty(c)));
@@ -468,8 +509,8 @@ namespace NuGet.ProjectModel
                     {
                         SetArrayValue(writer, "noWarn", dependency
                             .NoWarn
-                            .OrderBy(c => c)
                             .Distinct()
+                            .OrderBy(c => c)
                             .Select(code => code.GetName())
                             .Where(s => !string.IsNullOrEmpty(s)));
                     }
@@ -529,7 +570,7 @@ namespace NuGet.ProjectModel
 
         private static void SetImports(IObjectWriter writer, IList<NuGetFramework> frameworks)
         {
-            if (frameworks?.Any() == true)
+            if (frameworks?.Count > 0)
             {
                 var imports = frameworks.Select(framework => framework.GetShortFolderName());
 
@@ -539,7 +580,7 @@ namespace NuGet.ProjectModel
 
         private static void SetDownloadDependencies(IObjectWriter writer, IList<DownloadDependency> downloadDependencies)
         {
-            if (!downloadDependencies.Any())
+            if (!(downloadDependencies.Count > 0))
             {
                 return;
             }
@@ -561,7 +602,7 @@ namespace NuGet.ProjectModel
 
         private static void SetFrameworks(IObjectWriter writer, IList<TargetFrameworkInformation> frameworks, bool hashing)
         {
-            if (frameworks.Any())
+            if (frameworks.Count > 0)
             {
                 writer.WriteObjectStart("frameworks");
                 var frameworkSorter = NuGetFrameworkSorter.Instance;
@@ -604,7 +645,7 @@ namespace NuGet.ProjectModel
 
         private static void SetFrameworkReferences(IObjectWriter writer, ISet<FrameworkDependency> frameworkReferences)
         {
-            if (frameworkReferences?.Any() == true)
+            if (frameworkReferences?.Count > 0)
             {
                 writer.WriteObjectStart("frameworkReferences");
 
@@ -620,7 +661,7 @@ namespace NuGet.ProjectModel
 
         private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions, bool hashing)
         {
-            if (!centralPackageVersions.Any())
+            if (!(centralPackageVersions.Count > 0))
             {
                 return;
             }
@@ -636,9 +677,9 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name))
+                foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
+                    writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.OriginalString ?? dependency.VersionRange.ToNormalizedString());
                 }
             }
 
@@ -671,15 +712,15 @@ namespace NuGet.ProjectModel
 
         private static void SetArrayValue(IObjectWriter writer, string name, IEnumerable<string> values)
         {
-            if (values != null && values.Any())
+            if (values != null)
             {
-                writer.WriteNameArray(name, values);
+                writer.WriteNonEmptyNameArray(name, values);
             }
         }
 
         private static void SetDictionaryValue(IObjectWriter writer, string name, IDictionary<string, string> values)
         {
-            if (values != null && values.Any())
+            if (values != null && values.Count > 0)
             {
                 writer.WriteObjectStart(name);
 
@@ -696,7 +737,7 @@ namespace NuGet.ProjectModel
 
         private static void SetDictionaryValues(IObjectWriter writer, string name, IDictionary<string, IEnumerable<string>> values)
         {
-            if (values != null && values.Any())
+            if (values != null && values.Count > 0)
             {
                 writer.WriteObjectStart(name);
 

@@ -49,7 +49,7 @@ namespace NuGet.CommandLine.XPlat
                     versionRange = VersionRange.Parse(packageReferenceArgs.PackageVersion);
                 }
 
-                var libraryDependency = new LibraryDependency
+                var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
                 {
                     LibraryRange = new LibraryRange(
                         name: packageReferenceArgs.PackageId,
@@ -263,7 +263,7 @@ namespace NuGet.CommandLine.XPlat
         {
             IList<PackageSource> sources = AddPackageCommandUtility.EvaluateSources(originalPackageSpec.RestoreMetadata.Sources, originalPackageSpec.RestoreMetadata.ConfigFilePaths);
 
-            return await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packageId, prerelease);
+            return await AddPackageCommandUtility.GetLatestVersionFromSourcesAsync(sources, logger, packageId, prerelease, CancellationToken.None);
         }
 
         private static LibraryDependency GenerateLibraryDependency(
@@ -329,7 +329,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            return new LibraryDependency
+            return new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
             {
                 LibraryRange = new LibraryRange(
                     name: packageReferenceArgs.PackageId,

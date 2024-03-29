@@ -12,7 +12,9 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Model;
 using NuGet.Versioning;
@@ -29,6 +31,7 @@ namespace NuGet.Commands.Restore.Utility
 
         internal PackageVulnerabilitySeverity MinSeverity { get; }
         internal NuGetAuditMode AuditMode { get; }
+        internal Dictionary<string, bool>? SuppressedAdvisories { get; }
         internal List<string>? DirectPackagesWithAdvisory { get; private set; }
         internal List<string>? TransitivePackagesWithAdvisory { get; private set; }
         internal int Sev0DirectMatches { get; private set; }
@@ -45,6 +48,8 @@ namespace NuGet.Commands.Restore.Utility
         internal double? CheckPackagesDurationSeconds { get; private set; }
         internal double? GenerateOutputDurationSeconds { get; private set; }
         internal int SourcesWithVulnerabilityData { get; private set; }
+        internal int DistinctAdvisoriesSuppressedCount { get; private set; }
+        internal int TotalWarningsSuppressedCount { get; private set; }
 
         public AuditUtility(
             ProjectModel.RestoreAuditProperties? restoreAuditProperties,
@@ -61,10 +66,26 @@ namespace NuGet.Commands.Restore.Utility
 
             MinSeverity = ParseAuditLevel();
             AuditMode = ParseAuditMode();
+
+            if (restoreAuditProperties?.SuppressedAdvisories != null)
+            {
+                SuppressedAdvisories = new Dictionary<string, bool>(restoreAuditProperties.SuppressedAdvisories.Count);
+
+                foreach (string advisory in restoreAuditProperties.SuppressedAdvisories)
+                {
+                    SuppressedAdvisories.Add(advisory, false);
+                }
+            }
         }
 
         public async Task CheckPackageVulnerabilitiesAsync(CancellationToken cancellationToken)
         {
+            // Performance: Early exit if restore graph does not contain any packages.
+            if (!HasPackages())
+            {
+                return;
+            }
+
             Stopwatch stopwatch = Stopwatch.StartNew();
             GetVulnerabilityInfoResult? allVulnerabilityData = await GetAllVulnerabilityDataAsync(cancellationToken);
             stopwatch.Stop();
@@ -84,6 +105,18 @@ namespace NuGet.Commands.Restore.Utility
             if (allVulnerabilityData.KnownVulnerabilities is not null)
             {
                 CheckPackageVulnerabilities(allVulnerabilityData.KnownVulnerabilities);
+            }
+
+            bool HasPackages()
+            {
+                foreach (RestoreTargetGraph graph in _targetGraphs)
+                {
+                    if (graph.Flattened.Any(r => r.Key.Type == LibraryType.Package))
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             bool AnyVulnerabilityDataFound(IReadOnlyList<IReadOnlyDictionary<string, IReadOnlyList<PackageVulnerabilityInfo>>>? knownVulnerabilities)
@@ -108,7 +141,6 @@ namespace NuGet.Commands.Restore.Utility
             {
                 var messageText = string.Format(Strings.Error_VulnerabilityDataFetch, exception.Message);
                 RestoreLogMessage logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1900, messageText);
-                logMessage.ProjectPath = _projectFullPath;
                 _logger.Log(logMessage);
             }
         }
@@ -148,7 +180,6 @@ namespace NuGet.Commands.Restore.Utility
                             message,
                             package.Id,
                             affectedGraphs.OrderBy(s => s).ToArray());
-                        restoreLogMessage.ProjectPath = _projectFullPath;
                         _logger.Log(restoreLogMessage);
                     }
                 }
@@ -255,6 +286,19 @@ namespace NuGet.Commands.Restore.Utility
                                 continue;
                             }
 
+                            if (SuppressedAdvisories?.TryGetValue(knownVulnerability.Url.OriginalString, out bool advisoryUsed) == true)
+                            {
+                                TotalWarningsSuppressedCount++;
+
+                                if (!advisoryUsed)
+                                {
+                                    SuppressedAdvisories[knownVulnerability.Url.OriginalString] = true;
+                                    DistinctAdvisoriesSuppressedCount++;
+                                }
+
+                                continue;
+                            }
+
                             result ??= new();
 
                             if (!result.TryGetValue(packageIdentity, out PackageAuditInfo? auditInfo))
@@ -347,28 +391,15 @@ namespace NuGet.Commands.Restore.Utility
                 return PackageVulnerabilitySeverity.Low;
             }
 
-            if (string.Equals("low", auditLevel, StringComparison.OrdinalIgnoreCase))
+            if (_restoreAuditProperties!.TryParseAuditLevel(out PackageVulnerabilitySeverity result))
             {
-                return PackageVulnerabilitySeverity.Low;
-            }
-            if (string.Equals("moderate", auditLevel, StringComparison.OrdinalIgnoreCase))
-            {
-                return PackageVulnerabilitySeverity.Moderate;
-            }
-            if (string.Equals("high", auditLevel, StringComparison.OrdinalIgnoreCase))
-            {
-                return PackageVulnerabilitySeverity.High;
-            }
-            if (string.Equals("critical", auditLevel, StringComparison.OrdinalIgnoreCase))
-            {
-                return PackageVulnerabilitySeverity.Critical;
+                return result;
             }
 
             string messageText = string.Format(Strings.Error_InvalidNuGetAuditLevelValue, auditLevel, "low, moderate, high, critical");
             RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-            message.ProjectPath = _projectFullPath;
             _logger.Log(message);
-            return 0;
+            return PackageVulnerabilitySeverity.Low;
         }
 
         internal enum NuGetAuditMode { Unknown, Direct, All }
@@ -399,27 +430,22 @@ namespace NuGet.Commands.Restore.Utility
         }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
-        public static bool ParseEnableValue(string? value, string projectFullPath, ILogger logger)
+        public static bool ParseEnableValue(RestoreAuditProperties? value, string projectFullPath, ILogger logger)
         {
-            // Earlier versions allowed "enable" and "default" to opt-in
-            if (string.IsNullOrEmpty(value)
-                || string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(value, "enable", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(value, "default", StringComparison.OrdinalIgnoreCase))
+            if (value == null)
             {
                 return true;
             }
-            if (string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(value, "disable", StringComparison.OrdinalIgnoreCase))
+
+            if (!value.TryParseEnableAudit(out bool result))
             {
-                return false;
+                string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
+                RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
+                message.ProjectPath = projectFullPath;
+                logger.Log(message);
             }
 
-            string messageText = string.Format(Strings.Error_InvalidNuGetAuditValue, value, "true, false");
-            RestoreLogMessage message = RestoreLogMessage.CreateError(NuGetLogCode.NU1014, messageText);
-            message.ProjectPath = projectFullPath;
-            logger.Log(message);
-            return true;
+            return result;
         }
 
         // Enum parsing and ToString are a magnitude of times slower than a naive implementation.

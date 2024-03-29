@@ -21,6 +21,10 @@ namespace NuGet.ProjectModel
 
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {
+            if (stream == null) throw new ArgumentNullException(nameof(stream));
+            if (log == null) throw new ArgumentNullException(nameof(log));
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
             using (var textReader = new StreamReader(stream))
             {
                 return Read(textReader, log, path);
@@ -60,7 +64,11 @@ namespace NuGet.ProjectModel
 
         public static void Write(Stream stream, CacheFile cacheFile)
         {
+#if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(stream))
+#else
+            using (var textWriter = new NoAllocNewLineStreamWriter(stream))
+#endif
             {
                 Write(textWriter, cacheFile);
             }
@@ -96,11 +104,6 @@ namespace NuGet.ProjectModel
                     if (!string.IsNullOrWhiteSpace(path))
                     {
                         cacheFile.ExpectedPackageFilePaths.Add(path);
-
-                        if (!cacheFile.HasAnyMissingPackageFiles && !File.Exists(path))
-                        {
-                            cacheFile.HasAnyMissingPackageFiles = true;
-                        }
                     }
                 }
 

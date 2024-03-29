@@ -227,6 +227,7 @@ namespace NuGet.SolutionRestoreManager
                 {
                     var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(CultureInfo.CurrentCulture, Resources.NU1105, projectNames.ShortName, e.Message));
                     restoreLogMessage.ProjectPath = projectUniqueName;
+                    restoreLogMessage.FilePath = projectUniqueName;
 
                     nominationErrors = new List<IAssetsLogMessage>()
                     {
@@ -348,6 +349,7 @@ namespace NuGet.SolutionRestoreManager
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath),
                     RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks),
                     CentralPackageVersionsEnabled = cpvmEnabled,
+                    CentralPackageFloatingVersionsEnabled = VSNominationUtilities.IsCentralPackageFloatingVersionsEnabled(TargetFrameworks),
                     CentralPackageVersionOverrideDisabled = VSNominationUtilities.IsCentralPackageVersionOverrideDisabled(TargetFrameworks),
                     CentralPackageTransitivePinningEnabled = VSNominationUtilities.IsCentralPackageTransitivePinningEnabled(TargetFrameworks),
                     RestoreAuditProperties = VSNominationUtilities.GetRestoreAuditProperties(TargetFrameworks),

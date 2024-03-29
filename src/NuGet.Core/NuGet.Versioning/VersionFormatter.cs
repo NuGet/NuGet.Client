@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.Versioning
 {
@@ -86,16 +87,16 @@ namespace NuGet.Versioning
                     builder.Append(version.Metadata);
                     return;
                 case 'x':
-                    builder.Append(version.Major);
+                    builder.AppendInt(version.Major);
                     return;
                 case 'y':
-                    builder.Append(version.Minor);
+                    builder.AppendInt(version.Minor);
                     return;
                 case 'z':
-                    builder.Append(version.Patch);
+                    builder.AppendInt(version.Patch);
                     return;
                 case 'r':
-                    builder.Append(version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
+                    builder.AppendInt(version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
                     return;
 
                 default:
@@ -135,16 +136,16 @@ namespace NuGet.Versioning
 
         private static void AppendVersion(StringBuilder builder, SemanticVersion version)
         {
-            builder.Append(version.Major);
+            builder.AppendInt(version.Major);
             builder.Append('.');
-            builder.Append(version.Minor);
+            builder.AppendInt(version.Minor);
             builder.Append('.');
-            builder.Append(version.Patch);
+            builder.AppendInt(version.Patch);
 
             if (version is NuGetVersion nuGetVersion && nuGetVersion.IsLegacyVersion)
             {
                 builder.Append('.');
-                builder.Append(nuGetVersion.Version.Revision);
+                builder.AppendInt(nuGetVersion.Version.Revision);
             }
         }
     }

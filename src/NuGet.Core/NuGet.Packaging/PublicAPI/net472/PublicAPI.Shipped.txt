@@ -1103,8 +1103,9 @@ NuGet.Packaging.Signing.SignatureVerificationStatusFlags.NoValidTimestamp = 1310
 NuGet.Packaging.Signing.SignatureVerificationStatusFlags.SignatureAlgorithmUnsupported = 16 -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
 NuGet.Packaging.Signing.SignatureVerificationStatusFlags.SignatureCheckFailed = 8 -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
 NuGet.Packaging.Signing.SignatureVerificationStatusFlags.Suspect = NuGet.Packaging.Signing.SignatureVerificationStatusFlags.IntegrityCheckFailed | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.CertificateRevoked -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
+NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UnknownBuildStatus = 524288 -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
 NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UnknownRevocation = 8192 -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
-NuGet.Packaging.Signing.SignatureVerificationStatusFlags.Untrusted = NuGet.Packaging.Signing.SignatureVerificationStatusFlags.NoSignature | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.CertificateExpired | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.ChainBuildingFailure | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UnknownRevocation | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UntrustedRoot | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.GeneralizedTimeOutsideValidity -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
+NuGet.Packaging.Signing.SignatureVerificationStatusFlags.Untrusted = NuGet.Packaging.Signing.SignatureVerificationStatusFlags.NoSignature | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.CertificateExpired | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.ChainBuildingFailure | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UnknownRevocation | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UntrustedRoot | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.GeneralizedTimeOutsideValidity | NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UnknownBuildStatus -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
 NuGet.Packaging.Signing.SignatureVerificationStatusFlags.UntrustedRoot = 32768 -> NuGet.Packaging.Signing.SignatureVerificationStatusFlags
 NuGet.Packaging.Signing.SignatureVerificationSummary
 NuGet.Packaging.Signing.SignatureVerificationSummary.ExpirationTime.get -> System.DateTimeOffset?
@@ -1294,6 +1295,7 @@ NuGet.RuntimeModel.IObjectWriter.WriteArrayEnd() -> void
 ~NuGet.RuntimeModel.IObjectWriter.WriteNameValue(string name, bool value) -> void
 ~NuGet.RuntimeModel.IObjectWriter.WriteNameValue(string name, int value) -> void
 ~NuGet.RuntimeModel.IObjectWriter.WriteNameValue(string name, string value) -> void
+~NuGet.RuntimeModel.IObjectWriter.WriteNonEmptyNameArray(string name, System.Collections.Generic.IEnumerable<string> values) -> void
 NuGet.RuntimeModel.IObjectWriter.WriteObjectEnd() -> void
 NuGet.RuntimeModel.IObjectWriter.WriteObjectStart() -> void
 ~NuGet.RuntimeModel.IObjectWriter.WriteObjectStart(string name) -> void
@@ -1306,6 +1308,7 @@ NuGet.RuntimeModel.JsonObjectWriter.WriteArrayEnd() -> void
 ~NuGet.RuntimeModel.JsonObjectWriter.WriteNameValue(string name, bool value) -> void
 ~NuGet.RuntimeModel.JsonObjectWriter.WriteNameValue(string name, int value) -> void
 ~NuGet.RuntimeModel.JsonObjectWriter.WriteNameValue(string name, string value) -> void
+~NuGet.RuntimeModel.JsonObjectWriter.WriteNonEmptyNameArray(string name, System.Collections.Generic.IEnumerable<string> values) -> void
 NuGet.RuntimeModel.JsonObjectWriter.WriteObjectEnd() -> void
 NuGet.RuntimeModel.JsonObjectWriter.WriteObjectStart() -> void
 ~NuGet.RuntimeModel.JsonObjectWriter.WriteObjectStart(string name) -> void

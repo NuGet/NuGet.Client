@@ -168,9 +168,7 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath, ExcludeVersion);
 
-            var installedPackageReferences = GetInstalledPackageReferences(
-                packagesConfigFilePath,
-                allowDuplicatePackageIds: true);
+            var installedPackageReferences = GetInstalledPackageReferences(packagesConfigFilePath);
 
             var packageRestoreData = installedPackageReferences.Select(reference =>
                 new PackageRestoreData(
@@ -192,6 +190,8 @@ namespace NuGet.CommandLine
                 packageRestoreFailedEvent: (sender, args) => { failedEvents.Enqueue(args); },
                 sourceRepositories: packageSources.Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                enableNuGetAudit: true,
+                restoreAuditProperties: new(),
                 logger: Console);
 
             var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;

@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
-using NuGet.Frameworks;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers;
 
-namespace NuGet.Test
+namespace NuGet.Frameworks.Test
 {
     public class FrameworkNameProviderTests
     {
@@ -150,7 +149,7 @@ namespace NuGet.Test
 
             var set = new HashSet<NuGetFramework>(frameworks!, NuGetFramework.Comparer);
 
-            Assert.False(set.Contains(input));
+            Assert.DoesNotContain(input, set);
         }
 
         [Fact]

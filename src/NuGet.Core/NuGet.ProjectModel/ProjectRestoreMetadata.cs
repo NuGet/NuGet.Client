@@ -123,6 +123,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool CentralPackageVersionOverrideDisabled { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether or not floating versions are allowed when using central package management (CPM).
+        /// </summary>
+        public bool CentralPackageFloatingVersionsEnabled { get; set; }
+
         public bool CentralPackageTransitivePinningEnabled { get; set; }
 
         public RestoreAuditProperties RestoreAuditProperties { get; set; }
@@ -153,6 +158,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(ProjectWideWarningProperties);
             hashCode.AddObject(RestoreLockProperties);
             hashCode.AddObject(CentralPackageVersionsEnabled);
+            hashCode.AddObject(CentralPackageFloatingVersionsEnabled);
             hashCode.AddObject(CentralPackageVersionOverrideDisabled);
             hashCode.AddObject(CentralPackageTransitivePinningEnabled);
             hashCode.AddObject(RestoreAuditProperties);
@@ -184,7 +190,7 @@ namespace NuGet.ProjectModel
                    osStringComparer.Equals(OutputPath, other.OutputPath) &&
                    osStringComparer.Equals(ProjectName, other.ProjectName) &&
                    osStringComparer.Equals(ProjectUniqueName, other.ProjectUniqueName) &&
-                   Sources.OrderedEquals(other.Sources.Distinct(), (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Source, b.Source)) &&
+                   GetSources(Sources).SetEqualsWithNullCheck(GetSources(other.Sources), StringComparer.OrdinalIgnoreCase) &&
                    osStringComparer.Equals(PackagesPath, other.PackagesPath) &&
                    ConfigFilePaths.OrderedEquals(other.ConfigFilePaths, (a, b) => osStringComparer.Compare(a, b), osStringComparer) &&
                    FallbackFolders.OrderedEquals(other.FallbackFolders, (a, b) => osStringComparer.Compare(a, b), osStringComparer) &&
@@ -198,9 +204,24 @@ namespace NuGet.ProjectModel
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
                    EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled) &&
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageFloatingVersionsEnabled, other.CentralPackageFloatingVersionsEnabled) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageVersionOverrideDisabled, other.CentralPackageVersionOverrideDisabled) &&
                    EqualityUtility.EqualsWithNullCheck(CentralPackageTransitivePinningEnabled, other.CentralPackageTransitivePinningEnabled) &&
                    RestoreAuditProperties == other.RestoreAuditProperties;
+        }
+
+        private HashSet<string> GetSources(IList<PackageSource> sources)
+        {
+#if NETSTANDARD2_0
+            var setSources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+#else
+            var setSources = new HashSet<string>(sources.Count, StringComparer.OrdinalIgnoreCase);
+#endif
+            for (var i = 0; i < sources.Count; i++)
+            {
+                setSources.Add(sources[i].Source);
+            }
+            return setSources;
         }
 
         public virtual ProjectRestoreMetadata Clone()
@@ -233,6 +254,7 @@ namespace NuGet.ProjectModel
             clone.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
             clone.RestoreLockProperties = RestoreLockProperties?.Clone();
             clone.CentralPackageVersionsEnabled = CentralPackageVersionsEnabled;
+            clone.CentralPackageFloatingVersionsEnabled = CentralPackageFloatingVersionsEnabled;
             clone.CentralPackageVersionOverrideDisabled = CentralPackageVersionOverrideDisabled;
             clone.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
             clone.RestoreAuditProperties = RestoreAuditProperties?.Clone();

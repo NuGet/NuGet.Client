@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -91,6 +92,9 @@ namespace NuGet.Commands
         private const string AuditEnabled = "Audit.Enabled";
         private const string AuditLevel = "Audit.Level";
         private const string AuditMode = "Audit.Mode";
+        private const string AuditSuppressedAdvisoriesDefinedCount = "Audit.SuppressedAdvisories.Defined.Count";
+        private const string AuditSuppressedAdvisoriesTotalWarningsSuppressedCount = "Audit.SuppressedAdvisories.TotalWarningsSuppressed.Count";
+        private const string AuditSuppressedAdvisoriesDistinctAdvisoriesSuppressedCount = "Audit.SuppressedAdvisories.DistinctAdvisoriesSuppressed.Count";
         private const string AuditDataSources = "Audit.DataSources";
         private const string AuditDirectVulnerabilitiesPackages = "Audit.Vulnerability.Direct.Packages";
         private const string AuditDirectVulnerabilitiesCount = "Audit.Vulnerability.Direct.Count";
@@ -191,7 +195,11 @@ namespace NuGet.Commands
                         telemetry.StartIntervalMeasure();
                         bool noOp;
                         TimeSpan? cacheFileAge;
+
+                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStart(_request.Project.FilePath);
                         (cacheFile, noOp, cacheFileAge) = EvaluateCacheFile();
+                        if (NuGetEventSource.IsEnabled) TraceEvents.CalcNoOpRestoreStop(_request.Project.FilePath);
+
                         telemetry.TelemetryEvent[NoOpCacheFileEvaluationResult] = noOp;
                         telemetry.EndIntervalMeasure(NoOpCacheFileEvaluateDuration);
                         if (noOp)
@@ -278,12 +286,14 @@ namespace NuGet.Commands
                     using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
                         // Restore
+                        if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
                         graphs = await ExecuteRestoreAsync(
                         _request.DependencyProviders.GlobalPackages,
                         _request.DependencyProviders.FallbackPackageFolders,
                         contextForProject,
                         token,
                         telemetry);
+                        if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                     }
                 }
                 else
@@ -305,7 +315,7 @@ namespace NuGet.Commands
                 }
 
                 bool auditEnabled = AuditUtility.ParseEnableValue(
-                    _request.Project.RestoreMetadata?.RestoreAuditProperties?.EnableAudit,
+                    _request.Project.RestoreMetadata?.RestoreAuditProperties,
                     _request.Project.FilePath,
                     _logger);
                 telemetry.TelemetryEvent[AuditEnabled] = auditEnabled ? "enabled" : "disabled";
@@ -316,12 +326,14 @@ namespace NuGet.Commands
 
                 telemetry.StartIntervalMeasure();
                 // Create assets file
+                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStart(_request.Project.FilePath);
                 LockFile assetsFile = BuildAssetsFile(
                     _request.ExistingLockFile,
                     _request.Project,
                     graphs,
                     localRepositories,
                     contextForProject);
+                if (NuGetEventSource.IsEnabled) TraceEvents.BuildAssetsFileStop(_request.Project.FilePath);
                 telemetry.EndIntervalMeasure(GenerateAssetsFileDuration);
 
                 IList<CompatibilityCheckResult> checkResults = null;
@@ -490,6 +502,9 @@ namespace NuGet.Commands
 
             telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;
             telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
+            telemetry.TelemetryEvent[AuditSuppressedAdvisoriesDefinedCount] = audit.SuppressedAdvisories?.Count ?? 0;
+            telemetry.TelemetryEvent[AuditSuppressedAdvisoriesDistinctAdvisoriesSuppressedCount] = audit.DistinctAdvisoriesSuppressedCount;
+            telemetry.TelemetryEvent[AuditSuppressedAdvisoriesTotalWarningsSuppressedCount] = audit.TotalWarningsSuppressedCount;
 
             if (audit.DirectPackagesWithAdvisory is not null) { AddPackagesList(telemetry, AuditDirectVulnerabilitiesPackages, audit.DirectPackagesWithAdvisory); }
             telemetry.TelemetryEvent[AuditDirectVulnerabilitiesCount] = audit.DirectPackagesWithAdvisory?.Count ?? 0;
@@ -598,12 +613,17 @@ namespace NuGet.Commands
                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1010, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_MissingPackageVersion, string.Join(";", packageReferencedDependenciesWithoutCentralVersionDefined.Select(d => d.Name)))));
                 return false;
             }
-            var floatingVersionDependencies = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.CentralPackageVersions.Values).Where(cpv => cpv.VersionRange.IsFloating);
-            if (floatingVersionDependencies.Any())
+
+            if (!restoreRequest.Project.RestoreMetadata.CentralPackageFloatingVersionsEnabled)
             {
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1011, Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
-                return false;
+                var floatingVersionDependencies = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.CentralPackageVersions.Values).Where(cpv => cpv.VersionRange.IsFloating);
+                if (floatingVersionDependencies.Any())
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1011, Strings.Error_CentralPackageVersions_FloatingVersionsAreNotAllowed));
+                    return false;
+                }
             }
+
             return true;
         }
 
@@ -1407,6 +1427,85 @@ namespace NuGet.Commands
                 project,
                 msbuildProjectPath: null,
                 projectReferences: Enumerable.Empty<string>());
+        }
+
+        private static class TraceEvents
+        {
+            private const string EventNameBuildAssetsFile = "RestoreCommand/BuildAssetsFile";
+            private const string EventNameBuildRestoreGraph = "RestoreCommand/BuildRestoreGraph";
+            private const string EventNameCalcNoOpRestore = "RestoreCommand/CalcNoOpRestore";
+
+            public static void BuildAssetsFileStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameBuildAssetsFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void BuildAssetsFileStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameBuildAssetsFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void BuildRestoreGraphStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameBuildRestoreGraph, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void BuildRestoreGraphStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameBuildRestoreGraph, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void CalcNoOpRestoreStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void CalcNoOpRestoreStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameCalcNoOpRestore, eventOptions, new { FilePath = filePath });
+            }
         }
     }
 }

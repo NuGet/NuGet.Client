@@ -325,11 +325,18 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        internal static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio, ITestLogger logger)
+        public static void OpenNuGetPackageManagerWithDte(VisualStudioHost visualStudio, ITestLogger logger)
         {
             visualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
             WaitForCommandAvailable(visualStudio, "Project.ManageNuGetPackages", TimeSpan.FromMinutes(1), logger);
             visualStudio.Dte.ExecuteCommand("Project.ManageNuGetPackages");
+        }
+
+        public static void RestoreNuGetPackages(VisualStudioHost visualStudio, ITestLogger logger)
+        {
+            visualStudio.ObjectModel.Solution.WaitForOperationsInProgress(TimeSpan.FromMinutes(3));
+            WaitForCommandAvailable(visualStudio, "ProjectAndSolutionContextMenus.Solution.RestoreNuGetPackages", TimeSpan.FromMinutes(1), logger);
+            visualStudio.Dte.ExecuteCommand("ProjectAndSolutionContextMenus.Solution.RestoreNuGetPackages");
         }
 
         private static void WaitForCommandAvailable(VisualStudioHost visualStudio, string commandName, TimeSpan timeout, ITestLogger logger)
@@ -389,7 +396,6 @@ namespace NuGet.Tests.Apex
         {
             var timeout = TimeSpan.FromSeconds(20);
             var timer = Stopwatch.StartNew();
-            string content = null;
 
             do
             {
@@ -398,9 +404,8 @@ namespace NuGet.Tests.Apex
                 {
                     try
                     {
-                        content = File.ReadAllText(path);
                         var format = new LockFileFormat();
-                        return format.Parse(content, path);
+                        return format.Read(path);
                     }
                     catch
                     {
@@ -449,6 +454,24 @@ namespace NuGet.Tests.Apex
                 Timeout,
                 Interval,
                 $"{file.FullName} still existed after {Timeout}.");
+        }
+
+        public static void WaitForDirectoryExists(string directoryPath)
+        {
+            Omni.Common.WaitFor.IsTrue(
+                () => Directory.Exists(directoryPath),
+                Timeout,
+                Interval,
+                $"{directoryPath} did not exist within {Timeout}.");
+        }
+
+        public static void WaitForDirectoryNotExists(string directoryPath)
+        {
+            Omni.Common.WaitFor.IsTrue(
+                () => !Directory.Exists(directoryPath),
+                Timeout,
+                Interval,
+                $"{directoryPath} still existed after {Timeout}.");
         }
 
         public static void UIInvoke(Action action)

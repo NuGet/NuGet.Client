@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
             BuildIntegratedInstallationContext __,
             CancellationToken token)
         {
-            var dependency = new LibraryDependency
+            var dependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
             {
                 LibraryRange = new LibraryRange(
                     name: packageId,
@@ -223,11 +223,15 @@ namespace NuGet.PackageManagement.VisualStudio
             container.AddFromFileCopy(fullPath);
         }
 
-        public override async Task<bool> UninstallPackageAsync(
+        public override Task<bool> UninstallPackageAsync(
             PackageIdentity packageIdentity, INuGetProjectContext _, CancellationToken token)
         {
-            await ProjectServices.References.RemovePackageReferenceAsync(packageIdentity.Id);
+            return UninstallPackageAsync(packageIdentity.Id);
+        }
 
+        private async Task<bool> UninstallPackageAsync(string id)
+        {
+            await ProjectServices.References.RemovePackageReferenceAsync(id);
             return true;
         }
 
@@ -256,6 +260,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return msbuildProjectExtensionsPath;
         }
 
+        [Obsolete("New properties should use IVsProjectBuildProperties.GetPropertyValue instead. Ideally we should migrate existing properties to stop using DTE as well.")]
         private static string GetPropertySafe(IVsProjectBuildProperties projectBuildProperties, string propertyName)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -272,7 +277,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var packagePath = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesPath);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (string.IsNullOrWhiteSpace(packagePath))
             {
@@ -286,7 +294,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var sources = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreSources)).AsEnumerable();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (ShouldReadFromSettings(sources))
             {
@@ -298,7 +309,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add additional sources
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             sources = sources.Concat(MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreAdditionalProjectSources)));
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return sources.Select(e => new PackageSource(UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e))).ToList();
         }
@@ -307,7 +321,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var fallbackFolders = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreFallbackFolders)).AsEnumerable();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (ShouldReadFromSettings(fallbackFolders))
             {
@@ -319,7 +336,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Add additional fallback folders
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             fallbackFolders = fallbackFolders.Concat(MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreAdditionalProjectFallbackFolders)));
+#pragma warning restore CS0618 // Type or member is obsolete
 
             return fallbackFolders.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectFullPath, e)).ToList();
         }
@@ -352,6 +372,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 .GetPackageReferencesAsync(targetFramework, CancellationToken.None))
                 .ToList();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var packageTargetFallback = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.PackageTargetFallback))
                 .Select(NuGetFramework.Parse)
                 .ToList();
@@ -359,6 +381,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var assetTargetFallback = MSBuildStringUtility.Split(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.AssetTargetFallback))
                 .Select(NuGetFramework.Parse)
                 .ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var projectTfi = new TargetFrameworkInformation
             {
@@ -366,7 +389,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dependencies = packageReferences,
             };
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             bool isCpvmEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.ManagePackageVersionsCentrally));
+#pragma warning restore CS0618 // Type or member is obsolete
             if (isCpvmEnabled)
             {
                 // Add the central version information and merge the information to the package reference dependencies
@@ -379,10 +405,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Build up runtime information.
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var runtimes = GetRuntimeIdentifiers(
                 GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifier),
                 GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeIdentifiers));
             var supports = GetRuntimeSupports(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RuntimeSupports));
+#pragma warning restore CS0618 // Type or member is obsolete
             var runtimeGraph = new RuntimeGraph(runtimes, supports);
 
             // In legacy CSProj, we only have one target framework per project
@@ -390,7 +419,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var projectName = ProjectName ?? ProjectUniqueName;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             string specifiedPackageId = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.PackageId);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (!string.IsNullOrWhiteSpace(specifiedPackageId))
             {
@@ -398,7 +430,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
+#pragma warning disable CS0618 // Type or member is obsolete
+                // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
                 string specifiedAssemblyName = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.AssemblyName);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 if (!string.IsNullOrWhiteSpace(specifiedAssemblyName))
                 {
@@ -419,6 +454,21 @@ namespace NuGet.PackageManagement.VisualStudio
                 : null;
 
             var msbuildProjectExtensionsPath = await GetMSBuildProjectExtensionsPathAsync();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Do not add new properties here. Use BuildProperties.GetPropertyValue instead, without DTE fallback.
+            string treatWarningsAsErrors = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.TreatWarningsAsErrors);
+            string noWarn = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NoWarn);
+            string warningsAsErrors = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsAsErrors);
+            string warningsNotAsErrors = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsNotAsErrors);
+            string restorePackagesWithLockFile = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesWithLockFile);
+            string nugetLockFilePath = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NuGetLockFilePath);
+            string restoreLockedMode = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreLockedMode);
+            string centralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled);
+            string centralPackageTransitivePinningEnabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled);
+            // Do not add new properties here. Use BuildProperties.GetPropertyValue instead, without DTE fallback.
+#pragma warning restore CS0618 // Type or member is obsolete
+
             return new PackageSpec(tfis)
             {
                 Name = projectName,
@@ -449,17 +499,18 @@ namespace NuGet.PackageManagement.VisualStudio
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
                     ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
-                        treatWarningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.TreatWarningsAsErrors),
-                        noWarn: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NoWarn),
-                        warningsAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsAsErrors),
-                        warningsNotAsErrors: GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.WarningsNotAsErrors)),
+                        treatWarningsAsErrors,
+                        noWarn,
+                        warningsAsErrors,
+                        warningsNotAsErrors),
                     RestoreLockProperties = new RestoreLockProperties(
-                        GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestorePackagesWithLockFile),
-                        GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.NuGetLockFilePath),
-                        MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.RestoreLockedMode))),
+                        restorePackagesWithLockFile,
+                        nugetLockFilePath,
+                        MSBuildStringUtility.IsTrue(restoreLockedMode)),
                     CentralPackageVersionsEnabled = isCpvmEnabled,
-                    CentralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled).EqualsFalse(),
-                    CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled)),
+                    CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled.EqualsFalse(),
+                    CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
+                    CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
                     RestoreAuditProperties = auditProperties,
                 }
             };
@@ -522,5 +573,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         /// <inheritdoc/>
         protected override Dictionary<string, ProjectInstalledPackage> GetCollectionCopy(Dictionary<string, ProjectInstalledPackage> collection) => new(collection);
+
+        public override Task<bool> UninstallPackageAsync(string packageId, BuildIntegratedInstallationContext _, CancellationToken token)
+        {
+            if (string.IsNullOrEmpty(packageId)) throw new ArgumentException(string.Format(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
+            return UninstallPackageAsync(packageId);
+        }
     }
 }

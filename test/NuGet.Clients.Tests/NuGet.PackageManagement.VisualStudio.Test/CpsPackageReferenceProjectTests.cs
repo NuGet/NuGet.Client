@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
@@ -44,8 +43,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public CpsPackageReferenceProjectTests(GlobalServiceProvider globalServiceProvider)
             : base(globalServiceProvider)
         {
-            var componentModel = new Mock<IComponentModel>();
-
             var mockOutputConsoleUtility = OutputConsoleUtility.GetMock();
             _outputConsoleProviderMock = mockOutputConsoleUtility.mockIOutputConsoleProvider;
             _outputConsoleProvider = new Lazy<IOutputConsoleProvider>(() => _outputConsoleProviderMock.Object);
@@ -581,10 +578,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(builtIntegratedActions[0].VersionRange, VersionRange.Parse(versionRange));
 
                 var finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
-                && f.PackageIdentity.Version == packageA.Version));
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageA.Id
+                && f.PackageIdentity.Version == packageA.Version);
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
             }
         }
 
@@ -692,10 +689,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(builtIntegratedActions[0].VersionRange, VersionRange.Parse(versionRange));
 
                 var finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
-                && f.PackageIdentity.Version == packageA.Version));
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_V1.Id
-                && f.PackageIdentity.Version.ToString() == "1.8.0"));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageA.Id
+                && f.PackageIdentity.Version == packageA.Version);
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_V1.Id
+                && f.PackageIdentity.Version.ToString() == "1.8.0");
             }
         }
 
@@ -832,10 +829,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                 {
                     var finalInstalledPackages = (await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
-                    && f.PackageIdentity.Version == packageA.Version));
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                    && f.PackageIdentity.Version == packageB.Version));
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageA.Id
+                    && f.PackageIdentity.Version == packageA.Version);
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                    && f.PackageIdentity.Version == packageB.Version);
                 }
             }
         }
@@ -995,10 +992,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                 {
                     var finalInstalledPackages = (await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
-                    && f.PackageIdentity.Version == packageA.Version));
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                    && f.PackageIdentity.Version == packageB.Version));
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageA.Id
+                    && f.PackageIdentity.Version == packageA.Version);
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                    && f.PackageIdentity.Version == packageB.Version);
                 }
             }
         }
@@ -1127,10 +1124,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                 {
                     var finalInstalledPackages = (await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageA.Id
-                    && f.PackageIdentity.Version == packageA.Version));
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                    && f.PackageIdentity.Version == packageB.Version));
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageA.Id
+                    && f.PackageIdentity.Version == packageA.Version);
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                    && f.PackageIdentity.Version == packageB.Version);
                 }
             }
         }
@@ -1265,8 +1262,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                 {
                     var finalInstalledPackages = (await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
-                    && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_UpgradeVersion.Version);
                 }
                 var restoringLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restoring packages for ")).ToList();
                 var restoredLogs = testNuGetProjectContext.Logs.Value.Where(l => l.StartsWith("Restored ")).ToList();
@@ -1421,16 +1418,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project has packageB upgraded version.
                 var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
-                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version);
                 // Make sure middle parent project still have non-upgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
                 // Make sure bottom project still have non-upgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
             }
         }
 
@@ -1571,16 +1568,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project still have non-upgraded version.
                 var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
                 // Make sure middle parent project have upgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
-                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version);
                 // Make sure bottom project still have non-upgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
             }
         }
 
@@ -1721,16 +1718,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.True(builtIntegratedActions.All(b => !b.RestoreResult.LogMessages.Any())); // There should be no error or warning.
                 // Make sure top parent project still have non-upgraded version.
                 var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
                 // Make sure middle parent project still have non-upgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
                 // Make sure bottom project have upgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
-                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_UpgradeVersion.Id
+                && f.PackageIdentity.Version == packageB_UpgradeVersion.Version);
             }
         }
 
@@ -1866,8 +1863,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 foreach (var netCorePackageReferenceProject in netCorePackageReferenceProjects)
                 {
                     var finalInstalledPackages = await netCorePackageReferenceProject.GetInstalledPackagesAsync(CancellationToken.None);
-                    Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
-                    && f.PackageIdentity.Version == packageB_DowngradeVersion.Version));
+                    Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
+                    && f.PackageIdentity.Version == packageB_DowngradeVersion.Version);
                 }
             }
         }
@@ -2274,16 +2271,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(builtIntegratedActions.Sum(b => b.RestoreResult.LogMessages.Count()), 0);
                 // Make sure top parent project still have non-downgraded version.
                 var finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 1].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
                 // Make sure middle parent project still have non-downgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[numberOfProjects - 2].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB.Id
-                && f.PackageIdentity.Version == packageB.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB.Id
+                && f.PackageIdentity.Version == packageB.Version);
                 // Make sure bottom project have downgraded version.
                 finalInstalledPackages = (await netCorePackageReferenceProjects[0].GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-                Assert.True(finalInstalledPackages.Any(f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
-                && f.PackageIdentity.Version == packageB_DowngradeVersion.Version));
+                Assert.Contains(finalInstalledPackages, f => f.PackageIdentity.Id == packageB_DowngradeVersion.Id
+                && f.PackageIdentity.Version == packageB_DowngradeVersion.Version);
             }
         }
 
@@ -2482,7 +2479,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Assert
                 Assert.True(telemetryEvents.Count > 1);
                 var actionTelemetryStepEvents = telemetryEvents.OfType<ActionTelemetryStepEvent>();
-                Assert.True(actionTelemetryStepEvents.Any(t => t.SubStepName.Contains("Preview build integrated action time")));
+                Assert.Contains(actionTelemetryStepEvents, t => t.SubStepName.Contains("Preview build integrated action time"));
                 var builtIntegratedActions = actions.OfType<BuildIntegratedProjectAction>().ToList();
                 Assert.Equal(actions.Length, netCorePackageReferenceProjects.Count());
                 Assert.Equal(actions.Length, builtIntegratedActions.Count);
@@ -3652,7 +3649,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 // Assert
                 Assert.NotNull(exception);
-                Assert.True(exception.Message.StartsWith($"Package '{nonexistingPackage}' to be uninstalled could not be found in project"));
+                Assert.StartsWith($"Package '{nonexistingPackage}' to be uninstalled could not be found in project", exception.Message);
             }
         }
 

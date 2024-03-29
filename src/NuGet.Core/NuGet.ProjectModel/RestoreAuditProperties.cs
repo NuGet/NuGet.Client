@@ -4,6 +4,8 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using NuGet.Protocol;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
@@ -27,13 +29,75 @@ namespace NuGet.ProjectModel
         /// <value>direct, all</value>
         public string? AuditMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets values indicating which advisories to suppress.
+        /// </summary>
+        public HashSet<string>? SuppressedAdvisories { get; set; }
+
+        // Enum parsing and ToString are a magnitude of times slower than a naive implementation.
+        public bool TryParseEnableAudit(out bool result)
+        {
+            // Earlier versions allowed "enable" and "default" to opt-in
+            if (string.IsNullOrEmpty(EnableAudit)
+                || string.Equals(EnableAudit, bool.TrueString, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(EnableAudit, "enable", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(EnableAudit, "default", StringComparison.OrdinalIgnoreCase))
+            {
+                result = true;
+                return true;
+            }
+            if (string.Equals(EnableAudit, bool.FalseString, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(EnableAudit, "disable", StringComparison.OrdinalIgnoreCase))
+            {
+                result = false;
+                return true;
+            }
+            result = true;
+
+            return false;
+        }
+
+        public bool TryParseAuditLevel(out PackageVulnerabilitySeverity result)
+        {
+            if (AuditLevel == null)
+            {
+                result = PackageVulnerabilitySeverity.Low;
+                return true;
+            }
+
+            if (string.Equals(AuditLevel, "low", StringComparison.OrdinalIgnoreCase))
+            {
+                result = PackageVulnerabilitySeverity.Low;
+                return true;
+            }
+            if (string.Equals(AuditLevel, "moderate", StringComparison.OrdinalIgnoreCase))
+            {
+                result = PackageVulnerabilitySeverity.Moderate;
+                return true;
+            }
+            if (string.Equals(AuditLevel, "high", StringComparison.OrdinalIgnoreCase))
+            {
+                result = PackageVulnerabilitySeverity.High;
+                return true;
+            }
+            if (string.Equals(AuditLevel, "critical", StringComparison.OrdinalIgnoreCase))
+            {
+                result = PackageVulnerabilitySeverity.Critical;
+                return true;
+            }
+
+            result = PackageVulnerabilitySeverity.Unknown;
+            return false;
+        }
+
         public bool Equals(RestoreAuditProperties? other)
         {
             if (other is null) return false;
 
             return EnableAudit == other.EnableAudit &&
                 AuditLevel == other.AuditLevel &&
-                AuditMode == other.AuditMode;
+                AuditMode == other.AuditMode &&
+                SuppressedAdvisories.SetEqualsWithNullCheck(other.SuppressedAdvisories);
         }
 
         public override bool Equals(object? obj)
@@ -60,6 +124,7 @@ namespace NuGet.ProjectModel
             hashCodeCombiner.AddObject(EnableAudit);
             hashCodeCombiner.AddObject(AuditLevel);
             hashCodeCombiner.AddObject(AuditMode);
+            hashCodeCombiner.AddUnorderedSequence(SuppressedAdvisories);
             return hashCodeCombiner.CombinedHash;
         }
 
@@ -70,6 +135,7 @@ namespace NuGet.ProjectModel
                 EnableAudit = EnableAudit,
                 AuditLevel = AuditLevel,
                 AuditMode = AuditMode,
+                SuppressedAdvisories = SuppressedAdvisories == null ? null : new HashSet<string>(SuppressedAdvisories),
             };
             return clone;
         }

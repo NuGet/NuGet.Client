@@ -229,9 +229,9 @@ namespace NuGet.SolutionRestoreManager
         {
             return WarningProperties.GetWarningProperties(
                         treatWarningsAsErrors: GetSingleOrDefaultPropertyValue(targetFrameworks, ProjectBuildProperties.TreatWarningsAsErrors, e => e),
-                        warningsAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsAsErrors, e => MSBuildStringUtility.GetNuGetLogCodes(e)),
-                        noWarn: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.NoWarn, e => MSBuildStringUtility.GetNuGetLogCodes(e)),
-                        warningsNotAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsNotAsErrors, e => MSBuildStringUtility.GetNuGetLogCodes(e)));
+                        warningsAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsAsErrors, MSBuildStringUtility.GetNuGetLogCodes),
+                        noWarn: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.NoWarn, MSBuildStringUtility.GetNuGetLogCodes),
+                        warningsNotAsErrors: GetSingleOrDefaultNuGetLogCodes(targetFrameworks, ProjectBuildProperties.WarningsNotAsErrors, MSBuildStringUtility.GetNuGetLogCodes));
         }
 
         /// <summary>
@@ -295,6 +295,11 @@ namespace NuGet.SolutionRestoreManager
         internal static bool IsCentralPackageVersionOverrideDisabled(IEnumerable tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.CentralPackageVersionOverrideEnabled, (value) => value.EqualsFalse());
+        }
+
+        internal static bool IsCentralPackageFloatingVersionsEnabled(IEnumerable tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.CentralPackageFloatingVersionsEnabled, MSBuildStringUtility.IsTrue);
         }
 
         internal static bool IsCentralPackageTransitivePinningEnabled(IEnumerable tfms)
@@ -369,7 +374,23 @@ namespace NuGet.SolutionRestoreManager
             string propertyName,
             Func<string, TValue> valueFactory)
         {
-            return GetNonEvaluatedPropertyOrNull(values, propertyName, valueFactory).SingleOrDefault();
+            var distinctValues = GetNonEvaluatedPropertyOrNull(values, propertyName, valueFactory).ToList();
+
+            if (distinctValues.Count == 0)
+            {
+                return default(TValue);
+            }
+            else if (distinctValues.Count == 1)
+            {
+                return distinctValues[0];
+            }
+            else
+            {
+                distinctValues.Sort();
+                var distinctValueStrings = string.Join(", ", distinctValues);
+                var message = string.Format(CultureInfo.CurrentCulture, Resources.PropertyDoesNotHaveSingleValue, propertyName, distinctValueStrings);
+                throw new InvalidOperationException(message);
+            }
         }
 
         /// <summary>
@@ -398,7 +419,10 @@ namespace NuGet.SolutionRestoreManager
 
             TryGetVersionRange(item, "VersionOverride", out VersionRange versionOverrideRange);
 
-            var dependency = new LibraryDependency
+            // Get warning suppressions
+            IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn));
+
+            var dependency = new LibraryDependency(noWarn)
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
@@ -411,12 +435,6 @@ namespace NuGet.SolutionRestoreManager
                 Aliases = GetPropertyValueOrNull(item, "Aliases"),
                 VersionOverride = versionOverrideRange
             };
-
-            // Add warning suppressions
-            foreach (var code in MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn)))
-            {
-                dependency.NoWarn.Add(code);
-            }
 
             MSBuildRestoreUtility.ApplyIncludeFlags(
                 dependency,

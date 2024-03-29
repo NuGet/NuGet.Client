@@ -67,8 +67,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Check that the project supports both CPS and PackageReferences
-            if (!(await vsProject.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.Cps) &&
-                await vsProject.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences)))
+            if (!(vsProject.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.Cps) &&
+                vsProject.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences)))
             {
                 return null;
             }
@@ -76,7 +76,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var buildProperties = vsProject.BuildProperties;
 
             // read MSBuild property RestoreProjectStyle
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var restoreProjectStyle = buildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.RestoreProjectStyle);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // check for RestoreProjectStyle property is set and if not set to PackageReference then return false
             if (!(string.IsNullOrEmpty(restoreProjectStyle) ||

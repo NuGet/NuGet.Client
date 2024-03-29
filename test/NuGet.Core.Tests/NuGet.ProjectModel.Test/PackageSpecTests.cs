@@ -109,7 +109,7 @@ namespace NuGet.ProjectModel.Test
             Assert.NotEqual(originalPackOptions, clone);
             Assert.Equal(originalPackageName, clone.PackageType[0].Name);
 
-            // Set Up again
+            // Arrange again
             originalPackOptions.Mappings.Add("randomString", files);
 
             // Act again
@@ -229,7 +229,7 @@ namespace NuGet.ProjectModel.Test
         //[InlineData("ModifyRestoreSettings", true)] = Not really included in the equals and hash code comparisons
         public void PackageSpecCloneTest(string methodName, bool validateJson)
         {
-            // Set up
+            // Arrange
             var packageSpec = CreatePackageSpec();
             var clonedPackageSpec = packageSpec.Clone();
 
@@ -407,7 +407,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataCloneTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
             // Act
 
@@ -421,7 +421,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataCloneChangeSourcesTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
 
             // Preconditions
@@ -438,9 +438,98 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
+        public void ProjectRestoreMetadataEqualityAccountsForDuplicates()
+        {
+            // Arrange
+            var left = CreateProjectRestoreMetadata();
+            var right = CreateProjectRestoreMetadata();
+            left.Sources = new List<PackageSource>() { new PackageSource("http://api.nuget.org/v3/index.json"), new PackageSource("C:\\source"), new PackageSource("http://api.nuget.org/v3/index.json") };
+            right.Sources = new List<PackageSource>() { new PackageSource("C:\\source"), new PackageSource("http://api.nuget.org/v3/index.json"), new PackageSource("http://api.nuget.org/v3/index.json") };
+
+            // Act & Assert
+            Assert.Equal(left, right);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageVersionsEnabledTest()
+        {
+            // Arrange
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageVersionsEnabled = !originalProjectRestoreMetadata.CentralPackageVersionsEnabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageVersionsEnabled, !happyClone.CentralPackageVersionsEnabled);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageFloatingVersionsEnabledTest()
+        {
+            // Arrange
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled = !originalProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageFloatingVersionsEnabled, !happyClone.CentralPackageFloatingVersionsEnabled);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageVersionOverrideDisabledTest()
+        {
+            // Arrange
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled = !originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageVersionOverrideDisabled, !happyClone.CentralPackageVersionOverrideDisabled);
+        }
+
+        [Fact]
+        public void ProjectRestoreMetadataCloneChangeCentralPackageTransitivePinningEnabledTest()
+        {
+            // Arrange
+            var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
+
+            // Preconditions
+            var happyClone = originalProjectRestoreMetadata.Clone();
+            Assert.Equal(originalProjectRestoreMetadata, happyClone);
+            Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
+
+            // Act
+            originalProjectRestoreMetadata.CentralPackageTransitivePinningEnabled = !originalProjectRestoreMetadata.CentralPackageTransitivePinningEnabled;
+
+            // Assert
+            Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
+            Assert.Equal(originalProjectRestoreMetadata.CentralPackageTransitivePinningEnabled, !happyClone.CentralPackageTransitivePinningEnabled);
+        }
+
+        [Fact]
         public void ProjectRestoreMetadataCloneChangeFallbackFoldersTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
 
             // Preconditions
@@ -459,7 +548,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataCloneChangeConfigFilePathsTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
 
             // Preconditions
@@ -478,7 +567,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataCloneChangeOriginalTargetFrameworksTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
 
             // Preconditions
@@ -497,7 +586,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataCloneChangeFilesTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
 
             // Preconditions
@@ -516,7 +605,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreMetadataCloneChangeProjectWideWarningPropertiesTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadata = CreateProjectRestoreMetadata();
 
             // Preconditions
@@ -525,17 +614,17 @@ namespace NuGet.ProjectModel.Test
             Assert.False(object.ReferenceEquals(originalProjectRestoreMetadata, happyClone));
 
             // Act
-            originalProjectRestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false; ;
+            originalProjectRestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors = false;
 
             // Assert
             Assert.NotEqual(originalProjectRestoreMetadata, happyClone);
-            Assert.Equal(true, happyClone.ProjectWideWarningProperties.AllWarningsAsErrors);
+            Assert.True(happyClone.ProjectWideWarningProperties.AllWarningsAsErrors);
         }
 
         [Fact]
         public void ProjectRestoreMetadataFileCloneTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreMetadataFile = new ProjectRestoreMetadataFile("packagePath", "absolutePath");
 
             // Act
@@ -579,7 +668,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreReferenceCloneTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreReference = new ProjectRestoreReference();
             originalProjectRestoreReference.ProjectPath = "Path";
             originalProjectRestoreReference.ProjectUniqueName = "ProjectUniqueName";
@@ -605,7 +694,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void ProjectRestoreSettingsCloneTest()
         {
-            // Set up
+            // Arrange
             var originalProjectRestoreSettings = CreateProjectRestoreSettings();
 
             // Act
@@ -649,7 +738,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void TargetFrameworkInformationCloneTest()
         {
-            // Set up
+            // Arrange
             var originalTargetFrameworkInformation = CreateTargetFrameworkInformation();
 
             // Act
@@ -731,7 +820,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void WarningPropertiesCloneTest()
         {
-            // Set up
+            // Arrange
             var allWarningsAsErrors = false;
             var noWarn = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1000, NuGetLogCode.NU1500 };
             var warningsAsErrors = new HashSet<NuGetLogCode>() { NuGetLogCode.NU1001, NuGetLogCode.NU1501 };

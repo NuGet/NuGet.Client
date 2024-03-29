@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
@@ -123,8 +124,14 @@ namespace NuGet.Frameworks
             }
             else if (reverse.ContainsKey(key))
             {
-                value = reverse.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Key, key)).Select(s => s.Key).Single();
-                return true;
+                foreach (var item in reverse.NoAllocEnumerate())
+                {
+                    if (StringComparer.OrdinalIgnoreCase.Equals(item.Key, key))
+                    {
+                        value = item.Key;
+                        return true;
+                    }
+                }
             }
 
             value = null;
@@ -235,23 +242,23 @@ namespace NuGet.Frameworks
                 if (partCount == 1)
                     partCount = 2;
 
-                sb.Append(major);
+                sb.AppendInt(major);
                 if (partCount > 1)
-                    sb.Append('.').Append(minor);
+                    sb.Append('.').AppendInt(minor);
                 if (partCount > 2)
-                    sb.Append('.').Append(build);
+                    sb.Append('.').AppendInt(build);
                 if (partCount > 3)
-                    sb.Append('.').Append(revision);
+                    sb.Append('.').AppendInt(revision);
             }
             else
             {
-                sb.Append(major);
+                sb.AppendInt(major);
                 if (partCount > 1)
-                    sb.Append(minor);
+                    sb.AppendInt(minor);
                 if (partCount > 2)
-                    sb.Append(build);
+                    sb.AppendInt(build);
                 if (partCount > 3)
-                    sb.Append(revision);
+                    sb.AppendInt(revision);
             }
 
             return StringBuilderPool.Shared.ToStringAndReturn(sb);
@@ -405,15 +412,20 @@ namespace NuGet.Frameworks
                     remaining!.Add(fw);
                 }
 
-                var equalFrameworks = new HashSet<NuGetFramework>();
-                // include ourselves
-                equalFrameworks.Add(current!);
+                HashSet<NuGetFramework> equalFrameworks;
 
                 // find all equivalent frameworks for the current one
                 if (_equivalentFrameworks.TryGetValue(current!, out HashSet<NuGetFramework>? curFrameworks))
                 {
-                    UnionWith(equalFrameworks, curFrameworks);
+                    equalFrameworks = new HashSet<NuGetFramework>(curFrameworks);
                 }
+                else
+                {
+                    equalFrameworks = new HashSet<NuGetFramework>();
+                }
+
+                // include ourselves
+                equalFrameworks.Add(current!);
 
                 foreach (var fw in equalFrameworks)
                 {

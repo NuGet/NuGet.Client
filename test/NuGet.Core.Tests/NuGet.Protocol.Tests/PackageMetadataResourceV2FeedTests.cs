@@ -31,7 +31,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
 
             // Act
             var metadata = await packageMetadataResource.GetMetadataAsync("WindowsAzure.Storage", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -45,7 +45,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("WindowsAzure.Storage", latestPackage.Title);
             Assert.Equal("Microsoft", latestPackage.Authors);
             Assert.Equal("", latestPackage.Owners);
-            Assert.True(latestPackage.Description.StartsWith("This client library enables"));
+            Assert.StartsWith("This client library enables", latestPackage.Description);
             Assert.Equal(3957668, latestPackage.DownloadCount);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkID=288890", latestPackage.IconUrl.AbsoluteUri);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", latestPackage.LicenseUrl.AbsoluteUri);
@@ -72,7 +72,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
 
             // Act
             var metadata = await packageMetadataResource.GetMetadataAsync("afine", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -97,7 +97,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
 
             // Act
             var metadata = await packageMetadataResource.GetMetadataAsync("not-found", true, false, NullSourceCacheContext.Instance, NullLogger.Instance, CancellationToken.None);
@@ -119,7 +119,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
 
             var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview"));
 
@@ -146,7 +146,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
+            var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
 
             var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("0.0.0"));
 

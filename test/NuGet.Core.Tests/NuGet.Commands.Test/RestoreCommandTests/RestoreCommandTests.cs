@@ -1302,7 +1302,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 // Assert
                 Assert.False(result.Success);
-                Assert.True(logger.ErrorMessages.Any(s => s.Contains("Cycle detected")));
+                Assert.Contains(logger.ErrorMessages, s => s.Contains("Cycle detected"));
             }
         }
 
@@ -1984,12 +1984,21 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             }
         }
 
-        [Fact]
-        public async Task RestoreCommand_CentralVersion_ErrorWhenFloatingCentralVersions()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_CentralVersion_ErrorWhenFloatingCentralVersions(bool enabled)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    new SimpleTestPackageContext("foo", "1.0.0"));
+
+                using var context = new SourceCacheContext();
+
                 var projectName = "TestProject";
                 var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
                 var outputPath = Path.Combine(projectPath, "obj");
@@ -2005,23 +2014,27 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                     new List<LibraryDependency>() { packageRefDependecyFoo },
                     new List<CentralPackageVersion>() { centralVersionFoo });
 
-                var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
-                packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
+                var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi })
                 {
-                    ProjectUniqueName = projectName,
-                    CentralPackageVersionsEnabled = true,
-                    ProjectStyle = ProjectStyle.PackageReference,
-                    OutputPath = outputPath,
+                    FilePath = projectPath,
+                    Name = projectName,
+                    RestoreMetadata = new ProjectRestoreMetadata()
+                    {
+                        ProjectUniqueName = projectName,
+                        CentralPackageVersionsEnabled = true,
+                        CentralPackageFloatingVersionsEnabled = enabled,
+                        ProjectStyle = ProjectStyle.PackageReference,
+                        OutputPath = outputPath,
+                    }
                 };
-                packageSpec.FilePath = projectPath;
 
                 var dgspec = new DependencyGraphSpec();
                 dgspec.AddProject(packageSpec);
 
-                var sources = new List<PackageSource>();
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
                 var logger = new TestLogger();
 
-                var request = new TestRestoreRequest(dgspec.GetProjectSpec(projectName), sources, "", logger)
+                var request = new TestRestoreRequest(packageSpec, sources, "", logger)
                 {
                     LockFilePath = Path.Combine(projectPath, "project.assets.json"),
                     ProjectStyle = ProjectStyle.PackageReference
@@ -2032,13 +2045,19 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var result = await restoreCommand.ExecuteAsync();
 
                 // Assert
-                Assert.False(result.Success);
-                Assert.Equal(1, logger.ErrorMessages.Count);
-                logger.ErrorMessages.TryDequeue(out var errorMessage);
-                Assert.True(errorMessage.Contains("Centrally defined floating package versions are not allowed."));
-                var messagesForNU1011 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1011);
-                Assert.Equal(1, messagesForNU1011.Count());
-
+                if (enabled)
+                {
+                    Assert.True(result.Success);
+                }
+                else
+                {
+                    Assert.False(result.Success);
+                    Assert.Equal(1, logger.ErrorMessages.Count);
+                    logger.ErrorMessages.TryDequeue(out var errorMessage);
+                    Assert.True(errorMessage.Contains("Centrally defined floating package versions are not allowed."));
+                    var messagesForNU1011 = result.LockFile.LogMessages.Where(m => m.Code == NuGetLogCode.NU1011);
+                    Assert.Equal(1, messagesForNU1011.Count());
+                }
             }
         }
 
@@ -2253,7 +2272,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 Assert.True(result.Success);
                 Assert.NotNull(targetLib);
                 Assert.Equal(1, targetLib.Dependencies.Count);
-                Assert.True(targetLib.Dependencies.Any(d => d.Id == packageName));
+                Assert.Contains(targetLib.Dependencies, d => d.Id == packageName);
             }
         }
 
@@ -2788,6 +2807,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
             PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
             packageSpec.RestoreMetadata.RestoreAuditProperties.EnableAudit = bool.TrueString;
+            packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories = new HashSet<string> { "https://cve-1" };
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -2854,6 +2874,9 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
                 ["Audit.Level"] = value => value.Should().Be(0),
                 ["Audit.Mode"] = value => value.Should().Be("Unknown"),
+                ["Audit.SuppressedAdvisories.Defined.Count"] = value => value.Should().Be(1),
+                ["Audit.SuppressedAdvisories.TotalWarningsSuppressed.Count"] = value => value.Should().Be(0),
+                ["Audit.SuppressedAdvisories.DistinctAdvisoriesSuppressed.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Count"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity0"] = value => value.Should().Be(0),
                 ["Audit.Vulnerability.Direct.Severity1"] = value => value.Should().Be(0),
@@ -3190,9 +3213,103 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             }
         }
 
-        private static PackageSpec GetPackageSpec(string projectName, string testDirectory, string referenceSpec)
+        [Fact]
+        public async Task ExecuteAsync_ProjectWithWarnings_SkipsWritingAssetsFileWhenUpToDate()
         {
-            return JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, testDirectory).WithTestRestoreMetadata();
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(projectName, pathContext.SolutionRoot, "net472", "a");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.5.0"));
+
+            var logger = new TestLogger();
+
+            // Pre-Conditions
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+
+            await result.CommitAsync(logger, CancellationToken.None);
+            var logMessages = result.LogMessages;
+            logMessages.Should().HaveCount(1);
+            logMessages[0].Code.Should().Be(NuGetLogCode.NU1603);
+            DateTime assetsFileWriteTime = GetFileLastWriteTime(result.LockFilePath);
+
+            // Act
+            var forceRequest = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+            forceRequest.AllowNoOp = false;
+            var forceRestoreCommand = new RestoreCommand(forceRequest);
+            RestoreResult forceResult = await forceRestoreCommand.ExecuteAsync();
+            await forceResult.CommitAsync(logger, CancellationToken.None);
+
+            // Assert
+            forceResult.Success.Should().BeTrue(because: logger.ShowMessages());
+            logMessages = forceResult.LogMessages;
+            logMessages.Should().HaveCount(1);
+            logMessages[0].Code.Should().Be(NuGetLogCode.NU1603);
+
+            var currentWriteTime = GetFileLastWriteTime(result.LockFilePath);
+            currentWriteTime.Should().Be(assetsFileWriteTime);
+
+            static DateTime GetFileLastWriteTime(string path)
+            {
+                var fileInfo = new FileInfo(path);
+                fileInfo.Exists.Should().BeTrue();
+                return fileInfo.LastWriteTimeUtc;
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ProjectWithDuplicateSources_SkipsWritingAssetsFileWhenUpToDate()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var projectName = "TestProject";
+            pathContext.Settings.AddSource("extra-source", pathContext.PackageSource);
+            ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            PackageSpec packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName, pathContext.SolutionRoot, "net472", "a");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+
+            var logger = new TestLogger();
+
+            // Pre-Conditions
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+
+            await result.CommitAsync(logger, CancellationToken.None);
+            result.LogMessages.Should().HaveCount(0);
+            DateTime assetsFileWriteTime = GetFileLastWriteTime(result.LockFilePath);
+
+            // Act
+            var forceRequest = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, packageSpec);
+            forceRequest.AllowNoOp = false;
+            var forceRestoreCommand = new RestoreCommand(forceRequest);
+            RestoreResult forceResult = await forceRestoreCommand.ExecuteAsync();
+            await forceResult.CommitAsync(logger, CancellationToken.None);
+
+            // Assert
+            forceResult.Success.Should().BeTrue(because: logger.ShowMessages());
+            var currentWriteTime = GetFileLastWriteTime(result.LockFilePath);
+            currentWriteTime.Should().Be(assetsFileWriteTime);
+
+            static DateTime GetFileLastWriteTime(string path)
+            {
+                var fileInfo = new FileInfo(path);
+                fileInfo.Exists.Should().BeTrue();
+                return fileInfo.LastWriteTimeUtc;
+            }
         }
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)

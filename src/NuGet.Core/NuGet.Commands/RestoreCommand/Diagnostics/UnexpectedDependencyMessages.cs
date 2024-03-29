@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace NuGet.Commands
     /// <summary>
     /// Log warnings for packages that did not resolve to the minimum version of the dependency range.
     /// </summary>
-    public static class UnexpectedDependencyMessages
+    internal static class UnexpectedDependencyMessages
     {
         /// <summary>
         /// Log warnings for all project issues related to unexpected dependencies.
@@ -74,7 +73,6 @@ namespace NuGet.Commands
             foreach (var graph in graphs)
             {
                 messages.AddRange(graph.ResolvedDependencies
-                                            .Distinct()
                                             .Where(e => !ignoreIds.Contains(e.Child.Name, StringComparer.OrdinalIgnoreCase)
                                                         && DependencyRangeHasMissingExactMatch(e))
                                             .OrderBy(e => e.Child.Name, StringComparer.OrdinalIgnoreCase)

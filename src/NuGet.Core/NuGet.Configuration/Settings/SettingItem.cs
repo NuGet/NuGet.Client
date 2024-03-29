@@ -13,14 +13,14 @@ namespace NuGet.Configuration
     {
         protected virtual bool CanHaveChildren => false;
 
-        internal SettingItem MergedWith { get; set; }
+        internal SettingItem? MergedWith { get; set; }
 
         protected SettingItem()
             : base()
         {
         }
 
-        protected SettingItem(IReadOnlyDictionary<string, string> attributes)
+        protected SettingItem(IReadOnlyDictionary<string, string>? attributes)
             : base(attributes)
         {
         }
@@ -71,7 +71,7 @@ namespace NuGet.Configuration
                     otherAttributes.Remove(attribute.Key);
                 }
 
-                string value = null;
+                string? value = null;
                 if (otherValue != null)
                 {
                     value = otherValue;
@@ -100,6 +100,11 @@ namespace NuGet.Configuration
 
                 AddOrUpdateAttribute(attribute.Key, attribute.Value);
             }
+        }
+
+        public IReadOnlyDictionary<string, string> GetAttributes()
+        {
+            return Attributes;
         }
     }
 }

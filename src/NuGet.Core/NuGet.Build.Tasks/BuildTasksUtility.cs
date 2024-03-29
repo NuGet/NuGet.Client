@@ -31,6 +31,7 @@ using NuGet.ProjectManagement;
 using NuGet.Shared;
 using static NuGet.Shared.XmlUtility;
 using System.Globalization;
+using System.Collections;
 #endif
 
 namespace NuGet.Build.Tasks
@@ -418,12 +419,11 @@ namespace NuGet.Build.Tasks
         {
             string globalPackageFolder = null;
             string repositoryPath = null;
-            string firstPackagesConfigPath = null;
             IList<PackageSource> packageSources = null;
-
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>(PackageReferenceComparer.Instance);
-
             ISettings settings = null;
+
+            Dictionary<PackageReference, List<string>> packageReferenceToProjects = new(PackageReferenceComparer.Instance);
+            Dictionary<string, RestoreAuditProperties> restoreAuditProperties = new(PathUtility.GetStringComparerBasedOnOS());
 
             foreach (PackageSpec packageSpec in dgFile.Projects.Where(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
             {
@@ -449,9 +449,16 @@ namespace NuGet.Build.Tasks
 
                 string packagesConfigPath = GetPackagesConfigFilePath(pcRestoreMetadata.ProjectPath);
 
-                firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
-
-                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
+                foreach (PackageReference packageReference in GetInstalledPackageReferences(packagesConfigPath))
+                {
+                    if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
+                    {
+                        value ??= new();
+                        packageReferenceToProjects.Add(packageReference, value);
+                    }
+                    value.Add(pcRestoreMetadata.PackagesConfigPath);
+                }
+                restoreAuditProperties.Add(packageSpec.FilePath, packageSpec.RestoreMetadata.RestoreAuditProperties);
             }
 
             if (string.IsNullOrEmpty(repositoryPath))
@@ -469,20 +476,31 @@ namespace NuGet.Build.Tasks
                 Packaging.PackageSaveMode.Defaultv2 :
                 effectivePackageSaveMode;
 
-            var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
-
-            if (missingPackageReferences.Length == 0)
+            List<PackageRestoreData> packageRestoreData = new(packageReferenceToProjects.Count);
+            bool areAnyPackagesMissing = false;
+            foreach (KeyValuePair<PackageReference, List<string>> package in packageReferenceToProjects)
             {
+                var exists = nuGetPackageManager.PackageExistsInPackagesFolder(package.Key.PackageIdentity, packageSaveMode);
+                packageRestoreData.Add(new PackageRestoreData(package.Key, package.Value, !exists));
+                areAnyPackagesMissing |= !exists;
+            }
+
+            var repositories = sourceRepositoryProvider.GetRepositories().ToList();
+
+            if (!areAnyPackagesMissing)
+            {
+                using SourceCacheContext cacheContext = new();
+
+                var auditUtility = new AuditChecker(
+                    repositories,
+                    cacheContext,
+                    log);
+
+                await auditUtility.CheckPackageVulnerabilitiesAsync(packageRestoreData, restoreAuditProperties, CancellationToken.None);
+
                 return new RestoreSummary(true);
             }
-            var packageRestoreData = missingPackageReferences.Select(reference =>
-                new PackageRestoreData(
-                    reference,
-                    new[] { firstPackagesConfigPath },
-                    isMissing: true));
 
-            var repositories = sourceRepositoryProvider.GetRepositories().ToArray();
 
             var installCount = 0;
             var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
@@ -498,6 +516,8 @@ namespace NuGet.Build.Tasks
                 maxNumberOfParallelTasks: disableParallel
                     ? 1
                     : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                enableNuGetAudit: true,
+                restoreAuditProperties,
                 logger: collectorLogger);
 
             // TODO: Check require consent?
@@ -591,7 +611,7 @@ namespace NuGet.Build.Tasks
         }
 
 
-        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
+        private static IEnumerable<PackageReference> GetInstalledPackageReferences(string projectConfigFilePath)
         {
             if (File.Exists(projectConfigFilePath))
             {
@@ -599,7 +619,7 @@ namespace NuGet.Build.Tasks
                 {
                     XDocument xDocument = Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
-                    return reader.GetPackages(allowDuplicatePackageIds);
+                    return reader.GetPackages(allowDuplicatePackageIds: true);
                 }
                 catch (XmlException ex)
                 {
@@ -755,5 +775,47 @@ namespace NuGet.Build.Tasks
 
             return null;
         }
+
+        /// <summary>
+        /// Gets an integer indicating what files should be embedded in the MSBuild binary log based on the user-specified value:
+        ///  - "0" or "false" = Do not embed any files
+        ///  - "2" = Embed dgspec, project.assets.json, g.props, and g.targets
+        /// Any other value embeds project.assets.json, g.props, and g.targets
+        /// </summary>
+        /// <param name="value">The user supplied value indicating what files to embed in the binary log.</param>
+        /// <returns>An integer representing what to embed in the binary log.</returns>
+        public static int GetFilesToEmbedInBinlogValue(string value)
+        {
+            return GetFilesToEmbedInBinlogValue(value, EnvironmentVariableWrapper.Instance);
+        }
+
+        internal static int GetFilesToEmbedInBinlogValue(string value, IEnvironmentVariableReader environmentVariableReader)
+        {
+            if (!string.Equals(environmentVariableReader.GetEnvironmentVariable("MSBUILDBINARYLOGGERENABLED"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            if (value == null)
+            {
+                return 1;
+            }
+
+            string trimmed = value.Trim();
+
+            if (string.Equals(bool.FalseString, trimmed, StringComparison.OrdinalIgnoreCase) || string.Equals("0", trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return 0;
+            }
+
+            if (string.Equals("2", trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                return 2;
+            }
+
+            return 1;
+        }
+
     }
 }
+

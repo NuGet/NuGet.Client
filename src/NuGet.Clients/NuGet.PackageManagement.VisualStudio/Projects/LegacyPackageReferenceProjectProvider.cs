@@ -94,8 +94,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Check for RestoreProjectStyle property
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
             var restoreProjectStyle = vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(
                 ProjectBuildProperties.RestoreProjectStyle);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // For legacy csproj, either the RestoreProjectStyle must be set to PackageReference or
             // project has atleast one package dependency defined as PackageReference
@@ -103,7 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
                 || (vsProject4.PackageReferences?.InstalledPackages?.Length ?? 0) > 0)
             {
-                var nominatesOnSolutionLoad = await vsProjectAdapter.IsCapabilityMatchAsync(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences);
+                var nominatesOnSolutionLoad = vsProjectAdapter.IsCapabilityMatch(NuGet.VisualStudio.IDE.ProjectCapabilities.PackageReferences);
                 return new VsManagedLanguagesProjectSystemServices(vsProjectAdapter, _threadingService, vsProject4, nominatesOnSolutionLoad, _scriptExecutor);
             }
 
