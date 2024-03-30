@@ -53,7 +53,7 @@ jobs:
           buildType: specific
           project: $(resources.pipeline.officialbuild.projectID)
           definition: $(resources.pipeline.officialbuild.pipelineID)
-          artifactName: 'nupkgs - NonRTM'
+          artifactName: 'nupkgs - NonRTM - $(System.JobDisplayName) - Attempt $(System.JobAttempt)'
           targetPath: $(Build.ArtifactStagingDirectory)/backup/VS15/nupkgs
 
       - task: DownloadPipelineArtifact@2
@@ -63,7 +63,7 @@ jobs:
           buildType: specific
           project: $(resources.pipeline.officialbuild.projectID)
           definition: $(resources.pipeline.officialbuild.pipelineID)
-          artifactName: 'nupkgs - RTM'
+          artifactName: 'nupkgs - RTM - $(System.JobDisplayName) - Attempt $(System.JobAttempt)'
           targetPath: $(Build.ArtifactStagingDirectory)/backup/VS15-RTM/nupkgs
 
       - task: DownloadPipelineArtifact@2

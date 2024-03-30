@@ -13,7 +13,7 @@ steps:
   displayName: "Download nupkgs"
   name: DownloadNupkgs
   inputs:
-    artifactName: "nupkgs - RTM"
+    artifactName: "nupkgs - RTM - $(System.JobDisplayName) - Attempt $(System.JobAttempt)"
     downloadPath: "$(System.ArtifactsDirectory)/nupkgs"
 
 - task: PowerShell@2
