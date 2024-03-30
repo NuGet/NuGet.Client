@@ -124,7 +124,7 @@ stages:
         displayName: 'Publish NuGet.CommandLine.Test as artifact'
         condition: "succeeded()"
         targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
-        artifactName: "NuGet.CommandLine.Test"
+        artifactName: "NuGet.CommandLine.Test  - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
 
       - output: pipelineArtifact
         displayName: 'Publish nupkgs'
