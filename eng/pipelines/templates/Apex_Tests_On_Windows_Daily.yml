@@ -219,11 +219,11 @@ stages:
             downloadPath: "$(Pipeline.Workspace)/artifacts"
 
         - powershell: |
-            $zipPath = "$(Build.Repository.Localpath)/artifacts/EndToEnd.zip"
+            $zipPath = "$(Pipeline.Workspace)/artifacts/EndToEnd.zip"
             $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
             Write-Output "Extracting '$zipPath' to '$dest'"
             Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
-            $nugetExePath = "$(Build.Repository.Localpath)/artifacts/NuGet.exe"
+            $nugetExePath = "$(Pipeline.Workspace)/artifacts/NuGet.exe"
             Write-Output "Copying '$nugetExePath' to '$dest'"
             Copy-Item -Path "$nugetExePath" -Destination "$dest"
           displayName: "Extract EndToEnd.zip"
