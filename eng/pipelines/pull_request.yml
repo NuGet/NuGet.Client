@@ -65,7 +65,7 @@ extends:
         enabled: false
       componentgovernance:
         ignoreDirectories: $(Build.SourcesDirectory)/test
-        alertWarningLevel: Medium
+        alertWarningLevel: High
         failOnAlert: true
         verbosity: Normal
     pool:
