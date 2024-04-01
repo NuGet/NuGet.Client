@@ -68,7 +68,6 @@ namespace NuGet.PackageManagement.UI
 
             // hook event handler for dependency behavior changed
             _options.SelectedChanged += DependencyBehavior_SelectedChanged;
-            ReadMePreviewViewModel = new ReadMePreviewViewModel();
             _versions = new ItemsChangeObservableCollection<DisplayVersion>();
         }
 
@@ -492,18 +491,6 @@ namespace NuGet.PackageManagement.UI
             public const string Legacy = nameof(Legacy);
         }
 
-        private ReadMePreviewViewModel _readMePreviewViewModel;
-
-        public ReadMePreviewViewModel ReadMePreviewViewModel
-        {
-            get { return _readMePreviewViewModel; }
-            set
-            {
-                _readMePreviewViewModel = value;
-                OnPropertyChanged(nameof(ReadMePreviewViewModel));
-            }
-        }
-
         private DetailedPackageMetadata _packageMetadata;
 
         public DetailedPackageMetadata PackageMetadata
@@ -533,15 +520,6 @@ namespace NuGet.PackageManagement.UI
                     PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
                     PackageVulnerabilities = _packageMetadata?.Vulnerabilities?.ToList();
-                    if (_packageMetadata is not null)
-                    {
-                        NuGetUIThreadHelper.JoinableTaskFactory
-                            .RunAsync(async () =>
-                            {
-                                await ReadMePreviewViewModel.UpdateReadMe(_packageMetadata?.PackagePath, _packageMetadata?.Id);
-                            })
-                            .PostOnFailure(nameof(DetailControlModel));
-                    }
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                     OnPropertyChanged(nameof(IsPackageVulnerable));

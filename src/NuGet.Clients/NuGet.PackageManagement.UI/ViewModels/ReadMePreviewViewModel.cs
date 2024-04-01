@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI.ViewModels
@@ -67,7 +68,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     {
                         using var stream = fileInfo.OpenRead();
                         using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
-                        var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{packageId}.nuspec", StringComparison.OrdinalIgnoreCase));
+                        var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{packageId}{PackagingCoreConstants.NuspecExtension}", StringComparison.OrdinalIgnoreCase));
                         if (nuspecZipArchiveEntry is not null)
                         {
                             using var nuspecFile = nuspecZipArchiveEntry.Open();

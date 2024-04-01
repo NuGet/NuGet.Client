@@ -21,19 +21,19 @@
     <Style
       x:Key="StatusMessageTextBlockStyle"
       TargetType="TextBlock">
-        <Setter Property="TextTrimming" 
+      <Setter Property="TextTrimming" 
               Value="WordEllipsis"/>
-        <Setter Property="TextOptions.TextFormattingMode" 
+      <Setter Property="TextOptions.TextFormattingMode" 
               Value="Display"/>
-        <Setter Property="VerticalAlignment" 
+      <Setter Property="VerticalAlignment" 
               Value="Center"/>
-        <Setter Property="Margin" 
+      <Setter Property="Margin" 
               Value="3,0"/>
-        <Setter Property="FontFamily" 
+      <Setter Property="FontFamily" 
               Value="SegoeUI"/>
-        <Setter Property="FontSize" 
+      <Setter Property="FontSize" 
               Value="12" />
-        <Setter Property="HorizontalAlignment" 
+      <Setter Property="HorizontalAlignment" 
               Value="Left"/>
       <Setter Property="Foreground" 
               Value="{DynamicResource {x:Static nuget:Brushes.InfoTextKey}}" />
