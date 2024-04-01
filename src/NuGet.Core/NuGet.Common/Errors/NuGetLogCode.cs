@@ -223,6 +223,11 @@ namespace NuGet.Common
         NU1301 = 1301,
 
         /// <summary>
+        /// HTTP Source specified.
+        /// </summary>
+        NU1302 = 1302,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,
@@ -345,11 +350,6 @@ namespace NuGet.Common
         /// HTTP Source specified, but HTTP sources will be deprecated.
         /// </summary>
         NU1803 = 1803,
-
-        /// <summary>
-        /// HTTP Source specified.
-        /// </summary>
-        NU1804 = 1804,
 
         /// <summary>
         /// Server/package source vulnerability issue
