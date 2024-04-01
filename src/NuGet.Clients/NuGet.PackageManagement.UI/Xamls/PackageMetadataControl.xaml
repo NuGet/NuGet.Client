@@ -5,9 +5,12 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:vm="clr-namespace:NuGet.PackageManagement.UI.ViewModels"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+  xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
   xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+  d:DataContext="{d:DesignInstance Type=nuget:PackageDetailControlModel}"
   Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
@@ -123,13 +126,13 @@
     <TabItem
       IsVisibleChanged="TabReadMe_IsVisibleChanged"
       x:Name="tabReadMe"
-      Visibility="{Binding Path=ReadMePreviewViewModel.IsReadMeAvailable, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+      Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageMetadataControl}}, Path=ReadMePreviewViewModel.IsReadMeAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
       Tag="{x:Static nuget:ItemFilter.All}"
       Header="{x:Static nuget:Resources.Label_Readme}" >
       <nuget:PackageMetadataReadMeControl
-          x:Name="_packageMetadataReadMeControl"
-          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-          DataContext="{Binding ReadMePreviewViewModel}" />
+        x:Name="_packageMetadataReadMeControl"
+        PackageMetadata="{Binding RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageMetadataControl}}, Path=DataContext.PackageMetadata}"
+        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"/>
     </TabItem>
     <TabItem
       IsSelected="True"
@@ -137,9 +140,9 @@
       Tag="{x:Static nuget:ItemFilter.All}"
       Header="{x:Static nuget:Resources.Label_PackageDetails}">
       <nuget:PackageMetadataDescriptionControl
-          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-          Margin="0,12,0,0"
-          DataContext="{Binding PackageMetadata}" />
+        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
+        DataContext="{Binding PackageMetadata}"
+        Margin="0,12,0,0"/>
     </TabItem>
   </TabControl>
 </UserControl>

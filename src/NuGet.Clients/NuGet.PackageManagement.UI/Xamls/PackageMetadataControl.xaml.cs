@@ -4,6 +4,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using NuGet.PackageManagement.UI.ViewModels;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,13 +15,18 @@ namespace NuGet.PackageManagement.UI
     public partial class PackageMetadataControl : UserControl, IDisposable
     {
         private bool _initialVisibilitySet = false;
+        private ReadMePreviewViewModel _readMePreviewViewModel;
 
         public PackageMetadataControl()
         {
             InitializeComponent();
             Visibility = Visibility.Collapsed;
+            ReadMePreviewViewModel = new ReadMePreviewViewModel();
+            _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
+
+        public ReadMePreviewViewModel ReadMePreviewViewModel { get => _readMePreviewViewModel; set => _readMePreviewViewModel = value; }
 
         public void Dispose()
         {

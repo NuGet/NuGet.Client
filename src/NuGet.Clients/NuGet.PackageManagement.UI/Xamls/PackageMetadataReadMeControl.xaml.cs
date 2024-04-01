@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
 using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
@@ -17,6 +18,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageMetadataReadMeControl : UserControl, IDisposable
     {
+        public static readonly DependencyProperty PackageMetadataProperty =
+            DependencyProperty.Register(
+                nameof(PackageMetadata),
+                typeof(DetailedPackageMetadata),
+                typeof(PackageMetadataReadMeControl),
+                new PropertyMetadata(OnPropertyChanged));
+
 #pragma warning disable CS0618 // Type or member is obsolete
         private IMarkdownPreview _markdownPreview;
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -36,6 +44,19 @@ namespace NuGet.PackageManagement.UI
             GC.SuppressFinalize(this);
         }
 
+        public DetailedPackageMetadata PackageMetadata
+        {
+            get
+            {
+                return (DetailedPackageMetadata)GetValue(PackageMetadataProperty);
+            }
+            set
+            {
+                UpdateControl(PackageMetadata, value);
+                SetValue(PackageMetadataProperty, value);
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -53,10 +74,35 @@ namespace NuGet.PackageManagement.UI
             _disposed = true;
         }
 
+        private static void OnPropertyChanged(
+           DependencyObject dependencyObject,
+           DependencyPropertyChangedEventArgs e)
+        {
+            var control = (PackageMetadataReadMeControl)dependencyObject;
+            if (e.Property == PackageMetadataProperty)
+            {
+                control?.UpdateControl((DetailedPackageMetadata)e.OldValue, (DetailedPackageMetadata)e.NewValue);
+            }
+        }
+
+        private void UpdateControl(DetailedPackageMetadata oldValue, DetailedPackageMetadata newValue)
+        {
+            if (newValue is not null &&
+                (oldValue?.Id != newValue.Id ||
+                oldValue?.PackagePath != newValue.PackagePath))
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(async () =>
+                {
+                    await ReadMeViewModel.UpdateReadMe(newValue.PackagePath, newValue.Id);
+                })
+                .PostOnFailure(nameof(DetailControlModel));
+            }
+        }
+
         private void PackageMetadataReadMeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            var oldViewModel = (ReadMePreviewViewModel)e.OldValue;
-            if (oldViewModel != null)
+            if (e.OldValue is ReadMePreviewViewModel oldViewModel && oldViewModel is not null)
             {
                 oldViewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
             }

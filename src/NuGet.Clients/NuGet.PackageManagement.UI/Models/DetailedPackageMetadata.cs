@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
