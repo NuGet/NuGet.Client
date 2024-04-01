@@ -20,6 +20,10 @@
                       OutputItemType="TestableCredentialProviderOutputGroup" />
     <ProjectReference Include="..\..\TestUtilities\Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.Portable" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
