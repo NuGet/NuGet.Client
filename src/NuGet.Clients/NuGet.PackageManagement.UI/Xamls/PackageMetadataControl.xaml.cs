@@ -54,6 +54,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// This method is used to determine which tab should be selected, on initial load we can't determine which tab to select.
+        /// On initial load we don't know if the ReadMe is available or not so we assume it isn't. Once the ReadMe is available we switch
+        /// to that tab. By checking the _initialVisibilitySet field we do this once, not forcing users to look at the readme once they've clicked
+        /// away.
+        /// </summary>
         private void TabReadMe_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (!_initialVisibilitySet && tabReadMe.IsVisible)
