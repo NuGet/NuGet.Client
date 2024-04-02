@@ -14,11 +14,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
-<<<<<<< HEAD
-        [ValidateSet( "Build_and_UnitTest_NonRTM", "Build_and_UnitTest_RTM", "Tests On Mac", "Tests On Linux", "Functional_Tests_On_Windows IsDesktop", "Functional_Tests_On_Windows IsCore", "CrossFramework_Tests_On_Windows", "End_To_End_Tests_On_Windows Part1", "End_To_End_Tests_On_Windows Part2", "Apex Tests On Windows", "Rebuild")]
-=======
         [ValidateSet( "Build_and_UnitTest_NonRTM", "Build_and_UnitTest_RTM", "Unit Tests On Mac", "Functional Tests On Mac", "Mono Tests On Mac", "Unit Tests On Linux", "Functional Tests On Linux", "Windows FunctionalTests IsDesktop", "Windows FunctionalTests IsCore", "Windows CrossFrameworkTests", "End_To_End_Tests_On_Windows Part1", "End_To_End_Tests_On_Windows Part2", "Apex Tests On Windows", "Static Analysis", "Source Build")]
->>>>>>> 19c484d72 ([release-6.7.x] Use 1ES Templates in CI Pipelines  (#5727))
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
