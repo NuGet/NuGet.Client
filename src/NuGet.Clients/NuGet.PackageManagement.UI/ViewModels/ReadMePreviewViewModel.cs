@@ -16,6 +16,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         public ReadMePreviewViewModel()
         {
+            _isReadMeAvailable = false;
+            _isErrorWithReadMe = false;
+            _rawReadMe = string.Empty;
         }
 
         private bool _isErrorWithReadMe;
