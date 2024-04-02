@@ -386,7 +386,6 @@ stages:
       MSBUILDDISABLENODEREUSE: 1
       # Set MSBuildEnableWorkloadResolver to work around https://github.com/dotnet/sdk/issues/17461
       MSBuildEnableWorkloadResolver: false
-      BUILD_NET8: 'false'
     condition: "and(succeeded(), ne(variables['RunTestsOnMac'], 'false'))"
     pool:
       name: 'Azure Pipelines'
