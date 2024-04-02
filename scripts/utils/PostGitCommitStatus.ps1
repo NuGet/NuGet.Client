@@ -14,11 +14,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
-<<<<<<< HEAD
         [ValidateSet( "Build_and_UnitTest_NonRTM", "Build_and_UnitTest_RTM", "Unit Tests On Mac", "Functional Tests On Mac", "Mono Tests On Mac", "Unit Tests On Linux", "Functional Tests On Linux", "Windows FunctionalTests IsDesktop", "Windows FunctionalTests IsCore", "Windows CrossFrameworkTests", "End_To_End_Tests_On_Windows Part1", "End_To_End_Tests_On_Windows Part2", "Apex Tests On Windows", "Static Analysis", "Source Build")]
-=======
-        [ValidateSet( "Build_and_UnitTest_NonRTM", "Build_and_UnitTest_RTM", "Unit Tests On Mac", "Functional Tests On Mac", "Mono Tests On Mac", "Unit Tests On Linux", "Functional Tests On Linux", "Windows FunctionalTests IsDesktop", "Windows FunctionalTests IsCore", "Windows CrossFrameworkTests", "End_To_End_Tests_On_Windows Part1", "End_To_End_Tests_On_Windows Part2", "Apex Tests On Windows", "Rebuild")]
->>>>>>> 017074bee (Split hosted build test running up for unit tests, functional tests, and Mono tests (#5152))
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
