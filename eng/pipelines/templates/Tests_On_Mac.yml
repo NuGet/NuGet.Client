@@ -6,11 +6,12 @@ steps:
     version: 7.x
     installationPath: $(Agent.TempDirectory)/dotnet
 
-- task: DownloadBuildArtifacts@0
+- task: DownloadPipelineArtifact@2
   displayName: "Download NuGet.CommandLine.Test artifacts"
   inputs:
     artifactName: "NuGet.CommandLine.Test"
-    downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+    downloadPath: "$(Build.Repository.LocalPath)/artifacts/NuGet.CommandLine.Test"
+  condition: "and(succeeded(), eq(variables['TestRunDisplayName'], 'Mono Tests'))"
 
 - task: ShellScript@2
   displayName: "Run Tests (continue on error)"
@@ -40,14 +41,6 @@ steps:
     testRunTitle: "NuGet.Client Tests On Mac"
   condition: "succeededOrFailed()"
 
-- task: PublishBuildArtifacts@1
-  displayName: "Publish Test Freeze Dump"
-  inputs:
-    PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults"
-    ArtifactName: "$(Agent.JobName)"
-    ArtifactType: "Container"
-  condition: "failed()"
-
 - task: PowerShell@2
   displayName: "Initialize Git Commit Status on GitHub"
   inputs:
@@ -57,13 +50,3 @@ steps:
       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Tests On Mac"
     failOnStderr: "true"
   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
-  inputs:
-    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: $(Build.StagingDirectory)/binlog
-  condition: " failed() "
-
-- task: ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
