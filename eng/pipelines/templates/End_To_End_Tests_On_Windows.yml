@@ -140,7 +140,7 @@ stages:
       inputs:
         testRunner: "JUnit"
         testResultsFiles: "*.xml"
-1        searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
+        searchFolder: "$(System.DefaultWorkingDirectory)\\testresults"
         mergeTestResults: "true"
         testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
       condition: "succeededOrFailed()"

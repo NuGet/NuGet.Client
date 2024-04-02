@@ -273,7 +273,7 @@ steps:
     msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
-- task: PowerShell@1
+- task: MSBuild@1
   displayName: "Create EndToEnd Test Package"
   inputs:
     solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
@@ -321,7 +321,7 @@ steps:
         exit 1
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-  
+
 - task: PowerShell@1
   displayName: "Set CloudBuild Session ID variable for tests"
   name: "setcloudbuildsessionid"
@@ -339,7 +339,7 @@ steps:
         Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
       }
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-  
+
 - task: PowerShell@1
   displayName: "Set Base Build Drop variable for tests"
   name: "setbasebuilddrop"
