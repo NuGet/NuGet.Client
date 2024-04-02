@@ -25,18 +25,10 @@
     <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary)</TargetFrameworksLibraryForSigning>
     <TargetFrameworksLibraryForSigning Condition="'$(DotNetBuildFromSource)' != 'true'">$(TargetFrameworksLibraryForSigning);$(NETCoreLegacyTargetFrameworkForSigning)</TargetFrameworksLibraryForSigning>
     
-    <!-- Target framework for .NET Core runnable apps -->
-    <TargetFrameworksExe>$(NETCoreLegacyTargetFramework)</TargetFrameworksExe>
+    <!-- Target framework for runnable apps -->
+    <TargetFrameworksExe>$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExe Condition="'$(IsXPlat)' != 'true' And '$(DotNetBuildFromSource)' != 'true'">$(NETFXTargetFramework);$(TargetFrameworksExe)</TargetFrameworksExe>
 
-    <!-- Target frameworks for class libraries which require signing APIs which need to target NET 5.0 -->
-    <TargetFrameworksExeForSigning>$(TargetFrameworksExe)</TargetFrameworksExeForSigning>
-    <TargetFrameworksExeForSigning Condition="'$(IsXPlat)' != 'true' And '$(DotNetBuildFromSource)' != 'true'">$(TargetFrameworksExeForSigning);$(NETCoreLegacyTargetFrameworkForSigning)</TargetFrameworksExeForSigning>
-
-    <!-- Target frameworks for applications that don't need to use modern frameworks -->
-    <MinimalTargetFrameworksExe>$(NETCoreTargetFramework)</MinimalTargetFrameworksExe>
-    <MinimalTargetFrameworksExe Condition="'$(IsXPlat)' != 'true' And '$(DotNetBuildFromSource)' != 'true'">$(NETFXTargetFramework);$(MinimalTargetFrameworksExe)</MinimalTargetFrameworksExe>
-    
     <!-- Target frameworks for unit tests -->
     <TargetFrameworksUnitTest>$(NETCoreTargetFramework)</TargetFrameworksUnitTest>
     <TargetFrameworksUnitTest Condition="'$(IsXPlat)' != 'true' And '$(DotNetBuildFromSource)' != 'true'">$(NETFXTargetFramework);$(TargetFrameworksUnitTest)</TargetFrameworksUnitTest>
@@ -44,16 +36,10 @@
     <!-- Target frameworks for unit tests that test libaries using signing APIs -->
     <TargetFrameworksUnitTestForSigning>$(NETCoreTargetFramework)</TargetFrameworksUnitTestForSigning>
     <TargetFrameworksUnitTestForSigning Condition="'$(IsXPlat)' != 'true' And '$(DotNetBuildFromSource)' != 'true'">$(NETFXTargetFramework);$(TargetFrameworksUnitTestForSigning);$(NETCoreLegacyTargetFramework)</TargetFrameworksUnitTestForSigning>
-
-    <!-- Target framework for functional tests -->
-    <TargetFrameworksFunctionalTest>net8.0</TargetFrameworksFunctionalTest>
-    <TargetFrameworksFunctionalTest Condition="'$(IsXPlat)' != 'true' And '$(DotNetBuildFromSource)' != 'true'">$(NETFXTargetFramework);$(TargetFrameworksFunctionalTest)</TargetFrameworksFunctionalTest>
-  
   </PropertyGroup>
 
   <!-- Common -->
   <PropertyGroup>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>

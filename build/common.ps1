@@ -186,16 +186,9 @@ Function Install-DotnetCLI {
             continue
         }
 
-        if ([Environment]::Is64BitOperatingSystem) {
-            $arch = "x64";
-        }
-        else {
-            $arch = "x86";
-        }
-
-        Trace-Log "$DotNetInstall $CliBranch -InstallDir $CLIRoot -Architecture $arch -NoPath"
+        Trace-Log "$DotNetInstall $CliBranch -InstallDir $CLIRoot -NoPath"
  
-        & powershell $DotNetInstall $CliBranch -InstallDir $CLIRoot -Architecture $arch -NoPath
+        & powershell $DotNetInstall $CliBranch -InstallDir $CLIRoot -NoPath
         if ($LASTEXITCODE -ne 0)
         {
             throw "dotnet-install.ps1 exited with non-zero exit code"

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(MinimalTargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(TargetFrameworksExe)</TargetFrameworks>
     <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
