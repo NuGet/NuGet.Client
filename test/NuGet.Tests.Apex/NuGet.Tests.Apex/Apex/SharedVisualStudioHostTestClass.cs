@@ -87,7 +87,7 @@ namespace NuGet.Tests.Apex
             base.Dispose();
         }
 
-        internal string GetPackageManagerOutputWindowPaneText()
+        public string GetPackageManagerOutputWindowPaneText()
         {
             return string.Join(Environment.NewLine, VisualStudio.GetOutputWindowsLines());
         }

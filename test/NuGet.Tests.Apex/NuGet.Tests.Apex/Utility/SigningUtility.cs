@@ -13,17 +13,17 @@ namespace NuGet.Tests.Apex
     {
         private static readonly TimeSpan SoonDuration = TimeSpan.FromSeconds(20);
 
-        internal static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon()
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon()
         {
             return SigningTestUtility.GenerateTrustedTestCertificateThatWillExpireSoon(SoonDuration);
         }
 
-        internal static bool IsCertificateExpired(X509Certificate2 certificate)
+        public static bool IsCertificateExpired(X509Certificate2 certificate)
         {
             return DateTime.Now > certificate.NotAfter;
         }
 
-        internal static void WaitForCertificateToExpire(X509Certificate2 certificate)
+        public static void WaitForCertificateToExpire(X509Certificate2 certificate)
         {
             while (DateTimeOffset.Now < certificate.NotAfter)
             {
