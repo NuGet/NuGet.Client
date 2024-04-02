@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExe);$(NETCoreLegacyTargetFrameworkForSigning)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksUnitTestForSigning)</TargetFrameworks>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
     <OutputType>Exe</OutputType>
     <AssemblyName>Plugin.Testable</AssemblyName>
