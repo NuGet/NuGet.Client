@@ -40,7 +40,8 @@ namespace NuGet.SolutionRestoreManager
     [Export(typeof(IVsSolutionRestoreService2))]
     [Export(typeof(IVsSolutionRestoreService3))]
     [Export(typeof(IVsSolutionRestoreService4))]
-    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2, IVsSolutionRestoreService3, IVsSolutionRestoreService4
+    [Export(typeof(IVsSolutionRestoreService5))]
+    public sealed class VsSolutionRestoreService : IVsSolutionRestoreService, IVsSolutionRestoreService2, IVsSolutionRestoreService3, IVsSolutionRestoreService4, IVsSolutionRestoreService5
     {
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
@@ -169,6 +170,28 @@ namespace NuGet.SolutionRestoreManager
             return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
         }
 
+        Task<bool> IVsSolutionRestoreService5.NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo3 projectRestoreInfo, CancellationToken token)
+        {
+            const string eventName = nameof(IVsSolutionRestoreService5) + "." + nameof(NominateProjectAsync);
+            var eventData = new NominateProjectAsyncEventData()
+            {
+                ProjectUniqueName = projectUniqueName
+            };
+            using var _ = NuGetETW.ExtensibilityEventSource.StartStopEvent(eventName, eventData);
+
+            if (string.IsNullOrEmpty(projectUniqueName))
+            {
+                throw new ArgumentException($"'{nameof(projectUniqueName)}' cannot be null or empty.", nameof(projectUniqueName));
+            }
+
+            if (projectRestoreInfo is null)
+            {
+                throw new ArgumentNullException(nameof(projectRestoreInfo));
+            }
+
+            return NominateProjectAsync(projectUniqueName, null, null, projectRestoreInfo, token);
+        }
+
         /// <summary>
         /// This is where the nominate calls for the IVs1 and IVS3 APIs combine. The reason for this method is to avoid duplication and potential issues
         /// The issue with this method is that it has some weird custom logging to ensure backward compatibility. It's on the implementer to ensure these calls are correct.
@@ -178,21 +201,23 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="token"></param>
         /// <remarks>Exactly one of projectRestoreInfos has to null.</remarks>
         /// <returns>The task that scheduled restore</returns>
-        private async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
+        private async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, IVsProjectRestoreInfo3 projectRestoreInfo3, CancellationToken token)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
             }
 
-            if (projectRestoreInfo == null && projectRestoreInfo2 == null)
+            if (projectRestoreInfo == null && projectRestoreInfo2 == null && projectRestoreInfo3 == null)
             {
                 throw new ArgumentNullException(nameof(projectRestoreInfo));
             }
 
-            if (projectRestoreInfo != null && projectRestoreInfo2 != null)
+            if ((projectRestoreInfo != null ? 1 : 0)
+                + (projectRestoreInfo2 != null ? 1 : 0)
+                + (projectRestoreInfo3 != null ? 1 : 0) != 1)
             {
-                throw new ArgumentException($"Internal error: Both {nameof(projectRestoreInfo)} and {nameof(projectRestoreInfo2)} cannot have values. Please file an issue at NuGet/Home if you see this exception.");
+                throw new ArgumentException($"Internal error: Only one of {nameof(projectRestoreInfo)}, {nameof(projectRestoreInfo2)}, or {nameof(projectRestoreInfo3)} can have a value. Please file an issue at NuGet/Home if you see this exception.");
             }
 
             if (projectRestoreInfo != null)
@@ -202,9 +227,16 @@ namespace NuGet.SolutionRestoreManager
                     throw new InvalidOperationException("TargetFrameworks cannot be null.");
                 }
             }
-            else
+            else if (projectRestoreInfo3 != null)
             {
                 if (projectRestoreInfo2.TargetFrameworks == null)
+                {
+                    throw new InvalidOperationException("TargetFrameworks cannot be null.");
+                }
+            }
+            else
+            {
+                if (projectRestoreInfo3.TargetFrameworks == null)
                 {
                     throw new InvalidOperationException("TargetFrameworks cannot be null.");
                 }
@@ -221,7 +253,7 @@ namespace NuGet.SolutionRestoreManager
                 IReadOnlyList<IAssetsLogMessage> nominationErrors = null;
                 try
                 {
-                    dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo, projectRestoreInfo2);
+                    dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo, projectRestoreInfo2, projectRestoreInfo3);
                 }
                 catch (Exception e)
                 {
@@ -265,13 +297,15 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private static DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2)
+        private static DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, IVsProjectRestoreInfo3 projectRestoreInfo3)
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var packageSpec = projectRestoreInfo != null ?
-                ToPackageSpec(projectNames, projectRestoreInfo.TargetFrameworks, projectRestoreInfo.OriginalTargetFrameworks, projectRestoreInfo.BaseIntermediatePath) :
-                ToPackageSpec(projectNames, projectRestoreInfo2.TargetFrameworks, projectRestoreInfo2.OriginalTargetFrameworks, projectRestoreInfo2.BaseIntermediatePath);
+            var packageSpec = projectRestoreInfo3 != null ?
+                ToPackageSpec(projectNames, projectRestoreInfo3.TargetFrameworks, projectRestoreInfo.OriginalTargetFrameworks, projectRestoreInfo.BaseIntermediatePath) :
+                projectRestoreInfo2 != null ?
+                ToPackageSpec(projectNames, projectRestoreInfo2.TargetFrameworks, projectRestoreInfo2.OriginalTargetFrameworks, projectRestoreInfo2.BaseIntermediatePath) :
+                ToPackageSpec(projectNames, projectRestoreInfo.TargetFrameworks, projectRestoreInfo2.OriginalTargetFrameworks, projectRestoreInfo2.BaseIntermediatePath);
 
             dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
             dgSpec.AddProject(packageSpec);

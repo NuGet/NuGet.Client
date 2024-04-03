@@ -1,9 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
+
 namespace NuGet.SolutionRestoreManager
 {
-    public interface IVsTargetFrameworks3
+#pragma warning disable CA1010 // Collections should implement generic interface
+    public interface IVsTargetFrameworks3 : IEnumerable
+#pragma warning restore CA1010 // Collections should implement generic interface
     {
         /// <summary>
         /// Total count of references in container.
