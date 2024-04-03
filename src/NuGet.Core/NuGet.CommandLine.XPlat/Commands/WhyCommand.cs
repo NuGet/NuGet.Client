@@ -48,7 +48,7 @@ namespace NuGet.CommandLine.XPlat
                         logger);
 
                     var whyCommandRunner = getCommandRunner();
-                    whyCommandRunner.ExecuteCommandAsync(whyCommandArgs);
+                    whyCommandRunner.ExecuteCommandAsync(whyCommandArgs); // exception when we try to step in here
                     return 0;
                 });
             });
