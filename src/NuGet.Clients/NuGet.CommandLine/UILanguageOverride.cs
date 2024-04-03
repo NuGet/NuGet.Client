@@ -25,6 +25,7 @@ namespace NuGet.CommandLine
         /// </summary>
         /// <param name="logger">NuGet logger for diagnostic messages</param>
         /// <param name="langOverrideFunc">Method to apply culture to other step</param>
+        /// <param name="envvarReader">Environment variable reader</param>
         /// <exception cref="ArgumentNullException">If any arguments are null</exception>
         internal static void Setup(ILogger logger, Action<CultureInfo> langOverrideFunc, IEnvironmentVariableReader envvarReader)
         {

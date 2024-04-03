@@ -257,7 +257,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
-   <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
+    <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
