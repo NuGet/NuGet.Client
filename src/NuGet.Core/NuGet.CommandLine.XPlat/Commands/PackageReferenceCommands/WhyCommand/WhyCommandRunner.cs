@@ -145,8 +145,6 @@ namespace NuGet.CommandLine.XPlat
         private List<List<Dependency>> GetDependencyGraphPerFramework(IEnumerable<InstalledPackageReference> topLevelPackages, IList<LockFileTargetLibrary> libraries, string destination)
         {
             var dependencyGraph = new List<List<Dependency>>();
-            var listOfPaths = new List<List<Dependency>>();
-            var visited = new HashSet<Dependency>();
 
             foreach (var package in topLevelPackages)
             {
@@ -159,7 +157,7 @@ namespace NuGet.CommandLine.XPlat
                     }
                 };
 
-                List<List<Dependency>> dependencyPathsInFramework = DfsTraversal(package.Name, libraries, visited, path, listOfPaths, destination);
+                List<List<Dependency>> dependencyPathsInFramework = DfsTraversal(package.Name, libraries, visited: new HashSet<Dependency>(), path, listOfPaths: new List<List<Dependency>>(), destination);
                 dependencyGraph.AddRange(dependencyPathsInFramework);
             }
             return dependencyGraph;
