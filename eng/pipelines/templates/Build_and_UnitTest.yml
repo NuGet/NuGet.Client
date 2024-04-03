@@ -272,13 +272,12 @@ steps:
     msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
-- task: MSBuild@1
+- task: PowerShell@1
   displayName: "Create EndToEnd Test Package"
   inputs:
-    solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
-    configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.Repository.LocalPath)\\artifacts\\VS15 /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\16.CreateEndToEndTestPackage.binlog"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+    scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\CreateEndToEndTestPackage.ps1"
+    arguments: "-c $(BuildConfiguration) -out $(Build.Repository.LocalPath)\\artifacts\\VS15"
+    failOnStandardError: "true"
 
 - task: NuGetCommand@2
   displayName: 'Add the VSEng package source'
