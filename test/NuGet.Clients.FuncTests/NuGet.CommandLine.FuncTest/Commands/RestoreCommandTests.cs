@@ -24,6 +24,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private const int _successExitCode = 0;
         private const int _failureExitCode = 1;
+        private string _httpError = "You are running the 'restore' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         [Fact]
         public async Task Restore_LegacyPackageReference_WithNuGetLockFile()
@@ -1176,7 +1177,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
 
         [Fact]
-        public async Task Restore_WithHttpSource_Warns()
+        public async Task Restore_WithHttpSource_Fails()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1207,9 +1208,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
-            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+            result.Success.Should().BeFalse();
+            string errorForHttpSource = string.Format(_httpError, "http://api.source/index.json");
+            Assert.Contains(errorForHttpSource, result.AllOutput);
         }
 
         [Theory]
@@ -1219,7 +1220,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("", true)]
         [InlineData("true", false)]
         [InlineData("TRUE", false)]
-        public async Task Restore_WithHttpSourceAndFalseAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
+        public async Task Restore_WithHttpSourceAndFalseAllowInsecureConnections_FailsCorrectly(string allowInsecureConnections, bool shouldFail)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1250,20 +1251,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
             CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            string formatString = "You are running the 'restore' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS'";
-            string warningForHttpSource = string.Format(formatString, "http://api.source/index.json");
-            string warningForHttpsSource = string.Format(formatString, "https://api.source/index.json");
+            string errorForHttpSource = string.Format(_httpError, "http://api.source/index.json");
+            string errorForHttpsSource = string.Format(_httpError, "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.Output);
-            Assert.DoesNotContain(warningForHttpsSource, result.Output);
-            if (hasHttpWarning)
+            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
+
+            if (shouldFail)
             {
-                Assert.Contains(warningForHttpSource, result.Output);
+                Assert.Contains(errorForHttpSource, result.AllOutput);
             }
             else
             {
-                Assert.DoesNotContain(warningForHttpSource, result.Output);
+                Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.AllOutput);
+                Assert.DoesNotContain(errorForHttpSource, result.AllOutput);
             }
         }
 

@@ -89,7 +89,8 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl2, server2, indexJson2, repositoryPath2);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server1.Uri + "index.json", allowInsecureConnectionsValue: "true");
+                pathContext.Settings.AddSource("http-feed", server2.Uri + "nuget", allowInsecureConnectionsValue: "true");
                 server1.Start();
                 server2.Start();
 
@@ -225,7 +226,8 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl2, server2, indexJson2, repositoryPath2);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "index.json", allowInsecureConnectionsValue: "true");
+                pathContext.Settings.AddSource("http-feed", server2.Uri + "nuget", allowInsecureConnectionsValue: "true");
                 server.Start();
                 server2.Start();
 
@@ -486,7 +488,8 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl2, server2, indexJson2, repositoryPath2);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server2.Uri + "index.json", allowInsecureConnectionsValue: "true");
+                pathContext.Settings.AddSource("http-feed", server.Uri + "nuget", allowInsecureConnectionsValue: "true");
                 server.Start();
                 server2.Start();
 
@@ -839,7 +842,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "nuget", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -911,7 +914,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "index.json", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -985,7 +988,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "nuget", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -1055,7 +1058,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "index.json", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -1345,7 +1348,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "index.json", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -1411,7 +1414,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "index.json", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -1476,7 +1479,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-
+                pathContext.Settings.AddSource("http-feed", server.Uri + "nuget", allowInsecureConnectionsValue: "true");
                 server.Start();
 
                 // Add sources into NuGet.Config file
