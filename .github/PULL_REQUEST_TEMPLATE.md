@@ -29,3 +29,16 @@ Regression? Last working version:
   - [ ] Documentation PR or issue filled
   - **OR**
   - [ ] N/A
+
+- **Pipeline**
+  For any changes which affect the pipeline (eg, changes under the `eng/` directory)
+  Please choose from the following:
+  - [ ] No pipeline changes
+  - [ ] Pipeline changes should not affect any release branch. Explain:
+  - [ ] Pipeline changes apply to the following supported branches:
+     |Release Branch|Tracking Issue or Exception|
+    |--|--|
+    |release-5.11.x| |
+    |release-6.4.x| |
+    |release-6.6.x| |
+    |release-6.8.x| |
