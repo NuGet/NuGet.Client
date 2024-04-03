@@ -1208,7 +1208,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            result.Success.Should().BeFalse();
+            result.Success.Should().BeTrue();
             string errorForHttpSource = string.Format(_httpError, "http://api.source/index.json");
             Assert.Contains(errorForHttpSource, result.AllOutput);
         }
