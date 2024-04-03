@@ -24,7 +24,7 @@ namespace NuGet.CommandLine
         /// 
         /// If no alternative is provided in the attribute, this property will be null
         /// </summary>
-        /// <see cref="ICommand">
+        /// <see cref="ICommand"/>
         public Type AlternativeCommand { get; private set; }
 
         public DeprecatedCommandAttribute(Type AlternativeCommand)
