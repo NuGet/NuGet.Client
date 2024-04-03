@@ -189,7 +189,7 @@ stages:
         displayName: 'LocValidation: Publish Logs as an artifact'
         condition: "succeeded()"
         artifactName: LocValidationLogs
-        targetPath: "$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs"
+        targetPath: "$(Build.Repository.LocalPath)\\logs\\LocalizationValidation"
 
       - output: pipelineArtifact
         displayName: 'Publish binlogs'
