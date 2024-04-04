@@ -1411,7 +1411,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-                
+
                 server.Start();
 
                 // Add sources into NuGet.Config file
@@ -1476,7 +1476,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return ServerHandler(request, hitsByUrl, server, indexJson, repositoryPath);
                 });
-                                      
+
                 server.Start();
 
                 // Add sources into NuGet.Config file
