@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -18,7 +17,7 @@ using NuGet.Test.Server;
 
 namespace Test.Utility
 {
-    public class SelfSignedCertificateMockServer
+    public class SelfSignedCertificateMockServer : IDisposable
     {
         private readonly X509Certificate2 _certificate;
         private readonly string _packageDirectory;
@@ -198,6 +197,17 @@ namespace Test.Utility
                 var certBytes = cert.Export(X509ContentType.Pfx, "password");
                 return new X509Certificate2(certBytes, "password", X509KeyStorageFlags.Exportable);
             }
+        }
+
+        public void Dispose()
+        {
+            _tcpListener.Stop();
+
+#if NET8_0_OR_GREATER
+            _tcpListener.Dispose();
+#endif
+
+            _certificate.Dispose();
         }
     }
 
