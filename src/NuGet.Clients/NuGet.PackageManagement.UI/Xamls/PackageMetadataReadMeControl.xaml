@@ -14,10 +14,10 @@
   d:DesignHeight="300"
   d:DesignWidth="300">
   <UserControl.Resources>
-    <ui:BrushToColorConverter
-      x:Key="BrushToColorConverter" />
-    <BooleanToVisibilityConverter
-      x:Key="BooleanToVisibilityConverter" />
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources/>
+      </ResourceDictionary.MergedDictionaries>
     <Style
       x:Key="StatusMessageTextBlockStyle"
       TargetType="TextBlock">
@@ -38,12 +38,14 @@
       <Setter Property="Foreground" 
               Value="{DynamicResource {x:Static nuget:Brushes.InfoTextKey}}" />
     </Style>
+    </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
     <ContentControl
       x:Name="descriptionMarkdownPreview"
       x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
+      Visibility="{Binding Path=IsErrorWithReadMe, Mode=OneWay, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
     />
     <Grid
     Background="{DynamicResource {x:Static nuget:Brushes.InfoBackgroundKey}}"

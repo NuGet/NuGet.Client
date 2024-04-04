@@ -138,8 +138,7 @@ namespace NuGet.PackageManagement.UI
             }
             if (DataContext is ReadMePreviewViewModel viewModel)
             {
-                viewModel.IsErrorWithReadMe = false;
-                if (!string.IsNullOrWhiteSpace(markDown))
+                if (markDown is not null)
                 {
                     await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
                 }

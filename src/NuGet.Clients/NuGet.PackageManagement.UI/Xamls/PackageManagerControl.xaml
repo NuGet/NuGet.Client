@@ -149,6 +149,7 @@
             AutomationProperties.HelpText="{x:Static nuget:Resources.Accessibility_ThumbHelp}"
             Background="{DynamicResource {x:Static nuget:Brushes.SplitterBackgroundKey}}"
             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+            ShowsPreview="True"
             BorderThickness="1,0" />
 
           <!-- right side -->
