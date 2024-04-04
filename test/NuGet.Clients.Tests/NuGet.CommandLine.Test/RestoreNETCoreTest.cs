@@ -10029,7 +10029,7 @@ namespace NuGet.CommandLine.Test
                 var project = SimpleTestProjectContext.CreateNETCoreWithSDK(
                     "proj",
                     pathContext.SolutionRoot,
-                    "net5.0-windows");
+                    "net7.0-windows");
 
                 // Workaround: Set all the TFM properties ourselves.
                 // We can't rely on the SDK setting them, as only .NET 5 SDK P8 and later applies these correctly.
