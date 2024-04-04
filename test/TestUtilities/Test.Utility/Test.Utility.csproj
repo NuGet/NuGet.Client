@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExeForSigning)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksUnitTestForSigning)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <NoWarn Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
@@ -100,12 +100,12 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
+  <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <!-- Remove files that do not support netcore -->
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
+  <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
     <Compile Remove="ProjectManagement\TestCpsPackageReferenceProject.cs" />
     <Compile Remove="ProjectManagement\TestExternalProjectReference.cs" />
     <Compile Remove="ProjectManagement\TestProjectKProject.cs" />
