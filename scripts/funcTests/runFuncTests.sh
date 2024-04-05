@@ -22,6 +22,7 @@ pushd $DIR/
 LOG_DIRECTORY=$BUILD_STAGINGDIRECTORY
 if [ "$LOG_DIRECTORY" == "" ]; then
     LOG_DIRECTORY="$(pwd)/.test"
+fi
 
 mono --version
 
