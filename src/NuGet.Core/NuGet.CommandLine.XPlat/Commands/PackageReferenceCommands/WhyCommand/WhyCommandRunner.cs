@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.ProjectModel;
@@ -155,7 +157,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                Console.WriteLine($"Project '{projectName}' has the following dependency graph(s) for '{package}':");
+                Console.WriteLine($"Project '{projectName}' has the following dependency graph(s) for '{package}':\n");
                 PrintAllDependencyGraphs(dependencyGraphPerFramework);
             }
         }
@@ -287,52 +289,78 @@ namespace NuGet.CommandLine.XPlat
 
         private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
         {
-            // We do not want to print separate trees for differen frameworks if they're exactly the same, so we will deduplicate them
+            // If different frameworks have the same dependency graphs, we want to deduplicate them
             var printed = new HashSet<string>(dependencyGraphPerFramework.Count);
+
+            var deduplicatedFrameworks = GetDeduplicatedFrameworks(dependencyGraphPerFramework);
+
+            foreach (var frameworks in deduplicatedFrameworks)
+            {
+                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.FirstOrDefault()]);
+            }
+        }
+
+        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
+        {
+            List<string> frameworksWithoutGraphs = null;
+            var dependencyGraphHashes = new Dictionary<int, List<string>>(dependencyGraphPerFramework.Count);
+
+            var dependencyGraphsToFrameworks = new Dictionary<List<DependencyNode>, List<string>>(dependencyGraphPerFramework.Count);
 
             foreach (var framework in dependencyGraphPerFramework.Keys)
             {
-                if (printed.Contains(framework))
+                if (dependencyGraphPerFramework[framework] == null)
                 {
+                    frameworksWithoutGraphs ??= new List<string>();
+                    frameworksWithoutGraphs.Add(framework);
                     continue;
                 }
 
-                var frameworks = new List<string> { framework };
-                printed.Add(framework);
-
-                foreach (var potentialDuplicate in dependencyGraphPerFramework.Keys)
+                int hash = GetDependencyGraphHashCode(dependencyGraphPerFramework[framework]);
+                if (dependencyGraphHashes.ContainsKey(hash))
                 {
-                    if (potentialDuplicate == framework)
-                    {
-                        continue;
-                    }
-
-                    // TODO deduplication isn't working
-                    if (dependencyGraphPerFramework[framework].GetHashCode() == dependencyGraphPerFramework[potentialDuplicate].GetHashCode())
-                    {
-                        frameworks.Add(potentialDuplicate);
-                        printed.Add(potentialDuplicate);
-                    }
+                    dependencyGraphHashes[hash].Add(framework);
+                }
+                else
+                {
+                    dependencyGraphHashes.Add(hash, new List<string> { framework });
                 }
 
-                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[framework]);
+                List<DependencyNode> currentGraph = dependencyGraphPerFramework[framework];
+                if (dependencyGraphsToFrameworks.TryGetValue(currentGraph, out var frameworkList))
+                {
+                    frameworkList.Add(framework);
+                }
+                else
+                {
+                    dependencyGraphsToFrameworks.Add(currentGraph, new List<string> { framework });
+                }
             }
+
+            var deduplicatedFrameworks = dependencyGraphHashes.Values.ToList();
+
+            if (frameworksWithoutGraphs != null)
+            {
+                deduplicatedFrameworks.Add(frameworksWithoutGraphs);
+            }
+
+            return deduplicatedFrameworks;
         }
 
         private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> nodes)
         {
             foreach (var framework in frameworks)
             {
-                Console.WriteLine($"\n\t[{framework}]");
-            }
-
-            if (nodes == null || nodes.Count == 0)
-            {
-                Console.WriteLine("\n\t No dependency graphs found.");
-                return;
+                Console.WriteLine($"\t[{framework}]");
             }
 
             Console.WriteLine($"\t {ChildPrefixSymbol}");
+
+            if (nodes == null || nodes.Count == 0)
+            {
+                Console.WriteLine($"\t {LastChildNodeSymbol}No dependency graphs found\n");
+                return;
+            }
 
             for (int i = 0; i < nodes.Count; i++)
             {
@@ -346,6 +374,7 @@ namespace NuGet.CommandLine.XPlat
                     PrintDependencyNode(node, "\t ", false);
                 }
             }
+            Console.WriteLine();
         }
 
         private void PrintDependencyNode(DependencyNode node, string prefix, bool isLastChild)
@@ -382,6 +411,13 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        private int GetDependencyGraphHashCode(IList<DependencyNode> graph)
+        {
+            var hashCodeCombiner = new HashCodeCombiner();
+            hashCodeCombiner.AddSequence(graph);
+            return hashCodeCombiner.CombinedHash;
+        }
+
         class DependencyNode
         {
             public string Id { get; set; }
@@ -396,8 +432,38 @@ namespace NuGet.CommandLine.XPlat
             {
                 var hashCodeCombiner = new HashCodeCombiner();
                 hashCodeCombiner.AddObject(Id);
+                hashCodeCombiner.AddObject(Version);
+                hashCodeCombiner.AddObject(IsDuplicate);
                 hashCodeCombiner.AddSequence(Children);
                 return hashCodeCombiner.CombinedHash;
+            }
+
+            public bool Equals(DependencyNode other)
+            {
+                if (other is null) return false;
+
+                return Id == other.Id &&
+                    Version == other.Version &&
+                    IsDuplicate == other.IsDuplicate &&
+                    Children.SequenceEqualWithNullCheck(other.Children);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as DependencyNode);
+            }
+
+            public static bool operator ==(DependencyNode x, DependencyNode y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x is null || y is null) return false;
+
+                return x.Equals(y);
+            }
+
+            public static bool operator !=(DependencyNode x, DependencyNode y)
+            {
+                return !(x == y);
             }
         }
     }
