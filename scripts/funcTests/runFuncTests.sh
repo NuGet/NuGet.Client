@@ -19,6 +19,10 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$SCRIPTDIR/../..
 pushd $DIR/
 
+LOG_DIRECTORY=$BUILD_STAGINGDIRECTORY
+if [ "$LOG_DIRECTORY" == "" ]; then
+    LOG_DIRECTORY="$(pwd)/.test"
+
 mono --version
 
 dotnet --info
