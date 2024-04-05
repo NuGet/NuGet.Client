@@ -180,8 +180,8 @@ then
 fi
 
 # restore packages
-echo "dotnet msbuild build/build.proj /restore:false /target:Restore /property:Configuration=Release /property:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/02.Restore.binlog"
-dotnet msbuild build/build.proj /restore:false /target:Restore /target:Restore /property:Configuration=Release /property:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/02.Restore.binlog
+echo "dotnet msbuild build/build.proj /restore:false /target:Restore /property:Configuration=Release /property:ReleaseLabel=beta /bl:$LOG_DIRECTORY/binlog/02.Restore.binlog"
+dotnet msbuild build/build.proj /restore:false /target:Restore /target:Restore /property:Configuration=Release /property:ReleaseLabel=beta /bl:$LOG_DIRECTORY/binlog/02.Restore.binlog
 
 if [ $? -ne 0 ]; then
     echo "Restore failed!!"
@@ -191,8 +191,8 @@ fi
 echo "Restore finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # Unit tests
-echo "dotnet msbuild build/build.proj /restore:false /target:CoreUnitTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog"
-dotnet msbuild build/build.proj /restore:false /target:CoreUnitTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/03.CoreUnitTests.binlog
+echo "dotnet msbuild build/build.proj /restore:false /target:CoreUnitTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$LOG_DIRECTORY/binlog/03.CoreUnitTests.binlog"
+dotnet msbuild build/build.proj /restore:false /target:CoreUnitTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$LOG_DIRECTORY/binlog/03.CoreUnitTests.binlog
 
 if [ $? -ne 0 ]; then
     echo "CoreUnitTests failed!!"
@@ -202,8 +202,8 @@ fi
 echo "Core tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # Func tests
-echo "dotnet msbuild build/build.proj /restore:false /target:CoreFuncTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/04.CoreFuncTests.binlog"
-dotnet msbuild build/build.proj /restore:false /target:CoreFuncTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$BUILD_STAGINGDIRECTORY/binlog/04.CoreFuncTests.binlog
+echo "dotnet msbuild build/build.proj /restore:false /target:CoreFuncTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$LOG_DIRECTORY/binlog/04.CoreFuncTests.binlog"
+dotnet msbuild build/build.proj /restore:false /target:CoreFuncTests /property:Configuration=Release /property:ReleaseLabel=beta /bl:$LOG_DIRECTORY/binlog/04.CoreFuncTests.binlog
 
 if [ $? -ne 0 ]; then
     RESULTCODE='1'
