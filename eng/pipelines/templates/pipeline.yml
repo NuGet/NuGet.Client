@@ -416,6 +416,7 @@ stages:
     - template: /eng/pipelines/templates/Tests_On_Mac.yml@self
 
   - job: CrossFramework_Tests_On_Windows
+    displayName: "Windows CrossFrameworkTests"
     timeoutInMinutes: 30
     variables:
       BuildNumber: $[stageDependencies.Initialize.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
