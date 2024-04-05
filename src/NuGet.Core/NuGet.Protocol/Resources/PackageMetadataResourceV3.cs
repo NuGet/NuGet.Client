@@ -121,9 +121,10 @@ namespace NuGet.Protocol
                         var rangeUri = registrationPage.Url;
                         var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
 
-                        if (registrationPage == null)
+                        if (leafRegistrationPage == null)
                         {
-                            throw new InvalidDataException(registrationUri.AbsoluteUri);
+                            log.LogDebug($"{rangeUri} returned 404 NotFound. No versions in this range are available.");
+                            continue;
                         }
 
                         ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);

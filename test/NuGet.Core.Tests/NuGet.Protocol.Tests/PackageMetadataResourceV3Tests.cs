@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -302,6 +301,37 @@ namespace NuGet.Protocol.Tests
                 //Assert
                 Assert.Null(metadata);
             }
+        }
+
+        [Fact]
+        public async Task PackageMetadataResourceV3_GetMetadataAsync_RegistrationPageLeaf_NotFound()
+        {
+            // Arrange
+            var source = "https://api.nuget.org/v3/index.json";
+            var dummyPackage = "dummy.package";
+            var responses = new Dictionary<string, string>
+            {
+                { "https://api.nuget.org/v3/index.json", JsonData.RepoSignIndexJsonData },
+                { $"https://api.nuget.org/v3/registration0/{dummyPackage}/index.json", "{\"ok\": false, \"error\": \"This feature is not supported.\"}" },
+                { $"https://api.nuget.org/v3-registration3-gz-semver2/{dummyPackage}/index.json", JsonData.PackageRegistrationCatalogWithLeafPagesUpperLower },
+                { $"https://api.nuget.org/v3/registration3-gz-semver2/{dummyPackage}/page/2.0.1/3.0.0.json", string.Empty /*404*/ },
+                { $"https://api.nuget.org/v3/registration3-gz-semver2/{dummyPackage}/page/1.0.0/2.0.0.json", string.Empty /*404*/ },
+            };
+
+            var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
+            var resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
+
+            //Act
+            using var sourceCacheContext = new SourceCacheContext();
+            var packages = await resource.GetMetadataAsync(dummyPackage,
+                false,
+                false,
+                sourceCacheContext,
+                Common.NullLogger.Instance,
+                CancellationToken.None);
+
+            //Assert 
+            Assert.Empty(packages);
         }
     }
 }

@@ -4833,5 +4833,33 @@ namespace Test.Utility
     ""version"": ""0.0.0""
 }";
         #endregion
+
+        #region PackageRegistrationCatalogWithLeafPagesUpperLower
+        public const string PackageRegistrationCatalogWithLeafPagesUpperLower = @"{
+    ""@id"": ""http://api.nuget.org/v3/registration3-gz-semver2/dummy.package/index.json"",
+    ""@type"": [
+        ""catalog:CatalogRoot"",
+        ""PackageRegistration"",
+        ""catalog:Permalink""
+    ],
+    ""count"": 2,
+    ""items"": [
+        {
+            ""@id"": ""https://api.nuget.org/v3/registration3-gz-semver2/dummy.package/page/2.0.1/3.0.0.json"",
+            ""@type"": ""catalog:CatalogPage"",
+            ""count"": 12,
+            ""lower"": ""2.0.1"",
+            ""upper"": ""3.0.0""
+        },
+        {
+            ""@id"": ""https://api.nuget.org/v3/registration3-gz-semver2/dummy.package/page/1.0.0/2.0.0.json"",
+            ""@type"": ""catalog:CatalogPage"",
+            ""count"": 10,
+            ""lower"": ""1.0.0"",
+            ""upper"": ""2.0.0""
+        }
+    ]
+}";
+        #endregion
     }
 }
