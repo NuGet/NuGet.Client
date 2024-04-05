@@ -912,4 +912,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigGetCommandDescription" xml:space="preserve">
     <value>Gets the NuGet configuration settings that will be applied.</value>
   </data>
+  <data name="SourcesCommandAllowInsecureConnectionsDescription" xml:space="preserve">
+    <value>Enables HTTP connections, applicable only to the `Add` and `Update` subcommands. Note: Data sent or received is not secure. Please refer to https://aka.ms/nuget-https-everywhere.</value>
+    <comment>please don't localize `Add` and `Update`</comment>
+  </data>
 </root>

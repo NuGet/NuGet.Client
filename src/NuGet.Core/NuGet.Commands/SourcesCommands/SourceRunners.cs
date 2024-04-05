@@ -62,6 +62,7 @@ namespace NuGet.Commands
             }
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
+            newPackageSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
             if (newPackageSource.IsHttp && !newPackageSource.IsHttps && !newPackageSource.AllowInsecureConnections)
             {
@@ -262,6 +263,7 @@ namespace NuGet.Commands
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
 
             var existingSource = sourceProvider.GetPackageSourceByName(args.Name);
+            existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
             if (existingSource == null)
             {
                 throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
@@ -282,6 +284,7 @@ namespace NuGet.Commands
                 }
 
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
+                existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
                 // If the existing source is not http, warn the user
                 if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections)

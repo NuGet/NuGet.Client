@@ -296,7 +296,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Disable using the Http cache and contact all configured package sources for live information..
+        ///   Looks up a localized string similar to Disable the use of the HTTP cache and contact all configured package sources for live information..
         /// </summary>
         internal static string CommandNoHttpCache {
             get {
@@ -886,7 +886,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NoCache is deprecated in favor of the appropriately named NoHttpCache..
+        ///   Looks up a localized string similar to NoCache is deprecated and has been renamed to NoHttpCache. Please use NoHttpCache instead..
         /// </summary>
         internal static string Log_RestoreNoCacheInformation {
             get {
@@ -1725,6 +1725,15 @@ namespace NuGet.CommandLine {
         internal static string SignCommandUsageSummary {
             get {
                 return ResourceManager.GetString("SignCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables HTTP connections, applicable only to the `Add` and `Update` subcommands. Note: Data sent or received is not secure. Please refer to https://aka.ms/nuget-https-everywhere..
+        /// </summary>
+        internal static string SourcesCommandAllowInsecureConnectionsDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandAllowInsecureConnectionsDescription", resourceCulture);
             }
         }
         
