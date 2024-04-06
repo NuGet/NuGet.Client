@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
@@ -10,7 +11,7 @@ using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
-    internal class WhyCommand
+    internal static class WhyCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger, Func<IWhyCommandRunner> getCommandRunner)
         {
@@ -20,7 +21,7 @@ namespace NuGet.CommandLine.XPlat
                 why.HelpOption(XPlatUtility.HelpOption);
 
                 CommandArgument path = why.Argument(
-                    "<PROJECT | SOLUTION>",
+                    "<PROJECT> | <SOLUTION>",
                     Strings.WhyCommand_PathArgument_Description,
                     multipleValues: false);
 
@@ -30,13 +31,13 @@ namespace NuGet.CommandLine.XPlat
                     multipleValues: false);
 
                 CommandOption frameworks = why.Option(
-                    "--framework",
-                    Strings.WhyCommand_FrameworkArgument_Description,
+                    "-f|--framework",
+                    Strings.WhyCommand_FrameworkOption_Description,
                     CommandOptionType.MultipleValue);
 
                 why.OnExecute(() =>
                 {
-                    // TODO: Can path be empty?
+                    ValidatePathArgument(path);
                     ValidatePackageArgument(package);
                     ValidateFrameworksOption(frameworks);
 
@@ -54,11 +55,34 @@ namespace NuGet.CommandLine.XPlat
             });
         }
 
+        private static void ValidatePathArgument(CommandArgument path)
+        {
+            if (string.IsNullOrEmpty(path.Value))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
+                    path.Name));
+            }
+
+            if (!File.Exists(path.Value)
+                || (!path.Value.EndsWith("proj", StringComparison.OrdinalIgnoreCase) && !path.Value.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_PathIsMissingOrInvalid,
+                    path.Value));
+            }
+        }
+
         private static void ValidatePackageArgument(CommandArgument package)
         {
             if (string.IsNullOrEmpty(package.Value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.WhyCommand_Error_ArgumentCannotBeEmpty, package.Name));
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
+                    package.Name));
             }
         }
 
@@ -72,7 +96,10 @@ namespace NuGet.CommandLine.XPlat
 
             if (frameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(Strings.ListPkg_InvalidFramework, nameof(framework));
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_InvalidFramework,
+                    framework.Template));
             }
         }
     }

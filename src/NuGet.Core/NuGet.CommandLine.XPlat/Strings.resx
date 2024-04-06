@@ -912,23 +912,42 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="ConfigGetCommandDescription" xml:space="preserve">
     <value>Gets the NuGet configuration settings that will be applied.</value>
   </data>
-  <data name="WhyCommand_PackageArgument_Description" xml:space="preserve">
-    <value>A package name to look-up in the dependency graph.</value>
-  </data>
-  <data name="WhyCommand_FrameworkArgument_Description" xml:space="preserve">
-    <value>Specifies the target framework to look-up in the dependency graph while searching for a package.</value>
-  </data>
   <data name="WhyCommand_Description" xml:space="preserve">
     <value>Lists the dependency graph for a particular package for a given project or solution.</value>
   </data>
   <data name="WhyCommand_PathArgument_Description" xml:space="preserve">
     <value>A path to a project, solution file or directory.</value>
   </data>
-  <data name="WhyCommand_Error_NoPackagesFoundForFrameworks" xml:space="preserve">
-    <value>No packages were found for this framework.</value>
+  <data name="WhyCommand_PackageArgument_Description" xml:space="preserve">
+    <value>The package name to look-up in the dependency graph.</value>
+  </data>
+  <data name="WhyCommand_FrameworkOption_Description" xml:space="preserve">
+    <value>The target framework(s) for which dependency graphs are shown.</value>
   </data>
   <data name="WhyCommand_Error_ArgumentCannotBeEmpty" xml:space="preserve">
     <value>Unable to run 'dotnet nuget why'. The '{0}' argument cannot be empty.</value>
-    <comment>{0} - Argument which was not provided</comment>
+    <comment>{0} - Argument that was not provided</comment>
+  </data>
+  <data name="WhyCommand_Error_PathIsMissingOrInvalid" xml:space="preserve">
+    <value>Unable to run 'dotnet nuget why'. Missing or invalid project/solution file '{0}'.</value>
+    <comment>{0} - Project/solution file path</comment>
+  </data>
+  <data name="WhyCommand_Error_InvalidFramework" xml:space="preserve">
+    <value>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</value>
+  </data>
+  <data name="WhyCommand_Error_CannotReadAssetsFile" xml:space="preserve">
+    <value>Unable to read the assets file `{0}`.</value>
+    <comment>{0} - Assets file path</comment>
+  </data>
+  <data name="WhyCommand_Message_NoPackagesFoundForFramework" xml:space="preserve">
+    <value>No packages were found for this framework.</value>
+  </data>
+  <data name="WhyCommand_Message_NoDependencyGraphsFoundInProject" xml:space="preserve">
+    <value>Project '{0}' does not have any dependency graph(s) for '{1}'</value>
+    <comment>{0} - Project name, {1} - Target package</comment>
+  </data>
+  <data name="WhyCommand_Message_DependencyGraphsFoundInProject" xml:space="preserve">
+    <value>Project '{0}' has the following dependency graph(s) for '{1}':</value>
+    <comment>{0} - Project name, {1} - Target package</comment>
   </data>
 </root>

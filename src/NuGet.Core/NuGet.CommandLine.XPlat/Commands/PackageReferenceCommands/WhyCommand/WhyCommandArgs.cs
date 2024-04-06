@@ -19,7 +19,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="path">The path to the solution or project file.</param>
         /// <param name="package">The package for which we show the dependency graphs.</param>
-        /// <param name="frameworks">The target frameworks for which we show the dependency graphs.</param>
+        /// <param name="frameworks">The target framework(s) for which we show the dependency graphs.</param>
         /// <param name="logger"></param>
         public WhyCommandArgs(
             string path,

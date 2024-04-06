@@ -2224,25 +2224,70 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to read the assets file `{0}`..
+        /// </summary>
+        internal static string WhyCommand_Error_CannotReadAssetsFile {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_CannotReadAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid..
+        /// </summary>
+        internal static string WhyCommand_Error_InvalidFramework {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_InvalidFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. Missing or invalid project/solution file &apos;{0}&apos;..
+        /// </summary>
+        internal static string WhyCommand_Error_PathIsMissingOrInvalid {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_PathIsMissingOrInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The target framework(s) for which dependency graphs are shown..
+        /// </summary>
+        internal static string WhyCommand_FrameworkOption_Description {
+            get {
+                return ResourceManager.GetString("WhyCommand_FrameworkOption_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following dependency graph(s) for &apos;{1}&apos;:.
+        /// </summary>
+        internal static string WhyCommand_Message_DependencyGraphsFoundInProject {
+            get {
+                return ResourceManager.GetString("WhyCommand_Message_DependencyGraphsFoundInProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have any dependency graph(s) for &apos;{1}&apos;.
+        /// </summary>
+        internal static string WhyCommand_Message_NoDependencyGraphsFoundInProject {
+            get {
+                return ResourceManager.GetString("WhyCommand_Message_NoDependencyGraphsFoundInProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No packages were found for this framework..
         /// </summary>
-        internal static string WhyCommand_Error_NoPackagesFoundForFrameworks {
+        internal static string WhyCommand_Message_NoPackagesFoundForFramework {
             get {
-                return ResourceManager.GetString("WhyCommand_Error_NoPackagesFoundForFrameworks", resourceCulture);
+                return ResourceManager.GetString("WhyCommand_Message_NoPackagesFoundForFramework", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the target framework to look-up in the dependency graph while searching for a package..
-        /// </summary>
-        internal static string WhyCommand_FrameworkArgument_Description {
-            get {
-                return ResourceManager.GetString("WhyCommand_FrameworkArgument_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A package name to look-up in the dependency graph..
+        ///   Looks up a localized string similar to The package name to look-up in the dependency graph..
         /// </summary>
         internal static string WhyCommand_PackageArgument_Description {
             get {

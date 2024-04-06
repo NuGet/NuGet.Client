@@ -18,6 +18,7 @@ namespace NuGet.CommandLine.XPlat
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
 
+        // Dependency graph console output symbols
         private const string ChildNodeSymbol = "├─── ";
         private const string LastChildNodeSymbol = "└─── ";
 
@@ -33,7 +34,6 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         public Task ExecuteCommand(WhyCommandArgs whyCommandArgs)
         {
-            // TODO: figure out how to use current directory if path is not passed in
             var projectPaths = Path.GetExtension(whyCommandArgs.Path).Equals(".sln")
                                     ? MSBuildAPIUtility.GetProjectsFromSolution(whyCommandArgs.Path).Where(f => File.Exists(f))
                                     : new List<string>() { whyCommandArgs.Path };
@@ -86,7 +86,7 @@ namespace NuGet.CommandLine.XPlat
                     Console.Error.WriteLine(
                         string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.ListPkg_ErrorReadingAssetsFile,
+                            Strings.WhyCommand_Error_CannotReadAssetsFile,
                             assetsPath));
 
                     ProjectCollection.GlobalProjectCollection.UnloadProject(project);
@@ -102,7 +102,10 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    Console.WriteLine(string.Format(Strings.WhyCommand_Error_NoPackagesFoundForFrameworks, projectName));
+                    Console.WriteLine(
+                        string.Format(
+                            Strings.WhyCommand_Message_NoPackagesFoundForFramework,
+                            projectName));
                 }
 
                 // unload project
@@ -153,11 +156,20 @@ namespace NuGet.CommandLine.XPlat
 
             if (!doesProjectHaveDependencyOnPackage)
             {
-                Console.WriteLine($"Project '{projectName}' does not have any dependency graph(s) for '{targetPackage}'");
+                Console.WriteLine(
+                    string.Format(
+                        Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
+                        projectName,
+                        targetPackage));
             }
             else
             {
-                Console.WriteLine($"Project '{projectName}' has the following dependency graph(s) for '{targetPackage}':\n");
+                Console.WriteLine(
+                    string.Format(
+                        Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
+                        projectName,
+                        targetPackage));
+
                 PrintAllDependencyGraphs(dependencyGraphPerFramework);
             }
         }
@@ -310,6 +322,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
         private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
         {
+            Console.WriteLine();
+
             // deduplicate the dependency graphs
             List<List<string>> deduplicatedFrameworks = GetDeduplicatedFrameworks(dependencyGraphPerFramework);
 
@@ -335,7 +349,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (topLevelNodes == null || topLevelNodes.Count == 0)
             {
-                Console.WriteLine($"\t {LastChildNodeSymbol}No dependency graphs found\n");
+                Console.WriteLine($"\t {LastChildNodeSymbol}No dependency graph(s) found\n");
                 return;
             }
 
@@ -351,6 +365,7 @@ namespace NuGet.CommandLine.XPlat
                     PrintDependencyNode(node, prefix: "\t ", isLastChild: false);
                 }
             }
+
             Console.WriteLine();
         }
 
@@ -398,7 +413,9 @@ namespace NuGet.CommandLine.XPlat
         /// Deduplicates dependency graphs, and returns groups of frameworks that share the same graph.
         /// </summary>
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// eg. { { "net6.0", "netcoreapp3.1" }, { "net472" } }
+        /// </returns>
         private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
         {
             List<string> frameworksWithoutGraphs = null;
