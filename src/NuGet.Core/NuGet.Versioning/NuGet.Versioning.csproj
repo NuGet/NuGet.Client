@@ -7,6 +7,9 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile Condition="'$(IsOfficialBuild)' == 'true'">false</GenerateDocumentationFile>
+    <GenerateDocumentationFile Condition="'$(IsOfficialBuild)' != 'true'">true</GenerateDocumentationFile>
     <XPLATProject>true</XPLATProject>
     <NoWarn>$(NoWarn);RS0041</NoWarn>
     <nullable>enable</nullable>
