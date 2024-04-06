@@ -15,13 +15,11 @@ namespace NuGet.CommandLine.XPlat
         public List<string> Frameworks { get; }
 
         /// <summary>
-        /// A constructor for the arguments of the 'why'
-        /// command. This is used to execute the runner's
-        /// method
+        /// A constructor for the arguments of the 'why' command.
         /// </summary>
-        /// <param name="path"> The path to the solution or project file </param>
-        /// <param name="package">The package for which we show the dependency graph </param>
-        /// <param name="frameworks">The target frameworks for which we show the dependency graph </param>
+        /// <param name="path">The path to the solution or project file.</param>
+        /// <param name="package">The package for which we show the dependency graphs.</param>
+        /// <param name="frameworks">The target frameworks for which we show the dependency graphs.</param>
         /// <param name="logger"></param>
         public WhyCommandArgs(
             string path,

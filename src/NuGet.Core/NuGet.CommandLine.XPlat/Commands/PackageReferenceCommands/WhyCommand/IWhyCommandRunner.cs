@@ -7,6 +7,6 @@ namespace NuGet.CommandLine.XPlat
 {
     internal interface IWhyCommandRunner
     {
-        Task ExecuteCommandAsync(WhyCommandArgs whyCommandArgs);
+        Task ExecuteCommand(WhyCommandArgs whyCommandArgs);
     }
 }

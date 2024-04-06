@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Policy;
 using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
 using NuGet.ProjectModel;
@@ -29,104 +27,106 @@ namespace NuGet.CommandLine.XPlat
         private const string DuplicateTreeSymbol = "└─── (*)";
 
         /// <summary>
-        /// Use CLI arguments to execute why command.
+        /// Execute 'why' command.
         /// </summary>
-        /// <param name="whyCommandArgs">CLI arguments.</param>
+        /// <param name="whyCommandArgs">CLI arguments for the 'why' command.</param>
         /// <returns></returns>
-        public Task ExecuteCommandAsync(WhyCommandArgs whyCommandArgs)
+        public Task ExecuteCommand(WhyCommandArgs whyCommandArgs)
         {
-            //TestMethod();
-
             // TODO: figure out how to use current directory if path is not passed in
             var projectPaths = Path.GetExtension(whyCommandArgs.Path).Equals(".sln")
                                     ? MSBuildAPIUtility.GetProjectsFromSolution(whyCommandArgs.Path).Where(f => File.Exists(f))
                                     : new List<string>() { whyCommandArgs.Path };
 
-            // the package you want to print the dependency paths for
-            string package = whyCommandArgs.Package;
+            string targetPackage = whyCommandArgs.Package;
 
             var msBuild = new MSBuildAPIUtility(whyCommandArgs.Logger);
 
             foreach (var projectPath in projectPaths)
             {
-                // Open project to evaluate properties for the assets
-                // file and the name of the project
                 Project project = MSBuildAPIUtility.GetProject(projectPath);
 
+                // if the current project is not a PackageReference project, print an error message and continue to the next project
                 if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_NotPRProject,
-                        projectPath));
-                    Console.WriteLine();
+                    Console.Error.WriteLine(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_NotPRProject,
+                            projectPath));
+
+                    ProjectCollection.GlobalProjectCollection.UnloadProject(project);
                     continue;
                 }
 
                 string projectName = project.GetPropertyValue(ProjectName);
                 string assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
-                // If the file was not found, print an error message and continue to next project
+                // if the assets file was not found, print an error message and continue to the next project
                 if (!File.Exists(assetsPath))
                 {
-                    Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_AssetsFileNotFound,
-                        projectPath));
-                    Console.WriteLine();
+                    Console.Error.WriteLine(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_AssetsFileNotFound,
+                            projectPath));
+
+                    ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+                    continue;
+                }
+
+                var lockFileFormat = new LockFileFormat();
+                LockFile assetsFile = lockFileFormat.Read(assetsPath);
+
+                // assets file validation
+                if (assetsFile.PackageSpec == null
+                    || assetsFile.Targets == null
+                    || assetsFile.Targets.Count == 0)
+                {
+                    Console.Error.WriteLine(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.ListPkg_ErrorReadingAssetsFile,
+                            assetsPath));
+
+                    ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+                    continue;
+                }
+
+                // get all resolved package references for a project
+                List<FrameworkPackages> packages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true);
+
+                if (packages?.Count > 0)
+                {
+                    FindAllDependencyGraphs(packages, assetsFile.Targets, targetPackage, projectName);
                 }
                 else
                 {
-                    var lockFileFormat = new LockFileFormat();
-                    LockFile assetsFile = lockFileFormat.Read(assetsPath);
-
-                    // Assets file validation
-                    if (assetsFile.PackageSpec != null &&
-                        assetsFile.Targets != null &&
-                        assetsFile.Targets.Count != 0)
-                    {
-
-                        // Get all the packages that are referenced in a project
-                        List<FrameworkPackages> packages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true);
-
-                        // If packages equals null, it means something wrong happened
-                        // with reading the packages and it was handled and message printed
-                        // in MSBuildAPIUtility function, but we need to move to the next project
-                        if (packages != null)
-                        {
-                            // No packages means that no package references at all were found in the current framework
-                            if (!packages.Any())
-                            {
-                                Console.WriteLine(string.Format(Strings.WhyCommand_Error_NoPackagesFoundForFrameworks, projectName));
-                            }
-                            else
-                            {
-                                FindAllDependencyGraphs(packages, assetsFile.Targets, package, projectName);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
-                    }
-
-                    // Unload project
-                    ProjectCollection.GlobalProjectCollection.UnloadProject(project);
+                    Console.WriteLine(string.Format(Strings.WhyCommand_Error_NoPackagesFoundForFrameworks, projectName));
                 }
+
+                // unload project
+                ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
 
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Run the why command, print out output to console.
+        /// Run the 'why' command, and print out output to console.
         /// </summary>
-        /// <param name="packages">All packages in the project. Split up by top level packages and transitive packages.</param>
-        /// <param name="targetFrameworks">All target frameworks in project and corresponding info about frameworks.</param>
-        /// <param name="package">The package we want the dependency paths for.</param>
+        /// <param name="packages">All packages in the project, split up by top-level packages and transitive packages.</param>
+        /// <param name="targetFrameworks">All target frameworks in the project.</param>
+        /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <param name="projectName">The name of the current project.</param>
-        private void FindAllDependencyGraphs(IEnumerable<FrameworkPackages> packages, IList<LockFileTarget> targetFrameworks, string package, string projectName)
+        private void FindAllDependencyGraphs(
+            IEnumerable<FrameworkPackages> packages,
+            IList<LockFileTarget> targetFrameworks,
+            string targetPackage,
+            string projectName)
         {
             var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>>(targetFrameworks.Count);
-            bool foundPathsToPackage = false;
+            bool doesProjectHaveDependencyOnPackage = false;
 
             foreach (var frameworkPackages in packages)
             {
@@ -134,38 +134,40 @@ namespace NuGet.CommandLine.XPlat
 
                 if (target != null)
                 {
-                    // get all the top level packages for the framework
+                    // get all the top-level packages for the framework
                     IEnumerable<InstalledPackageReference> frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
 
                     // get all package libraries for the framework
                     IList<LockFileTargetLibrary> libraries = target.Libraries;
 
-                    List<DependencyNode> dependencyGraph = GetDependencyGraphPerFramework(frameworkTopLevelPackages, libraries, frameworkPackages, package);
+                    List<DependencyNode> dependencyGraph = GetDependencyGraphPerFramework(frameworkTopLevelPackages, libraries, frameworkPackages, targetPackage);
 
                     if (dependencyGraph != null)
                     {
-                        foundPathsToPackage = true;
+                        doesProjectHaveDependencyOnPackage = true;
                     }
 
                     dependencyGraphPerFramework.Add(frameworkPackages.Framework, dependencyGraph);
                 }
             }
 
-            if (!foundPathsToPackage)
+            if (!doesProjectHaveDependencyOnPackage)
             {
-                Console.WriteLine($"Project '{projectName}' does not have any dependency graph(s) for '{package}'");
+                Console.WriteLine($"Project '{projectName}' does not have any dependency graph(s) for '{targetPackage}'");
             }
             else
             {
-                Console.WriteLine($"Project '{projectName}' has the following dependency graph(s) for '{package}':\n");
+                Console.WriteLine($"Project '{projectName}' has the following dependency graph(s) for '{targetPackage}':\n");
                 PrintAllDependencyGraphs(dependencyGraphPerFramework);
             }
         }
 
+        /// <summary>
+        /// Returns a list of all top-level packages that have a dependency on the target package
         /// </summary>
-        /// Returns a list of all top-level packages that have a dependency on the given package
         /// <param name="topLevelPackages">All top-level packages for a given framework.</param>
-        /// <param name="libraries">All package libraries for a given framework.</param>
+        /// <param name="packageLibraries">All package libraries for a given framework.</param>
+        /// <param name="frameworkPackages">All resolved package references for a given framework. Used to get a dependency's resolved version for the graph.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
         private List<DependencyNode> GetDependencyGraphPerFramework(
@@ -175,15 +177,18 @@ namespace NuGet.CommandLine.XPlat
             string targetPackage)
         {
             List<DependencyNode> dependencyGraph = null;
+
+            // a dictionary mapping all 'visited' packageIds to their resolved versions
             var visitedIdToVersion = new Dictionary<string, string>();
 
             foreach (var topLevelPackage in topLevelPackages)
             {
+                // use depth-first search to find dependency paths to the target package
                 DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, frameworkPackages, visitedIdToVersion, targetPackage);
 
                 if (dependencyNode != null)
                 {
-                    dependencyGraph ??= new List<DependencyNode>();
+                    dependencyGraph ??= [];
                     dependencyGraph.Add(dependencyNode);
                 }
             }
@@ -197,7 +202,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="currentPackage">Current 'root' package.</param>
         /// <param name="packageLibraries">All libraries in the target framework.</param>
-        /// <param name="frameworkPackages">All resolved package references, used to get packages' resolved versions.</param>
+        /// <param name="frameworkPackages">All resolved package references for a given framework, used to get packages' resolved versions.</param>
         /// <param name="visitedIdToVersion">A dictionary mapping all visited packageIds to their resolved versions.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
@@ -208,7 +213,7 @@ namespace NuGet.CommandLine.XPlat
             Dictionary<string, string> visitedIdToVersion,
             string targetPackage)
         {
-            // If we find the target node, return the current node without any children
+            // if we reach the target node, return the current node without any children
             if (currentPackage == targetPackage)
             {
                 if (!visitedIdToVersion.ContainsKey(currentPackage))
@@ -225,7 +230,10 @@ namespace NuGet.CommandLine.XPlat
                 return currentNode;
             }
 
-            // If we have already traversed this node's children and found paths, we don't want to traverse it again
+            // if we have already traversed this node's children and found dependency paths, we don't want to traverse it again
+            // TODO: Are we traversing paths multiple times for the same package if we don't find any dependency paths?
+            // We can have 2 separate sets: one that just tracks all visited nodes in a HashSet<string>, and another that tracks all nodes
+            // that have been added to the dependency graph (similar to the current visitedIdToVersion dictionary)
             if (visitedIdToVersion.ContainsKey(currentPackage))
             {
                 var currentNode = new DependencyNode
@@ -238,7 +246,7 @@ namespace NuGet.CommandLine.XPlat
                 return currentNode;
             }
 
-            // Find the library that matches the root package's ID, and get all its dependencies
+            // find the library that matches the root package's ID, and get all its dependencies
             var dependencies = packageLibraries?.FirstOrDefault(i => i.Name == currentPackage)?.Dependencies;
 
             if (dependencies?.Count != 0)
@@ -249,15 +257,15 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var dependencyNode = FindDependencyPath(dependency.Id, packageLibraries, frameworkPackages, visitedIdToVersion, targetPackage);
 
-                    // If the dependency has a path to the target, add it to the list of paths
+                    // if the dependency has a path to the target, add it to the list of paths
                     if (dependencyNode != null)
                     {
-                        paths ??= new List<DependencyNode>();
+                        paths ??= [];
                         paths.Add(dependencyNode);
                     }
                 }
 
-                // If there are any paths leading to the target, return the current node with its children
+                // if there are any paths leading to the target, return the current node with its children
                 if (paths?.Count > 0)
                 {
                     if (!visitedIdToVersion.ContainsKey(currentPackage))
@@ -271,28 +279,39 @@ namespace NuGet.CommandLine.XPlat
                         Version = visitedIdToVersion[currentPackage],
                         Children = paths
                     };
+
                     return currentNode;
                 }
             }
 
-            // If we found no paths leading to the target, return null
+            // if we found no paths leading to the target, return null
             return null;
         }
 
+        /// <summary>
+        /// Gets the resolved version of a given packageId in the current target framework's graph.
+        /// </summary>
+        /// <param name="packageId">The package we want the version for.</param>
+        /// <param name="frameworkPackages">All resolved package references for a given framework.</param>
+        /// <returns></returns>
         private string GetResolvedVersion(string packageId, FrameworkPackages frameworkPackages)
         {
             var packageReference = frameworkPackages.TopLevelPackages.FirstOrDefault(i => i.Name == packageId)
                                         ?? frameworkPackages.TransitivePackages.FirstOrDefault(i => i.Name == packageId);
 
+            // TODO: Validation sanity check here?
+
             return packageReference.ResolvedPackageMetadata.Identity.Version.ToNormalizedString();
         }
 
+        /// <summary>
+        /// Prints the dependency graphs for all target frameworks.
+        /// </summary>
+        /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
         private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
         {
-            // If different frameworks have the same dependency graphs, we want to deduplicate them
-            var printed = new HashSet<string>(dependencyGraphPerFramework.Count);
-
-            var deduplicatedFrameworks = GetDeduplicatedFrameworks(dependencyGraphPerFramework);
+            // deduplicate the dependency graphs
+            List<List<string>> deduplicatedFrameworks = GetDeduplicatedFrameworks(dependencyGraphPerFramework);
 
             foreach (var frameworks in deduplicatedFrameworks)
             {
@@ -300,54 +319,12 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
-        {
-            List<string> frameworksWithoutGraphs = null;
-            var dependencyGraphHashes = new Dictionary<int, List<string>>(dependencyGraphPerFramework.Count);
-
-            var dependencyGraphsToFrameworks = new Dictionary<List<DependencyNode>, List<string>>(dependencyGraphPerFramework.Count);
-
-            foreach (var framework in dependencyGraphPerFramework.Keys)
-            {
-                if (dependencyGraphPerFramework[framework] == null)
-                {
-                    frameworksWithoutGraphs ??= new List<string>();
-                    frameworksWithoutGraphs.Add(framework);
-                    continue;
-                }
-
-                int hash = GetDependencyGraphHashCode(dependencyGraphPerFramework[framework]);
-                if (dependencyGraphHashes.ContainsKey(hash))
-                {
-                    dependencyGraphHashes[hash].Add(framework);
-                }
-                else
-                {
-                    dependencyGraphHashes.Add(hash, new List<string> { framework });
-                }
-
-                List<DependencyNode> currentGraph = dependencyGraphPerFramework[framework];
-                if (dependencyGraphsToFrameworks.TryGetValue(currentGraph, out var frameworkList))
-                {
-                    frameworkList.Add(framework);
-                }
-                else
-                {
-                    dependencyGraphsToFrameworks.Add(currentGraph, new List<string> { framework });
-                }
-            }
-
-            var deduplicatedFrameworks = dependencyGraphHashes.Values.ToList();
-
-            if (frameworksWithoutGraphs != null)
-            {
-                deduplicatedFrameworks.Add(frameworksWithoutGraphs);
-            }
-
-            return deduplicatedFrameworks;
-        }
-
-        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> nodes)
+        /// <summary>
+        /// Prints the dependency graph for a given framework/list of frameworks.
+        /// </summary>
+        /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
+        /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
+        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes)
         {
             foreach (var framework in frameworks)
             {
@@ -356,27 +333,33 @@ namespace NuGet.CommandLine.XPlat
 
             Console.WriteLine($"\t {ChildPrefixSymbol}");
 
-            if (nodes == null || nodes.Count == 0)
+            if (topLevelNodes == null || topLevelNodes.Count == 0)
             {
                 Console.WriteLine($"\t {LastChildNodeSymbol}No dependency graphs found\n");
                 return;
             }
 
-            for (int i = 0; i < nodes.Count; i++)
+            for (int i = 0; i < topLevelNodes.Count; i++)
             {
-                var node = nodes[i];
-                if (i == nodes.Count - 1)
+                var node = topLevelNodes[i];
+                if (i == topLevelNodes.Count - 1)
                 {
-                    PrintDependencyNode(node, "\t ", true);
+                    PrintDependencyNode(node, prefix: "\t ", isLastChild: true);
                 }
                 else
                 {
-                    PrintDependencyNode(node, "\t ", false);
+                    PrintDependencyNode(node, prefix: "\t ", isLastChild: false);
                 }
             }
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Prints a single dependency node on a line.
+        /// </summary>
+        /// <param name="node">The current package node.</param>
+        /// <param name="prefix">The prefix we need to print before the current node.</param>
+        /// <param name="isLastChild">Specifies whether the current node is the last child of its parent.</param>
         private void PrintDependencyNode(DependencyNode node, string prefix, bool isLastChild)
         {
             string currentPrefix, nextPrefix;
@@ -411,6 +394,51 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        /// <summary>
+        /// Deduplicates dependency graphs, and returns groups of frameworks that share the same graph.
+        /// </summary>
+        /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
+        /// <returns></returns>
+        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
+        {
+            List<string> frameworksWithoutGraphs = null;
+            var dependencyGraphHashes = new Dictionary<int, List<string>>(dependencyGraphPerFramework.Count);
+
+            foreach (var framework in dependencyGraphPerFramework.Keys)
+            {
+                if (dependencyGraphPerFramework[framework] == null)
+                {
+                    frameworksWithoutGraphs ??= [];
+                    frameworksWithoutGraphs.Add(framework);
+                    continue;
+                }
+
+                int hash = GetDependencyGraphHashCode(dependencyGraphPerFramework[framework]);
+                if (dependencyGraphHashes.ContainsKey(hash))
+                {
+                    dependencyGraphHashes[hash].Add(framework);
+                }
+                else
+                {
+                    dependencyGraphHashes.Add(hash, [framework]);
+                }
+            }
+
+            var deduplicatedFrameworks = dependencyGraphHashes.Values.ToList();
+
+            if (frameworksWithoutGraphs != null)
+            {
+                deduplicatedFrameworks.Add(frameworksWithoutGraphs);
+            }
+
+            return deduplicatedFrameworks;
+        }
+
+        /// <summary>
+        /// Returns a hash for a given dependency graph. Used to deduplicate dependency graphs for different frameworks.
+        /// </summary>
+        /// <param name="graph">The dependency graph for a given framework.</param>
+        /// <returns></returns>
         private int GetDependencyGraphHashCode(IList<DependencyNode> graph)
         {
             var hashCodeCombiner = new HashCodeCombiner();
@@ -422,10 +450,7 @@ namespace NuGet.CommandLine.XPlat
         {
             public string Id { get; set; }
             public string Version { get; set; }
-            // When a particular Node is a duplicate, we don't want to print its tree again,
-            // so we will print something else like a "(*)" instead
-            // See https://doc.rust-lang.org/cargo/commands/cargo-tree.html
-            public bool IsDuplicate { get; set; }
+            public bool IsDuplicate { get; set; } // When a particular Node is a duplicate, we don't want to print its tree again
             public IList<DependencyNode> Children { get; set; }
 
             public override int GetHashCode()
@@ -436,34 +461,6 @@ namespace NuGet.CommandLine.XPlat
                 hashCodeCombiner.AddObject(IsDuplicate);
                 hashCodeCombiner.AddSequence(Children);
                 return hashCodeCombiner.CombinedHash;
-            }
-
-            public bool Equals(DependencyNode other)
-            {
-                if (other is null) return false;
-
-                return Id == other.Id &&
-                    Version == other.Version &&
-                    IsDuplicate == other.IsDuplicate &&
-                    Children.SequenceEqualWithNullCheck(other.Children);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as DependencyNode);
-            }
-
-            public static bool operator ==(DependencyNode x, DependencyNode y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (x is null || y is null) return false;
-
-                return x.Equals(y);
-            }
-
-            public static bool operator !=(DependencyNode x, DependencyNode y)
-            {
-                return !(x == y);
             }
         }
     }
