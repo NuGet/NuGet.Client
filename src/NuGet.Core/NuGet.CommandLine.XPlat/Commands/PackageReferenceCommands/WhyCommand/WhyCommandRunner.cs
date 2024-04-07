@@ -190,13 +190,15 @@ namespace NuGet.CommandLine.XPlat
         {
             List<DependencyNode> dependencyGraph = null;
 
-            // a dictionary mapping all 'visited' packageIds to their resolved versions
-            var visitedIdToVersion = new Dictionary<string, string>();
+            // hashset tracking every package node that we've traversed
+            var visited = new HashSet<string>();
+            // dictionary tracking all package nodes that have been added to the graph, mapped to their resolved versions
+            var addedToGraph = new Dictionary<string, string>();
 
             foreach (var topLevelPackage in topLevelPackages)
             {
                 // use depth-first search to find dependency paths to the target package
-                DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, frameworkPackages, visitedIdToVersion, targetPackage);
+                DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, frameworkPackages, visited, addedToGraph, targetPackage);
 
                 if (dependencyNode != null)
                 {
@@ -215,47 +217,56 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="currentPackage">Current 'root' package.</param>
         /// <param name="packageLibraries">All libraries in the target framework.</param>
         /// <param name="frameworkPackages">All resolved package references for a given framework, used to get packages' resolved versions.</param>
-        /// <param name="visitedIdToVersion">A dictionary mapping all visited packageIds to their resolved versions.</param>
+        /// <param name="visited">HashSet tracking every package node that we've traversed.</param>
+        /// <param name="addedToGraph">Dictionary tracking all packageIds that were added to the graph, mapped to their resolved versions.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
         private DependencyNode FindDependencyPath(
             string currentPackage,
             IList<LockFileTargetLibrary> packageLibraries,
             FrameworkPackages frameworkPackages,
-            Dictionary<string, string> visitedIdToVersion,
+            HashSet<string> visited,
+            Dictionary<string, string> addedToGraph,
             string targetPackage)
         {
             // if we reach the target node, return the current node without any children
             if (currentPackage == targetPackage)
             {
-                if (!visitedIdToVersion.ContainsKey(currentPackage))
+                if (!addedToGraph.ContainsKey(currentPackage))
                 {
-                    visitedIdToVersion.Add(currentPackage, GetResolvedVersion(currentPackage, frameworkPackages));
+                    addedToGraph.Add(currentPackage, GetResolvedVersion(currentPackage, frameworkPackages));
                 }
 
                 var currentNode = new DependencyNode
                 {
                     Id = currentPackage,
-                    Version = visitedIdToVersion[currentPackage]
+                    Version = addedToGraph[currentPackage]
                 };
 
                 return currentNode;
             }
 
-            // if we have already traversed this node's children and found dependency paths, we don't want to traverse it again
-            // TODO: Are we traversing paths multiple times for the same package if we don't find any dependency paths?
-            // We can have 2 separate sets: one that just tracks all visited nodes in a HashSet<string>, and another that tracks all nodes
-            // that have been added to the dependency graph (similar to the current visitedIdToVersion dictionary)
-            if (visitedIdToVersion.ContainsKey(currentPackage))
+            // if we have already traversed this node's children and found dependency paths, mark it as a duplicate node and return
+            if (addedToGraph.ContainsKey(currentPackage))
             {
                 var currentNode = new DependencyNode
                 {
                     Id = currentPackage,
-                    Version = visitedIdToVersion[currentPackage],
+                    Version = addedToGraph[currentPackage],
                     IsDuplicate = true
                 };
 
                 return currentNode;
+            }
+
+            // if we have already traversed this node's children and found no dependency paths, return null
+            if (visited.Contains(currentPackage))
+            {
+                return null;
+            }
+            else
+            {
+                visited.Add(currentPackage);
             }
 
             // find the library that matches the root package's ID, and get all its dependencies
@@ -265,9 +276,10 @@ namespace NuGet.CommandLine.XPlat
             {
                 List<DependencyNode> paths = null;
 
+                // recurse on the package's dependencies
                 foreach (var dependency in dependencies)
                 {
-                    var dependencyNode = FindDependencyPath(dependency.Id, packageLibraries, frameworkPackages, visitedIdToVersion, targetPackage);
+                    var dependencyNode = FindDependencyPath(dependency.Id, packageLibraries, frameworkPackages, visited, addedToGraph, targetPackage);
 
                     // if the dependency has a path to the target, add it to the list of paths
                     if (dependencyNode != null)
@@ -280,15 +292,15 @@ namespace NuGet.CommandLine.XPlat
                 // if there are any paths leading to the target, return the current node with its children
                 if (paths?.Count > 0)
                 {
-                    if (!visitedIdToVersion.ContainsKey(currentPackage))
+                    if (!addedToGraph.ContainsKey(currentPackage))
                     {
-                        visitedIdToVersion.Add(currentPackage, GetResolvedVersion(currentPackage, frameworkPackages));
+                        addedToGraph.Add(currentPackage, GetResolvedVersion(currentPackage, frameworkPackages));
                     }
 
                     var currentNode = new DependencyNode
                     {
                         Id = currentPackage,
-                        Version = visitedIdToVersion[currentPackage],
+                        Version = addedToGraph[currentPackage],
                         Children = paths
                     };
 
@@ -310,8 +322,6 @@ namespace NuGet.CommandLine.XPlat
         {
             var packageReference = frameworkPackages.TopLevelPackages.FirstOrDefault(i => i.Name == packageId)
                                         ?? frameworkPackages.TransitivePackages.FirstOrDefault(i => i.Name == packageId);
-
-            // TODO: Validation sanity check here?
 
             return packageReference.ResolvedPackageMetadata.Identity.Version.ToNormalizedString();
         }
