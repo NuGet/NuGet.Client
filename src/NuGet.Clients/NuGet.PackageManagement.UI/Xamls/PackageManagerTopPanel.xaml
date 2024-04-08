@@ -181,15 +181,15 @@
     <Grid Grid.Row="2" Margin="20,0,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="2*"/>
-        <ColumnDefinition Width="*" MinWidth="192" />
+        <ColumnDefinition MinWidth="192" />
       </Grid.ColumnDefinitions>
       <Grid
         Grid.Column="0">
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*" MaxWidth="320" MinWidth="118"/>
+          <ColumnDefinition MaxWidth="320" MinWidth="118"/>
           <ColumnDefinition Width="auto" />
-          <ColumnDefinition Width="*" MaxWidth="125" />
-          <ColumnDefinition Width="*" MaxWidth="150"/>
+          <ColumnDefinition MaxWidth="125" />
+          <ColumnDefinition MaxWidth="150"/>
         </Grid.ColumnDefinitions>
         <!-- container of the search control -->
         <Border

@@ -56,7 +56,7 @@
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="16"/>
         <ColumnDefinition Width="16"/>
-        <ColumnDefinition Width="*" MinWidth="50"/>
+        <ColumnDefinition MinWidth="50"/>
       </Grid.ColumnDefinitions>
       <imaging:CrispImage Grid.Column="1"
            Moniker="{x:Static catalog:KnownMonikers.StatusError}"
