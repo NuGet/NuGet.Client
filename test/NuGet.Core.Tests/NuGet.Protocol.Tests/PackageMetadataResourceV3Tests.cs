@@ -314,7 +314,7 @@ namespace NuGet.Protocol.Tests
                 { "https://api.nuget.org/v3/index.json", JsonData.RepoSignIndexJsonData },
                 { $"https://api.nuget.org/v3/registration0/{dummyPackage}/index.json", "{\"ok\": false, \"error\": \"This feature is not supported.\"}" },
                 { $"https://api.nuget.org/v3-registration3-gz-semver2/{dummyPackage}/index.json", JsonData.PackageRegistrationCatalogWithLeafPagesUpperLower },
-                { $"https://api.nuget.org/v3/registration3-gz-semver2/{dummyPackage}/page/2.0.1/3.0.0.json", string.Empty /*404*/ },
+                { $"https://api.nuget.org/v3/registration3-gz-semver2/{dummyPackage}/page/2.0.1/3.0.0.json", "{ items: [] }" /*200*/ },
                 { $"https://api.nuget.org/v3/registration3-gz-semver2/{dummyPackage}/page/1.0.0/2.0.0.json", string.Empty /*404*/ },
             };
 
@@ -323,12 +323,16 @@ namespace NuGet.Protocol.Tests
 
             //Act
             using var sourceCacheContext = new SourceCacheContext();
-            var packages = await resource.GetMetadataAsync(dummyPackage,
-                false,
-                false,
-                sourceCacheContext,
-                Common.NullLogger.Instance,
-                CancellationToken.None);
+            var packages = Enumerable.Empty<IPackageSearchMetadata>();
+            await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            {
+                packages = await resource.GetMetadataAsync(dummyPackage,
+                    false,
+                    false,
+                    sourceCacheContext,
+                    Common.NullLogger.Instance,
+                    CancellationToken.None);
+            });
 
             //Assert 
             Assert.Empty(packages);

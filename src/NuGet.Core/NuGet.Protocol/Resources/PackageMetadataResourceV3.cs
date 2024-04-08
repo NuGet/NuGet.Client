@@ -123,8 +123,7 @@ namespace NuGet.Protocol
 
                         if (leafRegistrationPage == null)
                         {
-                            log.LogDebug($"{rangeUri} returned 404 NotFound. No versions in this range are available.");
-                            continue;
+                            throw new InvalidDataException(rangeUri);
                         }
 
                         ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);
@@ -234,7 +233,7 @@ namespace NuGet.Protocol
                                 $"list_{packageIdLowerCase}_range_{lower.ToNormalizedString()}-{upper.ToNormalizedString()}",
                                 httpSourceCacheContext)
                             {
-                                IgnoreNotFounds = true,
+                                IgnoreNotFounds = false,
                             },
                             httpSourceResult => DeserializeStreamDataAsync<RegistrationPage>(httpSourceResult.Stream, token),
                             log,
