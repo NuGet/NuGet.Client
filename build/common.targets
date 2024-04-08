@@ -24,9 +24,7 @@
     </ItemGroup>
   </Target>
 
-  <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
-    <Import Project="sign.targets" />
-  </ImportGroup>
+  <Import Project="sign.targets" Condition=" '$(SkipSigning)' != 'true' "/>
 
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <GetSigningInputsDependsOn Condition="'$(GetSigningInputsDependsOn)' == ''">GetSigningInputsDefault</GetSigningInputsDependsOn>
