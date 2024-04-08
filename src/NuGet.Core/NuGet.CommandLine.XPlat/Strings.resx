@@ -950,4 +950,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Project '{0}' has the following dependency graph(s) for '{1}':</value>
     <comment>{0} - Project name, {1} - Target package</comment>
   </data>
+  <data name="WhyCommand_Message_NoDependencyGraphsFoundForFramework" xml:space="preserve">
+    <value>No dependency graph(s) found</value>
+  </data>
 </root>

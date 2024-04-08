@@ -25,7 +25,7 @@ namespace NuGet.CommandLine.XPlat
         private const string ChildPrefixSymbol = "│    ";
         private const string LastChildPrefixSymbol = "     ";
 
-        private const string DuplicateTreeSymbol = "└─── (*)";
+        private const string DuplicateTreeSymbol = $"{LastChildNodeSymbol}(*)";
 
         /// <summary>
         /// Execute 'why' command.
@@ -197,7 +197,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var topLevelPackage in topLevelPackages)
             {
-                // use depth-first search to find dependency paths to the target package
+                // use depth-first search to find dependency paths from the top-level package to the target package
                 DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, frameworkPackages, visited, addedToGraph, targetPackage);
 
                 if (dependencyNode != null)
@@ -229,7 +229,7 @@ namespace NuGet.CommandLine.XPlat
             Dictionary<string, string> addedToGraph,
             string targetPackage)
         {
-            // if we reach the target node, return the current node without any children
+            // if we reach the target node, return
             if (currentPackage == targetPackage)
             {
                 if (!addedToGraph.ContainsKey(currentPackage))
@@ -359,7 +359,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (topLevelNodes == null || topLevelNodes.Count == 0)
             {
-                Console.WriteLine($"\t {LastChildNodeSymbol}No dependency graph(s) found\n");
+                Console.WriteLine($"\t {LastChildNodeSymbol}{Strings.WhyCommand_Message_NoDependencyGraphsFoundForFramework}\n");
                 return;
             }
 

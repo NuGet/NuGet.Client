@@ -2269,6 +2269,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No dependency graph(s) found.
+        /// </summary>
+        internal static string WhyCommand_Message_NoDependencyGraphsFoundForFramework {
+            get {
+                return ResourceManager.GetString("WhyCommand_Message_NoDependencyGraphsFoundForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have any dependency graph(s) for &apos;{1}&apos;.
         /// </summary>
         internal static string WhyCommand_Message_NoDependencyGraphsFoundInProject {
