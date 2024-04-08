@@ -799,7 +799,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occured while trying to load the ReadMe..
+        ///   Looks up a localized string similar to An error occurred while trying to load the Readme..
         /// </summary>
         public static string Error_UnableToLoadReadme {
             get {
@@ -1267,7 +1267,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to README.
+        ///   Looks up a localized string similar to Readme.
         /// </summary>
         public static string Label_Readme {
             get {

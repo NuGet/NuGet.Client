@@ -181,7 +181,7 @@
     <value>Project URL:</value>
   </data>
   <data name="Label_Readme" xml:space="preserve">
-    <value>README</value>
+    <value>Readme</value>
   </data>
   <data name="Label_Repository" xml:space="preserve">
     <value>Package source:</value>
@@ -1061,6 +1061,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Package Details</value>
   </data>
   <data name="Error_UnableToLoadReadme" xml:space="preserve">
-    <value>An error occured while trying to load the ReadMe.</value>
+    <value>An error occurred while trying to load the Readme.</value>
   </data>
 </root>

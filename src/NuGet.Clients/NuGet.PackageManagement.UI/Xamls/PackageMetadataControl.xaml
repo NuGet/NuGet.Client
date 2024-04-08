@@ -8,7 +8,6 @@
   xmlns:vm="clr-namespace:NuGet.PackageManagement.UI.ViewModels"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-  xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
   xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
   d:DataContext="{d:DesignInstance Type=nuget:PackageDetailControlModel}"
   Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"

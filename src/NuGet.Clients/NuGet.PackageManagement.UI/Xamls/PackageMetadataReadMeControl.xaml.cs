@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    await ReadMeViewModel.UpdateReadMe(newValue.PackagePath, newValue.Id);
+                    await ReadMeViewModel.LoadReadme(newValue.PackagePath, newValue.Id);
                 })
                 .PostOnFailure(nameof(DetailControlModel));
             }
