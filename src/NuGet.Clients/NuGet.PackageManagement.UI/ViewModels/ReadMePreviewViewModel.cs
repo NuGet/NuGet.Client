@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task UpdateReadMe(string packagePath, string packageId)
+        public async Task LoadReadme(string packagePath, string packageId)
         {
             var newReadMeValue = string.Empty;
             var isReadMeAvailable = false;

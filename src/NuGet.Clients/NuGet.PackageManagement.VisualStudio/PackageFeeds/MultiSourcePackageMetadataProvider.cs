@@ -13,6 +13,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -259,21 +260,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static string MergePackagePath(IEnumerable<IPackageSearchMetadata> packages)
         {
-            var packagePaths = packages
-                .Select(packageMetadata =>
-                {
-                    if (packageMetadata is LocalPackageSearchMetadata localPackageSearchMetadata)
-                    {
-                        return localPackageSearchMetadata.PackagePath;
-                    }
-                    if (packageMetadata is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata clonedPackage)
-                    {
-                        return clonedPackage.PackagePath;
-                    }
-                    return string.Empty;
-                })
-                .Where(packagePath => !string.IsNullOrWhiteSpace(packagePath));
-            return packagePaths.FirstOrDefault();
+            var cpPaths = packages
+                .OfType<ClonedPackageSearchMetadata>()
+                .Where(packageMetadata => !string.IsNullOrWhiteSpace(packageMetadata.PackagePath))
+                .Select(packageMetadata => packageMetadata.PackagePath);
+            var lpPaths = packages
+                .OfType<LocalPackageSearchMetadata>()
+                .Where(packageMetadata => !string.IsNullOrWhiteSpace(packageMetadata.PackagePath))
+                .Select(packageMetadata => packageMetadata.PackagePath);
+            return cpPaths.Concat(lpPaths).FirstOrDefault();
         }
 
         private async Task<(IEnumerable<VersionInfo> versions,
