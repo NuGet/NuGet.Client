@@ -120,12 +120,6 @@ namespace NuGet.Protocol
                     {
                         var rangeUri = registrationPage.Url;
                         var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
-
-                        if (leafRegistrationPage == null)
-                        {
-                            throw new InvalidDataException(rangeUri);
-                        }
-
                         ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);
                     }
                     else
