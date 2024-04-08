@@ -1,5 +1,4 @@
 steps:
-<<<<<<< HEAD
 - task: UseDotNet@2
   displayName: 'Use .NET Core sdk'
   inputs:
@@ -8,9 +7,6 @@ steps:
     installationPath: $(Agent.TempDirectory)/dotnet
 
 - task: DownloadPipelineArtifact@2
-=======
-- task: DownloadBuildArtifacts@0
->>>>>>> 476dca976 (Improve installation of .NET for building NuGet.Client repository (#5134))
   displayName: "Download NuGet.CommandLine.Test artifacts"
   inputs:
     artifactName: "NuGet.CommandLine.Test"
