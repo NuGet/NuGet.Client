@@ -10,6 +10,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GetSigningInputsDependsOn>GetSigningInputsCustom</GetSigningInputsDependsOn>
     <GetSymbolsToIndexDependsOn>GetSymbolsToIndexCustom</GetSymbolsToIndexDependsOn>
+    <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
   </PropertyGroup>
 
   <ItemGroup>
