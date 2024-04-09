@@ -53,7 +53,7 @@ namespace Dotnet.Integration.Test
                     <None Include=""abc.dll"" Pack=""True""  PackagePath=""lib"" />
                     <Content Include=""abc.txt"" Pack=""True"" />
 </ItemGroup>";
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net7.0");
                     ProjectFileUtils.AddCustomXmlToProjectRoot(xml, itemGroup);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -503,7 +503,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -569,7 +569,7 @@ namespace Dotnet.Integration.Test
                 var availableVersions = "1.0.0;2.0.0";
                 var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName);
+                msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, args: "classlib");
 
                 foreach (string version in availableVersions.Split(';'))
                 {
@@ -656,7 +656,7 @@ namespace Dotnet.Integration.Test
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -724,12 +724,8 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(2, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, libItems[0].TargetFramework);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[1].TargetFramework);
-                    Assert.Equal(
-                        new[]
-                        {"lib/netcoreapp1.0/ClassLibrary1.dll", "lib/netcoreapp1.0/ClassLibrary1.runtimeconfig.json"},
-                        libItems[0].Items);
-                    Assert.Equal(new[] { "lib/net45/ClassLibrary1.exe" },
-                        libItems[1].Items);
+                    Assert.Equal(new[] { "lib/netcoreapp1.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] { "lib/net45/ClassLibrary1.dll" }, libItems[1].Items);
                 }
             }
         }
@@ -991,9 +987,12 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NETCOREAPP5_0
-        [InlineData("TargetFramework", "net5.0")]
-        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#if NET7_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
+#elif NET8_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
 #endif
         public void PackCommand_PackProject_ExactVersionOverrideProjectRefVersionInMsbuild(string tfmProperty, string tfmValue)
         {
@@ -1006,7 +1005,7 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -1083,9 +1082,12 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NETCOREAPP5_0
-        [InlineData("TargetFramework", "net5.0")]
-        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#if NET7_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
+#elif NET8_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
 #endif
         public void PackCommand_PackProject_GetsProjectRefVersionFromMsbuild(string tfmProperty, string tfmValue)
         {
@@ -1098,7 +1100,7 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -1162,9 +1164,12 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NETCOREAPP5_0
-        [InlineData("TargetFramework", "net5.0")]
-        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#if NET7_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
+#elif NET8_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
 #endif
         public void PackCommand_PackProject_GetPackageVersionDependsOnWorks(string tfmProperty, string tfmValue)
         {
@@ -1177,7 +1182,7 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -2022,9 +2027,9 @@ namespace Dotnet.Integration.Test
             }
         }
 
-#if NETCOREAPP5_0
+#if NET7_0
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_SingleFramework_GeneratesPackageOnBuildUsingNet5()
+        public void PackCommand_SingleFramework_GeneratesPackageOnBuildUsingNet7()
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
@@ -2037,7 +2042,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net7.0");
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
                     ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj\\Debug");
 
@@ -2077,7 +2082,7 @@ namespace Dotnet.Integration.Test
 
                     var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
                     Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, dependencyGroups[0].TargetFramework);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net70, dependencyGroups[0].TargetFramework);
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("Newtonsoft.json", packages[0].Id);
@@ -2088,8 +2093,8 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net50, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { "lib/net5.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net70, libItems[0].TargetFramework);
+                    Assert.Equal(new[] { "lib/net7.0/ClassLibrary1.dll" }, libItems[0].Items);
                 }
 
             }
@@ -3386,9 +3391,12 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NETCOREAPP5_0
-        [InlineData("TargetFramework", "net5.0")]
-        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#if NET7_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
+#elif NET8_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
 #endif
         public void PackCommand_PackTargetHook_ExecutesBeforePack(string tfmProperty,
     string tfmValue)
@@ -3431,9 +3439,12 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-#if NETCOREAPP5_0
-        [InlineData("TargetFramework", "net5.0")]
-        [InlineData("TargetFrameworks", "netstandard1.4;net5.0")]
+#if NET7_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
+#elif NET8_0
+        [InlineData("TargetFramework", "net7.0")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net7.0")]
 #endif
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
         {
@@ -3903,7 +3914,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -3966,7 +3977,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -4038,7 +4049,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -4078,12 +4089,12 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, args: "classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net5.0");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net7.0");
                     ProjectFileUtils.AddProperty(xml, "DefaultAllowedOutputExtensionsInPackageBuildOutputFolder", ".dll");
                     ProjectFileUtils.AddProperty(xml, "GenerateDocumentationFile", "true");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -4103,8 +4114,8 @@ namespace ClassLibrary
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    Assert.Contains($"lib/net5.0/{projectName}.dll", allFiles);
-                    Assert.DoesNotContain($"lib/net5.0/{projectName}.xml", allFiles);
+                    Assert.Contains($"lib/net7.0/{projectName}.dll", allFiles);
+                    Assert.DoesNotContain($"lib/net7.0/{projectName}.xml", allFiles);
                     Assert.False(allFiles.Any(f => f.EndsWith(".exe")));
                     Assert.False(allFiles.Any(f => f.EndsWith(".winmd")));
                     Assert.False(allFiles.Any(f => f.EndsWith(".json")));
@@ -5246,7 +5257,7 @@ namespace ClassLibrary
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", 60000);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -5749,7 +5760,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_PrereleaseDependency_SucceedAndLogsWarning()
         {
             // Arrange
@@ -5766,7 +5777,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
@@ -5792,7 +5803,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_PrereleaseDependency_WarningSuppressed_Succeed()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
@@ -5808,7 +5819,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
@@ -5822,10 +5833,9 @@ namespace ClassLibrary
 
                 // Act
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -5855,7 +5865,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_PrereleaseDependencies_PartialWarningSuppressed_SucceedAndLogsWarning()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
@@ -5878,7 +5888,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFramework>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFramework>
@@ -5907,7 +5917,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_PrereleaseDependency_ProjectLevelWarningSuppressed_Succeed()
         {
             using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
@@ -5923,7 +5933,7 @@ namespace ClassLibrary
                 string testDirectory = pathContext.WorkingDirectory;
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>{Constants.DefaultTargetFramework.GetShortFolderName()}</TargetFrameworks>
@@ -5940,10 +5950,9 @@ namespace ClassLibrary
 
                 // Act
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -5973,7 +5982,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_MultiTfm_PrereleaseDependency_TreatWarningsAsErrors_FailsAndLogsWarning()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -6001,10 +6010,10 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net45</TargetFrameworks>
+    <TargetFrameworks>net7.0;net45</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -6033,7 +6042,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_MultiTfm_PrereleaseDependency_WarningIsSuppressed_Succeeds()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -6061,10 +6070,10 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net5.0;net45</TargetFrameworks>
+    <TargetFrameworks>net7.0;net45</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -6081,10 +6090,9 @@ namespace ClassLibrary
 
                 // Act
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
@@ -6116,7 +6124,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task PackCommand_MultiTfm_PrereleaseDependency_ProjectLevelWarningSuppressed_Succeed()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -6144,7 +6152,7 @@ namespace ClassLibrary
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib");
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <TargetFrameworks>{Constants.DefaultTargetFramework.GetShortFolderName()};net48</TargetFrameworks>
@@ -6154,24 +6162,19 @@ namespace ClassLibrary
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}"" />
-  </ItemGroup>
-
-  <ItemGroup Condition="" '$(TargetFramework)' == 'net48'"">
-    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}"" />
+    <PackageReference Include=""{prereleaseDependencyAName}"" Version=""{prereleaseDependencyAVersion}""  Condition="" '$(TargetFramework)' != 'net48'"" />
+    <PackageReference Include=""{prereleaseDependencyBName}"" Version=""{prereleaseDependencyBVersion}""  Condition="" '$(TargetFramework)' == 'net48'"" />
   </ItemGroup>
 </Project>";
                 File.WriteAllText(projectFile, projectXml);
 
                 // Act
-                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: false);
+                CommandRunnerResult result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}", validateSuccess: true);
 
                 // Assert
-                result.Success.Should().BeTrue();
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.2.3.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.2.3.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                File.Exists(nupkgPath).Should().BeTrue("The output .nupkg is not in the expected place");
                 result.AllOutput.Should().NotContain(prereleaseDependencyAName);
                 result.AllOutput.Should().NotContain(NuGetLogCode.NU5104.ToString());
 
@@ -6189,11 +6192,11 @@ namespace ClassLibrary
                         dependencyGroups.Count);
 
                     var dependencyPackage = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(1, dependencyPackage.Count);
-                    Assert.Equal(prereleaseDependencyAName, dependencyPackage[0].Id);
-                    Assert.Equal(new VersionRange(new NuGetVersion(prereleaseDependencyAVersion), true, null, true), dependencyPackage[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, dependencyPackage[0].Exclude);
-                    Assert.Empty(dependencyPackage[0].Include);
+                    dependencyPackage.Count.Should().Be(1);
+                    dependencyPackage[0].Id.Should().Be(prereleaseDependencyAName);
+                    dependencyPackage[0].VersionRange.Should().Be((new VersionRange(new NuGetVersion(prereleaseDependencyAVersion), true, null, true)));
+                    dependencyPackage[0].Exclude.Should().BeEquivalentTo(new[] { "Analyzers", "Build" });
+                    dependencyPackage[0].Include.Should().BeEmpty();
                 }
             }
         }

@@ -63,9 +63,12 @@ steps:
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
+- task: PowerShell@2
+  displayName: "Initialize Git Commit Status on GitHub"
   inputs:
-    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
-    targetPath: $(Build.StagingDirectory)\binlog
-  condition: " failed() "
+    targetType: "inline"
+    script: |
+      . $(Build.Repository.LocalPath)/scripts/utils/PostGitCommitStatus.ps1
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "Static Analysis"
+    failOnStderr: "true"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"

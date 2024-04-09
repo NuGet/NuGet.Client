@@ -32,7 +32,7 @@ namespace Dotnet.Integration.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = "projectA";
-                var targetFrameworks = "net5.0";
+                var targetFrameworks = "net7.0";
                 SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
@@ -77,7 +77,7 @@ namespace Dotnet.Integration.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = "projectA";
-                var targetFrameworks = "net5.0";
+                var targetFrameworks = "net7.0";
                 XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
                 var packageX = "packageX";
                 var packageY = "packageY";
@@ -110,7 +110,7 @@ namespace Dotnet.Integration.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = "projectA";
-                var targetFrameworks = "net5.0";
+                var targetFrameworks = "net7.0";
                 SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
@@ -155,7 +155,7 @@ namespace Dotnet.Integration.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = "projectA";
-                var targetFrameworks = "net5.0";
+                var targetFrameworks = "net7.0";
                 SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
                 var packageX = "packageX";
                 var packageX_V1 = new PackageIdentity(packageX, new NuGetVersion("1.0.0"));
@@ -188,7 +188,7 @@ namespace Dotnet.Integration.Test
             using (var pathContext = new SimpleTestPathContext())
             {
                 var projectName = "projectA";
-                var targetFrameworks = "net5.0";
+                var targetFrameworks = "net7.0";
                 SimpleTestProjectContext projectA = XPlatTestUtils.CreateProject(projectName, pathContext, targetFrameworks);
                 var packageY = "packageY";
                 var packageY_V1 = new PackageIdentity(packageY, new NuGetVersion("1.0.0"));
@@ -234,12 +234,12 @@ namespace Dotnet.Integration.Test
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net7.0");
 
             const string version = "1.0.0";
             const string packageX = "X", packageZ = "Z";
 
-            var packageFrameworks = "net472; net5.0";
+            var packageFrameworks = "net472; net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
@@ -295,12 +295,12 @@ namespace Dotnet.Integration.Test
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net7.0");
 
             const string version = "1.0.0";
             const string packageX = "X", packageZ = "Z";
 
-            var packageFrameworks = "net472; net5.0";
+            var packageFrameworks = "net472; net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
@@ -359,12 +359,12 @@ namespace Dotnet.Integration.Test
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net7.0");
 
             const string version = "1.0.0";
             const string packageX = "X", packageZ = "Z";
 
-            var packageFrameworks = "net472; net5.0";
+            var packageFrameworks = "net472; net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
@@ -425,12 +425,12 @@ namespace Dotnet.Integration.Test
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net7.0");
 
             const string version = "1.0.0";
             const string packageX = "X", packageZ = "Z";
 
-            var packageFrameworks = "net472; net5.0";
+            var packageFrameworks = "net472; net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
@@ -479,7 +479,7 @@ namespace Dotnet.Integration.Test
             // Assert
             result.Success.Should().BeFalse(because: result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
-            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net5.0'", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net7.0'", result.AllOutput);
         }
 
         [Fact]
@@ -490,12 +490,12 @@ namespace Dotnet.Integration.Test
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net7.0");
 
             const string version = "1.0.0";
             const string packageX = "X", packageZ = "Z";
 
-            var packageFrameworks = "net472;net5.0";
+            var packageFrameworks = "net472;net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
@@ -559,12 +559,12 @@ namespace Dotnet.Integration.Test
             // Set up solution, and project
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
             var projectName = "projectA";
-            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net5.0");
+            var projectA = XPlatTestUtils.CreateProject(projectName, pathContext, "net7.0");
 
             const string version = "1.0.0";
             const string packageX = "X", packageZ = "Z";
 
-            var packageFrameworks = "net472; net5.0";
+            var packageFrameworks = "net472; net7.0";
             var packageX100 = XPlatTestUtils.CreatePackage(packageX, version, frameworkString: packageFrameworks);
             var packageZ100 = XPlatTestUtils.CreatePackage(packageZ, version, frameworkString: packageFrameworks);
 
@@ -612,7 +612,7 @@ namespace Dotnet.Integration.Test
             // Assert
             result.Success.Should().BeFalse(because: result.AllOutput);
             Assert.Contains($"Installed {packageX} {version} from {packageSource2}", result.AllOutput);
-            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net5.0'", result.AllOutput);
+            Assert.Contains($"NU1100: Unable to resolve '{packageZ} (>= {version})' for 'net7.0'", result.AllOutput);
         }
 
         [Fact]
