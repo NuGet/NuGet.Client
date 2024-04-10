@@ -44,7 +44,7 @@ function Exec-Process([string]$command, [string]$commandArgs) {
 
 $dotnet = Join-Path $env:DOTNET_PATH dotnet.exe
 $repoRoot = Resolve-Path "$PSScriptRoot/../../"
-$binLog = Join-Path $repoRoot "artifacts/sb/log/source-build.binlog"
+$binLog = Join-Path $repoRoot "artifacts/sb/log/source-inner-build.binlog"
 $dotnetTool = "msbuild"
 $nugetPackagesRoot = Join-Path $repoRoot "artifacts/sb/package-cache/"
 $dotnetArguments = @()
@@ -56,7 +56,7 @@ $env:NUGET_PACKAGES=$nugetPackagesRoot
 # Add the dotnet tool...
 $dotnetArguments += $dotnetTool
 # Then project file...
-$dotnetArguments += "$PSScriptRoot/source-build.proj"
+$dotnetArguments += "$PSScriptRoot/dotnet-build.proj"
 # Then remaining arguments.
 $dotnetArguments += "/p:Configuration=$configuration"
 $dotnetArguments += "/p:DotNetBuildRepo=true"
