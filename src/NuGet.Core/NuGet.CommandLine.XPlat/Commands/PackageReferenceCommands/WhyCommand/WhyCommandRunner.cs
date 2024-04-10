@@ -25,10 +25,8 @@ namespace NuGet.CommandLine.XPlat
         private const string ChildPrefixSymbol = "│    ";
         private const string LastChildPrefixSymbol = "     ";
 
-        private const string DuplicateTreeSymbol = $"{LastChildNodeSymbol}(*)";
-
         /// <summary>
-        /// Execute 'why' command.
+        /// Executes the 'why' command.
         /// </summary>
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command.</param>
         /// <returns></returns>
@@ -116,41 +114,46 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Run the 'why' command, and print out output to console.
+        /// Runs the 'why' command, and prints out output to console.
         /// </summary>
-        /// <param name="packages">All packages in the project, split up by top-level packages and transitive packages.</param>
-        /// <param name="targetFrameworks">All target frameworks in the project.</param>
+        /// <param name="frameworkPackages">All frameworks in the project, with their top-level packages and transitive packages.</param>
+        /// <param name="targets">All lock file targets in the project.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <param name="projectName">The name of the current project.</param>
         private void FindAllDependencyGraphs(
-            IEnumerable<FrameworkPackages> packages,
-            IList<LockFileTarget> targetFrameworks,
+            IEnumerable<FrameworkPackages> frameworkPackages,
+            IList<LockFileTarget> targets,
             string targetPackage,
             string projectName)
         {
-            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>>(targetFrameworks.Count);
+            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>>(targets.Count);
             bool doesProjectHaveDependencyOnPackage = false;
 
-            foreach (var frameworkPackages in packages)
+            foreach (var frameworkPackage in frameworkPackages)
             {
-                LockFileTarget target = targetFrameworks.FirstOrDefault(i => i.TargetFramework.GetShortFolderName() == frameworkPackages.Framework);
+                LockFileTarget target = targets.FirstOrDefault(f => f.TargetFramework.GetShortFolderName() == frameworkPackage.Framework);
 
                 if (target != null)
                 {
                     // get all the top-level packages for the framework
-                    IEnumerable<InstalledPackageReference> frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
+                    IEnumerable<InstalledPackageReference> frameworkTopLevelPackages = frameworkPackage.TopLevelPackages;
 
                     // get all package libraries for the framework
-                    IList<LockFileTargetLibrary> libraries = target.Libraries;
+                    IList<LockFileTargetLibrary> packageLibraries = target.Libraries;
 
-                    List<DependencyNode> dependencyGraph = GetDependencyGraphPerFramework(frameworkTopLevelPackages, libraries, frameworkPackages, targetPackage);
+                    List<DependencyNode> dependencyGraph = null;
 
-                    if (dependencyGraph != null)
+                    if (packageLibraries.Any(l => l.Name == targetPackage))
                     {
-                        doesProjectHaveDependencyOnPackage = true;
+                        dependencyGraph = GetDependencyGraphPerFramework(packageLibraries, frameworkPackage, targetPackage);
+
+                        if (dependencyGraph != null)
+                        {
+                            doesProjectHaveDependencyOnPackage = true;
+                        }
                     }
 
-                    dependencyGraphPerFramework.Add(frameworkPackages.Framework, dependencyGraph);
+                    dependencyGraphPerFramework.Add(frameworkPackage.Framework, dependencyGraph);
                 }
             }
 
@@ -177,13 +180,11 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Returns a list of all top-level packages that have a dependency on the target package
         /// </summary>
-        /// <param name="topLevelPackages">All top-level packages for a given framework.</param>
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
-        /// <param name="frameworkPackages">All resolved package references for a given framework. Used to get a dependency's resolved version for the graph.</param>
+        /// <param name="frameworkPackages">All frameworks in the project, with their top-level packages and transitive packages.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
         private List<DependencyNode> GetDependencyGraphPerFramework(
-            IEnumerable<InstalledPackageReference> topLevelPackages,
             IList<LockFileTargetLibrary> packageLibraries,
             FrameworkPackages frameworkPackages,
             string targetPackage)
@@ -192,13 +193,18 @@ namespace NuGet.CommandLine.XPlat
 
             // hashset tracking every package node that we've traversed
             var visited = new HashSet<string>();
-            // dictionary tracking all package nodes that have been added to the graph, mapped to their resolved versions
-            var addedToGraph = new Dictionary<string, string>();
+            // dictionary tracking all package nodes that have been added to the graph, mapped to their DependencyNode objects
+            var addedToGraph = new Dictionary<string, DependencyNode>();
+            // dictionary mapping packageIds to their resolved versions
+            Dictionary<string, string> versions = GetAllResolvedVersions(packageLibraries);
+
+            // get all the top-level packages for the framework
+            IEnumerable<InstalledPackageReference> topLevelPackages = frameworkPackages.TopLevelPackages;
 
             foreach (var topLevelPackage in topLevelPackages)
             {
                 // use depth-first search to find dependency paths from the top-level package to the target package
-                DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, frameworkPackages, visited, addedToGraph, targetPackage);
+                DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, frameworkPackages, visited, addedToGraph, versions, targetPackage);
 
                 if (dependencyNode != null)
                 {
@@ -215,10 +221,11 @@ namespace NuGet.CommandLine.XPlat
         /// Returns null if no path was found.
         /// </summary>
         /// <param name="currentPackage">Current 'root' package.</param>
-        /// <param name="packageLibraries">All libraries in the target framework.</param>
-        /// <param name="frameworkPackages">All resolved package references for a given framework, used to get packages' resolved versions.</param>
+        /// <param name="packageLibraries">All package libraries for a given framework.</param>
+        /// <param name="frameworkPackages">All frameworks in the project, with their top-level packages and transitive packages.</param>
         /// <param name="visited">HashSet tracking every package node that we've traversed.</param>
-        /// <param name="addedToGraph">Dictionary tracking all packageIds that were added to the graph, mapped to their resolved versions.</param>
+        /// <param name="addedToGraph">Dictionary tracking all packageIds that were added to the graph, mapped to their DependencyNode objects.</param>
+        /// <param name="versions">Dictionary mapping packageIds to their resolved versions.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
         private DependencyNode FindDependencyPath(
@@ -226,7 +233,8 @@ namespace NuGet.CommandLine.XPlat
             IList<LockFileTargetLibrary> packageLibraries,
             FrameworkPackages frameworkPackages,
             HashSet<string> visited,
-            Dictionary<string, string> addedToGraph,
+            Dictionary<string, DependencyNode> addedToGraph,
+            Dictionary<string, string> versions,
             string targetPackage)
         {
             // if we reach the target node, return
@@ -234,29 +242,21 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (!addedToGraph.ContainsKey(currentPackage))
                 {
-                    addedToGraph.Add(currentPackage, GetResolvedVersion(currentPackage, frameworkPackages));
+                    addedToGraph.Add(currentPackage,
+                                     new DependencyNode
+                                     {
+                                         Id = currentPackage,
+                                         Version = versions[currentPackage]
+                                     });
                 }
 
-                var currentNode = new DependencyNode
-                {
-                    Id = currentPackage,
-                    Version = addedToGraph[currentPackage]
-                };
-
-                return currentNode;
+                return addedToGraph[currentPackage];
             }
 
             // if we have already traversed this node's children and found dependency paths, mark it as a duplicate node and return
             if (addedToGraph.ContainsKey(currentPackage))
             {
-                var currentNode = new DependencyNode
-                {
-                    Id = currentPackage,
-                    Version = addedToGraph[currentPackage],
-                    IsDuplicate = true
-                };
-
-                return currentNode;
+                return addedToGraph[currentPackage];
             }
 
             // if we have already traversed this node's children and found no dependency paths, return null
@@ -264,10 +264,8 @@ namespace NuGet.CommandLine.XPlat
             {
                 return null;
             }
-            else
-            {
-                visited.Add(currentPackage);
-            }
+
+            visited.Add(currentPackage);
 
             // find the library that matches the root package's ID, and get all its dependencies
             var dependencies = packageLibraries?.FirstOrDefault(i => i.Name == currentPackage)?.Dependencies;
@@ -279,7 +277,7 @@ namespace NuGet.CommandLine.XPlat
                 // recurse on the package's dependencies
                 foreach (var dependency in dependencies)
                 {
-                    var dependencyNode = FindDependencyPath(dependency.Id, packageLibraries, frameworkPackages, visited, addedToGraph, targetPackage);
+                    var dependencyNode = FindDependencyPath(dependency.Id, packageLibraries, frameworkPackages, visited, addedToGraph, versions, targetPackage);
 
                     // if the dependency has a path to the target, add it to the list of paths
                     if (dependencyNode != null)
@@ -294,17 +292,16 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (!addedToGraph.ContainsKey(currentPackage))
                     {
-                        addedToGraph.Add(currentPackage, GetResolvedVersion(currentPackage, frameworkPackages));
+                        addedToGraph.Add(currentPackage,
+                                     new DependencyNode
+                                     {
+                                         Id = currentPackage,
+                                         Version = versions[currentPackage],
+                                         Children = paths
+                                     });
                     }
 
-                    var currentNode = new DependencyNode
-                    {
-                        Id = currentPackage,
-                        Version = addedToGraph[currentPackage],
-                        Children = paths
-                    };
-
-                    return currentNode;
+                    return addedToGraph[currentPackage];
                 }
             }
 
@@ -313,17 +310,21 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Gets the resolved version of a given packageId in the current target framework's graph.
+        /// Adds all resolved versions of packages to a dictionary.
         /// </summary>
-        /// <param name="packageId">The package we want the version for.</param>
-        /// <param name="frameworkPackages">All resolved package references for a given framework.</param>
+        /// <param name="packageLibraries">All package libraries for a given framework.</param>
         /// <returns></returns>
-        private string GetResolvedVersion(string packageId, FrameworkPackages frameworkPackages)
+        private Dictionary<string, string> GetAllResolvedVersions(IList<LockFileTargetLibrary> packageLibraries)
         {
-            var packageReference = frameworkPackages.TopLevelPackages.FirstOrDefault(i => i.Name == packageId)
-                                        ?? frameworkPackages.TransitivePackages.FirstOrDefault(i => i.Name == packageId);
+            var versions = new Dictionary<string, string>();
 
-            return packageReference.ResolvedPackageMetadata.Identity.Version.ToNormalizedString();
+            foreach (var package in packageLibraries)
+            {
+                versions.Add(package.Name, package.Version.ToNormalizedString());
+            }
+
+            // Should we distinguish between package references and project references?
+            return versions;
         }
 
         /// <summary>
@@ -402,13 +403,6 @@ namespace NuGet.CommandLine.XPlat
             // print current node
             Console.WriteLine($"{currentPrefix}{node.Id} (v{node.Version})");
 
-            // if it is a duplicate, we do not print its tree again
-            if (node.IsDuplicate)
-            {
-                Console.WriteLine($"{nextPrefix}{DuplicateTreeSymbol}");
-                return;
-            }
-
             if (node.Children?.Count > 0)
             {
                 // recurse on the node's children
@@ -473,19 +467,21 @@ namespace NuGet.CommandLine.XPlat
             return hashCodeCombiner.CombinedHash;
         }
 
-        class DependencyNode
+        private class DependencyNode
         {
             public string Id { get; set; }
             public string Version { get; set; }
-            public bool IsDuplicate { get; set; } // When a particular Node is a duplicate, we don't want to print its tree again
             public IList<DependencyNode> Children { get; set; }
+
+            // Should we distinguish between package references and project references in the output?
+
+            // DependencyNode Parent; for stack
 
             public override int GetHashCode()
             {
                 var hashCodeCombiner = new HashCodeCombiner();
                 hashCodeCombiner.AddObject(Id);
                 hashCodeCombiner.AddObject(Version);
-                hashCodeCombiner.AddObject(IsDuplicate);
                 hashCodeCombiner.AddSequence(Children);
                 return hashCodeCombiner.CombinedHash;
             }
