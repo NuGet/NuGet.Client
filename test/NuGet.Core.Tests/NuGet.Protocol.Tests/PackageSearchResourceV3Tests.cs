@@ -99,16 +99,8 @@ namespace NuGet.Protocol.Tests
             }
             else // No owners data provided in response.
             {
-                if (string.IsNullOrEmpty(package.Owners))
-                {
-                    package.OwnersList.Should().BeNull();
-                    package.Owners.Should().BeNull();
-                }
-                else
-                {
-                    string ownerString = "aspnet, EntityFramework, Microsoft";
-                    package.Owners.Should().Be(ownerString);
-                }
+                package.OwnersList.Should().BeNull();
+                package.Owners.Should().BeNull();
             }
 
             package.DownloadCount.Should().Be(248620082);
