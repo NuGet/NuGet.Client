@@ -39,4 +39,16 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.Commands.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.Configuration.Test" />
+    <InternalsVisibleTo Include="NuGet.Credentials.Test" />
+    <InternalsVisibleTo Include="NuGet.DependencyResolver.Core.Tests" />
+    <InternalsVisibleTo Include="NuGet.SolutionRestoreManager.Test" />
+    <InternalsVisibleTo Include="NuGet.VisualStudio.Implementation.Test" />
+    <InternalsVisibleTo Include="Test.Utility" />
+  </ItemGroup>
 </Project>

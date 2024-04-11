@@ -47,6 +47,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="NuGet.Build.Tasks.Console.Test" />
+  </ItemGroup>
+
   <Target Name="PackBuildOutputs">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="contentFiles\any\$(TargetFramework)" PackageCopyToOutput="true" />
