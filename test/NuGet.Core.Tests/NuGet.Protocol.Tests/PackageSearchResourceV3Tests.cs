@@ -19,10 +19,10 @@ namespace NuGet.Protocol.Tests
     public class PackageSearchResourceV3Tests
     {
         [Theory]
-        [InlineData("EntityFrameworkSearch.json", true)]
-        [InlineData("EntityFrameworkSearchWithStringTypes.json", false)]
-        [InlineData("EntityFrameworkSearchWithoutOwner.json", false)]
-        public async Task PackageSearchResourceV3_GetMetadataAsync(string jsonFileName, bool expectOwnerArray)
+        [InlineData("EntityFrameworkSearch.json", true, true)]
+        [InlineData("EntityFrameworkSearchWithStringTypes.json", true, false)]
+        [InlineData("EntityFrameworkSearchWithoutOwner.json", false, false)]
+        public async Task PackageSearchResourceV3_GetMetadataAsync(string jsonFileName, bool hasOwners, bool hasOwnersArray)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -74,27 +74,33 @@ namespace NuGet.Protocol.Tests
 
             package.Authors.Should().Be("Microsoft");
 
-            if (expectOwnerArray)
+            //we have owners, expect both list/str to be populated.
+            if (hasOwners)
             {
-                package.OwnersList.Should()
-                    .NotBeNull()
-                    .And.NotBeEmpty()
-                    .And.HaveCount(3)
-                    .And.ContainInOrder(["aspnet", "EntityFramework", "Microsoft"]);
-                package.Owners.Should().Be("aspnet, EntityFramework, Microsoft");
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(package.Owners))
+                // we have array, expect list to contain N items
+                if (hasOwnersArray)
                 {
-                    package.OwnersList.Should().BeNull();
-                    package.Owners.Should().BeNull();
+                    package.OwnersList.Should()
+                        .NotBeNull()
+                        .And.NotBeEmpty()
+                        .And.HaveCount(3)
+                        .And.ContainInOrder(["aspnet", "EntityFramework", "Microsoft"]);
+                    package.Owners.Should().Be("aspnet, EntityFramework, Microsoft");
                 }
-                else
+                else // Data is a string
                 {
                     string ownerString = "aspnet, EntityFramework, Microsoft";
+                    package.OwnersList.Should().NotBeNull()
+                        .And.NotBeEmpty()
+                        .And.HaveCount(1)
+                        .And.ContainSingle(ownerString);
                     package.Owners.Should().Be(ownerString);
                 }
+            }
+            else // No owners data provided in response.
+            {
+                package.OwnersList.Should().BeNull();
+                package.Owners.Should().BeNull();
             }
 
             package.DownloadCount.Should().Be(248620082);
