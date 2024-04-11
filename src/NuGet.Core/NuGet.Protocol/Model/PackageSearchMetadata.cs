@@ -65,6 +65,7 @@ namespace NuGet.Protocol
         private IReadOnlyList<string> _ownersList;
 
         [JsonProperty(PropertyName = JsonProperties.Owners)]
+        [JsonConverter(typeof(MetadataStringOrArrayConverter))]
         public IReadOnlyList<string> OwnersList
         {
             get { return _ownersList; }

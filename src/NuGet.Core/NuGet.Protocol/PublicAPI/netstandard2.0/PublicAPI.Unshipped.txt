@@ -1,7 +1,13 @@
 #nullable enable
+NuGet.Protocol.MetadataStringOrArrayConverter
+NuGet.Protocol.MetadataStringOrArrayConverter.MetadataStringOrArrayConverter() -> void
+override NuGet.Protocol.MetadataStringOrArrayConverter.CanWrite.get -> bool
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersList.set -> void
 ~NuGet.Protocol.LocalPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.PackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
+~override NuGet.Protocol.MetadataStringOrArrayConverter.CanConvert(System.Type objectType) -> bool
+~override NuGet.Protocol.MetadataStringOrArrayConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
+~override NuGet.Protocol.MetadataStringOrArrayConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void

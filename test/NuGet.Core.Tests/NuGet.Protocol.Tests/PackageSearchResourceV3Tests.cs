@@ -20,8 +20,9 @@ namespace NuGet.Protocol.Tests
     {
         [Theory]
         [InlineData("EntityFrameworkSearch.json", true)]
+        [InlineData("EntityFrameworkSearchWithStringTypes.json", false)]
         [InlineData("EntityFrameworkSearchWithoutOwner.json", false)]
-        public async Task PackageSearchResourceV3_GetMetadataAsync(string jsonFileName, bool expectOwner)
+        public async Task PackageSearchResourceV3_GetMetadataAsync(string jsonFileName, bool expectOwnerArray)
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -73,7 +74,7 @@ namespace NuGet.Protocol.Tests
 
             package.Authors.Should().Be("Microsoft");
 
-            if (expectOwner)
+            if (expectOwnerArray)
             {
                 package.OwnersList.Should()
                     .NotBeNull()
@@ -84,8 +85,16 @@ namespace NuGet.Protocol.Tests
             }
             else
             {
-                package.OwnersList.Should().BeNull();
-                package.Owners.Should().BeNull();
+                if (string.IsNullOrEmpty(package.Owners))
+                {
+                    package.OwnersList.Should().BeNull();
+                    package.Owners.Should().BeNull();
+                }
+                else
+                {
+                    string ownerString = "aspnet, EntityFramework, Microsoft";
+                    package.Owners.Should().Be(ownerString);
+                }
             }
 
             package.DownloadCount.Should().Be(248620082);
