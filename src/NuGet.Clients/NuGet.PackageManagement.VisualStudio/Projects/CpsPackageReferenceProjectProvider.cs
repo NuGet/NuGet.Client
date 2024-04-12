@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
@@ -48,15 +47,14 @@ namespace NuGet.PackageManagement.VisualStudio
             _scriptExecutor = scriptExecutor;
         }
 
-        public async Task<NuGetProject> TryCreateNuGetProjectAsync(
+        public NuGetProject TryCreateNuGetProject(
             IVsProjectAdapter vsProject,
             ProjectProviderContext context,
             bool forceProjectType)
         {
             Assumes.Present(vsProject);
             Assumes.Present(context);
-
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            ThreadHelper.ThrowIfNotOnUIThread();
 
             // The project must be an IVsHierarchy.
             var hierarchy = vsProject.VsHierarchy;
