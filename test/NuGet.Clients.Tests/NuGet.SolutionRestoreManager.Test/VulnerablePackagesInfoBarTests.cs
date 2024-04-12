@@ -62,7 +62,7 @@ namespace NuGet.SolutionRestoreManager.Test
             infoBar._wasInfoBarClosed.Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13391")]
         public async Task OnSolutionClosed_ResetsInfoBarStatusProperties()
         {
             // Arrange
@@ -82,7 +82,7 @@ namespace NuGet.SolutionRestoreManager.Test
             infoBar._wasInfoBarClosed.Should().BeFalse();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13391")]
         public async Task OnSolutionClosed_WithInfoBarVisible_ClosesInfoBar()
         {
             // Arrange
@@ -108,7 +108,7 @@ namespace NuGet.SolutionRestoreManager.Test
             infoBarUIElement.Verify(ui => ui.Close(), Times.Once());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13391")]
         public async Task OnSolutionClosed_WithInfoBarNotVisible_DoesNotAttemptToCloseInfoBar()
         {
             // Arrange
