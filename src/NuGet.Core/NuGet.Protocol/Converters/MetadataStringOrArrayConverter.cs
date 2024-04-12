@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Protocol
 {
-    public class MetadataStringOrArrayConverter : JsonConverter
+    internal class MetadataStringOrArrayConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType) => (objectType == typeof(string) || objectType == typeof(string[]));
 
