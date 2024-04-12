@@ -226,10 +226,15 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             var itemStorage = (IVsBuildItemStorage)VsHierarchy;
-            var callback = new VisualStudioBuildItemStorageCallback();
-            itemStorage.FindItems(itemName, metadataNames.Length, metadataNames, callback);
+            if (itemStorage != null)
+            {
+                var callback = new VisualStudioBuildItemStorageCallback();
+                itemStorage.FindItems(itemName, metadataNames.Length, metadataNames, callback);
 
-            return callback.Items;
+                return callback.Items;
+            }
+
+            return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
         }
 
         private string GetTargetFrameworkString()
