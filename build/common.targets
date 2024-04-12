@@ -4,7 +4,8 @@
   <PropertyGroup>
     <DefineConstants Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">$(DefineConstants);IS_DESKTOP</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)'">$(DefineConstants);IS_CORECLR</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' != '$(NetStandardVersion)' And '$(TargetFramework)' != '$(NETCoreLegacyTargetFramework)'">$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
+    <!-- Source-only modes set the legacy target framework to a new targetframework, and signing is supported in those scenarios -->
+    <DefineConstants Condition="'$(TargetFramework)' != '$(NetStandardVersion)' And ('$(TargetFramework)' != '$(NETCoreLegacyTargetFramework)' Or '$(NETCoreTargetFramework)' == '$(NETCoreLegacyTargetFramework)')">$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
   </PropertyGroup>
 
   <!-- Include shared files for netcore projects -->
