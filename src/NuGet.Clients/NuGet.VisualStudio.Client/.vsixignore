@@ -85,7 +85,6 @@ System.Management.Automation.dll
 System.Net.Http.Formatting.dll
 System.Reflection.MetadataLoadContext.dll
 System.Resources.Extensions.dll
-System.Security.Permissions.dll
 System.Text.Encodings.Web.dll
 System.Text.Json.dll
 System.Web.Http.dll
