@@ -167,21 +167,13 @@ namespace NuGet.PackageManagement.VisualStudio
             string auditMode = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditMode);
             HashSet<string> suppressedAdvisories = GetSuppressedAdvisories();
 
-            bool hasAnyValue = !string.IsNullOrWhiteSpace(enableAudit)
-                || !string.IsNullOrWhiteSpace(auditLevel)
-                || !string.IsNullOrWhiteSpace(auditMode)
-                || suppressedAdvisories?.Count > 0;
-
-            RestoreAuditProperties auditProperties = hasAnyValue
-                ? new RestoreAuditProperties()
-                {
-                    EnableAudit = enableAudit,
-                    AuditLevel = auditLevel,
-                    AuditMode = auditMode,
-                    SuppressedAdvisories = suppressedAdvisories,
-                }
-                : null;
-            return auditProperties;
+            return new RestoreAuditProperties()
+            {
+                EnableAudit = enableAudit,
+                AuditLevel = auditLevel,
+                AuditMode = auditMode,
+                SuppressedAdvisories = suppressedAdvisories,
+            };
         }
 
         private HashSet<string> GetSuppressedAdvisories()
