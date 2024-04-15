@@ -31,15 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         [ImportingConstructor]
         public CpsPackageReferenceProjectProvider(IProjectSystemCache projectSystemCache, Lazy<IScriptExecutor> scriptExecutor)
-            : this(AsyncServiceProvider.GlobalProvider, projectSystemCache, scriptExecutor)
-        { }
-
-        public CpsPackageReferenceProjectProvider(
-            IAsyncServiceProvider vsServiceProvider,
-            IProjectSystemCache projectSystemCache,
-            Lazy<IScriptExecutor> scriptExecutor)
         {
-            Assumes.Present(vsServiceProvider);
             Assumes.Present(projectSystemCache);
             Assumes.Present(scriptExecutor);
 
