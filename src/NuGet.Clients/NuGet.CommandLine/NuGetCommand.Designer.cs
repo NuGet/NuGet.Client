@@ -1729,7 +1729,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enables HTTP connections, applicable only to the `Add` and `Update` subcommands. Note: Data sent or received is not secure. Please refer to https://aka.ms/nuget-https-everywhere..
+        ///   Looks up a localized string similar to Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information..
         /// </summary>
         internal static string SourcesCommandAllowInsecureConnectionsDescription {
             get {
