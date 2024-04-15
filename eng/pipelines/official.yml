@@ -56,7 +56,6 @@ extends:
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
       binskim:
         enabled: true
-        scanOutputDirectoryOnly: true
       sbom:
         enabled: false
     pool:
