@@ -4,7 +4,8 @@
   <PropertyGroup>
     <DefineConstants Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">$(DefineConstants);IS_DESKTOP</DefineConstants>
     <DefineConstants Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)'">$(DefineConstants);IS_CORECLR</DefineConstants>
-    <DefineConstants Condition="'$(TargetFramework)' != '$(NetStandardVersion)' And '$(TargetFramework)' != '$(NETCoreLegacyTargetFramework)'">$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
+    <!-- Signing is only supported in net5.0+ and netframework. -->
+    <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' Or ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)))">$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
   </PropertyGroup>
 
   <!-- Include shared files for netcore projects -->
@@ -24,9 +25,7 @@
     </ItemGroup>
   </Target>
 
-  <ImportGroup Condition=" '$(SkipSigning)' != 'true' ">
-    <Import Project="sign.targets" />
-  </ImportGroup>
+  <Import Project="sign.targets" Condition=" '$(SkipSigning)' != 'true' "/>
 
   <PropertyGroup Condition="'$(Shipping)' == 'true'">
     <GetSigningInputsDependsOn Condition="'$(GetSigningInputsDependsOn)' == ''">GetSigningInputsDefault</GetSigningInputsDependsOn>

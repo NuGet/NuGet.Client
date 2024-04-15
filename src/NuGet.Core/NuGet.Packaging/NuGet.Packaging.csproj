@@ -86,4 +86,14 @@
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.CommandLine.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.Packaging.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Packaging.Test" />
+    <InternalsVisibleTo Include="Test.Utility" />
+  </ItemGroup>
 </Project>

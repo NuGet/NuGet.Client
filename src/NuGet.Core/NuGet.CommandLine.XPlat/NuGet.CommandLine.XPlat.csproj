@@ -62,4 +62,11 @@
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.CommandLine.Xplat.Tests" />
+    <InternalsVisibleTo Include="NuGet.XPlat.FuncTest" />
+  </ItemGroup>
 </Project>

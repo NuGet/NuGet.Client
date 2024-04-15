@@ -56,4 +56,13 @@
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.PackageManagement.VisualStudio.Test" />
+    <InternalsVisibleTo Include="NuGet.ProjectModel.Test" />
+    <InternalsVisibleTo Include="NuGet.SolutionRestoreManager.Test" />
+    <InternalsVisibleTo Include="Test.Utility" />
+  </ItemGroup>
 </Project>
