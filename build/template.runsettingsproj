@@ -49,6 +49,7 @@
 
   <ItemGroup Label="Test Containers">
     <TestContainer Include="$(FileName)" />
+    <TestContainer Include="NuGet.Tests.Apex.dll" Condition=" '$(RunName)' == 'NuGet.Tests.Apex.Daily' " />  
     <InstallationConfiguration Include="$(VsConfigPath)" />
   </ItemGroup>
 
