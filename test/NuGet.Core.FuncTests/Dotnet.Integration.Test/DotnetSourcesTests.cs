@@ -75,7 +75,7 @@ namespace Dotnet.Integration.Test
                     "test_source",
                     "--configfile",
                     settings.ConfigPath,
-                    "--allowInsecureConnections"
+                    "--allow-insecure-connections"
                 };
 
                 // Act
