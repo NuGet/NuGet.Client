@@ -89,6 +89,7 @@ Microsoft.VisualStudio.Workspace.Extensions.dll
 Microsoft.VisualStudio.Workspace.Extensions.resources.dll
 Microsoft.VisualStudio.Workspace.resources.dll
 System.Configuration.ConfigurationManager.dll
+System.Drawing.Common.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.Management.Automation.dll
 System.Memory.Data.dll
