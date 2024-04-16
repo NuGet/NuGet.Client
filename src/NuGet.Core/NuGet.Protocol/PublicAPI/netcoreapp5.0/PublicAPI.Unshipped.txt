@@ -13,6 +13,5 @@ override NuGet.Protocol.MetadataStringOrArrayConverter.CanWrite.get -> bool
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersList.set -> void
 ~NuGet.Protocol.LocalPackageSearchMetadata.OwnerDetailsUrl.get -> System.Uri
 ~NuGet.Protocol.LocalPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
-~NuGet.Protocol.PackageMetadataResourceV3.PackageMetadataResourceV3(NuGet.Protocol.HttpSource client, NuGet.Protocol.RegistrationResourceV3 regResource, NuGet.Protocol.ReportAbuseResourceV3 reportAbuseResource, NuGet.Protocol.PackageDetailsUriResourceV3 packageDetailsUriResource, NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3 ownerDetailsUriResource) -> void
 ~NuGet.Protocol.PackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>

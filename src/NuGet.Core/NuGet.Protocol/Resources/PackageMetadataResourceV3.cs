@@ -18,19 +18,20 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
     public class PackageMetadataResourceV3(
-        HttpSource client,
-        RegistrationResourceV3 regResource,
-        ReportAbuseResourceV3 reportAbuseResource,
-        PackageDetailsUriResourceV3 packageDetailsUriResource,
-        OwnerDetailsUriTemplateResourceV3 ownerDetailsUriResource) : PackageMetadataResource
+        HttpSource _client,
+        RegistrationResourceV3 _regResource,
+        ReportAbuseResourceV3 _reportAbuseResource,
+        PackageDetailsUriResourceV3 _packageDetailsUriResource,
+        OwnerDetailsUriTemplateResourceV3 _ownerDetailsUriResource) : PackageMetadataResource
     {
         public PackageMetadataResourceV3(
             HttpSource client,
             RegistrationResourceV3 regResource,
             ReportAbuseResourceV3 reportAbuseResource,
             PackageDetailsUriResourceV3 packageDetailsUriResource)
-            : this(client, regResource, reportAbuseResource, packageDetailsUriResource, ownerDetailsUriResource: null)
+            : this(client, regResource, reportAbuseResource, packageDetailsUriResource, _ownerDetailsUriResource: null)
         {
 
         }
@@ -84,10 +85,10 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var metadataCache = new MetadataReferenceCache();
-            var registrationUri = regResource.GetUri(packageId);
+            var registrationUri = _regResource.GetUri(packageId);
 
             var (registrationIndex, httpSourceCacheContext) = await LoadRegistrationIndexAsync(
-                client,
+                _client,
                 registrationUri,
                 packageId,
                 sourceCacheContext,
@@ -118,7 +119,7 @@ namespace NuGet.Protocol
                     if (registrationPage.Items == null)
                     {
                         var rangeUri = registrationPage.Url;
-                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
+                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
 
                         if (registrationPage == null)
                         {
@@ -266,13 +267,13 @@ namespace NuGet.Protocol
                     && (includePrerelease || !version.IsPrerelease)
                     && (includeUnlisted || listed))
                 {
-                    catalogEntry.ReportAbuseUrl = reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
-                    catalogEntry.PackageDetailsUrl = packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
+                    catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
+                    catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
 
                     //TODO: just grab first owner for now
                     if (catalogEntry.OwnersList != null && catalogEntry.OwnersList.Count > 0)
                     {
-                        catalogEntry.OwnerDetailsUrl = ownerDetailsUriResource?.GetUri(catalogEntry.OwnersList[0]);
+                        catalogEntry.OwnerDetailsUrl = _ownerDetailsUriResource?.GetUri(catalogEntry.OwnersList[0]);
                     }
 
                     catalogEntry = metadataCache.GetObject(catalogEntry);

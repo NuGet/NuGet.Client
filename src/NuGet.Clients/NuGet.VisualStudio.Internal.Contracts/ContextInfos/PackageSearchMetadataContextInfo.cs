@@ -29,6 +29,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public DateTimeOffset? Published { get; internal set; }
         public Uri? ReportAbuseUrl { get; internal set; }
         public Uri? PackageDetailsUrl { get; internal set; }
+        public Uri? OwnerDetailsUrl { get; internal set; }
         public bool RequireLicenseAcceptance { get; internal set; }
         public string? Summary { get; internal set; }
         public bool PrefixReserved { get; internal set; }
@@ -68,6 +69,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Published = packageSearchMetadata.Published,
                 ReportAbuseUrl = packageSearchMetadata.ReportAbuseUrl,
                 PackageDetailsUrl = packageSearchMetadata.PackageDetailsUrl,
+                OwnerDetailsUrl = packageSearchMetadata.OwnerDetailsUrl,
                 PackagePath =
                     (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
                     (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath,

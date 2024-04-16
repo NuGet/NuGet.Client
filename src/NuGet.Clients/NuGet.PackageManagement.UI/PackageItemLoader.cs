@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (_supportsKnownOwners == null)
                 {
-                    _supportsKnownOwners = !IsMultiSource && UriUtility.IsNuGetOrg(_packageSources.FirstOrDefault()?.Source);
+                    _supportsKnownOwners = !IsMultiSource;// TODO: && UriUtility.IsNuGetOrg(_packageSources.FirstOrDefault()?.Source);
                 }
 
                 return _supportsKnownOwners.Value;
@@ -311,9 +311,9 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 ImmutableList<KnownOwner> knownOwners = null;
-                if (SupportsKnownOwners && metadata.PackageDetailsUrl != null && metadata.OwnersList != null)
+                if (SupportsKnownOwners && metadata.OwnerDetailsUrl != null && metadata.OwnersList != null)
                 {
-                    knownOwners = metadata.OwnersList.Select(owner => new KnownOwner(owner, metadata.PackageDetailsUrl)).ToImmutableList();
+                    knownOwners = metadata.OwnersList.Select(owner => new KnownOwner(owner, metadata.OwnerDetailsUrl)).ToImmutableList();
                 }
 
                 var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
