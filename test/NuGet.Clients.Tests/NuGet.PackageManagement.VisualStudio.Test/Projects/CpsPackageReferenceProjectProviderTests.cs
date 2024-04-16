@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test.Projects
 
         // As of October 2020, Service Fabric projects (sfproj) uses CPS, but does not support PackageReference. Make sure non-PR CPS projects do not use this project system.
         [Fact]
-        public async void TryCreateNuGetProject_CpsProjectWithoutPackageReferencesCapability_ReturnsNull()
+        public async Task TryCreateNuGetProject_CpsProjectWithoutPackageReferencesCapability_ReturnsNull()
         {
             // Arrange
             var hierarchy = new Mock<IVsHierarchy>();
