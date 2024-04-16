@@ -1,2 +1,6 @@
 #nullable enable
 ~static NuGet.Commands.MSBuildRestoreUtility.GetRestoreAuditProperties(NuGet.Commands.IMSBuildItem specItem, System.Collections.Generic.HashSet<string> suppressionItems) -> NuGet.ProjectModel.RestoreAuditProperties
+NuGet.Commands.UpdateSourceArgs.AllowInsecureConnections.set -> void
+NuGet.Commands.UpdateSourceArgs.AllowInsecureConnections.get -> bool
+NuGet.Commands.AddSourceArgs.AllowInsecureConnections.set -> void
+NuGet.Commands.AddSourceArgs.AllowInsecureConnections.get -> bool
