@@ -181,5 +181,25 @@ namespace NuGet.LibraryModel
             public int Length;
             public string String;
         }
+
+#pragma warning disable RS0016
+        public static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
+        {
+            if (current == previous)
+            {
+                return false;
+            }
+
+            if (previous == LibraryDependencyTarget.PackageProjectExternal)
+            {
+                LibraryDependencyTarget ppeFlags = current & LibraryDependencyTarget.PackageProjectExternal;
+                LibraryDependencyTarget nonPpeFlags = current & ~LibraryDependencyTarget.PackageProjectExternal;
+                return (ppeFlags != LibraryDependencyTarget.None && nonPpeFlags == LibraryDependencyTarget.None);
+            }
+
+            // TODO: Should there be other cases here?
+            return false;
+        }
+#pragma warning restore
     }
 }

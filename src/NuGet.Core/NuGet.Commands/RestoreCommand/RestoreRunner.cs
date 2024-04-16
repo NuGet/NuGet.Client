@@ -52,6 +52,7 @@ namespace NuGet.Commands
             var maxTasks = GetMaxTaskCount(restoreArgs);
 
             var log = restoreArgs.Log;
+            log.LogInformation($"SubProtoNug = {RestoreCommand.UsePrototype}");
 
             if (maxTasks > 1)
             {
