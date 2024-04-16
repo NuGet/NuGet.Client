@@ -129,6 +129,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         IsMachineWide = packageSourceContextInfo.IsMachineWide,
                         ProtocolVersion = packageSourceContextInfo.ProtocolVersion,
+                        AllowInsecureConnections = packageSourceContextInfo.AllowInsecureConnections
                     };
 
                     newPackageSources.Add(newSource);
