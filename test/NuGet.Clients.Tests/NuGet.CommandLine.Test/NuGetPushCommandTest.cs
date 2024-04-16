@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Principal;
@@ -21,6 +22,7 @@ namespace NuGet.CommandLine.Test
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
+        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         // Tests pushing to a source that is a v2 file system directory.
         [Fact]
@@ -2727,6 +2729,7 @@ $@"<configuration>
 
                             return HttpStatusCode.Created;
                         });
+                        string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", $"{serverV3.Uri}index.json");
 
                         serverV3.Start();
                         serverV2.Start();
