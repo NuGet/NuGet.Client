@@ -42,6 +42,8 @@ namespace NuGet.Protocol.Core.Types
             public Uri ReadmeUrl { get; set; }
             public Uri ReportAbuseUrl { get; set; }
             public Uri PackageDetailsUrl { get; set; }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
+            public Uri OwnerDetailsUrl { get; set; }
             public bool RequireLicenseAcceptance { get; set; }
             public string Summary { get; set; }
             public string Tags { get; set; }
@@ -100,6 +102,7 @@ namespace NuGet.Protocol.Core.Types
                 ReadmeUrl = _metadata.ReadmeUrl,
                 ReportAbuseUrl = _metadata.ReportAbuseUrl,
                 PackageDetailsUrl = _metadata.PackageDetailsUrl,
+                OwnerDetailsUrl = _metadata.OwnerDetailsUrl,
                 RequireLicenseAcceptance = _metadata.RequireLicenseAcceptance,
                 Summary = _metadata.Summary,
                 Tags = _metadata.Tags,

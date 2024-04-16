@@ -109,6 +109,9 @@ namespace NuGet.Protocol
 
         public Uri PackageDetailsUrl { get; private set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
+        public Uri OwnerDetailsUrl { get; } = null; // The OwnerDetailsUrl has not been added to the V2 feed.
+
         public bool RequireLicenseAcceptance { get; private set; }
 
         private string _summaryValue;

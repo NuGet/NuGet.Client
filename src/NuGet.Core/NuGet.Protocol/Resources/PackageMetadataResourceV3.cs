@@ -13,27 +13,26 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Extensions;
 using NuGet.Protocol.Model;
+using NuGet.Protocol.Resources;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
-    public class PackageMetadataResourceV3 : PackageMetadataResource
+    public class PackageMetadataResourceV3(
+        HttpSource client,
+        RegistrationResourceV3 regResource,
+        ReportAbuseResourceV3 reportAbuseResource,
+        PackageDetailsUriResourceV3 packageDetailsUriResource,
+        OwnerDetailsUriTemplateResourceV3 ownerDetailsUriResource) : PackageMetadataResource
     {
-        private readonly RegistrationResourceV3 _regResource;
-        private readonly ReportAbuseResourceV3 _reportAbuseResource;
-        private readonly PackageDetailsUriResourceV3 _packageDetailsUriResource;
-        private readonly HttpSource _client;
-
         public PackageMetadataResourceV3(
             HttpSource client,
             RegistrationResourceV3 regResource,
             ReportAbuseResourceV3 reportAbuseResource,
             PackageDetailsUriResourceV3 packageDetailsUriResource)
+            : this(client, regResource, reportAbuseResource, packageDetailsUriResource, ownerDetailsUriResource: null)
         {
-            _regResource = regResource;
-            _client = client;
-            _reportAbuseResource = reportAbuseResource;
-            _packageDetailsUriResource = packageDetailsUriResource;
+
         }
 
         /// <param name="packageId">PackageId for package we're looking.</param>
@@ -85,10 +84,10 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var metadataCache = new MetadataReferenceCache();
-            var registrationUri = _regResource.GetUri(packageId);
+            var registrationUri = regResource.GetUri(packageId);
 
             var (registrationIndex, httpSourceCacheContext) = await LoadRegistrationIndexAsync(
-                _client,
+                client,
                 registrationUri,
                 packageId,
                 sourceCacheContext,
@@ -119,7 +118,7 @@ namespace NuGet.Protocol
                     if (registrationPage.Items == null)
                     {
                         var rangeUri = registrationPage.Url;
-                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
+                        var leafRegistrationPage = await GetRegistratioIndexPageAsync(client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
 
                         if (registrationPage == null)
                         {
@@ -267,8 +266,15 @@ namespace NuGet.Protocol
                     && (includePrerelease || !version.IsPrerelease)
                     && (includeUnlisted || listed))
                 {
-                    catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
-                    catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
+                    catalogEntry.ReportAbuseUrl = reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
+                    catalogEntry.PackageDetailsUrl = packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
+
+                    //TODO: just grab first owner for now
+                    if (catalogEntry.OwnersList != null && catalogEntry.OwnersList.Count > 0)
+                    {
+                        catalogEntry.OwnerDetailsUrl = ownerDetailsUriResource?.GetUri(catalogEntry.OwnersList[0]);
+                    }
+
                     catalogEntry = metadataCache.GetObject(catalogEntry);
                     results.Add(catalogEntry);
                 }

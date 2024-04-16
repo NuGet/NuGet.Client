@@ -75,6 +75,8 @@ namespace NuGet.Protocol
 
         public Uri PackageDetailsUrl => null;
 
+        public Uri OwnerDetailsUrl => null;
+
         public bool RequireLicenseAcceptance => _nuspec.GetRequireLicenseAcceptance();
 
         public string Summary => !string.IsNullOrEmpty(_nuspec.GetSummary()) ? _nuspec.GetSummary() : Description;

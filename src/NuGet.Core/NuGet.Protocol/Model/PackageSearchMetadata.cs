@@ -112,6 +112,10 @@ namespace NuGet.Protocol
         [JsonIgnore]
         public Uri PackageDetailsUrl { get; set; }
 
+        [JsonIgnore]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
+        public Uri OwnerDetailsUrl { get; set; }
+
         [JsonProperty(PropertyName = JsonProperties.RequireLicenseAcceptance, DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(false)]
         [JsonConverter(typeof(SafeBoolConverter))]
