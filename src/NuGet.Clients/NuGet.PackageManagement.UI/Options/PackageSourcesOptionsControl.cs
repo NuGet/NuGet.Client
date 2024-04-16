@@ -483,13 +483,37 @@ namespace NuGet.PackageManagement.UI.Options
                 return TryUpdateSourceResults.SourceConflicted;
             }
 
-            selectedPackageSource.Name = name;
-            selectedPackageSource.Source = source;
-            _packageSources.ResetCurrentItem();
+            PackageSource packageSource = new PackageSource(source, name);
 
-            SetHttpErrorVisibilityForSelectSource(selectedPackageSource);
+            if (packageSource.IsHttp && !packageSource.IsHttps)
+            {
+                // Updating to an http source. Request user confirmation
+                bool? addHttpSource = MessageHelper.ShowQueryMessage(Resources.Warn_Adding_HttpSource, "HTTP Source", true);
 
-            return TryUpdateSourceResults.Successful;
+                if (addHttpSource == true)
+                {
+                    selectedPackageSource.Name = name;
+                    selectedPackageSource.Source = source;
+                    selectedPackageSource.AllowInsecureConnections = true;
+                    _packageSources.ResetCurrentItem();
+                    SetHttpErrorVisibilityForSelectSource(selectedPackageSource);
+
+                    return TryUpdateSourceResults.Successful;
+                }
+                else
+                {
+                    return TryUpdateSourceResults.Unchanged;
+                }
+            }
+            else
+            {
+                selectedPackageSource.Name = name;
+                selectedPackageSource.Source = source;
+                _packageSources.ResetCurrentItem();
+                SetHttpErrorVisibilityForSelectSource(selectedPackageSource);
+
+                return TryUpdateSourceResults.Successful;
+            }
         }
 
         private static void SelectAndFocus(TextBox textBox)

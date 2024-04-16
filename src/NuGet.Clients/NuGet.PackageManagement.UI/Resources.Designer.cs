@@ -2610,6 +2610,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?.
+        /// </summary>
+        public static string Warn_Adding_HttpSource {
+            get {
+                return ResourceManager.GetString("Warn_Adding_HttpSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
         /// </summary>
         public static string Warning_HTTPSource {

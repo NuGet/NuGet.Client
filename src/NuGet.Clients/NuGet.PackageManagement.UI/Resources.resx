@@ -1045,4 +1045,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Error_HttpSource_Single" xml:space="preserve">
     <value>NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file.</value>
   </data>
+  <data name="Warn_Adding_HttpSource" xml:space="preserve">
+    <value>You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?</value>
+  </data>
 </root>
