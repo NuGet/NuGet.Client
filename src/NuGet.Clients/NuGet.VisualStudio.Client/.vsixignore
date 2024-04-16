@@ -9,6 +9,7 @@ Microsoft.IdentityModel.JsonWebTokens.dll
 Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
 Microsoft.Internal.VisualStudio.Shell.Framework.dll
+Microsoft.Internal.VisualStudio.Shell.Framework.resources.dll
 Microsoft.IO.Redist.dll
 Microsoft.NET.StringTools.dll
 Microsoft.TeamFoundation.Build.Client.dll
@@ -68,6 +69,8 @@ Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
+Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
+Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.Services.Client.Interactive.dll
 Microsoft.VisualStudio.Services.Client.Interactive.resources.dll
 Microsoft.VisualStudio.Services.Common.dll
@@ -81,6 +84,7 @@ Microsoft.VisualStudio.Workspace.Extensions.dll
 Microsoft.VisualStudio.Workspace.Extensions.resources.dll
 Microsoft.VisualStudio.Workspace.resources.dll
 System.Configuration.ConfigurationManager.dll
+System.Drawing.Common.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.Management.Automation.dll
 System.Net.Http.Formatting.dll
