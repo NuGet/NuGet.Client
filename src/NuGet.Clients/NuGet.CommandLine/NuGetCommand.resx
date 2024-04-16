@@ -931,4 +931,7 @@ nuget client-certs List</value>
   <data name="SourcesCommandProtocolVersionDescription" xml:space="preserve">
     <value>The NuGet server protocol version to be used. Currently supported versions are 2 and 3. See https://learn.microsoft.com/nuget/api/overview for information about the version 3 protocol. Defaults to 2 if not specified.</value>
   </data>
+  <data name="SourcesCommandAllowInsecureConnectionsDescription" xml:space="preserve">
+    <value>Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information.</value>
+  </data>
 </root>
