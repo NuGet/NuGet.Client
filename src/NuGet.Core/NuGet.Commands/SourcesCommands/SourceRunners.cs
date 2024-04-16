@@ -63,7 +63,7 @@ namespace NuGet.Commands
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
             newPackageSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
-            if (newPackageSource.IsHttp && !newPackageSource.IsHttps)
+            if (newPackageSource.IsHttp && !newPackageSource.IsHttps && !args.AllowInsecureConnections)
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
@@ -246,7 +246,7 @@ namespace NuGet.Commands
                 existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
                 // If the new source is not http, throw an error
-                if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections)
+                if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections && !args.AllowInsecureConnections)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "source update", args.Source));
                 }

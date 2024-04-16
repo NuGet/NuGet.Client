@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -76,6 +75,10 @@ namespace NuGet.CommandLine.Test
                 SimpleTestSettingsContext settings = pathContext.Settings;
 
                 // Arrange
+                string expectedError = string.Format(CultureInfo.CurrentCulture,
+                        _httpErrorSingleShort,
+                        "source add",
+                        source);
                 var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
                     "sources",
@@ -99,7 +102,7 @@ namespace NuGet.CommandLine.Test
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal(source, sourceItem.GetValueAsPath());
                 Assert.Equal("True", sourceItem.AllowInsecureConnections);
-                Assert.False(result.Output.Contains("WARNING: You are running the 'add source' operation with an 'HTTP' source"));
+                Assert.False(result.Output.Contains(expectedError));
             }
         }
 
@@ -155,14 +158,17 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [InlineData("http://source.test", true)]
         [InlineData("https://source.test", false)]
-        public void SourcesCommandTest_UpdateSource_RemoveAllowInsecureConnections(string source, bool shouldWarn)
+        public void SourcesCommandTest_UpdateSource_RemoveAllowInsecureConnections(string source, bool shouldFail)
         {
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
-
+                string expectedError = string.Format(CultureInfo.CurrentCulture,
+                        _httpErrorSingleShort,
+                        "source add",
+                        source);
                 var nugetConfig = string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -191,13 +197,20 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, result.ExitCode);
-                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
-                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal(source, sourceItem.GetValueAsPath());
-                Assert.Null(sourceItem.AllowInsecureConnections);
-                Assert.Equal(shouldWarn, result.Output.Contains("WARNING: You are running the 'update source' operation with an 'HTTP' source"));
+                if (shouldFail)
+                {
+                    Assert.Equal(1, result.ExitCode);
+                    Assert.Contains(expectedError, result.AllOutput);
+                }
+                else
+                {
+                    Assert.Equal(0, result.ExitCode);
+                    ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                    Assert.Equal(source, sourceItem.GetValueAsPath());
+                    Assert.Null(sourceItem.AllowInsecureConnections);
+                }
             }
         }
 
