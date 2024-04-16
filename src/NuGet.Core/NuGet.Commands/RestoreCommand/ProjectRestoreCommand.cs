@@ -52,7 +52,12 @@ namespace NuGet.Commands
             string telemetryPrefix)
         {
             var allRuntimes = RuntimeGraph.Empty;
-            var frameworkTasks = new List<Task<RestoreTargetGraph>>();
+            //BSW - changes here to make each TFM/RID version run in series to make them easier to debug
+            //This shouldn't have an effect on overall performance, and can be undone if people would prefer parallelism
+
+            //START EDIT
+            //var frameworkTasks = new List<Task<RestoreTargetGraph>>();
+            var frameworkWDAResults = new List<RestoreTargetGraph>();
             var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
             var success = true;
@@ -63,16 +68,21 @@ namespace NuGet.Commands
             {
                 _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, pair.Key.DotNetFrameworkName));
 
-                frameworkTasks.Add(WalkDependenciesAsync(projectRange,
-                    pair.Key,
-                    remoteWalker,
-                    context,
-                    token: token));
+                //frameworkTasks.Add(WalkDependenciesAsync(projectRange,
+                //  pair.Key,
+                //  remoteWalker,
+                //  context,
+                //  token: token));
+                frameworkWDAResults.Add(WalkDependenciesAsync(projectRange,
+                                    pair.Key,
+                                    remoteWalker,
+                                    context,
+                                    token: token).Result);
             }
-
-            var frameworkGraphs = await Task.WhenAll(frameworkTasks);
-
-            graphs.AddRange(frameworkGraphs);
+            graphs.AddRange(frameworkWDAResults);
+            //var frameworkGraphs = await Task.WhenAll(frameworkTasks);
+            //graphs.AddRange(frameworkGraphs);
+            //END EDIT
 
             telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkFrameworkDependencyDuration);
 
