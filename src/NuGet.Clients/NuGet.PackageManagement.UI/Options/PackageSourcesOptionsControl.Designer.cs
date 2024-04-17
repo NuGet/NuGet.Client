@@ -52,6 +52,8 @@ namespace NuGet.PackageManagement.UI.Options
             this.MachineWidePackageSourcesListBox = new NuGet.PackageManagement.UI.Options.PackageSourceCheckedListBox();
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+            this.AllowInsecureConnectionsWarning = new System.Windows.Forms.Label();
+            this.AllowInsecureConnectionsWarningIcon = new System.Windows.Forms.PictureBox();
             this.HttpError = new System.Windows.Forms.Label();
             this.HttpErrorIcon = new System.Windows.Forms.PictureBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
@@ -214,19 +216,27 @@ namespace NuGet.PackageManagement.UI.Options
             resources.ApplyResources(this.tableLayoutPanel4, "tableLayoutPanel4");
             this.tableLayoutPanel4.Controls.Add(this.HttpError, 1, 0);
             this.tableLayoutPanel4.Controls.Add(this.HttpErrorIcon, 0, 0);
+            this.tableLayoutPanel4.Controls.Add(this.AllowInsecureConnectionsWarning, 1, 0);
+            this.tableLayoutPanel4.Controls.Add(this.AllowInsecureConnectionsWarningIcon, 0, 0);
             this.tableLayoutPanel4.Name = "tableLayoutPanel4";
             // 
-            // HttpWarning
+            // HttpError
             // 
-            resources.ApplyResources(this.HttpError, "HttpWarning");
-            this.HttpError.Name = "HttpWarning";
+            resources.ApplyResources(this.HttpError, "HttpError");
+            this.HttpError.Name = "HttpError";
+            resources.ApplyResources(this.AllowInsecureConnectionsWarning, "AllowInsecureConnectionsWarning");
+            this.AllowInsecureConnectionsWarning.Name = "AllowInsecureConnectionsWarning";
             // 
-            // HttpWarningIcon
+            // HttpErrorIcon
             // 
-            resources.ApplyResources(this.HttpErrorIcon, "HttpWarningIcon");
+            resources.ApplyResources(this.HttpErrorIcon, "HttpErrorIcon");
             this.HttpErrorIcon.AccessibleRole = System.Windows.Forms.AccessibleRole.Alert;
-            this.HttpErrorIcon.Name = "HttpWarningIcon";
+            this.HttpErrorIcon.Name = "HttpErrorIcon";
             this.HttpErrorIcon.TabStop = false;
+            resources.ApplyResources(this.AllowInsecureConnectionsWarningIcon, "AllowInsecureConnectionsWarningIcon");
+            this.AllowInsecureConnectionsWarningIcon.AccessibleRole = System.Windows.Forms.AccessibleRole.Alert;
+            this.AllowInsecureConnectionsWarningIcon.Name = "AllowInsecureConnectionsWarningIcon";
+            this.AllowInsecureConnectionsWarningIcon.TabStop = false;
             // 
             // images32px
             // 
@@ -261,6 +271,7 @@ namespace NuGet.PackageManagement.UI.Options
             this.tableLayoutPanel3.PerformLayout();
             this.tableLayoutPanel4.ResumeLayout(false);
             this.tableLayoutPanel4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AllowInsecureConnectionsWarningIcon)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.HttpErrorIcon)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -291,6 +302,8 @@ namespace NuGet.PackageManagement.UI.Options
         private ImageList images64px;
         private TableLayoutPanel tableLayoutPanel3;
         private TableLayoutPanel tableLayoutPanel4;
+        private Label AllowInsecureConnectionsWarning;
+        private PictureBox AllowInsecureConnectionsWarningIcon;
         private Label HttpError;
         private PictureBox HttpErrorIcon;
     }

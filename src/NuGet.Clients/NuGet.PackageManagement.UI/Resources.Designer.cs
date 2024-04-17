@@ -2619,20 +2619,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Warning: Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
+        ///   Looks up a localized string similar to `AllowInsecureConnections` attribute has been enabled for this source which would allow it connecting to a NON-HTTPS source..
         /// </summary>
         public static string Warning_HTTPSource {
             get {
                 return ResourceManager.GetString("Warning_HTTPSource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Non-HTTPS access will be removed in a future version. Consider migrating to an &apos;HTTPS&apos; source..
-        /// </summary>
-        public static string Warning_NewHTTPSource_VSOptions {
-            get {
-                return ResourceManager.GetString("Warning_NewHTTPSource_VSOptions", resourceCulture);
             }
         }
         

@@ -44,6 +44,15 @@ namespace NuGet.PackageManagement.UI.Options
                     return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, sourceMessage);
                 }
 
+                if (packageSource.AllowInsecureConnections)
+                {
+                    var insecureConnectionMessage = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Warning_HTTPSource,
+                        packageSource.Source);
+                    return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, insecureConnectionMessage);
+                }
+
                 return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, packageSource.Source);
             }
             else

@@ -22,6 +22,33 @@ namespace NuGet.PackageManagement.UI.Options
 
         private static Icon ErrorIcon { get; set; }
 
+        private static Icon WarningIcon { get; set; }
+
+        private Icon GetWarningIcon()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (WarningIcon == null)
+            {
+                ImageAttributes attributes = new ImageAttributes
+                {
+                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                    ImageType = (uint)_UIImageType.IT_Icon,
+                    Format = (uint)_UIDataFormat.DF_WinForms,
+                    LogicalWidth = 16,
+                    LogicalHeight = 16,
+                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                };
+
+                IVsImageService2 imageService = (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
+                IVsUIObject uIObj = imageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                WarningIcon = (Icon)GelUtilities.GetObjectData(uIObj);
+            }
+
+            return WarningIcon;
+        }
+
         private Icon GetErrorIcon()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -138,22 +165,36 @@ namespace NuGet.PackageManagement.UI.Options
                         var packageSource = new PackageSource(currentItem.Source, currentItem.Name);
                         packageSource.AllowInsecureConnections = currentItem.AllowInsecureConnections;
                         var shouldShowHttpErrorIcon = packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections;
-                        Rectangle errorBounds = default;
+                        Rectangle bounds = default;
 
                         if (shouldShowHttpErrorIcon)
                         {
                             var errorIcon = GetErrorIcon();
 
-                            errorBounds = new Rectangle(
+                            bounds = new Rectangle(
                                 nameBounds.Left,
                                 nameBounds.Bottom,
                                 errorIcon.Width,
                                 errorIcon.Height);
-                            graphics.DrawIcon(errorIcon, errorBounds);
+                            graphics.DrawIcon(errorIcon, bounds);
                         }
 
+                        if (packageSource.AllowInsecureConnections)
+                        {
+                            var warningIcon = GetWarningIcon();
+
+                            bounds = new Rectangle(
+                                nameBounds.Left,
+                                nameBounds.Bottom,
+                                warningIcon.Width,
+                                warningIcon.Height);
+                            graphics.DrawIcon(warningIcon, bounds);
+                        }
+
+                        bool showWarningOrError = shouldShowHttpErrorIcon || packageSource.AllowInsecureConnections;
+
                         var sourceBounds = new Rectangle(
-                            shouldShowHttpErrorIcon ? errorBounds.Right : nameBounds.Left,
+                            showWarningOrError ? bounds.Right : nameBounds.Left,
                             nameBounds.Bottom,
                             textWidth,
                             e.Bounds.Bottom - nameBounds.Bottom);

@@ -60,6 +60,28 @@ namespace NuGet.PackageManagement.UI.Options
             }
         }
 
+        public static Image WarningIcon
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+
+                ImageAttributes attributes = new ImageAttributes
+                {
+                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                    ImageType = (uint)_UIImageType.IT_Bitmap,
+                    Format = (uint)_UIDataFormat.DF_WinForms,
+                    LogicalWidth = 16,
+                    LogicalHeight = 16,
+                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+                };
+
+                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+                return (Image)GelUtilities.GetObjectData(uIObj);
+            }
+        }
+
         public static Image ErrorIcon
         {
             get
@@ -94,8 +116,13 @@ namespace NuGet.PackageManagement.UI.Options
 
             UpdateDPI();
 
+            AllowInsecureConnectionsWarningIcon.Image = WarningIcon;
+            AllowInsecureConnectionsWarning.Text = Resources.Warning_HTTPSource;
+            AllowInsecureConnectionsWarning.AutoSize = true;
+
             HttpErrorIcon.Image = ErrorIcon;
             HttpError.Text = Resources.Error_HttpSource_Single;
+            HttpError.AutoSize = true;
         }
 
         private void UpdateDPI()
@@ -754,6 +781,18 @@ namespace NuGet.PackageManagement.UI.Options
             {
                 HttpError.Visible = false;
                 HttpErrorIcon.Visible = false;
+            }
+
+            // Warn if AllowInsecureConnections for this source is set to true. 
+            if (source.AllowInsecureConnections)
+            {
+                AllowInsecureConnectionsWarning.Visible = true;
+                AllowInsecureConnectionsWarningIcon.Visible = true;
+            }
+            else
+            {
+                AllowInsecureConnectionsWarning.Visible = false;
+                AllowInsecureConnectionsWarningIcon.Visible = false;
             }
         }
     }
