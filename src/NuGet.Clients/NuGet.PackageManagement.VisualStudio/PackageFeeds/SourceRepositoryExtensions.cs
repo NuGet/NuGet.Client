@@ -11,6 +11,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Model;
+using NuGet.Protocol.Resources;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -41,14 +42,27 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
 
             var searchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>(cancellationToken);
+            var ownerDetailsUriResource = sourceRepository.GetResource<OwnerDetailsUriTemplateResourceV3>(cancellationToken);
 
-            var searchResults = await searchResource?.SearchAsync(
+            IEnumerable<IPackageSearchMetadata> searchResults = await searchResource?.SearchAsync(
                 searchToken.SearchString,
                 searchToken.SearchFilter,
                 searchToken.StartIndex,
                 pageSize + 1,
                 Common.NullLogger.Instance,
                 cancellationToken);
+
+            //TODO: Generate and store URLs.
+            if (ownerDetailsUriResource is not null)
+            {
+                foreach (var searchResult in searchResults)
+                {
+                    foreach (var owner in searchResult.OwnersList)
+                    {
+                        var ownerDetailsUrl = ownerDetailsUriResource.GetUri(owner);
+                    }
+                }
+            }
 
             var items = searchResults?.ToArray() ?? Array.Empty<IPackageSearchMetadata>();
 

@@ -4,8 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Resources;
 
 namespace NuGet.Protocol
 {
@@ -25,7 +25,6 @@ namespace NuGet.Protocol
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
                 var reportAbuseResource = await source.GetResourceAsync<ReportAbuseResourceV3>(token);
                 var packageDetailsUriResource = await source.GetResourceAsync<PackageDetailsUriResourceV3>(token);
-                var ownerDetailsUriResource = await source.GetResourceAsync<OwnerDetailsUriTemplateResourceV3>(token);
 
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
@@ -34,8 +33,7 @@ namespace NuGet.Protocol
                     httpSourceResource.HttpSource,
                     regResource,
                     reportAbuseResource,
-                    packageDetailsUriResource,
-                    ownerDetailsUriResource);
+                    packageDetailsUriResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

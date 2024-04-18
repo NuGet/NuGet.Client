@@ -114,7 +114,7 @@ namespace NuGet.Test.Utility
 
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
 
-            Uri IPackageSearchMetadata.OwnerDetailsUrl => throw new NotImplementedException();
+            Uri IPackageSearchMetadata.OwnerDetailsUrl => null;
         }
     }
 }

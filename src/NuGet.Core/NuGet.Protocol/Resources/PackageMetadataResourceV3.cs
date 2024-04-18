@@ -13,27 +13,27 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Extensions;
 using NuGet.Protocol.Model;
-using NuGet.Protocol.Resources;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
-    public class PackageMetadataResourceV3(
-        HttpSource _client,
-        RegistrationResourceV3 _regResource,
-        ReportAbuseResourceV3 _reportAbuseResource,
-        PackageDetailsUriResourceV3 _packageDetailsUriResource,
-        OwnerDetailsUriTemplateResourceV3 _ownerDetailsUriResource) : PackageMetadataResource
+    public class PackageMetadataResourceV3 : PackageMetadataResource
     {
+        private readonly RegistrationResourceV3 _regResource;
+        private readonly ReportAbuseResourceV3 _reportAbuseResource;
+        private readonly PackageDetailsUriResourceV3 _packageDetailsUriResource;
+        private readonly HttpSource _client;
+
         public PackageMetadataResourceV3(
             HttpSource client,
             RegistrationResourceV3 regResource,
             ReportAbuseResourceV3 reportAbuseResource,
             PackageDetailsUriResourceV3 packageDetailsUriResource)
-            : this(client, regResource, reportAbuseResource, packageDetailsUriResource, _ownerDetailsUriResource: null)
         {
-
+            _regResource = regResource;
+            _client = client;
+            _reportAbuseResource = reportAbuseResource;
+            _packageDetailsUriResource = packageDetailsUriResource;
         }
 
         /// <param name="packageId">PackageId for package we're looking.</param>
@@ -269,13 +269,6 @@ namespace NuGet.Protocol
                 {
                     catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
-
-                    //TODO: just grab first owner for now
-                    if (catalogEntry.OwnersList != null && catalogEntry.OwnersList.Count > 0)
-                    {
-                        catalogEntry.OwnerDetailsUrl = _ownerDetailsUriResource?.GetUri(catalogEntry.OwnersList[0]);
-                    }
-
                     catalogEntry = metadataCache.GetObject(catalogEntry);
                     results.Add(catalogEntry);
                 }
