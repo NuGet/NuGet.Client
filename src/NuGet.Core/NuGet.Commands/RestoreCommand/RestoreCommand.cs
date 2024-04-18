@@ -115,8 +115,28 @@ namespace NuGet.Commands
         private const string AuditDurationOutput = "Audit.Duration.Output";
         private const string AuditDurationTotal = "Audit.Duration.Total";
 
+
+        //BSW - variable to control if we use the prototype or not
+        private int _usePrototype = -1;
+        //
+
         public RestoreCommand(RestoreRequest request)
         {
+            //BSW - set
+            string subProtoNugValue = Environment.GetEnvironmentVariable("SubProtoNug");
+            if (subProtoNugValue != null)
+            {
+                if (subProtoNugValue == "1")
+                    _usePrototype = 1;
+                else if (subProtoNugValue == "2")
+                    _usePrototype = 2;
+                else
+                    _usePrototype = 0;
+            }
+            else
+                _usePrototype = 0;
+            //BSW
+
             _request = request ?? throw new ArgumentNullException(nameof(request));
             _lockFileBuilderCache = request.LockFileBuilderCache;
 
@@ -293,19 +313,57 @@ namespace NuGet.Commands
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
+                IEnumerable<RestoreTargetGraph> prototypeGraphs = null;
                 if (_success)
                 {
                     using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
-                        // Restore
-                        if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
-                        graphs = await ExecuteRestoreAsync(
-                        _request.DependencyProviders.GlobalPackages,
-                        _request.DependencyProviders.FallbackPackageFolders,
-                        contextForProject,
-                        token,
-                        telemetry);
-                        if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                        if ((_usePrototype == 0) || (_usePrototype == 2))
+                        {
+                            // Restore
+                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
+                            graphs = await ExecuteRestoreAsync(
+                            _request.DependencyProviders.GlobalPackages,
+                            _request.DependencyProviders.FallbackPackageFolders,
+                            contextForProject,
+                            token,
+                            telemetry);
+                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                        }
+                        if ((_usePrototype == 1) || (_usePrototype == 2))
+                        {
+                            // Restore using the prototype
+                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
+                            prototypeGraphs = await ExecuteRestoreAsync(
+                            _request.DependencyProviders.GlobalPackages,
+                            _request.DependencyProviders.FallbackPackageFolders,
+                            contextForProject,
+                            token,
+                            telemetry);
+                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                        }
+                        if (_usePrototype == 1)
+                        {
+                            _logger.LogMinimal($"***** Using SubProtoNug for {_request.Project.FilePath}");
+                            graphs = prototypeGraphs;
+                        }
+                        if (_usePrototype == 2)
+                        {
+                            _logger.LogMinimal($"***** Using SubProtoNug flattened graph for {_request.Project.FilePath}");
+                            foreach (var originalGraph in graphs)
+                            {
+                                originalGraph.Flattened = null; // assure we are actually assigning a flattened graph to everything
+                                foreach (var prototypeGraph in prototypeGraphs)
+                                {
+                                    if ((prototypeGraph.Framework == originalGraph.Framework) &&
+                                        (prototypeGraph.RuntimeIdentifier == originalGraph.RuntimeIdentifier))
+                                    {
+                                        originalGraph.Flattened = prototypeGraph.Flattened;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 else
