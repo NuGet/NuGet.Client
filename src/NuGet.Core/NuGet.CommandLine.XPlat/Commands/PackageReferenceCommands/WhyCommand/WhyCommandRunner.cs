@@ -331,18 +331,6 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var childNode = dependencyNodes[dependencyPath[i - 1]];
 
-                    /*
-                     * Why does this not work, even though hashCodes are the same?
-                     * How can I fix the Equals override method to make this work?
-                    */
-                    /*
-                    if (dependencyNodes[currentPackageId].Children.Contains(childNode))
-                    {
-                        continue;
-                    }
-                    */
-
-                    // TODO: Replace with .Contains() once Equals override method is fixed
                     if (dependencyNodes[currentPackageId].Children.Any(p => p.Id == childNode.Id))
                     {
                         continue;
@@ -500,37 +488,6 @@ namespace NuGet.CommandLine.XPlat
                 Version = version;
                 Children = new HashSet<DependencyNode>();
             }
-
-            /*
-            // TODO: Should we distinguish between package references and project references?
-
-            public bool Equals(DependencyNode other)
-            {
-                if (other is null) return false;
-
-                return Id == other.Id &&
-                    Version == other.Version &&
-                    Children.SetEqualsWithNullCheck(other.Children);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return Equals(obj as DependencyNode);
-            }
-
-            public static bool operator ==(DependencyNode x, DependencyNode y)
-            {
-                if (ReferenceEquals(x, y)) return true;
-                if (x is null || y is null) return false;
-
-                return x.Equals(y);
-            }
-
-            public static bool operator !=(DependencyNode x, DependencyNode y)
-            {
-                return !(x == y);
-            }
-            */
 
             public override int GetHashCode()
             {
