@@ -127,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
             string projectName)
         {
             bool doesProjectHaveDependencyOnPackage = false;
-            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>>(targets.Count);
+            var dependencyGraphPerFramework = new Dictionary<string, HashSet<DependencyNode>>(targets.Count);
 
             foreach (var frameworkPackage in frameworkPackages)
             {
@@ -141,10 +141,10 @@ namespace NuGet.CommandLine.XPlat
                     // get all package libraries for the framework
                     IList<LockFileTargetLibrary> packageLibraries = target.Libraries;
 
+                    // if the project has a dependency on the target package, get the dependency graph
                     if (packageLibraries.Any(l => l.Name == targetPackage))
                     {
                         doesProjectHaveDependencyOnPackage = true;
-
                         dependencyGraphPerFramework.Add(frameworkPackage.Framework,
                                                         GetDependencyGraphPerFramework(frameworkPackage.TopLevelPackages, packageLibraries, targetPackage));
                     }
@@ -182,12 +182,12 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
-        private List<DependencyNode> GetDependencyGraphPerFramework(
+        private HashSet<DependencyNode> GetDependencyGraphPerFramework(
             IEnumerable<InstalledPackageReference> topLevelPackages,
             IList<LockFileTargetLibrary> packageLibraries,
             string targetPackage)
         {
-            List<DependencyNode> dependencyGraph = null;
+            HashSet<DependencyNode> dependencyGraph = null;
 
             // hashset tracking every package node that we've traversed
             var visited = new HashSet<string>();
@@ -199,12 +199,12 @@ namespace NuGet.CommandLine.XPlat
             foreach (var topLevelPackage in topLevelPackages)
             {
                 // use depth-first search to find dependency paths from the top-level package to the target package
-                DependencyNode dependencyNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, visited, dependencyNodes, versions, targetPackage);
+                DependencyNode topLevelNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, visited, dependencyNodes, versions, targetPackage);
 
-                if (dependencyNode != null)
+                if (topLevelNode != null)
                 {
                     dependencyGraph ??= [];
-                    dependencyGraph.Add(dependencyNode);
+                    dependencyGraph.Add(topLevelNode);
                 }
             }
 
@@ -256,7 +256,7 @@ namespace NuGet.CommandLine.XPlat
                 var currentPackageData = stack.Pop();
                 var currentPackageId = currentPackageData.Id;
 
-                // if we reach the target node, or if we've already found dependency paths from the current package, add it to the graph
+                // if we reach the target node, or if we've already traversed this node and found dependency paths, add it to the graph
                 if (currentPackageId == targetPackage
                     || dependencyNodes.ContainsKey(currentPackageId))
                 {
@@ -317,20 +317,14 @@ namespace NuGet.CommandLine.XPlat
                 current = current.Parent;
             }
 
-            // then, we traverse this list from the target package to the top-level package, adding/updating their dependency nodes in the graph
+            // then, we traverse this list from the target package to the top-level package, initializing/updating their dependency nodes as needed
             for (int i = 0; i < dependencyPath.Count; i++)
             {
                 string currentPackageId = dependencyPath[i];
 
                 if (!dependencyNodes.ContainsKey(currentPackageId))
                 {
-                    dependencyNodes.Add(currentPackageId,
-                                     new DependencyNode
-                                     {
-                                         Id = currentPackageId,
-                                         Version = versions[currentPackageId],
-                                         Children = new HashSet<DependencyNode>()
-                                     });
+                    dependencyNodes.Add(currentPackageId, new DependencyNode(currentPackageId, versions[currentPackageId]));
                 }
 
                 if (i > 0)
@@ -340,6 +334,8 @@ namespace NuGet.CommandLine.XPlat
                     /*
                      * Why does this not work, even though hashCodes are the same?
                      * How can I fix the Equals override method to make this work?
+                    */
+                    /*
                     if (dependencyNodes[currentPackageId].Children.Contains(childNode))
                     {
                         continue;
@@ -361,7 +357,7 @@ namespace NuGet.CommandLine.XPlat
         /// Prints the dependency graphs for all target frameworks.
         /// </summary>
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
-        private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
+        private void PrintAllDependencyGraphs(Dictionary<string, HashSet<DependencyNode>> dependencyGraphPerFramework)
         {
             Console.WriteLine();
 
@@ -381,7 +377,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>
         /// eg. { { "net6.0", "netcoreapp3.1" }, { "net472" } }
         /// </returns>
-        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
+        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, HashSet<DependencyNode>> dependencyGraphPerFramework)
         {
             List<string> frameworksWithoutGraphs = null;
             var dependencyGraphHashes = new Dictionary<int, List<string>>(dependencyGraphPerFramework.Count);
@@ -421,8 +417,9 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
         /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
-        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes)
+        private void PrintDependencyGraphPerFramework(List<string> frameworks, HashSet<DependencyNode> topLevelNodes)
         {
+            // print framework header
             foreach (var framework in frameworks)
             {
                 Console.WriteLine($"\t[{framework}]");
@@ -439,18 +436,10 @@ namespace NuGet.CommandLine.XPlat
             var stack = new Stack<StackOutputData>();
 
             // initialize the stack with all top-level nodes
-            for (int i = 0; i < topLevelNodes.Count; i++)
+            int counter = 0;
+            foreach (var node in topLevelNodes)
             {
-                var node = topLevelNodes[i];
-
-                if (i == 0)
-                {
-                    stack.Push(new StackOutputData(node, prefix: "\t ", isLastChild: true));
-                }
-                else
-                {
-                    stack.Push(new StackOutputData(node, prefix: "\t ", isLastChild: false));
-                }
+                stack.Push(new StackOutputData(node, prefix: "\t ", isLastChild: counter++ == 0));
             }
 
             // print the dependency graph
@@ -458,16 +447,16 @@ namespace NuGet.CommandLine.XPlat
             {
                 var current = stack.Pop();
 
-                string currentPrefix, nextPrefix;
+                string currentPrefix, childPrefix;
                 if (current.IsLastChild)
                 {
                     currentPrefix = current.Prefix + LastChildNodeSymbol;
-                    nextPrefix = current.Prefix + LastChildPrefixSymbol;
+                    childPrefix = current.Prefix + LastChildPrefixSymbol;
                 }
                 else
                 {
                     currentPrefix = current.Prefix + ChildNodeSymbol;
-                    nextPrefix = current.Prefix + ChildPrefixSymbol;
+                    childPrefix = current.Prefix + ChildPrefixSymbol;
                 }
 
                 // print current node
@@ -476,10 +465,10 @@ namespace NuGet.CommandLine.XPlat
                 if (current.Node.Children?.Count > 0)
                 {
                     // push all the node's children onto the stack
-                    int counter = 0;
+                    counter = 0;
                     foreach (var child in current.Node.Children)
                     {
-                        stack.Push(new StackOutputData(child, nextPrefix, isLastChild: counter++ == 0));
+                        stack.Push(new StackOutputData(child, childPrefix, isLastChild: counter++ == 0));
                     }
                 }
             }
@@ -492,10 +481,10 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="graph">The dependency graph for a given framework.</param>
         /// <returns></returns>
-        private int GetDependencyGraphHashCode(IList<DependencyNode> graph)
+        private int GetDependencyGraphHashCode(HashSet<DependencyNode> graph)
         {
             var hashCodeCombiner = new HashCodeCombiner();
-            hashCodeCombiner.AddSequence(graph);
+            hashCodeCombiner.AddUnorderedSequence(graph);
             return hashCodeCombiner.CombinedHash;
         }
 
@@ -505,6 +494,14 @@ namespace NuGet.CommandLine.XPlat
             public string Version { get; set; }
             public HashSet<DependencyNode> Children { get; set; }
 
+            public DependencyNode(string id, string version)
+            {
+                Id = id;
+                Version = version;
+                Children = new HashSet<DependencyNode>();
+            }
+
+            /*
             // TODO: Should we distinguish between package references and project references?
 
             public bool Equals(DependencyNode other)
@@ -533,6 +530,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 return !(x == y);
             }
+            */
 
             public override int GetHashCode()
             {
@@ -549,10 +547,10 @@ namespace NuGet.CommandLine.XPlat
             public string Id { get; set; }
             public StackDependencyData Parent { get; set; }
 
-            public StackDependencyData(string currentId, StackDependencyData parent)
+            public StackDependencyData(string currentId, StackDependencyData parentDependencyData)
             {
                 Id = currentId;
-                Parent = parent;
+                Parent = parentDependencyData;
             }
         }
 
