@@ -60,49 +60,9 @@ namespace NuGet.PackageManagement.UI.Options
             }
         }
 
-        public static Image WarningIcon
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
+        public static Image WarningIcon { get; private set; }
 
-                ImageAttributes attributes = new ImageAttributes
-                {
-                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
-                    ImageType = (uint)_UIImageType.IT_Bitmap,
-                    Format = (uint)_UIDataFormat.DF_WinForms,
-                    LogicalWidth = 16,
-                    LogicalHeight = 16,
-                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
-                };
-
-                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
-
-                return (Image)GelUtilities.GetObjectData(uIObj);
-            }
-        }
-
-        public static Image ErrorIcon
-        {
-            get
-            {
-                ThreadHelper.ThrowIfNotOnUIThread();
-
-                ImageAttributes attributes = new ImageAttributes
-                {
-                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
-                    ImageType = (uint)_UIImageType.IT_Bitmap,
-                    Format = (uint)_UIDataFormat.DF_WinForms,
-                    LogicalWidth = 16,
-                    LogicalHeight = 16,
-                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
-                };
-
-                IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusError, attributes);
-
-                return (Image)GelUtilities.GetObjectData(uIObj);
-            }
-        }
+        public static Image ErrorIcon { get; private set; }
 
         public PackageSourcesOptionsControl(IAsyncServiceProvider asyncServiceProvider)
         {
@@ -116,13 +76,25 @@ namespace NuGet.PackageManagement.UI.Options
 
             UpdateDPI();
 
-            AllowInsecureConnectionsWarningIcon.Image = WarningIcon;
-            AllowInsecureConnectionsWarning.Text = Resources.Warning_HTTPSource;
-            AllowInsecureConnectionsWarning.AutoSize = true;
+            ThreadHelper.ThrowIfNotOnUIThread();
 
-            HttpErrorIcon.Image = ErrorIcon;
-            HttpError.Text = Resources.Error_HttpSource_Single;
-            HttpError.AutoSize = true;
+            ImageAttributes attributes = new ImageAttributes
+            {
+                StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
+                ImageType = (uint)_UIImageType.IT_Bitmap,
+                Format = (uint)_UIDataFormat.DF_WinForms,
+                LogicalWidth = 16,
+                LogicalHeight = 16,
+                Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
+            };
+
+            IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
+
+            WarningIcon = (Image)GelUtilities.GetObjectData(uIObj);
+
+            uIObj = ImageService.GetImage(KnownMonikers.StatusError, attributes);
+
+            ErrorIcon = (Image)GelUtilities.GetObjectData(uIObj);
         }
 
         private void UpdateDPI()
@@ -771,28 +743,27 @@ namespace NuGet.PackageManagement.UI.Options
             var source = new PackageSource(selectedSource.Source, selectedSource.Name);
             source.AllowInsecureConnections = selectedSource.AllowInsecureConnections;
 
-            // Error if the selected source is http, and the AllowInsecureConnections for this source is set to false. 
+            HttpErrorOrWarning.Visible = true;
+            HttpErrorOrWarningIcon.Visible = true;
+            configurationLink.Visible = true;
+
             if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
             {
-                HttpError.Visible = true;
-                HttpErrorIcon.Visible = true;
+                // Error if the selected source is http, and the AllowInsecureConnections for this source is set to false. 
+                HttpErrorOrWarningIcon.Image = ErrorIcon;
+                HttpErrorOrWarning.Text = Resources.Error_HttpSource_Single;
+            }
+            else if (source.AllowInsecureConnections)
+            {
+                // Warn if AllowInsecureConnections for this source is set to true.
+                HttpErrorOrWarningIcon.Image = WarningIcon;
+                HttpErrorOrWarning.Text = Resources.Warning_HTTPSource;
             }
             else
             {
-                HttpError.Visible = false;
-                HttpErrorIcon.Visible = false;
-            }
-
-            // Warn if AllowInsecureConnections for this source is set to true. 
-            if (source.AllowInsecureConnections)
-            {
-                AllowInsecureConnectionsWarning.Visible = true;
-                AllowInsecureConnectionsWarningIcon.Visible = true;
-            }
-            else
-            {
-                AllowInsecureConnectionsWarning.Visible = false;
-                AllowInsecureConnectionsWarningIcon.Visible = false;
+                HttpErrorOrWarning.Visible = false;
+                HttpErrorOrWarningIcon.Visible = false;
+                configurationLink.Visible = false;
             }
         }
     }

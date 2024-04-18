@@ -1393,6 +1393,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Common NuGet configurations; How settings are applied..
+        /// </summary>
+        public static string Link_configuration {
+            get {
+                return ResourceManager.GetString("Link_configuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Don&apos;t show again.
         /// </summary>
         public static string Link_DoNotShowAgain {

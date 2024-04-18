@@ -1045,4 +1045,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Warn_Adding_HttpSource" xml:space="preserve">
     <value>You are attempting to add an HTTP source, which is insecure. Would you like to proceed with adding this insecure HTTP source?</value>
   </data>
+  <data name="Link_configuration" xml:space="preserve">
+    <value>Common NuGet configurations; How settings are applied.</value>
+  </data>
 </root>
