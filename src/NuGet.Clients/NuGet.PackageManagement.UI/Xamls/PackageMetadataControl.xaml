@@ -102,7 +102,7 @@
                     Grid.Row="1"
                     Height="1"
                     Panel.ZIndex="-1"
-                    Margin="0,0,0,0"
+                    Margin="0,1,0,0"
                     HorizontalAlignment="Stretch"
                     Fill="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
                 <ContentPresenter
@@ -138,10 +138,45 @@
       x:Name="tabPackageDetails"
       Tag="{x:Static nuget:ItemFilter.All}"
       Header="{x:Static nuget:Resources.Label_PackageDetails}">
-      <nuget:PackageMetadataDescriptionControl
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-        DataContext="{Binding PackageMetadata}"
-        Margin="0,12,0,0"/>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="auto"/>
+          <RowDefinition Height="auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!-- vulnerabilities info -->
+        <Border
+          Grid.Row="0"
+          BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+          Visibility="{Binding Path=IsPackageVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
+          BorderThickness="0,0,0,1">
+          <Grid>
+            <nuget:VulnerabilitiesControl
+              x:Name="_vulnerabilitiesControl"
+              DataContext="{Binding}"
+              AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageVulnerabilities}" />
+          </Grid>
+        </Border>
+
+        <!-- deprecation info -->
+        <Border
+          Grid.Row="1"
+          BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+          Visibility="{Binding Path=IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
+          BorderThickness="0,0,0,1">
+          <Grid>
+            <nuget:DeprecationControl
+              x:Name="_deprecationControl"
+              DataContext="{Binding}"
+              AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageDeprecation}" />
+          </Grid>
+        </Border>
+        <nuget:PackageMetadataDescriptionControl
+          Grid.Row="2"
+          AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
+          DataContext="{Binding PackageMetadata}"
+          Margin="0,12,0,0"/>
+      </Grid>
     </TabItem>
   </TabControl>
 </UserControl>
