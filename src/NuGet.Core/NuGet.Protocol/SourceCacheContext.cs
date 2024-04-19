@@ -30,6 +30,8 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public bool NoCache { get; set; }
 
+        // TODO: Put a switch here to disable Owner lookup from sources?
+
         /// <summary>
         /// If set, the global disk cache will not be written to.
         /// </summary>

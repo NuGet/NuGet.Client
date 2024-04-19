@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as FeedSearchContinuationToken ?? throw new InvalidOperationException(Strings.Exception_InvalidContinuationToken);
 
             var searchResource = await sourceRepository.GetResourceAsync<PackageSearchResource>(cancellationToken);
-            var ownerDetailsUriResource = sourceRepository.GetResource<OwnerDetailsUriTemplateResourceV3>(cancellationToken);
+            //var ownerDetailsUriResource = await sourceRepository.GetResourceAsync<OwnerDetailsUriTemplateResourceV3>(cancellationToken);
 
             IEnumerable<IPackageSearchMetadata> searchResults = await searchResource?.SearchAsync(
                 searchToken.SearchString,
@@ -55,6 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
             //TODO: Generate and store URLs.
             if (ownerDetailsUriResource is not null)
             {
+                //Create a dictionary??? Map owners to their URLs?
                 foreach (var searchResult in searchResults)
                 {
                     foreach (var owner in searchResult.OwnersList)

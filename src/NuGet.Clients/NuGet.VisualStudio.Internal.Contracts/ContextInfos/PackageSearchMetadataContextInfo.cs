@@ -29,7 +29,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public DateTimeOffset? Published { get; internal set; }
         public Uri? ReportAbuseUrl { get; internal set; }
         public Uri? PackageDetailsUrl { get; internal set; }
-        public Uri? OwnerDetailsUrl { get; internal set; }
+        public Uri? OwnerDetailsUrl { get; internal set; } //TODO: make this a dictionary or a tuple?
         public bool RequireLicenseAcceptance { get; internal set; }
         public string? Summary { get; internal set; }
         public bool PrefixReserved { get; internal set; }
@@ -63,7 +63,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 LicenseMetadata = packageSearchMetadata.LicenseMetadata,
                 IsRecommended = isRecommended,
                 RecommenderVersion = recommenderVersion,
-                OwnersList = packageSearchMetadata.OwnersList?.ToImmutableList(),
+                OwnersList = packageSearchMetadata.OwnersList?.ToImmutableList(), //TODO: change to tuple with owner URI when source(s) support that?
                 Owners = packageSearchMetadata.Owners,
                 ProjectUrl = packageSearchMetadata.ProjectUrl,
                 Published = packageSearchMetadata.Published,
