@@ -135,10 +135,10 @@
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(OutputPath)\**\NuGet*.resources.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)\publish\**\NuGet*.resources.dll">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\NuGet*.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)\publish\NuGet*.dll">
         <PackagePath>$(PackagePathDir)</PackagePath> <!-- Do I need non-NuGet assemblies?-->
       </TfmSpecificPackageFile>
     </ItemGroup>
