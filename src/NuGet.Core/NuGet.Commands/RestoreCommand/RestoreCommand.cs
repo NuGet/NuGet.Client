@@ -318,8 +318,11 @@ namespace NuGet.Commands
                 {
                     using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
+                        long originalTimeMs = -1;
+                        long prototypeTimeMs = -1;
                         if ((_usePrototype == 0) || (_usePrototype == 2))
                         {
+                            Stopwatch sw = Stopwatch.StartNew();
                             // Restore
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
                             graphs = await ExecuteRestoreAsync(
@@ -329,19 +332,23 @@ namespace NuGet.Commands
                             token,
                             telemetry);
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                            originalTimeMs = sw.ElapsedMilliseconds;
                         }
                         if ((_usePrototype == 1) || (_usePrototype == 2))
                         {
+                            Stopwatch sw = Stopwatch.StartNew();
                             // Restore using the prototype
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
-                            prototypeGraphs = await ExecuteRestoreAsync(
+                            prototypeGraphs = await ExecuteSubProtoTypeRestoreAsync(
                             _request.DependencyProviders.GlobalPackages,
                             _request.DependencyProviders.FallbackPackageFolders,
                             contextForProject,
                             token,
                             telemetry);
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                            prototypeTimeMs = sw.ElapsedMilliseconds;
                         }
+                        _logger.LogMinimal($"BSW_Rt: orig={originalTimeMs}, prototype={prototypeTimeMs}, {_request.Project.FilePath}");
                         if (_usePrototype == 1)
                         {
                             _logger.LogMinimal($"***** Using SubProtoNug for {_request.Project.FilePath}");
@@ -1359,6 +1366,172 @@ namespace NuGet.Commands
             return allGraphs;
         }
 
+        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteSubProtoTypeRestoreAsync(
+            NuGetv3LocalRepository userPackageFolder,
+            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
+            RemoteWalkContext context,
+            CancellationToken token,
+            TelemetryActivity telemetryActivity)
+        {
+            if (_request.Project.TargetFrameworks.Count == 0)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1001, message));
+
+                _success = false;
+                return Enumerable.Empty<RestoreTargetGraph>();
+            }
+            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
+
+            // Get external project references
+            // If the top level project already exists, update the package spec provided
+            // with the RestoreRequest spec.
+            var updatedExternalProjects = GetProjectReferences();
+
+            // Load repositories
+            // the external project provider is specific to the current restore project
+            context.ProjectLibraryProviders.Add(
+                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
+
+            var remoteWalker = new RemoteDependencyWalker(context);
+
+            var projectRange = new LibraryRange()
+            {
+                Name = _request.Project.Name,
+                VersionRange = new VersionRange(_request.Project.Version),
+                TypeConstraint = LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject
+            };
+
+            // Resolve dependency graphs
+            var allGraphs = new List<RestoreTargetGraph>();
+            var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
+            var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
+            var hasSupports = _request.Project.RuntimeGraph.Supports.Count > 0;
+
+            var projectRestoreRequest = new ProjectRestoreRequest(
+                _request,
+                _request.Project,
+                _request.ExistingLockFile,
+                _logger)
+            {
+                ParentId = _operationId
+            };
+
+            var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
+
+            Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
+            bool failed = false;
+            using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
+            {
+                try
+                {
+                    result = await projectRestoreCommand.TryRestoreAsync(
+                        projectRange,
+                        projectFrameworkRuntimePairs,
+                        userPackageFolder,
+                        fallbackPackageFolders,
+                        remoteWalker,
+                        context,
+                        forceRuntimeGraphCreation: hasSupports,
+                        token: token,
+                        telemetryActivity: telemetryActivity,
+                        telemetryPrefix: string.Empty);
+                }
+                catch (FatalProtocolException)
+                {
+                    failed = true;
+                }
+            }
+
+            if (!failed)
+            {
+                var success = result.Item1;
+                allGraphs.AddRange(result.Item2);
+                _success = success;
+            }
+            else
+            {
+                _success = false;
+                // When we fail to create the graphs, we want to write a `target` for each target framework
+                // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
+                foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                {
+                    allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                }
+            }
+
+            // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
+            foreach (var profile in _request.Project.RuntimeGraph.Supports)
+            {
+                var runtimes = result.Item3;
+
+                CompatibilityProfile compatProfile;
+                if (profile.Value.RestoreContexts.Any())
+                {
+                    // Just use the contexts from the project definition
+                    compatProfile = profile.Value;
+                }
+                else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                {
+                    // No definition of this profile found, so just continue to the next one
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
+
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
+                    continue;
+                }
+
+                foreach (var pair in compatProfile.RestoreContexts)
+                {
+                    _logger.LogDebug($" {profile.Value.Name} -> +{pair}");
+                    _request.CompatibilityProfiles.Add(pair);
+                }
+            }
+
+            // Walk additional runtime graphs for supports checks
+            if (_success && _request.CompatibilityProfiles.Any())
+            {
+                Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> compatibilityResult = null;
+                using (telemetryActivity.StartIndependentInterval(CreateAdditionalRestoreTargetGraphDuration))
+                {
+                    compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
+                    projectRange,
+                    _request.CompatibilityProfiles,
+                    userPackageFolder,
+                    fallbackPackageFolders,
+                    remoteWalker,
+                    context,
+                    forceRuntimeGraphCreation: true,
+                    token: token,
+                    telemetryActivity: telemetryActivity,
+                    telemetryPrefix: "Additional-");
+                }
+
+                _success = compatibilityResult.Item1;
+
+                // TryRestore may contain graphs that are already in allGraphs if the
+                // supports section contains the same TxM as the project framework.
+                var currentGraphs = new HashSet<KeyValuePair<NuGetFramework, string>>(
+                    allGraphs.Select(graph => new KeyValuePair<NuGetFramework, string>(
+                        graph.Framework,
+                        graph.RuntimeIdentifier))
+                    );
+
+                foreach (var graph in compatibilityResult.Item2)
+                {
+                    var key = new KeyValuePair<NuGetFramework, string>(
+                        graph.Framework,
+                        graph.RuntimeIdentifier);
+
+                    if (currentGraphs.Add(key))
+                    {
+                        allGraphs.Add(graph);
+                    }
+                }
+            }
+
+
+            return allGraphs;
+        }
         private List<ExternalProjectReference> GetProjectReferences()
         {
             // External references
