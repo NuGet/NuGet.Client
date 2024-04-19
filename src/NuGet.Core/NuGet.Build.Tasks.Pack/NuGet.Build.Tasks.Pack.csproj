@@ -78,15 +78,6 @@
     </MSBuild>
   </Target>
 
-  <Target Name="ILMergeNuGetPack"
-          Condition="'$(TargetFramework)' != ''">
-    <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)publish\*.dll" Exclude="$(OutputPath)publish\*Pack.dll" />
-    </ItemGroup>
-    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPack)" Importance="High" />
-  </Target>
-
-
   <Target Name="ILMergeNuGetPackResources"
           Outputs="$(PathToMergedNuGetPackResource)"
           Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
@@ -94,6 +85,14 @@
       <ResourceArtifacts Include="$(OutputPath)$(CurrentCulture)NuGet*.resources.dll" Exclude="$(OutputPath)$(CurrentCulture)*Pack.resources.dll" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPackResource)" Importance="High" />
+  </Target>
+
+  <Target Name="ILMergeNuGetPack"
+          Condition="'$(TargetFramework)' != ''">
+    <ItemGroup>
+      <BuildArtifacts Include="$(OutputPath)publish\*.dll" Exclude="$(OutputPath)publish\*Pack.dll" />
+    </ItemGroup>
+    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPack)" Importance="High" />
   </Target>
 
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
@@ -105,11 +104,11 @@
 
   <Target Name="_GetDllsInOutputDirectory" Returns="@(DllsInOutputDir)">
     <ItemGroup>
-      <DllsInOutputDir Include="$(OutputPath)NuGet*.dll" KeepDuplicates="false">
+      <DllsInOutputDir Include="$(OutputPath)\publish\NuGet*.dll" KeepDuplicates="false">
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsInOutputDir>
-      <DllsInOutputDir Include="$(OutputPath)NuGet*.xml" KeepDuplicates="false"> <!-- Do I need the other-->
+      <DllsInOutputDir Include="$(OutputPath)\publish\NuGet*.xml" KeepDuplicates="false"> <!-- Do I need the other-->
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
     </ItemGroup>
@@ -118,13 +117,13 @@
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
   <Target Name="GetIlmergeSymbolOutput" Returns="@(SymbolsToIndex)">
     <ItemGroup>
-      <SymbolsToIndex Include="$(OutputPath)*.pdb" KeepDuplicates="false" />
+      <SymbolsToIndex Include="$(OutputPath)\publish\*.pdb" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
 
   <Target Name="GetFinalBuildOutput" Returns="@(DllsToIndex)">
     <ItemGroup>
-      <DllsToIndex Include="$(OutputPath)NuGet.Build.Tasks.Pack.dll"/>
+      <DllsToIndex Include="$(OutputPath)\publish\NuGet.Build.Tasks.Pack.dll"/>
     </ItemGroup>
   </Target>
 
