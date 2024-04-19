@@ -200,13 +200,13 @@
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
   <Target Name="GetIlmergeSymbolOutput" Returns="@(SymbolsToIndex)">
     <ItemGroup>
-      <SymbolsToIndex Include="$(OutputPath)ilmerge\*.pdb" KeepDuplicates="false" />
+      <SymbolsToIndex Include="$(OutputPath)*.pdb" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
 
   <Target Name="GetFinalBuildOutput" Returns="@(DllsToIndex)">
     <ItemGroup>
-      <DllsToIndex Include="$(OutputPath)ilmerge\NuGet.Build.Tasks.Pack.dll"/>
+      <DllsToIndex Include="$(OutputPath)NuGet.Build.Tasks.Pack.dll"/>
     </ItemGroup>
   </Target>
 
