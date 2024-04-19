@@ -37,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ILMerge" PrivateAssets="All" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " />
     <None Include="$(BuildCommonDirectory)NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
@@ -65,7 +64,7 @@
   <Target
     Name="PublishAndMergePackNupkg"
     AfterTargets="AfterBuild"
-    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(DotNetBuildSourceOnly)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(DotNetBuildSourceOnly)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true' AND '$(IlMergePack)' == 'true' ">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNuGetPack" />
   </Target>
 
