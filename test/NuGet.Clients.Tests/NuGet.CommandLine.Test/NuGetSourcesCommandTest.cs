@@ -166,7 +166,7 @@ namespace NuGet.CommandLine.Test
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
                 string expectedError = string.Format(CultureInfo.CurrentCulture,
-                        _httpErrorSingleShort,
+                        _httpErrorSingle,
                         "update source",
                         source);
                 var nugetConfig = string.Format(
