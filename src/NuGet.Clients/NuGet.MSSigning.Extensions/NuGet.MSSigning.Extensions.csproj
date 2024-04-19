@@ -11,6 +11,8 @@
     <GetSigningInputsDependsOn>GetSigningInputsCustom</GetSigningInputsDependsOn>
     <GetSymbolsToIndexDependsOn>GetSymbolsToIndexCustom</GetSymbolsToIndexDependsOn>
     <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <HighEntropyVA>true</HighEntropyVA>
   </PropertyGroup>
 
   <ItemGroup>

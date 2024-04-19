@@ -14,6 +14,8 @@
     <OutputType>Exe</OutputType>
     <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
     <ComVisible>false</ComVisible>
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <HighEntropyVA>true</HighEntropyVA>
     <!-- Pack properties-->
     <PackProject>true</PackProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
