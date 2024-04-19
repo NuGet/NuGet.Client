@@ -17,7 +17,6 @@
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <DepsFileGenerationMode>old</DepsFileGenerationMode>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
-    <SkipILMerge>true</SkipILMerge>
     </PropertyGroup>
 
   <ItemGroup>
@@ -65,7 +64,7 @@
   <Target
     Name="PublishAndMergePackNupkg"
     AfterTargets="AfterBuild"
-    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(SkipILMerge)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNuGetPack" />
   </Target>
 
@@ -79,103 +78,25 @@
     </MSBuild>
   </Target>
 
-  <Target Name="GetILMergePlatformArg" DependsOnTargets="ResolveReferences">
-    <ItemGroup>
-      <ILMergeMscorlibReferencePath Include="@(ReferencePath)" Condition="'%(ReferencePath.Filename)' == 'mscorlib'" />
-    </ItemGroup>
-    <PropertyGroup>
-      <ILMergePlatformDir>@(IlmergeMscorlibReferencePath->'%(RootDir)%(Directory)')</ILMergePlatformDir>
-      <ILMergePlatformArg>/targetplatform:v4,"$(ILMergePlatformDir.TrimEnd('\/'))"</ILMergePlatformArg>
-    </PropertyGroup>
-  </Target>
 
-  <Target Name="DetermineILMergeNuGetPackInputsOutputs">
-    <PropertyGroup>
-      <PathToBuiltNuGetPack>$(OutputPath)NuGet.Build.Tasks.Pack.dll</PathToBuiltNuGetPack>
-      <PathToMergedNuGetPack>$(OutputPath)ilmerge\NuGet.Build.Tasks.Pack.dll</PathToMergedNuGetPack>
-    </PropertyGroup>
+  <Target Name="ILMergeNuGetPack"
+          Inputs="@(BuildArtifacts)"
+          Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)publish\*.dll" Exclude="$(OutputPath)publish\*Pack.dll" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPack)" Importance="High" />
+
   </Target>
 
-  <Target Name="ILMergeNuGetPack"
-          DependsOnTargets="GetILMergePlatformArg;DetermineILMergeNuGetPackInputsOutputs"
-          Inputs="$(PathToBuiltNuGetPack);@(BuildArtifacts)"
-          Outputs="$(PathToMergedNuGetPack)"
-          Condition="'$(TargetFramework)' != '' AND '$(SkipILMerge)' != 'true' ">
-    <PropertyGroup>
-      <ILMergeResultDir>$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetPack)))</ILMergeResultDir>
-    </PropertyGroup>
 
-    <MakeDir Directories="$(ILMergeResultDir)" />
-
-    <PropertyGroup>
-      <IlmergeCommand>$(ILMergeConsolePath) ^
-        /out:$(PathToMergedNuGetPack) ^
-        $(ILMergePlatformArg) ^
-        /allowDup ^
-        /lib:$(OutputPath)publish ^
-        /internalize ^
-        /xmldocs ^
-        /log:$(ILMergeResultDir)IlMergeLog.txt</IlmergeCommand>
-      <IlmergeCommand Condition="'$(SkipSigning)' != 'true' And Exists($(AssemblyOriginatorKeyFile))">$(IlmergeCommand) ^
-        /delaysign ^
-        /keyfile:$(AssemblyOriginatorKeyFile)</IlmergeCommand>
-      <IlmergeCommand>$(IlmergeCommand) ^
-        $(PathToBuiltNuGetPack) ^
-        @(BuildArtifacts, ' ')</IlmergeCommand>
-      <IlmergeCommand Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">$(IlmergeCommand) ^
-        /lib:$(PkgMicrosoft_Build_Utilities_Core)\lib\netstandard2.0 ^
-        /lib:$(PkgMicrosoft_Build_Tasks_Core)\lib\netstandard2.0 ^
-        /lib:$(PkgMicrosoft_Build_Framework)\lib\netstandard2.0
-      </IlmergeCommand>
-
-    </PropertyGroup>
-    <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
-  </Target>
-
-  <Target Name="DetermineILMergeNuGetPackResourcesInputsOutputs">
-    <PropertyGroup>
-      <PathToBuiltNuGetPackResource>$(OutputPath)$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll</PathToBuiltNuGetPackResource>
-      <PathToMergedNuGetPackResource>$(OutputPath)ilmerge\$(CurrentCulture)NuGet.Build.Tasks.Pack.resources.dll</PathToMergedNuGetPackResource>
-    </PropertyGroup>
+  <Target Name="ILMergeNuGetPackResources"
+          Outputs="$(PathToMergedNuGetPackResource)"
+          Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
     <ItemGroup>
       <ResourceArtifacts Include="$(OutputPath)$(CurrentCulture)NuGet*.resources.dll" Exclude="$(OutputPath)$(CurrentCulture)*Pack.resources.dll" />
     </ItemGroup>
     <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPackResource)" Importance="High" />
-  </Target>
-
-  <Target Name="ILMergeNuGetPackResources"
-          DependsOnTargets="GetILMergePlatformArg;DetermineILMergeNuGetPackResourcesInputsOutputs"
-          Inputs="$(PathToBuiltNuGetPackResource);@(ResourceArtifacts)"
-          Outputs="$(PathToMergedNuGetPackResource)"
-          Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
-    <PropertyGroup>
-      <ILMergeResultDir>$([System.IO.Path]::GetDirectoryName($(PathToMergedNuGetPackResource)))</ILMergeResultDir>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(ILMergeResultDir)" />
-
-    <PropertyGroup>
-      <IlmergeCommand>$(ILMergeConsolePath) ^
-        /out:$(PathToMergedNuGetPackResource) ^
-        $(ILMergePlatformArg) ^
-        /allowDup ^
-        /log ^
-        /lib:$(OutputPath)\publish ^
-        /internalize ^
-        /xmldocs ^
-        /log:$(ILMergeResultDir)IlMergeLogResources.txt</IlmergeCommand>
-      <IlmergeCommand Condition="'$(SkipSigning)' != 'true' And Exists($(AssemblyOriginatorKeyFile))">$(IlmergeCommand) ^
-        /delaysign ^
-        /keyfile:$(AssemblyOriginatorKeyFile)</IlmergeCommand>
-      <IlmergeCommand>$(IlmergeCommand) ^
-        $(PathToBuiltNuGetPackResource) ^
-        @(ResourceArtifacts, ' ')</IlmergeCommand>
-    </PropertyGroup>
-    <Exec Command="$(IlmergeCommand)" ContinueOnError="false" />
   </Target>
 
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
@@ -187,11 +108,11 @@
 
   <Target Name="_GetDllsInOutputDirectory" Returns="@(DllsInOutputDir)">
     <ItemGroup>
-      <DllsInOutputDir Include="$(OutputPath)ilmerge\*.dll" KeepDuplicates="false">
+      <DllsInOutputDir Include="$(OutputPath)NuGet*.dll" KeepDuplicates="false">
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsInOutputDir>
-      <DllsInOutputDir Include="$(OutputPath)ilmerge\*.xml" KeepDuplicates="false">
+      <DllsInOutputDir Include="$(OutputPath)NuGet*.xml" KeepDuplicates="false"> <!-- Do I need the other-->
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
     </ItemGroup>
@@ -213,19 +134,15 @@
   <Target Name="CreatePackNupkg">
     <PropertyGroup>
       <!-- Build from source can't use ILMerge and XPLat builds don't run the ILmerge targets. -->
-      <ILMergeSubpath Condition="'$(SkipILMerge)' != 'true' and '$(IsXPlat)' != 'true'">ilmerge\</ILMergeSubpath>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll" Condition="'$(SkipILMerge)' != 'true'">
+      <TfmSpecificPackageFile Include="$(OutputPath)\**\NuGet*.resources.dll">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
-        <PackagePath>$(PackagePathDir)</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet*.dll" Condition="'$(SkipILMerge)' == 'true'">
-        <PackagePath>$(PackagePathDir)</PackagePath>
+      <TfmSpecificPackageFile Include="$(OutputPath)\NuGet*.dll" Condition="'$(SkipILMerge)' == 'true'">
+        <PackagePath>$(PackagePathDir)</PackagePath> <!-- Do I need non-NuGet assemblies?-->
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
