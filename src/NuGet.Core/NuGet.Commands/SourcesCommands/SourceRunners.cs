@@ -68,7 +68,7 @@ namespace NuGet.Commands
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
                         Strings.Error_HttpSource_Single_Short,
-                        "source add",
+                        "add source",
                         args.Source));
             }
 
@@ -246,9 +246,9 @@ namespace NuGet.Commands
                 existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
                 // If the new source is not http, throw an error
-                if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections && !existingSource.AllowInsecureConnections)
+                if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "source update", args.Source));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "update source", args.Source));
                 }
             }
 
@@ -342,7 +342,7 @@ namespace NuGet.Commands
                     Strings.SourcesCommandSourceEnabledSuccessfully, name));
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "source enable", packageSource.Source));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "enable source", packageSource.Source));
                 }
             }
             else

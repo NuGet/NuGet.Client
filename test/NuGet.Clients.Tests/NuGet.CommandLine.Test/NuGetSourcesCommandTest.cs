@@ -48,7 +48,7 @@ namespace NuGet.CommandLine.Test
                 {
                     string expectedError = string.Format(CultureInfo.CurrentCulture,
                         _httpErrorSingleShort,
-                        "source add",
+                        "add source",
                         source);
                     Assert.Equal(1, result.ExitCode);
                     Assert.Contains(expectedError, result.AllOutput);
@@ -77,7 +77,7 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 string expectedError = string.Format(CultureInfo.CurrentCulture,
                         _httpErrorSingleShort,
-                        "source add",
+                        "add source",
                         source);
                 var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
@@ -140,7 +140,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 if (shouldFail)
                 {
-                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source update", source);
+                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "update source", source);
                     Assert.Equal(1, result.ExitCode);
                     Assert.Contains(expectedError, result.AllOutput);
                 }
@@ -167,7 +167,7 @@ namespace NuGet.CommandLine.Test
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
                 string expectedError = string.Format(CultureInfo.CurrentCulture,
                         _httpErrorSingleShort,
-                        "source add",
+                        "update source",
                         source);
                 var nugetConfig = string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -303,7 +303,7 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source enable", "http://test_source");
+                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "enable source", "http://test_source");
                 Assert.Equal(1, result.ExitCode);
                 Assert.Contains(expectedError, result.AllOutput);
             }
@@ -361,7 +361,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.False(source.IsEnabled, "Source is not disabled");
-                string notExpectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source enable", "http://test_source");
+                string notExpectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "enable source", "http://test_source");
                 Assert.False(result.Output.Contains(notExpectedError));
             }
         }

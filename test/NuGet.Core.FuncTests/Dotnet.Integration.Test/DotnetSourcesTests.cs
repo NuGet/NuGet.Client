@@ -6,6 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -17,8 +18,6 @@ namespace Dotnet.Integration.Test
     public class DotnetSourcesTests
     {
         private readonly DotnetIntegrationTestFixture _fixture;
-        string _httpErrorSingleShort = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere.";
-        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         public DotnetSourcesTests(DotnetIntegrationTestFixture fixture)
         {
@@ -134,7 +133,7 @@ namespace Dotnet.Integration.Test
                     CommandRunnerResult result = _fixture.RunDotnetExpectFailure(workingPath, string.Join(" ", args));
 
                     // Assert
-                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingleShort, "source add", source);
+                    string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single_Short, "add source", source);
                     Assert.Contains(expectedError, result.AllOutput);
 
                 }
@@ -204,7 +203,7 @@ namespace Dotnet.Integration.Test
                     CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
 
                     // Assert
-                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source update", updateSource);
+                    string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "update source", updateSource);
                     Assert.Contains(expectedError, result.AllOutput);
                 }
                 else
@@ -379,7 +378,7 @@ namespace Dotnet.Integration.Test
                 CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
 
                 // Assert
-                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "source enable", "http://source.test");
+                string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "enable source", "http://source.test");
                 Assert.Equal(1, result.ExitCode);
                 Assert.Contains(expectedError, result.AllOutput);
             }
