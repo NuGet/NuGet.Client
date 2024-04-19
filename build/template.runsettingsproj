@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Test Containers">
-    <TestContainer Include="$(FileName)" /> 
+    <TestContainer Include="$(FileName)" />
     <InstallationConfiguration Include="$(VsConfigPath)" />
   </ItemGroup>
 
