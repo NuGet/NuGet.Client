@@ -18,9 +18,7 @@ jobs:
 
     steps:
       - task: CredScan@3
-        inputs:
-          toolMajorVersion: "V2"
-
+      
       - task: PoliCheck@2
         inputs:
           inputType: "Basic"
@@ -38,7 +36,7 @@ jobs:
           path: $(Pipeline.Workspace)\symbols\NonRTM
 
       ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
-      - task: APIScan@2
+      - task: APIScan@3
         displayName: Run APIScan
         inputs:
           softwareFolder: $(Pipeline.Workspace)\symbols
