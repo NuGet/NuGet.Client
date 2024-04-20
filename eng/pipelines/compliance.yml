@@ -17,11 +17,11 @@ jobs:
       vmImage: windows-latest
 
     steps:
-      - task: CredScan@2
+      - task: CredScan@3
         inputs:
           toolMajorVersion: "V2"
 
-      - task: PoliCheck@1
+      - task: PoliCheck@2
         inputs:
           inputType: "Basic"
           targetType: "F"
@@ -49,7 +49,7 @@ jobs:
         env:
           AzureServicesAuthConnectionString: runAs=App;AppId=$(ApiScanClientId);TenantId=$(ApiScanTenant);AppKey=$(ApiScanSecret)
 
-      - task: SdtReport@1
+      - task: SdtReport@2
         displayName: "Generate Analysis Report"
         inputs:
           CredScan: true
@@ -57,7 +57,7 @@ jobs:
           APIScan: true
           ToolLogsNotFoundAction: "Standard"
 
-      - task: TSAUpload@1
+      - task: TSAUpload@2
         displayName: "Upload to TSA"
         inputs:
           tsaVersion: "TsaV2"
@@ -82,7 +82,7 @@ jobs:
           uploadTSLint: false
           uploadAsync: true
 
-      - task: PublishSecurityAnalysisLogs@2
+      - task: PublishSecurityAnalysisLogs@3
         displayName: "Publish CodeAnalysis Logs"
         inputs:
           ArtifactName: "CodeAnalysisLogs"
