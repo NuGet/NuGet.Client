@@ -12,8 +12,6 @@ steps:
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: CredScan@3
-  inputs:
-    toolMajorVersion: "V2"
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
