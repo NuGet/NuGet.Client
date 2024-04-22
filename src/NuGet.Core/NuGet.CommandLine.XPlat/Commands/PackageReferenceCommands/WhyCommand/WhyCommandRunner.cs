@@ -133,7 +133,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 LockFileTarget target = targets.FirstOrDefault(f => f.TargetFramework.GetShortFolderName() == frameworkPackage.Framework);
 
-                if (target != null)
+                if (target != default)
                 {
                     // get all the top-level packages for the framework
                     IEnumerable<InstalledPackageReference> frameworkTopLevelPackages = frameworkPackage.TopLevelPackages;
@@ -275,7 +275,7 @@ namespace NuGet.CommandLine.XPlat
                 // get all dependencies for the current package
                 var dependencies = packageLibraries?.FirstOrDefault(i => i.Name == currentPackageId)?.Dependencies;
 
-                if (dependencies?.Count != 0)
+                if (dependencies?.Count > 0)
                 {
                     // push all the dependencies onto the stack
                     foreach (var dependency in dependencies)
@@ -475,7 +475,9 @@ namespace NuGet.CommandLine.XPlat
             hashCodeCombiner.AddUnorderedSequence(graph);
             return hashCodeCombiner.CombinedHash;
         }
-
+        /// <summary>
+        /// Represents a node in the package dependency graph.
+        /// </summary>
         private class DependencyNode
         {
             public string Id { get; set; }
