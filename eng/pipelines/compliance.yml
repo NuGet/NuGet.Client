@@ -36,7 +36,7 @@ jobs:
           path: $(Pipeline.Workspace)\symbols\NonRTM
 
       ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
-      - task: APIScan@3
+      - task: APIScan@2
         displayName: Run APIScan
         inputs:
           softwareFolder: $(Pipeline.Workspace)\symbols
