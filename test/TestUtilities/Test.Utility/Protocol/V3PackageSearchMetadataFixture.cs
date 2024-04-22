@@ -113,8 +113,6 @@ namespace NuGet.Test.Utility
             }
 
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-
-            Uri IPackageSearchMetadata.OwnerDetailsUrl => null;
         }
     }
 }

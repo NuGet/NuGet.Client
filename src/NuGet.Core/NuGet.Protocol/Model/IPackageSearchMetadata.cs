@@ -27,7 +27,6 @@ namespace NuGet.Protocol.Core.Types
         Uri ReportAbuseUrl { get; }
         Uri PackageDetailsUrl { get; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("ApiDesign", "RS0016:Add public types and members to the declared API", Justification = "<Pending>")]
-        Uri OwnerDetailsUrl { get; }
         DateTimeOffset? Published { get; }
         IReadOnlyList<string> OwnersList { get; }
         string Owners { get; }

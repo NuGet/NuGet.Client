@@ -102,7 +102,6 @@ namespace NuGet.Protocol.Core.Types
                 ReadmeUrl = _metadata.ReadmeUrl,
                 ReportAbuseUrl = _metadata.ReportAbuseUrl,
                 PackageDetailsUrl = _metadata.PackageDetailsUrl,
-                OwnerDetailsUrl = _metadata.OwnerDetailsUrl,
                 RequireLicenseAcceptance = _metadata.RequireLicenseAcceptance,
                 Summary = _metadata.Summary,
                 Tags = _metadata.Tags,

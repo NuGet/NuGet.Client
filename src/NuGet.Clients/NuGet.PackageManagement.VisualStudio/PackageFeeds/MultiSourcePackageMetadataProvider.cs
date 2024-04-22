@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
@@ -15,6 +14,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Resources;
 using NuGet.Versioning;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Implements a consolidated metadata provider for multiple package sources 
     /// with optional local repository as a fallback metadata source.
     /// </summary>
-    public sealed class MultiSourcePackageMetadataProvider : IPackageMetadataProvider
+    public sealed class MultiSourcePackageMetadataProvider : IPackageMetadataProvider, IOwnerDetailsUriService
     {
         private readonly ReadOnlyCollection<SourceRepository> _sourceRepositories;
         private readonly SourceRepository _localRepository;
@@ -76,19 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetPackageMetadataAsync(identity, tasks, cancellationToken);
         }
 
-        private OwnerDetailsUriTemplateResourceV3 _ownerDetailsUriTemplateResourceV3;
-        public OwnerDetailsUriTemplateResourceV3 OwnerDetailsUriTemplateResourceV3
-        {
-            get
-            {
-                if (SupportsKnownOwners)
-                {
-                    return _ownerDetailsUriTemplateResourceV3;
-                }
-
-                return null;
-            }
-        }
+        private OwnerDetailsUriTemplateResourceV3 _ownerDetailsUriTemplateResource;
 
         private bool? _supportsKnownOwners;
         public bool SupportsKnownOwners
@@ -103,9 +91,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Currently, the Owner Details resource is only utilized for a single selected package source.
                 if (_sourceRepositories.Count == 1)
                 {
-                    OwnerDetailsUriTemplateResourceV3 ownerDetailsUriTemplateResource = _sourceRepositories[0].GetResource<OwnerDetailsUriTemplateResourceV3>(CancellationToken.None);
-                    _supportsKnownOwners = ownerDetailsUriTemplateResource != null;
-                    _ownerDetailsUriTemplateResourceV3 = ownerDetailsUriTemplateResource;
+                    _ownerDetailsUriTemplateResource = _sourceRepositories[0].GetResource<OwnerDetailsUriTemplateResourceV3>(CancellationToken.None);
+                    _supportsKnownOwners = _ownerDetailsUriTemplateResource != null;
                 }
                 else
                 {
@@ -115,6 +102,17 @@ namespace NuGet.PackageManagement.VisualStudio
                 return _supportsKnownOwners.Value;
             }
         }
+
+        public Uri GetOwnerDetailsUri(string ownerName)
+        {
+            if (!SupportsKnownOwners)
+            {
+                return null;
+            }
+
+            return _ownerDetailsUriTemplateResource.GetUri(ownerName);
+        }
+
 
         public async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
             PackageIdentity identity,

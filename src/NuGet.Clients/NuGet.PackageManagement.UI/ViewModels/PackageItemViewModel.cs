@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableList<string> OwnersList { get; set; }
 
-        public ImmutableList<KnownOwner> KnownOwners { get; set; }
+        public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; set; }
 
         private string _owner;
 

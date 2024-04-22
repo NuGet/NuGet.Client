@@ -9,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Resources;
 using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.VisualStudio.Internal.Contracts
@@ -27,26 +28,34 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public DateTimeOffset? Published { get; internal set; }
         public IReadOnlyList<string>? OwnersList { get; internal set; }
         public string? Owners { get; internal set; }
-        public bool SupportsKnownOwners { get; internal set; }
+        private IOwnerDetailsUriService? _ownerDetailsUriService;
         public IReadOnlyList<KnownOwner> KnownOwners
         {
             get
             {
-                if (!SupportsKnownOwners || OwnersList is null || OwnersList.Count == 0)
+                if (_ownerDetailsUriService is null
+                    || OwnersList is null
+                    || OwnersList.Count == 0
+                    || _ownerDetailsUriService.SupportsKnownOwners)
                 {
                     return Array.Empty<KnownOwner>();
                 }
 
+                List<KnownOwner> knownOwners = new(capacity: OwnersList.Count);
+
                 foreach (string owner in OwnersList)
                 {
-                    var ownerDetailsUrl = ownerDetailsUriResource.GetUri(owner);
+                    Uri ownerDetailsUrl = _ownerDetailsUriService.GetOwnerDetailsUri(owner);
+                    KnownOwner knownOwner = new(owner, ownerDetailsUrl);
+                    knownOwners.Add(knownOwner);
                 }
+
+                return knownOwners;
             }
         }
 
         public Uri? ReportAbuseUrl { get; internal set; }
         public Uri? PackageDetailsUrl { get; internal set; }
-        public Uri? OwnerDetailsUrl { get; internal set; } //TODO: make this a dictionary or a tuple?
         public bool RequireLicenseAcceptance { get; internal set; }
         public string? Summary { get; internal set; }
         public bool PrefixReserved { get; internal set; }
@@ -66,10 +75,15 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
-            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null, supportsKnownOwners: false);
+            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null, ownerDetailsUriService: null);
         }
 
-        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion, bool supportsKnownOwners)
+        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, IOwnerDetailsUriService? ownerDetailsUriService)
+        {
+            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null, ownerDetailsUriService);
+        }
+
+        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion, IOwnerDetailsUriService? ownerDetailsUriService)
         {
             return new PackageSearchMetadataContextInfo()
             {
@@ -88,10 +102,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Published = packageSearchMetadata.Published,
                 OwnersList = packageSearchMetadata.OwnersList,
                 Owners = packageSearchMetadata.Owners,
-                SupportsKnownOwners = supportsKnownOwners,
+                _ownerDetailsUriService = ownerDetailsUriService,
                 ReportAbuseUrl = packageSearchMetadata.ReportAbuseUrl,
                 PackageDetailsUrl = packageSearchMetadata.PackageDetailsUrl,
-                OwnerDetailsUrl = packageSearchMetadata.OwnerDetailsUrl,
                 PackagePath =
                     (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
                     (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath,

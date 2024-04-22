@@ -296,10 +296,10 @@ namespace NuGet.PackageManagement.UI
                     transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
                 }
 
-                ImmutableList<KnownOwner> knownOwners = null;
-                if (metadataContextInfo.SupportsKnownOwners)
+                ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
+                if (metadataContextInfo.KnownOwners != null)
                 {
-                    knownOwners = metadataContextInfo.owner.Select(owner => new KnownOwner(owner, metadataContextInfo.OwnerDetailsUrl)).ToImmutableList();
+                    knownOwnerViewModels = metadataContextInfo.KnownOwners.Select(knownOwner => new KnownOwnerViewModel(knownOwner)).ToImmutableList();
                 }
 
                 var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
@@ -308,8 +308,7 @@ namespace NuGet.PackageManagement.UI
                     Version = metadataContextInfo.Identity.Version,
                     IconUrl = metadataContextInfo.IconUrl,
                     Owner = metadataContextInfo.Owners,
-                    //OwnersList = metadata.KnownOwners,
-                    //KnownOwners = SupportsKnownOwners ? knownOwners,
+                    KnownOwnerViewModels = knownOwnerViewModels,
                     Author = metadataContextInfo.Authors,
                     DownloadCount = metadataContextInfo.DownloadCount,
                     Summary = metadataContextInfo.Summary,

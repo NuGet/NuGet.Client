@@ -29,6 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private SearchFilter? _lastSearchFilter;
         private readonly IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
         private readonly IPackageMetadataProvider _packageMetadataProvider;
+        private readonly IOwnerDetailsUriService? _ownerDetailsUriService;
         private readonly MemoryCache? _inMemoryObjectCache;
 
         private readonly CacheItemPolicy _cacheItemPolicy = new CacheItemPolicy
@@ -52,6 +53,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _recommenderFeed = recommenderFeed;
             _packageSources = packageSources;
             _packageMetadataProvider = packageMetadataProvider;
+            _ownerDetailsUriService = _packageMetadataProvider as IOwnerDetailsUriService;
             _inMemoryObjectCache = searchCache;
         }
 
@@ -59,7 +61,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                return _packageMetadataProvider.SupportsKnownOwners;
+                if (_packageMetadataProvider is IOwnerDetailsUriService ownerDetailsUriService)
+                {
+                    return ownerDetailsUriService.SupportsKnownOwners;
+                }
+
+                return false;
             }
         }
 
@@ -92,7 +99,8 @@ namespace NuGet.PackageManagement.VisualStudio
                             recommendedFeedResultItem,
                             isRecommended: true,
                             recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo,
-                            SupportsKnownOwners));
+                            _ownerDetailsUriService
+                            ));
                 }
 
                 foreach (IPackageSearchMetadata mainFeedResultItem in mainFeedResult.Items)
@@ -100,7 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (!recommendedIds.Contains(mainFeedResultItem.Identity.Id))
                     {
                         CacheBackgroundData(mainFeedResultItem, filter.IncludePrerelease);
-                        recommendedPackageSearchMetadataContextInfo.Add(PackageSearchMetadataContextInfo.Create(mainFeedResultItem));
+                        recommendedPackageSearchMetadataContextInfo.Add(PackageSearchMetadataContextInfo.Create(mainFeedResultItem, _ownerDetailsUriService));
                     }
                 }
 
@@ -115,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
             foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
             {
                 CacheBackgroundData(packageSearchMetadata, filter.IncludePrerelease);
-                packageSearchMetadataContextInfoCollection.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
+                packageSearchMetadataContextInfoCollection.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata, _ownerDetailsUriService));
             }
 
             return new SearchResultContextInfo(

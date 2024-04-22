@@ -183,7 +183,7 @@
           <!-- author and download count -->
           <nuget:AuthorAndDownloadCount
                         Margin="5,4,0,0"
-                        KnownOwners="{Binding KnownOwners, Mode=OneTime}"
+                        KnownOwnerViewModels="{Binding KnownOwnerViewModels, Mode=OneTime}"
                         Author="{Binding ByAuthor, Mode=OneTime}"
                         DownloadCount="{Binding DownloadCount}" />
         </StackPanel>
