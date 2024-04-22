@@ -15,6 +15,8 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public interface IPackageMetadataProvider
     {
+        bool SupportsKnownOwners { get; }
+
         /// <summary>
         /// Retrieves a package metadata of a specific version along with list of all available versions
         /// </summary>

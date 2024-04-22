@@ -55,6 +55,14 @@ namespace NuGet.PackageManagement.VisualStudio
             _inMemoryObjectCache = searchCache;
         }
 
+        public bool SupportsKnownOwners
+        {
+            get
+            {
+                return _packageMetadataProvider.SupportsKnownOwners;
+            }
+        }
+
         public async ValueTask<SearchResultContextInfo> SearchAsync(string searchText, SearchFilter filter, bool useRecommender, CancellationToken cancellationToken)
         {
             SearchResult<IPackageSearchMetadata>? mainFeedResult = await _mainFeed.SearchAsync(searchText, filter, cancellationToken);
@@ -83,7 +91,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         PackageSearchMetadataContextInfo.Create(
                             recommendedFeedResultItem,
                             isRecommended: true,
-                            recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo));
+                            recommenderVersion: (_recommenderFeed as RecommenderPackageFeed)?.VersionInfo,
+                            SupportsKnownOwners));
                 }
 
                 foreach (IPackageSearchMetadata mainFeedResultItem in mainFeedResult.Items)

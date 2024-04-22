@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -13,7 +13,7 @@ using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    public sealed class PackageSearchMetadataContextInfo
+    public sealed class PackageSearchMetadataContextInfo : IPackageSearchMetadata
     {
         public PackageIdentity? Identity { get; internal set; }
         public string? Title { get; internal set; }
@@ -23,10 +23,27 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string? Tags { get; internal set; }
         public Uri? LicenseUrl { get; internal set; }
         public Uri? ReadmeUrl { get; internal set; }
-        public ImmutableList<string>? OwnersList { get; internal set; }
-        public string? Owners { get; internal set; }
         public Uri? ProjectUrl { get; internal set; }
         public DateTimeOffset? Published { get; internal set; }
+        public IReadOnlyList<string>? OwnersList { get; internal set; }
+        public string? Owners { get; internal set; }
+        public bool SupportsKnownOwners { get; internal set; }
+        public IReadOnlyList<KnownOwner> KnownOwners
+        {
+            get
+            {
+                if (!SupportsKnownOwners || OwnersList is null || OwnersList.Count == 0)
+                {
+                    return Array.Empty<KnownOwner>();
+                }
+
+                foreach (string owner in OwnersList)
+                {
+                    var ownerDetailsUrl = ownerDetailsUriResource.GetUri(owner);
+                }
+            }
+        }
+
         public Uri? ReportAbuseUrl { get; internal set; }
         public Uri? PackageDetailsUrl { get; internal set; }
         public Uri? OwnerDetailsUrl { get; internal set; } //TODO: make this a dictionary or a tuple?
@@ -43,12 +60,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; internal set; }
         public IReadOnlyCollection<PackageIdentity>? TransitiveOrigins { get; internal set; }
 
+        IEnumerable<PackageDependencyGroup> IPackageSearchMetadata.DependencySets => throw new NotImplementedException();
+
+        IEnumerable<PackageVulnerabilityMetadata> IPackageSearchMetadata.Vulnerabilities => throw new NotImplementedException();
+
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
-            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null);
+            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null, supportsKnownOwners: false);
         }
 
-        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion)
+        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion, bool supportsKnownOwners)
         {
             return new PackageSearchMetadataContextInfo()
             {
@@ -63,10 +84,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 LicenseMetadata = packageSearchMetadata.LicenseMetadata,
                 IsRecommended = isRecommended,
                 RecommenderVersion = recommenderVersion,
-                OwnersList = packageSearchMetadata.OwnersList?.ToImmutableList(), //TODO: change to tuple with owner URI when source(s) support that?
-                Owners = packageSearchMetadata.Owners,
                 ProjectUrl = packageSearchMetadata.ProjectUrl,
                 Published = packageSearchMetadata.Published,
+                OwnersList = packageSearchMetadata.OwnersList,
+                Owners = packageSearchMetadata.Owners,
+                SupportsKnownOwners = supportsKnownOwners,
                 ReportAbuseUrl = packageSearchMetadata.ReportAbuseUrl,
                 PackageDetailsUrl = packageSearchMetadata.PackageDetailsUrl,
                 OwnerDetailsUrl = packageSearchMetadata.OwnerDetailsUrl,
@@ -85,6 +107,16 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 TransitiveOrigins =
                     (packageSearchMetadata as TransitivePackageSearchMetadata)?.TransitiveOrigins,
             };
+        }
+
+        Task<PackageDeprecationMetadata> IPackageSearchMetadata.GetDeprecationMetadataAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<VersionInfo>> IPackageSearchMetadata.GetVersionsAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

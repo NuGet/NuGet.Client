@@ -126,6 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 includePrerelease,
                 cancellationToken);
 
+            //packageMetadataProvider.SupportsKnownOwners
             PackageSearchMetadataContextInfo packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageMetadata);
             PackageDeprecationMetadataContextInfo? deprecationMetadataContextInfo = null;
 
