@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -30,7 +29,11 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.PackagePublish);
-
+                // Check for a not HTTPS source
+                if (baseUrl.Scheme == Uri.UriSchemeHttp && baseUrl.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, baseUrl));
+                }
                 HttpSource httpSource = null;
                 var sourceUri = baseUrl?.AbsoluteUri;
                 if (!string.IsNullOrEmpty(sourceUri))

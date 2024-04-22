@@ -19,13 +19,15 @@ namespace NuGet.Protocol
         private readonly RegistrationResourceV3 _regResource;
         private readonly ServiceIndexResourceV3 _serviceIndex;
         private readonly HttpSource _client;
+        private readonly bool _allowInsecureConnections;
 
-        public AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource)
+        public AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource, bool allowInsecureConnections)
             : base()
         {
             _regResource = regResource;
             _serviceIndex = serviceIndex;
             _client = client;
+            _allowInsecureConnections = allowInsecureConnections;
         }
 
         public override async Task<IEnumerable<string>> IdStartsWith(
@@ -39,6 +41,12 @@ namespace NuGet.Protocol
             if (searchUrl == null)
             {
                 throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+            }
+
+            // Check for a not HTTPS source
+            if (searchUrl.Scheme == Uri.UriSchemeHttp && searchUrl.Scheme != Uri.UriSchemeHttps && !_allowInsecureConnections)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, _client, searchUrl));
             }
 
             // Construct the query

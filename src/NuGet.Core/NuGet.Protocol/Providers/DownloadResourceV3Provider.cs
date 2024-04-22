@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -33,7 +33,14 @@ namespace NuGet.Protocol
 
                 // If index.json contains a flat container resource use that to directly
                 // construct package download urls.
-                var packageBaseAddress = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress)?.AbsoluteUri;
+                var endpoint = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress);
+                var packageBaseAddress = endpoint?.AbsoluteUri;
+
+                // Check for a not HTTPS source
+                if (endpoint.Scheme == Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, endpoint));
+                }
 
                 if (packageBaseAddress != null)
                 {

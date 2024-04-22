@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -27,7 +27,11 @@ namespace NuGet.Protocol
             {
                 //This will come back as null if there are no matching RegistrationsBaseUrl types
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl);
-
+                // Check for a not HTTPS source
+                if (    .Scheme == Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, baseUrl));
+                }
                 if (baseUrl != null)
                 {
                     var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);

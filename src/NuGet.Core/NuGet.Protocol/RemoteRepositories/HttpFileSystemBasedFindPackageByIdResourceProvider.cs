@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -22,6 +24,15 @@ namespace NuGet.Protocol
             INuGetResource resource = null;
             var serviceIndexResource = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>(token);
             var packageBaseAddress = serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
+
+            foreach (Uri endpoint in packageBaseAddress)
+            {
+                PackageSource serviceSource = new PackageSource(endpoint.ToString(), endpoint.ToString());
+                if (serviceSource.IsHttp && !serviceSource.IsHttps && !sourceRepository.PackageSource.AllowInsecureConnections)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, sourceRepository.PackageSource.SourceUri, endpoint));
+                }
+            }
 
             if (packageBaseAddress != null
                 && packageBaseAddress.Count > 0)

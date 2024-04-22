@@ -169,6 +169,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet source &apos;{0}&apos; has a non HTTPS service index: &apos;{1}&apos;. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information..
+        /// </summary>
+        internal static string Error_HttpServiceIndexUsage {
+            get {
+                return ResourceManager.GetString("Error_HttpServiceIndexUsage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The server responded with HTTP &apos;403 Forbidden&apos; when accessing the source &apos;{0}&apos;. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource..
         /// </summary>
         internal static string Http_CredentialsForForbidden {
