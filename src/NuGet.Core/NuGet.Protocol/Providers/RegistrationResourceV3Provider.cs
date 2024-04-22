@@ -28,7 +28,7 @@ namespace NuGet.Protocol
                 //This will come back as null if there are no matching RegistrationsBaseUrl types
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl);
                 // Check for a not HTTPS source
-                if (    .Scheme == Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
+                if (baseUrl.Scheme == Uri.UriSchemeHttp && baseUrl.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, baseUrl));
                 }
