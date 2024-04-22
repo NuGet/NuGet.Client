@@ -36,7 +36,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 if (_ownerDetailsUriService is null
                     || OwnersList is null
                     || OwnersList.Count == 0
-                    || _ownerDetailsUriService.SupportsKnownOwners)
+                    || !_ownerDetailsUriService.SupportsKnownOwners)
                 {
                     return Array.Empty<KnownOwner>();
                 }
