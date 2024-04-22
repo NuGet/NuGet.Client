@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -1394,131 +1396,469 @@ namespace NuGet.Commands
             var allGraphs = new List<RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
-            var hasSupports = _request.Project.RuntimeGraph.Supports.Count > 0;
+            int patience = 0;
+            int maxOutstandingRefs = 0;
+            int totalLookups = 0;
+            int totalDeepLookups = 0;
+            int totalEvictions = 0;
+            int totalHardEvictions = 0;
 
-            var projectRestoreRequest = new ProjectRestoreRequest(
-                _request,
-                _request.Project,
-                _request.ExistingLockFile,
-                _logger)
+            Stopwatch sw2_prototype = Stopwatch.StartNew();
+            Stopwatch sw3_preamble = new Stopwatch();
+            Stopwatch sw4_voScan = new Stopwatch();
+            Stopwatch sw5_fullImport = new Stopwatch();
+            Stopwatch sw6_flatten = new Stopwatch();
+
+            foreach (var pair in projectFrameworkRuntimePairs)
             {
-                ParentId = _operationId
-            };
+                sw3_preamble.Start();
+                _logger.LogMinimal($"BSW_R1, Starting {pair.Framework},{pair.RuntimeIdentifier},{_request.Project.FilePath}");
+                //A nice debug break point for analysis, works well with /p:RestoreDisableParallel=true
+                if (_request.Project.FilePath.Contains("Microsoft.Exchange.Diagnostics"))
+                    _logger.LogMinimal($"BSW_BP");
 
-            var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
-            Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
-            bool failed = false;
-            using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
-            {
-                try
+                //Build up our new RestoreTargetGraph.
+                //This is done by making everything on RTG setable.  We should move to using a normal constructor.
+                var newRTG = new RestoreTargetGraph();
+                //Set the statically setable stuff
+                newRTG.AnalyzeResult = new AnalyzeResult<RemoteResolveResult>();
+                newRTG.Conflicts = new List<ResolverConflict>();
+                newRTG.InConflict = false; //its never set fwiw...
+                newRTG.Install = new HashSet<RemoteMatch>();
+                newRTG.ResolvedDependencies = new HashSet<ResolvedDependencyKey>();
+                newRTG.RuntimeGraph = null; //never used?
+                newRTG.Unresolved = new HashSet<LibraryRange>();
+
+
+                //Set the natively settable things.
+                newRTG.Conventions = new Client.ManagedCodeConventions(_request.Project.RuntimeGraph);
+                //This seems to match the original code, but causes sources\dev\data\src\DcDiscovery\Microsoft.Exchange.DcDiscovery.Library.csproj
+                // to not process correctly.  instead using newRTG.Conventions = olderRTG.Conventions; fixes it.
+                //Though, there is no a concrete difference in the data contents between the two...there is maybe a ref difference?
+                //aka 246
+                //newRTG.Conventions = olderRTG.Conventions;
+
+                newRTG.Framework = pair.Framework;
+                newRTG.RuntimeIdentifier = (pair.RuntimeIdentifier == "" ? null : pair.RuntimeIdentifier);
+                newRTG.Name = FrameworkRuntimePair.GetName(newRTG.Framework, newRTG.RuntimeIdentifier);
+                newRTG.TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(newRTG.Framework, newRTG.RuntimeIdentifier);
+
+                //Now build up our new flattened graph
+                var initialProject = new LibraryDependency(new LibraryRange()
                 {
-                    result = await projectRestoreCommand.TryRestoreAsync(
-                        projectRange,
-                        projectFrameworkRuntimePairs,
-                        userPackageFolder,
-                        fallbackPackageFolders,
-                        remoteWalker,
-                        context,
-                        forceRuntimeGraphCreation: hasSupports,
-                        token: token,
-                        telemetryActivity: telemetryActivity,
-                        telemetryPrefix: string.Empty);
-                }
-                catch (FatalProtocolException)
+                    Name = _request.Project.Name,
+                    VersionRange = new VersionRange(_request.Project.Version),
+                    TypeConstraint = LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject
+                });
+
+
+                //If we find newer nodes of things while we walk, we'll evict them.
+                //A subset of evictions cause a re-import.  For instance if a newer chosen node has fewer refs,
+                //then we might have a dangling over-elevated ref on the old one, it'll be hard evicted.
+                //The second item here is the path to root.  When we add a hard-evictee, we'll also remove anything
+                //added to the eviction list that contains the evictee on their path to root.
+                Queue<(LibraryDependency nextRef, string pathToNextRef, HashSet<String> suppressions, Dictionary<string, VersionRange>)> refImport =
+                  new Queue<(LibraryDependency, string, HashSet<string>, Dictionary<string, VersionRange>)>();
+
+                //using string since LibraryRange has an odd equals method.  Gotta be a cleaner way to do this.
+                Dictionary<string, GraphItem<RemoteResolveResult>> allResolvedItems =
+                    new Dictionary<string, GraphItem<RemoteResolveResult>>(StringComparer.OrdinalIgnoreCase);
+
+                Dictionary<string, (LibraryDependency libRef, string pathToRef, List<(HashSet<string> currentSupressions, Dictionary<string, VersionRange>)>)> chosenResolvedItems =
+                                            new Dictionary<string, (LibraryDependency, string, List<(HashSet<string> currentSupressions, Dictionary<string, VersionRange>)>)>(StringComparer.OrdinalIgnoreCase);
+
+                Dictionary<string, string> evictions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+                sw3_preamble.Stop();
+
+                sw5_fullImport.Start();
+
+            ProcessDeepEviction:
+                patience++;
+
+#if verboseLog
+                            LogIT($"BSW_EAA1,patience={patience}");
+#endif
+
+                refImport.Clear();
+                chosenResolvedItems.Clear();
+
+#if verboseLog
+                        foreach(var eviction in evictions)
+                            LogIT($"BSW_EAB1,evictee={eviction.Key} path={eviction.Value}");
+#endif
+
+
+                refImport.Enqueue((initialProject, "", new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                    new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase)));
+                while (refImport.Count > 0)
                 {
-                    failed = true;
-                }
-            }
+#if verboseLog
+                            LogIT($"BSW_EAC1,refWalk.Count={refImport.Count} chosenResolvedItems={chosenResolvedItems.Count}");
+#endif
+                    maxOutstandingRefs = Math.Max(refImport.Count, maxOutstandingRefs);
+                    (var currentRef, string pathToCurrentRef, HashSet<string> currentSupressions,
+                        Dictionary<string, VersionRange> currentOverrides) = refImport.Dequeue();
+                    string nameOfCurrentRef = currentRef.ToString();
+                    string libraryRangeOfCurrentRef = currentRef.LibraryRange.ToString();
 
-            if (!failed)
-            {
-                var success = result.Item1;
-                allGraphs.AddRange(result.Item2);
-                _success = success;
-            }
-            else
-            {
-                _success = false;
-                // When we fail to create the graphs, we want to write a `target` for each target framework
-                // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
-                foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
-                {
-                    allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
-                }
-            }
+                    bool isProject = nameOfCurrentRef.StartsWith("project");
 
-            // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
-            foreach (var profile in _request.Project.RuntimeGraph.Supports)
-            {
-                var runtimes = result.Item3;
-
-                CompatibilityProfile compatProfile;
-                if (profile.Value.RestoreContexts.Any())
-                {
-                    // Just use the contexts from the project definition
-                    compatProfile = profile.Value;
-                }
-                else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
-                {
-                    // No definition of this profile found, so just continue to the next one
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
-
-                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
-                    continue;
-                }
-
-                foreach (var pair in compatProfile.RestoreContexts)
-                {
-                    _logger.LogDebug($" {profile.Value.Name} -> +{pair}");
-                    _request.CompatibilityProfiles.Add(pair);
-                }
-            }
-
-            // Walk additional runtime graphs for supports checks
-            if (_success && _request.CompatibilityProfiles.Any())
-            {
-                Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> compatibilityResult = null;
-                using (telemetryActivity.StartIndependentInterval(CreateAdditionalRestoreTargetGraphDuration))
-                {
-                    compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
-                    projectRange,
-                    _request.CompatibilityProfiles,
-                    userPackageFolder,
-                    fallbackPackageFolders,
-                    remoteWalker,
-                    context,
-                    forceRuntimeGraphCreation: true,
-                    token: token,
-                    telemetryActivity: telemetryActivity,
-                    telemetryPrefix: "Additional-");
-                }
-
-                _success = compatibilityResult.Item1;
-
-                // TryRestore may contain graphs that are already in allGraphs if the
-                // supports section contains the same TxM as the project framework.
-                var currentGraphs = new HashSet<KeyValuePair<NuGetFramework, string>>(
-                    allGraphs.Select(graph => new KeyValuePair<NuGetFramework, string>(
-                        graph.Framework,
-                        graph.RuntimeIdentifier))
-                    );
-
-                foreach (var graph in compatibilityResult.Item2)
-                {
-                    var key = new KeyValuePair<NuGetFramework, string>(
-                        graph.Framework,
-                        graph.RuntimeIdentifier);
-
-                    if (currentGraphs.Add(key))
+#if verboseLog
+                            LogIT($"BSW_EAC2, dequed ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride}, ptr={pathToCurrentRef})");
+#endif
+                    if (evictions.ContainsKey(libraryRangeOfCurrentRef))
                     {
-                        allGraphs.Add(graph);
+#if verboseLog
+                                LogIT($"BSW_EA8h4, Skipping {currentRef.LibraryRange} due to eviction");
+#endif
+                        continue;
+                    }
+
+                    if (currentOverrides.ContainsKey(currentRef.Name))
+                    {
+                        if (currentRef.VersionOverride != null)
+                        {
+                            //                                    _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
+
+                        }
+                        if (currentOverrides[currentRef.Name] != currentRef.LibraryRange.VersionRange)
+                        {
+                            if (currentRef.VersionOverride != null)
+                            {
+                                _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it doesnt match the override of {currentOverrides[currentRef.Name]}");
+                            }
+#if verboseLog
+                                    LogIT($"BSW_EA8h4a, Skipping {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
+#endif
+                            continue;
+                        }
+                    }
+
+                    //else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
+                    if (chosenResolvedItems.Keys.Contains(currentRef.Name))
+                    {
+                        (LibraryDependency chosenRef, string pathChosenRef,
+                            List<(HashSet<string> currentSupressions, Dictionary<string, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItems[currentRef.Name];
+
+#if verboseLog
+                                LogIT($"BSW_EAD6a, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
+                                LogIT($"BSW_EAD6b, similar  chosenRef ({chosenRef},it={chosenRef.IncludeType},sp={chosenRef.SuppressParent},vo={chosenRef.VersionOverride})");
+#endif
+
+
+                        VersionRange nvr = currentRef.LibraryRange.VersionRange;
+                        VersionRange ovr = chosenRef.LibraryRange.VersionRange;
+
+                        //                                if(VersionRange.PreciseEquals(ovr,nvr)!=(ovr.ToString()==nvr.ToString()))
+                        //                                    _logger.LogMinimal($"BSW_ERR, Found a version range that is not equal but the string is {ovr} {nvr}");
+
+                        if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
+                        {
+                            //If we think the newer thing we are looking at is better, remove the old one and let it fall thru.
+#if verboseLog
+                                    LogIT($"BSW_EA8h0,{currentRef.LibraryRange} -> {chosenResolvedItems[currentRef.Name]}");
+                                    LogIT($"BSW_EA8h2,{nvr.Equals(ovr)}, {nvr.MinVersion},{nvr.MaxVersion},{ovr.MinVersion},{ovr.MaxVersion}");
+                                    LogIT($"BSW_EA8h3,{RemoteDependencyWalker.IsGreaterThanOrEqualTo(nvr, ovr)}, {RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr)}");
+#endif
+                            chosenResolvedItems.Remove(currentRef.Name);
+                            //Record an eviction for the node we are replacing.  The eviction path is for the current node.
+                            string evictedLR = chosenRef.LibraryRange.ToString();
+                            evictions.Add(evictedLR, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef);
+
+                            int deepEvictions = 0;
+                            //unwind anything chosen by the node we're evicting..
+                            HashSet<string> chosenItemsToRemove = null;
+                            foreach (var chosenItem in chosenResolvedItems)
+                            {
+                                if (chosenItem.Value.pathToRef.Contains(evictedLR))
+                                {
+                                    if (chosenItemsToRemove == null)
+                                        chosenItemsToRemove = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                    chosenItemsToRemove.Add(chosenItem.Key);
+                                }
+                            }
+                            if (chosenItemsToRemove != null)
+                            {
+                                foreach (var chosenItemToRemove in chosenItemsToRemove)
+                                {
+#if verboseLog
+                                            LogIT($"BSW_EA8h4, eviction lead to remove from chosen {chosenResolvedItems[chosenItemToRemove]}");
+#endif
+                                    chosenResolvedItems.Remove(chosenItemToRemove);
+                                    deepEvictions++;
+                                }
+                            }
+                            HashSet<string> evicteesToRemove = null;
+                            foreach (var evictee in evictions)
+                            {
+                                if (evictee.Value.Contains(evictedLR))
+                                {
+                                    if (evicteesToRemove == null)
+                                        evicteesToRemove = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                    evicteesToRemove.Add(evictee.Key);
+                                }
+                            }
+                            if (evicteesToRemove != null)
+                            {
+                                foreach (var evicteeToRemove in evicteesToRemove)
+                                {
+#if verboseLog
+                                            LogIT($"BSW_EA8h4b, eviction lead to remove from evictions {evicteeToRemove}");
+#endif
+                                    evictions.Remove(evicteeToRemove);
+                                    deepEvictions++;
+                                }
+                            }
+                            totalEvictions++;
+                            //Since this is a "new" choice, its gets a new import context list
+                            chosenResolvedItems.Add(currentRef.Name, (currentRef, pathToCurrentRef,
+                                new List<(HashSet<string>, Dictionary<string, VersionRange>)> { (currentSupressions, currentOverrides) }));
+                            if (deepEvictions > 0)
+                            {
+#if verboseLog
+                                        LogIT($"BSW_EA8h5, Evicted {deepEvictions} deeper nodes due to {evictedLR}");
+#endif
+                                totalHardEvictions++;
+                                goto ProcessDeepEviction;
+                            }
+                        }
+                        //if its lower we'll never do anything other than skip it.
+                        //                                else if (ovr.ToString() != nvr.ToString())
+                        else if (!VersionRange.PreciseEquals(ovr, nvr))
+                        {
+#if verboseLog
+                                    LogIT($"BSW_EA8h0, is lower {currentRef.LibraryRange}");
+#endif
+                            continue;
+
+                        }
+                        else
+                        //we are looking at same.  consider if its an upgrade.
+                        {
+#if verboseLog
+                                    LogIT($"BSW_EA8h1, Maybe skipping {currentRef.LibraryRange}");
+#endif
+                            //If the one we already have chosen is pure, then we can skip this one.  Processing it wont bring any new info
+                            if ((chosenSuppressions.Count == 1) && (chosenSuppressions[0].currentSupressions.Count == 0) &&
+                                (chosenSuppressions[0].currentOverrides.Count == 0))
+                            {
+#if verboseLog
+                                        LogIT($"BSW_EA8h2, chosenSuppressions.Count == 0 {currentRef.LibraryRange}");
+#endif
+                                continue;
+                            }
+                            //if the one we are now looking at is pure, then we should replace the one we have chosen because if we're here it isnt pure.
+                            else if ((currentSupressions.Count == 0) && (currentOverrides.Count == 0))
+                            {
+                                chosenResolvedItems.Remove(currentRef.Name);
+                                //slightly evil, but works.. we should just shift to the current thing as ref?
+                                chosenResolvedItems.Add(currentRef.Name, (currentRef, pathToCurrentRef,
+                                new List<(HashSet<string>, Dictionary<string, VersionRange>)> { (currentSupressions, currentOverrides) }));
+
+                            }
+                            else
+                            //check to see if we are equal to one of the dispositions or if we are less restrictive than one
+                            {
+                                bool isEqualOrSuperSetDisposition = false;
+                                foreach (var chosenImportDisposition in chosenSuppressions)
+                                {
+                                    bool localIsEqualOrSuperSetDisposition = currentSupressions.IsSupersetOf(chosenImportDisposition.currentSupressions);
+
+                                    bool localIsEqualorSuperSetOverride = currentOverrides.Count >= chosenImportDisposition.currentOverrides.Count;
+                                    if (localIsEqualorSuperSetOverride)
+                                    {
+                                        foreach (var chosenOverride in chosenImportDisposition.currentOverrides)
+                                        {
+                                            if (!currentOverrides.ContainsKey(chosenOverride.Key))
+                                            {
+                                                localIsEqualorSuperSetOverride = false;
+                                                break;
+                                            }
+                                            if (!VersionRange.PreciseEquals(currentOverrides[chosenOverride.Key], chosenOverride.Value))
+                                            {
+                                                localIsEqualorSuperSetOverride = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (localIsEqualOrSuperSetDisposition && localIsEqualorSuperSetOverride)
+                                    {
+                                        isEqualOrSuperSetDisposition = true;
+                                    }
+                                }
+
+                                if (isEqualOrSuperSetDisposition)
+                                {
+#if verboseLog
+                                            LogIT($"BSW_EA8h3, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
+#endif
+                                    continue;
+                                }
+                                else
+                                {
+                                    //case of differently restrictive dispositions or less restrictive... we should technically be able to remove
+                                    //a disposition if its less restrictive than another.  But we'll just add it to the list.
+                                    chosenResolvedItems.Remove(currentRef.Name);
+                                    var newImportDisposition =
+                                        new List<(HashSet<string>, Dictionary<string, VersionRange>)> { (currentSupressions, currentOverrides) };
+                                    newImportDisposition.AddRange(chosenSuppressions);
+                                    //slightly evil, but works.. we should just shift to the current thing as ref?
+                                    chosenResolvedItems.Add(currentRef.Name, (currentRef, pathToCurrentRef, newImportDisposition));
+#if verboseLog
+                                            LogIT($"BSW_EA8h3, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
+#endif
+                                    //continue;
+
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+#if verboseLog
+                                LogIT($"BSW_EAD7, Marking as Chosen ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
+#endif
+                        //This is now the thing we think is the highest version of this ref
+                        chosenResolvedItems.Add(currentRef.Name, (currentRef, pathToCurrentRef,
+                                new List<(HashSet<string>, Dictionary<string, VersionRange>)> { (currentSupressions, currentOverrides) }));
+
+                    }
+                    GraphItem<RemoteResolveResult> refItem = null;
+                    if (!allResolvedItems.TryGetValue(libraryRangeOfCurrentRef, out refItem))
+                    {
+                        refItem = ResolverUtility.FindLibraryCachedAsync(
+                        currentRef.LibraryRange,
+                                    newRTG.Framework,
+                                    newRTG.RuntimeIdentifier,
+                                    context,
+                                    CancellationToken.None).Result;
+                        totalDeepLookups++;
+#if verboseLog
+                                LogIT($"BSW_EAE1, {libraryRangeOfCurrentRef}");
+#endif
+                        allResolvedItems.Add(libraryRangeOfCurrentRef, refItem);
+                    }
+#if verboseLog
+                            LogIT($"BSW_EAE2, {libraryRangeOfCurrentRef}, {allResolvedItems[libraryRangeOfCurrentRef].Key.ToString()}");
+#endif
+                    totalLookups++;
+
+                    HashSet<string> suppressions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    suppressions.AddRange(currentSupressions);
+                    Dictionary<string, VersionRange> overrides =
+                        new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
+                    overrides.AddRange(currentOverrides);
+                    //Scan for supressions and overrides
+                    foreach (var dep in refItem.Data.Dependencies)
+                    {
+                        string depName = dep.Name;
+                        if ((dep.SuppressParent == LibraryIncludeFlags.All) && (isProject == false))
+                        {
+                            suppressions.Add(depName);
+                        }
+                        if (dep.VersionOverride != null)
+                        {
+                            overrides[depName] = dep.VersionOverride;
+                        }
+                    }
+                    foreach (var sup in suppressions)
+                    {
+#if verboseLog
+                                LogIT($"BSW_EAE3, Suppressed {sup}");
+#endif
+                    }
+                    foreach (var ov in overrides)
+                    {
+#if verboseLog
+                                LogIT($"BSW_EAE4, Override {ov.Key} to {ov.Value}");
+#endif
+                    }
+                    foreach (var dep in refItem.Data.Dependencies)
+                    {
+                        string depName = dep.Name;
+#if verboseLog
+                                //if(dep.Name.Contains("Microsoft.Cloud.InstrumentationFramework.VC14"))
+                                LogIT($"BSW_EAD4b, CR={currentRef.LibraryRange},dep={dep},it={dep.IncludeType},sp={dep.SuppressParent},tfm={pair.Framework}, ptcr={pathToCurrentRef}");
+#endif
+                        //Suppress this node
+                        if (suppressions.Contains(depName))
+                        {
+                            continue;
+                        }
+#if verboseLog
+                                LogIT($"BSW_EAD4, EnQued ({dep},it={dep.IncludeType},sp={dep.SuppressParent})");
+#endif
+                        refImport.Enqueue((dep, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef, suppressions, overrides));
                     }
                 }
+
+                sw5_fullImport.Stop();
+                sw6_flatten.Start();
+
+                //Now that we've completed import, figure out the short real flattened list
+                var newFlattened = new HashSet<GraphItem<RemoteResolveResult>>();
+                HashSet<string> visitedItems = new HashSet<string>();
+                Queue<string> itemsToFlatten = new Queue<string>();
+
+                itemsToFlatten.Enqueue(initialProject.Name);
+                while (itemsToFlatten.Count > 0)
+                {
+                    var currentName = itemsToFlatten.Dequeue();
+                    if (visitedItems.Contains(currentName))
+                        continue;
+                    visitedItems.Add(currentName);
+                    if (!chosenResolvedItems.ContainsKey(currentName))
+                        continue;
+                    (LibraryDependency chosenRef, string pathToChosenRef, var chosenSuppressions) = chosenResolvedItems[currentName];
+                    LibraryRange currLib = chosenRef.LibraryRange;
+                    string currLibLibrarRange = currLib.ToString();
+#if verboseLog
+                            LogIT($"BSW_EAE1,{chosenRef}");
+#endif
+                    if (!allResolvedItems.ContainsKey(currLibLibrarRange))
+                        _logger.LogMinimal($"BSW_EAE2, {currLibLibrarRange}");
+                    else
+                    {
+                        newFlattened.Add(allResolvedItems[currLibLibrarRange]);
+                        foreach (var dep in allResolvedItems[currLibLibrarRange].Data.Dependencies)
+                        {
+                            itemsToFlatten.Enqueue(dep.Name);
+                        }
+                    }
+                }
+
+                sw6_flatten.Stop();
+
+                newRTG.Flattened = newFlattened;
+                //Copy Results from the original RTG
+                //newRTG.Flattened = olderRTG.Flattened;
+
+
+                //stuff to make graphs
+                var nGraph = new List<GraphNode<RemoteResolveResult>>();
+                var newGraphNode = new GraphNode<RemoteResolveResult>(initialProject.LibraryRange);
+                newGraphNode.Item = allResolvedItems[initialProject.LibraryRange.ToString()];
+                nGraph.Add(newGraphNode);
+
+
+                //newRTG.Graphs = olderRTG.Graphs;
+
+
+                newRTG.Graphs = nGraph;
+                allGraphs.Add(newRTG);
             }
 
+            sw2_prototype.Stop();
+            
 
+            _logger.LogMinimal($"BSW_R0,tp={sw2_prototype.ElapsedMilliseconds}," +
+                $"tpr={sw3_preamble.ElapsedMilliseconds},tvo={sw4_voScan.ElapsedMilliseconds}," +
+                $"tfi={sw5_fullImport.ElapsedMilliseconds},tf={sw6_flatten.ElapsedMilliseconds},pa={patience},mor={maxOutstandingRefs},tl={totalLookups},tdl={totalDeepLookups},te={totalEvictions},the={totalHardEvictions}");
             return allGraphs;
+
         }
         private List<ExternalProjectReference> GetProjectReferences()
         {

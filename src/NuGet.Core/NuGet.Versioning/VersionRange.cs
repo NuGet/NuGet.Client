@@ -445,5 +445,42 @@ namespace NuGet.Versioning
         {
             return base.GetHashCode();
         }
+
+        public static bool PreciseEquals(VersionRange a, VersionRange b)
+        {
+            if ((a.Float != null) != (b.Float != null))
+            {
+                return false;
+            }
+            if (a.Float != b.Float)
+            {
+                return false;
+            }
+            if ((a.MinVersion != null) != (b.MinVersion != null))
+            {
+                return false;
+            }
+            if (a.MinVersion != b.MinVersion)
+            {
+                return false;
+            }
+            if ((a.MaxVersion != null) != (b.MaxVersion != null))
+            {
+                return false;
+            }
+            if (a.MaxVersion != b.MaxVersion)
+            {
+                return false;
+            }
+            if (a.IsMinInclusive != b.IsMinInclusive)
+            {
+                return false;
+            }
+            if (a.IsMaxInclusive != b.IsMaxInclusive)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }
