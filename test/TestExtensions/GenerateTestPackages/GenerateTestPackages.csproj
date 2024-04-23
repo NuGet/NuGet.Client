@@ -5,6 +5,9 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>ToolTestKey.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <HighEntropyVA>true</HighEntropyVA>
+    <LargeAddressAware>true</LargeAddressAware>
     <Description>A utility for generating test packages for end-to-end and Apex tests.</Description>
   </PropertyGroup>
 
