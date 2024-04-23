@@ -96,7 +96,10 @@
     <!-- Same as SDK default, but without CandidateAssemblyFiles in front, which would search in Content items -->
     <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName}</AssemblySearchPaths>
     <LangVersion>12</LangVersion>
-    <LangVersion Condition="'$(DotNetBuildSourceOnly)' == 'true'">latest</LangVersion>
+    <LangVersion Condition="'$(DotNetBuildSourceOnly)' == 'true'">latest</LangVersion>    
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+    <HighEntropyVA>true</HighEntropyVA>
+    <LargeAddressAware>true</LargeAddressAware>
   </PropertyGroup>
 
   <!-- NuGet's dev branch always targets the next upcoming version of .NET, so we always use the preview SDK -->
