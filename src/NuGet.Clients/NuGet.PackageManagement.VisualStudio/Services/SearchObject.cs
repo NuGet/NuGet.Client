@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
             foreach (IPackageSearchMetadata packageSearchMetadata in _lastMainFeedSearchResult.Items)
             {
                 CacheBackgroundData(packageSearchMetadata, _lastSearchFilter.IncludePrerelease);
-                packageItems.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata));
+                packageItems.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata, _ownerDetailsUriService));
             }
 
             return new SearchResultContextInfo(

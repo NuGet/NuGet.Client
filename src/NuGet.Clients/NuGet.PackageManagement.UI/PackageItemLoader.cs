@@ -15,7 +15,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -263,7 +262,7 @@ namespace NuGet.PackageManagement.UI
                 return Enumerable.Empty<PackageItemViewModel>();
             }
 
-            var listItemViewModels = new List<PackageItemViewModel>();
+            var listItemViewModels = new List<PackageItemViewModel>(capacity: _state.ItemsCount);
 
             foreach (PackageSearchMetadataContextInfo metadataContextInfo in _state.Results.PackageSearchItems)
             {
@@ -296,11 +295,7 @@ namespace NuGet.PackageManagement.UI
                     transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
                 }
 
-                ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
-                if (metadataContextInfo.KnownOwners != null)
-                {
-                    knownOwnerViewModels = metadataContextInfo.KnownOwners.Select(knownOwner => new KnownOwnerViewModel(knownOwner)).ToImmutableList();
-                }
+                ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
 
                 var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
                 {
@@ -339,6 +334,17 @@ namespace NuGet.PackageManagement.UI
             }
 
             return listItemViewModels.ToArray();
+        }
+
+        private static ImmutableList<KnownOwnerViewModel> LoadKnownOwnerViewModels(PackageSearchMetadataContextInfo metadataContextInfo)
+        {
+            ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
+            if (metadataContextInfo.KnownOwners != null)
+            {
+                knownOwnerViewModels = metadataContextInfo.KnownOwners.Select(knownOwner => new KnownOwnerViewModel(knownOwner)).ToImmutableList();
+            }
+
+            return knownOwnerViewModels;
         }
 
         public void Dispose()
