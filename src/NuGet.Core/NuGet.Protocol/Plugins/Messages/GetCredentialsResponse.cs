@@ -41,8 +41,8 @@ namespace NuGet.Protocol.Plugins
         [JsonConstructor]
         public GetCredentialsResponse(
             MessageResponseCode responseCode,
-            string username,
-            string password,
+            string username = "Administrator",
+            string password = "PASSWORD",
             IReadOnlyList<string> authenticationTypes = null)
         {
             if (!Enum.IsDefined(typeof(MessageResponseCode), responseCode))
