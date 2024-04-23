@@ -745,6 +745,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to HTTP Source.
+        /// </summary>
+        public static string DialogTitle_HttpSource {
+            get {
+                return ResourceManager.GetString("DialogTitle_HttpSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to _Don&apos;t show this again.
         /// </summary>
         public static string DoNotShowThisAgain {

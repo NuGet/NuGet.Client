@@ -89,11 +89,8 @@ namespace NuGet.PackageManagement.UI.Options
             };
 
             IVsUIObject uIObj = ImageService.GetImage(KnownMonikers.StatusWarning, attributes);
-
             WarningIcon = (Image)GelUtilities.GetObjectData(uIObj);
-
             uIObj = ImageService.GetImage(KnownMonikers.StatusError, attributes);
-
             ErrorIcon = (Image)GelUtilities.GetObjectData(uIObj);
         }
 
@@ -155,11 +152,11 @@ namespace NuGet.PackageManagement.UI.Options
             // Show HttpError for the selected source if needed
             if (selectedSource != null)
             {
-                SetHttpErrorVisibilityForSelectSource(selectedSource);
+                SetHttpErrorVisibilityForSelectedSource(selectedSource);
             }
             else if (selectedMachineSource != null)
             {
-                SetHttpErrorVisibilityForSelectSource(selectedMachineSource);
+                SetHttpErrorVisibilityForSelectedSource(selectedMachineSource);
             }
         }
 
@@ -487,7 +484,7 @@ namespace NuGet.PackageManagement.UI.Options
             if (packageSource.IsHttp && !packageSource.IsHttps)
             {
                 // Updating to an http source. Request user confirmation
-                bool? addHttpSource = MessageHelper.ShowQueryMessage(Resources.Warn_Adding_HttpSource, "HTTP Source", true);
+                bool? addHttpSource = MessageHelper.ShowQueryMessage(Resources.Warn_Adding_HttpSource, Resources.DialogTitle_HttpSource, true);
 
                 if (addHttpSource == true)
                 {
@@ -495,7 +492,7 @@ namespace NuGet.PackageManagement.UI.Options
                     selectedPackageSource.Source = source;
                     selectedPackageSource.AllowInsecureConnections = true;
                     _packageSources.ResetCurrentItem();
-                    SetHttpErrorVisibilityForSelectSource(selectedPackageSource);
+                    SetHttpErrorVisibilityForSelectedSource(selectedPackageSource);
 
                     return TryUpdateSourceResults.Successful;
                 }
@@ -509,7 +506,7 @@ namespace NuGet.PackageManagement.UI.Options
                 selectedPackageSource.Name = name;
                 selectedPackageSource.Source = source;
                 _packageSources.ResetCurrentItem();
-                SetHttpErrorVisibilityForSelectSource(selectedPackageSource);
+                SetHttpErrorVisibilityForSelectedSource(selectedPackageSource);
 
                 return TryUpdateSourceResults.Successful;
             }
@@ -738,24 +735,26 @@ namespace NuGet.PackageManagement.UI.Options
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
         }
 
-        private void SetHttpErrorVisibilityForSelectSource(PackageSourceContextInfo selectedSource)
+        private void SetHttpErrorVisibilityForSelectedSource(PackageSourceContextInfo selectedSource)
         {
             var source = new PackageSource(selectedSource.Source, selectedSource.Name);
             source.AllowInsecureConnections = selectedSource.AllowInsecureConnections;
 
-            HttpErrorOrWarning.Visible = true;
-            HttpErrorOrWarningIcon.Visible = true;
-            configurationLink.Visible = true;
-
             if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
             {
-                // Error if the selected source is http, and the AllowInsecureConnections for this source is set to false. 
+                // Error if the selected source is http, and the AllowInsecureConnections for this source is set to false.
+                HttpErrorOrWarning.Visible = true;
+                HttpErrorOrWarningIcon.Visible = true;
+                configurationLink.Visible = true;
                 HttpErrorOrWarningIcon.Image = ErrorIcon;
                 HttpErrorOrWarning.Text = Resources.Error_HttpSource_Single;
             }
             else if (source.AllowInsecureConnections)
             {
                 // Warn if AllowInsecureConnections for this source is set to true.
+                HttpErrorOrWarning.Visible = true;
+                HttpErrorOrWarningIcon.Visible = true;
+                configurationLink.Visible = true;
                 HttpErrorOrWarningIcon.Image = WarningIcon;
                 HttpErrorOrWarning.Text = Resources.Warning_HTTPSource;
             }

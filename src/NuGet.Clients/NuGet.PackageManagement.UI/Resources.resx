@@ -1048,4 +1048,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Link_configuration" xml:space="preserve">
     <value>Common NuGet configurations; How settings are applied.</value>
   </data>
+  <data name="DialogTitle_HttpSource" xml:space="preserve">
+    <value>HTTP Source</value>
+  </data>
 </root>
