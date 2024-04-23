@@ -2287,11 +2287,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No packages were found for this framework..
+        ///   Looks up a localized string similar to No packages were found for the project &apos;{0}&apos; for the given framework(s)..
         /// </summary>
-        internal static string WhyCommand_Message_NoPackagesFoundForFramework {
+        internal static string WhyCommand_Message_NoPackagesFoundForGivenFrameworks {
             get {
-                return ResourceManager.GetString("WhyCommand_Message_NoPackagesFoundForFramework", resourceCulture);
+                return ResourceManager.GetString("WhyCommand_Message_NoPackagesFoundForGivenFrameworks", resourceCulture);
             }
         }
         

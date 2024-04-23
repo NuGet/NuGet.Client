@@ -939,8 +939,9 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Unable to read the assets file `{0}`.</value>
     <comment>{0} - Assets file path</comment>
   </data>
-  <data name="WhyCommand_Message_NoPackagesFoundForFramework" xml:space="preserve">
-    <value>No packages were found for this framework.</value>
+  <data name="WhyCommand_Message_NoPackagesFoundForGivenFrameworks" xml:space="preserve">
+    <value>No packages were found for the project '{0}' for the given framework(s).</value>
+    <comment>{0} - Project name</comment>
   </data>
   <data name="WhyCommand_Message_NoDependencyGraphsFoundInProject" xml:space="preserve">
     <value>Project '{0}' does not have any dependency graph(s) for '{1}'</value>

@@ -15,8 +15,8 @@ namespace NuGet.CommandLine.XPlat
 {
     internal class WhyCommandRunner : IWhyCommandRunner
     {
-        private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
+        private const string ProjectAssetsFile = "ProjectAssetsFile";
 
         // Dependency graph console output symbols
         private const string ChildNodeSymbol = "├─── ";
@@ -32,13 +32,13 @@ namespace NuGet.CommandLine.XPlat
         /// <returns></returns>
         public Task ExecuteCommand(WhyCommandArgs whyCommandArgs)
         {
-            var projectPaths = Path.GetExtension(whyCommandArgs.Path).Equals(".sln")
-                                    ? MSBuildAPIUtility.GetProjectsFromSolution(whyCommandArgs.Path).Where(f => File.Exists(f))
-                                    : new List<string>() { whyCommandArgs.Path };
+            var msBuild = new MSBuildAPIUtility(whyCommandArgs.Logger);
 
             string targetPackage = whyCommandArgs.Package;
 
-            var msBuild = new MSBuildAPIUtility(whyCommandArgs.Logger);
+            IEnumerable<string> projectPaths = Path.GetExtension(whyCommandArgs.Path).Equals(".sln")
+                                                    ? MSBuildAPIUtility.GetProjectsFromSolution(whyCommandArgs.Path).Where(f => File.Exists(f))
+                                                    : new List<string>() { whyCommandArgs.Path };
 
             foreach (var projectPath in projectPaths)
             {
@@ -102,7 +102,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     Console.WriteLine(
                         string.Format(
-                            Strings.WhyCommand_Message_NoPackagesFoundForFramework,
+                            Strings.WhyCommand_Message_NoPackagesFoundForGivenFrameworks,
                             projectName));
                 }
 
@@ -114,7 +114,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Runs the 'why' command, and prints out output to console.
+        /// Runs the 'why' command, and prints output to the console.
         /// </summary>
         /// <param name="frameworkPackages">All frameworks in the project, with their top-level packages and transitive packages.</param>
         /// <param name="targets">All lock file targets in the project.</param>
@@ -127,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
             string projectName)
         {
             bool doesProjectHaveDependencyOnPackage = false;
-            var dependencyGraphPerFramework = new Dictionary<string, HashSet<DependencyNode>>(targets.Count);
+            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>>(targets.Count);
 
             foreach (var frameworkPackage in frameworkPackages)
             {
@@ -135,9 +135,6 @@ namespace NuGet.CommandLine.XPlat
 
                 if (target != default)
                 {
-                    // get all the top-level packages for the framework
-                    IEnumerable<InstalledPackageReference> frameworkTopLevelPackages = frameworkPackage.TopLevelPackages;
-
                     // get all package libraries for the framework
                     IList<LockFileTargetLibrary> packageLibraries = target.Libraries;
 
@@ -176,18 +173,19 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Returns all dependency paths from the top-level packages to the target package for a given framework.
+        /// Finds all dependency paths from the top-level packages to the target package for a given framework.
+        /// Returns a set of all top-level package nodes in the dependency graph.
         /// </summary>
         /// <param name="topLevelPackages">All top-level packages for the framework.</param>
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns></returns>
-        private HashSet<DependencyNode> GetDependencyGraphPerFramework(
+        private List<DependencyNode> GetDependencyGraphPerFramework(
             IEnumerable<InstalledPackageReference> topLevelPackages,
             IList<LockFileTargetLibrary> packageLibraries,
             string targetPackage)
         {
-            HashSet<DependencyNode> dependencyGraph = null;
+            List<DependencyNode> dependencyGraph = null;
 
             // hashset tracking every package node that we've traversed
             var visited = new HashSet<string>();
@@ -345,7 +343,7 @@ namespace NuGet.CommandLine.XPlat
         /// Prints the dependency graphs for all target frameworks.
         /// </summary>
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
-        private void PrintAllDependencyGraphs(Dictionary<string, HashSet<DependencyNode>> dependencyGraphPerFramework)
+        private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
         {
             Console.WriteLine();
 
@@ -365,7 +363,7 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>
         /// eg. { { "net6.0", "netcoreapp3.1" }, { "net472" } }
         /// </returns>
-        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, HashSet<DependencyNode>> dependencyGraphPerFramework)
+        private List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
         {
             List<string> frameworksWithoutGraphs = null;
             var dependencyGraphHashes = new Dictionary<int, List<string>>(dependencyGraphPerFramework.Count);
@@ -405,7 +403,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
         /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
-        private void PrintDependencyGraphPerFramework(List<string> frameworks, HashSet<DependencyNode> topLevelNodes)
+        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes)
         {
             // print framework header
             foreach (var framework in frameworks)
@@ -469,12 +467,13 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="graph">The dependency graph for a given framework.</param>
         /// <returns></returns>
-        private int GetDependencyGraphHashCode(HashSet<DependencyNode> graph)
+        private int GetDependencyGraphHashCode(List<DependencyNode> graph)
         {
             var hashCodeCombiner = new HashCodeCombiner();
             hashCodeCombiner.AddUnorderedSequence(graph);
             return hashCodeCombiner.CombinedHash;
         }
+
         /// <summary>
         /// Represents a node in the package dependency graph.
         /// </summary>

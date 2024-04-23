@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.XPlat
                 why.HelpOption(XPlatUtility.HelpOption);
 
                 CommandArgument path = why.Argument(
-                    "<PROJECT> | <SOLUTION>",
+                    "<PROJECT>|<SOLUTION>",
                     Strings.WhyCommand_PathArgument_Description,
                     multipleValues: false);
 
@@ -41,6 +41,7 @@ namespace NuGet.CommandLine.XPlat
                     ValidatePackageArgument(package);
                     ValidateFrameworksOption(frameworks);
 
+                    var whyCommandRunner = getCommandRunner();
                     var logger = getLogger();
                     var whyCommandArgs = new WhyCommandArgs(
                         path.Value,
@@ -48,8 +49,8 @@ namespace NuGet.CommandLine.XPlat
                         frameworks.Values,
                         logger);
 
-                    var whyCommandRunner = getCommandRunner();
                     whyCommandRunner.ExecuteCommand(whyCommandArgs);
+
                     return 0;
                 });
             });
