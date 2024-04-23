@@ -123,10 +123,9 @@
       </Style>
     </TabControl.Resources>
     <TabItem
-      IsVisibleChanged="TabReadMe_IsVisibleChanged"
       x:Name="tabReadMe"
-      Visibility="{Binding RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageMetadataControl}}, Path=ReadMePreviewViewModel.IsReadMeAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
-      Tag="{x:Static nuget:ItemFilter.All}"
+      IsSelected="True"
+      Tag="{x:Static nuget:PackageMetadataTab.Readme}"
       Header="{x:Static nuget:Resources.Label_Readme}" >
       <nuget:PackageMetadataReadMeControl
         x:Name="_packageMetadataReadMeControl"
@@ -134,9 +133,8 @@
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"/>
     </TabItem>
     <TabItem
-      IsSelected="True"
       x:Name="tabPackageDetails"
-      Tag="{x:Static nuget:ItemFilter.All}"
+      Tag="{x:Static nuget:PackageMetadataTab.PackageDetails}"
       Header="{x:Static nuget:Resources.Label_PackageDetails}">
       <Grid>
         <Grid.RowDefinitions>

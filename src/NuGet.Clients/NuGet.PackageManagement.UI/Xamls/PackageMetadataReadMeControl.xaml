@@ -18,26 +18,6 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
-    <Style
-      x:Key="StatusMessageTextBlockStyle"
-      TargetType="TextBlock">
-      <Setter Property="TextTrimming" 
-              Value="WordEllipsis"/>
-      <Setter Property="TextOptions.TextFormattingMode" 
-              Value="Display"/>
-      <Setter Property="VerticalAlignment" 
-              Value="Center"/>
-      <Setter Property="Margin" 
-              Value="3,0"/>
-      <Setter Property="FontFamily" 
-              Value="SegoeUI"/>
-      <Setter Property="FontSize" 
-              Value="12" />
-      <Setter Property="HorizontalAlignment" 
-              Value="Left"/>
-      <Setter Property="Foreground" 
-              Value="{DynamicResource {x:Static nuget:Brushes.InfoTextKey}}" />
-    </Style>
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -45,34 +25,15 @@
       x:Name="descriptionMarkdownPreview"
       x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
-      Visibility="{Binding Path=IsErrorWithReadMe, Mode=OneWay, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
     />
-    <Grid
-    Background="{DynamicResource {x:Static nuget:Brushes.InfoBackgroundKey}}"
-    VerticalAlignment="Top"
-    Visibility="{Binding Path=IsErrorWithReadMe, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
-    Margin="0"
-    Height="22">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="16"/>
-        <ColumnDefinition Width="16"/>
-        <ColumnDefinition MinWidth="50"/>
-      </Grid.ColumnDefinitions>
-      <imaging:CrispImage Grid.Column="1"
-           Moniker="{x:Static catalog:KnownMonikers.StatusError}"
-           Stretch="Uniform">
-      </imaging:CrispImage>
-      <TextBlock
-        Grid.Column="2"
-        TextWrapping="Wrap"
-        Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
-      >
-        <TextBlock.Style>
-          <Style TargetType="TextBlock"
-               BasedOn="{StaticResource StatusMessageTextBlockStyle}">
-          </Style>
-        </TextBlock.Style>
-      </TextBlock>
-    </Grid>
+    <TextBlock
+      TextWrapping="Wrap"
+      Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
+      Visibility="{Binding Path=IsErrorWithReadMe, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+      />
+    <TextBlock
+      x:Name="noReadmeFoundTextBlock"
+      TextWrapping="Wrap"
+      Text="{x:Static nuget:Resources.Text_NoReadme}"/>
   </Grid>
 </UserControl>

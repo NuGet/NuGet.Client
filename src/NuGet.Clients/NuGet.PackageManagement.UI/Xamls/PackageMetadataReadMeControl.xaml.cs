@@ -122,6 +122,8 @@ namespace NuGet.PackageManagement.UI
                 catch (Exception ex)
                 {
                     ReadMeViewModel.IsErrorWithReadMe = true;
+                    descriptionMarkdownPreview.Visibility = Visibility.Collapsed;
+                    noReadmeFoundTextBlock.Visibility = Visibility.Collapsed;
                     await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
                 }
             }
@@ -141,6 +143,9 @@ namespace NuGet.PackageManagement.UI
                 if (markDown is not null)
                 {
                     await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
+                    descriptionMarkdownPreview.Visibility = string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
+                    noReadmeFoundTextBlock.Visibility = !string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
+
                 }
             }
         }

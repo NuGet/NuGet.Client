@@ -140,6 +140,7 @@ namespace NuGet.PackageManagement.UI
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
+            InitializeSelectedPackageMetadataTab(settings);
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
@@ -437,6 +438,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void InitializeSelectedPackageMetadataTab(UserSettings settings)
+        {
+            if (settings != null)
+            {
+                _packageDetail._packageMetadataControl.SelectTab(settings.SelectedPackageMetadataTab);
+            }
+        }
+
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
@@ -655,7 +664,8 @@ namespace NuGet.PackageManagement.UI
                 FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action,
                 IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true,
                 SelectedFilter = _topPanel.Filter,
-                OptionsExpanded = _packageDetail._optionsControl.IsExpanded
+                OptionsExpanded = _packageDetail._optionsControl.IsExpanded,
+                SelectedPackageMetadataTab = _packageDetail._packageMetadataControl.SelectedTab
             };
             _packageDetail._solutionView.SaveSettings(settings);
 
