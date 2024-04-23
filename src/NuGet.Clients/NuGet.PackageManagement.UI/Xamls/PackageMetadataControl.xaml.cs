@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -14,8 +15,22 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageMetadataControl : UserControl, IDisposable
     {
-        private bool _initialVisibilitySet = false;
+        private TabItem SelectedTabItem
+        {
+            get
+            {
+                return tabsPackageDetails.SelectedItem as TabItem;
+            }
+            set
+            {
+                tabsPackageDetails.SelectedItem = value;
+            }
+        }
+
         private ReadMePreviewViewModel _readMePreviewViewModel;
+
+        public PackageMetadataTab SelectedTab { get => (PackageMetadataTab)SelectedTabItem.Tag; }
+
 
         public PackageMetadataControl()
         {
@@ -27,6 +42,20 @@ namespace NuGet.PackageManagement.UI
         }
 
         public ReadMePreviewViewModel ReadMePreviewViewModel { get => _readMePreviewViewModel; set => _readMePreviewViewModel = value; }
+
+        public void SelectTab(PackageMetadataTab selectedTab)
+        {
+            switch (selectedTab)
+            {
+                case PackageMetadataTab.PackageDetails:
+                    SelectedTabItem = tabPackageDetails;
+                    break;
+                case PackageMetadataTab.Readme:
+                default:
+                    SelectedTabItem = tabReadMe;
+                    break;
+            }
+        }
 
         public void Dispose()
         {
@@ -52,25 +81,6 @@ namespace NuGet.PackageManagement.UI
             {
                 Visibility = Visibility.Collapsed;
             }
-        }
-
-        /// <summary>
-        /// This method is used to determine which tab should be selected, on initial load we can't determine which tab to select.
-        /// On initial load we don't know if the ReadMe is available or not so we assume it isn't. Once the ReadMe is available we switch
-        /// to that tab. By checking the _initialVisibilitySet field we do this once, not forcing users to look at the readme once they've clicked
-        /// away.
-        /// </summary>
-        private void TabReadMe_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (!_initialVisibilitySet && tabReadMe.IsVisible)
-            {
-                tabReadMe.IsSelected = true;
-            }
-            if (!tabReadMe.IsVisible)
-            {
-                tabPackageDetails.IsSelected = true;
-            }
-            _initialVisibilitySet = true;
         }
     }
 }

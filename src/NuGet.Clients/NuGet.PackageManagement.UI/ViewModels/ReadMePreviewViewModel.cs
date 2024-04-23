@@ -16,7 +16,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         public ReadMePreviewViewModel()
         {
-            _isReadMeAvailable = false;
             _isErrorWithReadMe = false;
             _rawReadMe = string.Empty;
         }
@@ -30,18 +29,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 _isErrorWithReadMe = value;
                 RaisePropertyChanged(nameof(IsErrorWithReadMe));
-            }
-        }
-
-        private bool _isReadMeAvailable;
-
-        public bool IsReadMeAvailable
-        {
-            get => _isReadMeAvailable;
-            set
-            {
-                _isReadMeAvailable = value;
-                RaisePropertyChanged(nameof(IsReadMeAvailable));
             }
         }
 
@@ -60,7 +47,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public async Task LoadReadme(string packagePath, string packageId)
         {
             var newReadMeValue = string.Empty;
-            var isReadMeAvailable = false;
             var isErrorWithReadMe = false;
             try
             {
@@ -86,7 +72,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
                                     using var readMeStreamReader = new StreamReader(readMeFile);
                                     var readMeContents = await readMeStreamReader.ReadToEndAsync();
                                     newReadMeValue = readMeContents;
-                                    isReadMeAvailable = true;
                                 }
                             }
                         }
@@ -96,12 +81,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
             catch (Exception ex)
             {
                 isErrorWithReadMe = true;
-                isReadMeAvailable = true;
                 await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
             }
             finally
             {
-                IsReadMeAvailable = isReadMeAvailable;
                 IsErrorWithReadMe = isErrorWithReadMe;
                 ReadMeMarkdown = newReadMeValue;
             }

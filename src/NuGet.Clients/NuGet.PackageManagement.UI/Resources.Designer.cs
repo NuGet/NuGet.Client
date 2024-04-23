@@ -2043,6 +2043,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No Readme was found for the selected package..
+        /// </summary>
+        public static string Text_NoReadme {
+            get {
+                return ResourceManager.GetString("Text_NoReadme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Not available in this source.
         /// </summary>
         public static string Text_NotAvailableInSource {
