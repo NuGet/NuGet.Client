@@ -222,10 +222,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             if (metadataNames == null)
             {
-                throw new ArgumentNullException(nameof(itemName));
+                throw new ArgumentNullException(nameof(metadataNames));
             }
 
-            var itemStorage = (IVsBuildItemStorage)VsHierarchy;
+            var itemStorage = VsHierarchy as IVsBuildItemStorage;
             if (itemStorage != null)
             {
                 var callback = new VisualStudioBuildItemStorageCallback();
