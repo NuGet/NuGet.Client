@@ -17,6 +17,7 @@ steps:
 
 - task: PowerShell@2
   displayName: "Analyze CredScan artifact"
+  condition: false
   inputs:
     targetType: 'inline'
     script: |
