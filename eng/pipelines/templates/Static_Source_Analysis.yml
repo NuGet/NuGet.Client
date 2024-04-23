@@ -43,7 +43,6 @@ steps:
         exit 1
       }
   continueOnError: ${{ parameters.isOfficialBuild }}
-  condition: succeededOrFailed()
 
 - task: PowerShell@2
   displayName: "Ensure all projects are in NuGet.sln"
