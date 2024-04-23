@@ -13,6 +13,7 @@
     <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
     <HighEntropyVA>true</HighEntropyVA>
+    <LargeAddressAware>true</LargeAddressAware>
   </PropertyGroup>
 
   <ItemGroup>

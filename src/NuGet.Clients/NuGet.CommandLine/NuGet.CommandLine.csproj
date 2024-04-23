@@ -15,7 +15,8 @@
     <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
     <ComVisible>false</ComVisible>
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
-    <HighEntropyVA>true</HighEntropyVA>
+    <HighEntropyVA>true</HighEntropyVA>    
+    <LargeAddressAware>true</LargeAddressAware>
     <!-- Pack properties-->
     <PackProject>true</PackProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
