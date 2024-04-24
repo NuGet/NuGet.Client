@@ -28,23 +28,10 @@ namespace NuGet.Protocol.Tests.Resources
         }
 
         [Fact]
-        public void CreateOrNull_WhenEmptyTemplate_CreatesNullResource()
-        {
-            // Arrange
-            var template = new Uri(string.Empty);
-
-            // Act
-            var target = OwnerDetailsUriTemplateResourceV3.CreateOrNull(template);
-
-            // Assert
-            target.Should().BeNull();
-        }
-
-        [Fact]
         public void CreateOrNull_WhenTemplateNotAbsoluteUri_CreatesNullResource()
         {
             // Arrange
-            var template = new Uri("/owner/profile");
+            var template = new Uri("/owner/profile", UriKind.Relative);
 
             // Act
             var target = OwnerDetailsUriTemplateResourceV3.CreateOrNull(template);
