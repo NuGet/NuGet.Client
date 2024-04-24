@@ -5,9 +5,6 @@ NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3
 NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.GetUri(string! owner) -> System.Uri!
 override NuGet.Protocol.Providers.OwnerDetailsUriResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 static NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.CreateOrNull(System.Uri? uriTemplate) -> NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3?
-NuGet.Protocol.MetadataStringOrArrayConverter
-NuGet.Protocol.MetadataStringOrArrayConverter.MetadataStringOrArrayConverter() -> void
-override NuGet.Protocol.MetadataStringOrArrayConverter.CanWrite.get -> bool
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.OwnersList.set -> void
