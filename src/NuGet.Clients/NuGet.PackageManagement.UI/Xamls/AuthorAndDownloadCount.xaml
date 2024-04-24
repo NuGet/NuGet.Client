@@ -35,6 +35,7 @@
         <DataTemplate>
           <TextBlock><Hyperlink
               NavigateUri="{Binding Link, Mode=OneWay}"
+              ToolTip="{Binding Link, Mode=OneWay}"
               Style="{StaticResource HyperlinkSelectorAware}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
               <Run Text="{Binding Name, Mode=OneTime}" />
