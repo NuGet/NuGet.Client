@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Resources
     {
         private readonly string _template;
 
-        public OwnerDetailsUriTemplateResourceV3(string template)
+        private OwnerDetailsUriTemplateResourceV3(string template)
         {
             _template = template ?? throw new ArgumentNullException(nameof(template));
         }
