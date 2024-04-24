@@ -25,6 +25,9 @@ namespace NuGet.CommandLine.XPlat
         private const string ChildPrefixSymbol = "│    ";
         private const string LastChildPrefixSymbol = "     ";
 
+        private const string BoldTextEscapeChars = "\u001b[1m";
+        private const string ResetTextEscapeChars = "\u001b[0m";
+
         /// <summary>
         /// Executes the 'why' command.
         /// </summary>
@@ -168,7 +171,7 @@ namespace NuGet.CommandLine.XPlat
                         projectName,
                         targetPackage));
 
-                PrintAllDependencyGraphs(dependencyGraphPerFramework);
+                PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage);
             }
         }
 
@@ -343,7 +346,8 @@ namespace NuGet.CommandLine.XPlat
         /// Prints the dependency graphs for all target frameworks.
         /// </summary>
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
-        private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
+        /// <param name="targetPackage">The package we want the dependency paths for.</param>
+        private void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework, string targetPackage)
         {
             Console.WriteLine();
 
@@ -352,7 +356,7 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var frameworks in deduplicatedFrameworks)
             {
-                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.FirstOrDefault()]);
+                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.FirstOrDefault()], targetPackage);
             }
         }
 
@@ -403,7 +407,8 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
         /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
-        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes)
+        /// <param name="targetPackage">The package we want the dependency paths for.</param>
+        private void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes, string targetPackage)
         {
             // print framework header
             foreach (var framework in frameworks)
@@ -446,7 +451,21 @@ namespace NuGet.CommandLine.XPlat
                 }
 
                 // print current node
-                Console.WriteLine($"{currentPrefix}{current.Node.Id} (v{current.Node.Version})");
+                if (current.Node.Id == targetPackage)
+                {
+                    /*
+                    Console.Write($"{currentPrefix}");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"{current.Node.Id} (v{current.Node.Version})");
+                    Console.ResetColor();
+                    */
+
+                    Console.WriteLine($"{currentPrefix}{BoldTextEscapeChars}{current.Node.Id} (v{current.Node.Version}){ResetTextEscapeChars}");
+                }
+                else
+                {
+                    Console.WriteLine($"{currentPrefix}{current.Node.Id} (v{current.Node.Version})");
+                }
 
                 if (current.Node.Children?.Count > 0)
                 {

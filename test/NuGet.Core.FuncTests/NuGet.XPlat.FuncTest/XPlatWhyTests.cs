@@ -1,19 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-/*
 using NuGet.CommandLine.XPlat;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
+    [Collection("NuGet XPlat Test Collection")]
     public class XPlatWhyTests
     {
         private static readonly string ProjectName = "Test.Project.DotnetNugetWhy";
+        private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
 
         [Fact]
-        public void WhyCommand_BasicFunctionality_Succeeds()
+        public async void WhyCommand_BasicFunctionality_Succeeds()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -28,6 +30,17 @@ namespace NuGet.XPlat.FuncTest
                 packageX.Dependencies.Add(packageY);
 
                 project.AddPackageToFramework(projectFramework, packageX);
+
+                // Generate Package
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
+                var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+                var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
 
                 var whyCommandRunner = new WhyCommandRunner();
                 var whyCommandArgs = new WhyCommandArgs(
@@ -107,4 +120,3 @@ namespace NuGet.XPlat.FuncTest
         }
     }
 }
-*/
