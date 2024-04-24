@@ -9,7 +9,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Resources;
 using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.VisualStudio.Internal.Contracts

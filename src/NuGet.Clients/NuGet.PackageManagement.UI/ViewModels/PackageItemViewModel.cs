@@ -70,21 +70,7 @@ namespace NuGet.PackageManagement.UI
 
         public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; set; }
 
-        private string _owner;
-
-        public string Owner
-        {
-            get
-            {
-                return _owner;
-            }
-            set
-            {
-                _owner = value;
-                OnPropertyChanged(nameof(Owner));
-                OnPropertyChanged(nameof(ByOwner));
-            }
-        }
+        public string Owner { get; internal set; }
 
         private string _author;
         public string Author
@@ -101,11 +87,22 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public string ByOwner
+        private string ByOwner
         {
             get
             {
-                return !string.IsNullOrWhiteSpace(_owner) ? string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, _owner) : null;
+                // Only show owners when we have Known Owners.
+                if (KnownOwnerViewModels.IsEmpty)
+                {
+                    return null;
+                }
+
+                if (string.IsNullOrWhiteSpace(Owner))
+                {
+                    return null;
+                }
+
+                return string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, Owner);
             }
         }
 
