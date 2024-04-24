@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             else
             {
-                var suppressedAdvisories = new HashSet<string>(StringComparer.Ordinal);
+                var suppressedAdvisories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach ((string itemId, _) in buildItems.NoAllocEnumerate())
                 {
                     suppressedAdvisories.Add(itemId);
