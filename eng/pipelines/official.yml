@@ -55,6 +55,8 @@ extends:
     sdl:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\.config\.gdnsuppress
+      baseline:
+        baselineFile: $(Build.SourcesDirectory)\.config\.gdnbaselines
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
       binskim:
         enabled: true
