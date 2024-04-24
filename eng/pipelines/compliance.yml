@@ -37,6 +37,15 @@ jobs:
           artifact: "symbols - NonRTM"
           path: $(Pipeline.Workspace)\symbols\NonRTM
 
+      # Archive Symbols
+      - task: MicroBuildArchiveSymbols@5
+        displayName: 'Upload Symbols to Symweb/MSDL'
+        inputs:
+          SymbolsFeatureName: 'NuGetNonRTM'
+          SymbolsProject: 'DDE'
+          SymbolsAgentPath: $(Pipeline.Workspace)\symbols\NonRTM
+        condition: succeeded()
+
       ## Run latest version of APIScan listed at https://www.1eswiki.com/wiki/APIScan_Build_Task
       - task: APIScan@2
         displayName: Run APIScan
