@@ -73,7 +73,7 @@ namespace NuGet.Packaging
             }
 
             return EqualityComparer<NuGetFramework>.Default.Equals(TargetFramework, other.TargetFramework)
-                && Packages.OrderedEquals(other.Packages, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a, b));
+                && Packages.OrderedEquals(other.Packages, (a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Id, b.Id));
         }
 
         public override int GetHashCode()

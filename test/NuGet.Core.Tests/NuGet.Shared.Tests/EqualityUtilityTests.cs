@@ -676,7 +676,7 @@ namespace NuGet.Shared.Tests
             var dict = new Dictionary<int, string>();
 
             // Act & Assert
-            EqualityUtility.DictionaryEquals(dict, null).Should().BeFalse();
+            EqualityUtility.DictionaryEquals(dict, null, StringComparer.Ordinal.Equals).Should().BeFalse();
         }
         [Fact]
         public void DictionaryEquals_CompareTwoNullDicts_ReturnsTrue()
@@ -696,7 +696,7 @@ namespace NuGet.Shared.Tests
             var dict2 = new Dictionary<int, string>() { { 1, "unit.test" } };
 
             // Act & Assert
-            EqualityUtility.DictionaryEquals(dict1, dict2).Should().BeFalse();
+            EqualityUtility.DictionaryEquals(dict1, dict2, StringComparer.Ordinal.Equals).Should().BeFalse();
         }
 
         [Fact]
@@ -706,7 +706,7 @@ namespace NuGet.Shared.Tests
             var dict = new Dictionary<int, string>();
 
             // Act & Assert
-            EqualityUtility.DictionaryEquals(dict, dict).Should().BeTrue();
+            EqualityUtility.DictionaryEquals(dict, dict, StringComparer.Ordinal.Equals).Should().BeTrue();
         }
 
         [Fact]
@@ -717,7 +717,7 @@ namespace NuGet.Shared.Tests
             var dict2 = new Dictionary<int, string>();
 
             // Act & Assert
-            EqualityUtility.DictionaryEquals(dict1, dict2).Should().BeTrue();
+            EqualityUtility.DictionaryEquals(dict1, dict2, StringComparer.Ordinal.Equals).Should().BeTrue();
         }
 
         [Fact]
@@ -728,7 +728,7 @@ namespace NuGet.Shared.Tests
             var dict2 = new Dictionary<int, string>() { { 1, "unit.test" } };
 
             // Act & Assert
-            EqualityUtility.DictionaryEquals(dict1, dict2).Should().BeTrue();
+            EqualityUtility.DictionaryEquals(dict1, dict2, StringComparer.Ordinal.Equals).Should().BeTrue();
         }
     }
 }

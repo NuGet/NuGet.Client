@@ -397,11 +397,6 @@ namespace NuGet.Shared
                 return true;
             }
 
-            if (self.Comparer != other.Comparer)
-            {
-                return false;
-            }
-
             foreach (var kvp in self)
             {
                 if (!other.TryGetValue(kvp.Key, out TValue? otherValue) || !compareValues(kvp.Value, otherValue))
@@ -439,11 +434,6 @@ namespace NuGet.Shared
                 return true;
             }
 
-            if (self is Dictionary<TKey, TValue> selfDict && other is Dictionary<TKey, TValue> otherDict && selfDict.Comparer != otherDict.Comparer)
-            {
-                return false;
-            }
-
             foreach (var kvp in self)
             {
                 if (!other.TryGetValue(kvp.Key, out TValue? otherValue) || !compareValues(kvp.Value, otherValue))
@@ -479,11 +469,6 @@ namespace NuGet.Shared
             if (self.Count == 0)
             {
                 return true;
-            }
-
-            if (self is Dictionary<TKey, TValue> selfDict && other is Dictionary<TKey, TValue> otherDict && selfDict.Comparer != otherDict.Comparer)
-            {
-                return false;
             }
 
             foreach (var kvp in self)
