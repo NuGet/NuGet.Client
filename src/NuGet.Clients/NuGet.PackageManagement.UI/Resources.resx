@@ -933,7 +933,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} is a version number</comment>
   </data>
   <data name="Warning_HTTPSource" xml:space="preserve">
-    <value>`AllowInsecureConnections` attribute has been enabled for this source which would allow it connecting to a NON-HTTPS source.</value>
+    <value>AllowInsecureConnections is enabled and allows http access. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere.</value>
   </data>
   <data name="VSOptions_Button_Add" xml:space="preserve">
     <value>Add</value>

@@ -2637,7 +2637,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to `AllowInsecureConnections` attribute has been enabled for this source which would allow it connecting to a NON-HTTPS source..
+        ///   Looks up a localized string similar to AllowInsecureConnections is enabled and allows http access. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere..
         /// </summary>
         public static string Warning_HTTPSource {
             get {
