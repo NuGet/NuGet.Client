@@ -8,7 +8,7 @@
     <Description>Package Manager PowerShell Console implementation.</Description>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <UseWpf>true</UseWpf>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,6 +41,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.Console.TestContract" />
+    <InternalsVisibleTo Include="NuGet.PowerShellHost.Test" />
   </ItemGroup>
 
 </Project>
