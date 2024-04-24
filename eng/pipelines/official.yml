@@ -53,10 +53,10 @@ extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
     sdl:
-      suppression:
-        suppressionFile: $(Build.SourcesDirectory)\.config\.gdnsuppress
       baseline:
         baselineFile: $(Build.SourcesDirectory)\.config\.gdnbaselines
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\.config\.gdnsuppress
       sourceAnalysisPool: VSEngSS-MicroBuild2022-1ES
       binskim:
         enabled: true
