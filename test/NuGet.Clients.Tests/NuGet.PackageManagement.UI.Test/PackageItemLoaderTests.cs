@@ -241,5 +241,24 @@ namespace NuGet.PackageManagement.UI.Test
             string[] result = items.Select(pkg => pkg.Id).ToArray();
             Assert.Equal(inputIds, result);
         }
+
+        public void OwnerDetailsService_DoesNotSupportKnownOWners_ViewModelDoesNotProvideKnownOWners(string url, string expected)
+        {
+            var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
+            {
+                Identity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0")),
+                PackageDetailsUrl = new Uri(url)
+            };
+
+            Mock<IOwnerDetailsUriService> ownerDetailsUriService = new Mock<IOwnerDetailsUriService>();
+            ownerDetailsUriService.Setup(x => x.SupportsKnownOwners).Returns(false);
+            ownerDetailsUriService.Setup(x => x.GetOwnerDetailsUri(It.IsAny<string>())).Returns((string owner) => new Uri($"https://example.com/{owner}")
+
+            var packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata, ownerDetailsUriService);
+
+            var target = new DetailedPackageMetadata(packageSearchMetadataContextInfo, deprecationMetadata: null, downloadCount: null);
+
+            Assert.Equal(expected, target.PackageDetailsText);
+        }
     }
 }
