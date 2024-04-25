@@ -99,6 +99,7 @@
   <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNuGetPackResourcesPerCulture;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
+      <DllsToSign Include="@(ResourceArtifacts)" KeepDuplicates="false" />
     </ItemGroup>
   </Target>
 
