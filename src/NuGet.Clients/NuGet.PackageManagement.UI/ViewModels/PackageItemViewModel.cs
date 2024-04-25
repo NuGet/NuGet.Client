@@ -66,8 +66,6 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public ImmutableList<string> OwnersList { get; set; }
-
         public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; set; }
 
         public string Owner { get; internal set; }

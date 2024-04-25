@@ -54,18 +54,18 @@
 
     <!-- text "by author" is shown here when owner is unavailable -->
     <TextBlock 
-        x:Name="_textBlockAuthor" 
+        x:Name="_textBlockAuthor"
         Visibility="Collapsed"/>
 
     <TextBlock
-        x:Name="_separator" 
+        x:Name="_separator"
         xml:space="preserve"
         Margin="0,0,2,0"
         Visibility="Collapsed">,</TextBlock>
 
     <!-- the download count -->
     <TextBlock 
-        x:Name="_textBlockDownloadCount" 
+        x:Name="_textBlockDownloadCount"
         Visibility="Collapsed"/>
   </StackPanel>
 </UserControl>

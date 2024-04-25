@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -13,8 +12,10 @@ using static NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
-    public sealed class PackageSearchMetadataContextInfo : IPackageSearchMetadata
+    public sealed class PackageSearchMetadataContextInfo
     {
+        private IOwnerDetailsUriService? _ownerDetailsUriService;
+
         public PackageIdentity? Identity { get; internal set; }
         public string? Title { get; internal set; }
         public string? Description { get; internal set; }
@@ -27,7 +28,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public DateTimeOffset? Published { get; internal set; }
         public IReadOnlyList<string>? OwnersList { get; internal set; }
         public string? Owners { get; internal set; }
-        private IOwnerDetailsUriService? _ownerDetailsUriService;
         public IReadOnlyList<KnownOwner> KnownOwners
         {
             get
@@ -67,10 +67,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string? PackagePath { get; internal set; }
         public IReadOnlyCollection<PackageVulnerabilityMetadataContextInfo>? Vulnerabilities { get; internal set; }
         public IReadOnlyCollection<PackageIdentity>? TransitiveOrigins { get; internal set; }
-
-        IEnumerable<PackageDependencyGroup> IPackageSearchMetadata.DependencySets => throw new NotImplementedException();
-
-        IEnumerable<PackageVulnerabilityMetadata> IPackageSearchMetadata.Vulnerabilities => throw new NotImplementedException();
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
@@ -119,16 +115,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 TransitiveOrigins =
                     (packageSearchMetadata as TransitivePackageSearchMetadata)?.TransitiveOrigins,
             };
-        }
-
-        Task<PackageDeprecationMetadata> IPackageSearchMetadata.GetDeprecationMetadataAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<IEnumerable<VersionInfo>> IPackageSearchMetadata.GetVersionsAsync()
-        {
-            throw new NotImplementedException();
         }
     }
 }

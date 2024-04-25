@@ -57,19 +57,6 @@ namespace NuGet.PackageManagement.VisualStudio
             _inMemoryObjectCache = searchCache;
         }
 
-        public bool SupportsKnownOwners
-        {
-            get
-            {
-                if (_packageMetadataProvider is IOwnerDetailsUriService ownerDetailsUriService)
-                {
-                    return ownerDetailsUriService.SupportsKnownOwners;
-                }
-
-                return false;
-            }
-        }
-
         public async ValueTask<SearchResultContextInfo> SearchAsync(string searchText, SearchFilter filter, bool useRecommender, CancellationToken cancellationToken)
         {
             SearchResult<IPackageSearchMetadata>? mainFeedResult = await _mainFeed.SearchAsync(searchText, filter, cancellationToken);
