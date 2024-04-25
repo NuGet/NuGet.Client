@@ -24,7 +24,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
     {
         private const int _successExitCode = 0;
         private const int _failureExitCode = 1;
-        private string _httpError = "You are running the 'restore' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         [Fact]
         public async Task Restore_LegacyPackageReference_WithNuGetLockFile()
@@ -1209,7 +1208,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeTrue();
-            string errorForHttpSource = string.Format(_httpError, "http://api.source/index.json");
+            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "http://api.source/index.json");
             Assert.Contains(errorForHttpSource, result.AllOutput);
         }
 
@@ -1251,8 +1250,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            string errorForHttpSource = string.Format(_httpError, "http://api.source/index.json");
-            string errorForHttpsSource = string.Format(_httpError, "https://api.source/index.json");
+            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "http://api.source/index.json");
+            string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
             Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
