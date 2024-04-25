@@ -28,7 +28,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public DateTimeOffset? Published { get; internal set; }
         public IReadOnlyList<string>? OwnersList { get; internal set; }
         public string? Owners { get; internal set; }
-        public IReadOnlyList<KnownOwner> KnownOwners
+        public IReadOnlyList<KnownOwner>? KnownOwners
         {
             get
             {
@@ -37,7 +37,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                     || OwnersList.Count == 0
                     || !_ownerDetailsUriService.SupportsKnownOwners)
                 {
-                    return Array.Empty<KnownOwner>();
+                    return null;
                 }
 
                 List<KnownOwner> knownOwners = new(capacity: OwnersList.Count);
