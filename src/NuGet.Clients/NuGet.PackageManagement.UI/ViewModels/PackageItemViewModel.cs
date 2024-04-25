@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; set; }
+        public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels { get; internal set; }
 
         public string Owner { get; internal set; }
 
@@ -85,19 +85,32 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// When a collection of <see cref="KnownOwnerViewModels"/> is available, this property returns the <see cref="PackageSearchMetadataContextInfo.Owners"/>
+        /// string which contains the package owner name(s).
+        /// If the collection exists but is empty, it's treated as there being no assigned owner for this package by returning an empty string.
+        /// Otherwise, when there's no collection or no Owners string, it returns null.
+        /// </summary>
         private string ByOwner
         {
             get
             {
-                // Only show owners when we have Known Owners.
-                if (KnownOwnerViewModels.IsEmpty)
+                // Owners is only used when we have Known Owners.
+                if (KnownOwnerViewModels == null)
                 {
                     return null;
                 }
 
+                // Empty Known Owners is treated as there being no assigned owner for this package.
+                if (KnownOwnerViewModels.IsEmpty)
+                {
+                    return string.Empty;
+                }
+
+                // Having Known Owners but with an empty Owners string is treated as there being no assigned owner for this package.
                 if (string.IsNullOrWhiteSpace(Owner))
                 {
-                    return null;
+                    return string.Empty;
                 }
 
                 return string.Format(CultureInfo.CurrentCulture, Resx.Text_ByOwner, Owner);
@@ -112,6 +125,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// Fallback to <see cref="ByAuthor"/> only when <see cref="ByOwner"> is null.
+        /// </summary>
         public string ByOwnerOrAuthor
         {
             get
