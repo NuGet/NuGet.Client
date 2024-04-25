@@ -3,15 +3,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI.Utility;
+using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
@@ -242,23 +246,66 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(inputIds, result);
         }
 
-        public void OwnerDetailsService_DoesNotSupportKnownOWners_ViewModelDoesNotProvideKnownOWners(string url, string expected)
+        [Fact]
+        public async Task OwnerDetailsService_DoesNotSupportKnownOwners_ViewModelDoesNotProvideKnownOwnersAsync()
         {
             var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
             {
                 Identity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0")),
-                PackageDetailsUrl = new Uri(url)
+                OwnersList = new List<string> { "owner1", "owner2" },
             };
-
+            PackageSource packageSource = new PackageSource("https://nuget.test/v3/index.json");
             Mock<IOwnerDetailsUriService> ownerDetailsUriService = new Mock<IOwnerDetailsUriService>();
             ownerDetailsUriService.Setup(x => x.SupportsKnownOwners).Returns(false);
-            ownerDetailsUriService.Setup(x => x.GetOwnerDetailsUri(It.IsAny<string>())).Returns((string owner) => new Uri($"https://example.com/{owner}")
+            ownerDetailsUriService.Setup(x => x.GetOwnerDetailsUri(It.IsAny<string>())).Returns((string owner) => new Uri($"https://nuget.test/profiles/{owner}?_src=template"));
 
-            var packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata, ownerDetailsUriService);
+            var packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata, ownerDetailsUriService.Object);
 
-            var target = new DetailedPackageMetadata(packageSearchMetadataContextInfo, deprecationMetadata: null, downloadCount: null);
+            var searchResult = new SearchResultContextInfo(new[] { packageSearchMetadataContextInfo }, new Dictionary<string, LoadingStatus> { { "Search", LoadingStatus.Loading } }, hasMoreItems: false);
 
-            Assert.Equal(expected, target.PackageDetailsText);
+            //**
+            var serviceBroker = Mock.Of<IServiceBroker>();
+            //var packageFileService = new Mock<INuGetPackageFileService>();
+            var searchService = new Mock<INuGetSearchService>(MockBehavior.Strict);
+            searchService.Setup(s => s.SearchAsync(It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<SearchFilter>(),
+                    It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                    .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
+            var uiContext = new Mock<INuGetUIContext>();
+            uiContext.Setup(ui => ui.ServiceBroker).Returns(serviceBroker);
+            var context = new PackageLoadContext(isSolution: false, uiContext.Object);
+            var mockProgress = Mock.Of<IProgress<IItemLoaderState>>();
+
+            var loader = await PackageItemLoader.CreateAsync(
+                serviceBroker,
+                context,
+                new List<PackageSourceContextInfo>() { PackageSourceContextInfo.Create(packageSource) },
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                searchService.Object,
+                Mock.Of<INuGetPackageFileService>(),
+                TestSearchTerm);
+
+            // Act
+            await loader.SearchAsync(CancellationToken.None);
+            IEnumerable<PackageItemViewModel> viewModels = loader.GetCurrent();
+
+            ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = viewModels.Single().KnownOwnerViewModels;
+            knownOwnerViewModels
+                .Should().NotBeNull()
+                .And.HaveCount(2)
+                .And.BeEquivalentTo(new[]
+                {
+                    new KnownOwnerViewModel(new KnownOwner("owner1", new Uri("https://nuget.test/profiles/owner1?_src=template"))),
+                    new KnownOwnerViewModel(new KnownOwner("owner2", new Uri("https://nuget.test/profiles/owner2?_src=template")))
+                });
+            //.Should().BeNullOrEmpty();
+            //Assert.Equal(expected, .PackageDetailsText);
         }
     }
 }
