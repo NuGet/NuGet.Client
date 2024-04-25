@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -4089,7 +4090,7 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
-            string expectedError = $"You are running the 'restore' operation with an 'HTTP' source: {httpSourceUrl}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
+            string expectedError = string.Format(CultureInfo.CurrentCulture, NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", httpSourceUrl);
 
             if (isHttpErrorExpected)
             {
