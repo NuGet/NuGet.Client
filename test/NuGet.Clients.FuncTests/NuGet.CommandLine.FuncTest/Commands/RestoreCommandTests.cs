@@ -1208,7 +1208,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeTrue();
-            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "http://api.source/index.json");
+            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
             Assert.Contains(errorForHttpSource, result.AllOutput);
         }
 
@@ -1250,8 +1250,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "http://api.source/index.json");
-            string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "https://api.source/index.json");
+            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
+            string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
             Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);

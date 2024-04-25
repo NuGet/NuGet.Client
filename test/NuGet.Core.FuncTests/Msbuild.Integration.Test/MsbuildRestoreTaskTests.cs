@@ -1136,7 +1136,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task MsbuildRestore_PackagesConfigDependency_WithHttpSource_DispalyesAnError(bool useStaticGraphEvaluation)
+        public async Task MsbuildRestore_PackagesConfigDependency_WithHttpSource_Errors(bool useStaticGraphEvaluation)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1178,12 +1178,13 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     packageX);
 
                 // Act
+                string errorForHttpSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
                 string args = $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true /p:RestoreUseStaticGraphEvaluation={useStaticGraphEvaluation}";
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true);
 
                 // Assert
                 Assert.Contains("Added package 'x.1.0.0' to folder", result.AllOutput);
-                Assert.Contains("You are running the 'restore' operation with an 'HTTP' source: http://api.source/index.json. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.", result.AllOutput);
+                Assert.Contains(errorForHttpSource, result.AllOutput);
             }
         }
 
@@ -1194,7 +1195,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         [InlineData("", true)]
         [InlineData("true", false)]
         [InlineData("TRUE", false)]
-        public async Task MsbuildRestore_PackagesConfigDependency_WithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
+        public async Task MsbuildRestore_PackagesConfigDependency_WithHttpSourceAndAllowInsecureConnections_ErrorsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -1237,20 +1238,19 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
-                string formatString = "You are running the 'restore' operation with an 'HTTP' source: {0}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
-                string warningForHttpSource = string.Format(formatString, "http://api.source/index.json");
-                string warningForHttpsSource = string.Format(formatString, "https://api.source/index.json");
+                string errorForHttpSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
+                string errorForHttpsSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
 
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 Assert.Contains("Added package 'x.1.0.0' to folder", result.AllOutput);
-                Assert.DoesNotContain(warningForHttpsSource, result.Output);
+                Assert.DoesNotContain(errorForHttpsSource, result.Output);
                 if (hasHttpWarning)
                 {
-                    Assert.Contains(warningForHttpSource, result.Output);
+                    Assert.Contains(errorForHttpSource, result.Output);
                 }
                 else
                 {
-                    Assert.DoesNotContain(warningForHttpSource, result.Output);
+                    Assert.DoesNotContain(errorForHttpSource, result.Output);
                 }
             }
         }

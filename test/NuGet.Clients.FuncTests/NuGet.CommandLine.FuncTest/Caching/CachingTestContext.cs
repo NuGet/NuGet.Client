@@ -256,7 +256,7 @@ namespace NuGet.CommandLine.Test.Caching
             Directory.CreateDirectory(OutputPackagesPath);
         }
 
-        public void CreateNuGetConfig(string workingDirectory, string source)
+        internal void CreateNuGetConfig(string workingDirectory, string source)
         {
             string nugetConfigContent =
                 $@"<?xml version='1.0' encoding='utf-8'?>
