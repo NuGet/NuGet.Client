@@ -8,17 +8,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <LocalizationOutputDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationOutputDirectory>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <NuspecFile>NuGet.Localization.nuspec</NuspecFile>
-    <NuspecProperties>
-      Version=$(Version);
-      configuration=$(Configuration);
-      LocalizationOutputDirectory=$(LocalizationOutputDirectory);
-      PackageIcon=$(PackageIcon);
-      PackageIconPath=$([System.IO.Path]::Combine($(RepositoryRootDirectory),$(PackageIcon)))
-    </NuspecProperties>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateNupkg</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <!--
@@ -54,4 +44,13 @@
 
     <Copy SourceFiles="@(_LocalizedFilePaths->'%(Identity)')" DestinationFiles="@(_LocalizedFilePaths->'%(TargetPath)')" />
   </Target>
+
+   <Target Name="CreateNupkg">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(LocalizationOutputDirectory)\**\*.resources.dll">
+        <PackagePath>lib</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
+
 </Project>
