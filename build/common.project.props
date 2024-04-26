@@ -256,6 +256,12 @@
     <ProductProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <CoreProjects Include="$(RepositoryRootDirectory)src\NuGet.Core\*\*.csproj" 
+                  Exclude="$(RepositoryRootDirectory)test\NuGet.Core\NuGet.PackageManagement\*.csproj;
+                           $(RepositoryRootDirectory)test\NuGet.Core\NuGet.Localization\*.csproj" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
    <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   </ItemGroup>
