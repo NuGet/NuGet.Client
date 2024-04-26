@@ -866,13 +866,13 @@ namespace NuGet.CommandLine.Test
                 PackageCreator.CreatePackage("testPackage", "1.1.0", source);
 
                 // Act
-                var r = RunInstall(pathContext, "testPackage", 0, new []{"-OutputDirectory", outputDirectory, "-ExcludeVersion", "-Version", "1.2.0"});
+                var r = RunInstall(pathContext, "testPackage", 0, new[] {"-OutputDirectory", outputDirectory, "-ExcludeVersion", "-Version", "1.2.0"});
 
                 // Assert
                 Assert.Equal(0, r.ExitCode);
 
                 // Act
-                var result = RunInstall(pathContext, "testPackage", 0, new []{"-OutputDirectory", outputDirectory, "-ExcludeVersion", "-Version", "1.1.0"});
+                var result = RunInstall(pathContext, "testPackage", 0, new[] {"-OutputDirectory", outputDirectory, "-ExcludeVersion", "-Version", "1.1.0"});
 
                 var output = result.Output;
 
