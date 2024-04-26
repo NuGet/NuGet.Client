@@ -1204,10 +1204,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
             solution.Create(pathContext.SolutionRoot);
 
             // Act
-            var result = RunRestore(pathContext, _successExitCode);
+            var result = RunRestore(pathContext, _failureExitCode);
 
             // Assert
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeFalse();
             string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
             Assert.Contains(errorForHttpSource, result.AllOutput);
         }
@@ -1219,7 +1219,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [InlineData("", true)]
         [InlineData("true", false)]
         [InlineData("TRUE", false)]
-        public async Task Restore_WithHttpSourceAndFalseAllowInsecureConnections_FailsCorrectly(string allowInsecureConnections, bool shouldFail)
+        public async Task Restore_WithHttpSourceAndAllowInsecureConnectionsAttributeSet_FailsCorrectly(string allowInsecureConnections, bool shouldFail)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1247,21 +1247,20 @@ namespace NuGet.CommandLine.FuncTest.Commands
             solution.Create(pathContext.SolutionRoot);
 
             // Act
-            CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
+            CommandRunnerResult result = RunRestore(pathContext, shouldFail? _failureExitCode : _successExitCode);
 
             // Assert
             string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
             string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
 
-            result.Success.Should().BeTrue();
-            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
-
             if (shouldFail)
             {
+                result.Success.Should().BeFalse();
                 Assert.Contains(errorForHttpSource, result.AllOutput);
             }
             else
             {
+                result.Success.Should().BeTrue();
                 Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.AllOutput);
                 Assert.DoesNotContain(errorForHttpSource, result.AllOutput);
             }

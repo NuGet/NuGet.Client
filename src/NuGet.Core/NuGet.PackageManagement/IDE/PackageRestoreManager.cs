@@ -421,6 +421,7 @@ namespace NuGet.PackageManagement
                 if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                 {
                     packageRestoreContext.Logger.Log(LogLevel.Error, string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source));
+                    return new PackageRestoreResult(false, []);
                 }
             }
 
