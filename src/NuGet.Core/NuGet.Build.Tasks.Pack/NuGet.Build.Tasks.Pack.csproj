@@ -65,10 +65,10 @@
     Name="PublishAndMergePackNupkg"
     AfterTargets="AfterBuild"
     Condition="'$(TargetFramework)' != '' AND '$(IsXPlat)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNuGetPack" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" />
   </Target>
 
-  <Target Name="ILMergeNuGetPackResources" Condition="'$(TargetFramework)' != ''">
+  <Target Name="_GetResourceArtifacts" Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
       <ResourceArtifacts Include="$(OutputPath)\publish\**\NuGet*.resources.dll">
         <StrongName>$(StrongNameCert)</StrongName>
@@ -78,16 +78,8 @@
     <Message Text="$(MSBuildProjectName) -&gt; @(ResourceArtifacts)" Importance="High" />
   </Target>
 
-  <Target Name="ILMergeNuGetPack"
-          Condition="'$(TargetFramework)' != ''">
-    <ItemGroup>
-      <BuildArtifacts Include="$(OutputPath)publish\*.dll" Exclude="$(OutputPath)publish\*Pack.dll" />
-    </ItemGroup>
-    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPack)" Importance="High" />
-  </Target>
-
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
-  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNuGetPackResources;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
+  <Target Name="GetBuildOutput" DependsOnTargets="_GetResourceArtifacts;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
       <DllsToSign Include="@(ResourceArtifacts)" KeepDuplicates="false" />
@@ -103,19 +95,6 @@
       <DllsInOutputDir Include="$(OutputPath)\publish\NuGet*.xml" KeepDuplicates="false">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
-    </ItemGroup>
-  </Target>
-
-  <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
-  <Target Name="GetIlmergeSymbolOutput" Returns="@(SymbolsToIndex)">
-    <ItemGroup>
-      <SymbolsToIndex Include="$(OutputPath)\publish\*.pdb" KeepDuplicates="false" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="GetFinalBuildOutput" Returns="@(DllsToIndex)">
-    <ItemGroup>
-      <DllsToIndex Include="$(OutputPath)\publish\NuGet.Build.Tasks.Pack.dll"/>
     </ItemGroup>
   </Target>
 
@@ -136,7 +115,6 @@
   </Target>
 
   <PropertyGroup>
-    <SignTargetsForRealSigning Condition="'$(IsSymbolsBuild)' != 'true'">GetIlmergeBuildOutput</SignTargetsForRealSigning>
-    <SymbolTargetsToGetPdbs>GetIlmergeSymbolOutput;GetFinalBuildOutput</SymbolTargetsToGetPdbs>
+    <SignTargetsForRealSigning Condition="'$(IsSymbolsBuild)' != 'true'">GetBuildOutput</SignTargetsForRealSigning>
   </PropertyGroup>
 </Project>
