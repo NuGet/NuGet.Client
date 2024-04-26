@@ -1,3 +1,4 @@
+//#define verboseLog
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -1420,8 +1421,8 @@ namespace NuGet.Commands
                 sw3_preamble.Start();
                 _logger.LogMinimal($"BSW_R1, Starting {pair.Framework},{pair.RuntimeIdentifier},{_request.Project.FilePath}");
                 //A nice debug break point for analysis, works well with /p:RestoreDisableParallel=true
-                if (_request.Project.FilePath.Contains("Microsoft.Exchange.Diagnostics"))
-                    _logger.LogMinimal($"BSW_BP");
+                //                if (_request.Project.FilePath.Contains("Microsoft.Exchange.Diagnostics"))
+                //                    _logger.LogMinimal($"BSW_BP");
 
 
                 //Build up our new RestoreTargetGraph.
@@ -1501,15 +1502,15 @@ namespace NuGet.Commands
                 patience++;
 
 #if verboseLog
-                            LogIT($"BSW_EAA1,patience={patience}");
+                _logger.LogMinimal($"BSW_PI1,patience={patience}");
 #endif
 
                 refImport.Clear();
                 chosenResolvedItems.Clear();
 
 #if verboseLog
-                        foreach(var eviction in evictions)
-                            LogIT($"BSW_EAB1,evictee={eviction.Key} path={eviction.Value}");
+                foreach (var eviction in evictions)
+                    _logger.LogMinimal($"BSW_PI2,evictee={eviction.Key} path={eviction.Value}");
 #endif
 
 
@@ -1518,7 +1519,7 @@ namespace NuGet.Commands
                 while (refImport.Count > 0)
                 {
 #if verboseLog
-                            LogIT($"BSW_EAC1,refWalk.Count={refImport.Count} chosenResolvedItems={chosenResolvedItems.Count}");
+                    _logger.LogMinimal($"BSW_DI1,refWalk.Count={refImport.Count} chosenResolvedItems={chosenResolvedItems.Count}");
 #endif
                     maxOutstandingRefs = Math.Max(refImport.Count, maxOutstandingRefs);
                     (var currentRef, string pathToCurrentRef, HashSet<string> currentSupressions,
@@ -1529,12 +1530,12 @@ namespace NuGet.Commands
                     bool isProject = nameOfCurrentRef.StartsWith("project");
 
 #if verboseLog
-                            LogIT($"BSW_EAC2, dequed ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride}, ptr={pathToCurrentRef})");
+                    _logger.LogMinimal($"BSW_DI2, dequed ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride}, ptr={pathToCurrentRef})");
 #endif
                     if (evictions.ContainsKey(libraryRangeOfCurrentRef))
                     {
 #if verboseLog
-                                LogIT($"BSW_EA8h4, Skipping {currentRef.LibraryRange} due to eviction");
+                        _logger.LogMinimal($"BSW_DI3, Skipping {currentRef.LibraryRange} due to eviction");
 #endif
                         continue;
                     }
@@ -1553,7 +1554,7 @@ namespace NuGet.Commands
                                 _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it doesnt match the override of {currentOverrides[currentRef.Name]}");
                             }
 #if verboseLog
-                                    LogIT($"BSW_EA8h4a, Skipping {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
+                            _logger.LogMinimal($"BSW_DI4, Skipping {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
 #endif
                             continue;
                         }
@@ -1566,8 +1567,8 @@ namespace NuGet.Commands
                             List<(HashSet<string> currentSupressions, Dictionary<string, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItems[currentRef.Name];
 
 #if verboseLog
-                                LogIT($"BSW_EAD6a, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
-                                LogIT($"BSW_EAD6b, similar  chosenRef ({chosenRef},it={chosenRef.IncludeType},sp={chosenRef.SuppressParent},vo={chosenRef.VersionOverride})");
+                        _logger.LogMinimal($"BSW_DE1, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
+                        _logger.LogMinimal($"BSW_DE2, similar  chosenRef ({chosenRef},it={chosenRef.IncludeType},sp={chosenRef.SuppressParent},vo={chosenRef.VersionOverride})");
 #endif
 
 
@@ -1581,9 +1582,9 @@ namespace NuGet.Commands
                         {
                             //If we think the newer thing we are looking at is better, remove the old one and let it fall thru.
 #if verboseLog
-                                    LogIT($"BSW_EA8h0,{currentRef.LibraryRange} -> {chosenResolvedItems[currentRef.Name]}");
-                                    LogIT($"BSW_EA8h2,{nvr.Equals(ovr)}, {nvr.MinVersion},{nvr.MaxVersion},{ovr.MinVersion},{ovr.MaxVersion}");
-                                    LogIT($"BSW_EA8h3,{RemoteDependencyWalker.IsGreaterThanOrEqualTo(nvr, ovr)}, {RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr)}");
+                            _logger.LogMinimal($"BSW_DG1,{currentRef.LibraryRange} -> {chosenResolvedItems[currentRef.Name]}");
+                            _logger.LogMinimal($"BSW_DG2,{nvr.Equals(ovr)}, {nvr.MinVersion},{nvr.MaxVersion},{ovr.MinVersion},{ovr.MaxVersion}");
+                            _logger.LogMinimal($"BSW_DG3,{RemoteDependencyWalker.IsGreaterThanOrEqualTo(nvr, ovr)}, {RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr)}");
 #endif
                             chosenResolvedItems.Remove(currentRef.Name);
                             //Record an eviction for the node we are replacing.  The eviction path is for the current node.
@@ -1607,7 +1608,7 @@ namespace NuGet.Commands
                                 foreach (var chosenItemToRemove in chosenItemsToRemove)
                                 {
 #if verboseLog
-                                            LogIT($"BSW_EA8h4, eviction lead to remove from chosen {chosenResolvedItems[chosenItemToRemove]}");
+                                    _logger.LogMinimal($"BSW_DG4, eviction lead to remove from chosen {chosenResolvedItems[chosenItemToRemove]}");
 #endif
                                     chosenResolvedItems.Remove(chosenItemToRemove);
                                     deepEvictions++;
@@ -1628,7 +1629,7 @@ namespace NuGet.Commands
                                 foreach (var evicteeToRemove in evicteesToRemove)
                                 {
 #if verboseLog
-                                            LogIT($"BSW_EA8h4b, eviction lead to remove from evictions {evicteeToRemove}");
+                                    _logger.LogMinimal($"BSW_DG5, eviction lead to remove from evictions {evicteeToRemove}");
 #endif
                                     evictions.Remove(evicteeToRemove);
                                     deepEvictions++;
@@ -1641,7 +1642,7 @@ namespace NuGet.Commands
                             if (deepEvictions > 0)
                             {
 #if verboseLog
-                                        LogIT($"BSW_EA8h5, Evicted {deepEvictions} deeper nodes due to {evictedLR}");
+                                _logger.LogMinimal($"BSW_DG6, Evicted {deepEvictions} deeper nodes due to {evictedLR}");
 #endif
                                 totalHardEvictions++;
                                 goto ProcessDeepEviction;
@@ -1652,7 +1653,7 @@ namespace NuGet.Commands
                         else if (!VersionRange.PreciseEquals(ovr, nvr))
                         {
 #if verboseLog
-                                    LogIT($"BSW_EA8h0, is lower {currentRef.LibraryRange}");
+                            _logger.LogMinimal($"BSW_PE1, is lower {currentRef.LibraryRange}");
 #endif
                             continue;
 
@@ -1661,14 +1662,14 @@ namespace NuGet.Commands
                         //we are looking at same.  consider if its an upgrade.
                         {
 #if verboseLog
-                                    LogIT($"BSW_EA8h1, Maybe skipping {currentRef.LibraryRange}");
+                            _logger.LogMinimal($"BSW_DU1, Maybe skipping {currentRef.LibraryRange}");
 #endif
                             //If the one we already have chosen is pure, then we can skip this one.  Processing it wont bring any new info
                             if ((chosenSuppressions.Count == 1) && (chosenSuppressions[0].currentSupressions.Count == 0) &&
                                 (chosenSuppressions[0].currentOverrides.Count == 0))
                             {
 #if verboseLog
-                                        LogIT($"BSW_EA8h2, chosenSuppressions.Count == 0 {currentRef.LibraryRange}");
+                                _logger.LogMinimal($"BSW_DU2, chosenSuppressions.Count == 0 {currentRef.LibraryRange}");
 #endif
                                 continue;
                             }
@@ -1716,7 +1717,7 @@ namespace NuGet.Commands
                                 if (isEqualOrSuperSetDisposition)
                                 {
 #if verboseLog
-                                            LogIT($"BSW_EA8h3, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
+                                    _logger.LogMinimal($"BSW_DU3, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
 #endif
                                     continue;
                                 }
@@ -1731,7 +1732,7 @@ namespace NuGet.Commands
                                     //slightly evil, but works.. we should just shift to the current thing as ref?
                                     chosenResolvedItems.Add(currentRef.Name, (currentRef, pathToCurrentRef, newImportDisposition));
 #if verboseLog
-                                            LogIT($"BSW_EA8h3, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
+                                    _logger.LogMinimal($"BSW_DU4, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
 #endif
                                     //continue;
 
@@ -1742,7 +1743,7 @@ namespace NuGet.Commands
                     else
                     {
 #if verboseLog
-                                LogIT($"BSW_EAD7, Marking as Chosen ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
+                        _logger.LogMinimal($"BSW_MC1, Marking as Chosen ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
 #endif
                         //This is now the thing we think is the highest version of this ref
                         chosenResolvedItems.Add(currentRef.Name, (currentRef, pathToCurrentRef,
@@ -1762,12 +1763,12 @@ namespace NuGet.Commands
                                     CancellationToken.None).Result;
                         totalDeepLookups++;
 #if verboseLog
-                                LogIT($"BSW_EAE1, {libraryRangeOfCurrentRef}");
+                        _logger.LogMinimal($"BSW_PF1, {libraryRangeOfCurrentRef}");
 #endif
                         allResolvedItems.Add(libraryRangeOfCurrentRef, refItem);
                     }
 #if verboseLog
-                            LogIT($"BSW_EAE2, {libraryRangeOfCurrentRef}, {allResolvedItems[libraryRangeOfCurrentRef].Key.ToString()}");
+                    _logger.LogMinimal($"BSW_PF2, {libraryRangeOfCurrentRef}, {allResolvedItems[libraryRangeOfCurrentRef].Key.ToString()}");
 #endif
                     totalLookups++;
 
@@ -1792,21 +1793,21 @@ namespace NuGet.Commands
                     foreach (var sup in suppressions)
                     {
 #if verboseLog
-                                LogIT($"BSW_EAE3, Suppressed {sup}");
+                        _logger.LogMinimal($"BSW_PF3, Suppressed {sup}");
 #endif
                     }
                     foreach (var ov in overrides)
                     {
 #if verboseLog
-                                LogIT($"BSW_EAE4, Override {ov.Key} to {ov.Value}");
+                        _logger.LogMinimal($"BSW_PF4, Override {ov.Key} to {ov.Value}");
 #endif
                     }
                     foreach (var dep in refItem.Data.Dependencies)
                     {
                         string depName = dep.Name;
 #if verboseLog
-                                //if(dep.Name.Contains("Microsoft.Cloud.InstrumentationFramework.VC14"))
-                                LogIT($"BSW_EAD4b, CR={currentRef.LibraryRange},dep={dep},it={dep.IncludeType},sp={dep.SuppressParent},tfm={pair.Framework}, ptcr={pathToCurrentRef}");
+                        //if(dep.Name.Contains("Microsoft.Cloud.InstrumentationFramework.VC14"))
+                        _logger.LogMinimal($"BSW_PF5, CR={currentRef.LibraryRange},dep={dep},it={dep.IncludeType},sp={dep.SuppressParent},tfm={pair.Framework}, ptcr={pathToCurrentRef}");
 #endif
                         //Suppress this node
                         if (suppressions.Contains(depName))
@@ -1814,7 +1815,7 @@ namespace NuGet.Commands
                             continue;
                         }
 #if verboseLog
-                                LogIT($"BSW_EAD4, EnQued ({dep},it={dep.IncludeType},sp={dep.SuppressParent})");
+                        _logger.LogMinimal($"BSW_PF6, EnQued ({dep},it={dep.IncludeType},sp={dep.SuppressParent})");
 #endif
                         refImport.Enqueue((dep, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef, suppressions, overrides));
                     }
@@ -1870,10 +1871,10 @@ namespace NuGet.Commands
                     LibraryRange currLib = chosenRef.LibraryRange;
                     string currLibLibrarRange = currLib.ToString();
 #if verboseLog
-                            LogIT($"BSW_EAE1,{chosenRef}");
+                    _logger.LogMinimal($"BSW_DF1,{chosenRef}");
 #endif
                     if (!allResolvedItems.ContainsKey(currLibLibrarRange))
-                        _logger.LogMinimal($"BSW_EAE2, {currLibLibrarRange}");
+                        _logger.LogMinimal($"BSW_DF2, {currLibLibrarRange}");
                     else
                     {
                         newFlattened.Add(allResolvedItems[currLibLibrarRange]);
@@ -1910,7 +1911,7 @@ namespace NuGet.Commands
             }
 
             sw2_prototype.Stop();
-            
+
 
             _logger.LogMinimal($"BSW_R0,tp={sw2_prototype.ElapsedMilliseconds}," +
                 $"tpr={sw3_preamble.ElapsedMilliseconds},tvo={sw4_voScan.ElapsedMilliseconds}," +
