@@ -75,7 +75,6 @@
         <Authenticode>Microsoft400</Authenticode>
       </ResourceArtifacts>
     </ItemGroup>
-    <Message Text="$(MSBuildProjectName) -&gt; @(ResourceArtifacts)" Importance="High" />
   </Target>
 
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
@@ -100,7 +99,6 @@
 
   <Target Name="CreatePackNupkg">
     <PropertyGroup>
-      <!-- Build from source can't use ILMerge and XPLat builds don't run the ILmerge targets. -->
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
@@ -109,7 +107,7 @@
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(OutputPath)\publish\NuGet*.dll">
-        <PackagePath>$(PackagePathDir)</PackagePath> <!-- Do I need non-NuGet assemblies?-->
+        <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
