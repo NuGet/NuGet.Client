@@ -1213,13 +1213,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Theory]
-        [InlineData("false", true)]
-        [InlineData("FALSE", true)]
-        [InlineData("invalidString", true)]
-        [InlineData("", true)]
-        [InlineData("true", false)]
-        [InlineData("TRUE", false)]
-        public async Task Restore_WithHttpSourceAndAllowInsecureConnectionsAttributeSet_FailsCorrectly(string allowInsecureConnections, bool shouldFail)
+        [InlineData("true")]
+        [InlineData("TRUE")]
+        public async Task Restore_WithHttpSourceAndAllowInsecureConnectionsAttributeSetTrue_DoesNotFail(string allowInsecureConnections)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1247,23 +1243,60 @@ namespace NuGet.CommandLine.FuncTest.Commands
             solution.Create(pathContext.SolutionRoot);
 
             // Act
-            CommandRunnerResult result = RunRestore(pathContext, shouldFail? _failureExitCode : _successExitCode);
+            CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
             string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
             string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
 
-            if (shouldFail)
-            {
-                result.Success.Should().BeFalse();
-                Assert.Contains(errorForHttpSource, result.AllOutput);
-            }
-            else
-            {
-                result.Success.Should().BeTrue();
-                Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.AllOutput);
-                Assert.DoesNotContain(errorForHttpSource, result.AllOutput);
-            }
+            result.Success.Should().BeTrue();
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.AllOutput);
+            Assert.DoesNotContain(errorForHttpSource, result.AllOutput);
+            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
+        }
+
+        [Theory]
+        [InlineData("false")]
+        [InlineData("FALSE")]
+        [InlineData("invalidString")]
+        [InlineData("")]
+        public async Task Restore_WithHttpSourceAndAllowInsecureConnectionsAttributeSetFalse_Fails(string allowInsecureConnections)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
+
+            var net461 = NuGetFramework.Parse("net461");
+            var projectB = new SimpleTestProjectContext(
+                "b",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+            var projectBPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            // Act
+            CommandRunnerResult result = RunRestore(pathContext, _failureExitCode);
+
+            // Assert
+            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
+            string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
+
+            result.Success.Should().BeFalse();
+            Assert.Contains(errorForHttpSource, result.AllOutput);
+            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
         }
 
         public static string GetResource(string name)
