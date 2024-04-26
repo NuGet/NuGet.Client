@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -19,7 +20,7 @@ namespace NuGet.PackageManagement.UI
             Id = string.Empty;
         }
 
-        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, long? downloadCount)
+        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, PackageItemViewModel? searchResultPackage, long? downloadCount)
         {
             Id = serverData.Identity?.Id ?? string.Empty;
             Version = serverData.Identity?.Version;
@@ -27,6 +28,7 @@ namespace NuGet.PackageManagement.UI
             Description = serverData.Description;
             Authors = serverData.Authors;
             Owners = serverData.Owners;
+            KnownOwnerViewModels = searchResultPackage?.KnownOwnerViewModels;
             IconUrl = serverData.IconUrl;
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
@@ -85,7 +87,7 @@ namespace NuGet.PackageManagement.UI
         public string? Authors { get; set; }
 
         public string? Owners { get; set; }
-        public IReadOnlyList<KnownOwner>? KnownOwners { get; private set; }
+        public IReadOnlyList<KnownOwnerViewModel>? KnownOwnerViewModels { get; private set; }
         public Uri? IconUrl { get; set; }
 
         public Uri? LicenseUrl { get; set; }

@@ -37,7 +37,7 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <TextBlock><Hyperlink
-              NavigateUri="{Binding Link, Mode=OneWay}"
+              NavigateUri="{Binding Link, Mode=OneWay}" 
               ToolTip="{Binding Link, Mode=OneWay}"
               Style="{StaticResource HyperlinkSelectorAware}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
