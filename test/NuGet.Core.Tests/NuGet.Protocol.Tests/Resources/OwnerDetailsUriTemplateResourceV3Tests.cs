@@ -56,11 +56,8 @@ namespace NuGet.Protocol.Tests.Resources
         [Fact]
         public void CreateOrNull_WhenValidTemplateHttps_CreatesResource()
         {
-            // Arrange
-            var template = new Uri("https://nuget.test/profiles/{owner}?_src=template");
-
-            // Act
-            var target = OwnerDetailsUriTemplateResourceV3.CreateOrNull(template);
+            // Arrange & Act
+            var target = OwnerDetailsUriTemplateResourceV3.CreateOrNull(_template);
 
             // Assert
             target.Should().NotBeNull();
