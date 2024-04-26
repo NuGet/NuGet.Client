@@ -68,23 +68,14 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish;ILMergeNuGetPack" />
   </Target>
 
-  <Target Name="ILMergeNuGetPackResourcesPerCulture" DependsOnTargets="Publish">
+  <Target Name="ILMergeNuGetPackResources" Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
-      <_PackResourceDlls Include="$(OutputPath)**\$(AssemblyName).resources.dll" />
+      <ResourceArtifacts Include="$(OutputPath)\publish\**\NuGet*.resources.dll">
+        <StrongName>$(StrongNameCert)</StrongName>
+        <Authenticode>Microsoft400</Authenticode>
+      </ResourceArtifacts>
     </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ILMergeNuGetPackResources"
-             Properties="CurrentCulture=%(_PackResourceDlls.RecursiveDir);
-                         BuildProjectReferences=false">
-    </MSBuild>
-  </Target>
-
-  <Target Name="ILMergeNuGetPackResources"
-          Outputs="$(PathToMergedNuGetPackResource)"
-          Condition="'$(TargetFramework)' != '' AND '$(CurrentCulture)' != ''">
-    <ItemGroup>
-      <ResourceArtifacts Include="$(OutputPath)$(CurrentCulture)NuGet*.resources.dll" Exclude="$(OutputPath)$(CurrentCulture)*Pack.resources.dll" />
-    </ItemGroup>
-    <Message Text="$(MSBuildProjectName) -&gt; $(PathToMergedNuGetPackResource)" Importance="High" />
+    <Message Text="$(MSBuildProjectName) -&gt; @(ResourceArtifacts)" Importance="High" />
   </Target>
 
   <Target Name="ILMergeNuGetPack"
@@ -96,7 +87,7 @@
   </Target>
 
   <!--These targets help get all the DLLs that are packed in the nuspec to be sent for signing.-->
-  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNuGetPackResourcesPerCulture;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
+  <Target Name="GetIlmergeBuildOutput" DependsOnTargets="ILMergeNuGetPackResources;_GetDllsInOutputDirectory" Returns="@(DllsToSign)">
     <ItemGroup>
       <DllsToSign Include="@(DllsInOutputDir)" KeepDuplicates="false" />
       <DllsToSign Include="@(ResourceArtifacts)" KeepDuplicates="false" />
@@ -109,7 +100,7 @@
         <StrongName>MsSharedLib72</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </DllsInOutputDir>
-      <DllsInOutputDir Include="$(OutputPath)\publish\NuGet*.xml" KeepDuplicates="false"> <!-- Do I need the other-->
+      <DllsInOutputDir Include="$(OutputPath)\publish\NuGet*.xml" KeepDuplicates="false">
         <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
     </ItemGroup>
