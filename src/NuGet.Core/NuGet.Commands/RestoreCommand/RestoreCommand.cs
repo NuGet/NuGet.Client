@@ -1383,6 +1383,11 @@ namespace NuGet.Commands
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
+
+            var localRepositories = new List<NuGetv3LocalRepository>();
+            localRepositories.Add(userPackageFolder);
+            localRepositories.AddRange(fallbackPackageFolders);
+
             _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
 
             // Get external project references
@@ -1406,6 +1411,7 @@ namespace NuGet.Commands
 
             // Resolve dependency graphs
             var allGraphs = new List<RestoreTargetGraph>();
+            var graphByTFM = new Dictionary<NuGetFramework, RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
             int patience = 0;
@@ -1455,6 +1461,23 @@ namespace NuGet.Commands
                 newRTG.RuntimeIdentifier = (pair.RuntimeIdentifier == "" ? null : pair.RuntimeIdentifier);
                 newRTG.Name = FrameworkRuntimePair.GetName(newRTG.Framework, newRTG.RuntimeIdentifier);
                 newRTG.TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(newRTG.Framework, newRTG.RuntimeIdentifier);
+
+                RestoreTargetGraph tfmNonRidGraph = null;
+                RuntimeGraph runtimeGraph = null;
+                if (!string.IsNullOrEmpty(pair.RuntimeIdentifier))
+                {
+                    // We start with the non-RID TFM graph.
+                    // This is guaranteed to be computed before any graph with a RID, so we can assume this will return a value.
+                    tfmNonRidGraph = graphByTFM[pair.Framework];
+                    Debug.Assert(tfmNonRidGraph != null);
+
+                    // PCL Projects with Supports have a runtime graph but no matching framework.
+                    var runtimeGraphPath = _request.Project.TargetFrameworks.
+                            FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, tfmNonRidGraph.Framework))?.RuntimeIdentifierGraphPath;
+
+                    RuntimeGraph projectProviderRuntimeGraph = ProjectRestoreCommand.GetRuntimeGraph(runtimeGraphPath, _logger);
+                    runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
+                }
 
                 //Now build up our new flattened graph
                 var initialProject = new LibraryDependency(new LibraryRange()
@@ -1741,6 +1764,8 @@ namespace NuGet.Commands
                     GraphItem<RemoteResolveResult> refItem = null;
                     if (!allResolvedItems.TryGetValue(libraryRangeOfCurrentRef, out refItem))
                     {
+
+
                         refItem = ResolverUtility.FindLibraryCachedAsync(
                         currentRef.LibraryRange,
                                     newRTG.Framework,
@@ -1805,6 +1830,35 @@ namespace NuGet.Commands
 #endif
                         refImport.Enqueue((dep, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef, suppressions, overrides));
                     }
+
+                    // Add runtime dependencies of the current node if a runtime identifier has been specified.
+                    if (!string.IsNullOrEmpty(pair.RuntimeIdentifier))
+                    {
+                        // Check for runtime dependencies.
+                        HashSet<LibraryDependency> runtimeDependencies = new HashSet<LibraryDependency>();
+                        LibraryRange libraryRange = currentRef.LibraryRange;
+
+                        RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, pair.RuntimeIdentifier, runtimeGraph, ref runtimeDependencies);
+
+                        if (runtimeDependencies.Count > 0)
+                        {
+                            // If there are runtime dependencies that need to be added, remove the currentRef from allResolvedItems,
+                            // and add the newly created version that contains the previously detected dependencies and newly detected runtime dependencies.
+                            allResolvedItems.Remove(libraryRangeOfCurrentRef);
+                            bool rootHasInnerNodes = (refItem.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
+                            GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(libraryRange, rootHasInnerNodes, false)
+                            {
+                                Item = refItem,
+                            };
+                            RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, rootNode);
+                            allResolvedItems.Add(libraryRangeOfCurrentRef, rootNode.Item);
+                        }
+
+                        foreach (var dep in runtimeDependencies)
+                        {
+                            refImport.Enqueue((dep, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef, suppressions, overrides));
+                        }
+                    }
                 }
 
                 sw5_fullImport.Stop();
@@ -1861,6 +1915,10 @@ namespace NuGet.Commands
 
                 newRTG.Graphs = nGraph;
                 allGraphs.Add(newRTG);
+                if (string.IsNullOrEmpty(pair.RuntimeIdentifier))
+                {
+                    graphByTFM.Add(pair.Framework, newRTG);
+                }
             }
 
             sw2_prototype.Stop();
@@ -1872,6 +1930,7 @@ namespace NuGet.Commands
             return allGraphs;
 
         }
+
         private List<ExternalProjectReference> GetProjectReferences()
         {
             // External references

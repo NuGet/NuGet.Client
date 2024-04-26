@@ -249,73 +249,77 @@ namespace NuGet.DependencyResolver
             }
 
             return rootNode;
+        }
 
-            static void EvaluateRuntimeDependencies(ref LibraryRange libraryRange, string runtimeName, RuntimeGraph runtimeGraph, ref HashSet<LibraryDependency> runtimeDependencies)
+#pragma warning disable RS0016
+        public static void EvaluateRuntimeDependencies(ref LibraryRange libraryRange, string runtimeName, RuntimeGraph runtimeGraph, ref HashSet<LibraryDependency> runtimeDependencies)
+#pragma warning restore
+        {
+            // HACK(davidfowl): This is making runtime.json support package redirects
+
+            // Look up any additional dependencies for this package
+            foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name).NoAllocEnumerate())
             {
-                // HACK(davidfowl): This is making runtime.json support package redirects
-
-                // Look up any additional dependencies for this package
-                foreach (var runtimeDependency in runtimeGraph.FindRuntimeDependencies(runtimeName, libraryRange.Name).NoAllocEnumerate())
+                var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
                 {
-                    var libraryDependency = new LibraryDependency(noWarn: Array.Empty<NuGetLogCode>())
+                    LibraryRange = new LibraryRange()
                     {
-                        LibraryRange = new LibraryRange()
-                        {
-                            Name = runtimeDependency.Id,
-                            VersionRange = runtimeDependency.VersionRange,
-                            TypeConstraint = LibraryDependencyTarget.PackageProjectExternal
-                        }
-                    };
+                        Name = runtimeDependency.Id,
+                        VersionRange = runtimeDependency.VersionRange,
+                        TypeConstraint = LibraryDependencyTarget.PackageProjectExternal
+                    }
+                };
 
-                    if (StringComparer.OrdinalIgnoreCase.Equals(runtimeDependency.Id, libraryRange.Name))
+                if (StringComparer.OrdinalIgnoreCase.Equals(runtimeDependency.Id, libraryRange.Name))
+                {
+                    if (libraryRange.VersionRange != null &&
+                        runtimeDependency.VersionRange != null &&
+                        libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
                     {
-                        if (libraryRange.VersionRange != null &&
-                            runtimeDependency.VersionRange != null &&
-                            libraryRange.VersionRange.MinVersion < runtimeDependency.VersionRange.MinVersion)
-                        {
-                            libraryRange = libraryDependency.LibraryRange;
-                        }
+                        libraryRange = libraryDependency.LibraryRange;
                     }
-                    else
-                    {
-                        // Otherwise it's a dependency of this node
-                        runtimeDependencies ??= new HashSet<LibraryDependency>(LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer);
-                        runtimeDependencies.Add(libraryDependency);
-                    }
+                }
+                else
+                {
+                    // Otherwise it's a dependency of this node
+                    runtimeDependencies ??= new HashSet<LibraryDependency>(LibraryDependencyNameComparer.OrdinalIgnoreCaseNameComparer);
+                    runtimeDependencies.Add(libraryDependency);
                 }
             }
+        }
 
-            static void MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphNode<RemoteResolveResult> node)
+#pragma warning disable RS0016
+        public static void MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphNode<RemoteResolveResult> node)
+#pragma warning restore
+        {
+            // Merge in runtime dependencies
+            if (runtimeDependencies?.Count > 0)
             {
-                // Merge in runtime dependencies
-                if (runtimeDependencies?.Count > 0)
+                var newDependencies = new List<LibraryDependency>(runtimeDependencies.Count + node.Item.Data.Dependencies.Count);
+                foreach (var nodeDep in node.Item.Data.Dependencies)
                 {
-                    var newDependencies = new List<LibraryDependency>(runtimeDependencies.Count + node.Item.Data.Dependencies.Count);
-                    foreach (var nodeDep in node.Item.Data.Dependencies)
+                    if (!runtimeDependencies.Contains(nodeDep))
                     {
-                        if (!runtimeDependencies.Contains(nodeDep))
-                        {
-                            newDependencies.Add(nodeDep);
-                        }
+                        newDependencies.Add(nodeDep);
                     }
-
-                    foreach (var runtimeDependency in runtimeDependencies)
-                    {
-                        newDependencies.Add(runtimeDependency);
-                    }
-
-                    // Create a new item on this node so that we can update it with the new dependencies from
-                    // runtime.json files
-                    // We need to clone the item since they can be shared across multiple nodes
-                    node.Item = new GraphItem<RemoteResolveResult>(node.Item.Key)
-                    {
-                        Data = new RemoteResolveResult()
-                        {
-                            Dependencies = newDependencies,
-                            Match = node.Item.Data.Match
-                        }
-                    };
                 }
+
+                foreach (var runtimeDependency in runtimeDependencies)
+                {
+                    newDependencies.Add(runtimeDependency);
+                }
+
+                // Create a new item on this node so that we can update it with the new dependencies from
+                // runtime.json files
+                // We need to clone the item since they can be shared across multiple nodes
+                node.Item = new GraphItem<RemoteResolveResult>(node.Item.Key)
+                {
+                    Data = new RemoteResolveResult()
+                    {
+                        Dependencies = newDependencies,
+                        Match = node.Item.Data.Match
+                    }
+                };
             }
         }
 
@@ -615,7 +619,8 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        private class LibraryDependencyNameComparer : IEqualityComparer<LibraryDependency>
+#pragma warning disable RS0016
+        public class LibraryDependencyNameComparer : IEqualityComparer<LibraryDependency>
         {
             public static readonly IEqualityComparer<LibraryDependency> OrdinalIgnoreCaseNameComparer = new LibraryDependencyNameComparer();
 
@@ -631,6 +636,7 @@ namespace NuGet.DependencyResolver
                 return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Name);
             }
         }
+#pragma warning restore
 
         /// <summary>
         /// Captures state to begin or resume processing of a GraphNode
