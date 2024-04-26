@@ -139,13 +139,13 @@ namespace NuGet.Commands
                         !projectProvidedRuntimeIdentifierGraphs.TryGetValue(runtimeGraphPath, out projectProviderRuntimeGraph))
                     {
 
-                        projectProviderRuntimeGraph = GetRuntimeGraph(runtimeGraphPath);
+                        projectProviderRuntimeGraph = GetRuntimeGraph(runtimeGraphPath, _logger);
                         success &= projectProviderRuntimeGraph != null;
                         projectProvidedRuntimeIdentifierGraphs.Add(runtimeGraphPath, projectProviderRuntimeGraph);
                     }
 
 
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph);
+                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
                     var runtimeIds = runtimesByFramework[graph.Framework];
 
                     // Merge all runtimes for the output
@@ -194,7 +194,7 @@ namespace NuGet.Commands
 
         // Gets the runtime graph specified in the path.
         // returns null if an error is hit. A valid runtime graph otherwise.
-        private RuntimeGraph GetRuntimeGraph(string runtimeGraphPath)
+        internal static RuntimeGraph GetRuntimeGraph(string runtimeGraphPath, RestoreCollectorLogger logger)
         {
             if (File.Exists(runtimeGraphPath))
             {
@@ -208,7 +208,7 @@ namespace NuGet.Commands
                 }
                 catch (Exception e)
                 {
-                    _logger.Log(
+                    logger.Log(
                      RestoreLogMessage.CreateError(
                          NuGetLogCode.NU1007,
                          string.Format(CultureInfo.CurrentCulture,
@@ -219,7 +219,7 @@ namespace NuGet.Commands
             }
             else
             {
-                _logger.Log(
+                logger.Log(
                  RestoreLogMessage.CreateError(
                      NuGetLogCode.NU1007,
                      string.Format(CultureInfo.CurrentCulture,
@@ -465,9 +465,9 @@ namespace NuGet.Commands
         /// <summary>
         /// Merge all runtime.json found in the flattened graph.
         /// </summary>
-        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories, RuntimeGraph projectRuntimeGraph)
+        internal static RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories, RuntimeGraph projectRuntimeGraph, RestoreCollectorLogger logger)
         {
-            _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
+            logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
             var runtimeGraph = projectRuntimeGraph ?? RuntimeGraph.Empty;
 
             // Find runtime.json files using the flattened graph which is unique per id.
@@ -490,7 +490,7 @@ namespace NuGet.Commands
                     var nextGraph = info.Package.RuntimeGraph;
                     if (nextGraph != null)
                     {
-                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MergingRuntimes, match.Library));
+                        logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MergingRuntimes, match.Library));
                         runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
                     }
                 }
