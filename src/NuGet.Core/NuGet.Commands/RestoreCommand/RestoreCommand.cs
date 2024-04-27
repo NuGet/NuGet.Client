@@ -1598,6 +1598,9 @@ namespace NuGet.Commands
                             _logger.LogMinimal($"BSW_DG2,{nvr.Equals(ovr)}, {nvr.MinVersion},{nvr.MaxVersion},{ovr.MinVersion},{ovr.MaxVersion}");
                             _logger.LogMinimal($"BSW_DG3,{RemoteDependencyWalker.IsGreaterThanOrEqualTo(nvr, ovr)}, {RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr)}");
 #endif
+//                            if ((nvr.MinVersion.Major == 7) && (nvr.MinVersion.Minor == 3) && (currentRef.LibraryRange.ToString().Contains("Identity")))
+//                                _logger.LogMinimal("BSW_BP");
+
                             chosenResolvedItems.Remove(currentRef.Name);
                             //Record an eviction for the node we are replacing.  The eviction path is for the current node.
                             string evictedLR = chosenRef.LibraryRange.ToString();
@@ -1659,6 +1662,22 @@ namespace NuGet.Commands
                                 totalHardEvictions++;
                                 goto ProcessDeepEviction;
                             }
+                            //if we are going to live with this queue and chosen state, we need to also kick
+                            // any queue members who were descendants of the thing we just evicted.
+                            var newRefImport =
+                                new Queue<(LibraryDependency, string, HashSet<string>, Dictionary<string, VersionRange>)>();
+                            while(refImport.Count>0)
+                            {
+                                (var cR, string pTCR, HashSet<string> cS, Dictionary<string, VersionRange> cO) =
+                                    refImport.Dequeue();
+#if verboseLog
+                                if(pTCR.Contains(evictedLR))
+                                    _logger.LogMinimal($"BSW_SCORE - {cR} - {pTCR} - {evictedLR}");
+#endif
+                                if (!pTCR.Contains(evictedLR))
+                                    newRefImport.Enqueue((cR,pTCR,cS,cO));
+                            }
+                            refImport = newRefImport;
                         }
                         //if its lower we'll never do anything other than skip it.
                         //                                else if (ovr.ToString() != nvr.ToString())
@@ -1752,7 +1771,7 @@ namespace NuGet.Commands
                             }
                         }
                     }
-                    else
+                   else
                     {
 #if verboseLog
                         _logger.LogMinimal($"BSW_MC1, Marking as Chosen ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
