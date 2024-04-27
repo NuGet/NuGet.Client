@@ -25,35 +25,21 @@ namespace NuGet.Protocol.Resources
         /// </summary>
         /// <param name="uriTemplate">The Absolute Uri template provided by the server.</param>
         /// <returns>A valid Owner Details Uri template, or null.</returns>
-        public static OwnerDetailsUriTemplateResourceV3? CreateOrNull(Uri? uriTemplate)
+        public static OwnerDetailsUriTemplateResourceV3? CreateOrNull(Uri uriTemplate)
         {
-            if (uriTemplate == null || uriTemplate.OriginalString.Length == 0 || !uriTemplate.IsAbsoluteUri)
+            if (uriTemplate is null)
+            {
+                throw new ArgumentNullException(nameof(uriTemplate));
+            }
+
+            if (uriTemplate.OriginalString.Length == 0
+                || !uriTemplate.IsAbsoluteUri
+                || !uriTemplate.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
-            string absoluteUri = uriTemplate.OriginalString;
-            if (string.IsNullOrWhiteSpace(absoluteUri)
-                || !IsValidUriTemplate(absoluteUri))
-            {
-                return null;
-            }
-
-            return new OwnerDetailsUriTemplateResourceV3(absoluteUri);
-        }
-
-        private static bool IsValidUriTemplate(string absoluteUri)
-        {
-            Uri? uri;
-            var isValidUri = Uri.TryCreate(absoluteUri, UriKind.Absolute, out uri);
-
-            // Only allow HTTPS owner details URLs.
-            if (isValidUri && uri?.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) != true)
-            {
-                return false;
-            }
-
-            return isValidUri;
+            return new OwnerDetailsUriTemplateResourceV3(uriTemplate.OriginalString);
         }
 
         /// <summary>

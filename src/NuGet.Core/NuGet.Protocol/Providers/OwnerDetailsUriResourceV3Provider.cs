@@ -29,8 +29,12 @@ namespace NuGet.Protocol.Providers
             ServiceIndexResourceV3? serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                Uri uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.OwnerDetailsUriTemplate);
-                resource = OwnerDetailsUriTemplateResourceV3.CreateOrNull(uriTemplate);
+                Uri? uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.OwnerDetailsUriTemplate);
+
+                if (uriTemplate != null)
+                {
+                    resource = OwnerDetailsUriTemplateResourceV3.CreateOrNull(uriTemplate);
+                }
             }
 
             return new Tuple<bool, INuGetResource?>(resource != null, resource);

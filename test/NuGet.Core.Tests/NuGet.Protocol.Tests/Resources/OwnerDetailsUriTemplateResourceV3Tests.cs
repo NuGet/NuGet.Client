@@ -15,16 +15,13 @@ namespace NuGet.Protocol.Tests.Resources
         private readonly Uri _template = new Uri("https://nuget.test/profiles/{owner}?_src=template");
 
         [Fact]
-        public void CreateOrNull_WhenNullTemplate_CreatesNullResource()
+        public void CreateOrNull_WhenNullTemplate_Throws()
         {
             // Arrange
             Uri? template = null;
 
-            // Act
-            var target = OwnerDetailsUriTemplateResourceV3.CreateOrNull(template);
-
-            // Assert
-            target.Should().BeNull();
+            // Act & Assert
+            Assert.Throws<ArgumentNullException>(() => OwnerDetailsUriTemplateResourceV3.CreateOrNull(template!));
         }
 
         [Fact]
