@@ -25,7 +25,6 @@ namespace NuGet.Tests.Apex.Daily
         {
         }
 
-        [Ignore]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void InstallPackageToWebSiteProjectFromUI()
@@ -43,13 +42,16 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            uiwindow.InstallPackageFromUI("log4net", "2.0.12");
 
+            Logger.WriteMessage($"Open PM UI...");
+            System.Threading.Thread.Sleep(6000);
+            uiwindow.InstallPackageFromUI("log4net", "2.0.12");
+            var item = project.Find(SolutionItemFind.FileName, "packages.config");
+            item.Open();
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.12", Logger);
         }
 
-        [Ignore]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void UpdateWebSitePackageFromUI()
