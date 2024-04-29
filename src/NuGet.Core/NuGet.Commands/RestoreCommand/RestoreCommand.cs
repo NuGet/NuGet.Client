@@ -361,7 +361,7 @@ namespace NuGet.Commands
                                 originalGraph.TargetGraphName = null;
 
                                 originalGraph.Conventions = null;
-                                originalGraph.Graphs = null;
+                                //originalGraph.Graphs = null;
 
 
                                 foreach (var prototypeGraph in prototypeGraphs)
@@ -380,7 +380,7 @@ namespace NuGet.Commands
                                         originalGraph.TargetGraphName = prototypeGraph.TargetGraphName;
 
                                         originalGraph.Conventions = prototypeGraph.Conventions;
-                                        originalGraph.Graphs = prototypeGraph.Graphs;
+                                        //originalGraph.Graphs = prototypeGraph.Graphs;
 
                                         break;
                                     }
@@ -1459,18 +1459,10 @@ namespace NuGet.Commands
                 newRTG.InConflict = false; //its never set fwiw...
                 newRTG.Install = new HashSet<RemoteMatch>();
                 newRTG.ResolvedDependencies = new HashSet<ResolvedDependencyKey>();
-                newRTG.RuntimeGraph = null; //never used?
                 newRTG.Unresolved = new HashSet<LibraryRange>();
 
 
                 //Set the natively settable things.
-                newRTG.Conventions = new Client.ManagedCodeConventions(_request.Project.RuntimeGraph);
-                //This seems to match the original code, but causes sources\dev\data\src\DcDiscovery\Microsoft.Exchange.DcDiscovery.Library.csproj
-                // to not process correctly.  instead using newRTG.Conventions = olderRTG.Conventions; fixes it.
-                //Though, there is no a concrete difference in the data contents between the two...there is maybe a ref difference?
-                //aka 246
-                //newRTG.Conventions = olderRTG.Conventions;
-
                 newRTG.Framework = pair.Framework;
                 newRTG.RuntimeIdentifier = (pair.RuntimeIdentifier == "" ? null : pair.RuntimeIdentifier);
                 newRTG.Name = FrameworkRuntimePair.GetName(newRTG.Framework, newRTG.RuntimeIdentifier);
@@ -1497,6 +1489,8 @@ namespace NuGet.Commands
 
                     runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
                 }
+
+                newRTG.Conventions = new Client.ManagedCodeConventions(runtimeGraph);
 
                 //Now build up our new flattened graph
                 var initialProject = new LibraryDependency(new LibraryRange()
@@ -1946,7 +1940,6 @@ namespace NuGet.Commands
                 var newGraphNode = new GraphNode<RemoteResolveResult>(initialProject.LibraryRange);
                 newGraphNode.Item = allResolvedItems[initialProject.LibraryRange.ToString()];
                 nGraph.Add(newGraphNode);
-
 
                 //newRTG.Graphs = olderRTG.Graphs;
 
