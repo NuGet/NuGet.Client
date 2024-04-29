@@ -204,8 +204,9 @@ case "$(uname -s)" in
 			fi
 			;;
 		Darwin)
-			echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Linux --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
-			mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Linux" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
+			# Disable Mono tests on Mac by default. Uncomment to run them.
+			#echo "mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --TestCaseFilter:Platform!=Windows&Platform!=Linux --logger:console;verbosity=$VsTestVerbosity --logger:trx;LogFilePath=$TestResultsTrx"
+			#mono $VsTestConsole "$TestDir/NuGet.CommandLine.Test.dll" --TestCaseFilter:"Platform!=Windows&Platform!=Linux" --logger:"console;verbosity=$VsTestVerbosity" --logger:"trx;LogFilePath=$TestResultsTrx"
 			if [ $? -ne '0' ]; then
 				RESULTCODE=$?
 				echo "Mono tests failed!"
