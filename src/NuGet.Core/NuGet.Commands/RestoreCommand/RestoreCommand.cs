@@ -371,10 +371,9 @@ namespace NuGet.Commands
                                 originalGraph.Install = null;
                                 originalGraph.Name = null;
                                 originalGraph.TargetGraphName = null;
-
                                 originalGraph.Conventions = null;
-                                //originalGraph.Graphs = null;
 
+                                originalGraph.Graphs = null;
 
                                 foreach (var prototypeGraph in prototypeGraphs)
                                 {
@@ -390,9 +389,9 @@ namespace NuGet.Commands
                                         originalGraph.Install = prototypeGraph.Install;
                                         originalGraph.Name = prototypeGraph.Name;
                                         originalGraph.TargetGraphName = prototypeGraph.TargetGraphName;
-
                                         originalGraph.Conventions = prototypeGraph.Conventions;
-                                        //originalGraph.Graphs = prototypeGraph.Graphs;
+
+                                        originalGraph.Graphs = prototypeGraph.Graphs;
 
                                         break;
                                     }
@@ -1910,32 +1909,50 @@ namespace NuGet.Commands
 
                 //Now that we've completed import, figure out the short real flattened list
                 var newFlattened = new HashSet<GraphItem<RemoteResolveResult>>();
-                HashSet<string> visitedItems = new HashSet<string>();
-                Queue<string> itemsToFlatten = new Queue<string>();
+                HashSet<string> visitedItems = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                Queue<(string, GraphNode<RemoteResolveResult>)> itemsToFlatten = new Queue<(string, GraphNode<RemoteResolveResult>)>();
+                var nGraph = new List<GraphNode<RemoteResolveResult>>();
 
-                itemsToFlatten.Enqueue(initialProject.Name);
+
+                LibraryDependency startRef = chosenResolvedItems[initialProject.Name].libRef;
+
+                var rootGraphNode = new GraphNode<RemoteResolveResult>(startRef.LibraryRange);
+                rootGraphNode.Item = allResolvedItems[startRef.LibraryRange.ToString()];
+                nGraph.Add(rootGraphNode);
+
+                itemsToFlatten.Enqueue((initialProject.Name, rootGraphNode));
                 while (itemsToFlatten.Count > 0)
                 {
-                    var currentName = itemsToFlatten.Dequeue();
-                    if (visitedItems.Contains(currentName))
-                        continue;
-                    visitedItems.Add(currentName);
+                    (string currentName, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
                     if (!chosenResolvedItems.ContainsKey(currentName))
+                    {
+                        _logger.LogMinimal($"BSW_ERR1, {currentName}");
                         continue;
+                    }
                     (LibraryDependency chosenRef, string pathToChosenRef, var chosenSuppressions) = chosenResolvedItems[currentName];
                     LibraryRange currLib = chosenRef.LibraryRange;
                     string currLibLibrarRange = currLib.ToString();
 #if verboseLog
-                    _logger.LogMinimal($"BSW_DF1,{chosenRef}");
+                            LogIT($"BSW_EAE1,{chosenRef}");
 #endif
                     if (!allResolvedItems.ContainsKey(currLibLibrarRange))
-                        _logger.LogMinimal($"BSW_DF2, {currLibLibrarRange}");
+                        _logger.LogMinimal($"BSW_ERR2, {currLibLibrarRange}");
                     else
                     {
-                        newFlattened.Add(allResolvedItems[currLibLibrarRange]);
+                        var node = allResolvedItems[currLibLibrarRange];
+                        newFlattened.Add(node);
                         foreach (var dep in allResolvedItems[currLibLibrarRange].Data.Dependencies)
                         {
-                            itemsToFlatten.Enqueue(dep.Name);
+
+                            if (visitedItems.Contains(dep.Name))
+                                continue;
+                            visitedItems.Add(dep.Name);
+
+                            var newGraphNode = new GraphNode<RemoteResolveResult>(dep.LibraryRange);
+                            newGraphNode.Item = allResolvedItems[currLibLibrarRange.ToString()];
+                            currentGraphNode.InnerNodes.Add(newGraphNode);
+
+                            itemsToFlatten.Enqueue((dep.Name, newGraphNode));
                         }
                     }
                 }
@@ -1943,18 +1960,12 @@ namespace NuGet.Commands
                 sw6_flatten.Stop();
 
                 newRTG.Flattened = newFlattened;
-                //Copy Results from the original RTG
-                //newRTG.Flattened = olderRTG.Flattened;
 
+                newRTG.Graphs = nGraph;
+                allGraphs.Add(newRTG);
+                sw6_flatten.Stop();
 
-                //stuff to make graphs
-                var nGraph = new List<GraphNode<RemoteResolveResult>>();
-                var newGraphNode = new GraphNode<RemoteResolveResult>(initialProject.LibraryRange);
-                newGraphNode.Item = allResolvedItems[initialProject.LibraryRange.ToString()];
-                nGraph.Add(newGraphNode);
-
-                //newRTG.Graphs = olderRTG.Graphs;
-
+                newRTG.Flattened = newFlattened;
 
                 newRTG.Graphs = nGraph;
                 allGraphs.Add(newRTG);
