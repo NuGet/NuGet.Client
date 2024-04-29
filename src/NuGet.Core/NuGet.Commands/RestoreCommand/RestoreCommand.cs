@@ -1951,12 +1951,7 @@ namespace NuGet.Commands
 
                 newRTG.Graphs = nGraph;
                 allGraphs.Add(newRTG);
-                sw6_flatten.Stop();
 
-                newRTG.Flattened = newFlattened;
-
-                newRTG.Graphs = nGraph;
-                allGraphs.Add(newRTG);
                 if (string.IsNullOrEmpty(pair.RuntimeIdentifier))
                 {
                     graphByTFM.Add(pair.Framework, newRTG);
