@@ -1489,7 +1489,12 @@ namespace NuGet.Commands
                     var runtimeGraphPath = _request.Project.TargetFrameworks.
                             FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, tfmNonRidGraph.Framework))?.RuntimeIdentifierGraphPath;
 
-                    RuntimeGraph projectProviderRuntimeGraph = ProjectRestoreCommand.GetRuntimeGraph(runtimeGraphPath, _logger);
+                    RuntimeGraph projectProviderRuntimeGraph = null;
+                    if (runtimeGraphPath != null)
+                    {
+                        projectProviderRuntimeGraph = ProjectRestoreCommand.GetRuntimeGraph(runtimeGraphPath, _logger);
+                    }
+
                     runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
                 }
 
