@@ -363,12 +363,37 @@ namespace NuGet.Commands
                             foreach (var originalGraph in graphs)
                             {
                                 originalGraph.Flattened = null; // assure we are actually assigning a flattened graph to everything
+                                originalGraph.RuntimeGraph = null;
+                                originalGraph.ResolvedDependencies = null;
+                                originalGraph.AnalyzeResult = null;
+                                originalGraph.Conflicts = null;
+                                originalGraph.InConflict = true;
+                                originalGraph.Install = null;
+                                originalGraph.Name = null;
+                                originalGraph.TargetGraphName = null;
+
+                                originalGraph.Conventions = null;
+                                originalGraph.Graphs = null;
+
+
                                 foreach (var prototypeGraph in prototypeGraphs)
                                 {
                                     if ((prototypeGraph.Framework == originalGraph.Framework) &&
                                         (prototypeGraph.RuntimeIdentifier == originalGraph.RuntimeIdentifier))
                                     {
                                         originalGraph.Flattened = prototypeGraph.Flattened;
+                                        originalGraph.RuntimeGraph = prototypeGraph.RuntimeGraph;
+                                        originalGraph.ResolvedDependencies = prototypeGraph.ResolvedDependencies;
+                                        originalGraph.AnalyzeResult = prototypeGraph.AnalyzeResult;
+                                        originalGraph.Conflicts = prototypeGraph.Conflicts;
+                                        originalGraph.InConflict = prototypeGraph.InConflict;
+                                        originalGraph.Install = prototypeGraph.Install;
+                                        originalGraph.Name = prototypeGraph.Name;
+                                        originalGraph.TargetGraphName = prototypeGraph.TargetGraphName;
+
+                                        originalGraph.Conventions = prototypeGraph.Conventions;
+                                        originalGraph.Graphs = prototypeGraph.Graphs;
+
                                         break;
                                     }
                                 }
@@ -1598,8 +1623,8 @@ namespace NuGet.Commands
                             _logger.LogMinimal($"BSW_DG2,{nvr.Equals(ovr)}, {nvr.MinVersion},{nvr.MaxVersion},{ovr.MinVersion},{ovr.MaxVersion}");
                             _logger.LogMinimal($"BSW_DG3,{RemoteDependencyWalker.IsGreaterThanOrEqualTo(nvr, ovr)}, {RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr)}");
 #endif
-//                            if ((nvr.MinVersion.Major == 7) && (nvr.MinVersion.Minor == 3) && (currentRef.LibraryRange.ToString().Contains("Identity")))
-//                                _logger.LogMinimal("BSW_BP");
+                            //                            if ((nvr.MinVersion.Major == 7) && (nvr.MinVersion.Minor == 3) && (currentRef.LibraryRange.ToString().Contains("Identity")))
+                            //                                _logger.LogMinimal("BSW_BP");
 
                             chosenResolvedItems.Remove(currentRef.Name);
                             //Record an eviction for the node we are replacing.  The eviction path is for the current node.
@@ -1666,7 +1691,7 @@ namespace NuGet.Commands
                             // any queue members who were descendants of the thing we just evicted.
                             var newRefImport =
                                 new Queue<(LibraryDependency, string, HashSet<string>, Dictionary<string, VersionRange>)>();
-                            while(refImport.Count>0)
+                            while (refImport.Count > 0)
                             {
                                 (var cR, string pTCR, HashSet<string> cS, Dictionary<string, VersionRange> cO) =
                                     refImport.Dequeue();
@@ -1675,7 +1700,7 @@ namespace NuGet.Commands
                                     _logger.LogMinimal($"BSW_SCORE - {cR} - {pTCR} - {evictedLR}");
 #endif
                                 if (!pTCR.Contains(evictedLR))
-                                    newRefImport.Enqueue((cR,pTCR,cS,cO));
+                                    newRefImport.Enqueue((cR, pTCR, cS, cO));
                             }
                             refImport = newRefImport;
                         }
@@ -1771,7 +1796,7 @@ namespace NuGet.Commands
                             }
                         }
                     }
-                   else
+                    else
                     {
 #if verboseLog
                         _logger.LogMinimal($"BSW_MC1, Marking as Chosen ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
