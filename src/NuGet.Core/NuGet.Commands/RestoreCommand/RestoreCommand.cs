@@ -361,7 +361,7 @@ namespace NuGet.Commands
                                 originalGraph.TargetGraphName = null;
                                 originalGraph.Conventions = null;
 
-                                originalGraph.Graphs = null;
+                                //originalGraph.Graphs = null;
 
                                 foreach (var prototypeGraph in prototypeGraphs)
                                 {
@@ -379,7 +379,7 @@ namespace NuGet.Commands
                                         originalGraph.TargetGraphName = prototypeGraph.TargetGraphName;
                                         originalGraph.Conventions = prototypeGraph.Conventions;
 
-                                        originalGraph.Graphs = prototypeGraph.Graphs;
+                                        //originalGraph.Graphs = prototypeGraph.Graphs;
 
                                         break;
                                     }
