@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -104,11 +105,10 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("http://source.test", true)]
-        [InlineData("https://source.test", false)]
-        public void Sources_DisplaysErrorWhenAddingHttpSource(string source, bool shouldFail)
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WhenAddingHttpSource_Error()
         {
+            string source = "http://source.test";
             using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 TestDirectory workingPath = pathContext.WorkingDirectory;
@@ -127,41 +127,58 @@ namespace Dotnet.Integration.Test
                     settings.ConfigPath
                 };
 
-                if (shouldFail)
-                {
-                    // Act
-                    CommandRunnerResult result = _fixture.RunDotnetExpectFailure(workingPath, string.Join(" ", args));
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectFailure(workingPath, string.Join(" ", args));
 
-                    // Assert
-                    string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single_Short, "add source", source);
-                    Assert.Contains(expectedError, result.AllOutput);
-
-                }
-                else
-                {
-                    // Act
-                    CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
-
-                    // Assert
-                    ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
-
-                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                    Assert.Equal(source, sourceItem.GetValueAsPath());
-                }
+                // Assert
+                string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single_Short, "add source", source);
+                Assert.Contains(expectedError, result.AllOutput);
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("http://source.test", true)]
-        [InlineData("https://source.test", false)]
-        public void Sources_WarnWhenUpdatingHttpSource(string updateSource, bool shouldFail)
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WhenAddingHttpsSource_NoError()
+        {
+            string source = "https://source.test";
+
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                TestDirectory workingPath = pathContext.WorkingDirectory;
+                SimpleTestSettingsContext settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    source,
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+
+                // Assert
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal(source, sourceItem.GetValueAsPath());
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WhenUpdatingHttpSource_Errors()
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
                 string configFileName = "nuget.config";
                 string configFilePath = Path.Combine(configFileDirectory, configFileName);
-
+                string updateSource = "http://source.test";
                 var nugetConfig =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -197,34 +214,74 @@ namespace Dotnet.Integration.Test
                     configFilePath
                 };
 
-                if (shouldFail)
-                {
-                    // Act
-                    CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectFailure(configFileDirectory, string.Join(" ", args));
 
-                    // Assert
-                    string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "update source", updateSource);
-                    Assert.Contains(expectedError, result.AllOutput);
-                }
-                else
-                {
-                    // Act
-                    CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+                // Assert
+                string expectedError = string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "update source", updateSource);
+                Assert.Contains(expectedError, result.AllOutput);
+            }
+        }
 
-                    // Assert
-                    ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
-                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                    Assert.Equal(updateSource, sourceItem.GetValueAsPath());
-                }
+        [PlatformFact(Platform.Windows)]
+        public void Sources_WhenUpdatingHttpsSource_Succeeds()
+        {
+            using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
+            {
+                string configFileName = "nuget.config";
+                string configFilePath = Path.Combine(configFileDirectory, configFileName);
+                string updateSource = "https://source.test";
+                var nugetConfig =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test.initial"" />
+  </packageSources>
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
+
+                ISettings settings = Settings.LoadDefaultSettings(
+                    configFileDirectory,
+                    configFileName,
+                    null);
+
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.Single(sources);
+
+                PackageSource source = sources.Single();
+                Assert.Equal("test_source", source.Name);
+                Assert.Equal("http://source.test.initial", source.Source);
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "update",
+                    "source",
+                    "test_source",
+                    "--source",
+                    updateSource,
+                    "--configfile",
+                    configFilePath
+                };
+
+                // Act
+                CommandRunnerResult result = _fixture.RunDotnetExpectSuccess(configFileDirectory, string.Join(" ", args));
+
+                // Assert
+                ISettings loadedSettings = Settings.LoadDefaultSettings(root: configFileDirectory, configFileName: null, machineWideSettings: null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal(updateSource, sourceItem.GetValueAsPath());
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("http://source.test", "http://source.test.2")]
-        [InlineData("https://source.test", "http://source.test.2")]
-        [InlineData("https://source.test", "https://source.test.2")]
-        public void Sources_WhenListHttpSource(string initialSource, string secondSource)
+        [InlineData("http://source.test", "http://source.test.2", new[] { "http://source.test", "http://source.test.2" })]
+        [InlineData("https://source.test", "http://source.test.2", new[] { "http://source.test.2" })]
+        [InlineData("http://source.test", "https://source.test.2", new[] { "http://source.test" })]
+        public void ListSources_WhenHttpSources_ErrorsForEachHttpSource(string initialSource, string secondSource, string[] httpSources)
         {
             using (TestDirectory configFileDirectory = _fixture.CreateTestDirectory())
             {
@@ -235,8 +292,8 @@ namespace Dotnet.Integration.Test
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""test_source"" value=""{0}"" />
-    <add key=""test_source_2"" value=""{1}"" />
+    <add key=""source1"" value=""{0}"" />
+    <add key=""source2"" value=""{1}"" />
   </packageSources>
 </configuration>", initialSource, secondSource);
                 CreateXmlFile(configFilePath, nugetConfig);
@@ -248,7 +305,23 @@ namespace Dotnet.Integration.Test
                     "list",
                     "source",
                 };
+                List<PackageSource> httpPackageSources = new List<PackageSource>();
+                string expectedError = "";
 
+                for (int i = 0; i < httpSources.Count(); i++)
+                {
+                    var source = httpSources[i];
+                    httpPackageSources.Add(new PackageSource(source, $"source{i}"));
+                }
+
+                if (httpPackageSources.Count == 1)
+                {
+                    expectedError = string.Format(Strings.Warning_List_HttpSource, httpPackageSources.First().Source);
+                }
+                else
+                {
+                    expectedError = string.Format(Strings.Warning_List_HttpSources, httpPackageSources.Select(e => e.Name));
+                }
                 // Act
                 ISettings settings = Settings.LoadDefaultSettings(
                     configFileDirectory,

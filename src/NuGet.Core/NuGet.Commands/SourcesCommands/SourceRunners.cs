@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -161,6 +162,9 @@ namespace NuGet.Commands
                                 source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
                             getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, "{0}{1}", sourcePadding, source.Source));
                         }
+
+                        // Warn for non Https sources
+                        WarnForHttpSources(sourcesList, getLogger);
                     }
                     break;
                 case SourcesListFormat.Short:
@@ -190,6 +194,40 @@ namespace NuGet.Commands
                 case SourcesListFormat.None:
                     // This validation could move to the Command or Args and be code-generated.
                     throw new CommandException(string.Format(CultureInfo.CurrentCulture, Strings.Source_InvalidFormatValue, args.Format));
+            }
+        }
+
+        private static void WarnForHttpSources(IEnumerable<PackageSource> sources, Func<ILogger> getLogger)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in sources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    getLogger().LogWarning(
+                    string.Format(CultureInfo.CurrentCulture,
+                        Strings.Warning_List_HttpSource,
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    getLogger().LogWarning(
+                            string.Format(CultureInfo.CurrentCulture,
+                            Strings.Warning_List_HttpSources,
+                            Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
             }
         }
     }
