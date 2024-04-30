@@ -31,7 +31,7 @@ namespace NuGet.Tests.Apex.Daily
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
-          
+
             EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
@@ -44,6 +44,7 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            solutionService.Build();
 
             Logger.WriteMessage($"Open PM UI...");
             System.Threading.Thread.Sleep(6000);
@@ -94,7 +95,7 @@ namespace NuGet.Tests.Apex.Daily
             EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
-            solutionService.CreateEmptySolution();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
