@@ -76,6 +76,7 @@ Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
 Microsoft.VisualStudio.Interop.dll
 Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.RpcContracts.dll
+Microsoft.VisualStudio.Markdown.Platform.resources.dll
 Microsoft.VisualStudio.Services.Client.Interactive.dll
 Microsoft.VisualStudio.Services.Client.Interactive.resources.dll
 Microsoft.VisualStudio.Services.Common.dll
