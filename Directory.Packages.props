@@ -61,7 +61,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.LanguageServices" Version="4.3.1" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed" Version="17.2.0-beta1-20502-01" />
-    <PackageVersion Include="Microsoft.VisualStudio.Markdown.Platform" Version="17.11.108-preview-g698faff4c2" />
+    <PackageVersion Include="Microsoft.VisualStudio.Markdown.Platform" Version="17.11.119-preview" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="17.2.0-beta1-20502-01" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.VS" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.SDK" Version="17.10.40171" />
