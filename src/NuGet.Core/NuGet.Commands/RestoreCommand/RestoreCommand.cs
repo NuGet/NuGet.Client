@@ -1464,7 +1464,7 @@ namespace NuGet.Commands
                 //Set the statically setable stuff
                 newRTG.AnalyzeResult = new AnalyzeResult<RemoteResolveResult>();
                 newRTG.Conflicts = new List<ResolverConflict>();
-                newRTG.InConflict = false; //its never set fwiw...
+                newRTG.InConflict = false; //its never set for substrate fwiw...
                 newRTG.Install = new HashSet<RemoteMatch>();
                 newRTG.ResolvedDependencies = new HashSet<ResolvedDependencyKey>();
                 newRTG.Unresolved = new HashSet<LibraryRange>();
@@ -1507,7 +1507,6 @@ namespace NuGet.Commands
                     VersionRange = new VersionRange(_request.Project.Version),
                     TypeConstraint = LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject
                 });
-
 
                 //If we find newer nodes of things while we walk, we'll evict them.
                 //A subset of evictions cause a re-import.  For instance if a newer chosen node has fewer refs,
@@ -1574,11 +1573,11 @@ namespace NuGet.Commands
 
                     if (currentOverrides.ContainsKey(currentRef.Name))
                     {
-                        if (currentRef.VersionOverride != null)
-                        {
-                            //                                    _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
-
-                        }
+                        /*                        if (currentRef.VersionOverride != null)
+                                                {
+                                                    _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
+                                                }
+                        */
                         if (currentOverrides[currentRef.Name] != currentRef.LibraryRange.VersionRange)
                         {
                             if (currentRef.VersionOverride != null)
@@ -1607,8 +1606,8 @@ namespace NuGet.Commands
                         VersionRange nvr = currentRef.LibraryRange.VersionRange;
                         VersionRange ovr = chosenRef.LibraryRange.VersionRange;
 
-                        //                                if(VersionRange.PreciseEquals(ovr,nvr)!=(ovr.ToString()==nvr.ToString()))
-                        //                                    _logger.LogMinimal($"BSW_ERR, Found a version range that is not equal but the string is {ovr} {nvr}");
+                        //if(VersionRange.PreciseEquals(ovr,nvr)!=(ovr.ToString()==nvr.ToString()))
+                        //  _logger.LogMinimal($"BSW_ERR, Found a version range that is not equal but the string is {ovr} {nvr}");
 
                         if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
@@ -1618,8 +1617,8 @@ namespace NuGet.Commands
                             _logger.LogMinimal($"BSW_DG2,{nvr.Equals(ovr)}, {nvr.MinVersion},{nvr.MaxVersion},{ovr.MinVersion},{ovr.MaxVersion}");
                             _logger.LogMinimal($"BSW_DG3,{RemoteDependencyWalker.IsGreaterThanOrEqualTo(nvr, ovr)}, {RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr)}");
 #endif
-                            //                            if ((nvr.MinVersion.Major == 7) && (nvr.MinVersion.Minor == 3) && (currentRef.LibraryRange.ToString().Contains("Identity")))
-                            //                                _logger.LogMinimal("BSW_BP");
+                            //if ((nvr.MinVersion.Major == 7) && (nvr.MinVersion.Minor == 3) && (currentRef.LibraryRange.ToString().Contains("Identity")))
+                            //  _logger.LogMinimal("BSW_BP");
 
                             chosenResolvedItems.Remove(currentRef.Name);
                             //Record an eviction for the node we are replacing.  The eviction path is for the current node.
@@ -1700,7 +1699,6 @@ namespace NuGet.Commands
                             refImport = newRefImport;
                         }
                         //if its lower we'll never do anything other than skip it.
-                        //                                else if (ovr.ToString() != nvr.ToString())
                         else if (!VersionRange.PreciseEquals(ovr, nvr))
                         {
 #if verboseLog
@@ -1804,8 +1802,6 @@ namespace NuGet.Commands
                     GraphItem<RemoteResolveResult> refItem = null;
                     if (!allResolvedItems.TryGetValue(libraryRangeOfCurrentRef, out refItem))
                     {
-
-
                         refItem = ResolverUtility.FindLibraryCachedAsync(
                         currentRef.LibraryRange,
                                     newRTG.Framework,
@@ -1828,7 +1824,7 @@ namespace NuGet.Commands
                     Dictionary<string, VersionRange> overrides =
                         new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
                     overrides.AddRange(currentOverrides);
-                    //Scan for supressions and overrides
+                    //Scan for suppressions and overrides
                     foreach (var dep in refItem.Data.Dependencies)
                     {
                         string depName = dep.Name;
@@ -1929,15 +1925,15 @@ namespace NuGet.Commands
 
                     (LibraryDependency chosenRef, string pathToChosenRef, var chosenSuppressions) = chosenResolvedItems[currentName];
                     LibraryRange currLib = chosenRef.LibraryRange;
-                    string currLibLibrarRange = currLib.ToString();
+                    string currLibLibraryRange = currLib.ToString();
 #if verboseLog
                             LogIT($"BSW_EAE1,{chosenRef}");
 #endif
-                    if (!allResolvedItems.ContainsKey(currLibLibrarRange))
-                        _logger.LogMinimal($"BSW_ERR2, {currLibLibrarRange}");
+                    if (!allResolvedItems.ContainsKey(currLibLibraryRange))
+                        _logger.LogMinimal($"BSW_ERR2, {currLibLibraryRange}");
                     else
                     {
-                        var node = allResolvedItems[currLibLibrarRange];
+                        var node = allResolvedItems[currLibLibraryRange];
                         newFlattened.Add(node);
                         foreach (var dep in node.Data.Dependencies)
                         {
@@ -1945,15 +1941,14 @@ namespace NuGet.Commands
                                 continue;
                             visitedItems.Add(dep.Name);
 
-                            if(!chosenResolvedItems.ContainsKey(dep.Name))
+                            if (!chosenResolvedItems.ContainsKey(dep.Name))
                             {
                                 //apparently not an erorr condition?
                                 //_logger.LogMinimal($"BSW_ERR3,{dep.Name},{_request.Project.FilePath}");
                                 continue;
                             }
 
-                           LibraryDependency actualDep = chosenResolvedItems[dep.Name].libRef;
-
+                            LibraryDependency actualDep = chosenResolvedItems[dep.Name].libRef;
 
                             var newGraphNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange);
                             newGraphNode.Item = allResolvedItems[actualDep.LibraryRange.ToString()];
@@ -1978,6 +1973,10 @@ namespace NuGet.Commands
             }
 
             sw2_prototype.Stop();
+
+            // Update the logger with the restore target graphs
+            // This allows lazy initialization for the Transitive Warning Properties
+            _logger.ApplyRestoreOutput(allGraphs);
 
 
             _logger.LogMinimal($"BSW_R0,tp={sw2_prototype.ElapsedMilliseconds}," +
