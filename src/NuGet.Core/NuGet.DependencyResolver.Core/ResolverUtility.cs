@@ -41,7 +41,7 @@ namespace NuGet.DependencyResolver
             string runtimeIdentifier,
             RemoteWalkContext context,
             CancellationToken cancellationToken,
-            bool noLock)
+            bool noLock = false)
         {
             GraphItem<RemoteResolveResult> graphItem = null;
             var currentCacheContext = context.CacheContext;
