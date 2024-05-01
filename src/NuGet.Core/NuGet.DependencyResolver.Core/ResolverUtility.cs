@@ -17,19 +17,22 @@ namespace NuGet.DependencyResolver
 {
     public static class ResolverUtility
     {
+#pragma warning disable RS0016
         public static Task<GraphItem<RemoteResolveResult>> FindLibraryCachedAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
             string runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool noLock = false)
         {
             LibraryRangeCacheKey key = new(libraryRange, framework);
 
             return context.FindLibraryEntryCache.GetOrAddAsync(key,
-                static state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken),
-                (key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken),
-                cancellationToken);
+                static state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken, state.noLock),
+                (key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken, noLock),
+                cancellationToken,
+                noLock);
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
@@ -37,7 +40,8 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            bool noLock)
         {
             GraphItem<RemoteResolveResult> graphItem = null;
             var currentCacheContext = context.CacheContext;
@@ -55,7 +59,9 @@ namespace NuGet.DependencyResolver
             // the package.
             for (var i = 0; i < 2 && graphItem == null; i++)
             {
-                var match = await FindLibraryMatchAsync(
+                RemoteMatch match = null;
+
+                var matchTask = FindLibraryMatchAsync(
                     libraryRange,
                     framework,
                     runtimeIdentifier,
@@ -67,6 +73,16 @@ namespace NuGet.DependencyResolver
                     context.Logger,
                     cancellationToken);
 
+                if (noLock)
+                {
+                    match = matchTask.Result;
+                }
+                else
+                {
+                    match = await matchTask;
+                }
+
+
                 if (match == null)
                 {
                     return CreateUnresolvedResult(libraryRange);
@@ -76,7 +92,16 @@ namespace NuGet.DependencyResolver
 
                     try
                     {
-                        graphItem = await CreateGraphItemAsync(match, framework, currentCacheContext, context.Logger, cancellationToken);
+                        var graphItemTask = CreateGraphItemAsync(match, framework, currentCacheContext, context.Logger, cancellationToken);
+
+                        if (noLock)
+                        {
+                            graphItem = graphItemTask.Result;
+                        }
+                        else
+                        {
+                            graphItem = await graphItemTask;
+                        }
                     }
                     catch (InvalidCacheProtocolException) when (i == 0)
                     {
@@ -99,6 +124,8 @@ namespace NuGet.DependencyResolver
 
             return graphItem;
         }
+
+#pragma warning restore
 
         private static async Task<GraphItem<RemoteResolveResult>> CreateGraphItemAsync(
             RemoteMatch match,

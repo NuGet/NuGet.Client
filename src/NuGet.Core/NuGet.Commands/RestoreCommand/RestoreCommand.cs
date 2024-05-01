@@ -120,10 +120,10 @@ namespace NuGet.Commands
 
 
         //BSW - variable to control if we use the prototype or not
-        private int _usePrototype = -1;
+        private static int _usePrototype = -1;
         //
 
-        public RestoreCommand(RestoreRequest request)
+        static RestoreCommand()
         {
             //BSW - set
             string subProtoNugValue = Environment.GetEnvironmentVariable("SubProtoNug");
@@ -139,7 +139,10 @@ namespace NuGet.Commands
             else
                 _usePrototype = 0;
             //BSW
+        }
 
+        public RestoreCommand(RestoreRequest request)
+        {
             _request = request ?? throw new ArgumentNullException(nameof(request));
             _lockFileBuilderCache = request.LockFileBuilderCache;
 
@@ -1501,8 +1504,8 @@ namespace NuGet.Commands
                 //then we might have a dangling over-elevated ref on the old one, it'll be hard evicted.
                 //The second item here is the path to root.  When we add a hard-evictee, we'll also remove anything
                 //added to the eviction list that contains the evictee on their path to root.
-                Queue<(LibraryDependency nextRef, string pathToNextRef, HashSet<String> suppressions, Dictionary<string, VersionRange>)> refImport =
-                  new Queue<(LibraryDependency, string, HashSet<string>, Dictionary<string, VersionRange>)>();
+                Queue<ImportRefItem> refImport =
+                  new Queue<ImportRefItem>();
 
                 //using string since LibraryRange has an odd equals method.  Gotta be a cleaner way to do this.
                 Dictionary<string, GraphItem<RemoteResolveResult>> allResolvedItems =
@@ -1532,17 +1535,27 @@ namespace NuGet.Commands
                     _logger.LogMinimal($"BSW_PI2,evictee={eviction.Key} path={eviction.Value}");
 #endif
 
+                refImport.Enqueue(new ImportRefItem()
+                {
+                    Ref = initialProject,
+                    PathToRef = "",
+                    Suppressions = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                    CurrentOverrides = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase),
+                });
 
-                refImport.Enqueue((initialProject, "", new HashSet<string>(StringComparer.OrdinalIgnoreCase),
-                    new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase)));
                 while (refImport.Count > 0)
                 {
 #if verboseLog
                     _logger.LogMinimal($"BSW_DI1,refWalk.Count={refImport.Count} chosenResolvedItems={chosenResolvedItems.Count}");
 #endif
                     maxOutstandingRefs = Math.Max(refImport.Count, maxOutstandingRefs);
-                    (var currentRef, string pathToCurrentRef, HashSet<string> currentSupressions,
-                        Dictionary<string, VersionRange> currentOverrides) = refImport.Dequeue();
+
+                    ImportRefItem importRefItem = refImport.Dequeue();
+                    var currentRef = importRefItem.Ref;
+                    var pathToCurrentRef = importRefItem.PathToRef;
+                    var currentSupressions = importRefItem.Suppressions;
+                    var currentOverrides = importRefItem.CurrentOverrides;
+
                     string nameOfCurrentRef = currentRef.ToString();
                     string libraryRangeOfCurrentRef = currentRef.LibraryRange.ToString();
 
@@ -1672,17 +1685,16 @@ namespace NuGet.Commands
                             //if we are going to live with this queue and chosen state, we need to also kick
                             // any queue members who were descendants of the thing we just evicted.
                             var newRefImport =
-                                new Queue<(LibraryDependency, string, HashSet<string>, Dictionary<string, VersionRange>)>();
+                                new Queue<ImportRefItem>();
                             while (refImport.Count > 0)
                             {
-                                (var cR, string pTCR, HashSet<string> cS, Dictionary<string, VersionRange> cO) =
-                                    refImport.Dequeue();
+                                ImportRefItem item = refImport.Dequeue();
 #if verboseLog
-                                if(pTCR.Contains(evictedLR))
-                                    _logger.LogMinimal($"BSW_SCORE - {cR} - {pTCR} - {evictedLR}");
+                                if(item.PathToRef.Contains(evictedLR))
+                                    _logger.LogMinimal($"BSW_SCORE - {item.Ref} - {item.PathToRef} - {evictedLR}");
 #endif
-                                if (!pTCR.Contains(evictedLR))
-                                    newRefImport.Enqueue((cR, pTCR, cS, cO));
+                                if (!item.PathToRef.Contains(evictedLR))
+                                    newRefImport.Enqueue(item);
                             }
                             refImport = newRefImport;
                         }
@@ -1795,7 +1807,8 @@ namespace NuGet.Commands
                                     newRTG.Framework,
                                     newRTG.RuntimeIdentifier,
                                     context,
-                                    CancellationToken.None).Result;
+                                    CancellationToken.None,
+                                    noLock: true).Result;
                         totalDeepLookups++;
 #if verboseLog
                         _logger.LogMinimal($"BSW_PF1, {libraryRangeOfCurrentRef}");
@@ -1852,7 +1865,13 @@ namespace NuGet.Commands
 #if verboseLog
                         _logger.LogMinimal($"BSW_PF6, EnQued ({dep},it={dep.IncludeType},sp={dep.SuppressParent})");
 #endif
-                        refImport.Enqueue((dep, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef, suppressions, overrides));
+                        refImport.Enqueue(new ImportRefItem()
+                        {
+                            Ref = dep,
+                            PathToRef = pathToCurrentRef + " -> " + libraryRangeOfCurrentRef,
+                            Suppressions = suppressions,
+                            CurrentOverrides = overrides,
+                        });
                     }
 
                     // Add runtime dependencies of the current node if a runtime identifier has been specified.
@@ -1880,7 +1899,13 @@ namespace NuGet.Commands
 
                         foreach (var dep in runtimeDependencies)
                         {
-                            refImport.Enqueue((dep, pathToCurrentRef + " -> " + libraryRangeOfCurrentRef, suppressions, overrides));
+                            refImport.Enqueue(new ImportRefItem()
+                            {
+                                Ref = dep,
+                                PathToRef = pathToCurrentRef + " -> " + libraryRangeOfCurrentRef,
+                                Suppressions = suppressions,
+                                CurrentOverrides = overrides,
+                            });
                         }
                     }
                 }
