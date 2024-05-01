@@ -55,9 +55,9 @@ namespace NuGet
         /// <param name="state">A state object to pass to the value factory.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use for signaling that an operation should be cancelled.</param>
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
-        public Task<TValue> GetOrAddAsync<TState>(TKey key, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken)
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken, bool noLock = false)
         {
-            return GetOrAddAsync(key, refresh: false, valueFactory, state, cancellationToken);
+            return GetOrAddAsync(key, refresh: false, valueFactory, state, cancellationToken, noLock);
         }
 
         /// <summary>
@@ -69,30 +69,36 @@ namespace NuGet
         /// <param name="state">A state object to pass to the value factory.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use for signaling that an operation should be cancelled.</param>
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
-        public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken)
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken, bool noLock = false)
         {
             if (!refresh && _cache.TryGetValue(key, out Task<TValue>? value))
             {
                 return value;
             }
 
-            // Get a lock object for this one single key which allows other asynchronous tasks to be added and retrieved at the same time
-            // rather than locking the entire cache.
-            // NOTE: Be very careful about which overload of GetOrAdd is called. There was previously a very subtle bug with this call:
-            //
-            // GetOrAdd(key, static () => new object());
-            //
-            // Which calls the `GetOrAdd(TKey key, TValue value)` overload rather than the `GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)`
-            // overload. The consequence is that the same static delegate is cached and locked on rather than having one lock object per key.
-            object lockObject = _perTaskLock.GetOrAdd(key, static (TKey _) => new object());
-
-            lock (lockObject)
+            if (!noLock)
             {
-                if (!refresh && _cache.TryGetValue(key, out value))
-                {
-                    return value;
-                }
+                // Get a lock object for this one single key which allows other asynchronous tasks to be added and retrieved at the same time
+                // rather than locking the entire cache.
+                object lockObject = _perTaskLock.GetOrAdd(key, static (TKey _) => new object());
 
+                lock (lockObject)
+                {
+                    if (!refresh && _cache.TryGetValue(key, out value))
+                    {
+                        return value;
+                    }
+
+                    return _cache[key] = valueFactory(state)
+                        .ContinueWith(
+                            static task => task.GetAwaiter().GetResult(),
+                            cancellationToken,
+                            TaskContinuationOptions.RunContinuationsAsynchronously,
+                            TaskScheduler.Default);
+                }
+            }
+            else
+            {
                 return _cache[key] = valueFactory(state)
                     .ContinueWith(
                         static task => task.GetAwaiter().GetResult(),
