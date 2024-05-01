@@ -360,8 +360,7 @@ namespace NuGet.Commands
                                 originalGraph.Name = null;
                                 originalGraph.TargetGraphName = null;
                                 originalGraph.Conventions = null;
-
-                                //originalGraph.Graphs = null;
+                                originalGraph.Graphs = null;
 
                                 foreach (var prototypeGraph in prototypeGraphs)
                                 {
@@ -378,9 +377,7 @@ namespace NuGet.Commands
                                         originalGraph.Name = prototypeGraph.Name;
                                         originalGraph.TargetGraphName = prototypeGraph.TargetGraphName;
                                         originalGraph.Conventions = prototypeGraph.Conventions;
-
-                                        //originalGraph.Graphs = prototypeGraph.Graphs;
-
+                                        originalGraph.Graphs = prototypeGraph.Graphs;
                                         break;
                                     }
                                 }
@@ -1917,6 +1914,7 @@ namespace NuGet.Commands
                         _logger.LogMinimal($"BSW_ERR1, {currentName}");
                         continue;
                     }
+
                     (LibraryDependency chosenRef, string pathToChosenRef, var chosenSuppressions) = chosenResolvedItems[currentName];
                     LibraryRange currLib = chosenRef.LibraryRange;
                     string currLibLibrarRange = currLib.ToString();
@@ -1929,18 +1927,27 @@ namespace NuGet.Commands
                     {
                         var node = allResolvedItems[currLibLibrarRange];
                         newFlattened.Add(node);
-                        foreach (var dep in allResolvedItems[currLibLibrarRange].Data.Dependencies)
+                        foreach (var dep in node.Data.Dependencies)
                         {
-
                             if (visitedItems.Contains(dep.Name))
                                 continue;
                             visitedItems.Add(dep.Name);
 
-                            var newGraphNode = new GraphNode<RemoteResolveResult>(dep.LibraryRange);
-                            newGraphNode.Item = allResolvedItems[currLibLibrarRange.ToString()];
+                            if(!chosenResolvedItems.ContainsKey(dep.Name))
+                            {
+                                //apparently not an erorr condition?
+                                //_logger.LogMinimal($"BSW_ERR3,{dep.Name},{_request.Project.FilePath}");
+                                continue;
+                            }
+
+                           LibraryDependency actualDep = chosenResolvedItems[dep.Name].libRef;
+
+
+                            var newGraphNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange);
+                            newGraphNode.Item = allResolvedItems[actualDep.LibraryRange.ToString()];
                             currentGraphNode.InnerNodes.Add(newGraphNode);
 
-                            itemsToFlatten.Enqueue((dep.Name, newGraphNode));
+                            itemsToFlatten.Enqueue((actualDep.Name, newGraphNode));
                         }
                     }
                 }
