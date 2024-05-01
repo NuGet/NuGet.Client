@@ -43,7 +43,7 @@ namespace NuGet.DependencyResolver
             string? runtimeIdentifier,
             RemoteWalkContext context,
             CancellationToken cancellationToken,
-            bool noLock)
+            bool noLock = false)
         {
             if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
             if (framework == null) throw new ArgumentNullException(nameof(framework));
