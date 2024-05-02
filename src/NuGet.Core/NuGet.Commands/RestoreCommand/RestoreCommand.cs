@@ -354,15 +354,21 @@ namespace NuGet.Commands
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                             prototypeTimeMs = sw.ElapsedMilliseconds;
                         }
+#if bswlog
                         _logger.LogMinimal($"BSW_Rt: orig={originalTimeMs}, prototype={prototypeTimeMs}, {_request.Project.FilePath}");
+#endif
                         if (_usePrototype == 1)
                         {
+#if bswlog
                             _logger.LogMinimal($"***** Using SubProtoNug for {_request.Project.FilePath}");
+#endif
                             graphs = prototypeGraphs;
                         }
                         if (_usePrototype == 2)
                         {
+#if bswlog
                             _logger.LogMinimal($"***** Using SubProtoNug flattened graph for {_request.Project.FilePath}");
+#endif
                             foreach (var originalGraph in graphs)
                             {
                                 originalGraph.Flattened = null; // assure we are actually assigning a flattened graph to everything
@@ -1458,7 +1464,9 @@ namespace NuGet.Commands
             foreach (var pair in projectFrameworkRuntimePairs)
             {
                 sw3_preamble.Start();
+#if bswlog
                 _logger.LogMinimal($"BSW_R1, Starting {pair.Framework},{pair.RuntimeIdentifier},{_request.Project.FilePath}");
+#endif
                 //A nice debug break point for analysis, works well with /p:RestoreDisableParallel=true
                 //                if (_request.Project.FilePath.Contains("Microsoft.Exchange.Diagnostics"))
                 //                    _logger.LogMinimal($"BSW_BP");
@@ -1957,7 +1965,9 @@ namespace NuGet.Commands
                     (LibraryDependencyIndex currentDependencyIndex, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
                     if (!chosenResolvedItems.ContainsKey(currentDependencyIndex))
                     {
+#if bswlog
                         _logger.LogMinimal($"BSW_ERR1, {currentDependencyIndex}");
+#endif
                         continue;
                     }
                     (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, var chosenSuppressions) = chosenResolvedItems[currentDependencyIndex];
@@ -1965,7 +1975,11 @@ namespace NuGet.Commands
                             LogIT($"BSW_EAE1,{chosenRef}");
 #endif
                     if (!allResolvedItems.ContainsKey(chosenRefRangeIndex))
+#if bswlog
                         _logger.LogMinimal($"BSW_ERR2, {chosenRefRangeIndex}");
+#else
+                    { }
+#endif
                     else
                     {
                         var node = allResolvedItems[chosenRefRangeIndex];
@@ -2016,10 +2030,11 @@ namespace NuGet.Commands
             // This allows lazy initialization for the Transitive Warning Properties
             _logger.ApplyRestoreOutput(allGraphs);
 
-
+#if bswlog
             _logger.LogMinimal($"BSW_R0,tp={sw2_prototype.ElapsedMilliseconds}," +
                 $"tpr={sw3_preamble.ElapsedMilliseconds},tvo={sw4_voScan.ElapsedMilliseconds}," +
                 $"tfi={sw5_fullImport.ElapsedMilliseconds},tf={sw6_flatten.ElapsedMilliseconds},pa={patience},mor={maxOutstandingRefs},tl={totalLookups},tdl={totalDeepLookups},te={totalEvictions},the={totalHardEvictions}");
+#endif
             return allGraphs;
 
         }
