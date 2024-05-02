@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -25,7 +24,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private const string ADVERTISE_SKIPDUPLICATE_OPTION = "To skip already published packages, use the option -SkipDuplicate"; //PushCommandSkipDuplicateAdvertiseNuGetExe
         private const string WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST = "File does not exist";
         private const string MESSAGE_FILE_DOES_NOT_EXIST = WITHOUT_FILENAME_MESSAGE_FILE_DOES_NOT_EXIST + " ({0})";
-        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         /// <summary>
         /// 100 seconds is significant because that is the default timeout on <see cref="HttpClient"/>.
@@ -832,7 +830,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         [Fact]
-        public void PushCommand_WhenPushingToAnHttpServerV3_WithSymbols_Warns()
+        public void PushCommand_WhenPushingToAnHttpServerV3_WithSymbols_Errors()
         {
             // Arrange
             using var packageDirectory = TestDirectory.Create();
@@ -844,7 +842,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             CommandRunnerResult result = null;
             using var server = CreateAndStartMockV3Server(packageDirectory, out string sourceName);
-            string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", sourceName);
             SetupMockServerAlwaysCreate(server);
             // Act
             result = CommandRunner.Run(
@@ -855,7 +852,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             Assert.False(result.Success, result.AllOutput);
-            Assert.Contains(expectedError, result.AllOutput);
+            Assert.Contains(sourceName, result.Errors);
         }
 
         #region Helpers
