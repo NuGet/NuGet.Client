@@ -921,7 +921,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
   <data name="WhyCommand_PackageArgument_Description" xml:space="preserve">
     <value>The package name to look-up in the dependency graph.</value>
   </data>
-  <data name="WhyCommand_FrameworkOption_Description" xml:space="preserve">
+  <data name="WhyCommand_FrameworksOption_Description" xml:space="preserve">
     <value>The target framework(s) for which dependency graphs are shown.</value>
   </data>
   <data name="WhyCommand_Error_ArgumentCannotBeEmpty" xml:space="preserve">

@@ -45,7 +45,7 @@ namespace NuGet.XPlat.FuncTest
                 var whyCommandRunner = new WhyCommandRunner();
                 var whyCommandArgs = new WhyCommandArgs(
                         project.ProjectPath,
-                        packageY.PackageName,
+                        packageY.Id,
                         [projectFramework],
                         logger);
 

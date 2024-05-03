@@ -2253,9 +2253,9 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to The target framework(s) for which dependency graphs are shown..
         /// </summary>
-        internal static string WhyCommand_FrameworkOption_Description {
+        internal static string WhyCommand_FrameworksOption_Description {
             get {
-                return ResourceManager.GetString("WhyCommand_FrameworkOption_Description", resourceCulture);
+                return ResourceManager.GetString("WhyCommand_FrameworksOption_Description", resourceCulture);
             }
         }
         

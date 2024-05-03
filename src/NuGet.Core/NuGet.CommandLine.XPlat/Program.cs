@@ -39,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
         {
 #if DEBUG
             // Uncomment the following when debugging. Also uncomment the PackageReference for Microsoft.Build.Locator.
-            /*try
+            try
             {
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
                 // try block is never entered if Microsoft.Build.Locator.dll can't be found. So, run it in a
@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // MSBuildLocator is used only to enable Visual Studio debugging.
                 // It's not needed when using a patched dotnet sdk, so it doesn't matter if it fails.
-            }*/
+            }
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
@@ -74,9 +74,11 @@ namespace NuGet.CommandLine.XPlat
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-            if ((args.Count() >= 2 && args[0] == "package" && args[1] == "search") || (args.Any() && args[0] == "config"))
+            // Migrating from Microsoft.Extensions.CommandLineUtils.CommandLineApplication to System.Commandline.CliCommand
+            if ((args.Count() >= 2 && args[0] == "package" && args[1] == "search")
+                || (args.Any() && args[0] == "config")
+                || (args.Any() && args[0] == "why"))
             {
-                // We are executing command `dotnet package search`
                 Func<ILoggerWithColor> getHidePrefixLogger = () =>
                 {
                     log.HidePrefixForInfoAndMinimal = true;
@@ -84,14 +86,16 @@ namespace NuGet.CommandLine.XPlat
                 };
 
                 CliCommand rootCommand = new CliCommand("package");
+
                 PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
                 ConfigCommand.Register(rootCommand, getHidePrefixLogger);
+                WhyCommand.Register(rootCommand, getHidePrefixLogger);
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
                 tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
-                int exitCodeValue = 0;
                 CliConfiguration config = new(rootCommand);
                 ParseResult parseResult = rootCommand.Parse(args, config);
+                int exitCodeValue = 0;
 
                 try
                 {
@@ -255,7 +259,6 @@ namespace NuGet.CommandLine.XPlat
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
                 TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
                 SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
-                WhyCommand.Register(app, getHidePrefixLogger, () => new WhyCommandRunner());
             }
 
             app.FullName = Strings.App_FullName;
