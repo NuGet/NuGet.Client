@@ -42,7 +42,6 @@ namespace NuGet.XPlat.FuncTest
                 var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
                 var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
 
-                var whyCommandRunner = new WhyCommandRunner();
                 var whyCommandArgs = new WhyCommandArgs(
                         project.ProjectPath,
                         packageY.Id,
@@ -50,7 +49,7 @@ namespace NuGet.XPlat.FuncTest
                         logger);
 
                 // Act
-                var result = whyCommandRunner.ExecuteCommand(whyCommandArgs);
+                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
                 // Assert
                 var output = logger.ShowMessages();
@@ -70,7 +69,6 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestCommandOutputLogger();
-                var whyCommandRunner = new WhyCommandRunner();
                 var whyCommandArgs = new WhyCommandArgs(
                         "",
                         "PackageX",
@@ -78,7 +76,7 @@ namespace NuGet.XPlat.FuncTest
                         logger);
 
                 // Act
-                var result = whyCommandRunner.ExecuteCommand(whyCommandArgs);
+                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
                 // Assert
                 var output = logger.ShowMessages();
@@ -98,7 +96,6 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 var logger = new TestCommandOutputLogger();
-                var whyCommandRunner = new WhyCommandRunner();
                 var whyCommandArgs = new WhyCommandArgs(
                         "FakeProjectPath.csproj",
                         "PackageX",
@@ -106,7 +103,7 @@ namespace NuGet.XPlat.FuncTest
                         logger);
 
                 // Act
-                var result = whyCommandRunner.ExecuteCommand(whyCommandArgs);
+                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
                 // Assert
                 var output = logger.ShowMessages();
