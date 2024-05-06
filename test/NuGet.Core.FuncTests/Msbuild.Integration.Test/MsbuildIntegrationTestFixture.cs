@@ -100,7 +100,7 @@ namespace Msbuild.Integration.Test
         {
             var restoreDllPath = Path.Combine(_testDir, "NuGet.Build.Tasks.dll");
             var nugetRestoreTargetsPath = Path.Combine(_testDir, "NuGet.targets");
-            
+
             var result = CommandRunner.Run(_msbuildPath.Value,
                 workingDirectory,
                 $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",

@@ -984,7 +984,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 string.Join(" ", args),
                 environmentVariables: envVars,
                 testOutputHelper: _testOutputHelper);
-            
+
             // Assert
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);
 

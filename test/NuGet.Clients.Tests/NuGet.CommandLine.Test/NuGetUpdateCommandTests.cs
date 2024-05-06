@@ -1710,7 +1710,7 @@ namespace NuGet.CommandLine.Test
                 var nugetExe = Path.Combine(pathContext.WorkingDirectory, "NuGet.exe");
                 File.Copy(Util.GetNuGetExePath(), nugetExe);
 
-                CommandRunnerResult result = Util.RunCommand(pathContext, nugetExe, 1, testOutputHelper: _testOutputHelper,"update", "-self", "-source", pathContext.PackageSource, "-source", pathContext.HttpCacheFolder);
+                CommandRunnerResult result = Util.RunCommand(pathContext, nugetExe, 1, testOutputHelper: _testOutputHelper, "update", "-self", "-source", pathContext.PackageSource, "-source", pathContext.HttpCacheFolder);
                 result.ExitCode.Equals(1);
                 result.AllOutput.Contains(NuGetResources.Error_UpdateSelf_Source);
             }
