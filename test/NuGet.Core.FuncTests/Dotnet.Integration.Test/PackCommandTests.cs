@@ -2019,13 +2019,13 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_SingleFramework_GeneratesPackageOnBuildUsingNetCore()
         {
-            using (var testDirectory = msbuildFixture.CreateTestDirectory())
+            using (var testDirectory = _dotnetFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                _dotnetFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -2047,8 +2047,8 @@ namespace Dotnet.Integration.Test
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                msbuildFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
-                msbuildFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+                _dotnetFixture.RestoreProjectExpectSuccess(workingDirectory, projectName);
+                _dotnetFixture.BuildProjectExpectSuccess(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", "Debug", $"{projectName}.1.0.0.nuspec");
