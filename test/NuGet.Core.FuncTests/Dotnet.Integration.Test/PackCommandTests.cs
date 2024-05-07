@@ -29,7 +29,7 @@ namespace Dotnet.Integration.Test
 #elif NET9_0
         private const string ProjectTargetFramework = "net9.0";
 #else
-        #error Update the logic for which target framework to use for tests projects!!!
+#error Update the logic for which target framework to use for tests projects!!!
 #endif
 
         public PackCommandTests(DotnetIntegrationTestFixture fixture)
