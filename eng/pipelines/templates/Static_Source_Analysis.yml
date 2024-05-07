@@ -15,6 +15,11 @@ steps:
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
+- task: PostAnalysis@2
+  inputs:
+    GdnBreakAllTools: false
+    GdnBreakGdnToolCredScan: true
+
 - task: PowerShell@2
   displayName: "Analyze CredScan artifact"
   condition: false
