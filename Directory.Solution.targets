@@ -11,7 +11,7 @@
     <VSTestVerbosity Condition="'$(VSTestVerbosity)' == ''">quiet</VSTestVerbosity>
     <VSTestSetting Condition="'$(VSTestSetting)' == '' And '$(CI)' == 'true'">$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', 'build', 'xunit.runsettings'))</VSTestSetting>
     <VSTestResultsDirectory Condition="'$(VSTestResultsDirectory)' == ''">$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', 'TestResults'))</VSTestResultsDirectory>
-    <VSTestLogger Condition="'$(VSTestLogger)' == ''">console;verbosity=$(VSTestVerbosity)</VSTestLogger>
+    <VSTestLogger Condition="'$(VSTestLogger)' == ''">console%3Bverbosity=$(VSTestVerbosity)</VSTestLogger>
 
     <!--
       Build tests for all supported target frameworks by default, otherwise build tests for just the specified target framework.
