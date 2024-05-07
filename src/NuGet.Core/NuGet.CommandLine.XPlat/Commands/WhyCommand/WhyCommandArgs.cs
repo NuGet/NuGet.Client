@@ -6,17 +6,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
     internal class WhyCommandArgs
     {
-        public ILogger Logger { get; }
         public string Path { get; }
         public string Package { get; }
         public List<string> Frameworks { get; }
+        public ILoggerWithColor Logger { get; }
 
         /// <summary>
         /// A constructor for the arguments of the 'why' command.
@@ -29,7 +28,7 @@ namespace NuGet.CommandLine.XPlat
             string path,
             string package,
             List<string> frameworks,
-            ILogger logger)
+            ILoggerWithColor logger)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             Package = package ?? throw new ArgumentNullException(nameof(package));
@@ -48,11 +47,12 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                    "<PROJECT>|<SOLUTION>"));
+                    "PROJECT|SOLUTION"));
             }
 
             if (!File.Exists(path)
-                || (!path.EndsWith("proj", StringComparison.OrdinalIgnoreCase) && !path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
+                || (!path.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
+                    && !path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                    "<PACKAGE_NAME>"));
+                    "PACKAGE"));
             }
         }
 

@@ -2233,7 +2233,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid..
+        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid. For a list of accepted values, please visit https://learn.microsoft.com/en-us/nuget/reference/target-frameworks#supported-frameworks..
         /// </summary>
         internal static string WhyCommand_Error_InvalidFramework {
             get {
@@ -2269,7 +2269,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No dependency graph(s) found.
+        ///   Looks up a localized string similar to No dependency graph(s) found..
         /// </summary>
         internal static string WhyCommand_Message_NoDependencyGraphsFoundForFramework {
             get {
@@ -2278,7 +2278,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have any dependency graph(s) for &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have any dependency graph(s) for &apos;{1}&apos;..
         /// </summary>
         internal static string WhyCommand_Message_NoDependencyGraphsFoundInProject {
             get {
@@ -2296,7 +2296,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package name to look-up in the dependency graph..
+        ///   Looks up a localized string similar to The package name to lookup in the dependency graph..
         /// </summary>
         internal static string WhyCommand_PackageArgument_Description {
             get {
@@ -2305,7 +2305,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A path to a project, solution file or directory..
+        ///   Looks up a localized string similar to A path to a project, solution file, or directory..
         /// </summary>
         internal static string WhyCommand_PathArgument_Description {
             get {

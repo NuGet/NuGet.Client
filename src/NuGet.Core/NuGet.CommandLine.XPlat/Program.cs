@@ -87,9 +87,17 @@ namespace NuGet.CommandLine.XPlat
 
                 CliCommand rootCommand = new CliCommand("package");
 
+                if (args[0] == "why")
+                {
+                    rootCommand = new CliCommand("nuget");
+                }
+
                 PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
                 ConfigCommand.Register(rootCommand, getHidePrefixLogger);
                 WhyCommand.Register(rootCommand, getHidePrefixLogger);
+                // this won't show up in help for dotnet nuget * this way
+                // eg. `dotnet nuget blah` should show the help option for `dotnet nuget`, which should list all sub commands,
+                // but it won't enter this if block, so we won't see 'why' as a subcommand
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
                 tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
