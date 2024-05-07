@@ -6,7 +6,7 @@
             "file": [
                 "test/NuGet.Core.Tests/NuGet.Protocol.Tests/Plugins/Messages/GetCredentialsResponseTests.cs",
                 "test/NuGet.Core.Tests/NuGet.Protocol.Tests/Plugins/Messages/SetCredentialsRequestTests.cs",
-                "docs/cross-platform-debugging.md"
+                "docs/cross-platform-debugging.md1"
             ]
         }
     ]
