@@ -875,7 +875,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 packageDirectory,
                 $"push {snupkgFileName} -Source {sourceName} -Timeout 110 -Verbosity detailed",
                 timeOutInMilliseconds: 120000,
-                        testOutputHelper: _testOutputHelper); // 120 seconds
+                testOutputHelper: _testOutputHelper); // 120 seconds
 
             // Assert
             Assert.True(result.Success, result.AllOutput);
