@@ -63,7 +63,7 @@ extends:
         scanOutputDirectoryOnly: true
       sbom:
         enabled: false
-      credScan:
+      credscan:
         enabled: false
     pool:
       name: AzurePipelines-EO
