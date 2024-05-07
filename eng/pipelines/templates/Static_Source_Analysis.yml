@@ -12,41 +12,15 @@ steps:
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
 - task: CredScan@3
+  displayName: "CredScan"
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
 - task: PostAnalysis@2
+  displayName: "CredScan: Post Analysis"
   inputs:
     GdnBreakAllTools: false
     GdnBreakGdnToolCredScan: true
-
-- task: PowerShell@2
-  displayName: "Analyze CredScan artifact"
-  condition: false
-  inputs:
-    targetType: 'inline'
-    script: |
-      try {
-        $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\_sdt\logs\CredentialScanner CredentialScanner-matches.xml
-        $credScannerXml = [xml](Get-Content $credentialScannerMatches)
-
-        if($credScannerXml.DEFECTS -eq $null)
-        {
-          Write-Host "Unable to verify CodeAnalysisLogs artifact content, please manually verify it."
-          exit 1
-        }
-
-        if ($credScannerXml.DEFECTS.DEFECT -ne $null) {
-          Write-Host "CredentialScanner found following credential in this PR, please revoke this credential immediately:"
-          $credScannerXml.DEFECTS.DEFECT
-          exit 1
-        }
-      }
-      catch
-      {
-        Write-Host "##vso[task.LogIssue type=error;]$Error[0]"
-        exit 1
-      }
   continueOnError: ${{ parameters.isOfficialBuild }}
 
 - task: PowerShell@2

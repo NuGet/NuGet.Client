@@ -63,6 +63,8 @@ extends:
         scanOutputDirectoryOnly: true
       sbom:
         enabled: false
+      credScan:
+        enabled: false
     pool:
       name: AzurePipelines-EO
       image: 1ESPT-Windows2022
