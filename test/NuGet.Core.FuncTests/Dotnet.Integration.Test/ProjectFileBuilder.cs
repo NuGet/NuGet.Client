@@ -4,13 +4,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
-using Dotnet.Integration.Test;
+using NuGet.Test.Utility;
 
-namespace NuGet.Test.Utility
+namespace Dotnet.Integration.Test
 {
     /// <summary>
     /// Represents a builder for dotnet core projects for integration tests.
-    /// Relies on <c>MsbuildIntegrationTestFixture</c> to programmatically create the project
+    /// Relies on <see cref="DotnetIntegrationTestFixture" /> to programmatically create the project
     /// </summary>
     /// <seealso cref="DotnetIntegrationTestFixture"/>
     internal class ProjectFileBuilder
@@ -50,8 +50,8 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
-        /// Adds and intem inside a &lt;ItemGroup/&gt; node in the following form:
-        /// <c>&lt;{itemType} Include="{itemPath}" [PackagePath="{packagePath}" Pack="{pack}" Version="{version}"] /&gt;</c>
+        /// Adds and item inside a &lt;ItemGroup/&gt; node in the following form:
+        /// <code>&lt;{itemType} Include="{itemPath}" [PackagePath="{packagePath}" Pack="{pack}" Version="{version}"] /&gt;</code>
         /// </summary>
         public ProjectFileBuilder WithItem(
             string itemType,
