@@ -326,7 +326,7 @@ namespace NuGet.Commands
             return graphSuccess && ddSuccess;
         }
 
-        private async Task<bool> InstallPackagesAsync(
+        public async Task<bool> InstallPackagesAsync(
             HashSet<LibraryIdentity> uniquePackages,
             IEnumerable<RestoreTargetGraph> graphs,
             IList<DownloadDependencyResolutionResult> downloadDependencyInformations,
