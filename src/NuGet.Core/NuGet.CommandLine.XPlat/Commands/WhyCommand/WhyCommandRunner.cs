@@ -123,7 +123,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Runs the 'why' command, and prints output to the console.
+        /// Finds dependency graphs for a given project, and prints output to the console.
         /// </summary>
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command</param>
         /// <param name="project">Current project</param>
