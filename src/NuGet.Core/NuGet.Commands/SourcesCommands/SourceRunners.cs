@@ -163,7 +163,6 @@ namespace NuGet.Commands
                             getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture, "{0}{1}", sourcePadding, source.Source));
                         }
 
-                        // Warn for non Https sources
                         WarnForHttpSources(sourcesList, getLogger);
                     }
                     break;

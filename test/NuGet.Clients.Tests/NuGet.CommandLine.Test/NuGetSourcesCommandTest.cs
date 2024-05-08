@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -16,15 +15,10 @@ namespace NuGet.CommandLine.Test
     public class NuGetSourcesCommandTest
     {
 
-        string _httpErrorSingleShort = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere for more information.";
-        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information.";
-        string _httpListWarning = "The following are 'Non-HTTPS' sources: {0}\r\nNuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere for more information.";
-
-        [Theory]
-        [InlineData("http://test_source", true)]
-        [InlineData("https://test_source", false)]
-        public void SourcesCommandTest_AddSource(string source, bool shouldFail)
+        [Fact]
+        public void SourcesCommandTest_AddSourceWithHTTPSource_ShouldFail()
         {
+            string source = "http://test_source";
             using (var pathContext = new SimpleTestPathContext())
             {
                 TestDirectory workingPath = pathContext.WorkingDirectory;
@@ -47,23 +41,42 @@ namespace NuGet.CommandLine.Test
                 CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
 
                 // Assert
-                if (shouldFail)
-                {
-                    string expectedError = string.Format(CultureInfo.CurrentCulture,
-                        _httpErrorSingleShort,
-                        "add source",
-                        source);
-                    Assert.Equal(1, result.ExitCode);
-                    Assert.Contains(expectedError, result.AllOutput);
-                }
-                else
-                {
-                    Assert.Equal(0, result.ExitCode);
-                    ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
-                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                    Assert.Equal(source, sourceItem.GetValueAsPath());
-                }
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains(source, result.Errors);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_AddSourceWithHTTPSSource_ShouldSucceed()
+        {
+            string source = "https://test_source";
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                TestDirectory workingPath = pathContext.WorkingDirectory;
+                SimpleTestSettingsContext settings = pathContext.Settings;
+
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    source,
+                    "-ConfigFile",
+                    settings.ConfigPath
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(nugetexe, workingPath, string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(workingPath, null, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal(source, sourceItem.GetValueAsPath());
             }
         }
 
@@ -78,10 +91,6 @@ namespace NuGet.CommandLine.Test
                 SimpleTestSettingsContext settings = pathContext.Settings;
 
                 // Arrange
-                string expectedError = string.Format(CultureInfo.CurrentCulture,
-                        _httpErrorSingleShort,
-                        "add source",
-                        source);
                 var nugetexe = Util.GetNuGetExePath();
                 var args = new string[] {
                     "sources",
@@ -105,15 +114,50 @@ namespace NuGet.CommandLine.Test
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal(source, sourceItem.GetValueAsPath());
                 Assert.Equal("True", sourceItem.AllowInsecureConnections);
-                Assert.False(result.Output.Contains(expectedError));
+                Assert.False(result.Errors.Contains(source));
             }
         }
 
-        [Theory]
-        [InlineData("http://source.test", true)]
-        [InlineData("https://source.test", false)]
-        public void SourcesCommandTest_UpdateSource(string source, bool shouldFail)
+        [Fact]
+        public void SourcesCommandTest_UpdateSourceWithHTTPSource_ShouldFail()
         {
+            using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
+            {
+                string source = "http://source.test";
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
+
+                pathContext.Settings.AddSource("test_source", "http://source.test.initial");
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Update",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    source,
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    pathContext.WorkingDirectory,
+                    string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains(source, result.Errors);
+            }
+        }
+
+        [Fact]
+        public void SourcesCommandTest_UpdateSourceWithHTTPSSource_ShouldSucceed()
+        {
+            string source = "https://source.test";
             using (SimpleTestPathContext pathContext = new SimpleTestPathContext())
             {
                 var nugetexe = Util.GetNuGetExePath();
@@ -141,37 +185,23 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                if (shouldFail)
-                {
-                    string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "update source", source);
-                    Assert.Equal(1, result.ExitCode);
-                    Assert.Contains(expectedError, result.AllOutput);
-                }
-                else
-                {
-                    Assert.Equal(0, result.ExitCode);
-                    ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(pathContext.WorkingDirectory, configFileName, null);
-                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                    Assert.Equal(source, sourceItem.GetValueAsPath());
-                }
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(pathContext.WorkingDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal(source, sourceItem.GetValueAsPath());
             }
         }
 
-        [Theory]
-        [InlineData("http://source.test", true)]
-        [InlineData("https://source.test", false)]
-        public void SourcesCommandTest_UpdateSource_RemoveAllowInsecureConnections(string source, bool shouldFail)
+        [Fact]
+        public void SourcesCommandTest_RemoveAllowInsecureConnectionsOfHttpSource_Fails()
         {
+            string source = "http://source.test";
             using (TestDirectory configFileDirectory = TestDirectory.Create())
             {
                 var nugetexe = Util.GetNuGetExePath();
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
-                string expectedError = string.Format(CultureInfo.CurrentCulture,
-                        _httpErrorSingle,
-                        "update source",
-                        source);
                 var nugetConfig = string.Format(
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -200,20 +230,53 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                if (shouldFail)
-                {
-                    Assert.Equal(1, result.ExitCode);
-                    Assert.Contains(expectedError, result.AllOutput);
-                }
-                else
-                {
-                    Assert.Equal(0, result.ExitCode);
-                    ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
-                    SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
-                    SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                    Assert.Equal(source, sourceItem.GetValueAsPath());
-                    Assert.Null(sourceItem.AllowInsecureConnections);
-                }
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains(source, result.Errors);
+            }
+        }
+        [Fact]
+        public void SourcesCommandTest_RemoveAllowInsecureConnectionsOfHttpsSource_Succeeds()
+        {
+            string source = "https://source.test";
+            using (TestDirectory configFileDirectory = TestDirectory.Create())
+            {
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+                var nugetConfig = string.Format(
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://source.test.initial"" AllowInsecureConnections=""True""/>
+  </packageSources>
+</configuration>", source);
+                Util.CreateFile(configFileDirectory, configFileName, nugetConfig);
+
+                // Arrange
+                var args = new string[] {
+                    "sources",
+                    "Update",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    source,
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    configFileDirectory,
+                    string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                ISettings loadedSettings = Configuration.Settings.LoadDefaultSettings(configFileDirectory, configFileName, null);
+                SettingSection packageSourcesSection = loadedSettings.GetSection("packageSources");
+                SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+                Assert.Equal(source, sourceItem.GetValueAsPath());
+                Assert.Null(sourceItem.AllowInsecureConnections);
             }
         }
 
@@ -263,7 +326,7 @@ namespace NuGet.CommandLine.Test
                 SourceItem sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal(source, sourceItem.GetValueAsPath());
                 Assert.Equal("True", sourceItem.AllowInsecureConnections);
-                Assert.False(result.Output.Contains(_httpErrorSingleShort));
+                Assert.False(result.Errors.Contains(source));
             }
         }
 
@@ -306,9 +369,8 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "enable source", "http://test_source");
                 Assert.Equal(1, result.ExitCode);
-                Assert.Contains(expectedError, result.AllOutput);
+                Assert.Contains("http://test_source", result.Errors);
             }
         }
 
@@ -364,8 +426,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.False(source.IsEnabled, "Source is not disabled");
-                string notExpectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "enable source", "http://test_source");
-                Assert.False(result.Output.Contains(notExpectedError));
+                Assert.False(result.Errors.Contains("http://test_source"));
             }
         }
 
@@ -513,11 +574,12 @@ namespace NuGet.CommandLine.Test
                 Util.VerifyResultSuccess(result);
 
                 // http source with false allowInsecureConnections have warnings.
-                string expectedWarning = string.Format(CultureInfo.CurrentCulture,
-                            _httpListWarning,
-                            Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name)));
 
-                Assert.Contains(expectedWarning, result.Output);
+                Assert.Contains("http://source.test1", result.Errors);
+                Assert.Contains("http://source.test2", result.Errors);
+                Assert.Contains("http://source.test3", result.Errors);
+                Assert.Contains("http://source.test4", result.Errors);
+                Assert.Contains("http://source.test5", result.Errors);
             }
         }
 
