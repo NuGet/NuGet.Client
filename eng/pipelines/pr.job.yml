@@ -25,6 +25,11 @@ jobs:
       value: ${{ parameters.testType }}
     - name: TestTargetFramework
       value: ${{ parameters.testTargetFramework }}
+    - name: BinlogDirectory
+      ${{ if eq(parameters.osName, 'Windows') }}:
+        value: $(Agent.TempDirectory)\binlogs\
+      ${{ else }}:
+        value: $(Agent.TempDirectory)/binlogs/
 
   pool:
     name: ${{ parameters.agentPool }}

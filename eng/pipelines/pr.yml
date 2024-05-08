@@ -56,8 +56,11 @@ stages:
       parameters:
         displayName: Unit Tests on Windows (.NET Framework 4.7.2)
         osName: Windows
-        agentPool: NetCore-Public
-        agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
         testTargetFramework: net472
 
@@ -70,8 +73,11 @@ stages:
       parameters:
         displayName: Unit Tests on Windows (.NET 8.0)
         osName: Windows
-        agentPool: NetCore-Public
-        agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
         testTargetFramework: net8.0
 
@@ -84,8 +90,11 @@ stages:
       parameters:
         displayName: Unit Tests on Windows (.NET Core 3.1)
         osName: Windows
-        agentPool: NetCore-Public
-        agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
         testTargetFramework: netcoreapp3.1
 
@@ -98,8 +107,11 @@ stages:
       parameters:
         displayName: Functional Tests on Windows (.NET Framework 4.7.2)
         osName: Windows
-        agentPool: NetCore-Public
-        agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
         testTargetFramework: net472
         timeoutInMinutes: 60
@@ -113,8 +125,11 @@ stages:
       parameters:
         displayName: Functional Tests on Windows (.NET 8.0)
         osName: Windows
-        agentPool: NetCore-Public
-        agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
         testTargetFramework: net8.0
         timeoutInMinutes: 60
@@ -128,8 +143,11 @@ stages:
       parameters:
         displayName: Functional Tests on Windows (.NET Core 3.1)
         osName: Windows
-        agentPool: NetCore-Public
-        agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ if eq(variables['System.TeamProject'], 'public') }}:
+          agentPool: NetCore-Public
+          agentDemands: ImageOverride -equals Windows.VS2022Preview.Amd64.Open
+        ${{ else }}:
+          agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
         testTargetFramework: netcoreapp3.1
         timeoutInMinutes: 60
