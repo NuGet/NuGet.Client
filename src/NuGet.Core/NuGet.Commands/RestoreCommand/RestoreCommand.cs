@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using NuGet.Commands.Restore.Utility;
 using NuGet.Common;
 using NuGet.DependencyResolver;
@@ -342,6 +343,7 @@ namespace NuGet.Commands
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                             prototypeTimeMs = sw.ElapsedMilliseconds;
                         }
+                        _logger.LogMinimal($"SubProtoNug = {_usePrototype}");
 #if bswlog
                         _logger.LogMinimal($"BSW_Rt: orig={originalTimeMs}, prototype={prototypeTimeMs}, {_request.Project.FilePath}");
 #endif
@@ -1403,6 +1405,17 @@ namespace NuGet.Commands
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
 
+            var projectRestoreRequest = new ProjectRestoreRequest(
+             _request,
+             _request.Project,
+             _request.ExistingLockFile,
+             _logger)
+            {
+                ParentId = _operationId
+            };
+
+            var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
+
             var localRepositories = new List<NuGetv3LocalRepository>();
             localRepositories.Add(userPackageFolder);
             localRepositories.AddRange(fallbackPackageFolders);
@@ -1972,6 +1985,14 @@ namespace NuGet.Commands
                     {
                         var node = allResolvedItems[chosenRefRangeIndex];
                         newFlattened.Add(node);
+
+                        // If the package came from a remote library provider, it needs to be installed locally.
+                        var isRemote = context.RemoteLibraryProviders.Contains(node.Data.Match.Provider);
+                        if (isRemote)
+                        {
+                            newRTG.Install.Add(node.Data.Match);
+                        }
+
                         foreach (var dep in node.Data.Dependencies)
                         {
                             LibraryDependencyIndex depIndex = libraryDependencyInterningTable.Intern(dep);
@@ -2011,6 +2032,14 @@ namespace NuGet.Commands
                     graphByTFM.Add(pair.Framework, newRTG);
                 }
             }
+
+            HashSet<LibraryIdentity> uniquePackages = new HashSet<LibraryIdentity>();
+            projectRestoreCommand.InstallPackagesAsync(
+                uniquePackages,
+                allGraphs,
+                Array.Empty<DownloadDependencyResolutionResult>(),
+                userPackageFolder,
+                token).Wait(token);
 
             sw2_prototype.Stop();
 
