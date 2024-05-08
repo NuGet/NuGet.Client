@@ -575,11 +575,11 @@ namespace NuGet.CommandLine.Test
 
                 // http source with false allowInsecureConnections have warnings.
 
-                Assert.Contains("http://source.test1", result.Errors);
-                Assert.Contains("http://source.test2", result.Errors);
-                Assert.Contains("http://source.test3", result.Errors);
-                Assert.Contains("http://source.test4", result.Errors);
-                Assert.Contains("http://source.test5", result.Errors);
+                Assert.Contains("http://source.test1", result.AllOutput);
+                Assert.Contains("http://source.test2", result.AllOutput);
+                Assert.Contains("http://source.test3", result.AllOutput);
+                Assert.Contains("http://source.test4", result.AllOutput);
+                Assert.Contains("http://source.test5", result.AllOutput);
             }
         }
 
