@@ -25,16 +25,7 @@ jobs:
       value: ${{ parameters.testType }}
     - name: TestTargetFramework
       value: ${{ parameters.testTargetFramework }}
-    - name: TestResultsDirectory
-      ${{ if eq(parameters.osName, 'Windows') }}:
-        value: $(Agent.TempDirectory)\TestResults
-      ${{ else }}:
-        value: $(Agent.TempDirectory)/TestResults
-    - name: BinlogDirectory
-      ${{ if eq(parameters.osName, 'Windows') }}:
-        value: $(Agent.TempDirectory)\binlogs\
-      ${{ else }}:
-        value: $(Agent.TempDirectory)/binlogs/
+
   pool:
     name: ${{ parameters.agentPool }}
     ${{ if ne(parameters.vmImage, 'none') }}:
@@ -82,18 +73,7 @@ jobs:
     condition: succeeded()
     inputs:
       command: test
-      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --blame --logger trx --results-directory $(TestResultsDirectory) --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
-      publishTestResults: false
-
-  - task: PublishTestResults@2
-    displayName: Publish $(TestType) Tests Results 
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFormat: VSTest
-      testResultsFiles: '**/*.trx'
-      searchFolder: $(TestResultsDirectory)
-      mergeTestResults: true
-      failTaskOnMissingResultsFile: true
+      arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --blame --logger trx --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
       testRunTitle: ${{ parameters.osName }} $(TestType) Tests ($(TestTargetFramework))
 
   - task: PublishPipelineArtifact@1
