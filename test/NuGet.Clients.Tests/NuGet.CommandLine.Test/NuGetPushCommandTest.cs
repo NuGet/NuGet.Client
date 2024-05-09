@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Security.Principal;
@@ -22,7 +21,6 @@ namespace NuGet.CommandLine.Test
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
-        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         // Tests pushing to a source that is a v2 file system directory.
         [Fact]
@@ -2478,10 +2476,8 @@ namespace NuGet.CommandLine.Test
             Util.TestCommandInvalidArguments(cmd);
         }
 
-        [Theory]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public void PushCommand_WhenPushingToAnHttpServerWithAllowInsecureConnections_ThrowsAnErrorCorrectly(string allowInsecureConnections, bool shouldFail)
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerWithAllowInsecureConnectionsFalse_Errors()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -2507,7 +2503,7 @@ namespace NuGet.CommandLine.Test
 $@"<configuration>
     <packageSources>
         <clear />
-        <add key='http-feed' value='{server.Uri}push' protocalVersion=""3"" allowInsecureConnections=""{allowInsecureConnections}"" />
+        <add key='http-feed' value='{server.Uri}push' protocalVersion=""3"" allowInsecureConnections=""False"" />
     </packageSources>
 </configuration>";
             string configPath = Path.Combine(packageDirectory, "NuGet.Config");
@@ -2522,23 +2518,58 @@ $@"<configuration>
                             $"push {packageFileName} -ConfigFile {configPath} -Source {server.Uri}push");
 
             // Assert
-            string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", $"{server.Uri}push");
-            if (shouldFail)
-            {
-                result.Success.Should().BeFalse(result.AllOutput);
-                Assert.Contains(expectedError, result.AllOutput);
-            }
-            else
-            {
-                result.Success.Should().BeTrue(result.AllOutput);
-                Assert.DoesNotContain(expectedError, result.AllOutput);
-            }
+            result.Success.Should().BeFalse(result.AllOutput);
+            Assert.Contains($"{server.Uri}push", result.Errors);
         }
 
-        [Theory]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public void PushCommand_WhenPushingToAnHttpServerWithSymbolsAndAllowInsecureConnections_ThrowsAnErrorCorrectly(string allowInsecureConnections, bool shouldFail)
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerWithAllowInsecureConnectionsTrue_Succeeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using var packageDirectory = TestDirectory.Create();
+            var packageFileName = Util.CreateTestPackage("test", "1.1.0", packageDirectory);
+            var outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+
+            using var server = new MockServer();
+            server.Get.Add("/push", r => "OK");
+            server.Put.Add("/push", r =>
+            {
+                byte[] buffer = MockServer.GetPushedPackage(r);
+                using (var of = new FileStream(outputFileName, FileMode.Create))
+                {
+                    of.Write(buffer, 0, buffer.Length);
+                }
+
+                return HttpStatusCode.Created;
+            });
+
+            // Arrange the NuGet.Config file
+            string nugetConfigContent =
+$@"<configuration>
+    <packageSources>
+        <clear />
+        <add key='http-feed' value='{server.Uri}push' protocalVersion=""3"" allowInsecureConnections=""True"" />
+    </packageSources>
+</configuration>";
+            string configPath = Path.Combine(packageDirectory, "NuGet.Config");
+            File.WriteAllText(configPath, nugetConfigContent);
+
+            server.Start();
+
+            // Act
+            var result = CommandRunner.Run(
+                            nugetexe,
+                            Directory.GetCurrentDirectory(),
+                            $"push {packageFileName} -ConfigFile {configPath} -Source {server.Uri}push");
+
+            // Assert
+            result.Success.Should().BeTrue(result.AllOutput);
+            Assert.DoesNotContain($"{server.Uri}push", result.Errors);
+        }
+
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerWithSymbolsAndAllowInsecureConnectionsFalse_Errors()
         {
             using var packageDirectory = TestDirectory.Create();
             using var server = new MockServer();
@@ -2568,7 +2599,7 @@ $@"<configuration>
 $@"<configuration>
     <packageSources>
         <clear />
-        <add key='http-feed' value='{server.Uri}push' protocalVersion=""3"" allowInsecureConnections=""{allowInsecureConnections}"" />
+        <add key='http-feed' value='{server.Uri}push' protocalVersion=""3"" allowInsecureConnections=""False"" />
     </packageSources>
 </configuration>";
             string configPath = Path.Combine(packageDirectory, "NuGet.Config");
@@ -2586,22 +2617,67 @@ $@"<configuration>
                 $"push {packageFileName} -Source {pushUri} -SymbolSource {pushSymbolsUri} -ConfigFile {configPath} -ApiKey PushKey -SymbolApiKey PushSymbolsKey");
 
             // Assert
-            if (shouldFail)
-            {
-                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", pushUri);
-                Assert.False(result.Success);
-                Assert.Contains(expectedError, result.AllOutput);
-            }
-            else
-            {
-                result.Success.Should().BeTrue(because: result.AllOutput);
-                Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Output);
-                Assert.Contains($"Created {pushUri}", result.Output);
-                Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Output);
-                Assert.Contains($"Created {pushSymbolsUri}", result.Output);
-                Assert.Contains("Your package was pushed.", result.Output);
-            }
+            Assert.False(result.Success);
+            Assert.Contains(pushUri, result.Errors);
         }
+
+        [Fact]
+        public void PushCommand_WhenPushingToAnHttpServerWithSymbolsAndAllowInsecureConnectionsTrue_Succeeds()
+        {
+            using var packageDirectory = TestDirectory.Create();
+            using var server = new MockServer();
+            // Arrange
+            var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+            var symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+            File.Copy(packageFileName, symbolFileName);
+
+            server.Get.Add("/push", r => "OK");
+            server.Put.Add("/push", r =>
+            {
+                return r.Headers["X-NuGet-ApiKey"] == "PushKey"
+                    ? HttpStatusCode.Created
+                    : HttpStatusCode.Unauthorized;
+            });
+
+            server.Get.Add("/symbols", r => "OK");
+            server.Put.Add("/symbols", r =>
+            {
+                return r.Headers["X-NuGet-ApiKey"] == "PushSymbolsKey"
+                    ? HttpStatusCode.Created
+                    : HttpStatusCode.Unauthorized;
+            });
+
+            // Arrange the NuGet.Config file
+            string nugetConfigContent =
+$@"<configuration>
+    <packageSources>
+        <clear />
+        <add key='http-feed' value='{server.Uri}push' protocalVersion=""3"" allowInsecureConnections=""True"" />
+    </packageSources>
+</configuration>";
+            string configPath = Path.Combine(packageDirectory, "NuGet.Config");
+            File.WriteAllText(configPath, nugetConfigContent);
+
+            server.Start();
+
+            var pushUri = $"{server.Uri}push";
+            var pushSymbolsUri = $"{server.Uri}symbols";
+
+            // Act
+            CommandRunnerResult result = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                Directory.GetCurrentDirectory(),
+                $"push {packageFileName} -Source {pushUri} -SymbolSource {pushSymbolsUri} -ConfigFile {configPath} -ApiKey PushKey -SymbolApiKey PushSymbolsKey");
+
+            // Assert
+            result.Success.Should().BeTrue(because: result.AllOutput);
+            Assert.Contains($"Pushing testPackage1.1.1.0.nupkg to '{pushUri}'", result.Output);
+            Assert.Contains($"Created {pushUri}", result.Output);
+            Assert.Contains($"Pushing testPackage1.1.1.0.symbols.nupkg to '{pushSymbolsUri}'", result.Output);
+            Assert.Contains($"Created {pushSymbolsUri}", result.Output);
+            Assert.Contains("Your package was pushed.", result.Output);
+        }
+
         [Fact]
         public void PushCommand_WhenPushingToAnHttpServerV3_ThrowsAnException()
         {
@@ -2651,7 +2727,6 @@ $@"<configuration>
 
                             return HttpStatusCode.Created;
                         });
-                        string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "push", $"{serverV3.Uri}index.json");
 
                         serverV3.Start();
                         serverV2.Start();
@@ -2672,7 +2747,7 @@ $@"<configuration>
 
                         // Assert
                         result.Success.Should().BeFalse(result.AllOutput);
-                        result.AllOutput.Should().Contain(expectedError);
+                        result.Errors.Should().Contain($"{serverV3.Uri}index.json");
                     }
                 }
             }
