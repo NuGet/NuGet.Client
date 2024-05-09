@@ -385,7 +385,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere..
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information..
         /// </summary>
         internal static string Error_HttpSource_Single {
             get {
@@ -394,7 +394,16 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with &apos;HTTP&apos; sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere..
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with an &apos;HTTP&apos; source: {1}. NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere for more information..
+        /// </summary>
+        internal static string Error_HttpSource_Single_Short {
+            get {
+                return ResourceManager.GetString("Error_HttpSource_Single_Short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are running the &apos;{0}&apos; operation with &apos;HTTP&apos; sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information..
         /// </summary>
         internal static string Error_HttpSources_Multiple {
             get {
@@ -2489,6 +2498,26 @@ namespace NuGet.Commands {
         internal static string Warning_HttpServerUsage_MultipleSources {
             get {
                 return ResourceManager.GetString("Warning_HttpServerUsage_MultipleSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following is a &apos;Non-HTTPS&apos; source: {0}
+        ///NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere for more information..
+        /// </summary>
+        internal static string Warning_List_HttpSource {
+            get {
+                return ResourceManager.GetString("Warning_List_HttpSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The following are &apos;Non-HTTPS&apos; sources: {0}
+        ///NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere for more information..
+        /// </summary>
+        internal static string Warning_List_HttpSources {
+            get {
+                return ResourceManager.GetString("Warning_List_HttpSources", resourceCulture);
             }
         }
         
