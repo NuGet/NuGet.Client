@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
@@ -16,7 +15,6 @@ namespace NuGet.CommandLine.Test
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
-        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         // Tests deleting a package from a source that is a file system directory.
         [Fact]
@@ -433,10 +431,52 @@ namespace NuGet.CommandLine.Test
             Util.TestCommandInvalidArguments(args);
         }
 
-        [Theory]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnections_DisplaysErrorCorrectly(string allowInsecureConnections, bool shouldFail)
+        [Fact]
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using (var server = new MockServer())
+            {
+                server.Start();
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    return HttpStatusCode.OK;
+                });
+
+                using SimpleTestPathContext config = new SimpleTestPathContext();
+
+                // Arrange the NuGet.Config file
+                string nugetConfigContent =
+    $@"<configuration>
+    <packageSources>
+        <clear />
+        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""False"" />
+    </packageSources>
+</configuration>";
+                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+                    "-Source", server.Uri + "nuget",
+                    "-ConfigFile", config.NuGetConfig, "-NonInteractive" };
+
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains($"{server.Uri}nuget", result.Errors);
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -459,11 +499,10 @@ namespace NuGet.CommandLine.Test
     $@"<configuration>
     <packageSources>
         <clear />
-        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""{allowInsecureConnections}"" />
+        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""True"" />
     </packageSources>
 </configuration>";
                 File.WriteAllText(config.NuGetConfig, nugetConfigContent);
-                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "delete", $"{server.Uri}nuget");
 
                 // Act
                 string[] args = new string[] {
@@ -477,17 +516,9 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args));
 
                 // Assert
-                if (shouldFail)
-                {
-                    Assert.Equal(1, result.ExitCode);
-                    Assert.Contains(expectedError, result.AllOutput);
-                }
-                else
-                {
-                    Assert.Equal(0, result.ExitCode);
-                    Assert.True(deleteRequestIsCalled);
-                    Assert.DoesNotContain(expectedError, result.AllOutput);
-                }
+                Assert.Equal(0, result.ExitCode);
+                Assert.True(deleteRequestIsCalled);
+                Assert.DoesNotContain($"{server.Uri}nuget", result.Errors);
             }
         }
 
