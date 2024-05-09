@@ -18,6 +18,8 @@ namespace NuGet.CommandLine.XPlat
         private const string ProjectName = "MSBuildProjectName";
         private const string ProjectAssetsFile = "ProjectAssetsFile";
 
+        private const ConsoleColor TargetPackageColor = ConsoleColor.Cyan;
+
         // Dependency graph console output symbols
         private const string ChildNodeSymbol = "├─ ";
         private const string LastChildNodeSymbol = "└─ ";
@@ -42,11 +44,11 @@ namespace NuGet.CommandLine.XPlat
             foreach (var projectPath in projectPaths)
             {
                 Project project = MSBuildAPIUtility.GetProject(projectPath);
-                LockFile assetsFile = GetProjectAssetsFile(project, whyCommandArgs);
+                LockFile assetsFile = GetProjectAssetsFile(project, whyCommandArgs.Logger);
 
                 if (assetsFile != null)
                 {
-                    FindAllDependencyGraphs(whyCommandArgs, project, assetsFile);
+                    FindAllDependencyGraphs(whyCommandArgs, msBuild, project, assetsFile);
                 }
 
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
@@ -59,20 +61,13 @@ namespace NuGet.CommandLine.XPlat
         /// Validates and returns the assets file for the given project.
         /// </summary>
         /// <param name="project">Evaluated MSBuild project</param>
+        /// <param name="logger">Logger for the 'why' command</param>
         /// <returns>Assets file for given project</returns>
-        private static LockFile GetProjectAssetsFile(Project project, WhyCommandArgs whyCommandArgs)
+        private static LockFile GetProjectAssetsFile(Project project, ILoggerWithColor logger)
         {
             if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
             {
-                /*
-                Console.Error.WriteLine(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_NotPRProject,
-                        project.FullPath));
-                */
-
-                whyCommandArgs.Logger.LogError(
+                logger.LogError(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Error_NotPRProject,
@@ -85,15 +80,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (!File.Exists(assetsPath))
             {
-                /*
-                Console.Error.WriteLine(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_AssetsFileNotFound,
-                        project.FullPath));
-                */
-
-                whyCommandArgs.Logger.LogError(
+                logger.LogError(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Error_AssetsFileNotFound,
@@ -110,7 +97,7 @@ namespace NuGet.CommandLine.XPlat
                 || assetsFile.Targets == null
                 || assetsFile.Targets.Count == 0)
             {
-                Console.Error.WriteLine(
+                logger.LogError(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.WhyCommand_Error_CannotReadAssetsFile,
@@ -126,17 +113,18 @@ namespace NuGet.CommandLine.XPlat
         /// Finds dependency graphs for a given project, and prints output to the console.
         /// </summary>
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command</param>
+        /// <param name="msBuild">MSBuild utility</param>
         /// <param name="project">Current project</param>
         /// <param name="assetsFile">Assets file for current project</param>
         private static void FindAllDependencyGraphs(
             WhyCommandArgs whyCommandArgs,
+            MSBuildAPIUtility msBuild,
             Project project,
             LockFile assetsFile)
         {
-            var msBuild = new MSBuildAPIUtility(whyCommandArgs.Logger); // is it bad to do this repeatedly per project?
-
+            // TODO: The top-level packages here are only package references, and do not include project references. Need to fix this.
             // get all resolved package references for a project
-            List<FrameworkPackages> frameworkPackages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true);
+            List<FrameworkPackages> frameworkPackages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true, includeProjectReferences: true);
 
             if (frameworkPackages?.Count > 0)
             {
@@ -169,7 +157,7 @@ namespace NuGet.CommandLine.XPlat
 
                 if (!doesProjectHaveDependencyOnPackage)
                 {
-                    Console.WriteLine(
+                    whyCommandArgs.Logger.LogMinimal(
                         string.Format(
                             Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
                             project.GetPropertyValue(ProjectName),
@@ -177,19 +165,19 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    Console.WriteLine(
+                    whyCommandArgs.Logger.LogMinimal(
                         string.Format(
                             Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
                             project.GetPropertyValue(ProjectName),
                             targetPackage));
 
-                    PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage);
+                    PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
                 }
             }
             else
             {
-                Console.WriteLine(
-                    string.Format(
+                whyCommandArgs.Logger.LogMinimal(
+                        string.Format(
                         Strings.WhyCommand_Message_NoPackagesFoundForGivenFrameworks,
                         project.GetPropertyValue(ProjectName)));
             }
@@ -364,16 +352,17 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
-        private static void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework, string targetPackage)
+        private static void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework, string targetPackage, ILoggerWithColor logger)
         {
-            Console.WriteLine();
+            // print empty line
+            logger.LogMinimal("");
 
             // deduplicate the dependency graphs
             List<List<string>> deduplicatedFrameworks = GetDeduplicatedFrameworks(dependencyGraphPerFramework);
 
             foreach (var frameworks in deduplicatedFrameworks)
             {
-                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.FirstOrDefault()], targetPackage);
+                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.FirstOrDefault()], targetPackage, logger);
             }
         }
 
@@ -425,19 +414,19 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
         /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
-        private static void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes, string targetPackage)
+        private static void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes, string targetPackage, ILoggerWithColor logger)
         {
             // print framework header
             foreach (var framework in frameworks)
             {
-                Console.WriteLine($"\t[{framework}]");
+                logger.LogMinimal($"\t[{framework}]");
             }
 
-            Console.WriteLine($"\t {ChildPrefixSymbol}");
+            logger.LogMinimal($"\t {ChildPrefixSymbol}");
 
             if (topLevelNodes == null || topLevelNodes.Count == 0)
             {
-                Console.WriteLine($"\t {LastChildNodeSymbol}{Strings.WhyCommand_Message_NoDependencyGraphsFoundForFramework}\n");
+                logger.LogMinimal($"\t {LastChildNodeSymbol}{Strings.WhyCommand_Message_NoDependencyGraphsFoundForFramework}\n\n");
                 return;
             }
 
@@ -470,14 +459,12 @@ namespace NuGet.CommandLine.XPlat
                 // print current node
                 if (current.Node.Id == targetPackage)
                 {
-                    Console.Write($"{currentPrefix}");
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"{current.Node.Id} (v{current.Node.Version})");
-                    Console.ResetColor();
+                    logger.LogMinimal($"{currentPrefix}", Console.ForegroundColor);
+                    logger.LogMinimal($"{current.Node.Id} (v{current.Node.Version})\n", TargetPackageColor);
                 }
                 else
                 {
-                    Console.WriteLine($"{currentPrefix}{current.Node.Id} (v{current.Node.Version})");
+                    logger.LogMinimal($"{currentPrefix}{current.Node.Id} (v{current.Node.Version})");
                 }
 
                 if (current.Node.Children?.Count > 0)
@@ -491,7 +478,7 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
-            Console.WriteLine();
+            logger.LogMinimal("");
         }
 
         /// <summary>

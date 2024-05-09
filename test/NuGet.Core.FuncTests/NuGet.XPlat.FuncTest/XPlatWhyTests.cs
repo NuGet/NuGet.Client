@@ -57,8 +57,7 @@ namespace NuGet.XPlat.FuncTest
                 Assert.Equal(System.Threading.Tasks.Task.CompletedTask, result);
                 Assert.Equal(string.Empty, logger.ShowErrors());
 
-                Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.PackageName}'", output);
-                Assert.DoesNotContain($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageY.PackageName}'", output);
+                Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
             }
         }
 
@@ -115,5 +114,25 @@ namespace NuGet.XPlat.FuncTest
                 Assert.DoesNotContain($"Project '{ProjectName}' does not have any dependency graph(s) for 'PackageX'", output);
             }
         }
+
+        /*
+        [Fact]
+        public void NewTest()
+        {
+            var assetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", LockFileFormat.AssetsFileName);
+            var format = new LockFileFormat();
+            LockFile assetsFile = format.Read(assetsFilePath);
+
+            var responses = new Dictionary<string, string>
+            {
+                { testFeedUrl, ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType()) },
+                { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
+                { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
+                { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
+                { "https://api.nuget.org/v3/registration3-gz-semver2/nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) },
+                { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
+            };
+        }
+        */
     }
 }
