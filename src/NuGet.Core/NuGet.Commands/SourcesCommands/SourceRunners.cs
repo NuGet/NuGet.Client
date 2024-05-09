@@ -66,9 +66,9 @@ namespace NuGet.Commands
 
             if (newPackageSource.IsHttp && !newPackageSource.IsHttps && !newPackageSource.AllowInsecureConnections)
             {
-                getLogger().LogWarning(
+                throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
+                        Strings.Error_HttpSource_Single_Short,
                         "add source",
                         args.Source));
             }
@@ -188,8 +188,6 @@ namespace NuGet.Commands
                             legend += " ";
                             getLogger().LogMinimal(legend + source.Source);
                         }
-
-                        WarnForHttpSources(sourcesList, getLogger);
                     }
                     break;
                 case SourcesListFormat.None:
@@ -219,16 +217,14 @@ namespace NuGet.Commands
                 {
                     getLogger().LogWarning(
                     string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_HttpServerUsage,
-                        "list source",
+                        Strings.Warning_List_HttpSource,
                         httpPackageSources[0]));
                 }
                 else
                 {
                     getLogger().LogWarning(
                             string.Format(CultureInfo.CurrentCulture,
-                            Strings.Warning_HttpServerUsage_MultipleSources,
-                            "list source",
+                            Strings.Warning_List_HttpSources,
                             Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }
             }
@@ -286,10 +282,10 @@ namespace NuGet.Commands
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
                 existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
-                // If the existing source is not http, warn the user
+                // If the new source is not http, throw an error
                 if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections)
                 {
-                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "update source", args.Source));
                 }
             }
 
@@ -383,7 +379,7 @@ namespace NuGet.Commands
                     Strings.SourcesCommandSourceEnabledSuccessfully, name));
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
-                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "enable source", packageSource.Source));
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "enable source", packageSource.Source));
                 }
             }
             else

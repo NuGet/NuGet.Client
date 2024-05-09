@@ -934,12 +934,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using MockServer server = new MockServer();
             PackageSource source = new PackageSource(server.Uri + "v3/index.json", "mockSource");
             using SimpleTestPathContext config = new SimpleTestPathContext();
-            CommandRunner.Run(
-                nugetexe,
-                config.WorkingDirectory,
-                $"source add -name mockSource -source {server.Uri}v3/index.json -configfile {config.NuGetConfig}",
-                    testOutputHelper: _testOutputHelper);
-
+            config.Settings.AddSource("mockSource", $"{server.Uri}v3/index.json");
             string index = $@"
                 {{
                     ""version"": ""3.0.0"",

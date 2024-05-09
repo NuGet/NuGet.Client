@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,9 +19,6 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
-        string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
-        string _httpErrorMultiple = "You are running the '{0}' operation with 'HTTP' sources: {1}. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
-
         [Fact]
         public void ListCommand_WithNugetShowStack_ShowsStack()
         {
@@ -1143,10 +1139,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnections_ProducesAnErrorCorrectly(string allowInsecureConnections, bool isHttpErrorExpected)
+        [PlatformFact(Platform.Windows)]
+        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -1170,11 +1164,10 @@ namespace NuGet.CommandLine.Test
             server.Start();
 
             // create the config file
-            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: allowInsecureConnections);
+            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "False");
 
             var configFile = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
             PackageSource source = new PackageSource(server.Uri + "nuget", "http-feed");
-            string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "list", source);
 
             // Act
             var args = "list test -ConfigFile " + configFile;
@@ -1185,19 +1178,54 @@ namespace NuGet.CommandLine.Test
             server.Stop();
 
             // Assert
-            if (isHttpErrorExpected)
-            {
-                Assert.False(result.Success);
-                Assert.Contains(expectedError, result.AllOutput);
-            }
-            else
-            {
-                Assert.Equal(0, result.ExitCode);
-                Assert.DoesNotContain(expectedError, result.AllOutput);
-                // verify that only package id & version is displayed
-                var expectedOutput = "testPackage1 1.1.0";
-                Assert.Contains(expectedOutput, result.Output);
-            }
+            Assert.False(result.Success);
+            Assert.Contains($"{server.Uri}nuget", result.Errors);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void ListCommand_WhenListWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            using var server = new MockServer();
+            var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", pathContext.WorkingDirectory);
+
+            server.Get.Add("/nuget/$metadata", r =>
+                Util.GetMockServerResource());
+            server.Get.Add("/nuget/Search()", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    string searchRequest = r.Url.ToString();
+                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                    string feed = server.ToODataFeed(new[] { new FileInfo(packageFileName1) }, "Search");
+                    MockServer.SetResponseContent(response, feed);
+                }));
+            server.Get.Add("/nuget", r => "OK");
+
+            server.Start();
+
+            // create the config file
+            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "True");
+
+            var configFile = Path.Combine(pathContext.WorkingDirectory, "nuget.config");
+            PackageSource source = new PackageSource(server.Uri + "nuget", "http-feed");
+
+            // Act
+            var args = "list test -ConfigFile " + configFile;
+            var result = CommandRunner.Run(
+                nugetexe,
+                pathContext.WorkingDirectory,
+                args);
+            server.Stop();
+
+            // Assert
+            Assert.Equal(0, result.ExitCode);
+            Assert.DoesNotContain($"{server.Uri}nuget", result.Errors);
+            // verify that only package id & version is displayed
+            var expectedOutput = "testPackage1 1.1.0";
+            Assert.Contains(expectedOutput, result.Output);
         }
 
         [Fact]
@@ -1241,11 +1269,6 @@ namespace NuGet.CommandLine.Test
 
             PackageSource source1 = new PackageSource(server1.Uri + "nuget", "http-feed1");
             PackageSource source2 = new PackageSource(server2.Uri + "nuget", "http-feed2");
-            List<PackageSource> sources = new List<PackageSource>() { source1, source2 };
-            string expectedError = string.Format(CultureInfo.CurrentCulture,
-                        _httpErrorMultiple,
-                        "list",
-                        Environment.NewLine + string.Join(Environment.NewLine, sources.Select(e => e.SourceUri)));
 
             // Act
             var args = "list test -Source " + server1.Uri + "nuget" + " -Source " + server2.Uri + "nuget";
@@ -1259,7 +1282,9 @@ namespace NuGet.CommandLine.Test
             // Assert
             Assert.Equal(1, result.ExitCode);
 
-            Assert.Contains(expectedError, result.AllOutput);
+            Assert.Contains(source1.Source, result.Errors);
+            Assert.Contains(source2.Source, result.Errors);
+
         }
 
         [Fact]
