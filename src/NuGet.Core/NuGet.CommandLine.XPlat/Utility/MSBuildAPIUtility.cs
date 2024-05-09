@@ -728,7 +728,14 @@ namespace NuGet.CommandLine.XPlat
                     tfmInformation = requestedTargetFrameworks.First(tfm => tfm.FrameworkName.Equals(target.TargetFramework));
                     projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks
                                                     .First(tfm => tfm.FrameworkName.Equals(target.TargetFramework))
-                                                    .ProjectReferences.Select(p => Path.GetRelativePath(projectPath, p.ProjectPath));
+                                                    .ProjectReferences.Select(p => p.ProjectPath); // need to filter by the alias too
+
+                    /*
+                    projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks
+                                                    .First(tfm => tfm.FrameworkName.Equals(target.TargetFramework)
+                                                           && tfm.TargetAlias.Equals(??)) // what goes here?
+                                                    .ProjectReferences.Select(p => p.ProjectPath);
+                    */
                 }
                 catch (Exception)
                 {
@@ -749,9 +756,9 @@ namespace NuGet.CommandLine.XPlat
                     List<string> matchingProjects = null;
                     if (library.Type == "project" && includeProjectReferences)
                     {
-                        string projectLibraryPath = Path.GetFullPath(GetProjectLibraryPath(library, assetsFile.Libraries));
+                        string projectLibraryPath = GetProjectLibraryPath(library, assetsFile.Libraries, project.DirectoryPath);
                         matchingProjects ??= projectReferences.Where(p =>
-                            Path.GetFullPath(p).Equals(projectLibraryPath, StringComparison.OrdinalIgnoreCase)).ToList();
+                            p.Equals(projectLibraryPath, StringComparison.OrdinalIgnoreCase)).ToList();
                     }
 
                     var resolvedVersion = library.Version.ToString();
@@ -814,12 +821,10 @@ namespace NuGet.CommandLine.XPlat
                     else if (matchingProjects?.Count > 0)
                     {
                         var topLevelProject = matchingProjects.Single();
-                        var projectReference = new InstalledPackageReference(library.Name);
-                        /*
+                        var projectReference = new InstalledPackageReference(library.Name)
                         {
                             OriginalRequestedVersion = resolvedVersion
                         };
-                        */
 
                         if (includeProjectReferences)
                         {
@@ -856,16 +861,19 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Gets the relative path of the given project library.
+        /// Gets the absolute path of the given project library.
         /// </summary>
         /// <param name="library">The target project library that we want the path for.</param>
         /// <param name="libraries">All libraries in the assets file.</param>
-        /// <returns>Relative path of the matching project library.</returns>
-        private string GetProjectLibraryPath(LockFileTargetLibrary library, IList<LockFileLibrary> libraries)
+        /// <param name="projectPath">The absolute path to the project file.</param>
+        /// <returns>absolute path of the matching project library.</returns>
+        private string GetProjectLibraryPath(LockFileTargetLibrary library, IList<LockFileLibrary> libraries, string projectDirectoryPath)
         {
-            return libraries.Where(l => l.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)
-                                        && l.Version.Equals(library.Version))
-                            .First().Path;
+            string relativePath = libraries.Where(l => l.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)
+                                                       && l.Version.Equals(library.Version))
+                                           .First().Path;
+
+            return Path.GetFullPath(relativePath, projectDirectoryPath);
         }
 
         /// <summary>
