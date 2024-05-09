@@ -24,8 +24,6 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetInstallCommandTest
     {
-        private string _httpError = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
-
         [Fact]
         public async Task InstallCommand_PackageIdInstalledWithSxSAndExcludeVersionAsync()
         {
@@ -2053,7 +2051,7 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             result.Success.Should().BeTrue();
-            result.AllOutput.Should().Contain(string.Format(_httpError, "restore", "http://api.source/api/v2"));
+            result.Errors.Should().Contain("http://api.source/api/v2");
         }
 
         [Theory]
@@ -2098,14 +2096,12 @@ namespace NuGet.CommandLine.Test
             CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
-            string errorForHttpSource = string.Format(_httpError, "restore", "http://api.source/index.json");
-            string errorForHttpsSource = string.Format(_httpError, "restore", "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
 
-            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
+            Assert.DoesNotContain("https://api.source/index.json", result.Errors);
 
-            Assert.Contains(errorForHttpSource, result.AllOutput);
+            Assert.Contains("http://api.source/index.json", result.Errors);
 
         }
 
@@ -2149,13 +2145,11 @@ namespace NuGet.CommandLine.Test
             CommandRunnerResult result = RunInstall(pathContext, config, expectedExitCode: 0, additionalArgs: args);
 
             // Assert
-            string errorForHttpSource = string.Format(_httpError, "restore", "http://api.source/index.json");
-            string errorForHttpsSource = string.Format(_httpError, "restore", "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
             result.AllOutput.Should().Contain($"Added package 'A.1.0.0' to folder '{pathContext.PackagesV2}'");
-            Assert.DoesNotContain(errorForHttpsSource, result.Output);
-            Assert.DoesNotContain(errorForHttpSource, result.Output); ;
+            Assert.DoesNotContain("http://api.source/index.json", result.Errors);
+            Assert.DoesNotContain("https://api.source/index.json", result.Errors); ;
         }
 
         [Fact]
