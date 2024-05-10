@@ -107,7 +107,7 @@ namespace NuGet.XPlat.FuncTest
                 logger.Verify(x => x.LogMinimal("	 │  "), Times.Exactly(1));
                 logger.Verify(x => x.LogMinimal("	 └─ PackageX (v1.0.0)"), Times.Exactly(1));
                 logger.Verify(x => x.LogMinimal("	    └─ ", ConsoleColor.Gray), Times.Exactly(1));
-                logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)", ConsoleColor.Cyan), Times.Exactly(1));
+                logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
             }
         }
 
