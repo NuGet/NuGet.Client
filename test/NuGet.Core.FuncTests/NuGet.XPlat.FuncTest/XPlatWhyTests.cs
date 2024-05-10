@@ -19,216 +19,206 @@ namespace NuGet.XPlat.FuncTest
         [Fact]
         public async void WhyCommand_TransitiveDependency_PathExists()
         {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var logger = new TestCommandOutputLogger();
-                var projectFramework = "net472";
-                var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+            // Arrange 
+            var logger = new TestCommandOutputLogger();
 
-                var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-                var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-                packageX.Dependencies.Add(packageY);
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
-                project.AddPackageToFramework(projectFramework, packageX);
+            packageX.Dependencies.Add(packageY);
 
-                // Generate Package
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX,
-                    packageY);
+            project.AddPackageToFramework(projectFramework, packageX);
 
-                var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
-                var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-                var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
 
-                var whyCommandArgs = new WhyCommandArgs(
-                        project.ProjectPath,
-                        packageY.Id,
-                        [projectFramework],
-                        logger);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
 
-                // Act
-                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageY.Id,
+                    [projectFramework],
+                    logger);
 
-                // Assert
-                var output = logger.ShowMessages();
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
-                Assert.Equal(ExitCodes.Success, result);
-                Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
-            }
+            // Assert
+            var output = logger.ShowMessages();
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
         }
 
         [Fact]
         public async void WhyCommand_TransitiveDependency_OutputFormatIsCorrect()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var logger = new Mock<ILoggerWithColor>();
-                var projectFramework = "net472";
-                var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+            var logger = new Mock<ILoggerWithColor>();
 
-                var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-                var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-                packageX.Dependencies.Add(packageY);
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
-                project.AddPackageToFramework(projectFramework, packageX);
+            packageX.Dependencies.Add(packageY);
 
-                // Generate Package
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX,
-                    packageY);
+            project.AddPackageToFramework(projectFramework, packageX);
 
-                var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
-                var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-                var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
 
-                var whyCommandArgs = new WhyCommandArgs(
-                        project.ProjectPath,
-                        packageY.Id,
-                        [projectFramework],
-                        logger.Object);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
 
-                // Act
-                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageY.Id,
+                    [projectFramework],
+                    logger.Object);
 
-                // Assert
-                Assert.Equal(ExitCodes.Success, result);
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
-                logger.Verify(x => x.LogMinimal("Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageY':"), Times.Exactly(1));
-                logger.Verify(x => x.LogMinimal(""), Times.Exactly(2));
-                logger.Verify(x => x.LogMinimal("	[net472]"), Times.Exactly(1));
-                logger.Verify(x => x.LogMinimal("	 │  "), Times.Exactly(1));
-                logger.Verify(x => x.LogMinimal("	 └─ PackageX (v1.0.0)"), Times.Exactly(1));
-                logger.Verify(x => x.LogMinimal("	    └─ ", ConsoleColor.Gray), Times.Exactly(1));
-                logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
-            }
+            // Assert
+            Assert.Equal(ExitCodes.Success, result);
+
+            logger.Verify(x => x.LogMinimal("Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageY':"), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal(""), Times.Exactly(2));
+            logger.Verify(x => x.LogMinimal("	[net472]"), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("	 │  "), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("	 └─ PackageX (v1.0.0)"), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("	    └─ ", ConsoleColor.Gray), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
         }
 
         [Fact]
         public async void WhyCommand_BasicFunctionality_Succeeds()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var logger = new TestCommandOutputLogger();
-                var projectFramework = "net472";
-                var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+            var logger = new TestCommandOutputLogger();
 
-                var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-                var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-                packageX.Dependencies.Add(packageY);
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
-                project.AddPackageToFramework(projectFramework, packageX);
+            packageX.Dependencies.Add(packageY);
 
-                // Generate Package
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    PackageSaveMode.Defaultv3,
-                    packageX,
-                    packageY);
+            project.AddPackageToFramework(projectFramework, packageX);
 
-                var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
-                var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-                var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
+            // Generate Package
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
 
-                var whyCommandArgs = new WhyCommandArgs(
-                        project.ProjectPath,
-                        packageY.Id,
-                        [projectFramework],
-                        logger);
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
 
-                // Act
-                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageY.Id,
+                    [projectFramework],
+                    logger);
 
-                // Assert
-                var output = logger.ShowMessages();
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
-                Assert.Equal(ExitCodes.Success, result);
-                Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
-            }
+            // Assert
+            var output = logger.ShowMessages();
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
         }
 
         [Fact]
         public void WhyCommand_EmptyProjectArgument_Fails()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var logger = new TestCommandOutputLogger();
-                var whyCommandArgs = new WhyCommandArgs(
-                        "",
-                        "PackageX",
-                        [],
-                        logger);
+            var logger = new TestCommandOutputLogger();
 
-                // Act
-                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+            var whyCommandArgs = new WhyCommandArgs(
+                    "",
+                    "PackageX",
+                    [],
+                    logger);
 
-                // Assert
-                var errorOutput = logger.ShowErrors();
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
-                Assert.Equal(ExitCodes.InvalidArguments, result);
-                Assert.Contains($"Unable to run 'dotnet nuget why'. The 'PROJECT|SOLUTION' argument cannot be empty.", errorOutput);
-            }
+            // Assert
+            var errorOutput = logger.ShowErrors();
+
+            Assert.Equal(ExitCodes.InvalidArguments, result);
+            Assert.Contains($"Unable to run 'dotnet nuget why'. The 'PROJECT|SOLUTION' argument cannot be empty.", errorOutput);
         }
 
         [Fact]
         public void WhyCommand_EmptyPackageArgument_Fails()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var logger = new TestCommandOutputLogger();
-                var projectFramework = "net472";
-                var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+            var logger = new TestCommandOutputLogger();
 
-                var whyCommandArgs = new WhyCommandArgs(
-                        project.ProjectPath,
-                        "",
-                        [],
-                        logger);
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-                // Act
-                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    "",
+                    [],
+                    logger);
 
-                // Assert
-                var errorOutput = logger.ShowErrors();
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
-                Assert.Equal(ExitCodes.InvalidArguments, result);
-                Assert.Contains($"Unable to run 'dotnet nuget why'. The 'PACKAGE' argument cannot be empty.", errorOutput);
-            }
+            // Assert
+            var errorOutput = logger.ShowErrors();
+
+            Assert.Equal(ExitCodes.InvalidArguments, result);
+            Assert.Contains($"Unable to run 'dotnet nuget why'. The 'PACKAGE' argument cannot be empty.", errorOutput);
         }
 
         [Fact]
         public void WhyCommand_InvalidProject_Fails()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                var logger = new TestCommandOutputLogger();
-                var whyCommandArgs = new WhyCommandArgs(
-                        "FakeProjectPath.csproj",
-                        "PackageX",
-                        [],
-                        logger);
+            var logger = new TestCommandOutputLogger();
 
-                // Act
-                var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+            var whyCommandArgs = new WhyCommandArgs(
+                    "FakeProjectPath.csproj",
+                    "PackageX",
+                    [],
+                    logger);
 
-                // Assert
-                var errorOutput = logger.ShowErrors();
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
 
-                Assert.Equal(ExitCodes.InvalidArguments, result);
-                Assert.Contains($"Unable to run 'dotnet nuget why'. Missing or invalid project/solution file 'FakeProjectPath.csproj'.", errorOutput);
-            }
+            // Assert
+            var errorOutput = logger.ShowErrors();
+
+            Assert.Equal(ExitCodes.InvalidArguments, result);
+            Assert.Contains($"Unable to run 'dotnet nuget why'. Missing or invalid project/solution file 'FakeProjectPath.csproj'.", errorOutput);
         }
 
         /*
