@@ -1879,6 +1879,10 @@ namespace NuGet.Commands
                         {
                             overrides[depIndex] = dep.VersionOverride;
                         }
+                        if(isProject&&(dep.LibraryRange.TypeConstraint==LibraryDependencyTarget.Package))
+                        {
+                            overrides[depIndex] = dep.LibraryRange.VersionRange;
+                        }
                     }
 #if verboseLog
                     foreach (var sup in suppressions)
