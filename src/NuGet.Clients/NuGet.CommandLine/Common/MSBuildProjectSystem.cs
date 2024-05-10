@@ -14,7 +14,9 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public sealed class MSBuildProjectSystem
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         : MSBuildUser
         , IMSBuildProjectSystem
     {
@@ -27,7 +29,9 @@ namespace NuGet.Common
         private const string TargetPlatformVersionProperty = "TargetPlatformVersion";
         private const string TargetPlatformMinVersionProperty = "TargetPlatformMinVersion";
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public MSBuildProjectSystem(
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             string msbuildDirectory,
             string projectFullPath,
             INuGetProjectContext projectContext)
@@ -42,24 +46,36 @@ namespace NuGet.Common
             NuGetProjectContext = projectContext;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public INuGetProjectContext NuGetProjectContext { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// This does not contain the filename, just the path to the directory where the project file exists
         /// </summary>
         public string ProjectFullPath { get; }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ProjectName { get; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ProjectUniqueName { get; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ProjectFileFullPath { get; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public dynamic VSProject4 { get; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         private NuGetFramework _targetFramework;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public NuGetFramework TargetFramework
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -93,28 +109,38 @@ namespace NuGet.Common
 
         private dynamic Project { get; }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void AddBindingRedirects()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // No-op
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void AddExistingFile(string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // No-op
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void AddFile(string path, Stream stream)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             FileSystemUtility.AddFile(ProjectFullPath, path, stream, NuGetProjectContext);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task AddFrameworkReferenceAsync(string name, string packageId)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // No-op
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void AddImport(string targetFullPath, ImportLocation location)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (targetFullPath == null)
             {
@@ -159,7 +185,9 @@ namespace NuGet.Common
             Project.Save();
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task AddReferenceAsync(string referencePath)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var fullPath = PathUtility.GetAbsolutePath(ProjectFullPath, referencePath);
             var relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
@@ -185,29 +213,39 @@ namespace NuGet.Common
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task BeginProcessingAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void RegisterProcessedFiles(IEnumerable<string> files)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task EndProcessingAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void DeleteDirectory(string path, bool recursive)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             FileSystemUtility.DeleteDirectory(path, recursive, NuGetProjectContext);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool FileExistsInProject(string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // some ItemTypes which starts with _ are added by various MSBuild tasks for their own purposes
             // and they do not represent content files of the projects. Therefore, we exclude them when checking for file existence.
@@ -229,19 +267,25 @@ namespace NuGet.Common
             return false;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IEnumerable<string> GetDirectories(string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             path = Path.Combine(ProjectFullPath, path);
             return Directory.EnumerateDirectories(path);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             path = Path.Combine(ProjectFullPath, path);
             return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IEnumerable<string> GetFullPaths(string fileName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             foreach (var projectItem in Project.Items)
             {
@@ -253,28 +297,38 @@ namespace NuGet.Common
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public dynamic GetPropertyValue(string propertyName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return Project.GetPropertyValue(propertyName);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IsSupportedFile(string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return true;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task<bool> ReferenceExistsAsync(string name)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return TaskResult.Boolean(GetReference(name) != null);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void RemoveFile(string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var fullPath = Path.Combine(ProjectFullPath, path);
             FileSystemUtility.DeleteFile(fullPath, NuGetProjectContext);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void RemoveImport(string targetFullPath)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (targetFullPath == null)
             {
@@ -311,7 +365,9 @@ namespace NuGet.Common
             Project.Save();
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task RemoveReferenceAsync(string name)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             dynamic assemblyReference = GetReference(name);
             if (assemblyReference != null)
@@ -322,12 +378,16 @@ namespace NuGet.Common
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ResolvePath(string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return path;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Save()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Project.Save();
         }

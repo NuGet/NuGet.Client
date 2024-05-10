@@ -56,7 +56,9 @@ namespace NuGet.Versioning
 
         internal static IVersionRangeComparer VersionReleaseMetadata { get; } = new VersionRangeComparer(VersionComparer.VersionReleaseMetadata);
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static IVersionRangeComparer Get(VersionComparison versionComparison)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return versionComparison switch
             {

@@ -17,7 +17,9 @@ namespace NuGet.CommandLine
 
     [Command(typeof(NuGetCommand), "pack", "PackageCommandDescription", MaxArgs = 1, UsageSummaryResourceName = "PackageCommandUsageSummary",
             UsageDescriptionResourceName = "PackageCommandUsageDescription", UsageExampleResourceName = "PackCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class PackCommand : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         internal static readonly string SymbolsExtension = ".symbols" + PackagingCoreConstants.NupkgExtension;
 
@@ -27,46 +29,72 @@ namespace NuGet.CommandLine
         private Version _minClientVersionValue;
 
         [Option(typeof(NuGetCommand), "PackageCommandOutputDirDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string OutputDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandBasePathDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string BasePath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandVersionDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Version { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandSuffixDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Suffix { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandExcludeDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Exclude
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get { return _excludes; }
         }
 
         [Option(typeof(NuGetCommand), "PackageCommandSymbolsDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Symbols { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandToolDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Tool { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandBuildDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Build { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandNoDefaultExcludes")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NoDefaultExcludes { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandNoRunAnalysis")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NoPackageAnalysis { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandExcludeEmptyDirectories")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool ExcludeEmptyDirectories { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandIncludeReferencedProjects")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IncludeReferencedProjects { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandPropertiesDescription", AltName = "p")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Dictionary<string, string> Properties
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -75,33 +103,53 @@ namespace NuGet.CommandLine
         }
 
         [Option(typeof(NuGetCommand), "PackageCommandMinClientVersion")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MinClientVersion { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandSymbolPackageFormat")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string SymbolPackageFormat { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandPackagesDirectory")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string PackagesDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandSolutionDirectory")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string SolutionDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MSBuildVersion { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MSBuildPath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandInstallPackageToOutputPath")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool InstallPackageToOutputPath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandOutputFileNamesWithoutVersion")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool OutputFileNamesWithoutVersion { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public new string ConfigFile { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var packArgs = new PackArgs();
             packArgs.Logger = Console;

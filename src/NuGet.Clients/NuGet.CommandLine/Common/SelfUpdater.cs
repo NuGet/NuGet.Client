@@ -35,7 +35,9 @@ namespace NuGet.CommandLine
 
         private readonly IConsole _console;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SelfUpdater(IConsole console)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (console == null)
             {
@@ -60,7 +62,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task UpdateSelfAsync(bool prerelease, PackageSource updateFeed)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Assembly assembly = typeof(SelfUpdater).Assembly;
             var version = GetNuGetVersion(assembly) ?? new NuGetVersion(assembly.GetName().Version);

@@ -32,46 +32,74 @@ namespace NuGet.CommandLine
         MinArgs = 0, MaxArgs = 1, UsageSummaryResourceName = "RestoreCommandUsageSummary",
         UsageDescriptionResourceName = "RestoreCommandUsageDescription",
         UsageExampleResourceName = "RestoreCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class RestoreCommand : DownloadCommandBase
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "RestoreCommandRequireConsent")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool RequireConsent { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandP2PTimeOut")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int Project2ProjectTimeOut { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandPackagesDirectory", AltName = "OutputDirectory")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string PackagesDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandSolutionDirectory")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string SolutionDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MSBuildVersion { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MSBuildPath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandRecursive")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Recursive { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ForceRestoreCommand")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Force { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandUseLockFile")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool UseLockFile { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandLockedMode")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool LockedMode { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandLockFilePath")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string LockFilePath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "RestoreCommandForceEvaluate")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool ForceEvaluate { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [ImportingConstructor]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public RestoreCommand()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
         }
 
@@ -91,7 +119,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (DisableParallelProcessing)
             {
@@ -250,7 +280,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected override void SetDefaultCredentialProvider()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             SetDefaultCredentialProvider(MsBuildDirectory);
         }

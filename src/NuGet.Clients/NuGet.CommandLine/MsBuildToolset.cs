@@ -50,7 +50,9 @@ namespace NuGet.CommandLine
             InstallDate = installDate;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Version ParsedVersion
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -66,15 +68,25 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IsValid => Path != null;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Version { get; private set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Path { get; private set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public DateTime InstallDate { get; private set; } = DateTime.MinValue;
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int CompareTo(MsBuildToolset rhs)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (Object.ReferenceEquals(rhs, null))
             {
@@ -99,7 +111,9 @@ namespace NuGet.CommandLine
             return DateTime.FromFileTimeUtc(highBits | (long)(uint)time.dwLowDateTime);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string GetMsBuildDirFromVsDir(string vsDir)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (string.IsNullOrEmpty(vsDir))
             {
@@ -159,7 +173,9 @@ namespace NuGet.CommandLine
             return FileVersionInfo.GetVersionInfo(msBuildPath)?.FileVersion;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override string ToString()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return $"Version: {Version} Path: {Path}";
         }

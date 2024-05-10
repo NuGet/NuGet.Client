@@ -12,16 +12,22 @@ using NuGet.Commands;
 namespace NuGet.CommandLine
 {
     [Export(typeof(ICommandManager))]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class CommandManager : ICommandManager
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly IList<ICommand> _commands = new List<ICommand>();
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IEnumerable<ICommand> GetCommands()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return _commands;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICommand GetCommand(string commandName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             IEnumerable<ICommand> results = from command in _commands
                                             where command.CommandAttribute.CommandName.StartsWith(commandName, StringComparison.OrdinalIgnoreCase) ||
@@ -50,7 +56,9 @@ namespace NuGet.CommandLine
             return matchedCommand;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IDictionary<OptionAttribute, PropertyInfo> GetCommandOptions(ICommand command)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var result = new Dictionary<OptionAttribute, PropertyInfo>();
 
@@ -77,7 +85,9 @@ namespace NuGet.CommandLine
             return result;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void RegisterCommand(ICommand command)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var attrib = command.CommandAttribute;
             if (attrib != null)

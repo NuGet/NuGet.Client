@@ -17,7 +17,9 @@ namespace NuGet.Credentials
     {
         private readonly CoreV2.NuGet.ICredentialProvider _provider;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public CredentialProviderAdapter(CoreV2.NuGet.ICredentialProvider provider)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (provider == null)
             {
@@ -33,7 +35,9 @@ namespace NuGet.Credentials
         /// </summary>
         public string Id { get; }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task<CredentialResponse> GetAsync(
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             Uri uri,
             IWebProxy proxy,
             CredentialRequestType type,

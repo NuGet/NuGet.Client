@@ -5,7 +5,9 @@ using System.Linq;
 
 namespace NuGet.Common
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class ProjectHelper
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private static readonly HashSet<string> _supportedProjectExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             ".csproj",
@@ -19,7 +21,9 @@ namespace NuGet.Common
             ".nfproj",
         };
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static HashSet<string> SupportedProjectExtensions
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -27,7 +31,9 @@ namespace NuGet.Common
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool TryGetProjectFile(string directory, out string projectFile)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             projectFile = null;
             var candidates = GetProjectFiles(directory).ToArray();
@@ -39,13 +45,17 @@ namespace NuGet.Common
             return !String.IsNullOrEmpty(projectFile);
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static IEnumerable<string> GetProjectFiles(string directory)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return _supportedProjectExtensions.SelectMany(x => Directory.GetFiles(directory, "*" + x));
         }
 
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string GetSolutionDir(string projectDirectory)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             string path = projectDirectory;
 

@@ -12,19 +12,25 @@ using NuGet.Packaging;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class CommandLineParser
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly ICommandManager _commandManager;
 
         // On Unix or MacOSX slash as a switch indicator would interfere with the path separator
         private static readonly bool _supportSlashAsSwitch = (Environment.OSVersion.Platform != PlatformID.Unix) && (Environment.OSVersion.Platform != PlatformID.MacOSX);
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public CommandLineParser(ICommandManager manager)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             _commandManager = manager;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void ExtractOptions(ICommand command, IEnumerator<string> argsEnumerator)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             List<string> arguments = new List<string>();
             IDictionary<OptionAttribute, PropertyInfo> properties = _commandManager.GetCommandOptions(command);
@@ -130,7 +136,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICommand ParseCommandLine(IEnumerable<string> commandLineArgs)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             IEnumerator<string> argsEnumerator = commandLineArgs.GetEnumerator();
 
@@ -152,7 +160,9 @@ namespace NuGet.CommandLine
             return cmd;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string GetNextCommandLineItem(IEnumerator<string> argsEnumerator)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (argsEnumerator == null || !argsEnumerator.MoveNext())
             {

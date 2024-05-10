@@ -26,48 +26,76 @@ namespace NuGet.CommandLine
 {
     [Command(typeof(NuGetCommand), "update", "UpdateCommandDescription", UsageSummary = "<packages.config|solution|project>",
         UsageExampleResourceName = "UpdateCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class UpdateCommand : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "UpdateCommandSourceDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Source { get; } = new List<string>();
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandIdDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Id { get; } = new List<string>();
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandVersionDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Version { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandDependencyVersion")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string DependencyVersion { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string RepositoryPath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandSafeDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Safe { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandSelfDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Self { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandVerboseDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Verbose { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandPrerelease")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Prerelease { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "UpdateCommandFileConflictAction")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ProjectManagement.FileConflictAction FileConflictAction { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MSBuildVersion { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandMSBuildPath")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string MSBuildPath { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         // The directory that contains msbuild
         private string _msbuildDirectory;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // update with self as parameter
             if (Self)

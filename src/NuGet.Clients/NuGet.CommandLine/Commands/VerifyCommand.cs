@@ -14,23 +14,35 @@ namespace NuGet.CommandLine
         MaxArgs = 1,
         UsageSummaryResourceName = "VerifyCommandUsageSummary",
         UsageExampleResourceName = "VerifyCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class VerifyCommand : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected VerifyCommand() : base()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             CertificateFingerprint = new List<string>();
         }
 
         [Option(typeof(NuGetCommand), "VerifyCommandCertificateFingerprintDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> CertificateFingerprint { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "VerifyCommandSignaturesDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Signatures { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "VerifyCommandAllDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool All { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override Task ExecuteCommandAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var PackagePath = Arguments[0];
 

@@ -8,10 +8,6 @@
     <DefineConstants Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' Or ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)))">$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(EnforceCodeStyleInBuild)' != '' And '$(IsOfficialBuild)' != 'true'">
-    <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
-  </PropertyGroup>
-
   <!-- Include shared files for netcore projects -->
   <ItemGroup Condition=" ('$(IsNetCoreProject)' == 'true' AND '$(SkipShared)' != 'true' AND '$(TestProject)' != 'true') OR '$(IncludeNuGetSharedFiles)' == 'true'">
     <Compile Include="$(SharedDirectory)\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
@@ -59,7 +55,7 @@
     <None Include="$(MSBuildProjectDirectory)\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
-    <!-- Don't use PublicApiAnalyzer on source-build .NET -->
+  <!-- Don't use PublicApiAnalyzer on source-build .NET -->
   <PropertyGroup Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>

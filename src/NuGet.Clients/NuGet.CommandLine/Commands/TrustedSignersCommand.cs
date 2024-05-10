@@ -18,31 +18,49 @@ namespace NuGet.CommandLine.Commands
         MaxArgs = 2,
         UsageSummaryResourceName = "TrustedSignersCommandUsageSummary",
         UsageExampleResourceName = "TrustedSignersCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class TrustedSignersCommand : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "TrustedSignersCommandNameDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Name { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandServiceIndexDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ServiceIndex { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandCertificateFingerprintDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificateFingerprint { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandFingerprintAlgorithmDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string FingerprintAlgorithm { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandAllowUntrustedRootDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool AllowUntrustedRoot { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandAuthorDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Author { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandRepositoryDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Repository { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "TrustedSignersCommandOwnersDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Owners { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         internal ITrustedSignersCommandRunner TrustedSignersCommandRunner { get; set; }
 
@@ -51,7 +69,9 @@ namespace NuGet.CommandLine.Commands
             Owners = new List<string>();
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var actionString = Arguments.FirstOrDefault();
 

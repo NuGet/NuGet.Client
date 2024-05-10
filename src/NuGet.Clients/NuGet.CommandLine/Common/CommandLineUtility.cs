@@ -11,9 +11,13 @@ using NuGet.Packaging.Signing;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class CommandLineUtility
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static void ValidateSource(string source)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Uri result;
             if (!Uri.TryCreate(source, UriKind.Absolute, out result))
@@ -22,7 +26,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string GetSourceDisplayName(string source)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (string.IsNullOrEmpty(source) || source.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
             {
@@ -32,7 +38,9 @@ namespace NuGet.CommandLine
             return "'" + source + "'";
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool IsValidConfigFileName(string fileName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return fileName != null &&
                 fileName.StartsWith("packages.", StringComparison.OrdinalIgnoreCase) &&
