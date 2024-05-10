@@ -12,7 +12,6 @@ namespace Dotnet.Integration.Test
     /// Represents a builder for dotnet core projects for integration tests.
     /// Relies on <see cref="DotnetIntegrationTestFixture" /> to programmatically create the project
     /// </summary>
-    /// <seealso cref="DotnetIntegrationTestFixture"/>
     internal class ProjectFileBuilder
     {
         public string PackageIcon { get; private set; }
