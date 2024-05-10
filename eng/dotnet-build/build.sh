@@ -89,7 +89,6 @@ fi
 
 properties="$properties /p:Configuration=$configuration"
 properties="$properties /p:DotNetBuildRepo=true"
-properties="$properties /p:DotNetBuildFromSource=true"
 properties="$properties /p:RepoRoot=$repo_root"
 
 "$DOTNET" msbuild "$scriptroot/dotnet-build.proj" "/bl:${repo_root}artifacts/sb/log/source-inner-build.binlog" $properties $args

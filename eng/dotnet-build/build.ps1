@@ -60,7 +60,6 @@ $dotnetArguments += "$PSScriptRoot/dotnet-build.proj"
 # Then remaining arguments.
 $dotnetArguments += "/p:Configuration=$configuration"
 $dotnetArguments += "/p:DotNetBuildRepo=true"
-$dotnetArguments += "/p:DotNetBuildFromSource=true"
 $dotnetArguments += "/p:RepoRoot=$repoRoot"
 if ($bl){
     $dotnetArguments += "/bl:${binLog}"
