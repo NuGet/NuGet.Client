@@ -10,11 +10,15 @@ using System.Text;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class ResourceHelper
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private static Dictionary<Type, ResourceManager> _cachedManagers;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string GetLocalizedString(Type resourceType, string resourceNames)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (resourceType == null)
             {

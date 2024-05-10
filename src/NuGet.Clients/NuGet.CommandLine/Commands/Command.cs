@@ -18,49 +18,77 @@ using NuGet.Protocol.Plugins;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public abstract class Command : ICommand
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private const string CommandSuffix = "Command";
         private CommandAttribute _commandAttribute;
         private string _currentDirectory;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Command()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Arguments = new List<string>();
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IList<string> Arguments { get; private set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Import]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IConsole Console { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Import]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public HelpCommand HelpCommand { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Import]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICommandManager Manager { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Import]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "Option_Help", AltName = "?")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Help { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "Option_Verbosity")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Verbosity Verbosity { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "Option_NonInteractive")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NonInteractive { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "Option_ConfigFile")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ConfigFile { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "Option_ForceEnglishOutput")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool ForceEnglishOutput { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Configuration.ICredentialService CredentialService { get; private set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public DeprecatedCommandAttribute DeprecatedCommandAttribute
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -75,7 +103,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CurrentDirectory
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -87,11 +117,17 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected internal Configuration.ISettings Settings { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected internal Configuration.IPackageSourceProvider SourceProvider { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected internal CoreV2.NuGet.IPackageRepositoryFactory RepositoryFactory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         private Lazy<MsBuildToolset> MsBuildToolset
         {
@@ -108,7 +144,9 @@ namespace NuGet.CommandLine
 
         private Lazy<MsBuildToolset> _defaultMsBuildToolset;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public CommandAttribute CommandAttribute
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -120,12 +158,16 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public virtual bool IncludedInHelp(string optionName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return true;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Execute()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (Help)
             {
@@ -202,12 +244,16 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected virtual bool ShouldOutputNuGetVersion
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get { return Console.Verbosity == Verbosity.Detailed; }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected virtual void SetDefaultCredentialProvider()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             SetDefaultCredentialProvider(MsBuildToolset);
         }
@@ -257,18 +303,24 @@ namespace NuGet.CommandLine
             return providers;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public virtual Task ExecuteCommandAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             ExecuteCommand();
             return Task.CompletedTask;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public virtual void ExecuteCommand()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
         }
 
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This method does quite a bit of processing.")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public virtual CommandAttribute GetCommandAttribute()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var attributes = GetType().GetCustomAttributes(typeof(CommandAttribute), true);
             if (attributes.Any())

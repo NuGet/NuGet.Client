@@ -7,12 +7,18 @@ namespace NuGet.CommandLine
     [Command(typeof(NuGetCommand), "setApiKey", "SetApiKeyCommandDescription",
         MinArgs = 1, MaxArgs = 1, UsageDescriptionResourceName = "SetApiKeyCommandUsageDescription",
         UsageSummaryResourceName = "SetApiKeyCommandUsageSummary", UsageExampleResourceName = "SetApiKeyCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SetApiKeyCommand : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "SetApiKeyCommandSourceDescription", AltName = "src")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Source { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (SourceProvider == null)
             {

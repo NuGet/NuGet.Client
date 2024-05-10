@@ -7,17 +7,23 @@ using System.Net;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SettingsCredentialProvider : CoreV2.NuGet.ICredentialProvider
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private readonly Common.ILogger _logger;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             : this(packageSourceProvider, Common.NullLogger.Instance)
         {
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Common.ILogger logger)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (packageSourceProvider == null)
             {
@@ -28,7 +34,9 @@ namespace NuGet.CommandLine
             _logger = logger;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CoreV2.NuGet.CredentialType credentialType, bool retrying)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // If we are retrying, the stored credentials must be invalid.
             if (!retrying && (credentialType == CoreV2.NuGet.CredentialType.RequestCredentials) && TryGetCredentials(uri, out var credentials, out var username))

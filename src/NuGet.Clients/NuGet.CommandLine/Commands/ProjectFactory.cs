@@ -27,7 +27,9 @@ using XElementExtensions = NuGet.Packaging.XElementExtensions;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class ProjectFactory : MSBuildUser, IProjectFactory, CoreV2.NuGet.IPropertyProvider
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private const string NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK = nameof(NUGET_ENABLE_LEGACY_PROJECT_JSON_PACK);
         private const string NUGET_ENABLE_LEGACY_CSPROJ_PACK = nameof(NUGET_ENABLE_LEGACY_CSPROJ_PACK);
@@ -66,9 +68,13 @@ namespace NuGet.CommandLine
         private const string TransformFileExtension = ".transform";
 
         [Import]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IMachineWideSettings MachineWideSettings { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
             {
@@ -84,7 +90,9 @@ namespace NuGet.CommandLine
             };
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ProjectFactory(string msbuildDirectory, string path, IDictionary<string, string> projectProperties)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             LoadAssemblies(msbuildDirectory);
 
@@ -108,7 +116,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ProjectFactory(string msbuildDirectory, dynamic project)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             LoadAssemblies(msbuildDirectory);
             Initialize(project);
@@ -164,7 +174,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public WarningProperties GetWarningPropertiesForProject()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var treatWarningsAsErrors = GetPropertyValue("TreatWarningsAsErrors");
             return WarningProperties.GetWarningProperties(treatWarningsAsErrors: string.IsNullOrEmpty(treatWarningsAsErrors) ? "false" : treatWarningsAsErrors,
@@ -185,32 +197,56 @@ namespace NuGet.CommandLine
             set;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void SetIncludeSymbols(bool includeSymbols)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             IncludeSymbols = includeSymbols;
         }
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IncludeSymbols { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IncludeReferencedProjects { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Build { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Dictionary<string, string> GetProjectProperties()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return ProjectProperties;
         }
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Dictionary<string, string> ProjectProperties { get; private set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IsTool { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public LogLevel LogLevel { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SymbolPackageFormat SymbolPackageFormat { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string PackagesDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string SolutionDirectory { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ILogger Logger
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -223,7 +259,9 @@ namespace NuGet.CommandLine
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public PackageBuilder CreateBuilder(string basePath, NuGetVersion version, string suffix, bool buildIfNeeded, PackageBuilder builder = null)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (buildIfNeeded)
             {
@@ -389,7 +427,9 @@ namespace NuGet.CommandLine
             return builder;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string InitializeProperties(Packaging.IPackageMetadata metadata)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // Set the properties that were resolved from the assembly/project so they can be
             // resolved by name if the nuspec contains tokens
@@ -430,7 +470,9 @@ namespace NuGet.CommandLine
             return projectAuthor;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string GetPropertyValue(string propertyName)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             string value;
             if (!_properties.TryGetValue(propertyName, out value) &&
@@ -1422,7 +1464,9 @@ namespace NuGet.CommandLine
             }
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool ContentEquals(string targetFile, string fullPath)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             bool isEqual;
             using (var dependencyFileStream = File.OpenRead(targetFile))

@@ -16,39 +16,59 @@ using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public abstract class DownloadCommandBase : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly List<string> _sources = new List<string>();
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected PackageSaveMode EffectivePackageSaveMode { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected DownloadCommandBase()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
         }
 
         [Option(typeof(NuGetCommand), "CommandSourceDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Source
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get { return _sources; }
         }
 
         [Option(typeof(NuGetCommand), "CommandFallbackSourceDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> FallbackSource { get; } = new List<string>();
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandNoCache", isHidden: true)]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NoCache { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandNoHttpCache")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NoHttpCache { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandDirectDownload")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool DirectDownload { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandDisableParallelProcessing")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool DisableParallelProcessing { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandPackageSaveMode")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string PackageSaveMode { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// If true the global packages folder NOT will be added as a source.
@@ -120,7 +140,9 @@ namespace NuGet.CommandLine
             return Enumerable.Empty<Packaging.PackageReference>();
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected IReadOnlyCollection<Configuration.PackageSource> GetPackageSources(Configuration.ISettings settings)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();

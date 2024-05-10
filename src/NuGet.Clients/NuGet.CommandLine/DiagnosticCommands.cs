@@ -10,7 +10,9 @@ using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class DiagnosticCommands
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly Common.ILogger _log;
 
@@ -21,12 +23,16 @@ namespace NuGet.CommandLine
         private const string FrameworkReference = "\x1b[34mframeworkref\x1b[39m";
         private const string Nothing = "\x1b[33mnothing\x1b[39m";
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public DiagnosticCommands(Common.ILogger log)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             _log = log;
         }
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int Lockfile(string projectOrLockfile, string target, string library)
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // Locate the lock file
             if (!string.Equals(Path.GetFileName(projectOrLockfile), LockFileFormat.LockFileName, StringComparison.Ordinal))

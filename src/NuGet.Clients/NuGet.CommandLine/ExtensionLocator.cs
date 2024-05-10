@@ -25,8 +25,12 @@ namespace NuGet.CommandLine
 
         private const string CredentialProviderPattern = "CredentialProvider*.exe";
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public readonly static string ExtensionsEnvar = "NUGET_EXTENSIONS_PATH";
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public readonly static string CredentialProvidersEnvar = "NUGET_CREDENTIALPROVIDERS_PATH";
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// Find paths to all extensions

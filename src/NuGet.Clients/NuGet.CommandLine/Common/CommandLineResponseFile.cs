@@ -9,7 +9,9 @@ using NuGet.CommandLine;
 
 namespace NuGet.Common
 {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class CommandLineResponseFile
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         /// <summary>
         /// Takes command line args and parses response files prefixed with the @ symbol.  

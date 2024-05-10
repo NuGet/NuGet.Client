@@ -18,12 +18,18 @@ namespace NuGet.CommandLine
     [Command(typeof(NuGetCommand), "init", "InitCommandDescription",
     MinArgs = 2, MaxArgs = 2, UsageDescriptionResourceName = "InitCommandUsageDescription",
     UsageSummaryResourceName = "InitCommandUsageSummary", UsageExampleResourceName = "InitCommandUsageExamples")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class InitCommand : Command
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "ExpandDescription")]
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Expand { get; set; }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // Arguments[0] or Arguments[1] will not be null at this point.
             // Because, this command has MinArgs set to 2.
