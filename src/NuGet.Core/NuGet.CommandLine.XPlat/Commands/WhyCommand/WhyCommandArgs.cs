@@ -3,10 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -34,58 +30,6 @@ namespace NuGet.CommandLine.XPlat
             Package = package ?? throw new ArgumentNullException(nameof(package));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            ValidatePathArgument(Path);
-            ValidatePackageArgument(Package);
-            ValidateFrameworksOption(Frameworks);
-        }
-
-        private static void ValidatePathArgument(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                    "PROJECT|SOLUTION"));
-            }
-
-            if (!File.Exists(path)
-                || (!path.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
-                    && !path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_PathIsMissingOrInvalid,
-                    path));
-            }
-        }
-
-        private static void ValidatePackageArgument(string package)
-        {
-            if (string.IsNullOrEmpty(package))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                    "PACKAGE"));
-            }
-        }
-
-        private static void ValidateFrameworksOption(List<string> frameworks)
-        {
-            var parsedFrameworks = frameworks.Select(f =>
-                                    NuGetFramework.Parse(
-                                        f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
-                                            .Select(s => s.Trim())
-                                            .ToArray()[0]));
-
-            if (parsedFrameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_InvalidFramework));
-            }
         }
     }
 }

@@ -682,14 +682,23 @@ namespace NuGet.CommandLine.XPlat
             var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
             var requestedTargets = assetsFile.Targets;
 
+            var requestedRestoreMetadataTFMs = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks; //TODO 
+
             // If the user has entered frameworks, we want to filter
             // the targets and frameworks from the assets file
             if (userInputFrameworks.Any())
             {
+                // TODO: If we're supposed to use aliases instead of actual frameworks here,
+                //  do we 1) ignore the first line where we're parsing them into NuGetFrameworks,
+                //  and 2) match the user input string against tfm.TargetAlias and not tfm.FrameworkName instead?
                 //Target frameworks filtering
                 var parsedUserFrameworks = userInputFrameworks.Select(f =>
                                                NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
                 requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName)).ToList();
+
+                // TODO: i.e.
+                requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => userInputFrameworks.Contains(tfm.TargetAlias)).ToList();
+                requestedRestoreMetadataTFMs = requestedRestoreMetadataTFMs.Where(tfm => userInputFrameworks.Contains(tfm.TargetAlias)).ToList();
 
                 //Assets file targets filtering by framework and RID
                 var filteredTargets = new List<LockFileTarget>();
@@ -728,7 +737,15 @@ namespace NuGet.CommandLine.XPlat
                     tfmInformation = requestedTargetFrameworks.First(tfm => tfm.FrameworkName.Equals(target.TargetFramework));
                     projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks
                                                     .First(tfm => tfm.FrameworkName.Equals(target.TargetFramework))
-                                                    .ProjectReferences.Select(p => p.ProjectPath); // need to filter by the alias too
+                                                    .ProjectReferences.Select(p => p.ProjectPath);
+                    // TODO: need to filter by alias here? 1) why, (only when we have user input frameworks in the CLI options?)
+                    // and 2) how exactly?
+                    //      filter by alias + framework? alias instead of framework?
+                    //      where would the the alias value come from? One is from the package spec, what about the other one? User input CLI option?
+                    // Now, we're already filtering it by alias above, if there are any user input frameworks. Is that what was needed?
+
+                    // TODO: This refactoring might introduce changes/bugs in other places, like the list command.
+                    // Deal with this later, and just match based on frameworks normally right now?
 
                     /*
                     projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks

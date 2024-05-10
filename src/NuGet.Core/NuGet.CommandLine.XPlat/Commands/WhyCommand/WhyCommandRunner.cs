@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Build.Evaluation;
+using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 
@@ -31,8 +31,20 @@ namespace NuGet.CommandLine.XPlat
         /// Executes the 'why' command.
         /// </summary>
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command.</param>
-        public static Task ExecuteCommand(WhyCommandArgs whyCommandArgs)
+        public static int ExecuteCommand(WhyCommandArgs whyCommandArgs)
         {
+            try
+            {
+                ValidatePathArgument(whyCommandArgs.Path);
+                ValidatePackageArgument(whyCommandArgs.Package);
+                ValidateFrameworksOption(whyCommandArgs.Frameworks);
+            }
+            catch (ArgumentException ex)
+            {
+                whyCommandArgs.Logger.LogError(ex.Message);
+                return ExitCodes.InvalidArguments;
+            }
+
             var msBuild = new MSBuildAPIUtility(whyCommandArgs.Logger);
 
             string targetPackage = whyCommandArgs.Package;
@@ -54,7 +66,55 @@ namespace NuGet.CommandLine.XPlat
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
 
-            return Task.CompletedTask;
+            return ExitCodes.Success;
+        }
+
+        private static void ValidatePathArgument(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
+                    "PROJECT|SOLUTION"));
+            }
+
+            if (!File.Exists(path)
+                || (!path.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
+                    && !path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_PathIsMissingOrInvalid,
+                    path));
+            }
+        }
+
+        private static void ValidatePackageArgument(string package)
+        {
+            if (string.IsNullOrEmpty(package))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
+                    "PACKAGE"));
+            }
+        }
+
+        private static void ValidateFrameworksOption(List<string> frameworks)
+        {
+            var parsedFrameworks = frameworks.Select(f =>
+                                    NuGetFramework.Parse(
+                                        f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(s => s.Trim())
+                                            .ToArray()[0]));
+
+            if (parsedFrameworks.Any(f => f.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_InvalidFramework));
+            }
         }
 
         /// <summary>
@@ -148,6 +208,7 @@ namespace NuGet.CommandLine.XPlat
                             dependencyGraphPerFramework.Add(frameworkPackage.Framework,
                                                             GetDependencyGraphPerFramework(frameworkPackage.TopLevelPackages, packageLibraries, targetPackage));
 
+                            // Sanity check
                             if (dependencyGraphPerFramework[frameworkPackage.Framework] == null)
                             {
                                 Console.WriteLine("WTF?");
