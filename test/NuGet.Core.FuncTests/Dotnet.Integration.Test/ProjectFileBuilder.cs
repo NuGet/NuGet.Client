@@ -10,7 +10,6 @@ namespace Dotnet.Integration.Test
 {
     /// <summary>
     /// Represents a builder for dotnet core projects for integration tests.
-    /// Relies on <see cref="DotnetIntegrationTestFixture" /> to programmatically create the project
     /// </summary>
     internal class ProjectFileBuilder
     {
@@ -150,7 +149,7 @@ namespace Dotnet.Integration.Test
         }
 
         /// <summary>
-        /// Represents an MSBuild project file Item entry created by <c>ProjectFileBuilder</c>.
+        /// Represents an MSBuild project file Item entry created by <see cref="ProjectFileBuilder" />.
         /// For testing purposes.
         /// </summary>
         internal class ItemEntry
