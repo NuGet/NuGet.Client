@@ -1611,14 +1611,14 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    if (currentOverrides.ContainsKey(currentRefDependencyIndex))
+                    if (currentOverrides.TryGetValue(currentRefDependencyIndex, out var ov))
                     {
                         /*                        if (currentRef.VersionOverride != null)
                                                 {
                                                     _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
                                                 }
                         */
-                        if (currentOverrides[currentRefDependencyIndex] != currentRef.LibraryRange.VersionRange)
+                        if (ov != currentRef.LibraryRange.VersionRange)
                         {
                             if (currentRef.VersionOverride != null)
                             {
@@ -1632,10 +1632,10 @@ namespace NuGet.Commands
                     }
 
                     //else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
-                    if (chosenResolvedItems.Keys.Contains(currentRefDependencyIndex))
+                    if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out var chosenResolvedItem))
                     {
                         (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathChosenRef,
-                            List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItems[currentRefDependencyIndex];
+                            List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItem;
 
 #if verboseLog
                         _logger.LogMinimal($"BSW_DE1, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
@@ -1783,12 +1783,12 @@ namespace NuGet.Commands
                                     {
                                         foreach (var chosenOverride in chosenImportDisposition.currentOverrides)
                                         {
-                                            if (!currentOverrides.ContainsKey(chosenOverride.Key))
+                                            if (!currentOverrides.TryGetValue(chosenOverride.Key, out VersionRange currentOverride))
                                             {
                                                 localIsEqualorSuperSetOverride = false;
                                                 break;
                                             }
-                                            if (!VersionRange.PreciseEquals(currentOverrides[chosenOverride.Key], chosenOverride.Value))
+                                            if (!VersionRange.PreciseEquals(currentOverride, chosenOverride.Value))
                                             {
                                                 localIsEqualorSuperSetOverride = false;
                                                 break;
@@ -1998,26 +1998,19 @@ namespace NuGet.Commands
                 while (itemsToFlatten.Count > 0)
                 {
                     (LibraryDependencyIndex currentDependencyIndex, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
-                    if (!chosenResolvedItems.ContainsKey(currentDependencyIndex))
+                    if (!chosenResolvedItems.TryGetValue(currentDependencyIndex, out var foundItem))
                     {
 #if bswlog
                         _logger.LogMinimal($"BSW_ERR1, {currentDependencyIndex}");
 #endif
                         continue;
                     }
-                    (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, var chosenSuppressions) = chosenResolvedItems[currentDependencyIndex];
+                    (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, var chosenSuppressions) = foundItem;
 #if verboseLog
                             LogIT($"BSW_EAE1,{chosenRef}");
 #endif
-                    if (!allResolvedItems.ContainsKey(chosenRefRangeIndex))
-#if bswlog
-                        _logger.LogMinimal($"BSW_ERR2, {chosenRefRangeIndex}");
-#else
-                    { }
-#endif
-                    else
+                    if (allResolvedItems.TryGetValue(chosenRefRangeIndex, out var node))
                     {
-                        var node = allResolvedItems[chosenRefRangeIndex];
                         newFlattened.Add(node);
 
                         // If the package came from a remote library provider, it needs to be installed locally.
@@ -2034,14 +2027,11 @@ namespace NuGet.Commands
                                 continue;
                             visitedItems.Add(depIndex);
 
-                            if (!chosenResolvedItems.ContainsKey(depIndex))
+                            if (!chosenResolvedItems.TryGetValue(depIndex, out var chosenItem))
                             {
-                                //apparently not an erorr condition?
-                                //_logger.LogMinimal($"BSW_ERR3,{dep.Name},{_request.Project.FilePath}");
                                 continue;
                             }
 
-                            var chosenItem = chosenResolvedItems[depIndex];
                             var chosenItemRangeIndex = chosenItem.rangeIndex;
                             LibraryDependency actualDep = chosenItem.libRef;
 
@@ -2052,6 +2042,12 @@ namespace NuGet.Commands
                             itemsToFlatten.Enqueue((depIndex, newGraphNode));
                         }
                     }
+#if bswlog
+                    else
+                    {
+                        _logger.LogMinimal($"BSW_ERR2, {chosenRefRangeIndex}");
+                    }
+#endif
                 }
 
                 sw6_flatten.Stop();
