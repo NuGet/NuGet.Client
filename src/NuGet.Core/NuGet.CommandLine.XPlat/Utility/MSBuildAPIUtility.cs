@@ -657,6 +657,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="userInputFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages/projects in the result</param>
+        /// <param name="includeProjectReferences">Include project references in the result</param>
         /// <returns>FrameworkPackages collection with top-level and transitive package/project
         /// references for each framework, or null on error</returns>
         internal List<FrameworkPackages> GetResolvedVersions(
@@ -682,23 +683,14 @@ namespace NuGet.CommandLine.XPlat
             var requestedTargetFrameworks = assetsFile.PackageSpec.TargetFrameworks;
             var requestedTargets = assetsFile.Targets;
 
-            var requestedRestoreMetadataTFMs = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks; //TODO 
-
             // If the user has entered frameworks, we want to filter
             // the targets and frameworks from the assets file
             if (userInputFrameworks.Any())
             {
-                // TODO: If we're supposed to use aliases instead of actual frameworks here,
-                //  do we 1) ignore the first line where we're parsing them into NuGetFrameworks,
-                //  and 2) match the user input string against tfm.TargetAlias and not tfm.FrameworkName instead?
                 //Target frameworks filtering
                 var parsedUserFrameworks = userInputFrameworks.Select(f =>
                                                NuGetFramework.Parse(f.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray()[0]));
                 requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => parsedUserFrameworks.Contains(tfm.FrameworkName)).ToList();
-
-                // TODO: i.e.
-                requestedTargetFrameworks = requestedTargetFrameworks.Where(tfm => userInputFrameworks.Contains(tfm.TargetAlias)).ToList();
-                requestedRestoreMetadataTFMs = requestedRestoreMetadataTFMs.Where(tfm => userInputFrameworks.Contains(tfm.TargetAlias)).ToList();
 
                 //Assets file targets filtering by framework and RID
                 var filteredTargets = new List<LockFileTarget>();
@@ -738,21 +730,6 @@ namespace NuGet.CommandLine.XPlat
                     projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks
                                                     .First(tfm => tfm.FrameworkName.Equals(target.TargetFramework))
                                                     .ProjectReferences.Select(p => p.ProjectPath);
-                    // TODO: need to filter by alias here? 1) why, (only when we have user input frameworks in the CLI options?)
-                    // and 2) how exactly?
-                    //      filter by alias + framework? alias instead of framework?
-                    //      where would the the alias value come from? One is from the package spec, what about the other one? User input CLI option?
-                    // Now, we're already filtering it by alias above, if there are any user input frameworks. Is that what was needed?
-
-                    // TODO: This refactoring might introduce changes/bugs in other places, like the list command.
-                    // Deal with this later, and just match based on frameworks normally right now?
-
-                    /*
-                    projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks
-                                                    .First(tfm => tfm.FrameworkName.Equals(target.TargetFramework)
-                                                           && tfm.TargetAlias.Equals(??)) // what goes here?
-                                                    .ProjectReferences.Select(p => p.ProjectPath);
-                    */
                 }
                 catch (Exception)
                 {
@@ -882,13 +859,13 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="library">The target project library that we want the path for.</param>
         /// <param name="libraries">All libraries in the assets file.</param>
-        /// <param name="projectPath">The absolute path to the project file.</param>
-        /// <returns>absolute path of the matching project library.</returns>
+        /// <param name="projectDirectoryPath">The absolute path to the project base directory.</param>
+        /// <returns>The absolute path of the matching project library.</returns>
         private string GetProjectLibraryPath(LockFileTargetLibrary library, IList<LockFileLibrary> libraries, string projectDirectoryPath)
         {
             string relativePath = libraries.Where(l => l.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)
                                                        && l.Version.Equals(library.Version))
-                                           .First().Path;
+                                           .FirstOrDefault().Path;
 
             return Path.GetFullPath(relativePath, projectDirectoryPath);
         }

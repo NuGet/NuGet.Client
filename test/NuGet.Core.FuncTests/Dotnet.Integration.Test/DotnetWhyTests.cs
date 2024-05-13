@@ -22,7 +22,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_PathExists()
+        public async void WhyCommand_ProjectHasTransitiveDependency_DependencyPathExists()
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
@@ -56,7 +56,39 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_WithFrameworksOption_PathExists()
+        public async void WhyCommand_ProjectHasNoDependencyOnTargetPackage_PathDoesNotExist()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageZ);
+
+            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageZ.Id}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result.ExitCode);
+            Assert.Contains($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageZ.Id}'", result.AllOutput);
+        }
+
+        [Fact]
+        public async void WhyCommand_WithFrameworksOption_OptionParsedSuccessfully()
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
@@ -90,7 +122,7 @@ namespace Dotnet.Integration.Test
         }
 
         [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_WithFrameworksOptionAlias_PathExists()
+        public async void WhyCommand_WithFrameworksOptionAlias_OptionParsedSuccessfully()
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
@@ -121,38 +153,6 @@ namespace Dotnet.Integration.Test
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
-        }
-
-        [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_PathDoesNotExist()
-        {
-            // Arrange
-            var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
-            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
-
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-            project.AddPackageToFramework(projectFramework, packageX);
-
-            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0");
-
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                packageX,
-                packageZ);
-
-            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
-            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
-
-            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageZ.Id}";
-
-            // Act
-            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
-
-            // Assert
-            Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageZ.Id}'", result.AllOutput);
         }
 
         [Fact]

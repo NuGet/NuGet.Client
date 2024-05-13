@@ -182,7 +182,6 @@ namespace NuGet.CommandLine.XPlat
             Project project,
             LockFile assetsFile)
         {
-            // TODO: The top-level packages here are only package references, and do not include project references. Need to fix this.
             // get all resolved package references for a project
             List<FrameworkPackages> frameworkPackages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true, includeProjectReferences: true);
 
@@ -194,7 +193,7 @@ namespace NuGet.CommandLine.XPlat
 
                 foreach (var frameworkPackage in frameworkPackages)
                 {
-                    LockFileTarget target = assetsFile.GetTarget(frameworkPackage.Framework, runtimeIdentifier: null); // runtime Identifier?
+                    LockFileTarget target = assetsFile.GetTarget(frameworkPackage.Framework, runtimeIdentifier: null);
 
                     if (target != default)
                     {

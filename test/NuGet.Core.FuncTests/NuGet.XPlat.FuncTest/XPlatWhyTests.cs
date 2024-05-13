@@ -17,7 +17,7 @@ namespace NuGet.XPlat.FuncTest
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
 
         [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_PathExists()
+        public async void WhyCommand_ProjectHasTransitiveDependency_DependencyPathExists()
         {
             // Arrange
             var logger = new TestCommandOutputLogger();
@@ -60,7 +60,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_OutputFormatIsCorrect()
+        public async void WhyCommand_ProjectHasTransitiveDependency_OutputFormatIsCorrect()
         {
             // Arrange
             var logger = new Mock<ILoggerWithColor>();
@@ -107,9 +107,8 @@ namespace NuGet.XPlat.FuncTest
             logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
         }
 
-
         [Fact]
-        public async void WhyCommand_SimpleTransitiveDependency_PathDoesNotExist()
+        public async void WhyCommand_ProjectHasNoDependencyOnTargetPackage_PathDoesNotExist()
         {
             // Arrange
             var logger = new TestCommandOutputLogger();
@@ -150,7 +149,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public void WhyCommand_SimpleTransitiveDependency_DidNotRunRestore_Fails()
+        public void WhyCommand_ProjectDidNotRunRestore_Fails()
         {
             // Arrange
             var logger = new TestCommandOutputLogger();
@@ -251,25 +250,5 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(ExitCodes.InvalidArguments, result);
             Assert.Contains($"Unable to run 'dotnet nuget why'. Missing or invalid project/solution file 'FakeProjectPath.csproj'.", errorOutput);
         }
-
-        /*
-        [Fact]
-        public void NewTest()
-        {
-            var assetsFilePath = Path.Combine(pathContext.SolutionRoot, "obj", LockFileFormat.AssetsFileName);
-            var format = new LockFileFormat();
-            LockFile assetsFile = format.Read(assetsFilePath);
-
-            var responses = new Dictionary<string, string>
-            {
-                { testFeedUrl, ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.index.json", GetType()) },
-                { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
-                { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
-                { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
-                { "https://api.nuget.org/v3/registration3-gz-semver2/nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) },
-                { "https://api.nuget.org/v3/registration3-gz-semver2/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
-            };
-        }
-        */
     }
 }
