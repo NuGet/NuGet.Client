@@ -44,16 +44,12 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            solutionService.Build();
-
-            Logger.WriteMessage($"Open PM UI...");
-            System.Threading.Thread.Sleep(6000);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
-            var item = project.Find(SolutionItemFind.FileName, "packages.config");
-            item.Open();
-            System.Threading.Thread.Sleep(6000);
+            VisualStudio.ClearWindows();
+            uiwindow.UninstallPackageFromUI(TestPackageName);
+
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
         }
 
         [TestMethod]
@@ -76,7 +72,11 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             System.Threading.Thread.Sleep(6000);
             VisualStudio.ClearWindows();
             uiwindow.UpdatePackageFromUI(TestPackageName, TestPackageVersionV2);
@@ -106,10 +106,10 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.ClearWindows();
-            uiwindow.UninstallPackageFromUI(TestPackageName);
+            // uiwindow.UninstallPackageFromUI(TestPackageName);
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
         }
 
         [TestMethod]
