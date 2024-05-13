@@ -15,6 +15,6 @@ namespace NuGet.Commands
         public LibraryRangeIndex RangeIndex { get; set; } = LibraryRangeIndex.Invalid;
         public LibraryRangeIndex[] PathToRef { get; set; } = Array.Empty<LibraryRangeIndex>();
         public HashSet<LibraryDependencyIndex> Suppressions { get; set; }
-        public Dictionary<LibraryDependencyIndex, VersionRange> CurrentOverrides { get; set; }
+        public IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> CurrentOverrides { get; set; }
     }
 }
