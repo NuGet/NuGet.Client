@@ -17,9 +17,9 @@ namespace NuGet.XPlat.FuncTest
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
 
         [Fact]
-        public async void WhyCommand_TransitiveDependency_PathExists()
+        public async void WhyCommand_SimpleTransitiveDependency_PathExists()
         {
-            // Arrange 
+            // Arrange
             var logger = new TestCommandOutputLogger();
 
             var pathContext = new SimpleTestPathContext();
@@ -60,7 +60,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void WhyCommand_TransitiveDependency_OutputFormatIsCorrect()
+        public async void WhyCommand_SimpleTransitiveDependency_OutputFormatIsCorrect()
         {
             // Arrange
             var logger = new Mock<ILoggerWithColor>();
@@ -107,8 +107,50 @@ namespace NuGet.XPlat.FuncTest
             logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
         }
 
+
         [Fact]
-        public async void WhyCommand_BasicFunctionality_Succeeds()
+        public async void WhyCommand_SimpleTransitiveDependency_PathDoesNotExist()
+        {
+            // Arrange
+            var logger = new TestCommandOutputLogger();
+
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0"); // not added to project
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageZ);
+
+            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageZ.Id,
+                    [projectFramework],
+                    logger);
+
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageZ.Id}'", output);
+        }
+
+        [Fact]
+        public void WhyCommand_SimpleTransitiveDependency_DidNotRunRestore_Fails()
         {
             // Arrange
             var logger = new TestCommandOutputLogger();
@@ -124,17 +166,6 @@ namespace NuGet.XPlat.FuncTest
 
             project.AddPackageToFramework(projectFramework, packageX);
 
-            // Generate Package
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                packageX,
-                packageY);
-
-            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
-            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
-
             var whyCommandArgs = new WhyCommandArgs(
                     project.ProjectPath,
                     packageY.Id,
@@ -148,7 +179,7 @@ namespace NuGet.XPlat.FuncTest
             var output = logger.ShowMessages();
 
             Assert.Equal(ExitCodes.Success, result);
-            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
+            Assert.Contains($"No assets file was found for `{project.ProjectPath}`. Please run restore before running this command.", output);
         }
 
         [Fact]

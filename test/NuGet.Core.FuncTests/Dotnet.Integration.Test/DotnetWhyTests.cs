@@ -1,80 +1,192 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System;
-using NuGet.CommandLine.Xplat.Tests;
+using NuGet.CommandLine.XPlat;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
+using NuGet.XPlat.FuncTest;
 using Xunit;
-using System.IO;
-using System.Reflection;
 
 namespace Dotnet.Integration.Test
 {
     [Collection(DotnetIntegrationCollection.Name)]
-    public class DotnetWhyTests : IClassFixture<PackageSearchRunnerFixture>
+    public class DotnetWhyTests
     {
-        private readonly DotnetIntegrationTestFixture _testFixture;
-        private readonly PackageSearchRunnerFixture _packageSearchRunnerFixture;
+        private static readonly string ProjectName = "Test.Project.DotnetNugetWhy";
 
-        public DotnetWhyTests(DotnetIntegrationTestFixture testFixture, PackageSearchRunnerFixture packageSearchRunnerFixture)
+        private readonly DotnetIntegrationTestFixture _testFixture;
+
+        public DotnetWhyTests(DotnetIntegrationTestFixture testFixture)
         {
             _testFixture = testFixture;
-            _packageSearchRunnerFixture = packageSearchRunnerFixture;
-        }
-
-        internal string NormalizeNewlines(string input)
-        {
-            return input.Replace("\r\n", "\n").Replace("\r", "\n");
         }
 
         [Fact]
-        public void DotnetPackageSearch_Succeed()
+        public async void WhyCommand_SimpleTransitiveDependency_PathExists()
         {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                var args = new string[] { "package", "search", "json", "--take", "10", "--prerelease", "--source", $"{_packageSearchRunnerFixture.ServerWithMultipleEndpoints.Uri}v3/index.json", "--format", "json" };
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-                // Act
-                var result = _testFixture.RunDotnetExpectSuccess(pathContext.PackageSource, string.Join(" ", args));
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
-                // Assert
-                Assert.Equal(0, result.ExitCode);
-                Assert.Contains("\"id\": \"Fake.Newtonsoft.Json\",", result.AllOutput);
-                Assert.Contains("\"owners\": \"James Newton-King\"", result.AllOutput);
-                Assert.Contains("\"totalDownloads\": 531607259,", result.AllOutput);
-                Assert.Contains("\"latestVersion\": \"12.0.3\"", result.AllOutput);
-            }
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result.ExitCode);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
         }
 
         [Fact]
-        public void DotnetPackageSearch_WithInvalidSource_FailWithNoHelpOutput()
+        public async void WhyCommand_SimpleTransitiveDependency_WithFrameworksOption_PathExists()
         {
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Arrange
-                string source = "invalid-source";
-                var args = new string[] { "package", "search", "json", "--source", source, "--format", "json" };
-                Dictionary<string, string> finalEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["MSBuildSDKsPath"] = _testFixture.MsBuildSdksPath,
-                    ["UseSharedCompilation"] = bool.FalseString,
-                    ["DOTNET_MULTILEVEL_LOOKUP"] = "0",
-                    ["DOTNET_ROOT"] = TestDotnetCLiUtility.CopyAndPatchLatestDotnetCli(Path.GetFullPath(Assembly.GetExecutingAssembly().Location)),
-                    ["MSBUILDDISABLENODEREUSE"] = bool.TrueString,
-                    ["NUGET_SHOW_STACK"] = bool.TrueString
-                };
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-                string error = "is invalid. Provide a valid source.";
-                string help = "dotnet package search [<SearchTerm>] [options]";
-                // Act
-                var result = CommandRunner.Run(_testFixture.TestDotnetCli, pathContext.PackageSource, string.Join(" ", args), environmentVariables: finalEnvironmentVariables);
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
 
-                // Assert
-                Assert.Contains(error, result.AllOutput);
-                Assert.DoesNotContain(help, result.AllOutput);
-            }
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id} --framework {projectFramework}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result.ExitCode);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+        }
+
+        [Fact]
+        public async void WhyCommand_SimpleTransitiveDependency_WithFrameworksOptionAlias_PathExists()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id} -f {projectFramework}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result.ExitCode);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+        }
+
+        [Fact]
+        public async void WhyCommand_SimpleTransitiveDependency_PathDoesNotExist()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageZ);
+
+            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageZ.Id}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result.ExitCode);
+            Assert.Contains($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageZ.Id}'", result.AllOutput);
+        }
+
+        [Fact]
+        public void WhyCommand_EmptyProjectArgument_Fails()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+
+            string whyCommandArgs = $"nuget why";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
+            Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
+        }
+
+        [Fact]
+        public void WhyCommand_EmptyPackageArgument_Fails()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
+            Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
         }
     }
 }

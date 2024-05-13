@@ -22,7 +22,7 @@ namespace NuGet.CommandLine.XPlat
             Arity = ArgumentArity.ExactlyOne
         };
 
-        private static CliOption<List<string>> Frameworks = new CliOption<List<string>>("-f|--framework")
+        private static CliOption<List<string>> Frameworks = new CliOption<List<string>>("--framework", "-f")
         {
             Description = Strings.WhyCommand_FrameworksOption_Description,
             Arity = ArgumentArity.OneOrMore
