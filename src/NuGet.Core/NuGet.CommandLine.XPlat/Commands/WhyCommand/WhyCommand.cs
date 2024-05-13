@@ -13,7 +13,7 @@ namespace NuGet.CommandLine.XPlat
         private static CliArgument<string> Path = new CliArgument<string>("PROJECT|SOLUTION")
         {
             Description = Strings.WhyCommand_PathArgument_Description,
-            Arity = ArgumentArity.ExactlyOne // ZeroOrOne?
+            Arity = ArgumentArity.ExactlyOne
         };
 
         private static CliArgument<string> Package = new CliArgument<string>("PACKAGE")
@@ -54,9 +54,8 @@ namespace NuGet.CommandLine.XPlat
                         parseResult.GetValue(Frameworks),
                         logger);
 
-                    WhyCommandRunner.ExecuteCommand(whyCommandArgs);
-
-                    return 0;
+                    int exitCode = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+                    return exitCode;
                 }
                 catch (ArgumentException ex)
                 {

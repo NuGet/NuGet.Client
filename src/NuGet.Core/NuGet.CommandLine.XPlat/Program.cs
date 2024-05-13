@@ -39,7 +39,7 @@ namespace NuGet.CommandLine.XPlat
         {
 #if DEBUG
             // Uncomment the following when debugging. Also uncomment the PackageReference for Microsoft.Build.Locator.
-            try
+            /*try
             {
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
                 // try block is never entered if Microsoft.Build.Locator.dll can't be found. So, run it in a
@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 // MSBuildLocator is used only to enable Visual Studio debugging.
                 // It's not needed when using a patched dotnet sdk, so it doesn't matter if it fails.
-            }
+            }*/
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
@@ -95,15 +95,12 @@ namespace NuGet.CommandLine.XPlat
                 PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
                 ConfigCommand.Register(rootCommand, getHidePrefixLogger);
                 WhyCommand.Register(rootCommand, getHidePrefixLogger);
-                // this won't show up in help for dotnet nuget * this way
-                // eg. `dotnet nuget blah` should show the help option for `dotnet nuget`, which should list all sub commands,
-                // but it won't enter this if block, so we won't see 'why' as a subcommand
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
                 tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
+                int exitCodeValue = 0;
                 CliConfiguration config = new(rootCommand);
                 ParseResult parseResult = rootCommand.Parse(args, config);
-                int exitCodeValue = 0;
 
                 try
                 {

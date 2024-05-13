@@ -206,12 +206,6 @@ namespace NuGet.CommandLine.XPlat
                             doesProjectHaveDependencyOnPackage = true;
                             dependencyGraphPerFramework.Add(frameworkPackage.Framework,
                                                             GetDependencyGraphPerFramework(frameworkPackage.TopLevelPackages, packageLibraries, targetPackage));
-
-                            // Sanity check
-                            if (dependencyGraphPerFramework[frameworkPackage.Framework] == null)
-                            {
-                                Console.WriteLine("WTF?");
-                            }
                         }
                         else
                         {
