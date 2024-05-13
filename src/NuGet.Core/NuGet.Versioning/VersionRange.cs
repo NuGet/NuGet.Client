@@ -448,13 +448,9 @@ namespace NuGet.Versioning
 
         public static bool PreciseEquals(VersionRange a, VersionRange b)
         {
-            if ((a.Float != null) != (b.Float != null))
+            if (ReferenceEquals(a, b))
             {
-                return false;
-            }
-            if (a.Float != b.Float)
-            {
-                return false;
+                return true;
             }
             if ((a.MinVersion != null) != (b.MinVersion != null))
             {
@@ -480,6 +476,15 @@ namespace NuGet.Versioning
             {
                 return false;
             }
+            if ((a.Float != null) != (b.Float != null))
+            {
+                return false;
+            }
+            if (a.Float != b.Float)
+            {
+                return false;
+            }
+
             return true;
         }
     }
