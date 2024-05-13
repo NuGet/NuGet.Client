@@ -1546,8 +1546,8 @@ namespace NuGet.Commands
                 Dictionary<LibraryRangeIndex, GraphItem<RemoteResolveResult>> allResolvedItems =
                     new Dictionary<LibraryRangeIndex, GraphItem<RemoteResolveResult>>();
 
-                Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, List<(HashSet<LibraryDependencyIndex> currentSupressions, Dictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
-                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], List<(HashSet<LibraryDependencyIndex> currentSupressions, Dictionary<LibraryDependencyIndex, VersionRange>)>)>();
+                Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
+                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>();
 
                 Dictionary<LibraryRangeIndex, LibraryRangeIndex[]> evictions = new Dictionary<LibraryRangeIndex, LibraryRangeIndex[] >();
 
@@ -1635,7 +1635,7 @@ namespace NuGet.Commands
                     if (chosenResolvedItems.Keys.Contains(currentRefDependencyIndex))
                     {
                         (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathChosenRef,
-                            List<(HashSet<LibraryDependencyIndex> currentSupressions, Dictionary<LibraryDependencyIndex, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItems[currentRefDependencyIndex];
+                            List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItems[currentRefDependencyIndex];
 
 #if verboseLog
                         _logger.LogMinimal($"BSW_DE1, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
@@ -1712,7 +1712,7 @@ namespace NuGet.Commands
                             totalEvictions++;
                             //Since this is a "new" choice, its gets a new import context list
                             chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef,
-                                new List<(HashSet<LibraryDependencyIndex>, Dictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
+                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
                             if (deepEvictions > 0)
                             {
 #if verboseLog
@@ -1767,7 +1767,7 @@ namespace NuGet.Commands
                                 chosenResolvedItems.Remove(currentRefDependencyIndex);
                                 //slightly evil, but works.. we should just shift to the current thing as ref?
                                 chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef,
-                                new List<(HashSet<LibraryDependencyIndex>, Dictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
+                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
 
                             }
                             else
@@ -1815,7 +1815,7 @@ namespace NuGet.Commands
                                     //a disposition if its less restrictive than another.  But we'll just add it to the list.
                                     chosenResolvedItems.Remove(currentRefDependencyIndex);
                                     var newImportDisposition =
-                                        new List<(HashSet<LibraryDependencyIndex>, Dictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) };
+                                        new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) };
                                     newImportDisposition.AddRange(chosenSuppressions);
                                     //slightly evil, but works.. we should just shift to the current thing as ref?
                                     chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, newImportDisposition));
@@ -1835,7 +1835,7 @@ namespace NuGet.Commands
 #endif
                         //This is now the thing we think is the highest version of this ref
                         chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef,
-                                new List<(HashSet<LibraryDependencyIndex>, Dictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
+                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
 
                     }
                     GraphItem<RemoteResolveResult> refItem = null;
@@ -1861,9 +1861,9 @@ namespace NuGet.Commands
 
                     HashSet<LibraryDependencyIndex> suppressions = new HashSet<LibraryDependencyIndex>();
                     suppressions.AddRange(currentSupressions);
-                    Dictionary<LibraryDependencyIndex, VersionRange> overrides =
+                    IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> finalVersionOverrides = null;
+                    Dictionary <LibraryDependencyIndex, VersionRange> newOverrides =
                         new Dictionary<LibraryDependencyIndex, VersionRange>();
-                    overrides.AddRange(currentOverrides);
                     //Scan for supressions and overrides
                     LibraryDependencyIndex[] depIndexList = new LibraryDependencyIndex[refItem.Data.Dependencies.Count];
                     for (int i = 0; i < refItem.Data.Dependencies.Count; i++)
@@ -1877,12 +1877,30 @@ namespace NuGet.Commands
                         }
                         if (dep.VersionOverride != null)
                         {
-                            overrides[depIndex] = dep.VersionOverride;
+                            newOverrides[depIndex] = dep.VersionOverride;
                         }
                         if(isProject&&(dep.LibraryRange.TypeConstraint==LibraryDependencyTarget.Package))
                         {
-                            overrides[depIndex] = dep.LibraryRange.VersionRange;
+                            newOverrides[depIndex] = dep.LibraryRange.VersionRange;
                         }
+                    }
+
+                    // If the override set has been mutated, then add the rest of the overrides.
+                    // Otherwise, just use the incoming set of overrides.
+                    if (newOverrides.Count > 0)
+                    {
+                        Dictionary<LibraryDependencyIndex, VersionRange> allOverrides =
+                            new Dictionary<LibraryDependencyIndex, VersionRange>(currentOverrides.Count + newOverrides.Count);
+                        allOverrides.AddRange(currentOverrides);
+                        foreach(var overridePair in newOverrides)
+                        {
+                            allOverrides[overridePair.Key] = overridePair.Value;
+                        }
+                        finalVersionOverrides = allOverrides;
+                    }
+                    else
+                    {
+                        finalVersionOverrides = currentOverrides;
                     }
 #if verboseLog
                     foreach (var sup in suppressions)
@@ -1917,7 +1935,7 @@ namespace NuGet.Commands
                             RangeIndex = libraryRangeInterningTable.Intern(dep.LibraryRange),
                             PathToRef = PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef),
                             Suppressions = suppressions,
-                            CurrentOverrides = overrides,
+                            CurrentOverrides = finalVersionOverrides,
                         });
                     }
 
@@ -1953,7 +1971,7 @@ namespace NuGet.Commands
                                 RangeIndex = libraryRangeInterningTable.Intern(dep.LibraryRange),
                                 PathToRef = PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef),
                                 Suppressions = suppressions,
-                                CurrentOverrides = overrides,
+                                CurrentOverrides = finalVersionOverrides,
                             });
                         }
                     }
