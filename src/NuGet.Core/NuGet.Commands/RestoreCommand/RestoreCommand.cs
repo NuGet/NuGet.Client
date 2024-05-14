@@ -1552,8 +1552,8 @@ namespace NuGet.Commands
                 Dictionary<LibraryRangeIndex, GraphItem<RemoteResolveResult>> allResolvedItems =
                     new Dictionary<LibraryRangeIndex, GraphItem<RemoteResolveResult>>();
 
-                Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
-                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>();
+                Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, bool directReferenceFromRootProject, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
+                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], bool, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>();
 
                 Dictionary<LibraryRangeIndex, LibraryRangeIndex[]> evictions = new Dictionary<LibraryRangeIndex, LibraryRangeIndex[] >();
 
@@ -1568,6 +1568,7 @@ namespace NuGet.Commands
                     RangeIndex = libraryRangeInterningTable.Intern(initialProject.LibraryRange),
                     Suppressions = new HashSet<LibraryDependencyIndex>(),
                     CurrentOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
+                    DirectReferenceFromRootProject = false,
                 };
 
             ProcessDeepEviction:
@@ -1601,6 +1602,7 @@ namespace NuGet.Commands
                     var pathToCurrentRef = importRefItem.PathToRef;
                     var currentSupressions = importRefItem.Suppressions;
                     var currentOverrides = importRefItem.CurrentOverrides;
+                    var directReferenceFromRootProject = importRefItem.DirectReferenceFromRootProject;
 
                     LibraryRangeIndex libraryRangeOfCurrentRef = importRefItem.RangeIndex;
 
@@ -1642,8 +1644,13 @@ namespace NuGet.Commands
                     //else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
                     if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out var chosenResolvedItem))
                     {
-                        (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathChosenRef,
+                        (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathChosenRef, bool fromRootProject,
                             List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItem;
+
+                        if (fromRootProject)
+                        {
+                            continue;
+                        }
 
 #if verboseLog
                         _logger.LogMinimal($"BSW_DE1, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
@@ -1719,7 +1726,7 @@ namespace NuGet.Commands
                             }
                             totalEvictions++;
                             //Since this is a "new" choice, its gets a new import context list
-                            chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef,
+                            chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, directReferenceFromRootProject,
                                 new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
                             if (deepEvictions > 0)
                             {
@@ -1774,7 +1781,7 @@ namespace NuGet.Commands
                             {
                                 chosenResolvedItems.Remove(currentRefDependencyIndex);
                                 //slightly evil, but works.. we should just shift to the current thing as ref?
-                                chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef,
+                                chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, directReferenceFromRootProject,
                                 new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
 
                             }
@@ -1826,7 +1833,7 @@ namespace NuGet.Commands
                                         new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) };
                                     newImportDisposition.AddRange(chosenSuppressions);
                                     //slightly evil, but works.. we should just shift to the current thing as ref?
-                                    chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, newImportDisposition));
+                                    chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, directReferenceFromRootProject, newImportDisposition));
 #if verboseLog
                                     _logger.LogMinimal($"BSW_DU4, Skipping {currentRef.LibraryRange} as it is more restrictive than {chosenRef.LibraryRange}");
 #endif
@@ -1842,7 +1849,7 @@ namespace NuGet.Commands
                         _logger.LogMinimal($"BSW_MC1, Marking as Chosen ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
 #endif
                         //This is now the thing we think is the highest version of this ref
-                        chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef,
+                        chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, directReferenceFromRootProject,
                                 new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
 
                     }
@@ -1892,14 +1899,6 @@ namespace NuGet.Commands
                                 newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>();
                             }
                             newOverrides[depIndex] = dep.VersionOverride;
-                        }
-                        if(isProject&&(dep.LibraryRange.TypeConstraint==LibraryDependencyTarget.Package))
-                        {
-                            if (newOverrides == null)
-                            {
-                                newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>();
-                            }
-                            newOverrides[depIndex] = dep.LibraryRange.VersionRange;
                         }
                     }
 
@@ -1965,6 +1964,7 @@ namespace NuGet.Commands
                             PathToRef = PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef),
                             Suppressions = suppressions,
                             CurrentOverrides = finalVersionOverrides,
+                            DirectReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.RangeIndex) && (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package),
                         });
                     }
 
@@ -2001,6 +2001,7 @@ namespace NuGet.Commands
                                 PathToRef = PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef),
                                 Suppressions = suppressions,
                                 CurrentOverrides = finalVersionOverrides,
+                                DirectReferenceFromRootProject = false,
                             });
                         }
                     }
@@ -2035,7 +2036,7 @@ namespace NuGet.Commands
 #endif
                         continue;
                     }
-                    (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, var chosenSuppressions) = foundItem;
+                    (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, bool directReferenceFromRootProject, var chosenSuppressions) = foundItem;
 #if verboseLog
                             LogIT($"BSW_EAE1,{chosenRef}");
 #endif
