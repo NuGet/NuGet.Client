@@ -1852,8 +1852,7 @@ namespace NuGet.Commands
                     HashSet<LibraryDependencyIndex> suppressions = new HashSet<LibraryDependencyIndex>();
                     suppressions.AddRange(currentSupressions);
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> finalVersionOverrides = null;
-                    Dictionary <LibraryDependencyIndex, VersionRange> newOverrides =
-                        new Dictionary<LibraryDependencyIndex, VersionRange>();
+                    Dictionary<LibraryDependencyIndex, VersionRange> newOverrides = null;
                     //Scan for supressions and overrides
                     LibraryDependencyIndex[] depIndexList = new LibraryDependencyIndex[refItem.Data.Dependencies.Count];
                     for (int i = 0; i < refItem.Data.Dependencies.Count; i++)
@@ -1867,17 +1866,25 @@ namespace NuGet.Commands
                         }
                         if (dep.VersionOverride != null)
                         {
+                            if (newOverrides == null)
+                            {
+                                newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>();
+                            }
                             newOverrides[depIndex] = dep.VersionOverride;
                         }
                         if(isProject&&(dep.LibraryRange.TypeConstraint==LibraryDependencyTarget.Package))
                         {
+                            if (newOverrides == null)
+                            {
+                                newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>();
+                            }
                             newOverrides[depIndex] = dep.LibraryRange.VersionRange;
                         }
                     }
 
                     // If the override set has been mutated, then add the rest of the overrides.
                     // Otherwise, just use the incoming set of overrides.
-                    if (newOverrides.Count > 0)
+                    if (newOverrides != null)
                     {
                         Dictionary<LibraryDependencyIndex, VersionRange> allOverrides =
                             new Dictionary<LibraryDependencyIndex, VersionRange>(currentOverrides.Count + newOverrides.Count);
