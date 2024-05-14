@@ -1855,6 +1855,8 @@ namespace NuGet.Commands
                         refItemResult = new FindLibraryCachedAsyncResult(
                             currentRef,
                             refItem,
+                            currentRefDependencyIndex,
+                            currentRefRangeIndex,
                             libraryDependencyInterningTable,
                             libraryRangeInterningTable);
 #if verboseLog
@@ -1987,6 +1989,8 @@ namespace NuGet.Commands
                             findLibraryCachedAsyncResult = new FindLibraryCachedAsyncResult(
                                 currentRef,
                                 rootNode.Item,
+                                currentRefDependencyIndex,
+                                currentRefRangeIndex,
                                 libraryDependencyInterningTable,
                                 libraryRangeInterningTable);
                             allResolvedItems.Add(libraryRangeOfCurrentRef, findLibraryCachedAsyncResult);
