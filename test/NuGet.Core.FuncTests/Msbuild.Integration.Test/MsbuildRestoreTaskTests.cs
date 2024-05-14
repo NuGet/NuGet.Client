@@ -14,8 +14,10 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -1434,6 +1436,111 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 fileInfo.Exists.Should().BeTrue();
                 return fileInfo.LastWriteTimeUtc;
             }
+        }
+
+        [Fact]
+        public async Task MsbuildRestore_PackagesConfigProject_PackagesWithVulnerabilities_RaisesAppropriateWarnings()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+
+            // set up vulnerability server
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+
+            mockServer.Vulnerabilities.Add(
+                "packageA",
+                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
+                    (new Uri("https://contoso.com/advisories/12345"), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 2.0.0)")),
+                    (new Uri("https://contoso.com/advisories/12346"), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[1.2.0, 2.0.0)"))
+                });
+            pathContext.Settings.RemoveSource("source");
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
+
+            // set up solution, projects and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var net472 = NuGetFramework.Parse("net472");
+
+            var projectA = new SimpleTestProjectContext(
+                "A",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net472));
+            projectA.Properties.Add("NuGetAuditLevel", "critical");
+
+            var projectB = new SimpleTestProjectContext(
+                "B",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net472));
+            projectB.Properties.Add("NuGetAuditLevel", "high");
+
+            var packageA1 = new SimpleTestPackageContext()
+            {
+                Id = "packageA",
+                Version = "1.1.0"
+            };
+            var packageA2 = new SimpleTestPackageContext()
+            {
+                Id = "packageA",
+                Version = "1.2.0"
+            };
+            var packageB = new SimpleTestPackageContext()
+            {
+                Id = "packageB",
+                Version = "2.2.0"
+            };
+
+            packageA1.Files.Clear();
+            packageA1.AddFile("lib/net472/packageA.dll");
+
+            packageA2.Files.Clear();
+            packageA2.AddFile("lib/net472/packageA.dll");
+
+            packageB.Files.Clear();
+            packageB.AddFile("lib/net472/packageB.dll");
+
+            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
+            {
+                writer.Write(
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" />
+  <package id=""packageB"" version=""2.2.0"" />
+</packages>");
+            }
+
+            using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectB.ProjectPath), "packages.config")))
+            {
+                writer.Write(
+@"<packages>
+  <package id=""packageA"" version=""1.2.0"" />
+  <package id=""packageB"" version=""2.2.0"" />
+</packages>");
+            }
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                packageA1,
+                packageA2,
+                packageB);
+
+            // Act
+            mockServer.Start();
+
+            string args = $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true";
+            var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true, testOutputHelper: _testOutputHelper);
+
+            mockServer.Stop();
+
+            // Assert
+            Assert.True(result.ExitCode == 0, result.AllOutput);
+            Assert.Contains($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", result.AllOutput);
+            Assert.Contains($"Package 'packageA' 1.2.0 has a known high severity vulnerability", result.AllOutput);
+            Assert.DoesNotContain($"Package 'packageA' 1.1.0 has a known high severity vulnerability", result.AllOutput);
         }
     }
 }
