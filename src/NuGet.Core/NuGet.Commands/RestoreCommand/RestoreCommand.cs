@@ -124,6 +124,13 @@ namespace NuGet.Commands
         private static int _usePrototype = -1;
         //
 
+#pragma warning disable RS0016
+        public static int UsePrototype
+        {
+            get { return _usePrototype; }
+        }
+#pragma warning restore
+
         static RestoreCommand()
         {
             //BSW - set
@@ -355,7 +362,6 @@ namespace NuGet.Commands
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                             prototypeTimeMs = sw.ElapsedMilliseconds;
                         }
-                        _logger.LogMinimal($"SubProtoNug = {_usePrototype}");
 #if bswlog
                         _logger.LogMinimal($"BSW_Rt: orig={originalTimeMs}, prototype={prototypeTimeMs}, {_request.Project.FilePath}");
 #endif
