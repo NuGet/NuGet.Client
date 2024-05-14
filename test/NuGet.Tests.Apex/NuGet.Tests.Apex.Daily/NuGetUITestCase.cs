@@ -27,7 +27,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageToWebSiteProjectFromUI()
+        public async Task AsyncInstallPackageToWebSiteProjectFromUI()
         {
             // Arrange
             await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
