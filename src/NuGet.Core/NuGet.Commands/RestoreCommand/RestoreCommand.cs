@@ -1543,6 +1543,15 @@ namespace NuGet.Commands
 
                 sw5_fullImport.Start();
 
+                ImportRefItem rootProjectRefItem = new ImportRefItem()
+                {
+                    Ref = initialProject,
+                    DependencyIndex = libraryDependencyInterningTable.Intern(initialProject),
+                    RangeIndex = libraryRangeInterningTable.Intern(initialProject.LibraryRange),
+                    Suppressions = new HashSet<LibraryDependencyIndex>(),
+                    CurrentOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
+                };
+
             ProcessDeepEviction:
                 patience++;
 
@@ -1558,14 +1567,7 @@ namespace NuGet.Commands
                     _logger.LogMinimal($"BSW_PI2,evictee={eviction.Key} path={eviction.Value}");
 #endif
 
-                refImport.Enqueue(new ImportRefItem()
-                {
-                    Ref = initialProject,
-                    DependencyIndex = libraryDependencyInterningTable.Intern(initialProject),
-                    RangeIndex = libraryRangeInterningTable.Intern(initialProject.LibraryRange),
-                    Suppressions = new HashSet<LibraryDependencyIndex>(),
-                    CurrentOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
-                });
+                refImport.Enqueue(rootProjectRefItem);
 
                 while (refImport.Count > 0)
                 {
@@ -1974,11 +1976,12 @@ namespace NuGet.Commands
                 Queue<(LibraryDependencyIndex, GraphNode<RemoteResolveResult>)> itemsToFlatten = new Queue<(LibraryDependencyIndex, GraphNode<RemoteResolveResult>)>();
                 var nGraph = new List<GraphNode<RemoteResolveResult>>();
 
-                LibraryDependencyIndex initialProjectIndex = libraryDependencyInterningTable.Intern(initialProject);
-                LibraryDependency startRef = chosenResolvedItems[initialProjectIndex].libRef;
+                LibraryDependencyIndex initialProjectIndex = rootProjectRefItem.DependencyIndex;
+                var cri = chosenResolvedItems[initialProjectIndex];
+                LibraryDependency startRef = cri.libRef;
 
                 var rootGraphNode = new GraphNode<RemoteResolveResult>(startRef.LibraryRange);
-                LibraryRangeIndex startRefLibraryRangeIndex = libraryRangeInterningTable.Intern(startRef.LibraryRange);
+                LibraryRangeIndex startRefLibraryRangeIndex = cri.rangeIndex;
                 rootGraphNode.Item = allResolvedItems[startRefLibraryRangeIndex];
                 nGraph.Add(rootGraphNode);
 
