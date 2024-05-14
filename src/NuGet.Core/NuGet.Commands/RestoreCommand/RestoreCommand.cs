@@ -1849,8 +1849,7 @@ namespace NuGet.Commands
 #endif
                     totalLookups++;
 
-                    HashSet<LibraryDependencyIndex> suppressions = new HashSet<LibraryDependencyIndex>();
-                    suppressions.AddRange(currentSupressions);
+                    HashSet<LibraryDependencyIndex> suppressions = null;
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> finalVersionOverrides = null;
                     Dictionary<LibraryDependencyIndex, VersionRange> newOverrides = null;
                     //Scan for supressions and overrides
@@ -1862,6 +1861,10 @@ namespace NuGet.Commands
                         depIndexList[i] = depIndex;
                         if ((dep.SuppressParent == LibraryIncludeFlags.All) && (isProject == false))
                         {
+                            if (suppressions == null)
+                            {
+                                suppressions = new HashSet<LibraryDependencyIndex>();
+                            }
                             suppressions.Add(depIndex);
                         }
                         if (dep.VersionOverride != null)
@@ -1898,6 +1901,17 @@ namespace NuGet.Commands
                     else
                     {
                         finalVersionOverrides = currentOverrides;
+                    }
+
+                    // If the suppressions have been mutated, then add the rest of the suppressions.
+                    // Otherwise just use teh incoming set of suppressions.
+                    if (suppressions != null)
+                    {
+                        suppressions.AddRange(currentSupressions);
+                    }
+                    else
+                    {
+                        suppressions = currentSupressions;
                     }
 #if verboseLog
                     foreach (var sup in suppressions)
