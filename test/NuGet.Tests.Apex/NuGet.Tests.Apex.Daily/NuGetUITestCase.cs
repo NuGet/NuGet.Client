@@ -44,12 +44,15 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.ClearWindows();
-            uiwindow.UninstallPackageFromUI(TestPackageName);
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
 
             // Assert
-            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
         }
 
         [TestMethod]
@@ -104,12 +107,16 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.ClearWindows();
-            // uiwindow.UninstallPackageFromUI(TestPackageName);
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
+            uiwindow.UninstallPackageFromUI(TestPackageName);
 
             // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
+            CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
         }
 
         [TestMethod]
