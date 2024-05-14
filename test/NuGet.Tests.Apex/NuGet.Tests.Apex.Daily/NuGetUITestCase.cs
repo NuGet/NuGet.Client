@@ -39,17 +39,15 @@ namespace NuGet.Tests.Apex.Daily
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
+            project.Rebuild();
 
             // Act
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            solutionService.Build();
-            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.ClearWindows();
-            solutionService.Build();
-            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
@@ -70,17 +68,14 @@ namespace NuGet.Tests.Apex.Daily
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
+            solutionService.Build();
+            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
 
             // Act
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            solutionService.Build();
-            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
-            solutionService.Build();
-            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
-            System.Threading.Thread.Sleep(6000);
             VisualStudio.ClearWindows();
             uiwindow.UpdatePackageFromUI(TestPackageName, TestPackageVersionV2);
 
@@ -111,8 +106,6 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.ClearWindows();
-            solutionService.Build();
-            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             uiwindow.UninstallPackageFromUI(TestPackageName);
 
             // Assert
