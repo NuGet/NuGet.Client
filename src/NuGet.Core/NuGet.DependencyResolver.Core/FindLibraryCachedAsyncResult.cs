@@ -14,12 +14,14 @@ namespace NuGet.DependencyResolver
         public FindLibraryCachedAsyncResult(
             LibraryDependency libraryDependency,
             GraphItem<RemoteResolveResult> resolvedItem,
+            LibraryDependencyIndex itemDependencyIndex,
+            LibraryRangeIndex itemRangeIndex,
             LibraryDependencyInterningTable libraryDependencyInterningTable,
             LibraryRangeInterningTable libraryRangeInterningTable)
         {
             Item = resolvedItem;
-            DependencyIndex = libraryDependencyInterningTable.Intern(libraryDependency);
-            RangeIndex = libraryRangeInterningTable.Intern(libraryDependency.LibraryRange);
+            DependencyIndex = itemDependencyIndex;
+            RangeIndex = itemRangeIndex;
             int dependencyCount = resolvedItem.Data.Dependencies.Count;
             _dependencyIndices = new LibraryDependencyIndex[dependencyCount];
             _rangeIndices = new LibraryRangeIndex[dependencyCount];
