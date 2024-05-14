@@ -1650,7 +1650,7 @@ namespace NuGet.Commands
 
                             chosenResolvedItems.Remove(currentRefDependencyIndex);
                             //Record an eviction for the node we are replacing.  The eviction path is for the current node.
-                            LibraryRangeIndex evictedLR = libraryRangeInterningTable.Intern(chosenRef.LibraryRange);
+                            LibraryRangeIndex evictedLR = chosenRefRangeIndex;
                             evictions.Add(evictedLR, PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef));
 
                             int deepEvictions = 0;
