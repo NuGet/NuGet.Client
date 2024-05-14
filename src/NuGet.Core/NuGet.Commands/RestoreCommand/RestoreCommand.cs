@@ -1622,11 +1622,11 @@ namespace NuGet.Commands
                         */
                         if (ov != currentRef.LibraryRange.VersionRange)
                         {
+#if verboseLog
                             if (currentRef.VersionOverride != null)
                             {
                                 _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it doesnt match the override of {currentOverrides[currentRefDependencyIndex]}");
                             }
-#if verboseLog
                             _logger.LogMinimal($"BSW_DI4, Skipping {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
 #endif
                             continue;
