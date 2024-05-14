@@ -3,25 +3,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.LibraryModel;
 
-namespace NuGet.Commands
+namespace NuGet.LibraryModel
 {
-    internal enum LibraryRangeIndex : int
+#pragma warning disable RS0016
+    public enum LibraryRangeIndex : int
     {
         Invalid = -1,
     }
 
-    internal sealed class LibraryRangeInterningTable
+    public sealed class LibraryRangeInterningTable
     {
         private int _nextIndex = 0;
         private readonly Dictionary<string, LibraryRangeIndex> _table = new Dictionary<string, LibraryRangeIndex>(StringComparer.OrdinalIgnoreCase);
 
-        internal LibraryRangeIndex Intern(LibraryRange libraryRange)
+        public LibraryRangeIndex Intern(LibraryRange libraryRange)
         {
             string key = libraryRange.ToString();
             if (!_table.TryGetValue(key, out LibraryRangeIndex index))
@@ -33,17 +29,17 @@ namespace NuGet.Commands
             return index;
         }
     }
-    internal enum LibraryDependencyIndex : int
+    public enum LibraryDependencyIndex : int
     {
         Invalid = -1,
     }
 
-    internal sealed class LibraryDependencyInterningTable
+    public sealed class LibraryDependencyInterningTable
     {
         private int _nextIndex = 0;
         private readonly Dictionary<string, LibraryDependencyIndex> _table = new Dictionary<string, LibraryDependencyIndex>(StringComparer.OrdinalIgnoreCase);
 
-        internal LibraryDependencyIndex Intern(LibraryDependency libraryDependency)
+        public LibraryDependencyIndex Intern(LibraryDependency libraryDependency)
         {
             string key = libraryDependency.Name;
             if (!_table.TryGetValue(key, out LibraryDependencyIndex index))
@@ -55,4 +51,5 @@ namespace NuGet.Commands
             return index;
         }
     }
+#pragma warning restore
 }
