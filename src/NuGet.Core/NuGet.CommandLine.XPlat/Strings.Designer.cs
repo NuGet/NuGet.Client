@@ -2206,7 +2206,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Lists the dependency graph for a particular package for a given project or solution..
+        ///   Looks up a localized string similar to Shows the dependency graph for a particular package for a given project or solution..
         /// </summary>
         internal static string WhyCommand_Description {
             get {
@@ -2224,16 +2224,16 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to read the assets file `{0}`..
+        ///   Looks up a localized string similar to The assets file {0} is invalid. Please run restore for project &apos;{1}&apos; before running this command..
         /// </summary>
-        internal static string WhyCommand_Error_CannotReadAssetsFile {
+        internal static string WhyCommand_Error_InvalidAssetsFile {
             get {
-                return ResourceManager.GetString("WhyCommand_Error_CannotReadAssetsFile", resourceCulture);
+                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid. For a list of accepted values, please visit https://learn.microsoft.com/en-us/nuget/reference/target-frameworks#supported-frameworks..
+        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid. For a list of accepted values, please visit https://learn.microsoft.com/en-us/nuget/reference/target-frameworks#supported-frameworks.
         /// </summary>
         internal static string WhyCommand_Error_InvalidFramework {
             get {
@@ -2269,7 +2269,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No dependency graph(s) found..
+        ///   Looks up a localized string similar to No dependency graph(s) found for this target framework..
         /// </summary>
         internal static string WhyCommand_Message_NoDependencyGraphsFoundForFramework {
             get {
@@ -2278,20 +2278,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have any dependency graph(s) for &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have a dependency on &apos;{1}&apos;..
         /// </summary>
         internal static string WhyCommand_Message_NoDependencyGraphsFoundInProject {
             get {
                 return ResourceManager.GetString("WhyCommand_Message_NoDependencyGraphsFoundInProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No packages were found for the project &apos;{0}&apos; for the given framework(s)..
-        /// </summary>
-        internal static string WhyCommand_Message_NoPackagesFoundForGivenFrameworks {
-            get {
-                return ResourceManager.GetString("WhyCommand_Message_NoPackagesFoundForGivenFrameworks", resourceCulture);
             }
         }
         

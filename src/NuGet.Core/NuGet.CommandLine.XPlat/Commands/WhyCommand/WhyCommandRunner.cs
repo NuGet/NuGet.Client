@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -47,11 +49,11 @@ namespace NuGet.CommandLine.XPlat
             foreach (var projectPath in projectPaths)
             {
                 Project project = MSBuildAPIUtility.GetProject(projectPath);
-                LockFile assetsFile = GetProjectAssetsFile(project, whyCommandArgs.Logger);
+                LockFile? assetsFile = GetProjectAssetsFile(project, whyCommandArgs.Logger);
 
                 if (assetsFile != null)
                 {
-                    FindAllDependencyGraphs(whyCommandArgs, msBuild, project, assetsFile);
+                    OutputAllDependencyGraphs(whyCommandArgs, msBuild, project, assetsFile);
                 }
 
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
@@ -106,6 +108,23 @@ namespace NuGet.CommandLine.XPlat
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.WhyCommand_Error_InvalidFramework));
             }
+
+            // Break up the whole thing into a for loop instead of using linq, and then we can output the errors for each user input framework,
+            // OR
+            // Remove this validation completely, and get targets based on whatever inputs the user provides.
+            // Still need to validate that the user input 'target alias' exists in the assets file
+            /*
+            foreach (var framework in parsedFrameworks)
+            {
+                if (framework.Framework.Equals("Unsupported", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_InvalidFramework,
+                    framework.GetShortFolderName()));
+                }
+            }
+            */
         }
 
         /// <summary>
@@ -113,8 +132,8 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="project">Evaluated MSBuild project</param>
         /// <param name="logger">Logger for the 'why' command</param>
-        /// <returns>Assets file for given project</returns>
-        private static LockFile GetProjectAssetsFile(Project project, ILoggerWithColor logger)
+        /// <returns>Assets file for the given project. Returns null if there was any issue finding or parsing the assets file.</returns>
+        private static LockFile? GetProjectAssetsFile(Project project, ILoggerWithColor logger)
         {
             if (!MSBuildAPIUtility.IsPackageReferenceProject(project))
             {
@@ -151,8 +170,9 @@ namespace NuGet.CommandLine.XPlat
                 logger.LogError(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.WhyCommand_Error_CannotReadAssetsFile,
-                        assetsPath));
+                        Strings.WhyCommand_Error_InvalidAssetsFile,
+                        assetsFile.Path,
+                        project.FullPath));
 
                 return null;
             }
@@ -161,27 +181,28 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Finds dependency graphs for a given project, and prints output to the console.
+        /// Finds and prints dependency graphs for a given project.
         /// </summary>
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command</param>
         /// <param name="msBuild">MSBuild utility</param>
         /// <param name="project">Current project</param>
         /// <param name="assetsFile">Assets file for current project</param>
-        private static void FindAllDependencyGraphs(
+        private static void OutputAllDependencyGraphs(
             WhyCommandArgs whyCommandArgs,
             MSBuildAPIUtility msBuild,
             Project project,
             LockFile assetsFile)
         {
+            bool doesProjectHaveDependencyOnPackage = false;
+            string targetPackage = whyCommandArgs.Package;
+            var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>?>(assetsFile.Targets.Count);
+
             // get all resolved package references for a project
             List<FrameworkPackages> frameworkPackages = msBuild.GetResolvedVersions(project, whyCommandArgs.Frameworks, assetsFile, transitive: true, includeProjectReferences: true);
+            Dictionary<string, List<string>> topLevelReferences = GetTopLevelPackageAndProjectReferences(assetsFile, whyCommandArgs.Frameworks, project.DirectoryPath);
 
             if (frameworkPackages?.Count > 0)
             {
-                string targetPackage = whyCommandArgs.Package;
-                bool doesProjectHaveDependencyOnPackage = false;
-                var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>>(assetsFile.Targets.Count);
-
                 foreach (var frameworkPackage in frameworkPackages)
                 {
                     LockFileTarget target = assetsFile.GetTarget(frameworkPackage.Framework, runtimeIdentifier: null);
@@ -204,32 +225,25 @@ namespace NuGet.CommandLine.XPlat
                         }
                     }
                 }
+            }
 
-                if (!doesProjectHaveDependencyOnPackage)
-                {
-                    whyCommandArgs.Logger.LogMinimal(
-                        string.Format(
-                            Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
-                            project.GetPropertyValue(ProjectName),
-                            targetPackage));
-                }
-                else
-                {
-                    whyCommandArgs.Logger.LogMinimal(
-                        string.Format(
-                            Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
-                            project.GetPropertyValue(ProjectName),
-                            targetPackage));
-
-                    WhyCommandPrintUtility.PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
-                }
+            if (!doesProjectHaveDependencyOnPackage)
+            {
+                whyCommandArgs.Logger.LogMinimal(
+                    string.Format(
+                        Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
+                        project.GetPropertyValue(ProjectName),
+                        targetPackage));
             }
             else
             {
                 whyCommandArgs.Logger.LogMinimal(
-                        string.Format(
-                        Strings.WhyCommand_Message_NoPackagesFoundForGivenFrameworks,
-                        project.GetPropertyValue(ProjectName)));
+                    string.Format(
+                        Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
+                        project.GetPropertyValue(ProjectName),
+                        targetPackage));
+
+                WhyCommandPrintUtility.PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
             }
         }
 
@@ -240,12 +254,12 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns>List of all top-level package nodes in the dependency graph.</returns>
-        private static List<DependencyNode> GetDependencyGraphPerFramework(
+        private static List<DependencyNode>? GetDependencyGraphPerFramework(
             IEnumerable<InstalledPackageReference> topLevelPackages,
             IList<LockFileTargetLibrary> packageLibraries,
             string targetPackage)
         {
-            List<DependencyNode> dependencyGraph = null;
+            List<DependencyNode>? dependencyGraph = null;
 
             // hashset tracking every package node that we've traversed
             var visited = new HashSet<string>();
@@ -257,7 +271,7 @@ namespace NuGet.CommandLine.XPlat
             foreach (var topLevelPackage in topLevelPackages)
             {
                 // use depth-first search to find dependency paths from the top-level package to the target package
-                DependencyNode topLevelNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, visited, dependencyNodes, versions, targetPackage);
+                DependencyNode? topLevelNode = FindDependencyPath(topLevelPackage.Name, packageLibraries, visited, dependencyNodes, versions, targetPackage);
 
                 if (topLevelNode != null)
                 {
@@ -280,7 +294,10 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var package in packageLibraries)
             {
-                versions.Add(package.Name, package.Version.ToNormalizedString());
+                if (package?.Name != null && package?.Version != null)
+                {
+                    versions.Add(package.Name, package.Version.ToNormalizedString());
+                }
             }
 
             return versions;
@@ -296,7 +313,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="versions">Dictionary mapping packageIds to their resolved versions.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
         /// <returns>The top-level package node in the dependency graph (if a path was found), or null (if no path was found)</returns>
-        private static DependencyNode FindDependencyPath(
+        private static DependencyNode? FindDependencyPath(
             string topLevelPackage,
             IList<LockFileTargetLibrary> packageLibraries,
             HashSet<string> visited,
@@ -365,7 +382,7 @@ namespace NuGet.CommandLine.XPlat
         {
             // first, we traverse the target's parents, listing the packages in the path from the target to the top-level package
             var dependencyPath = new List<string> { targetPackageData.Id };
-            StackDependencyData current = targetPackageData.Parent;
+            StackDependencyData? current = targetPackageData.Parent;
 
             while (current != null)
             {
@@ -397,12 +414,58 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        private static Dictionary<string, List<string>> GetTopLevelPackageAndProjectReferences(LockFile assetsFile, List<string> userInputFrameworks, string projectDirectoryPath)
+        {
+            var topLevelReferences = new Dictionary<string, List<string>>();
+
+            var targetAliases = assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks;
+
+            if (userInputFrameworks?.Count > 0)
+            {
+                targetAliases = targetAliases.Where(f => userInputFrameworks.Contains(f)).ToList();
+            }
+
+            var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
+            var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count());
+
+            foreach (var library in projectLibraries)
+            {
+                projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
+            }
+
+            foreach (string targetAlias in targetAliases)
+            {
+                topLevelReferences.Add(targetAlias, []);
+
+                // top level packages
+                TargetFrameworkInformation? targetFrameworkInformation = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
+                if (targetFrameworkInformation != default)
+                {
+                    var topLevelPackages = targetFrameworkInformation.Dependencies.Select(d => d.Name);
+                    topLevelReferences[targetAlias].AddRange(topLevelPackages);
+                }
+
+                // top level projects
+                ProjectRestoreMetadataFrameworkInfo? restoreMetadataFrameworkInfo = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
+                if (restoreMetadataFrameworkInfo != default)
+                {
+                    var topLevelProjectPaths = restoreMetadataFrameworkInfo.ProjectReferences.Select(p => p.ProjectPath);
+                    foreach (var projectPath in topLevelProjectPaths)
+                    {
+                        topLevelReferences[targetAlias].Add(projectLibraryPathToName[projectPath]);
+                    }
+                }
+            }
+
+            return topLevelReferences;
+        }
+
         private class StackDependencyData
         {
             public string Id { get; set; }
-            public StackDependencyData Parent { get; set; }
+            public StackDependencyData? Parent { get; set; }
 
-            public StackDependencyData(string currentId, StackDependencyData parentDependencyData)
+            public StackDependencyData(string currentId, StackDependencyData? parentDependencyData)
             {
                 Id = currentId;
                 Parent = parentDependencyData;

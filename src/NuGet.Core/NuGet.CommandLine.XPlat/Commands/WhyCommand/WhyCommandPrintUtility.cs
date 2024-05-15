@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +26,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="dependencyGraphPerFramework">A dictionary mapping target frameworks to their dependency graphs.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
-        public static void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework, string targetPackage, ILoggerWithColor logger)
+        public static void PrintAllDependencyGraphs(Dictionary<string, List<DependencyNode>?> dependencyGraphPerFramework, string targetPackage, ILoggerWithColor logger)
         {
             // print empty line
             logger.LogMinimal("");
@@ -34,7 +36,10 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var frameworks in deduplicatedFrameworks)
             {
-                PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.FirstOrDefault()], targetPackage, logger);
+                if (frameworks.Count > 0)
+                {
+                    PrintDependencyGraphPerFramework(frameworks, dependencyGraphPerFramework[frameworks.First()], targetPackage, logger);
+                }
             }
         }
 
@@ -44,7 +49,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="frameworks">The list of frameworks that share this dependency graph.</param>
         /// <param name="topLevelNodes">The top-level package nodes of the dependency graph.</param>
         /// <param name="targetPackage">The package we want the dependency paths for.</param>
-        private static void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode> topLevelNodes, string targetPackage, ILoggerWithColor logger)
+        private static void PrintDependencyGraphPerFramework(List<string> frameworks, List<DependencyNode>? topLevelNodes, string targetPackage, ILoggerWithColor logger)
         {
             // print framework header
             foreach (var framework in frameworks)
@@ -64,7 +69,7 @@ namespace NuGet.CommandLine.XPlat
 
             // initialize the stack with all top-level nodes
             int counter = 0;
-            foreach (var node in topLevelNodes)
+            foreach (var node in topLevelNodes.OrderByDescending(c => c.Id, StringComparer.CurrentCulture))
             {
                 stack.Push(new StackOutputData(node, prefix: "   ", isLastChild: counter++ == 0));
             }
@@ -101,7 +106,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     // push all the node's children onto the stack
                     counter = 0;
-                    foreach (var child in current.Node.Children)
+                    foreach (var child in current.Node.Children.OrderByDescending(c => c.Id, StringComparer.CurrentCulture))
                     {
                         stack.Push(new StackOutputData(child, childPrefix, isLastChild: counter++ == 0));
                     }
@@ -118,9 +123,9 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>
         /// eg. { { "net6.0", "netcoreapp3.1" }, { "net472" } }
         /// </returns>
-        private static List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>> dependencyGraphPerFramework)
+        private static List<List<string>> GetDeduplicatedFrameworks(Dictionary<string, List<DependencyNode>?> dependencyGraphPerFramework)
         {
-            List<string> frameworksWithoutGraphs = null;
+            List<string>? frameworksWithoutGraphs = null;
             var dependencyGraphHashes = new Dictionary<int, List<string>>(dependencyGraphPerFramework.Count);
 
             foreach (var framework in dependencyGraphPerFramework.Keys)
@@ -157,7 +162,7 @@ namespace NuGet.CommandLine.XPlat
         /// Returns a hash for a given dependency graph. Used to deduplicate dependency graphs for different frameworks.
         /// </summary>
         /// <param name="graph">The dependency graph for a given framework.</param>
-        private static int GetDependencyGraphHashCode(List<DependencyNode> graph)
+        private static int GetDependencyGraphHashCode(List<DependencyNode>? graph)
         {
             var hashCodeCombiner = new HashCodeCombiner();
             hashCodeCombiner.AddUnorderedSequence(graph);

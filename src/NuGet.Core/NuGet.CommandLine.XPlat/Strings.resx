@@ -913,7 +913,7 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Gets the NuGet configuration settings that will be applied.</value>
   </data>
   <data name="WhyCommand_Description" xml:space="preserve">
-    <value>Lists the dependency graph for a particular package for a given project or solution.</value>
+    <value>Shows the dependency graph for a particular package for a given project or solution.</value>
   </data>
   <data name="WhyCommand_PathArgument_Description" xml:space="preserve">
     <value>A path to a project, solution file, or directory.</value>
@@ -933,18 +933,14 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>{0} - Project/solution file path</comment>
   </data>
   <data name="WhyCommand_Error_InvalidFramework" xml:space="preserve">
-    <value>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid. For a list of accepted values, please visit https://learn.microsoft.com/en-us/nuget/reference/target-frameworks#supported-frameworks.</value>
+    <value>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid. For a list of accepted values, please visit https://learn.microsoft.com/en-us/nuget/reference/target-frameworks#supported-frameworks</value>
   </data>
-  <data name="WhyCommand_Error_CannotReadAssetsFile" xml:space="preserve">
-    <value>Unable to read the assets file `{0}`.</value>
-    <comment>{0} - Assets file path</comment>
-  </data>
-  <data name="WhyCommand_Message_NoPackagesFoundForGivenFrameworks" xml:space="preserve">
-    <value>No packages were found for the project '{0}' for the given framework(s).</value>
-    <comment>{0} - Project name</comment>
+  <data name="WhyCommand_Error_InvalidAssetsFile" xml:space="preserve">
+    <value>The assets file {0} is invalid. Please run restore for project '{1}' before running this command.</value>
+    <comment>{0} - Assets file path, {1} - Project name</comment>
   </data>
   <data name="WhyCommand_Message_NoDependencyGraphsFoundInProject" xml:space="preserve">
-    <value>Project '{0}' does not have any dependency graph(s) for '{1}'.</value>
+    <value>Project '{0}' does not have a dependency on '{1}'.</value>
     <comment>{0} - Project name, {1} - Target package</comment>
   </data>
   <data name="WhyCommand_Message_DependencyGraphsFoundInProject" xml:space="preserve">
@@ -952,6 +948,6 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>{0} - Project name, {1} - Target package</comment>
   </data>
   <data name="WhyCommand_Message_NoDependencyGraphsFoundForFramework" xml:space="preserve">
-    <value>No dependency graph(s) found.</value>
+    <value>No dependency graph(s) found for this target framework.</value>
   </data>
 </root>
