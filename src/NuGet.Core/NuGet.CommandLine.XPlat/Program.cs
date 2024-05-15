@@ -74,7 +74,12 @@ namespace NuGet.CommandLine.XPlat
 
             NuGet.Common.Migrations.MigrationRunner.Run();
 
-            // Migrating from Microsoft.Extensions.CommandLineUtils.CommandLineApplication to System.Commandline.CliCommand
+            // TODO: Migrating from Microsoft.Extensions.CommandLineUtils.CommandLineApplication to System.Commandline.CliCommand
+            // If we are looking to add further commands here, we should also look to redesign this parsing logic at that time
+            // See related issues:
+            //    - https://github.com/NuGet/Home/issues/11996
+            //    - https://github.com/NuGet/Home/issues/11997
+            //    - https://github.com/NuGet/Home/issues/13089
             if ((args.Count() >= 2 && args[0] == "package" && args[1] == "search")
                 || (args.Any() && args[0] == "config")
                 || (args.Any() && args[0] == "why"))
@@ -85,16 +90,20 @@ namespace NuGet.CommandLine.XPlat
                     return log;
                 };
 
-                CliCommand rootCommand = new CliCommand("package");
+                CliCommand rootCommand;
+                if (args[0] == "package")
+                {
+                    rootCommand = new CliCommand("package");
 
-                if (args[0] == "why")
+                    PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
+                }
+                else
                 {
                     rootCommand = new CliCommand("nuget");
-                }
 
-                PackageSearchCommand.Register(rootCommand, getHidePrefixLogger);
-                ConfigCommand.Register(rootCommand, getHidePrefixLogger);
-                WhyCommand.Register(rootCommand, getHidePrefixLogger);
+                    ConfigCommand.Register(rootCommand, getHidePrefixLogger);
+                    WhyCommand.Register(rootCommand, getHidePrefixLogger);
+                }
 
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
                 tokenSource.CancelAfter(TimeSpan.FromMinutes(DotnetPackageSearchTimeOut));
