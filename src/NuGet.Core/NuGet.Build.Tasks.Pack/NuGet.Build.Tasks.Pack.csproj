@@ -17,7 +17,7 @@
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <DepsFileGenerationMode>old</DepsFileGenerationMode>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
-    </PropertyGroup>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
