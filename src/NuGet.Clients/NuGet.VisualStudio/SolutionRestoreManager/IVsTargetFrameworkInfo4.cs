@@ -16,7 +16,7 @@ namespace NuGet.SolutionRestoreManager
         /// Collection of item types.
         /// e.g. PackageReference
         /// </summary>
-        IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem>> Items { get; }
+        IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> Items { get; }
 
         /// <summary>
         /// Collection of project level properties evaluated per each Target Framework,

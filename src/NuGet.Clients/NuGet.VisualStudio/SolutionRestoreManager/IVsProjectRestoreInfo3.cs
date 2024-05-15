@@ -24,7 +24,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Collection of tool references.
         /// </summary>
-        IReadOnlyList<IVsReferenceItem> ToolReferences { get; }
+        IReadOnlyList<IVsReferenceItem2> ToolReferences { get; }
 
         /// <summary>
         /// Original raw value of TargetFrameworks property as set in a project file.

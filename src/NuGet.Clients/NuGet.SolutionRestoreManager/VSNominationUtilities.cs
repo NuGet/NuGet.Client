@@ -30,7 +30,7 @@ namespace NuGet.SolutionRestoreManager
         * ToolReferences *
         ******************/
 
-        internal static void ProcessToolReferences(ProjectNames projectNames, IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks, IReadOnlyList<IVsReferenceItem> toolReferences, DependencyGraphSpec dgSpec)
+        internal static void ProcessToolReferences(ProjectNames projectNames, IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks, IReadOnlyList<IVsReferenceItem2> toolReferences, DependencyGraphSpec dgSpec)
         {
             var toolFramework = GetToolFramework(targetFrameworks);
             var packagesPath = GetRestoreProjectPath(targetFrameworks);
@@ -389,7 +389,7 @@ namespace NuGet.SolutionRestoreManager
 
         #region IVSReferenceItemAPIs
 
-        private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item, bool cpvmEnabled)
+        private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem2 item, bool cpvmEnabled)
         {
             if (!TryGetVersionRange(item, "Version", out VersionRange versionRange))
             {
@@ -424,7 +424,7 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static IEnumerable<DownloadDependency> ToPackageDownloadDependency(IVsReferenceItem item)
+        private static IEnumerable<DownloadDependency> ToPackageDownloadDependency(IVsReferenceItem2 item)
         {
             var id = item.Name;
             var versionRanges = GetVersionRangeList(item);
@@ -441,7 +441,7 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private static CentralPackageVersion ToCentralPackageVersion(IVsReferenceItem item)
+        private static CentralPackageVersion ToCentralPackageVersion(IVsReferenceItem2 item)
         {
             string id = item.Name;
             VersionRange versionRange = GetVersionRange(item);
@@ -450,7 +450,7 @@ namespace NuGet.SolutionRestoreManager
             return centralPackageVersion;
         }
 
-        private static void PopulateFrameworkDependencies(TargetFrameworkInformation tfi, IReadOnlyList<IVsReferenceItem> frameworkReferences)
+        private static void PopulateFrameworkDependencies(TargetFrameworkInformation tfi, IReadOnlyList<IVsReferenceItem2> frameworkReferences)
         {
             foreach (var item in frameworkReferences)
             {
@@ -461,13 +461,13 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private static FrameworkDependency ToFrameworkDependency(IVsReferenceItem item)
+        private static FrameworkDependency ToFrameworkDependency(IVsReferenceItem2 item)
         {
             var privateAssets = GetFrameworkDependencyFlags(item, ProjectBuildProperties.PrivateAssets);
             return new FrameworkDependency(item.Name, privateAssets);
         }
 
-        private static ProjectRestoreReference ToProjectRestoreReference(IVsReferenceItem item, string projectDirectory)
+        private static ProjectRestoreReference ToProjectRestoreReference(IVsReferenceItem2 item, string projectDirectory)
         {
             // The path may be a relative path, to match the project unique name as a
             // string this should be the full path to the project
@@ -489,7 +489,7 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static bool TryGetVersionRange(IVsReferenceItem item, string propertyName, out VersionRange versionRange)
+        private static bool TryGetVersionRange(IVsReferenceItem2 item, string propertyName, out VersionRange versionRange)
         {
             versionRange = null;
             string versionRangeItemValue = GetPropertyValueOrNull(item, propertyName);
@@ -502,7 +502,7 @@ namespace NuGet.SolutionRestoreManager
             return versionRange != null;
         }
 
-        private static IEnumerable<VersionRange> GetVersionRangeList(IVsReferenceItem item)
+        private static IEnumerable<VersionRange> GetVersionRangeList(IVsReferenceItem2 item)
         {
             char[] splitChars = new[] { ';' };
             string versionString = GetPropertyValueOrNull(item, "Version");
@@ -525,7 +525,7 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private static VersionRange GetVersionRange(IVsReferenceItem item)
+        private static VersionRange GetVersionRange(IVsReferenceItem2 item)
         {
             if (TryGetVersionRange(item, "Version", out VersionRange versionRange))
             {
@@ -537,7 +537,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Get the frameworkdependencyflag based on the name.
         /// </summary>
-        private static FrameworkDependencyFlags GetFrameworkDependencyFlags(IVsReferenceItem item, string name)
+        private static FrameworkDependencyFlags GetFrameworkDependencyFlags(IVsReferenceItem2 item, string name)
         {
             var flags = GetPropertyValueOrNull(item, name);
 
@@ -548,7 +548,7 @@ namespace NuGet.SolutionRestoreManager
         /// True if ReferenceOutputAssembly is true or empty.
         /// All other values will be false.
         /// </summary>
-        private static bool IsReferenceOutputAssemblyTrueOrEmpty(IVsReferenceItem item)
+        private static bool IsReferenceOutputAssemblyTrueOrEmpty(IVsReferenceItem2 item)
         {
             var value = GetPropertyValueOrNull(item, ProjectBuildProperties.ReferenceOutputAssembly);
 
@@ -556,11 +556,14 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private static bool GetPropertyBoolOrFalse(
-        IVsReferenceItem item, string propertyName)
+        IVsReferenceItem2 item, string propertyName)
         {
             try
             {
-                return MSBuildStringUtility.IsTrue(item.Properties?.Item(propertyName)?.Value);
+                if (item.Properties.TryGetValue(propertyName, out var value))
+                {
+                    return MSBuildStringUtility.IsTrue(value);
+                }
             }
             catch (ArgumentException)
             {
@@ -573,11 +576,14 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static string GetPropertyValueOrNull(
-            IVsReferenceItem item, string propertyName)
+            IVsReferenceItem2 item, string propertyName)
         {
             try
             {
-                return MSBuildStringUtility.TrimAndGetNullForEmpty(item.Properties?.Item(propertyName)?.Value);
+                if (item.Properties.TryGetValue(propertyName, out var value))
+                {
+                    return MSBuildStringUtility.TrimAndGetNullForEmpty(value);
+                }
             }
             catch (ArgumentException)
             {
