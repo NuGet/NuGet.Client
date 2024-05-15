@@ -52,6 +52,8 @@
         <PackagePath>lib</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
+    <Message Text="Loc directory $(LocalizationOutputDirectory)" Importance="High" />
+    <Message Text="Files added: @(TfmSpecificPackageFile, '%0a')" Importance="High" />
   </Target>
 
 </Project>
