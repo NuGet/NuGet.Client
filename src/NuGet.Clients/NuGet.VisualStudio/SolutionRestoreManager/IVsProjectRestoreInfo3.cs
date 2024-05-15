@@ -1,16 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager
 {
     /// <summary>
     /// Contains project metadata needed for project restore operation.
     /// </summary>
-    [ComImport]
-    [Guid("1B74A7B4-AA7C-4AE1-9A8D-3A7AEDA9C594")]
     public interface IVsProjectRestoreInfo3
     {
         /// <summary>
@@ -22,12 +19,12 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Target frameworks metadata.
         /// </summary>
-        IVsTargetFrameworks3 TargetFrameworks { get; }
+        IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; }
 
         /// <summary>
         /// Collection of tool references.
         /// </summary>
-        IVsReferenceItems ToolReferences { get; }
+        IReadOnlyList<IVsReferenceItem> ToolReferences { get; }
 
         /// <summary>
         /// Original raw value of TargetFrameworks property as set in a project file.

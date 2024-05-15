@@ -1,21 +1,15 @@
 #nullable enable
-NuGet.SolutionRestoreManager.IVsProjectItems
-NuGet.SolutionRestoreManager.IVsProjectItems.Count.get -> int
 NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3
-NuGet.SolutionRestoreManager.IVsReferenceItemType
 NuGet.SolutionRestoreManager.IVsSolutionRestoreService5
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4
 NuGet.SolutionRestoreManager.IVsTargetFrameworks3
 NuGet.SolutionRestoreManager.IVsTargetFrameworks3.Count.get -> int
-~NuGet.SolutionRestoreManager.IVsProjectItems.Item(object index) -> NuGet.SolutionRestoreManager.IVsReferenceItemType
 ~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.BaseIntermediatePath.get -> string
 ~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.OriginalTargetFrameworks.get -> string
-~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.TargetFrameworks.get -> NuGet.SolutionRestoreManager.IVsTargetFrameworks3
-~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.ToolReferences.get -> NuGet.SolutionRestoreManager.IVsReferenceItems
-~NuGet.SolutionRestoreManager.IVsReferenceItemType.Items.get -> NuGet.SolutionRestoreManager.IVsReferenceItems
-~NuGet.SolutionRestoreManager.IVsReferenceItemType.ItemType.get -> string
+~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.TargetFrameworks.get -> System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4>
+~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.ToolReferences.get -> System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsReferenceItem>
 ~NuGet.SolutionRestoreManager.IVsSolutionRestoreService5.NominateProjectAsync(string projectUniqueName, NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3 projectRestoreInfo, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
-~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Items.get -> NuGet.SolutionRestoreManager.IVsProjectItems
-~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Properties.get -> NuGet.SolutionRestoreManager.IVsProjectProperties
+~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Items.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsReferenceItem>>
+~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
 ~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.TargetFrameworkMoniker.get -> string
 ~NuGet.SolutionRestoreManager.IVsTargetFrameworks3.Item(object index) -> NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4
