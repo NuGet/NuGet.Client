@@ -1395,6 +1395,9 @@ namespace NuGet.Commands
             return allGraphs;
         }
 
+        private const int RefImportQueueSize = 4096;
+        private const int OverridesDictionarySize = 1024;
+
         private async Task<IEnumerable<RestoreTargetGraph>> ExecuteSubProtoTypeRestoreAsync(
             NuGetv3LocalRepository userPackageFolder,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
@@ -1535,15 +1538,15 @@ namespace NuGet.Commands
                 //The second item here is the path to root.  When we add a hard-evictee, we'll also remove anything
                 //added to the eviction list that contains the evictee on their path to root.
                 Queue<ImportRefItem> refImport =
-                  new Queue<ImportRefItem>();
+                  new Queue<ImportRefItem>(RefImportQueueSize);
 
                 Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> allResolvedItems =
-                    new Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult>();
+                    new Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult>(2048);
 
                 Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, bool directPackageReferenceFromRootProject, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
-                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], bool, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>();
+                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], bool, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>(2048);
 
-                Dictionary<LibraryRangeIndex, LibraryRangeIndex[]> evictions = new Dictionary<LibraryRangeIndex, LibraryRangeIndex[] >();
+                Dictionary<LibraryRangeIndex, LibraryRangeIndex[]> evictions = new Dictionary<LibraryRangeIndex, LibraryRangeIndex[] >(1024);
 
                 sw3_preamble.Stop();
 
@@ -1669,27 +1672,6 @@ namespace NuGet.Commands
 
                             int deepEvictions = 0;
                             //unwind anything chosen by the node we're evicting..
-                            HashSet<LibraryDependencyIndex> chosenItemsToRemove = null;
-                            foreach (var chosenItem in chosenResolvedItems)
-                            {
-                                if (chosenItem.Value.pathToRef.Contains(evictedLR))
-                                {
-                                    if (chosenItemsToRemove == null)
-                                        chosenItemsToRemove = new HashSet<LibraryDependencyIndex>();
-                                    chosenItemsToRemove.Add(chosenItem.Key);
-                                }
-                            }
-                            if (chosenItemsToRemove != null)
-                            {
-                                foreach (var chosenItemToRemove in chosenItemsToRemove)
-                                {
-#if verboseLog
-                                    _logger.LogMinimal($"BSW_DG4, eviction lead to remove from chosen {chosenResolvedItems[chosenItemToRemove]}");
-#endif
-                                    chosenResolvedItems.Remove(chosenItemToRemove);
-                                    deepEvictions++;
-                                }
-                            }
                             HashSet<LibraryRangeIndex> evicteesToRemove = null;
                             foreach (var evictee in evictions)
                             {
@@ -1711,10 +1693,15 @@ namespace NuGet.Commands
                                     deepEvictions++;
                                 }
                             }
+                            foreach (var chosenItem in chosenResolvedItems)
+                            {
+                                if (chosenItem.Value.pathToRef.Contains(evictedLR))
+                                {
+                                    deepEvictions++;
+                                    break;
+                                }
+                            }
                             totalEvictions++;
-                            //Since this is a "new" choice, its gets a new import context list
-                            chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, packageReferenceFromRootProject,
-                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
                             if (deepEvictions > 0)
                             {
 #if verboseLog
@@ -1723,10 +1710,14 @@ namespace NuGet.Commands
                                 totalHardEvictions++;
                                 goto ProcessDeepEviction;
                             }
+                            //Since this is a "new" choice, its gets a new import context list
+                            chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, packageReferenceFromRootProject,
+                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSupressions, currentOverrides) }));
+
                             //if we are going to live with this queue and chosen state, we need to also kick
                             // any queue members who were descendants of the thing we just evicted.
                             var newRefImport =
-                                new Queue<ImportRefItem>();
+                                new Queue<ImportRefItem>(RefImportQueueSize);
                             while (refImport.Count > 0)
                             {
                                 ImportRefItem item = refImport.Dequeue();
@@ -1889,7 +1880,7 @@ namespace NuGet.Commands
                         {
                             if (newOverrides == null)
                             {
-                                newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>();
+                                newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(OverridesDictionarySize);
                             }
                             newOverrides[depIndex] = dep.VersionOverride;
                         }
