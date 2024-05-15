@@ -29,10 +29,8 @@ namespace NuGet
         [ThreadStatic]
         private static StringBuilder BuilderInstance = null;
 
-#if DEBUG
         [ThreadStatic]
         private static bool InUse = false;
-#endif
 
         public static readonly SharedStringBuilder Instance = new SharedStringBuilder();
 
@@ -56,18 +54,19 @@ namespace NuGet
         /// </remarks>
         public StringBuilder Rent(int minimumCapacity)
         {
-            if (minimumCapacity <= MaxSize)
+            if (!InUse)
             {
-#if DEBUG
-                Debug.Assert(!InUse);
-                InUse = true;
-#endif
-                if (BuilderInstance == null)
+                if (minimumCapacity <= MaxSize)
                 {
-                    BuilderInstance = new StringBuilder(MaxSize);
-                }
+                    InUse = true;
 
-                return BuilderInstance;
+                    if (BuilderInstance == null)
+                    {
+                        BuilderInstance = new StringBuilder(MaxSize);
+                    }
+
+                    return BuilderInstance;
+                }
             }
 
             return new StringBuilder(minimumCapacity);
@@ -90,13 +89,13 @@ namespace NuGet
         /// <returns>The string, built from <paramref name="builder"/>.</returns>
         public string ToStringAndReturn(StringBuilder builder)
         {
-#if DEBUG
-            Debug.Assert(ReferenceEquals(BuilderInstance, builder));
-            Debug.Assert(InUse);
-            InUse = false;
-#endif
             string result = builder.ToString();
-            builder.Clear();
+
+            if (ReferenceEquals(BuilderInstance, builder))
+            {
+                InUse = false;
+                builder.Clear();
+            }
 
             return result;
         }
