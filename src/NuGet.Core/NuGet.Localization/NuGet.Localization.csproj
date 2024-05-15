@@ -4,6 +4,7 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)')">false</PackProject>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <Description>NuGet localization package for dotnet CLI.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
