@@ -40,15 +40,16 @@ namespace NuGet.Tests.Apex.Daily
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
-            project.Rebuild();
+            solutionService.BuildManager.Rebuild();
 
             // Act
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-            project.Unload();
-            project.Reload();
-            uiwindow = nugetTestService.GetUIWindowfromProject(project);
+
+            VisualStudio.ObjectModel.Shell.ToolWindows.ErrorHub.ShowErrors();
+            Thread.Sleep(10000);
+
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             VisualStudio.ClearWindows();
 
