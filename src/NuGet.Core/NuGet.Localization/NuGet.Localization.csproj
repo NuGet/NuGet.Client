@@ -10,6 +10,7 @@
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <LocalizationOutputDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationOutputDirectory>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateNupkg</TargetsForTfmSpecificContentInPackage>
+    <BeforePack>MoveLocalizedFilesToLocalizedArtifacts</BeforePack>
   </PropertyGroup>
 
   <!--
@@ -20,7 +21,7 @@
     ============================================================
   -->
 
-  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="Exists($(LocalizationRootDirectory)) " BeforeTargets="GenerateNuspec">
+  <Target Name="MoveLocalizedFilesToLocalizedArtifacts" Condition="Exists($(LocalizationRootDirectory)) ">
     <MakeDir
             Directories="$(LocalizationOutputDirectory)"/>
     <ItemGroup>
