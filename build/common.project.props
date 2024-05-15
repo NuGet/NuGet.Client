@@ -256,10 +256,12 @@
     <ProductProjects Include="$(RepositoryRootDirectory)src\*\*\*.csproj" />
   </ItemGroup>
 
+  <!-- All projects that build assemblies that are inserted into the .NET SDK -->
   <ItemGroup>
     <CoreProjects Include="$(RepositoryRootDirectory)src\NuGet.Core\*\*.csproj" 
-                  Exclude="$(RepositoryRootDirectory)test\NuGet.Core\NuGet.PackageManagement\*.csproj;
-                           $(RepositoryRootDirectory)test\NuGet.Core\NuGet.Localization\*.csproj" />
+                  Exclude="$(RepositoryRootDirectory)test\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj;
+                           $(RepositoryRootDirectory)test\NuGet.Core\NuGet.Localization\NuGet.Localization.csproj;
+                           $(RepositoryRootDirectory)test\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsXPlat)' != 'true' ">
