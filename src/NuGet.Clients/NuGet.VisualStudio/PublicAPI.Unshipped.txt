@@ -3,16 +3,13 @@ NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3
 NuGet.SolutionRestoreManager.IVsReferenceItem2
 NuGet.SolutionRestoreManager.IVsSolutionRestoreService5
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4
-NuGet.SolutionRestoreManager.IVsTargetFrameworks3
-NuGet.SolutionRestoreManager.IVsTargetFrameworks3.Count.get -> int
-~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.BaseIntermediatePath.get -> string
-~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.OriginalTargetFrameworks.get -> string
-~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.TargetFrameworks.get -> System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4>
-~NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.ToolReferences.get -> System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsReferenceItem2>
-~NuGet.SolutionRestoreManager.IVsReferenceItem2.Name.get -> string
-~NuGet.SolutionRestoreManager.IVsReferenceItem2.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
-~NuGet.SolutionRestoreManager.IVsSolutionRestoreService5.NominateProjectAsync(string projectUniqueName, NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3 projectRestoreInfo, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
-~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Items.get -> System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsReferenceItem2>>
-~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string, string>
-~NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.TargetFrameworkMoniker.get -> string
-~NuGet.SolutionRestoreManager.IVsTargetFrameworks3.Item(object index) -> NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4
+NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.BaseIntermediatePath.get -> string!
+NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.OriginalTargetFrameworks.get -> string?
+NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.TargetFrameworks.get -> System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4!>!
+NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3.ToolReferences.get -> System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsReferenceItem2!>?
+NuGet.SolutionRestoreManager.IVsReferenceItem2.Name.get -> string!
+NuGet.SolutionRestoreManager.IVsReferenceItem2.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>?
+NuGet.SolutionRestoreManager.IVsSolutionRestoreService5.NominateProjectAsync(string! projectUniqueName, NuGet.SolutionRestoreManager.IVsProjectRestoreInfo3! projectRestoreInfo, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Items.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IReadOnlyList<NuGet.SolutionRestoreManager.IVsReferenceItem2!>!>?
+NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.Properties.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string?>!
+NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo4.TargetFrameworkMoniker.get -> string!

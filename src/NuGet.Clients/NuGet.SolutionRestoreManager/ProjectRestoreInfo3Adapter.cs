@@ -13,11 +13,11 @@ namespace NuGet.SolutionRestoreManager
     {
         public required string BaseIntermediatePath { get; init; }
 
-        public required string OriginalTargetFrameworks { get; init; }
+        public string? OriginalTargetFrameworks { get; init; }
 
         public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 
-        public required IReadOnlyList<IVsReferenceItem2> ToolReferences { get; init; }
+        public IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; init; }
 
         public static ProjectRestoreInfo3Adapter Create(IVsProjectRestoreInfo projectRestoreInfo)
         {
@@ -28,7 +28,7 @@ namespace NuGet.SolutionRestoreManager
                 BaseIntermediatePath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
                 TargetFrameworks = GetTargetFrameworksAdapter(projectRestoreInfo.TargetFrameworks),
-                ToolReferences = GetToolReferencesAdapter(projectRestoreInfo.ToolReferences)
+                ToolReferences = projectRestoreInfo.ToolReferences is null ? null : GetToolReferencesAdapter(projectRestoreInfo.ToolReferences)
             };
         }
 
@@ -45,22 +45,21 @@ namespace NuGet.SolutionRestoreManager
             };
         }
 
-        private static IReadOnlyList<IVsReferenceItem2> GetToolReferencesAdapter(IVsReferenceItems toolReferences)
+        private static IReadOnlyList<IVsReferenceItem2>? GetToolReferencesAdapter(IVsReferenceItems? toolReferences)
         {
+            if (toolReferences is null) { return null; }
+
             var result = new List<IVsReferenceItem2>(toolReferences.Count);
 
             for (var i = 0; i < toolReferences.Count; i++)
             {
-                IVsReferenceItem2 toolReference = ToReferenceItem2(toolReferences.Item(i));
-                result.Add(toolReference);
+                var reference = toolReferences.Item(i);
+                IVsReferenceItem2? toolReference = reference is not null ? new ReferenceItem2Adapter(reference) : null;
+                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                result.Add(toolReference!);
             }
 
             return result;
-        }
-
-        private static IVsReferenceItem2 ToReferenceItem2(IVsReferenceItem referenceItem)
-        {
-            throw new NotImplementedException();
         }
 
         private static IReadOnlyList<IVsTargetFrameworkInfo4> GetTargetFrameworksAdapter(IVsTargetFrameworks targetFrameworks)
@@ -69,9 +68,10 @@ namespace NuGet.SolutionRestoreManager
 
             for (var i = 0; i < targetFrameworks.Count; i++)
             {
-                IVsTargetFrameworkInfo targetFramework = targetFrameworks.Item(i);
-                IVsTargetFrameworkInfo4 targetFrameworkAdapter = new TargetFramework4Adapter(targetFramework);
-                result.Add(targetFrameworkAdapter);
+                IVsTargetFrameworkInfo? targetFramework = targetFrameworks.Item(i);
+                IVsTargetFrameworkInfo4? targetFrameworkAdapter = targetFramework is not null ? new TargetFramework4Adapter(targetFramework) : null;
+                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                result.Add(targetFrameworkAdapter!);
             }
 
             return result;
@@ -83,34 +83,37 @@ namespace NuGet.SolutionRestoreManager
 
             for (var i = 0; i < targetFrameworks.Count; i++)
             {
-                IVsTargetFrameworkInfo2 targetFramework = targetFrameworks.Item(i);
-                IVsTargetFrameworkInfo4 targetFrameworkAdapter = new TargetFramework4Adapter(targetFramework);
-                result.Add(targetFrameworkAdapter);
+                IVsTargetFrameworkInfo2? targetFramework = targetFrameworks.Item(i);
+                IVsTargetFrameworkInfo4? targetFrameworkAdapter = targetFramework is not null ? new TargetFramework4Adapter(targetFramework) : null;
+                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                result.Add(targetFrameworkAdapter!);
             }
 
             return result;
         }
 
-        private static IReadOnlyDictionary<string, string> ToPropertiesDictionary(IVsProjectProperties properties)
+        private static IReadOnlyDictionary<string, string?> ToPropertiesDictionary(IVsProjectProperties properties)
         {
-            var result = new Dictionary<string, string>(properties.Count, StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, string?>(properties.Count, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < properties.Count; i++)
             {
-                var property = properties.Item(i);
+                var property = properties.Item(i) ?? throw new Exception($"Property index {i} returned null");
                 result.Add(property.Name, property.Value);
             }
 
             return result;
         }
 
-        private static IReadOnlyDictionary<string, string> ToPropertiesDictionary(IVsReferenceProperties properties)
+        private static IReadOnlyDictionary<string, string?>? ToPropertiesDictionary(IVsReferenceProperties? properties)
         {
-            var result = new Dictionary<string, string>(properties.Count, StringComparer.OrdinalIgnoreCase);
+            if (properties is null) { return null; }
+
+            var result = new Dictionary<string, string?>(properties.Count, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < properties.Count; i++)
             {
-                var property = properties.Item(i);
+                var property = properties.Item(i) ?? throw new Exception($"Property index {i} returned null");
                 result.Add(property.Name, property.Value);
             }
 
@@ -121,9 +124,12 @@ namespace NuGet.SolutionRestoreManager
         {
             public TargetFramework4Adapter(IVsTargetFrameworkInfo targetFrameworkInfo)
             {
+                if (targetFrameworkInfo is null) { throw new ArgumentNullException(nameof(targetFrameworkInfo)); }
+
                 TargetFrameworkMoniker = targetFrameworkInfo.TargetFrameworkMoniker;
                 Items = ToItemsDictionary(targetFrameworkInfo);
-                Properties = ToPropertiesDictionary(targetFrameworkInfo.Properties);
+                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                Properties = targetFrameworkInfo.Properties is not null ? ToPropertiesDictionary(targetFrameworkInfo.Properties) : null!;
             }
 
             private IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> ToItemsDictionary(IVsTargetFrameworkInfo targetFrameworkInfo)
@@ -171,8 +177,10 @@ namespace NuGet.SolutionRestoreManager
                     var list = new List<IVsReferenceItem2>(referenceItems.Count);
                     for (var i = 0; i < referenceItems.Count; i++)
                     {
-                        IVsReferenceItem2 projectReference = new ReferenceItem2Adapter(referenceItems.Item(i));
-                        list.Add(projectReference);
+                        IVsReferenceItem? reference = referenceItems.Item(i);
+                        IVsReferenceItem2? projectReference = reference is not null ? new ReferenceItem2Adapter(reference) : null;
+                        // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                        list.Add(projectReference!);
                     }
 
                     return list;
@@ -181,16 +189,16 @@ namespace NuGet.SolutionRestoreManager
 
             public string TargetFrameworkMoniker { get; }
 
-            public IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> Items { get; }
+            public IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>>? Items { get; }
 
-            public IReadOnlyDictionary<string, string> Properties { get; }
+            public IReadOnlyDictionary<string, string?> Properties { get; }
         }
 
         private record ReferenceItem2Adapter : IVsReferenceItem2
         {
             public string Name { get; }
 
-            public IReadOnlyDictionary<string, string> Properties { get; }
+            public IReadOnlyDictionary<string, string?>? Properties { get; }
 
             public ReferenceItem2Adapter(IVsReferenceItem referenceItem)
             {

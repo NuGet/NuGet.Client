@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -70,6 +73,7 @@ namespace NuGet.SolutionRestoreManager
                     GetPropertyValueOrNull(tfi.Properties, ProjectBuildProperties.RuntimeIdentifier),
                     GetPropertyValueOrNull(tfi.Properties, ProjectBuildProperties.RuntimeIdentifiers),
                 })
+                .OfType<string>()
                 .SelectMany(MSBuildStringUtility.Split)
                 .Distinct(StringComparer.Ordinal)
                 .Select(rid => new RuntimeDescription(rid))
@@ -77,6 +81,7 @@ namespace NuGet.SolutionRestoreManager
 
             var supports = targetFrameworks
                 .Select(tfi => GetPropertyValueOrNull(tfi.Properties, ProjectBuildProperties.RuntimeSupports))
+                .OfType<string>()
                 .SelectMany(MSBuildStringUtility.Split)
                 .Distinct(StringComparer.Ordinal)
                 .Select(s => new CompatibilityProfile(s))
@@ -94,18 +99,25 @@ namespace NuGet.SolutionRestoreManager
                 TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework)
             };
 
-            var ptf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.PackageTargetFallback))
-                                          .Select(NuGetFramework.Parse)
-                                          .ToList();
+            string? ptfString = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.PackageTargetFallback);
+            List<NuGetFramework>? ptf = ptfString is not null
+                ? MSBuildStringUtility.Split(ptfString).Select(NuGetFramework.Parse).ToList()
+                : null;
 
-            var atf = MSBuildStringUtility.Split(GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.AssetTargetFallback))
-                                          .Select(NuGetFramework.Parse)
-                                          .ToList();
+            string? atfString = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.AssetTargetFallback);
+            List<NuGetFramework>? atf = atfString is not null
+                ? MSBuildStringUtility.Split(atfString).Select(NuGetFramework.Parse).ToList()
+                : null;
 
             // Update TFI with fallback properties
             AssetTargetFallbackUtility.ApplyFramework(tfi, ptf, atf);
 
             tfi.RuntimeIdentifierGraphPath = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.RuntimeIdentifierGraphPath);
+
+            if (targetFrameworkInfo.Items is null)
+            {
+                return tfi;
+            }
 
             if (targetFrameworkInfo.Items.TryGetValue(ProjectItems.PackageReference, out var packageReferences))
             {
@@ -137,7 +149,7 @@ namespace NuGet.SolutionRestoreManager
             return tfi;
         }
 
-        internal static NuGetFramework GetTargetFramework(IReadOnlyDictionary<string, string> properties, string projectFullPath)
+        internal static NuGetFramework GetTargetFramework(IReadOnlyDictionary<string, string?> properties, string projectFullPath)
         {
             var targetFrameworkMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkMoniker);
             var targetPlatformMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMoniker);
@@ -165,7 +177,7 @@ namespace NuGet.SolutionRestoreManager
                 TargetAlias = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.TargetFramework)
             };
 
-            if (targetFrameworkInfo.Items.TryGetValue(ProjectItems.ProjectReference, out var projectReferences))
+            if (targetFrameworkInfo.Items?.TryGetValue(ProjectItems.ProjectReference, out var projectReferences) ?? false)
             {
                 tfi.ProjectReferences.AddRange(
                     projectReferences
@@ -187,13 +199,13 @@ namespace NuGet.SolutionRestoreManager
         {
             // $(PackageVersion) property if set overrides the $(Version)
             var versionPropertyValue =
-                GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.PackageVersion, NuGetVersion.Parse)
+                GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectItems.PackageVersion, NuGetVersion.Parse)
                 ?? GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.Version, NuGetVersion.Parse);
 
             return versionPropertyValue ?? PackageSpec.DefaultVersion;
         }
 
-        internal static string GetRestoreProjectPath(IReadOnlyList<IVsTargetFrameworkInfo4> values)
+        internal static string? GetRestoreProjectPath(IReadOnlyList<IVsTargetFrameworkInfo4> values)
         {
             return GetSingleNonEvaluatedPropertyOrNull(values, ProjectBuildProperties.RestorePackagesPath, e => e);
         }
@@ -221,7 +233,11 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         internal static IEnumerable<string> GetRestoreSources(IReadOnlyList<IVsTargetFrameworkInfo4> values)
         {
-            var sources = HandleClear(MSBuildStringUtility.Split(GetSingleNonEvaluatedPropertyOrNull(values, ProjectBuildProperties.RestoreSources, e => e)));
+            string? propertyValue = GetSingleNonEvaluatedPropertyOrNull(values, ProjectBuildProperties.RestoreSources, e => e);
+
+            string[] sources = propertyValue is not null ?
+                HandleClear(MSBuildStringUtility.Split(propertyValue))
+                : Array.Empty<string>();
 
             // Read RestoreAdditionalProjectSources from the inner build, these may be different between frameworks.
             // Exclude is not allowed for sources
@@ -238,7 +254,11 @@ namespace NuGet.SolutionRestoreManager
         /// </summary>
         internal static IEnumerable<string> GetRestoreFallbackFolders(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
-            var folders = HandleClear(MSBuildStringUtility.Split(GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreFallbackFolders, e => e)));
+            var value = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreFallbackFolders, e => e);
+
+            string[] folders = value is not null
+                ? HandleClear(MSBuildStringUtility.Split(value))
+                : Array.Empty<string>();
 
             // Read RestoreAdditionalProjectFallbackFolders from the inner build.
             // Remove all excluded fallback folders listed in RestoreAdditionalProjectFallbackFoldersExcludes.
@@ -249,12 +269,12 @@ namespace NuGet.SolutionRestoreManager
             return VSRestoreSettingsUtilities.GetEntriesWithAdditional(folders, additional.ToArray());
         }
 
-        private static string GetRestorePackagesWithLockFile(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+        private static string? GetRestorePackagesWithLockFile(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestorePackagesWithLockFile, v => v);
         }
 
-        private static string GetNuGetLockFilePath(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+        private static string? GetNuGetLockFilePath(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetLockFilePath, v => v);
         }
@@ -288,11 +308,11 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.CentralPackageTransitivePinningEnabled, MSBuildStringUtility.IsTrue);
         }
 
-        internal static RestoreAuditProperties GetRestoreAuditProperties(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
+        internal static RestoreAuditProperties? GetRestoreAuditProperties(IReadOnlyList<IVsTargetFrameworkInfo4> tfms)
         {
-            string enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
-            string auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
-            string auditMode = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditMode, s => s);
+            string? enableAudit = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAudit, s => s);
+            string? auditLevel = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditLevel, s => s);
+            string? auditMode = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditMode, s => s);
 
             return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel) || !string.IsNullOrEmpty(auditMode)
                 ? new RestoreAuditProperties()
@@ -312,7 +332,7 @@ namespace NuGet.SolutionRestoreManager
                     NuGetFramework.Parse) ?? CommonFrameworks.NetCoreApp10;
         }
 
-        private static TValue GetSingleOrDefaultPropertyValue<TValue>(
+        private static TValue? GetSingleOrDefaultPropertyValue<TValue>(
             IReadOnlyList<IVsTargetFrameworkInfo4> values,
             string propertyName,
             Func<string, TValue> valueFactory)
@@ -329,11 +349,11 @@ namespace NuGet.SolutionRestoreManager
         {
             var logCodeProperties = GetNonEvaluatedPropertyOrNull(values, propertyName, valueFactory);
 
-            return MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodeProperties);
+            return logCodeProperties is not null ? MSBuildStringUtility.GetDistinctNuGetLogCodesOrDefault(logCodeProperties) : Enumerable.Empty<NuGetLogCode>();
         }
 
         // Trying to fetch a list of property value from all tfm property bags.
-        private static IEnumerable<TValue> GetNonEvaluatedPropertyOrNull<TValue>(
+        private static IEnumerable<TValue?> GetNonEvaluatedPropertyOrNull<TValue>(
             IReadOnlyList<IVsTargetFrameworkInfo4> values,
             string propertyName,
             Func<string, TValue> valueFactory)
@@ -341,7 +361,7 @@ namespace NuGet.SolutionRestoreManager
             return values
                 .Select(tfm =>
                 {
-                    var val = GetPropertyValueOrNull(tfm.Properties, propertyName);
+                    var val = tfm.Properties is not null ? GetPropertyValueOrNull(tfm.Properties, propertyName) : null;
                     return val != null ? valueFactory(val) : default(TValue);
                 })
                 .Distinct();
@@ -349,7 +369,7 @@ namespace NuGet.SolutionRestoreManager
 
         // Trying to fetch a property value from tfm property bags.
         // If defined the property should have identical values in all of the occurances.
-        private static TValue GetSingleNonEvaluatedPropertyOrNull<TValue>(
+        private static TValue? GetSingleNonEvaluatedPropertyOrNull<TValue>(
             IReadOnlyList<IVsTargetFrameworkInfo4> values,
             string propertyName,
             Func<string, TValue> valueFactory)
@@ -382,7 +402,11 @@ namespace NuGet.SolutionRestoreManager
         {
             // Only non-null values are added to the list as part of the split.
             return values
-                .SelectMany(tfm => MSBuildStringUtility.Split(GetPropertyValueOrNull(tfm.Properties, propertyName)));
+                .SelectMany(tfm =>
+                {
+                    var valueString = GetPropertyValueOrNull(tfm.Properties, propertyName);
+                    return valueString is not null ? MSBuildStringUtility.Split(valueString) : Enumerable.Empty<string>();
+                });
         }
 
         #endregion IVSTargetFrameworksAPIs
@@ -391,15 +415,16 @@ namespace NuGet.SolutionRestoreManager
 
         private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem2 item, bool cpvmEnabled)
         {
-            if (!TryGetVersionRange(item, "Version", out VersionRange versionRange))
+            if (!TryGetVersionRange(item, "Version", out VersionRange? versionRange))
             {
                 versionRange = cpvmEnabled ? null : VersionRange.All;
             }
 
-            TryGetVersionRange(item, "VersionOverride", out VersionRange versionOverrideRange);
+            TryGetVersionRange(item, "VersionOverride", out VersionRange? versionOverrideRange);
 
             // Get warning suppressions
-            IList<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn));
+            string? noWarnString = GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn);
+            IList<NuGetLogCode> noWarn = noWarnString is not null ? MSBuildStringUtility.GetNuGetLogCodes(noWarnString) : Array.Empty<NuGetLogCode>();
 
             var dependency = new LibraryDependency(noWarn)
             {
@@ -489,10 +514,10 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static bool TryGetVersionRange(IVsReferenceItem2 item, string propertyName, out VersionRange versionRange)
+        private static bool TryGetVersionRange(IVsReferenceItem2 item, string propertyName, [NotNullWhen(true)] out VersionRange? versionRange)
         {
             versionRange = null;
-            string versionRangeItemValue = GetPropertyValueOrNull(item, propertyName);
+            string? versionRangeItemValue = GetPropertyValueOrNull(item, propertyName);
 
             if (versionRangeItemValue != null)
             {
@@ -505,7 +530,7 @@ namespace NuGet.SolutionRestoreManager
         private static IEnumerable<VersionRange> GetVersionRangeList(IVsReferenceItem2 item)
         {
             char[] splitChars = new[] { ';' };
-            string versionString = GetPropertyValueOrNull(item, "Version");
+            string? versionString = GetPropertyValueOrNull(item, "Version");
             if (string.IsNullOrEmpty(versionString))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Error_PackageDownload_NoVersion, item.Name));
@@ -527,7 +552,7 @@ namespace NuGet.SolutionRestoreManager
 
         private static VersionRange GetVersionRange(IVsReferenceItem2 item)
         {
-            if (TryGetVersionRange(item, "Version", out VersionRange versionRange))
+            if (TryGetVersionRange(item, "Version", out VersionRange? versionRange))
             {
                 return versionRange;
             }
@@ -560,7 +585,7 @@ namespace NuGet.SolutionRestoreManager
         {
             try
             {
-                if (item.Properties.TryGetValue(propertyName, out var value))
+                if (item.Properties?.TryGetValue(propertyName, out var value) ?? false)
                 {
                     return MSBuildStringUtility.IsTrue(value);
                 }
@@ -575,12 +600,12 @@ namespace NuGet.SolutionRestoreManager
             return false;
         }
 
-        internal static string GetPropertyValueOrNull(
+        internal static string? GetPropertyValueOrNull(
             IVsReferenceItem2 item, string propertyName)
         {
             try
             {
-                if (item.Properties.TryGetValue(propertyName, out var value))
+                if (item.Properties?.TryGetValue(propertyName, out var value) ?? false)
                 {
                     return MSBuildStringUtility.TrimAndGetNullForEmpty(value);
                 }
@@ -595,8 +620,8 @@ namespace NuGet.SolutionRestoreManager
             return null;
         }
 
-        private static string GetPropertyValueOrNull(
-            IReadOnlyDictionary<string, string> properties, string propertyName)
+        private static string? GetPropertyValueOrNull(
+            IReadOnlyDictionary<string, string?> properties, string propertyName)
         {
             try
             {

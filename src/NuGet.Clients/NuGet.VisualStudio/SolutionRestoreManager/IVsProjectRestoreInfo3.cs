@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager
@@ -24,11 +26,11 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Collection of tool references.
         /// </summary>
-        IReadOnlyList<IVsReferenceItem2> ToolReferences { get; }
+        IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; }
 
         /// <summary>
         /// Original raw value of TargetFrameworks property as set in a project file.
         /// </summary>
-        string OriginalTargetFrameworks { get; }
+        string? OriginalTargetFrameworks { get; }
     }
 }

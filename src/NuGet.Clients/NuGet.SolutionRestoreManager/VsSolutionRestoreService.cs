@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -216,11 +218,36 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(projectRestoreInfo));
             }
 
-            if (projectRestoreInfo != null)
+            if (string.IsNullOrEmpty(projectRestoreInfo.BaseIntermediatePath))
             {
-                if (projectRestoreInfo.TargetFrameworks == null)
+                throw new ArgumentException(message: $"BaseIntermediatePath must have a value",
+                    paramName: nameof(projectRestoreInfo));
+            }
+
+            if (projectRestoreInfo.TargetFrameworks == null)
+            {
+                throw new InvalidOperationException("TargetFrameworks cannot be null.");
+            }
+
+            for (int i = 0; i < projectRestoreInfo.TargetFrameworks.Count; i++)
+            {
+                IVsTargetFrameworkInfo4 targetFramework = projectRestoreInfo.TargetFrameworks[i];
+                if (targetFramework is null)
                 {
-                    throw new InvalidOperationException("TargetFrameworks cannot be null.");
+                    throw new ArgumentException(message: $"Target framework at index {i} must not be null",
+                        paramName: nameof(projectRestoreInfo));
+                }
+
+                if (targetFramework.Properties is null)
+                {
+                    throw new ArgumentException(message: $"Target framework at index {i} must provide project properties",
+                        paramName: nameof(projectRestoreInfo));
+                }
+
+                if (string.IsNullOrEmpty(targetFramework.TargetFrameworkMoniker))
+                {
+                    throw new ArgumentException(message: $"Target framework at index {i} must provide TargetFrameworkMoniker",
+                        paramName: nameof(projectRestoreInfo));
                 }
             }
 
@@ -232,7 +259,7 @@ namespace NuGet.SolutionRestoreManager
                 ProjectNames projectNames = await GetProjectNamesAsync(projectUniqueName, token);
 
                 DependencyGraphSpec dgSpec;
-                IReadOnlyList<IAssetsLogMessage> nominationErrors = null;
+                IReadOnlyList<IAssetsLogMessage>? nominationErrors = null;
                 try
                 {
                     dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo);
@@ -281,7 +308,7 @@ namespace NuGet.SolutionRestoreManager
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo.TargetFrameworks, projectRestoreInfo.OriginalTargetFrameworks, projectRestoreInfo.BaseIntermediatePath);
+            var packageSpec = ToPackageSpec(projectNames, projectRestoreInfo);
 
             dgSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
             dgSpec.AddProject(packageSpec);
@@ -294,40 +321,45 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        internal static PackageSpec ToPackageSpec(ProjectNames projectNames, IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
+        internal static PackageSpec ToPackageSpec(ProjectNames projectNames, IVsProjectRestoreInfo3 projectRestoreInfo)
         {
-            var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(TargetFrameworks);
+            var targetFrameworks = projectRestoreInfo.TargetFrameworks;
 
-            var tfis = TargetFrameworks
-                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled, projectNames.FullName))
-                .ToArray();
+            var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(targetFrameworks);
+
+            TargetFrameworkInformation[] tfis = new TargetFrameworkInformation[targetFrameworks.Count];
+            for (int i = 0; i < targetFrameworks.Count; i++)
+            {
+                IVsTargetFrameworkInfo4 targetFrameworkInfo = targetFrameworks[i];
+                TargetFrameworkInformation tfi = VSNominationUtilities.ToTargetFrameworkInformation(targetFrameworkInfo, cpvmEnabled, projectNames.FullName);
+                tfis[i] = tfi;
+            }
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
             var projectDirectory = Path.GetDirectoryName(projectFullPath);
 
             // Initialize OTF and CT values when original value of OTF property is not provided.
-            var originalTargetFrameworks = tfis
-                .Select(tfi => GetBestOriginalFrameworkValue(tfi))
+            string[]? originalTargetFrameworks = tfis
+                .Select(GetBestOriginalFrameworkValue)
                 .ToArray();
             var crossTargeting = originalTargetFrameworks.Length > 1;
 
             // if "TargetFrameworks" property presents in the project file prefer the raw value.
-            if (!string.IsNullOrWhiteSpace(originalTargetFrameworkstr))
+            if (!string.IsNullOrWhiteSpace(projectRestoreInfo.OriginalTargetFrameworks))
             {
-                originalTargetFrameworks = MSBuildStringUtility.Split(
-                    originalTargetFrameworkstr);
+                originalTargetFrameworks = MSBuildStringUtility.Split(projectRestoreInfo.OriginalTargetFrameworks!);
                 // cross-targeting is always ON even in case of a single tfm in the list.
                 crossTargeting = true;
             }
 
-            var outputPath = GetProjectOutputPath(projectDirectory, msbuildProjectExtensionsPath);
+            var outputPath = GetProjectOutputPath(projectDirectory, projectRestoreInfo.BaseIntermediatePath);
 
-            var projectName = VSNominationUtilities.GetPackageId(projectNames, TargetFrameworks);
+            var projectName = VSNominationUtilities.GetPackageId(projectNames, targetFrameworks);
 
             var packageSpec = new PackageSpec(tfis)
             {
                 Name = projectName,
-                Version = VSNominationUtilities.GetPackageVersion(TargetFrameworks),
+                Version = VSNominationUtilities.GetPackageVersion(targetFrameworks),
                 FilePath = projectFullPath,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
@@ -336,7 +368,7 @@ namespace NuGet.SolutionRestoreManager
                     ProjectPath = projectFullPath,
                     OutputPath = outputPath,
                     ProjectStyle = ProjectStyle.PackageReference,
-                    TargetFrameworks = TargetFrameworks
+                    TargetFrameworks = targetFrameworks
                         .Select(item => VSNominationUtilities.ToProjectRestoreMetadataFrameworkInfo(item, projectDirectory, projectFullPath))
                         .ToList(),
                     OriginalTargetFrameworks = originalTargetFrameworks,
@@ -344,21 +376,21 @@ namespace NuGet.SolutionRestoreManager
 
                     // Read project properties for settings. ISettings values will be applied later since
                     // this value is put in the nomination cache and ISettings could change.
-                    PackagesPath = VSNominationUtilities.GetRestoreProjectPath(TargetFrameworks),
-                    FallbackFolders = VSNominationUtilities.GetRestoreFallbackFolders(TargetFrameworks).AsList(),
-                    Sources = VSNominationUtilities.GetRestoreSources(TargetFrameworks)
+                    PackagesPath = VSNominationUtilities.GetRestoreProjectPath(targetFrameworks),
+                    FallbackFolders = VSNominationUtilities.GetRestoreFallbackFolders(targetFrameworks).AsList(),
+                    Sources = VSNominationUtilities.GetRestoreSources(targetFrameworks)
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
-                    ProjectWideWarningProperties = VSNominationUtilities.GetProjectWideWarningProperties(TargetFrameworks),
+                    ProjectWideWarningProperties = VSNominationUtilities.GetProjectWideWarningProperties(targetFrameworks),
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath),
-                    RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks),
+                    RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(targetFrameworks),
                     CentralPackageVersionsEnabled = cpvmEnabled,
-                    CentralPackageFloatingVersionsEnabled = VSNominationUtilities.IsCentralPackageFloatingVersionsEnabled(TargetFrameworks),
-                    CentralPackageVersionOverrideDisabled = VSNominationUtilities.IsCentralPackageVersionOverrideDisabled(TargetFrameworks),
-                    CentralPackageTransitivePinningEnabled = VSNominationUtilities.IsCentralPackageTransitivePinningEnabled(TargetFrameworks),
-                    RestoreAuditProperties = VSNominationUtilities.GetRestoreAuditProperties(TargetFrameworks),
+                    CentralPackageFloatingVersionsEnabled = VSNominationUtilities.IsCentralPackageFloatingVersionsEnabled(targetFrameworks),
+                    CentralPackageVersionOverrideDisabled = VSNominationUtilities.IsCentralPackageVersionOverrideDisabled(targetFrameworks),
+                    CentralPackageTransitivePinningEnabled = VSNominationUtilities.IsCentralPackageTransitivePinningEnabled(targetFrameworks),
+                    RestoreAuditProperties = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks),
                 },
-                RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(TargetFrameworks),
+                RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(targetFrameworks),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
             };
 
