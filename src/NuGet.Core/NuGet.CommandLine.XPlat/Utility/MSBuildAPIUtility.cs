@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Build.Construction;
@@ -657,11 +656,10 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="userInputFrameworks">A list of frameworks</param>
         /// <param name="assetsFile">Assets file for all targets and libraries</param>
         /// <param name="transitive">Include transitive packages/projects in the result</param>
-        /// <param name="includeProjectReferences">Include project references in the result</param>
         /// <returns>FrameworkPackages collection with top-level and transitive package/project
         /// references for each framework, or null on error</returns>
         internal List<FrameworkPackages> GetResolvedVersions(
-            Project project, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive, bool includeProjectReferences = false)
+            Project project, IEnumerable<string> userInputFrameworks, LockFile assetsFile, bool transitive)
         {
             if (userInputFrameworks == null)
             {
@@ -722,14 +720,10 @@ namespace NuGet.CommandLine.XPlat
                 // Find the tfminformation corresponding to the target to
                 // get the top-level dependencies
                 TargetFrameworkInformation tfmInformation;
-                IEnumerable<string> projectReferences;
 
                 try
                 {
                     tfmInformation = requestedTargetFrameworks.First(tfm => tfm.FrameworkName.Equals(target.TargetFramework));
-                    projectReferences = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks
-                                                    .First(tfm => tfm.FrameworkName.Equals(target.TargetFramework))
-                                                    .ProjectReferences.Select(p => p.ProjectPath);
                 }
                 catch (Exception)
                 {
@@ -747,19 +741,11 @@ namespace NuGet.CommandLine.XPlat
                     var matchingPackages = frameworkDependencies.Where(d =>
                         d.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)).ToList();
 
-                    List<string> matchingProjects = null;
-                    if (library.Type == "project" && includeProjectReferences)
-                    {
-                        string projectLibraryPath = GetProjectLibraryPath(library, assetsFile.Libraries, project.DirectoryPath);
-                        matchingProjects ??= projectReferences.Where(p =>
-                            p.Equals(projectLibraryPath, StringComparison.OrdinalIgnoreCase)).ToList();
-                    }
-
                     var resolvedVersion = library.Version.ToString();
 
                     //In case we found a matching package in requestedVersions, the package will be
                     //top level.
-                    if (matchingPackages.Count > 0)
+                    if (matchingPackages.Any())
                     {
                         var topLevelPackage = matchingPackages.Single();
                         InstalledPackageReference installedPackage = default;
@@ -807,22 +793,9 @@ namespace NuGet.CommandLine.XPlat
 
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
-                        if (library.Type != "project" || includeProjectReferences)
+                        if (library.Type != "project")
                         {
                             topLevelPackages.Add(installedPackage);
-                        }
-                    }
-                    else if (matchingProjects?.Count > 0)
-                    {
-                        var topLevelProject = matchingProjects.Single();
-                        var projectReference = new InstalledPackageReference(library.Name)
-                        {
-                            OriginalRequestedVersion = resolvedVersion
-                        };
-
-                        if (includeProjectReferences)
-                        {
-                            topLevelPackages.Add(projectReference);
                         }
                     }
                     // If no matching packages were found, then the package is transitive,
@@ -836,7 +809,7 @@ namespace NuGet.CommandLine.XPlat
                                 .Build()
                         };
 
-                        if (library.Type != "project" || includeProjectReferences)
+                        if (library.Type != "project")
                         {
                             transitivePackages.Add(installedPackage);
                         }
@@ -854,21 +827,6 @@ namespace NuGet.CommandLine.XPlat
             return resultPackages;
         }
 
-        /// <summary>
-        /// Gets the absolute path of the given project library.
-        /// </summary>
-        /// <param name="library">The target project library that we want the path for.</param>
-        /// <param name="libraries">All libraries in the assets file.</param>
-        /// <param name="projectDirectoryPath">The absolute path to the project base directory.</param>
-        /// <returns>The absolute path of the matching project library.</returns>
-        private string GetProjectLibraryPath(LockFileTargetLibrary library, IList<LockFileLibrary> libraries, string projectDirectoryPath)
-        {
-            string relativePath = libraries.Where(l => l.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)
-                                                       && l.Version.Equals(library.Version))
-                                           .FirstOrDefault().Path;
-
-            return Path.GetFullPath(relativePath, projectDirectoryPath);
-        }
 
         /// <summary>
         /// Returns all package references after evaluating the condition on the item groups.
