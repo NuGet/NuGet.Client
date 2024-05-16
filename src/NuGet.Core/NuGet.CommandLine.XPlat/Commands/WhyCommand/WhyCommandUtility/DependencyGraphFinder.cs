@@ -237,10 +237,11 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
             // so we will store all project reference paths in a dictionary here
             var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
             var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count());
+            var projectDirectoryPath = Path.GetFullPath(assetsFile.PackageSpec.BaseDirectory);
 
             foreach (var library in projectLibraries)
             {
-                projectLibraryPathToName.Add(Path.GetFullPath(library.Path, assetsFile.PackageSpec.BaseDirectory), library.Name);
+                projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
             }
 
             // get all top-level references for each target alias
