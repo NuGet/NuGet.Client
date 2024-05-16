@@ -84,7 +84,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageZ.Id}'", result.AllOutput);
+            Assert.Contains($"Project '{ProjectName}' does not have a dependency on '{packageZ.Id}'", result.AllOutput);
         }
 
         [Fact]

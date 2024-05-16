@@ -100,10 +100,10 @@ namespace NuGet.XPlat.FuncTest
 
             logger.Verify(x => x.LogMinimal("Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageY':"), Times.Exactly(1));
             logger.Verify(x => x.LogMinimal(""), Times.Exactly(2));
-            logger.Verify(x => x.LogMinimal("	[net472]"), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("	 │  "), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("	 └─ PackageX (v1.0.0)"), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("	    └─ ", ConsoleColor.Gray), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("  [net472]"), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("   │  "), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("   └─ PackageX (v1.0.0)"), Times.Exactly(1));
+            logger.Verify(x => x.LogMinimal("      └─ ", ConsoleColor.Gray), Times.Exactly(1));
             logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
         }
 
@@ -145,7 +145,7 @@ namespace NuGet.XPlat.FuncTest
             var output = logger.ShowMessages();
 
             Assert.Equal(ExitCodes.Success, result);
-            Assert.Contains($"Project '{ProjectName}' does not have any dependency graph(s) for '{packageZ.Id}'", output);
+            Assert.Contains($"Project '{ProjectName}' does not have a dependency on '{packageZ.Id}'", output);
         }
 
         [Fact]
