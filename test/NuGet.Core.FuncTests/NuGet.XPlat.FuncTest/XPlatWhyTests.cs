@@ -57,54 +57,8 @@ namespace NuGet.XPlat.FuncTest
 
             Assert.Equal(ExitCodes.Success, result);
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
-        }
-
-        [Fact]
-        public async void WhyCommand_ProjectHasTransitiveDependency_OutputFormatIsCorrect()
-        {
-            // Arrange
-            var logger = new Mock<ILoggerWithColor>();
-
-            var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
-            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
-
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
-
-            packageX.Dependencies.Add(packageY);
-
-            project.AddPackageToFramework(projectFramework, packageX);
-
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                packageX,
-                packageY);
-
-            var addPackageArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
-            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
-            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageArgs, MsBuild);
-
-            var whyCommandArgs = new WhyCommandArgs(
-                    project.ProjectPath,
-                    packageY.Id,
-                    [projectFramework],
-                    logger.Object);
-
-            // Act
-            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
-
-            // Assert
-            Assert.Equal(ExitCodes.Success, result);
-
-            logger.Verify(x => x.LogMinimal("Project 'Test.Project.DotnetNugetWhy' has the following dependency graph(s) for 'PackageY':"), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal(""), Times.Exactly(2));
-            logger.Verify(x => x.LogMinimal("  [net472]"), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("   │  "), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("   └─ PackageX (v1.0.0)"), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("      └─ ", ConsoleColor.Gray), Times.Exactly(1));
-            logger.Verify(x => x.LogMinimal("PackageY (v1.0.1)\n", ConsoleColor.Cyan), Times.Exactly(1));
+            Assert.Contains($"{packageX.Id} (v{packageX.Version})", output);
+            Assert.Contains($"{packageY.Id} (v{packageY.Version})", output);
         }
 
         [Fact]

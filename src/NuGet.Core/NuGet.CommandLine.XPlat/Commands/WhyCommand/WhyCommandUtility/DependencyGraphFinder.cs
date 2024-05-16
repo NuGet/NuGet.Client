@@ -16,25 +16,23 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
         /// <summary>
         /// Finds all dependency graphs for a given project.
         /// </summary>
-        /// <param name="whyCommandArgs">CLI arguments for the 'why' command.</param>
         /// <param name="assetsFile">Assets file for the project.</param>
-        /// <param name="projectDirectoryPath">Root directory of the project.</param>
+        /// <param name="targetPackage">The package we want the dependency paths for.</param>
+        /// <param name="userInputFrameworks">List of target framework aliases.</param>
         /// <returns>
         /// Dictionary mapping target framework aliases to their respective dependency graphs.
         /// Returns null if the project does not have a dependency on the target package.
         /// </returns>
         public static Dictionary<string, List<DependencyNode>?>? GetAllDependencyGraphs(
-            WhyCommandArgs whyCommandArgs,
             LockFile assetsFile,
-            string projectDirectoryPath)
+            string targetPackage,
+            List<string> userInputFrameworks)
         {
             var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>?>(assetsFile.Targets.Count);
-
             bool doesProjectHaveDependencyOnPackage = false;
-            string targetPackage = whyCommandArgs.Package;
 
             // get all top-level package and project references for the project, categorized by target framework alias
-            Dictionary<string, List<string>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, whyCommandArgs.Frameworks, projectDirectoryPath);
+            Dictionary<string, List<string>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, userInputFrameworks, assetsFile.PackageSpec.BaseDirectory);
 
             if (topLevelReferencesByFramework.Count > 0)
             {
@@ -231,11 +229,14 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
 
             var targetAliases = assetsFile.PackageSpec.RestoreMetadata.OriginalTargetFrameworks;
 
+            // filter the targets to the set of targets that the user has specified
             if (userInputFrameworks?.Count > 0)
             {
                 targetAliases = targetAliases.Where(f => userInputFrameworks.Contains(f)).ToList();
             }
 
+            // we need to match top-level project references to their target library entries using their paths,
+            // so we will store all project reference paths in a dictionary here
             var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
             var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count());
 
@@ -244,11 +245,12 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
             }
 
+            // get all top-level references for each target alias
             foreach (string targetAlias in targetAliases)
             {
                 topLevelReferences.Add(targetAlias, []);
 
-                // top level packages
+                // top-level packages
                 TargetFrameworkInformation? targetFrameworkInformation = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
                 if (targetFrameworkInformation != default)
                 {
@@ -256,7 +258,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                     topLevelReferences[targetAlias].AddRange(topLevelPackages);
                 }
 
-                // top level projects
+                // top-level projects
                 ProjectRestoreMetadataFrameworkInfo? restoreMetadataFrameworkInfo = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(targetAlias, StringComparison.OrdinalIgnoreCase));
                 if (restoreMetadataFrameworkInfo != default)
                 {

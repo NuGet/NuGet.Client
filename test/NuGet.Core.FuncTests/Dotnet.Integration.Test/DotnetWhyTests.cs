@@ -29,8 +29,8 @@ namespace Dotnet.Integration.Test
             var projectFramework = "net472";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1", projectFramework);
 
             packageX.Dependencies.Add(packageY);
 
@@ -63,10 +63,10 @@ namespace Dotnet.Integration.Test
             var projectFramework = "net472";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
             project.AddPackageToFramework(projectFramework, packageX);
 
-            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0");
+            var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0", projectFramework);
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -95,8 +95,8 @@ namespace Dotnet.Integration.Test
             var projectFramework = "net472";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1", projectFramework);
 
             packageX.Dependencies.Add(packageY);
 
@@ -129,8 +129,8 @@ namespace Dotnet.Integration.Test
             var projectFramework = "net472";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
-            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0");
-            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1");
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1", projectFramework);
 
             packageX.Dependencies.Add(packageY);
 

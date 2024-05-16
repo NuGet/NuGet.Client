@@ -49,7 +49,10 @@ namespace NuGet.CommandLine.XPlat
 
                 if (assetsFile != null)
                 {
-                    Dictionary<string, List<DependencyNode>?>? dependencyGraphPerFramework = DependencyGraphFinder.GetAllDependencyGraphs(whyCommandArgs, assetsFile, project.DirectoryPath);
+                    Dictionary<string, List<DependencyNode>?>? dependencyGraphPerFramework = DependencyGraphFinder.GetAllDependencyGraphs(
+                        assetsFile,
+                        whyCommandArgs.Package,
+                        whyCommandArgs.Frameworks);
 
                     if (dependencyGraphPerFramework != null)
                     {
