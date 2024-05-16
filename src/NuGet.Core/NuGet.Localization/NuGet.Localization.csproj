@@ -25,7 +25,11 @@
     <MakeDir
             Directories="$(LocalizationOutputDirectory)"/>
     <ItemGroup>
-      <LocalizationProjects Include="@(CoreProjects)" Exclude="..\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj"/>
+      <LocalizationProjects Include="@(CoreProjects)" 
+                            Exclude="$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj;
+                            $(RepositoryRootDirectory)src\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj;
+                            $(RepositoryRootDirectory)src\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj"
+                            />
     </ItemGroup>
     <Message Text="Localization Projects: @(LocalizationProjects, '%0a')" Importance="High" />
     <MSBuild Projects="@(LocalizationProjects)"
