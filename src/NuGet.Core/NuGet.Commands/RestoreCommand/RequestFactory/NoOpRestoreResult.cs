@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -64,6 +65,12 @@ namespace NuGet.Commands
         public override ISet<LibraryIdentity> GetAllInstalled()
         {
             return new HashSet<LibraryIdentity>();
+        }
+
+        //We override this method because in the case of a no op we don't have any dirty files.
+        internal override IReadOnlyList<string> GetDirtyFiles()
+        {
+            return null;
         }
     }
 }

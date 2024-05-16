@@ -269,12 +269,12 @@ namespace NuGet.Commands
             var log = summaryRequest.Request.Log;
 
             bool isNoOp = result is NoOpRestoreResult;
-            IReadOnlyList<string> filesToBeUpdated = isNoOp ? null : GetFilesToBeUpdated(restoreResult);
+            IReadOnlyList<string> filesToBeUpdated = result.GetDirtyFiles();
             try
             {
                 if (!isNoOp)
                 {
-                    progressReporter?.StartProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                    progressReporter?.StartProjectUpdate(summaryRequest.InputPath, filesToBeUpdated);
                 }
 
                 // Commit the result
@@ -287,7 +287,7 @@ namespace NuGet.Commands
             {
                 if (!isNoOp)
                 {
-                    progressReporter?.EndProjectUpdate(summaryRequest.Request.Project.FilePath, filesToBeUpdated);
+                    progressReporter?.EndProjectUpdate(summaryRequest.InputPath, filesToBeUpdated);
                 }
             }
 
