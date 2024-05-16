@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Shared;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.WhyCommandUtility
 {
-    internal static class WhyCommandPrintUtility
+    internal static class DependencyGraphPrinter
     {
         private const ConsoleColor TargetPackageColor = ConsoleColor.Cyan;
 
