@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
             bool doesProjectHaveDependencyOnPackage = false;
 
             // get all top-level package and project references for the project, categorized by target framework alias
-            Dictionary<string, List<string>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, userInputFrameworks, assetsFile.PackageSpec.BaseDirectory);
+            Dictionary<string, List<string>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, userInputFrameworks);
 
             if (topLevelReferencesByFramework.Count > 0)
             {
@@ -216,14 +216,12 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
         /// </summary>
         /// <param name="assetsFile">Assets file for the project.</param>
         /// <param name="userInputFrameworks">List of target framework aliases.</param>
-        /// <param name="projectDirectoryPath">Root directory of the project.</param>
         /// <returns>
         /// Dictionary mapping the project's target framework aliases to their respective top-level package and project references.
         /// </returns>
         private static Dictionary<string, List<string>> GetTopLevelPackageAndProjectReferences(
             LockFile assetsFile,
-            List<string> userInputFrameworks,
-            string projectDirectoryPath)
+            List<string> userInputFrameworks)
         {
             var topLevelReferences = new Dictionary<string, List<string>>();
 
@@ -242,7 +240,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
 
             foreach (var library in projectLibraries)
             {
-                projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
+                projectLibraryPathToName.Add(Path.GetFullPath(library.Path, assetsFile.PackageSpec.BaseDirectory), library.Name);
             }
 
             // get all top-level references for each target alias
