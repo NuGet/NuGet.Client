@@ -388,49 +388,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task RestoreAsync_WithProgressReporter_WithIncrementalRestore_ProgressIsReportedForDirtyFilesOnly()
         {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName: "projectName", rootPath: pathContext.SolutionRoot);
-            var preConditionProgressReporter = new Mock<IRestoreProgressReporter>();
-
-            var assetsFilePath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
-            var propsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.PropsExtension);
-            var targetsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.TargetsExtension);
-            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-
-            // Pre-conditions
-            IReadOnlyList<RestoreSummary> preConditionResult = await DependencyGraphRestoreUtility.RestoreAsync(
-                ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec),
-                new DependencyGraphCacheContext(),
-                new RestoreCommandProvidersCache(),
-                cacheContextModifier: _ => { },
-                sources: new SourceRepository[0],
-                parentId: Guid.Empty,
-                forceRestore: false,
-                isRestoreOriginalAction: true,
-                additionalMessages: null,
-                progressReporter: preConditionProgressReporter.Object,
-                new TestLogger(),
-                CancellationToken.None);
-
-            // Assert pre-conditions
-            preConditionResult.Should().HaveCount(1);
-            preConditionResult[0].Success.Should().BeTrue();
-
-            IReadOnlyList<string> preConditionExpectedList = new string[] { assetsFilePath, propsFile, targetsFile };
-
-            preConditionProgressReporter.Verify(r =>
-                r.StartProjectUpdate(
-                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
-                    Times.Once);
-
-            preConditionProgressReporter.Verify(r =>
-                r.EndProjectUpdate(
-                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
-                    Times.Once);
+            (SimpleTestPathContext pathContext, PackageSpec packageSpec, string assetsFilePath, string propsFile, string targetsFile, StringComparer pathComparer) = await SetupProjectAndRunRestore();
 
             // Arrange again
             var progressReporter = new Mock<IRestoreProgressReporter>();
@@ -473,49 +431,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task RestoreAsync_WithProgressReporter_WithIncrementalRestoreAndPackageWithProps_ProgressIsReportedForDirtyFilesOnly()
         {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName: "projectName", rootPath: pathContext.SolutionRoot);
-            var preConditionProgressReporter = new Mock<IRestoreProgressReporter>();
-
-            var assetsFilePath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
-            var propsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.PropsExtension);
-            var targetsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.TargetsExtension);
-            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-
-            // Pre-conditions
-            IReadOnlyList<RestoreSummary> preConditionResult = await DependencyGraphRestoreUtility.RestoreAsync(
-                ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec),
-                new DependencyGraphCacheContext(),
-                new RestoreCommandProvidersCache(),
-                cacheContextModifier: _ => { },
-                sources: new SourceRepository[0],
-                parentId: Guid.Empty,
-                forceRestore: false,
-                isRestoreOriginalAction: true,
-                additionalMessages: null,
-                progressReporter: preConditionProgressReporter.Object,
-                new TestLogger(),
-                CancellationToken.None);
-
-            // Assert pre-conditions
-            preConditionResult.Should().HaveCount(1);
-            preConditionResult[0].Success.Should().BeTrue();
-
-            IReadOnlyList<string> preConditionExpectedList = new string[] { assetsFilePath, propsFile, targetsFile };
-
-            preConditionProgressReporter.Verify(r =>
-                r.StartProjectUpdate(
-                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
-                    Times.Once);
-
-            preConditionProgressReporter.Verify(r =>
-                r.EndProjectUpdate(
-                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
-                    Times.Once);
+            (SimpleTestPathContext pathContext, PackageSpec packageSpec, string assetsFilePath, string propsFile, string targetsFile, StringComparer pathComparer) = await SetupProjectAndRunRestore();
 
             // Arrange again
             var progressReporter = new Mock<IRestoreProgressReporter>();
@@ -557,49 +473,7 @@ namespace NuGet.PackageManagement.Test
         [Fact]
         public async Task RestoreAsync_WithProgressReporter_WithIncrementalRestoreAndPackageWithTargets_ProgressIsReportedForDirtyFilesOnly()
         {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
-            var packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName: "projectName", rootPath: pathContext.SolutionRoot);
-            var preConditionProgressReporter = new Mock<IRestoreProgressReporter>();
-
-            var assetsFilePath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
-            var propsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.PropsExtension);
-            var targetsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.TargetsExtension);
-            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-
-            // Pre-conditions
-            IReadOnlyList<RestoreSummary> preConditionResult = await DependencyGraphRestoreUtility.RestoreAsync(
-                ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec),
-                new DependencyGraphCacheContext(),
-                new RestoreCommandProvidersCache(),
-                cacheContextModifier: _ => { },
-                sources: new SourceRepository[0],
-                parentId: Guid.Empty,
-                forceRestore: false,
-                isRestoreOriginalAction: true,
-                additionalMessages: null,
-                progressReporter: preConditionProgressReporter.Object,
-                new TestLogger(),
-                CancellationToken.None);
-
-            // Assert pre-conditions
-            preConditionResult.Should().HaveCount(1);
-            preConditionResult[0].Success.Should().BeTrue();
-
-            IReadOnlyList<string> preConditionExpectedList = new string[] { assetsFilePath, propsFile, targetsFile };
-
-            preConditionProgressReporter.Verify(r =>
-                r.StartProjectUpdate(
-                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
-                    Times.Once);
-
-            preConditionProgressReporter.Verify(r =>
-                r.EndProjectUpdate(
-                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
-                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
-                    Times.Once);
+            (SimpleTestPathContext pathContext, PackageSpec packageSpec, string assetsFilePath, string propsFile, string targetsFile, StringComparer pathComparer) = await SetupProjectAndRunRestore();
 
             // Arrange again
             var progressReporter = new Mock<IRestoreProgressReporter>();
@@ -637,6 +511,55 @@ namespace NuGet.PackageManagement.Test
                     It.Is<string>(e => e.Equals(packageSpec.FilePath)),
                     It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(expectedFileList, (f) => f, pathComparer, pathComparer))),
                     Times.Once);
+        }
+
+        private static async Task<(SimpleTestPathContext, PackageSpec, string, string, string, StringComparer)> SetupProjectAndRunRestore()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            var packageSpec = ProjectTestHelpers.GetPackageSpec(settings, projectName: "projectName", rootPath: pathContext.SolutionRoot);
+            var preConditionProgressReporter = new Mock<IRestoreProgressReporter>();
+
+            string assetsFilePath = Path.Combine(packageSpec.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName);
+            var propsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.PropsExtension);
+            var targetsFile = BuildAssetsUtils.GetMSBuildFilePath(packageSpec, BuildAssetsUtils.TargetsExtension);
+            var pathComparer = PathUtility.GetStringComparerBasedOnOS();
+
+            // Act
+            IReadOnlyList<RestoreSummary> preConditionResult = await DependencyGraphRestoreUtility.RestoreAsync(
+                ProjectTestHelpers.GetDGSpecForAllProjects(packageSpec),
+                new DependencyGraphCacheContext(),
+                new RestoreCommandProvidersCache(),
+                cacheContextModifier: _ => { },
+                sources: new SourceRepository[0],
+                parentId: Guid.Empty,
+                forceRestore: false,
+                isRestoreOriginalAction: true,
+                additionalMessages: null,
+                progressReporter: preConditionProgressReporter.Object,
+                new TestLogger(),
+                CancellationToken.None);
+
+            // Assert pre-conditions
+            preConditionResult.Should().HaveCount(1);
+            preConditionResult[0].Success.Should().BeTrue();
+
+            IReadOnlyList<string> preConditionExpectedList = new string[] { assetsFilePath, propsFile, targetsFile };
+
+            preConditionProgressReporter.Verify(r =>
+                r.StartProjectUpdate(
+                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
+                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
+                    Times.Once);
+
+            preConditionProgressReporter.Verify(r =>
+                r.EndProjectUpdate(
+                    It.Is<string>(e => e.Equals(packageSpec.FilePath)),
+                    It.Is<IReadOnlyList<string>>(e => e.OrderedEquals(preConditionExpectedList, (f) => f, pathComparer, pathComparer))),
+                    Times.Once);
+
+            return (pathContext, packageSpec, assetsFilePath, propsFile, targetsFile, pathComparer);
         }
 
 #if NETFRAMEWORK
