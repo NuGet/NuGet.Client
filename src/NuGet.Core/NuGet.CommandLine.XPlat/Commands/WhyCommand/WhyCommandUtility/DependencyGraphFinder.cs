@@ -162,14 +162,9 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 }
             }
 
-            if (dependencyNodes.ContainsKey(topLevelPackage))
-            {
-                return dependencyNodes[topLevelPackage];
-            }
-            else
-            {
-                return null;
-            }
+            return dependencyNodes.ContainsKey(topLevelPackage)
+                ? dependencyNodes[topLevelPackage]
+                : null;
         }
 
         /// <summary>
