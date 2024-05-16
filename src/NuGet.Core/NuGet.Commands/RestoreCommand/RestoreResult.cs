@@ -3,17 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.Tracing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -157,6 +154,11 @@ namespace NuGet.Commands
         ///  the file will not be written to disk.</remarks>
         public virtual async Task CommitAsync(ILogger log, CancellationToken token)
         {
+            if(log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
 
@@ -194,7 +196,7 @@ namespace NuGet.Commands
             if (NuGetEventSource.IsEnabled) TraceEvents.WriteDgSpecFileStop(_dependencyGraphSpecFilePath);
         }
 
-        private async Task CommitAssetsFileAsync(
+        private static async Task CommitAssetsFileAsync(
             LockFileFormat lockFileFormat,
             IRestoreResult result,
             ILogger log,
