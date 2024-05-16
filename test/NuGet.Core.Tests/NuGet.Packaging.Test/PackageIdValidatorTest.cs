@@ -19,6 +19,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void ValidatePackageId_OnGB18030Characters_Succeeds()
+        {
+            // Arrange
+            string packageId = "G龦鿃C啊阿鼾齄D2丂丄狚狛D3狜狝﨨﨩D4ⅫㄨㄩD1ˊˋ〇D5U1U2U3㐀㐁䶴䶵ABCDEFKS";
+
+            // Act & Assert
+            try
+            {
+                PackageIdValidator.ValidatePackageId(packageId);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail(ex.Message);
+            }
+        }
+
+        [Fact]
         public void EmptyIsNotValid()
         {
             // Arrange
