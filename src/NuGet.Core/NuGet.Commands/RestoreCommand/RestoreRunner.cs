@@ -269,6 +269,7 @@ namespace NuGet.Commands
             var log = summaryRequest.Request.Log;
 
             bool isNoOp = result is NoOpRestoreResult;
+
             IReadOnlyList<string> filesToBeUpdated = result.GetDirtyFiles();
             try
             {
@@ -326,19 +327,6 @@ namespace NuGet.Commands
                 summaryRequest.ConfigFiles,
                 summaryRequest.Sources,
                 messages);
-
-            static IReadOnlyList<string> GetFilesToBeUpdated(RestoreResultPair result)
-            {
-                List<string> filesToBeUpdated = new(3); // We know that we have 3 files.
-                filesToBeUpdated.Add(result.Result.LockFilePath);
-
-                foreach (MSBuildOutputFile msbuildOutputFile in result.Result.MSBuildOutputFiles)
-                {
-                    filesToBeUpdated.Add(msbuildOutputFile.Path);
-                }
-
-                return filesToBeUpdated.AsReadOnly();
-            }
         }
 
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)

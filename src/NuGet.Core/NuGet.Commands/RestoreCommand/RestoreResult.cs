@@ -317,13 +317,13 @@ namespace NuGet.Commands
             }
         }
 
-        internal IReadOnlyList<string> GetDirtyFiles()
+        internal virtual IReadOnlyList<string> GetDirtyFiles()
         {
             List<string> dirtyFiles = null;
 
             if (_dirtyMSBuildFiles.Value.Count > 0)
             {
-                var paths = _dirtyMSBuildFiles.Value.Select(e => e.Path);
+                dirtyFiles = _dirtyMSBuildFiles.Value.Select(e => e.Path).ToList();
             }
             if (_isAssetsFileDirty.Value)
             {
