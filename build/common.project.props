@@ -124,15 +124,12 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
+    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);EnableGenerateDocumentationFile</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
     <VsixPublishDestination>$(ArtifactRoot)$(VsixOutputDirName)\</VsixPublishDestination>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnforceCodeStyleInBuild)' == ''">
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <!-- Set the output location for all non-test projects -->
