@@ -124,7 +124,7 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
-    <WarningsNotAsErrors>EnableGenerateDocumentationFile</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);EnableGenerateDocumentationFile</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
