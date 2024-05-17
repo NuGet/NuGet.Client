@@ -131,7 +131,7 @@
     <VsixPublishDestination>$(ArtifactRoot)$(VsixOutputDirName)\</VsixPublishDestination>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(EnforceCodeStyleInBuild)' != 'false'">
+  <PropertyGroup Condition="'$(EnforceCodeStyleInBuild)' == ''">
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
