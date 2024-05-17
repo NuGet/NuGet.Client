@@ -70,7 +70,7 @@
 
   <Target Name="_GetResourceArtifacts" Condition="'$(TargetFramework)' != ''">
     <ItemGroup>
-      <ResourceArtifacts Include="$(OutputPath)\publish\**\NuGet*.resources.dll">
+      <ResourceArtifacts Include="$(OutputPath)\**\NuGet*.resources.dll">
         <StrongName>$(StrongNameCert)</StrongName>
         <Authenticode>Microsoft400</Authenticode>
       </ResourceArtifacts>
@@ -103,7 +103,7 @@
       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(OutputPath)\publish\**\NuGet*.resources.dll">
+      <TfmSpecificPackageFile Include="$(OutputPath)\**\NuGet*.resources.dll">
         <PackagePath>$(PackagePathDir)</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(OutputPath)\publish\NuGet*.dll">
