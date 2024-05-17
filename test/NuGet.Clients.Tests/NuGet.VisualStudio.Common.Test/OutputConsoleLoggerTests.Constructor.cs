@@ -9,9 +9,10 @@ using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test
 {
+
     public partial class OutputConsoleLoggerTests
     {
-        public class Constructor : OutputConsoleLoggerTests
+        public class Constructor : OutputConsoleLoggerTests, IClassFixture<GlobalServiceProvider>
         {
             public Constructor(GlobalServiceProvider sp)
                 : base(sp)

@@ -11,7 +11,7 @@ namespace NuGet.VisualStudio.Common.Test
 {
     public partial class OutputConsoleLoggerTests
     {
-        public class Start : OutputConsoleLoggerTests
+        public class Start : OutputConsoleLoggerTests, IClassFixture<GlobalServiceProvider>
         {
             public Start(GlobalServiceProvider sp)
                 : base(sp)

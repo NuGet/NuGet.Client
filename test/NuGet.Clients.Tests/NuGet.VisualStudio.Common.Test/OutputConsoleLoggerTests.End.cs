@@ -9,7 +9,7 @@ namespace NuGet.VisualStudio.Common.Test
 {
     public partial class OutputConsoleLoggerTests
     {
-        public class End : OutputConsoleLoggerTests
+        public class End : OutputConsoleLoggerTests, IClassFixture<GlobalServiceProvider>
         {
             public End(GlobalServiceProvider sp)
                 : base(sp)
