@@ -13,13 +13,13 @@ namespace NuGet.SolutionRestoreManager
     public interface IVsReferenceItem2
     {
         /// <summary>
-        /// Unique reference item name.
+        /// The item's name. In MSBuild, this is the Identifier metadata.
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// Collection of reference properties.
+        /// Collection of item metadata.
         /// </summary>
-        IReadOnlyDictionary<string, string?>? Properties { get; }
+        IReadOnlyDictionary<string, string?>? Metadata { get; }
     }
 }

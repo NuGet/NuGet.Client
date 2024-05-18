@@ -10,12 +10,12 @@ namespace NuGet.SolutionRestoreManager.Test
     {
         public string Name { get; }
 
-        public IReadOnlyDictionary<string, string> Properties { get; }
+        public IReadOnlyDictionary<string, string> Metadata { get; }
 
-        public VsReferenceItem2(string name, IReadOnlyDictionary<string, string> properties)
+        public VsReferenceItem2(string name, IReadOnlyDictionary<string, string> metadata)
         {
             Name = !string.IsNullOrEmpty(name) ? name : throw new ArgumentException("Argument cannot be null or empty", nameof(name));
-            Properties = properties ?? throw new ArgumentNullException(nameof(properties));
+            Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         }
     }
 }

@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -415,12 +414,13 @@ namespace NuGet.SolutionRestoreManager
 
         private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem2 item, bool cpvmEnabled)
         {
-            if (!TryGetVersionRange(item, "Version", out VersionRange? versionRange))
+            VersionRange? versionRange = ParseVersionRange(item, "Version");
+            if (versionRange == null && !cpvmEnabled)
             {
-                versionRange = cpvmEnabled ? null : VersionRange.All;
+                versionRange = VersionRange.All;
             }
 
-            TryGetVersionRange(item, "VersionOverride", out VersionRange? versionOverrideRange);
+            VersionRange? versionOverrideRange = ParseVersionRange(item, "VersionOverride");
 
             // Get warning suppressions
             string? noWarnString = GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn);
@@ -514,17 +514,17 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static bool TryGetVersionRange(IVsReferenceItem2 item, string propertyName, [NotNullWhen(true)] out VersionRange? versionRange)
+        private static VersionRange? ParseVersionRange(IVsReferenceItem2 item, string propertyName)
         {
-            versionRange = null;
             string? versionRangeItemValue = GetPropertyValueOrNull(item, propertyName);
 
             if (versionRangeItemValue != null)
             {
-                versionRange = VersionRange.Parse(versionRangeItemValue);
+                VersionRange versionRange = VersionRange.Parse(versionRangeItemValue);
+                return versionRange;
             }
 
-            return versionRange != null;
+            return null;
         }
 
         private static IEnumerable<VersionRange> GetVersionRangeList(IVsReferenceItem2 item)
@@ -552,11 +552,8 @@ namespace NuGet.SolutionRestoreManager
 
         private static VersionRange GetVersionRange(IVsReferenceItem2 item)
         {
-            if (TryGetVersionRange(item, "Version", out VersionRange? versionRange))
-            {
-                return versionRange;
-            }
-            return VersionRange.All;
+            VersionRange versionRange = ParseVersionRange(item, "Version") ?? VersionRange.All;
+            return versionRange;
         }
 
         /// <summary>
@@ -585,7 +582,7 @@ namespace NuGet.SolutionRestoreManager
         {
             try
             {
-                if (item.Properties?.TryGetValue(propertyName, out var value) ?? false)
+                if (item.Metadata?.TryGetValue(propertyName, out var value) ?? false)
                 {
                     return MSBuildStringUtility.IsTrue(value);
                 }
@@ -605,7 +602,7 @@ namespace NuGet.SolutionRestoreManager
         {
             try
             {
-                if (item.Properties?.TryGetValue(propertyName, out var value) ?? false)
+                if (item.Metadata?.TryGetValue(propertyName, out var value) ?? false)
                 {
                     return MSBuildStringUtility.TrimAndGetNullForEmpty(value);
                 }

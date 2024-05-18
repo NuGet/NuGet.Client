@@ -11,7 +11,7 @@ namespace NuGet.SolutionRestoreManager
 {
     internal record ProjectRestoreInfo3Adapter : IVsProjectRestoreInfo3
     {
-        public required string BaseIntermediatePath { get; init; }
+        public required string MsBuildProjectExtensionsPath { get; init; }
 
         public string? OriginalTargetFrameworks { get; init; }
 
@@ -23,9 +23,15 @@ namespace NuGet.SolutionRestoreManager
         {
             if (projectRestoreInfo is null) { throw new ArgumentNullException(nameof(projectRestoreInfo)); }
 
+            if (string.IsNullOrEmpty(projectRestoreInfo.BaseIntermediatePath))
+            {
+                throw new ArgumentException(message: "BaseIntermediatePath must have a non-empty value",
+                    paramName: nameof(projectRestoreInfo));
+            }
+
             return new ProjectRestoreInfo3Adapter
             {
-                BaseIntermediatePath = projectRestoreInfo.BaseIntermediatePath,
+                MsBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
                 TargetFrameworks = GetTargetFrameworksAdapter(projectRestoreInfo.TargetFrameworks),
                 ToolReferences = projectRestoreInfo.ToolReferences is null ? null : GetToolReferencesAdapter(projectRestoreInfo.ToolReferences)
@@ -38,7 +44,7 @@ namespace NuGet.SolutionRestoreManager
 
             return new ProjectRestoreInfo3Adapter
             {
-                BaseIntermediatePath = projectRestoreInfo.BaseIntermediatePath,
+                MsBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
                 TargetFrameworks = GetTargetFrameworksAdapter(projectRestoreInfo.TargetFrameworks),
                 ToolReferences = GetToolReferencesAdapter(projectRestoreInfo.ToolReferences)
@@ -153,13 +159,13 @@ namespace NuGet.SolutionRestoreManager
                     if (targetFrameworkInfo2.PackageDownloads?.Count > 0)
                     {
                         IReadOnlyList<IVsReferenceItem2> packageDownloads = ToReferenceItem2ReadOnlyList(targetFrameworkInfo2.PackageDownloads);
-                        result["PackageDownload"] = packageDownloads;
+                        result[ProjectItems.PackageDownload] = packageDownloads;
                     }
 
                     if (targetFrameworkInfo2.FrameworkReferences?.Count > 0)
                     {
                         IReadOnlyList<IVsReferenceItem2> frameworkReferences = ToReferenceItem2ReadOnlyList(targetFrameworkInfo2.FrameworkReferences);
-                        result["FrameworkReference"] = frameworkReferences;
+                        result[ProjectItems.FrameworkReference] = frameworkReferences;
                     }
                 }
 
@@ -167,7 +173,7 @@ namespace NuGet.SolutionRestoreManager
                     && targetFrameworkInfo3.CentralPackageVersions?.Count > 0)
                 {
                     IReadOnlyList<IVsReferenceItem2> centralPackageVersions = ToReferenceItem2ReadOnlyList(targetFrameworkInfo3.CentralPackageVersions);
-                    result["PackageVersion"] = centralPackageVersions;
+                    result[ProjectItems.PackageVersion] = centralPackageVersions;
                 }
 
                 return result;
@@ -198,12 +204,12 @@ namespace NuGet.SolutionRestoreManager
         {
             public string Name { get; }
 
-            public IReadOnlyDictionary<string, string?>? Properties { get; }
+            public IReadOnlyDictionary<string, string?>? Metadata { get; }
 
             public ReferenceItem2Adapter(IVsReferenceItem referenceItem)
             {
                 Name = referenceItem.Name;
-                Properties = ToPropertiesDictionary(referenceItem.Properties);
+                Metadata = ToPropertiesDictionary(referenceItem.Properties);
             }
         }
     }

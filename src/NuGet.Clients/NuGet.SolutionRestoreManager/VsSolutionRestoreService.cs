@@ -218,9 +218,9 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(projectRestoreInfo));
             }
 
-            if (string.IsNullOrEmpty(projectRestoreInfo.BaseIntermediatePath))
+            if (string.IsNullOrEmpty(projectRestoreInfo.MsBuildProjectExtensionsPath))
             {
-                throw new ArgumentException(message: $"BaseIntermediatePath must have a value",
+                throw new ArgumentException(message: $"MsBuildProjectExtensionsPath must have a value",
                     paramName: nameof(projectRestoreInfo));
             }
 
@@ -241,12 +241,6 @@ namespace NuGet.SolutionRestoreManager
                 if (targetFramework.Properties is null)
                 {
                     throw new ArgumentException(message: $"Target framework at index {i} must provide project properties",
-                        paramName: nameof(projectRestoreInfo));
-                }
-
-                if (string.IsNullOrEmpty(targetFramework.TargetFrameworkMoniker))
-                {
-                    throw new ArgumentException(message: $"Target framework at index {i} must provide TargetFrameworkMoniker",
                         paramName: nameof(projectRestoreInfo));
                 }
             }
@@ -276,7 +270,7 @@ namespace NuGet.SolutionRestoreManager
                     };
 
                     var projectDirectory = Path.GetDirectoryName(projectUniqueName);
-                    string projectIntermediatePath = projectRestoreInfo.BaseIntermediatePath;
+                    string projectIntermediatePath = projectRestoreInfo.MsBuildProjectExtensionsPath;
                     var dgSpecOutputPath = GetProjectOutputPath(projectDirectory, projectIntermediatePath);
                     dgSpec = CreateMinimalDependencyGraphSpec(projectUniqueName, dgSpecOutputPath);
                 }
@@ -352,7 +346,7 @@ namespace NuGet.SolutionRestoreManager
                 crossTargeting = true;
             }
 
-            var outputPath = GetProjectOutputPath(projectDirectory, projectRestoreInfo.BaseIntermediatePath);
+            var outputPath = GetProjectOutputPath(projectDirectory, projectRestoreInfo.MsBuildProjectExtensionsPath);
 
             var projectName = VSNominationUtilities.GetPackageId(projectNames, targetFrameworks);
 

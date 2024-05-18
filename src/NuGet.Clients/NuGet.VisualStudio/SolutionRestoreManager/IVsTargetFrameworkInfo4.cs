@@ -7,16 +7,15 @@ using System.Collections.Generic;
 
 namespace NuGet.SolutionRestoreManager
 {
+    /// <summary>
+    /// A type representing all project inputs (items and properties) for the given target framework.
+    /// It is implemented by project systems sending nominations to NuGet.
+    /// </summary>
     public interface IVsTargetFrameworkInfo4
     {
         /// <summary>
-        /// Target framework name in full format.
-        /// </summary>
-        string TargetFrameworkMoniker { get; }
-
-        /// <summary>
-        /// Collection of item types.
-        /// e.g. PackageReference
+        /// Collection of item types. The dictionary key is the MSBuild item type (for example, PackageReference), and
+        /// the value is the list of items of that item type.
         /// </summary>
         IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>>? Items { get; }
 

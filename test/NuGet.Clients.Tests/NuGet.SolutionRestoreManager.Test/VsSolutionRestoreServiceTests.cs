@@ -1982,7 +1982,6 @@ namespace NuGet.SolutionRestoreManager.Test
             projectProperties["ManagePackageVersionsCentrally"] = "true";
 
             var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
-                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>()
                 {
                     [ProjectItems.PackageReference] = new[] { new VsReferenceItem2("foo", EmptyProperties) },
@@ -1998,7 +1997,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2026,7 +2025,6 @@ namespace NuGet.SolutionRestoreManager.Test
             projectProperties["ManagePackageVersionsCentrally"] = "true";
 
             var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
-                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [ProjectItems.PackageReference] = [new VsReferenceItem2("foo", EmptyProperties)],
@@ -2036,7 +2034,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2073,7 +2071,6 @@ namespace NuGet.SolutionRestoreManager.Test
             }
 
             var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
-                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [ProjectItems.PackageReference] = [ new VsReferenceItem2("foo", packageReferenceProperties) ],
@@ -2084,7 +2081,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString()
             };
@@ -2118,7 +2115,6 @@ namespace NuGet.SolutionRestoreManager.Test
             projectProperties[ProjectBuildProperties.CentralPackageVersionOverrideEnabled] = isCentralPackageVersionOverrideEnabled;
 
             var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
-                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [ProjectItems.PackageReference] = [ new VsReferenceItem2("foo", EmptyProperties) ],
@@ -2134,7 +2130,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2180,7 +2176,6 @@ namespace NuGet.SolutionRestoreManager.Test
             projectProperties[ProjectBuildProperties.CentralPackageTransitivePinningEnabled] = CentralPackageTransitivePinningEnabled;
 
             var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
-                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
                 new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>()
                 {
                     [ProjectItems.PackageReference] = [ new VsReferenceItem2("foo", EmptyProperties) ]
@@ -2190,7 +2185,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2228,7 +2223,6 @@ namespace NuGet.SolutionRestoreManager.Test
             projectProperties[ProjectBuildProperties.CentralPackageFloatingVersionsEnabled] = centralPackageFloatingVersionsEnabled;
 
             var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
-                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [ProjectItems.PackageReference] = [ new VsReferenceItem2("foo", EmptyProperties)]
@@ -2238,7 +2232,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2315,19 +2309,17 @@ namespace NuGet.SolutionRestoreManager.Test
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
                 new VsTargetFrameworkInfo4(
-                    targetFrameworkMoniker: "tfm1",
                     items: emptyItems,
                     properties:ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20, "tfm1")),
                 new VsTargetFrameworkInfo4(
-                    targetFrameworkMoniker: "tfm1",
                     items: emptyItems,
                     properties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard21, "tfm2"))
             };
-            var originalTargetFrameworksString = string.Join(";", targetFrameworks.Select(tf => tf.TargetFrameworkMoniker));
+            var originalTargetFrameworksString = "tfm1;tfm2";
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = originalTargetFrameworksString,
             };
@@ -2391,15 +2383,14 @@ namespace NuGet.SolutionRestoreManager.Test
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
                 new VsTargetFrameworkInfo4(
-                    targetFrameworkMoniker: "tfm1",
                     items: emptyItems,
                     properties: ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(managedFramework, "tfm1", clrSupport))
             };
-            var originalTargetFrameworksString = string.Join(";", targetFrameworks.Select(tf => tf.TargetFrameworkMoniker));
+            var originalTargetFrameworksString = "tfm1";
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = originalTargetFrameworksString,
             };
@@ -2439,7 +2430,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
-                new VsTargetFrameworkInfo4("net5.0",
+                new VsTargetFrameworkInfo4(
                 items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                 {
                     [ProjectItems.ProjectReference] = [
@@ -2452,7 +2443,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = string.Empty
             };
@@ -2479,7 +2470,6 @@ namespace NuGet.SolutionRestoreManager.Test
             var targetFrameworks = new VsTargetFrameworkInfo4[]
             {
                 new VsTargetFrameworkInfo4(
-                    targetFrameworkMoniker: "net5.0",
                     items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase)
                     {
                         [ProjectItems.PackageDownload] = [ new VsReferenceItem2(packageName, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["Version"] = null }) ]
@@ -2491,7 +2481,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                BaseIntermediatePath = string.Empty,
+                MsBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = string.Empty
             };
@@ -2764,7 +2754,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
         private record VsProjectRestoreInfo3 : IVsProjectRestoreInfo3
         {
-            public required string BaseIntermediatePath { get; init; }
+            public required string MsBuildProjectExtensionsPath { get; init; }
 
             public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 

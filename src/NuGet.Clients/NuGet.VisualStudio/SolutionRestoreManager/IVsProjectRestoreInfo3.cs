@@ -13,23 +13,26 @@ namespace NuGet.SolutionRestoreManager
     public interface IVsProjectRestoreInfo3
     {
         /// <summary>
-        /// The MSBuildProjectExtensionsPath of the project (originally BaseIntermediateOutputPath was used,
-        /// but rather than create a new interface, we changed the meaning of this property).
+        /// The MSBuildProjectExtensionsPath of the project, where NuGet will write outputs, such as the assets file.
         /// </summary>
-        string BaseIntermediatePath { get; }
+        string MsBuildProjectExtensionsPath { get; }
 
         /// <summary>
-        /// Target frameworks metadata.
+        /// A collection of all the target frameworks that the project defines.
         /// </summary>
         IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; }
 
         /// <summary>
-        /// Collection of tool references.
+        /// Collection of DotnetCliToolReference items.
         /// </summary>
+        /// <remarks>
+        /// This was a feature added to .NET Core 1.0 and removed in .NET Core 3.0. But VS and the .NET SDK still support building these projects.
+        /// </remarks>
         IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; }
 
         /// <summary>
         /// Original raw value of TargetFrameworks property as set in a project file.
+        /// Should be null if the project uses singular TargetFramework rather than plural TargetFrameworks.
         /// </summary>
         string? OriginalTargetFrameworks { get; }
     }
