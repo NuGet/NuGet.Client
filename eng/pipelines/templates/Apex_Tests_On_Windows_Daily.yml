@@ -12,6 +12,8 @@ parameters:
   - name: isOfficialBuild
     type: boolean
     default: false
+  - name: testMachineImageName
+    type: string
 
 stages:
   - template: stages\visual-studio\build-to-build-upgrade\single-runsettings.yml@DartLabTemplates
@@ -44,6 +46,7 @@ stages:
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
+      testMachineImageName: ${{parameters.testMachineImageName}}
       preTestMachineConfigurationStepList: 
         - download: ComponentBuildUnderTest
           artifact: MicroBuildOutputs
