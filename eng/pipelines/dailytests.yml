@@ -33,6 +33,10 @@ parameters:
   type: boolean
   default: false
 
+- name: testMachineImageName
+  type: string
+  default: Windows-11-Enterprise-23H2-WinBuildDevFiles
+
 variables:
   DOTNET_NOLOGO: 1
   Codeql.Enabled: ${{ parameters.isOfficialBuild }}
@@ -46,3 +50,4 @@ stages:
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
     testExecutionJobTimeoutInMinutes: 150
     testMachineCleanUpStrategy: ${{parameters.ApexAgentCleanup}}
+    testMachineImageName: ${{parameters.testMachineImageName}}
