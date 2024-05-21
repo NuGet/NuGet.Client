@@ -10,7 +10,7 @@ namespace NuGet.VisualStudio.Common.Test
 {
     public partial class OutputConsoleLoggerTests
     {
-        public class ImportingConstructor : OutputConsoleLoggerTests, IClassFixture<GlobalServiceProvider>
+        public class ImportingConstructor : OutputConsoleLoggerTests
         {
             public ImportingConstructor(GlobalServiceProvider sp)
                 : base(sp)

@@ -12,7 +12,7 @@ namespace NuGet.VisualStudio.Common.Test
 {
     public partial class OutputConsoleLoggerTests
     {
-        public class ReportError : LogAndReportErrorTests, IClassFixture<GlobalServiceProvider>
+        public class ReportError : LogAndReportErrorTests
         {
             public ReportError(GlobalServiceProvider sp)
                 : base(sp)

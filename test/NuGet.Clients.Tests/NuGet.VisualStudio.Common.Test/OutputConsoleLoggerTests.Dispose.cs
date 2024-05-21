@@ -9,7 +9,7 @@ namespace NuGet.VisualStudio.Common.Test
 {
     public partial class OutputConsoleLoggerTests
     {
-        public class Dispose : OutputConsoleLoggerTests, IClassFixture<GlobalServiceProvider>
+        public class Dispose : OutputConsoleLoggerTests
         {
             public Dispose(GlobalServiceProvider sp)
                 : base(sp)
