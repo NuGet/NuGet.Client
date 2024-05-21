@@ -218,7 +218,7 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(projectRestoreInfo));
             }
 
-            if (string.IsNullOrEmpty(projectRestoreInfo.MsBuildProjectExtensionsPath))
+            if (string.IsNullOrEmpty(projectRestoreInfo.MSBuildProjectExtensionsPath))
             {
                 throw new ArgumentException(message: $"MsBuildProjectExtensionsPath must have a value",
                     paramName: nameof(projectRestoreInfo));
@@ -270,7 +270,7 @@ namespace NuGet.SolutionRestoreManager
                     };
 
                     var projectDirectory = Path.GetDirectoryName(projectUniqueName);
-                    string projectIntermediatePath = projectRestoreInfo.MsBuildProjectExtensionsPath;
+                    string projectIntermediatePath = projectRestoreInfo.MSBuildProjectExtensionsPath;
                     var dgSpecOutputPath = GetProjectOutputPath(projectDirectory, projectIntermediatePath);
                     dgSpec = CreateMinimalDependencyGraphSpec(projectUniqueName, dgSpecOutputPath);
                 }
@@ -346,7 +346,7 @@ namespace NuGet.SolutionRestoreManager
                 crossTargeting = true;
             }
 
-            var outputPath = GetProjectOutputPath(projectDirectory, projectRestoreInfo.MsBuildProjectExtensionsPath);
+            var outputPath = GetProjectOutputPath(projectDirectory, projectRestoreInfo.MSBuildProjectExtensionsPath);
 
             var projectName = VSNominationUtilities.GetPackageId(projectNames, targetFrameworks);
 

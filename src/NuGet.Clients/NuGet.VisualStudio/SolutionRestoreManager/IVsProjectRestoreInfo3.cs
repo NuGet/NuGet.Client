@@ -15,7 +15,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// The MSBuildProjectExtensionsPath of the project, where NuGet will write outputs, such as the assets file.
         /// </summary>
-        string MsBuildProjectExtensionsPath { get; }
+        string MSBuildProjectExtensionsPath { get; }
 
         /// <summary>
         /// A collection of all the target frameworks that the project defines.

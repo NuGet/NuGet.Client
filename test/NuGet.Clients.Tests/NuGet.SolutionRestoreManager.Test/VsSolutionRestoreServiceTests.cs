@@ -1997,7 +1997,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2034,7 +2034,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2081,7 +2081,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString()
             };
@@ -2130,7 +2130,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2185,7 +2185,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2232,7 +2232,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
             };
@@ -2319,7 +2319,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = originalTargetFrameworksString,
             };
@@ -2390,7 +2390,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = originalTargetFrameworksString,
             };
@@ -2443,7 +2443,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = string.Empty
             };
@@ -2481,7 +2481,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var pri = new VsProjectRestoreInfo3
             {
-                MsBuildProjectExtensionsPath = string.Empty,
+                MSBuildProjectExtensionsPath = string.Empty,
                 TargetFrameworks = targetFrameworks,
                 OriginalTargetFrameworks = string.Empty
             };
@@ -2754,7 +2754,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
         private record VsProjectRestoreInfo3 : IVsProjectRestoreInfo3
         {
-            public required string MsBuildProjectExtensionsPath { get; init; }
+            public required string MSBuildProjectExtensionsPath { get; init; }
 
             public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 

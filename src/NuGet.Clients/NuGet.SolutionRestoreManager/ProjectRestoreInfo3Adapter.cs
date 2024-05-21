@@ -24,7 +24,7 @@ namespace NuGet.SolutionRestoreManager
 
             return new VsProjectRestoreInfo3Adapter
             {
-                MsBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
+                MSBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
                 TargetFrameworks = ToTargetFrameworkInfoList(projectRestoreInfo.TargetFrameworks),
                 ToolReferences = ToReferenceItemList(projectRestoreInfo.ToolReferences)
@@ -43,7 +43,7 @@ namespace NuGet.SolutionRestoreManager
 
             return new VsProjectRestoreInfo3Adapter
             {
-                MsBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
+                MSBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
                 TargetFrameworks = ToTargetFrameworkInfoList(projectRestoreInfo.TargetFrameworks),
                 ToolReferences = ToReferenceItemList(projectRestoreInfo.ToolReferences)
@@ -213,7 +213,7 @@ namespace NuGet.SolutionRestoreManager
 
         private record VsProjectRestoreInfo3Adapter : IVsProjectRestoreInfo3
         {
-            public required string MsBuildProjectExtensionsPath { get; init; }
+            public required string MSBuildProjectExtensionsPath { get; init; }
 
             public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 
