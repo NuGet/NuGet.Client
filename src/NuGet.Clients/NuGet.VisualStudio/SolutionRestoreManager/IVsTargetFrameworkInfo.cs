@@ -18,6 +18,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Target framework name in full format.
         /// </summary>
+        /// <remarks>No longer used. TargetFrameworkMoniker is now retrieved from the Properties property.</remarks>
         string TargetFrameworkMoniker { get; }
 
         /// <summary>
@@ -34,6 +35,6 @@ namespace NuGet.SolutionRestoreManager
         /// Collection of project level properties evaluated per each Target Framework,
         /// e.g. PackageTargetFallback.
         /// </summary>
-        IVsProjectProperties? Properties { get; }
+        IVsProjectProperties Properties { get; }
     }
 }

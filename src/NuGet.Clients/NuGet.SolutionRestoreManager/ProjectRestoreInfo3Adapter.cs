@@ -5,21 +5,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using NuGet.ProjectManagement;
 
 namespace NuGet.SolutionRestoreManager
 {
-    internal record ProjectRestoreInfo3Adapter : IVsProjectRestoreInfo3
+    internal static class ProjectRestoreInfo3Adapter
     {
-        public required string MsBuildProjectExtensionsPath { get; init; }
-
-        public string? OriginalTargetFrameworks { get; init; }
-
-        public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
-
-        public IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; init; }
-
-        public static ProjectRestoreInfo3Adapter Create(IVsProjectRestoreInfo projectRestoreInfo)
+        public static IVsProjectRestoreInfo3 Create(IVsProjectRestoreInfo projectRestoreInfo)
         {
             if (projectRestoreInfo is null) { throw new ArgumentNullException(nameof(projectRestoreInfo)); }
 
@@ -29,77 +22,128 @@ namespace NuGet.SolutionRestoreManager
                     paramName: nameof(projectRestoreInfo));
             }
 
-            return new ProjectRestoreInfo3Adapter
+            return new VsProjectRestoreInfo3Adapter
             {
                 MsBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
-                TargetFrameworks = GetTargetFrameworksAdapter(projectRestoreInfo.TargetFrameworks),
-                ToolReferences = projectRestoreInfo.ToolReferences is null ? null : GetToolReferencesAdapter(projectRestoreInfo.ToolReferences)
+                TargetFrameworks = ToTargetFrameworkInfoList(projectRestoreInfo.TargetFrameworks),
+                ToolReferences = ToReferenceItemList(projectRestoreInfo.ToolReferences)
             };
         }
 
-        public static ProjectRestoreInfo3Adapter Create(IVsProjectRestoreInfo2 projectRestoreInfo)
+        public static IVsProjectRestoreInfo3 Create(IVsProjectRestoreInfo2 projectRestoreInfo)
         {
             if (projectRestoreInfo is null) { throw new ArgumentNullException(nameof(projectRestoreInfo)); }
 
-            return new ProjectRestoreInfo3Adapter
+            if (string.IsNullOrEmpty(projectRestoreInfo.BaseIntermediatePath))
+            {
+                throw new ArgumentException(message: "BaseIntermediatePath must have a non-empty value",
+                    paramName: nameof(projectRestoreInfo));
+            }
+
+            return new VsProjectRestoreInfo3Adapter
             {
                 MsBuildProjectExtensionsPath = projectRestoreInfo.BaseIntermediatePath,
                 OriginalTargetFrameworks = projectRestoreInfo.OriginalTargetFrameworks,
-                TargetFrameworks = GetTargetFrameworksAdapter(projectRestoreInfo.TargetFrameworks),
-                ToolReferences = GetToolReferencesAdapter(projectRestoreInfo.ToolReferences)
+                TargetFrameworks = ToTargetFrameworkInfoList(projectRestoreInfo.TargetFrameworks),
+                ToolReferences = ToReferenceItemList(projectRestoreInfo.ToolReferences)
             };
         }
 
-        private static IReadOnlyList<IVsReferenceItem2>? GetToolReferencesAdapter(IVsReferenceItems? toolReferences)
+        [return: NotNullIfNotNull(nameof(references))]
+        private static IReadOnlyList<IVsReferenceItem2>? ToReferenceItemList(IVsReferenceItems? references)
         {
-            if (toolReferences is null) { return null; }
+            if (references is null) { return null; }
 
-            var result = new List<IVsReferenceItem2>(toolReferences.Count);
+            var result = new List<IVsReferenceItem2>(references.Count);
 
-            for (var i = 0; i < toolReferences.Count; i++)
+            for (var i = 0; i < references.Count; i++)
             {
-                var reference = toolReferences.Item(i);
-                IVsReferenceItem2? toolReference = reference is not null ? new ReferenceItem2Adapter(reference) : null;
+                var reference = references.Item(i);
+                IVsReferenceItem2? adapter = ToReferenceItem(reference);
                 // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
-                result.Add(toolReference!);
+                result.Add(adapter!);
             }
 
             return result;
         }
 
-        private static IReadOnlyList<IVsTargetFrameworkInfo4> GetTargetFrameworksAdapter(IVsTargetFrameworks targetFrameworks)
+        private static IVsReferenceItem2? ToReferenceItem(IVsReferenceItem? reference)
+        {
+            if (reference is null) { return null; }
+
+            var a = new VsReferenceItem2Adapter
+            {
+                Name = reference.Name,
+                Metadata = ToPropertiesDictionary(reference.Properties),
+            };
+            return a;
+        }
+
+        private static IReadOnlyList<IVsTargetFrameworkInfo4> ToTargetFrameworkInfoList(IVsTargetFrameworks targetFrameworks)
         {
             var result = new List<IVsTargetFrameworkInfo4>(targetFrameworks.Count);
 
             for (var i = 0; i < targetFrameworks.Count; i++)
             {
                 IVsTargetFrameworkInfo? targetFramework = targetFrameworks.Item(i);
-                IVsTargetFrameworkInfo4? targetFrameworkAdapter = targetFramework is not null ? new TargetFramework4Adapter(targetFramework) : null;
+                IVsTargetFrameworkInfo4? adapter = ToTargetFrameworkInfo(targetFramework);
                 // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
-                result.Add(targetFrameworkAdapter!);
+                result.Add(adapter!);
             }
 
             return result;
         }
 
-        private static IReadOnlyList<IVsTargetFrameworkInfo4> GetTargetFrameworksAdapter(IVsTargetFrameworks2 targetFrameworks)
+        private static IVsTargetFrameworkInfo4? ToTargetFrameworkInfo(IVsTargetFrameworkInfo? targetFramework)
+        {
+            if (targetFramework is null) { return null; }
+
+            var adapter = new VsTargetFramework4Adapter()
+            {
+                TargetFrameworkMoniker = targetFramework.TargetFrameworkMoniker,
+                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                Properties = ToPropertiesDictionary(targetFramework.Properties)!,
+                Items = ToItemsDictionary(targetFramework)
+            };
+
+            return adapter;
+        }
+
+        private static IReadOnlyList<IVsTargetFrameworkInfo4> ToTargetFrameworkInfoList(IVsTargetFrameworks2 targetFrameworks)
         {
             var result = new List<IVsTargetFrameworkInfo4>(targetFrameworks.Count);
 
             for (var i = 0; i < targetFrameworks.Count; i++)
             {
                 IVsTargetFrameworkInfo2? targetFramework = targetFrameworks.Item(i);
-                IVsTargetFrameworkInfo4? targetFrameworkAdapter = targetFramework is not null ? new TargetFramework4Adapter(targetFramework) : null;
+                IVsTargetFrameworkInfo4? adapter = ToTargetFrameworkInfo(targetFramework);
                 // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
-                result.Add(targetFrameworkAdapter!);
+                result.Add(adapter!);
             }
 
             return result;
         }
 
-        private static IReadOnlyDictionary<string, string?> ToPropertiesDictionary(IVsProjectProperties properties)
+        private static IVsTargetFrameworkInfo4? ToTargetFrameworkInfo(IVsTargetFrameworkInfo2? targetFramework)
         {
+            if (targetFramework is null) { return null; }
+
+            var adapter = new VsTargetFramework4Adapter()
+            {
+                TargetFrameworkMoniker = targetFramework.TargetFrameworkMoniker,
+                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
+                Properties = ToPropertiesDictionary(targetFramework.Properties)!,
+                Items = ToItemsDictionary(targetFramework)
+            };
+
+            return adapter;
+        }
+
+        private static IReadOnlyDictionary<string, string?>? ToPropertiesDictionary(IVsProjectProperties? properties)
+        {
+            if (properties is null) { return null; }
+
             var result = new Dictionary<string, string?>(properties.Count, StringComparer.OrdinalIgnoreCase);
 
             for (var i = 0; i < properties.Count; i++)
@@ -126,91 +170,72 @@ namespace NuGet.SolutionRestoreManager
             return result;
         }
 
-        private record TargetFramework4Adapter : IVsTargetFrameworkInfo4
+        private static IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> ToItemsDictionary(IVsTargetFrameworkInfo targetFrameworkInfo)
         {
-            public TargetFramework4Adapter(IVsTargetFrameworkInfo targetFrameworkInfo)
-            {
-                if (targetFrameworkInfo is null) { throw new ArgumentNullException(nameof(targetFrameworkInfo)); }
+            var result = new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase);
 
-                TargetFrameworkMoniker = targetFrameworkInfo.TargetFrameworkMoniker;
-                Items = ToItemsDictionary(targetFrameworkInfo);
-                // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
-                Properties = targetFrameworkInfo.Properties is not null ? ToPropertiesDictionary(targetFrameworkInfo.Properties) : null!;
+            if (targetFrameworkInfo.ProjectReferences?.Count > 0)
+            {
+                IReadOnlyList<IVsReferenceItem2> projectReferences = ToReferenceItemList(targetFrameworkInfo.ProjectReferences);
+                result[ProjectItems.ProjectReference] = projectReferences;
             }
 
-            private IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>> ToItemsDictionary(IVsTargetFrameworkInfo targetFrameworkInfo)
+            if (targetFrameworkInfo.PackageReferences?.Count > 0)
             {
-                var result = new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>(StringComparer.OrdinalIgnoreCase);
+                IReadOnlyList<IVsReferenceItem2>? packageReferences = ToReferenceItemList(targetFrameworkInfo.PackageReferences);
+                result[ProjectItems.PackageReference] = packageReferences;
+            }
 
-                if (targetFrameworkInfo.ProjectReferences?.Count > 0)
+            if (targetFrameworkInfo is IVsTargetFrameworkInfo2 targetFrameworkInfo2)
+            {
+                if (targetFrameworkInfo2.PackageDownloads?.Count > 0)
                 {
-                    IReadOnlyList<IVsReferenceItem2> projectReferences = ToReferenceItem2ReadOnlyList(targetFrameworkInfo.ProjectReferences);
-                    result[ProjectItems.ProjectReference] = projectReferences;
+                    IReadOnlyList<IVsReferenceItem2>? packageDownloads = ToReferenceItemList(targetFrameworkInfo2.PackageDownloads);
+                    result[ProjectItems.PackageDownload] = packageDownloads;
                 }
 
-                if (targetFrameworkInfo.PackageReferences?.Count > 0)
+                if (targetFrameworkInfo2.FrameworkReferences?.Count > 0)
                 {
-                    IReadOnlyList<IVsReferenceItem2> packageReferences = ToReferenceItem2ReadOnlyList(targetFrameworkInfo.PackageReferences);
-                    result[ProjectItems.PackageReference] = packageReferences;
-                }
-
-                if (targetFrameworkInfo is IVsTargetFrameworkInfo2 targetFrameworkInfo2)
-                {
-                    if (targetFrameworkInfo2.PackageDownloads?.Count > 0)
-                    {
-                        IReadOnlyList<IVsReferenceItem2> packageDownloads = ToReferenceItem2ReadOnlyList(targetFrameworkInfo2.PackageDownloads);
-                        result[ProjectItems.PackageDownload] = packageDownloads;
-                    }
-
-                    if (targetFrameworkInfo2.FrameworkReferences?.Count > 0)
-                    {
-                        IReadOnlyList<IVsReferenceItem2> frameworkReferences = ToReferenceItem2ReadOnlyList(targetFrameworkInfo2.FrameworkReferences);
-                        result[ProjectItems.FrameworkReference] = frameworkReferences;
-                    }
-                }
-
-                if (targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3
-                    && targetFrameworkInfo3.CentralPackageVersions?.Count > 0)
-                {
-                    IReadOnlyList<IVsReferenceItem2> centralPackageVersions = ToReferenceItem2ReadOnlyList(targetFrameworkInfo3.CentralPackageVersions);
-                    result[ProjectItems.PackageVersion] = centralPackageVersions;
-                }
-
-                return result;
-
-                static IReadOnlyList<IVsReferenceItem2> ToReferenceItem2ReadOnlyList(IVsReferenceItems referenceItems)
-                {
-                    var list = new List<IVsReferenceItem2>(referenceItems.Count);
-                    for (var i = 0; i < referenceItems.Count; i++)
-                    {
-                        IVsReferenceItem? reference = referenceItems.Item(i);
-                        IVsReferenceItem2? projectReference = reference is not null ? new ReferenceItem2Adapter(reference) : null;
-                        // null needs to be handled in VsSolutionRestoreService.ToDependencySpec and reported back to caller
-                        list.Add(projectReference!);
-                    }
-
-                    return list;
+                    IReadOnlyList<IVsReferenceItem2>? frameworkReferences = ToReferenceItemList(targetFrameworkInfo2.FrameworkReferences);
+                    result[ProjectItems.FrameworkReference] = frameworkReferences;
                 }
             }
 
-            public string TargetFrameworkMoniker { get; }
+            if (targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3
+                && targetFrameworkInfo3.CentralPackageVersions?.Count > 0)
+            {
+                IReadOnlyList<IVsReferenceItem2>? centralPackageVersions = ToReferenceItemList(targetFrameworkInfo3.CentralPackageVersions);
+                result[ProjectItems.PackageVersion] = centralPackageVersions;
+            }
 
-            public IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>>? Items { get; }
-
-            public IReadOnlyDictionary<string, string?> Properties { get; }
+            return result;
         }
 
-        private record ReferenceItem2Adapter : IVsReferenceItem2
+        private record VsProjectRestoreInfo3Adapter : IVsProjectRestoreInfo3
         {
-            public string Name { get; }
+            public required string MsBuildProjectExtensionsPath { get; init; }
 
-            public IReadOnlyDictionary<string, string?>? Metadata { get; }
+            public required IReadOnlyList<IVsTargetFrameworkInfo4> TargetFrameworks { get; init; }
 
-            public ReferenceItem2Adapter(IVsReferenceItem referenceItem)
-            {
-                Name = referenceItem.Name;
-                Metadata = ToPropertiesDictionary(referenceItem.Properties);
-            }
+            public IReadOnlyList<IVsReferenceItem2>? ToolReferences { get; init; }
+
+            public string? OriginalTargetFrameworks { get; init; }
+        }
+
+        private record VsTargetFramework4Adapter : IVsTargetFrameworkInfo4
+        {
+            public required string TargetFrameworkMoniker { get; init; }
+
+            public IReadOnlyDictionary<string, IReadOnlyList<IVsReferenceItem2>>? Items { get; init; }
+
+            public required IReadOnlyDictionary<string, string?> Properties { get; init; }
+        }
+
+        private record VsReferenceItem2Adapter : IVsReferenceItem2
+        {
+            public required string Name { get; init; }
+
+            public IReadOnlyDictionary<string, string?>? Metadata { get; init; }
         }
     }
 }

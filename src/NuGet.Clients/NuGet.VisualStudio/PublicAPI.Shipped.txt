@@ -89,7 +89,7 @@ NuGet.SolutionRestoreManager.IVsSolutionRestoreStatusProvider.IsRestoreCompleteA
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo.PackageReferences.get -> NuGet.SolutionRestoreManager.IVsReferenceItems?
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo.ProjectReferences.get -> NuGet.SolutionRestoreManager.IVsReferenceItems?
-NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo.Properties.get -> NuGet.SolutionRestoreManager.IVsProjectProperties?
+NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo.Properties.get -> NuGet.SolutionRestoreManager.IVsProjectProperties!
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo.TargetFrameworkMoniker.get -> string!
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo2
 NuGet.SolutionRestoreManager.IVsTargetFrameworkInfo2.FrameworkReferences.get -> NuGet.SolutionRestoreManager.IVsReferenceItems?
