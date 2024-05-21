@@ -126,7 +126,6 @@
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);EnableGenerateDocumentationFile</WarningsNotAsErrors>
-    <AnalysisLevel>8.0</AnalysisLevel>
   </PropertyGroup>
 
   <PropertyGroup>
