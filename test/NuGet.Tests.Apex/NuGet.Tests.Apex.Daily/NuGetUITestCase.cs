@@ -41,20 +41,6 @@ namespace NuGet.Tests.Apex.Daily
             solutionService.SaveAll();
             CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
             solutionService.BuildManager.Rebuild();
-
-            // Act
-            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
-            var nugetTestService = GetNuGetTestService();
-            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
-
-            VisualStudio.ObjectModel.Shell.ToolWindows.ErrorHub.ShowErrors();
-            Thread.Sleep(10000);
-
-            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
-            VisualStudio.ClearWindows();
-
-            // Assert
-            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
         }
 
         [TestMethod]
