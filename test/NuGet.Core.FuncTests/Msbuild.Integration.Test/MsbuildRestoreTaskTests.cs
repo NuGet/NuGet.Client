@@ -20,6 +20,7 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Msbuild.Integration.Test
 {
@@ -1459,20 +1460,18 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // set up solution, projects and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-            var net472 = NuGetFramework.Parse("net472");
-
             var projectA = new SimpleTestProjectContext(
                 "A",
                 ProjectStyle.PackagesConfig,
                 pathContext.SolutionRoot);
-            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net472));
+            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(CommonFrameworks.Net472));
             projectA.Properties.Add("NuGetAuditLevel", "critical");
 
             var projectB = new SimpleTestProjectContext(
                 "B",
                 ProjectStyle.PackagesConfig,
                 pathContext.SolutionRoot);
-            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net472));
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(CommonFrameworks.Net472));
             projectB.Properties.Add("NuGetAuditLevel", "high");
 
             var packageA1 = new SimpleTestPackageContext()
@@ -1490,15 +1489,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Id = "packageB",
                 Version = "2.2.0"
             };
-
-            packageA1.Files.Clear();
-            packageA1.AddFile("lib/net472/packageA.dll");
-
-            packageA2.Files.Clear();
-            packageA2.AddFile("lib/net472/packageA.dll");
-
-            packageB.Files.Clear();
-            packageB.AddFile("lib/net472/packageB.dll");
 
             solution.Projects.Add(projectA);
             solution.Projects.Add(projectB);
@@ -1522,7 +1512,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 </packages>");
             }
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
                 packageA1,
                 packageA2,
