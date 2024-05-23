@@ -21,6 +21,22 @@ namespace NuGet.Packaging.Core
         /// </summary>
         /// <param name="id">name</param>
         /// <param name="version">version</param>
+        public PackageIdentity(string id, string version)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            _id = id;
+            _version = new NuGetVersion(version);
+        }
+
+        /// <summary>
+        /// Creates a new package identity.
+        /// </summary>
+        /// <param name="id">name</param>
+        /// <param name="version">version</param>
         public PackageIdentity(string id, NuGetVersion version)
         {
             if (id == null)
