@@ -75,7 +75,7 @@ namespace NuGet.DependencyResolver
 
                 if (noLock)
                 {
-                    match = matchTask.Result;
+                    match = matchTask.GetAwaiter().GetResult();
                 }
                 else
                 {
@@ -96,7 +96,7 @@ namespace NuGet.DependencyResolver
 
                         if (noLock)
                         {
-                            graphItem = graphItemTask.Result;
+                            graphItem = graphItemTask.GetAwaiter().GetResult();
                         }
                         else
                         {

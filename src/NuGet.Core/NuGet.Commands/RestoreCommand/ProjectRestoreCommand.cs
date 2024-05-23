@@ -73,11 +73,13 @@ namespace NuGet.Commands
                 //  remoteWalker,
                 //  context,
                 //  token: token));
-                frameworkWDAResults.Add(WalkDependenciesAsync(projectRange,
+                var task = WalkDependenciesAsync(projectRange,
                                     pair.Key,
                                     remoteWalker,
                                     context,
-                                    token: token).Result);
+                                    token: token);
+
+                frameworkWDAResults.Add(task.GetAwaiter().GetResult());
             }
             graphs.AddRange(frameworkWDAResults);
             //var frameworkGraphs = await Task.WhenAll(frameworkTasks);
