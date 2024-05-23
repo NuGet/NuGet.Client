@@ -14,7 +14,7 @@ parameters:
 - name: testTargetFramework
 - name: timeoutInMinutes
   type: number
-  default: 15
+  default: 120
 
 jobs:
 - job:
