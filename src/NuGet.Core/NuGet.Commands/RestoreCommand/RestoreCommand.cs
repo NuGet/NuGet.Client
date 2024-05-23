@@ -1315,6 +1315,10 @@ namespace NuGet.Commands
                 {
                     failed = true;
                 }
+                catch (AggregateException e) when (e.InnerException is FatalProtocolException)
+                {
+                    failed = true;
+                }
             }
 
             if (!failed)
@@ -1852,7 +1856,7 @@ namespace NuGet.Commands
                                     newRTG.RuntimeIdentifier,
                                     context,
                                     CancellationToken.None,
-                                    noLock: true).Result;
+                                    noLock: true).GetAwaiter().GetResult();
                         totalDeepLookups++;
 
                         refItemResult = new FindLibraryCachedAsyncResult(
