@@ -469,17 +469,31 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static Dictionary<string, string> GetPackagesConfigToProjectPath(PackageRestoreInputs packageRestoreInputs)
+        private Dictionary<string, string> GetPackagesConfigToProjectPath(PackageRestoreInputs packageRestoreInputs)
         {
             Dictionary<string, string> configToProjectPath = new();
             foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
-                    configToProjectPath.Add(((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath, project.FilePath);
+                    var packagesConfig = ((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath;
+
+                    if (!configToProjectPath.TryGetValue(packagesConfig, out string existingValue))
+                    {
+                        configToProjectPath.Add(packagesConfig, project.FilePath);
+                    }
+                    else
+                    {
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            LocalizedResourceManager.GetString("Warning_RestoreMultipleProjectsOnePackagesConfigFile"),
+                            packagesConfig,
+                            existingValue,
+                            project.FilePath);
+                        Console.LogWarning(message);
+                    }
                 }
             }
-
             return configToProjectPath;
         }
 

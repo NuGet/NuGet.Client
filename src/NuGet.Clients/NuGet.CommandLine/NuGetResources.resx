@@ -747,4 +747,7 @@ Do not localize `SDK`, `dotnet pack`, msbuild -t:pack` and 'true'.</comment>
 {1} - current command marked as deprecated, e.g., list
 {2} - replacement command. For example, search</comment>
   </data>
+  <data name="Warning_RestoreMultipleProjectsOnePackagesConfigFile" xml:space="preserve">
+    <value>Multiple projects are associated with one `packages.config` file. This will lead to NuGetAudit configuration not being respected in the second project. It is recommended that each project has their own packages.config file. packages.config: '{0}', projects: '{1}', '{2}'.</value>
+  </data>
 </root>

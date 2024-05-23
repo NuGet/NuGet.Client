@@ -720,6 +720,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipping installation of package &quot;{0}&quot; because higher version &quot;{1}&quot; is already installed..
+        /// </summary>
+        public static string InstallCommandHigherVersionAlreadyExists {
+            get {
+                return ResourceManager.GetString("InstallCommandHigherVersionAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contains invalid package references. .
         /// </summary>
         public static string InstallCommandInvalidPackageReference {
@@ -743,15 +752,6 @@ namespace NuGet.CommandLine {
         public static string InstallCommandPackageAlreadyExists {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Skipping installation of package &quot;{0}&quot; because higher version &quot;{1}&quot; is already installed..
-        /// </summary>
-        public static string InstallCommandHigherVersionAlreadyExists {
-            get {
-                return ResourceManager.GetString("InstallCommandHigherVersionAlreadyExists", resourceCulture);
             }
         }
         
@@ -1807,6 +1807,15 @@ namespace NuGet.CommandLine {
         public static string Warning_ReadingProjectsFailed {
             get {
                 return ResourceManager.GetString("Warning_ReadingProjectsFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple projects are associated with one `packages.config` file. This will lead to NuGetAudit configuration not being respected in the second project. It is recommended that each project has their own packages.config file. packages.config: &apos;{0}&apos;, projects: &apos;{1}&apos;, &apos;{2}&apos;..
+        /// </summary>
+        public static string Warning_RestoreMultipleProjectsOnePackagesConfigFile {
+            get {
+                return ResourceManager.GetString("Warning_RestoreMultipleProjectsOnePackagesConfigFile", resourceCulture);
             }
         }
         
