@@ -276,16 +276,16 @@ namespace NuGet.CommandLine
 
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
-                Dictionary<string, string> configToProjectPath = GetPackagesConfigToProjectPath(packageRestoreInputs);
+                Dictionary<string, List<string>> configToProjectPath = GetPackagesConfigToProjectsPath(packageRestoreInputs);
                 Dictionary<PackageReference, List<string>> packageReferenceToProjects = new(PackageReferenceComparer.Instance);
 
                 foreach (string configFile in packageRestoreInputs.PackagesConfigFiles)
                 {
                     foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile))
                     {
-                        if (!configToProjectPath.TryGetValue(configFile, out string projectPath))
+                        if (!configToProjectPath.TryGetValue(configFile, out List<string> projectPath))
                         {
-                            projectPath = configFile;
+                            projectPath = new List<string> { configFile };
                         }
 
                         if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
@@ -293,7 +293,7 @@ namespace NuGet.CommandLine
                             value ??= new();
                             packageReferenceToProjects.Add(packageReference, value);
                         }
-                        value.Add(projectPath);
+                        value.AddRange(projectPath);
                     }
                 }
 
@@ -469,21 +469,19 @@ namespace NuGet.CommandLine
             }
         }
 
-        private Dictionary<string, string> GetPackagesConfigToProjectPath(PackageRestoreInputs packageRestoreInputs)
+        private Dictionary<string, List<string>> GetPackagesConfigToProjectsPath(PackageRestoreInputs packageRestoreInputs)
         {
-            Dictionary<string, string> configToProjectPath = new();
+            Dictionary<string, List<string>> configToProjectPath = new();
             foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
                 {
                     var packagesConfig = ((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath;
 
-                    if (!configToProjectPath.TryGetValue(packagesConfig, out string existingValue))
+                    if (configToProjectPath.TryGetValue(packagesConfig, out var existingValue))
                     {
-                        configToProjectPath.Add(packagesConfig, project.FilePath);
-                    }
-                    else
-                    {
+                        existingValue.Add(project.FilePath);
+
                         var message = string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("Warning_RestoreMultipleProjectsOnePackagesConfigFile"),
@@ -491,6 +489,10 @@ namespace NuGet.CommandLine
                             existingValue,
                             project.FilePath);
                         Console.LogWarning(message);
+                    }
+                    else
+                    {
+                        configToProjectPath.Add(packagesConfig, new List<string> { project.FilePath });
                     }
                 }
             }
