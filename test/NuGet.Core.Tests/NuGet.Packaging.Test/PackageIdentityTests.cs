@@ -14,7 +14,7 @@ namespace NuGet.Packaging.Core.Test
             var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
             Assert.Equal("packageA.1.0.0", packageIdentity.ToString());
 
-            var packageIdentityNoVersion = new PackageIdentity("packageB", null);
+            var packageIdentityNoVersion = new PackageIdentity("packageB", version: null);
             Assert.Equal("packageB", packageIdentityNoVersion.ToString());
 
             var formattedString = string.Format("This is package '{0}'", packageIdentity);

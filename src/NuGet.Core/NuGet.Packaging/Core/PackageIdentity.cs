@@ -20,8 +20,8 @@ namespace NuGet.Packaging.Core
         /// Creates a new package identity.
         /// </summary>
         /// <param name="id">name</param>
-        /// <param name="version">version</param>
-        public PackageIdentity(string id, string version)
+        /// <param name="versionStr">version</param>
+        public PackageIdentity(string id, string versionStr)
         {
             if (id == null)
             {
@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Core
             }
 
             _id = id;
-            _version = new NuGetVersion(version);
+            _version = NuGetVersion.Parse(versionStr);
         }
 
         /// <summary>

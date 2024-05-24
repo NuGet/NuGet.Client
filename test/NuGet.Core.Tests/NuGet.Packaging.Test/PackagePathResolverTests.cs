@@ -298,7 +298,7 @@ namespace NuGet.Packaging.Test
             {
                 var target = new PackagePathResolver(testDirectory.Path);
 
-                PackageIdentity nullVersionPackageIdentity = new PackageIdentity("PackageA", null);
+                PackageIdentity nullVersionPackageIdentity = new PackageIdentity("PackageA", version: null);
 
                 // Act
                 var exception = Assert.Throws<ArgumentException>(paramName: "packageIdentity",

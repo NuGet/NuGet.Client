@@ -7172,7 +7172,7 @@ namespace NuGet.Test
                 // Main Act
                 var targets = new List<PackageIdentity>
                 {
-                    new PackageIdentity("a", null)
+                    new PackageIdentity("a", version: null)
                 };
 
                 // Assert

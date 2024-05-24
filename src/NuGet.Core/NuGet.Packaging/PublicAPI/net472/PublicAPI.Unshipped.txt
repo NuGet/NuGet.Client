@@ -1,2 +1,2 @@
 #nullable enable
-~NuGet.Packaging.Core.PackageIdentity.PackageIdentity(string id, string version) -> void
+~NuGet.Packaging.Core.PackageIdentity.PackageIdentity(string id, string versionStr) -> void
