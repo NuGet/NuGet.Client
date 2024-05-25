@@ -314,13 +314,13 @@ namespace NuGet.SolutionRestoreManager
             string? auditMode = GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.NuGetAuditMode, s => s);
             HashSet<string>? suppressedAdvisories = GetSuppressedAdvisories(tfms);
 
-            return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel) || !string.IsNullOrEmpty(auditMode)
+            return !string.IsNullOrEmpty(enableAudit) || !string.IsNullOrEmpty(auditLevel) || !string.IsNullOrEmpty(auditMode) || suppressedAdvisories is not null
                 ? new RestoreAuditProperties()
                 {
                     EnableAudit = enableAudit,
                     AuditLevel = auditLevel,
                     AuditMode = auditMode,
-                    SuppressedAdvisories = GetSuppressedAdvisories(tfms),
+                    SuppressedAdvisories = suppressedAdvisories,
                 }
                 : null;
 
@@ -345,7 +345,8 @@ namespace NuGet.SolutionRestoreManager
                 {
                     if (!AreSameAdvisories(suppressedAdvisories, tfms[i].Items))
                     {
-                        throw new Exception("Different TargetFrameworks have different NuGetAuditSupress items");
+                        string message = string.Format(Resources.ItemValuesAreDifferentAcrossTargetFrameworks, ProjectItems.NuGetAuditSuppress);
+                        throw new InvalidOperationException(message);
                     }
                 }
 
