@@ -9,7 +9,8 @@
     <TestSessionTimeout Condition=" '$(TestSessionTimeout)' == ''">9000000</TestSessionTimeout>
     <TestAdaptersPaths>C:\Test;C:\NuGet</TestAdaptersPaths>
     <ResultsDirectory>C:\Test\Results</ResultsDirectory>
-    <LingeringProcessCollector Condition=" '$(LingeringProcessCollector)' == '' ">disabled</LingeringProcessCollector>
+    <ProcDumpCollector> Condition=" '$(ProcDumpCollector)' == '' ">enabled</ProcDumpCollector>
+    <LingeringProcessCollector Condition=" '$(LingeringProcessCollector)' == '' ">enabled</LingeringProcessCollector>
     <OptProfCollector Condition=" '$(OptProfCollector)' == '' ">disabled</OptProfCollector>
     <ScreenshotCollector Condition=" '$(ScreenshotCollector)' == '' ">enabled</ScreenshotCollector>
     <TestRunParametersLogger Condition=" '$(TestRunParametersLogger)' == '' ">enabled</TestRunParametersLogger>
@@ -107,7 +108,7 @@
       <Configuration>
         <KillLingeringProcesses>true</KillLingeringProcesses>
         <LoggingBehavior>Warning</LoggingBehavior>
-        <CollectDumps>true</CollectDumps>
+        <CollectDumps>false</CollectDumps>
         <RootDumpDirectory>%SystemDrive%\Test\Logs\Dumps</RootDumpDirectory>
         <ShutdownCommands>$(LingeringProcessCollectorShutdownCommands)</ShutdownCommands>
         <WhiteList>
