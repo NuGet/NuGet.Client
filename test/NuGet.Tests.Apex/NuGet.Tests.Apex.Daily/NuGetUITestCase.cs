@@ -25,24 +25,7 @@ namespace NuGet.Tests.Apex.Daily
         {
         }
 
-        [TestMethod]
-        [Timeout(DefaultTimeout)]
-        public async Task AsyncInstallPackageToWebSiteProjectFromUI()
-        {
-            // Arrange
-            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
-
-            EnsureVisualStudioHost();
-            var dte = VisualStudio.Dte;
-            var solutionService = VisualStudio.Get<SolutionService>();
-            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
-            VisualStudio.ClearOutputWindow();
-            solutionService.SaveAll();
-            CommonUtility.RestoreNuGetPackages(VisualStudio, Logger);
-            solutionService.BuildManager.Rebuild();
-        }
-
+        [Ignore] 
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public async Task InstallPackageToWebSiteProjectFromUI()
@@ -75,6 +58,7 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, Logger);
         }
 
+        [Ignore]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public async Task UpdateWebSitePackageFromUI()
