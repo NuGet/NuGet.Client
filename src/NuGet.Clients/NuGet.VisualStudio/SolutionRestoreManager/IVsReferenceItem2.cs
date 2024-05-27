@@ -20,6 +20,6 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// Collection of item metadata.
         /// </summary>
-        IReadOnlyDictionary<string, string?>? Metadata { get; }
+        IReadOnlyDictionary<string, string>? Metadata { get; }
     }
 }

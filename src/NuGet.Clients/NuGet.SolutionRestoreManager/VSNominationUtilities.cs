@@ -148,7 +148,7 @@ namespace NuGet.SolutionRestoreManager
             return tfi;
         }
 
-        internal static NuGetFramework GetTargetFramework(IReadOnlyDictionary<string, string?> properties, string projectFullPath)
+        internal static NuGetFramework GetTargetFramework(IReadOnlyDictionary<string, string> properties, string projectFullPath)
         {
             var targetFrameworkMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetFrameworkMoniker);
             var targetPlatformMoniker = GetPropertyValueOrNull(properties, ProjectBuildProperties.TargetPlatformMoniker);
@@ -678,7 +678,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private static string? GetPropertyValueOrNull(
-            IReadOnlyDictionary<string, string?> properties, string propertyName)
+            IReadOnlyDictionary<string, string> properties, string propertyName)
         {
             try
             {

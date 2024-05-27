@@ -23,6 +23,6 @@ namespace NuGet.SolutionRestoreManager
         /// Collection of project level properties evaluated per each Target Framework,
         /// e.g. PackageTargetFallback.
         /// </summary>
-        IReadOnlyDictionary<string, string?> Properties { get; }
+        IReadOnlyDictionary<string, string> Properties { get; }
     }
 }
