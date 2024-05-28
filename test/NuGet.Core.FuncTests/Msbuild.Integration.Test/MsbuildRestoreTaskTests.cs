@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Commands;
@@ -1616,14 +1617,19 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             File.Exists(packageFileA).Should().BeTrue();
             File.Exists(packageFileA120).Should().BeTrue();
             File.Exists(packageFileB).Should().BeTrue();
-            r.AllOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", Exactly.Twice());
-            r.AllOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known high severity vulnerability", Exactly.Once());
-            r.AllOutput.Should().Contain($"Package 'packageA' 1.1.0 has a known high severity vulnerability", Exactly.Once());
+            // MSBuild replays warnings at the bottom, so only look there.
+
+            var allOutput = r.AllOutput;
+           var replayedOutput = allOutput.Substring(allOutput.IndexOf($"\"{solution.SolutionPath}\" (Restore "));
+
+            replayedOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", Exactly.Twice());
+            replayedOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known high severity vulnerability", Exactly.Once());
+            replayedOutput.Should().Contain($"Package 'packageA' 1.1.0 has a known high severity vulnerability", Exactly.Once());
             // Make sure that we're not missing out asserting any reported vulnerabilities.
-            r.AllOutput.Should().NotContain($"a known low severity vulnerability");
-            r.AllOutput.Should().NotContain($"a known moderate severity vulnerability");
-            r.AllOutput.Should().Contain($"a known high severity vulnerability", Exactly.Twice());
-            r.AllOutput.Should().Contain($"a known critical severity vulnerability", Exactly.Twice());
+            replayedOutput.Should().NotContain($"a known low severity vulnerability");
+            replayedOutput.Should().NotContain($"a known moderate severity vulnerability");
+            replayedOutput.Should().Contain($"a known high severity vulnerability", Exactly.Twice());
+            replayedOutput.Should().Contain($"a known critical severity vulnerability", Exactly.Twice());
         }
     }
 }
