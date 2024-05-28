@@ -257,3 +257,19 @@ stages:
         vmImage: macos-latest
         testType: Functional
         testTargetFramework: netcoreapp3.1
+
+  - stage:
+    displayName: Source Build
+    dependsOn: []
+    jobs:
+    - job:
+      displayName: Source Build
+      timeoutInMinutes: 15
+      vmImage: linux-latest
+      steps:
+      - task: PowerShell@2
+        displayName: "Build source-build"
+        inputs:
+          targetType: "inline"
+          script: |
+            ./eng/dotnet-build/build.sh --source-build
