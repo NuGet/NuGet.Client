@@ -4,6 +4,7 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <PackProject Condition="!Exists('$(LocalizationRootDirectory)')">false</PackProject>
+    <IsPackable>$(PackProject)</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <Description>NuGet localization package for dotnet CLI.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -25,7 +26,7 @@
     <MakeDir
             Directories="$(LocalizationOutputDirectory)"/>
     <ItemGroup>
-      <LocalizationProjects Include="@(CoreProjects)" 
+      <LocalizationProjects Include="@(CoreProjects)"
                             Exclude="$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj;
                             $(RepositoryRootDirectory)src\NuGet.Core\Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj;
                             $(RepositoryRootDirectory)src\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj"

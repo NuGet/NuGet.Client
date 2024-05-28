@@ -50,6 +50,7 @@
     <DotnetExePath Condition=" '$(IsXPlat)' == 'true' ">$(RepositoryRootDirectory)cli\dotnet</DotnetExePath>
     <SharedDirectory>$(BuildCommonDirectory)Shared</SharedDirectory>
     <NupkgOutputDirectory>$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
+    <PackageOutputPath>$(NupkgOutputDirectory)</PackageOutputPath>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>

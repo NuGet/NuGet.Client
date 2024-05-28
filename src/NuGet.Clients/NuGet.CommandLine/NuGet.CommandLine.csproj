@@ -15,6 +15,7 @@
     <SignWithMicrosoftKey>true</SignWithMicrosoftKey>
     <ComVisible>false</ComVisible>
     <!-- Pack properties-->
+    <IsPackable>true</IsPackable>
     <PackProject>true</PackProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateCommandlineNupkg</TargetsForTfmSpecificContentInPackage>
