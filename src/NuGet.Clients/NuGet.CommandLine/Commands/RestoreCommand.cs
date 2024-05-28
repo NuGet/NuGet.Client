@@ -481,14 +481,6 @@ namespace NuGet.CommandLine
                     if (configToProjectPath.TryGetValue(packagesConfig, out var existingValue))
                     {
                         existingValue.Add(project.FilePath);
-
-                        var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            LocalizedResourceManager.GetString("Warning_RestoreMultipleProjectsOnePackagesConfigFile"),
-                            packagesConfig,
-                            existingValue,
-                            project.FilePath);
-                        Console.LogWarning(message);
                     }
                     else
                     {

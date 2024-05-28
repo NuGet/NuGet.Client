@@ -1811,15 +1811,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple projects are associated with one `packages.config` file. This will lead to NuGetAudit configuration not being respected in the second project. It is recommended that each project has their own packages.config file. packages.config: &apos;{0}&apos;, projects: &apos;{1}&apos;, &apos;{2}&apos;..
-        /// </summary>
-        public static string Warning_RestoreMultipleProjectsOnePackagesConfigFile {
-            get {
-                return ResourceManager.GetString("Warning_RestoreMultipleProjectsOnePackagesConfigFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
         /// </summary>
         public static string Warning_SemanticVersion {
