@@ -3601,7 +3601,7 @@ EndProject";
                 "a",
                 ProjectStyle.PackagesConfig,
                 pathContext.SolutionRoot);
-            //projectA.Properties.Add("NuGetAuditLevel", "critical");
+            projectA.Properties.Add("NuGetAuditLevel", "critical");
 
             var projectB = new SimpleTestProjectContext(
                 "b",
@@ -3611,7 +3611,7 @@ EndProject";
             projectB.ProjectPath = Path.Combine(pathContext.SolutionRoot, "a", $"b.csproj");
 
             solution.Projects.Add(projectA);
-            //solution.Projects.Add(projectB);
+            solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
 
             Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
@@ -3639,14 +3639,14 @@ EndProject";
             File.Exists(packageFileA).Should().BeTrue();
             File.Exists(packageFileA120).Should().BeTrue();
             File.Exists(packageFileB).Should().BeTrue();
-            r.AllOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", Exactly.Once());
+            r.AllOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", Exactly.Twice());
             r.AllOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known high severity vulnerability", Exactly.Once());
             r.AllOutput.Should().Contain($"Package 'packageA' 1.1.0 has a known high severity vulnerability", Exactly.Once());
             // Make sure that we're not missing out asserting any reported vulnerabilities.
             r.AllOutput.Should().NotContain($"a known low severity vulnerability");
             r.AllOutput.Should().NotContain($"a known moderate severity vulnerability");
             r.AllOutput.Should().Contain($"a known high severity vulnerability", Exactly.Twice());
-            r.AllOutput.Should().Contain($"a known critical severity vulnerability", Exactly.Once());
+            r.AllOutput.Should().Contain($"a known critical severity vulnerability", Exactly.Twice());
         }
 
         private static byte[] GetResource(string name)

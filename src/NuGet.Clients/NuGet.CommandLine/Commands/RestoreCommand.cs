@@ -276,16 +276,16 @@ namespace NuGet.CommandLine
 
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
-                Dictionary<string, List<string>> configToProjectPath = GetPackagesConfigToProjectsPath(packageRestoreInputs);
+                Dictionary<string, HashSet<string>> configToProjectPath = GetPackagesConfigToProjectsPath(packageRestoreInputs);
                 Dictionary<PackageReference, List<string>> packageReferenceToProjects = new(PackageReferenceComparer.Instance);
 
-                foreach (string configFile in packageRestoreInputs.PackagesConfigFiles)
+                foreach (string configFile in packageRestoreInputs.PackagesConfigFiles.Distinct())
                 {
                     foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile))
                     {
-                        if (!configToProjectPath.TryGetValue(configFile, out List<string> projectPath))
+                        if (!configToProjectPath.TryGetValue(configFile, out HashSet<string> projectPath))
                         {
-                            projectPath = new List<string> { configFile };
+                            projectPath = new HashSet<string> { configFile };
                         }
 
                         if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
@@ -469,9 +469,9 @@ namespace NuGet.CommandLine
             }
         }
 
-        private Dictionary<string, List<string>> GetPackagesConfigToProjectsPath(PackageRestoreInputs packageRestoreInputs)
+        private Dictionary<string, HashSet<string>> GetPackagesConfigToProjectsPath(PackageRestoreInputs packageRestoreInputs)
         {
-            Dictionary<string, List<string>> configToProjectPath = new();
+            Dictionary<string, HashSet<string>> configToProjectPath = new();
             foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
             {
                 if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
@@ -484,7 +484,7 @@ namespace NuGet.CommandLine
                     }
                     else
                     {
-                        configToProjectPath.Add(packagesConfig, new List<string> { project.FilePath });
+                        configToProjectPath.Add(packagesConfig, new HashSet<string> { project.FilePath });
                     }
                 }
             }
