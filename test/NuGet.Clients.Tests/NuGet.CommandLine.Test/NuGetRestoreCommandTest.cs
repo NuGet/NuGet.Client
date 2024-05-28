@@ -3337,7 +3337,6 @@ EndProject";
             r.AllOutput.Should().Contain($"Package 'packageA' 1.1.0 has a known high severity vulnerability");
         }
 
-
         [SkipMono()]
         public void RestoreCommand_WithProjectWithPackagesConfig_DefaultSettings_PackageWithVulnerabilities_RaisesWarnings()
         {

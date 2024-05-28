@@ -478,7 +478,7 @@ namespace NuGet.CommandLine
                 {
                     var packagesConfig = ((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath;
 
-                    if (configToProjectPath.TryGetValue(packagesConfig, out var existingValue))
+                    if (configToProjectPath.TryGetValue(packagesConfig, out HashSet<string> existingValue))
                     {
                         existingValue.Add(project.FilePath);
                     }

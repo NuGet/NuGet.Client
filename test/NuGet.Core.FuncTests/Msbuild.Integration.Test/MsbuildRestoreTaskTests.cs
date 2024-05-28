@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.Http;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Commands;
@@ -21,7 +20,6 @@ using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.TeamFoundation.Common.Internal.NativeMethods;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Msbuild.Integration.Test
