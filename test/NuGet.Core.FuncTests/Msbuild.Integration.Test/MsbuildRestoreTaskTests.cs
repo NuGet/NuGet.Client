@@ -1615,10 +1615,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             File.Exists(packageFileA).Should().BeTrue();
             File.Exists(packageFileA120).Should().BeTrue();
             File.Exists(packageFileB).Should().BeTrue();
-            // MSBuild replays warnings at the bottom, so only look there.
 
-            var allOutput = r.AllOutput;
-           var replayedOutput = allOutput.Substring(allOutput.IndexOf($"\"{solution.SolutionPath}\" (Restore "));
+            // MSBuild replays warnings at the bottom, so only look there.
+            var replayedOutput = r.AllOutput.Substring(r.AllOutput.IndexOf($"\"{solution.SolutionPath}\" (Restore "));
 
             replayedOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", Exactly.Twice());
             replayedOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known high severity vulnerability", Exactly.Once());
