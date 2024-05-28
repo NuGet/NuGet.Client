@@ -265,7 +265,8 @@ stages:
     - job:
       displayName: Source Build
       timeoutInMinutes: 15
-      vmImage: linux-latest
+      pool:
+        vmImage: linux-latest
       steps:
       - task: PowerShell@2
         displayName: "Build source-build"
