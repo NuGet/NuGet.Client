@@ -3607,7 +3607,7 @@ EndProject";
                 "b",
                 ProjectStyle.PackagesConfig,
                 pathContext.SolutionRoot);
-            //projectB.Properties.Add("NuGetAuditLevel", "high");
+            projectB.Properties.Add("NuGetAuditLevel", "high");
             projectB.ProjectPath = Path.Combine(pathContext.SolutionRoot, "a", $"b.csproj");
 
             solution.Projects.Add(projectA);
