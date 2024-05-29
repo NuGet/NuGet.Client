@@ -32,5 +32,6 @@ namespace NuGet.VisualStudio
 
         public static readonly NuGetFeatureFlagConstants BulkRestoreCoordination = new("NuGet.BulkRestoreCoordination", "NUGET_BULK_RESTORE_COORDINATION", defaultState: true);
         public static readonly NuGetFeatureFlagConstants NuGetSolutionCacheInitilization = new("NuGet.SolutionCacheInitialization", "NUGET_SOLUTION_CACHE_INITIALIZATION", defaultState: true);
+        public static readonly NuGetFeatureFlagConstants DoNotUseDefaultNetworkCredentials = new("NuGet.DoNotUseDefaultNetworkCredentials", "NUGET_DONOTUSE_DEFAULTNETWORKCREDENTIALS", defaultState: true);
     }
 }

@@ -32,5 +32,11 @@ namespace NuGet.VisualStudio.Common.Test
 
             constant.DefaultState.Should().Be(defaultFeatureFlag);
         }
+
+        [Fact]
+        public void DefaultNetworkCredentialsNotUsed_DefaultState()
+        {
+            Assert.True(NuGetFeatureFlagConstants.DoNotUseDefaultNetworkCredentials.DefaultState);
+        }
     }
 }

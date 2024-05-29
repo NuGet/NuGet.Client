@@ -20,22 +20,24 @@ namespace NuGet.PackageManagement.VisualStudio
     [Export(typeof(ICredentialServiceProvider))]
     public class DefaultVSCredentialServiceProvider : ICredentialServiceProvider
     {
-
         private readonly Lazy<INuGetUILogger> _outputConsoleLogger;
         private readonly IAsyncServiceProvider _asyncServiceProvider;
+        private readonly INuGetFeatureFlagService _featureFlagService;
 
         [ImportingConstructor]
-        internal DefaultVSCredentialServiceProvider(Lazy<INuGetUILogger> outputConsoleLogger)
-            : this(AsyncServiceProvider.GlobalProvider, outputConsoleLogger)
+        internal DefaultVSCredentialServiceProvider(Lazy<INuGetUILogger> outputConsoleLogger, INuGetFeatureFlagService featureFlagService)
+            : this(AsyncServiceProvider.GlobalProvider, outputConsoleLogger, featureFlagService)
         { }
 
         internal DefaultVSCredentialServiceProvider(
             IAsyncServiceProvider asyncServiceProvider,
-            Lazy<INuGetUILogger> outputConsoleLogger
+            Lazy<INuGetUILogger> outputConsoleLogger,
+            INuGetFeatureFlagService featureFlagService
             )
         {
             _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _outputConsoleLogger = outputConsoleLogger ?? throw new ArgumentNullException(nameof(outputConsoleLogger));
+            _featureFlagService = featureFlagService ?? throw new ArgumentNullException(nameof(featureFlagService));
         }
 
         public async Task<NuGet.Configuration.ICredentialService> GetCredentialServiceAsync()
@@ -93,9 +95,14 @@ namespace NuGet.PackageManagement.VisualStudio
             var credentialService = new CredentialService(
                 new AsyncLazy<IEnumerable<ICredentialProvider>>(() => Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)),
                 nonInteractive: nonInteractive,
-                handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
+                handlesDefaultCredentials: await IsDoNotUseDefaultNetworkCredentialsFeatureFlagSetAsync());
 
             return credentialService;
+
+            async Task<bool> IsDoNotUseDefaultNetworkCredentialsFeatureFlagSetAsync()
+            {
+                return await _featureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.DoNotUseDefaultNetworkCredentials);
+            }
         }
 
         private async Task TryAddCredentialProvidersAsync(
