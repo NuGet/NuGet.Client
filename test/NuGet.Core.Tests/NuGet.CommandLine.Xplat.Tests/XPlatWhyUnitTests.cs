@@ -216,6 +216,17 @@ namespace NuGet.CommandLine.Xplat.Tests
             {
                 library.Path = ConvertWindowsPathToUnix(library.Path);
             }
+
+            var packageSpecTargets = assetsFile.PackageSpec.RestoreMetadata.TargetFrameworks;
+
+            foreach (var target in packageSpecTargets)
+            {
+                var projectReferences = target.ProjectReferences;
+                foreach (var projectReference in projectReferences)
+                {
+                    projectReference.ProjectPath = ConvertWindowsPathToUnix(projectReference.ProjectPath);
+                }
+            }
         }
 
         private static string ConvertWindowsPathToUnix(string path)
