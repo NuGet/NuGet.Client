@@ -9,7 +9,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Evaluation;
-using NuGet.CommandLine.XPlat.WhyCommandUtility;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat

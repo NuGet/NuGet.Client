@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using NuGet.ProjectModel;
 
-namespace NuGet.CommandLine.XPlat.WhyCommandUtility
+namespace NuGet.CommandLine.XPlat
 {
     internal static class DependencyGraphFinder
     {
