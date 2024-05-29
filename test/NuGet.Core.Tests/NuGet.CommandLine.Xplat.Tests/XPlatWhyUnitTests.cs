@@ -220,7 +220,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
         private static string ConvertWindowsPathToUnix(string path)
         {
-            char[] trimChars = [ 'C', ':' ];
+            char[] trimChars = ['C', ':'];
             return path.TrimStart(trimChars).Replace("\\", "/");
         }
     }
