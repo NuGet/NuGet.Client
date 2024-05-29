@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.CommandLine.XPlat.WhyCommandUtility;
+using NuGet.CommandLine.XPlat;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Test.Utility;
