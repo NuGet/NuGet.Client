@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.CommandLine.XPlat;
-using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 using Xunit;
@@ -36,9 +35,8 @@ namespace Dotnet.Integration.Test
 
             project.AddPackageToFramework(projectFramework, packageX);
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
                 packageX,
                 packageY);
 
@@ -68,9 +66,8 @@ namespace Dotnet.Integration.Test
 
             var packageZ = XPlatTestUtils.CreatePackage("PackageZ", "1.0.0", projectFramework);
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
                 packageX,
                 packageZ);
 
@@ -102,9 +99,8 @@ namespace Dotnet.Integration.Test
 
             project.AddPackageToFramework(projectFramework, packageX);
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
                 packageX,
                 packageY);
 
@@ -136,9 +132,8 @@ namespace Dotnet.Integration.Test
 
             project.AddPackageToFramework(projectFramework, packageX);
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
                 packageX,
                 packageY);
 
@@ -205,9 +200,8 @@ namespace Dotnet.Integration.Test
 
             project.AddPackageToFramework(projectFramework, packageX);
 
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+            await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
                 packageX,
                 packageY);
 
