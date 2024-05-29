@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using NuGet.Shared;
 
@@ -19,9 +20,9 @@ namespace NuGet.CommandLine.XPlat
 
         public DependencyNode(string id, string version)
         {
-            Id = id;
-            Version = version;
-            Children = new HashSet<DependencyNode>();
+            Id = id ?? throw new ArgumentNullException(nameof(id));
+            Version = version ?? throw new ArgumentNullException(nameof(version));
+            Children = new HashSet<DependencyNode>(new DependencyNodeComparer());
         }
 
         public override int GetHashCode()
@@ -31,6 +32,22 @@ namespace NuGet.CommandLine.XPlat
             hashCodeCombiner.AddObject(Version);
             hashCodeCombiner.AddUnorderedSequence(Children);
             return hashCodeCombiner.CombinedHash;
+        }
+    }
+
+    internal class DependencyNodeComparer : IEqualityComparer<DependencyNode>
+    {
+        public bool Equals(DependencyNode? x, DependencyNode? y)
+        {
+            if (x == null || y == null)
+                return false;
+
+            return string.Equals(x.Id, y.Id, StringComparison.CurrentCultureIgnoreCase);
+        }
+
+        public int GetHashCode(DependencyNode obj)
+        {
+            return obj.Id.GetHashCode();
         }
     }
 }

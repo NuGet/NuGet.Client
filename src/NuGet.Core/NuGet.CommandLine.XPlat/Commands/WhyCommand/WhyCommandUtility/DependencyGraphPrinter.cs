@@ -69,7 +69,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
 
             // initialize the stack with all top-level nodes
             int counter = 0;
-            foreach (var node in topLevelNodes.OrderByDescending(c => c.Id, StringComparer.CurrentCulture))
+            foreach (var node in topLevelNodes.OrderByDescending(c => c.Id, StringComparer.OrdinalIgnoreCase))
             {
                 stack.Push(new StackOutputData(node, prefix: "   ", isLastChild: counter++ == 0));
             }
@@ -92,7 +92,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 }
 
                 // print current node
-                if (current.Node.Id == targetPackage)
+                if (current.Node.Id.Equals(targetPackage, StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogMinimal($"{currentPrefix}", Console.ForegroundColor);
                     logger.LogMinimal($"{current.Node.Id} (v{current.Node.Version})\n", TargetPackageColor);
@@ -106,7 +106,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 {
                     // push all the node's children onto the stack
                     counter = 0;
-                    foreach (var child in current.Node.Children.OrderByDescending(c => c.Id, StringComparer.CurrentCulture))
+                    foreach (var child in current.Node.Children.OrderByDescending(c => c.Id, StringComparer.OrdinalIgnoreCase))
                     {
                         stack.Push(new StackOutputData(child, childPrefix, isLastChild: counter++ == 0));
                     }

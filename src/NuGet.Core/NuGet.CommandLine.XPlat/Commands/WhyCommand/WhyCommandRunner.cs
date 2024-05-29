@@ -16,7 +16,6 @@ namespace NuGet.CommandLine.XPlat
 {
     internal static class WhyCommandRunner
     {
-        private const string ProjectName = "MSBuildProjectName";
         private const string ProjectAssetsFile = "ProjectAssetsFile";
 
         /// <summary>
@@ -25,14 +24,10 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="whyCommandArgs">CLI arguments for the 'why' command.</param>
         public static int ExecuteCommand(WhyCommandArgs whyCommandArgs)
         {
-            try
+            bool validArgumentsUsed = ValidatePathArgument(whyCommandArgs.Path, whyCommandArgs.Logger)
+                                        && ValidatePackageArgument(whyCommandArgs.Package, whyCommandArgs.Logger);
+            if (!validArgumentsUsed)
             {
-                ValidatePathArgument(whyCommandArgs.Path);
-                ValidatePackageArgument(whyCommandArgs.Package);
-            }
-            catch (ArgumentException ex)
-            {
-                whyCommandArgs.Logger.LogError(ex.Message);
                 return ExitCodes.InvalidArguments;
             }
 
@@ -49,7 +44,9 @@ namespace NuGet.CommandLine.XPlat
 
                 if (assetsFile != null)
                 {
-                    Dictionary<string, List<DependencyNode>?>? dependencyGraphPerFramework = DependencyGraphFinder.GetAllDependencyGraphs(
+                    ValidateFrameworksOptions(assetsFile, whyCommandArgs.Frameworks, whyCommandArgs.Logger);
+
+                    Dictionary<string, List<DependencyNode>?>? dependencyGraphPerFramework = DependencyGraphFinder.GetAllDependencyGraphsForTarget(
                         assetsFile,
                         whyCommandArgs.Package,
                         whyCommandArgs.Frameworks);
@@ -59,7 +56,7 @@ namespace NuGet.CommandLine.XPlat
                         whyCommandArgs.Logger.LogMinimal(
                             string.Format(
                                 Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
-                                project.GetPropertyValue(ProjectName),
+                                assetsFile.PackageSpec.Name,
                                 targetPackage));
 
                         DependencyGraphPrinter.PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
@@ -69,7 +66,7 @@ namespace NuGet.CommandLine.XPlat
                         whyCommandArgs.Logger.LogMinimal(
                             string.Format(
                                 Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
-                                project.GetPropertyValue(ProjectName),
+                                assetsFile.PackageSpec.Name,
                                 targetPackage));
                     }
                 }
@@ -80,36 +77,49 @@ namespace NuGet.CommandLine.XPlat
             return ExitCodes.Success;
         }
 
-        private static void ValidatePathArgument(string path)
+        private static bool ValidatePathArgument(string path, ILoggerWithColor logger)
         {
             if (string.IsNullOrEmpty(path))
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                    "PROJECT|SOLUTION"));
+                logger.LogError(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
+                        "PROJECT|SOLUTION"));
+
+                return false;
             }
 
             if (!File.Exists(path)
                 || (!path.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
                     && !path.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)))
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_PathIsMissingOrInvalid,
-                    path));
+                logger.LogError(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WhyCommand_Error_PathIsMissingOrInvalid,
+                        path));
+
+                return false;
             }
+
+            return true;
         }
 
-        private static void ValidatePackageArgument(string package)
+        private static bool ValidatePackageArgument(string package, ILoggerWithColor logger)
         {
             if (string.IsNullOrEmpty(package))
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                    "PACKAGE"));
+                logger.LogError(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
+                        "PACKAGE"));
+
+                return false;
             }
+
+            return true;
         }
 
         /// <summary>
@@ -163,6 +173,29 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return assetsFile;
+        }
+
+        /// <summary>
+        /// Validates that the input frameworks options have corresponding targets in the assets file. Outputs a warning message if a framework does not exist.
+        /// </summary>
+        /// <param name="assetsFile"></param>
+        /// <param name="inputFrameworks"></param>
+        /// <param name="logger"></param>
+        private static void ValidateFrameworksOptions(LockFile assetsFile, List<string> inputFrameworks, ILoggerWithColor logger)
+        {
+            foreach (var frameworkAlias in inputFrameworks)
+            {
+                if (assetsFile.GetTarget(frameworkAlias, runtimeIdentifier: null) == null)
+                {
+                    logger.LogWarning(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget,
+                            assetsFile.Path,
+                            assetsFile.PackageSpec.Name,
+                            frameworkAlias));
+                }
+            }
         }
     }
 }

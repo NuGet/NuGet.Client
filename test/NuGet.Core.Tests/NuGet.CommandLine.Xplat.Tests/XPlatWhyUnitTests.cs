@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.CommandLine.XPlat.WhyCommandUtility;
 using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -20,11 +21,16 @@ namespace NuGet.CommandLine.Xplat.Tests
             var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
             var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
             string targetPackage = "System.Text.Json";
             var frameworks = new List<string>();
 
             // Act
-            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphs(assetsFile, targetPackage, frameworks);
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
 
@@ -46,11 +52,16 @@ namespace NuGet.CommandLine.Xplat.Tests
             var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
             var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
             string targetPackage = "DotnetNuGetWhyPackage"; // project reference
             var frameworks = new List<string>();
 
             // Act
-            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphs(assetsFile, targetPackage, frameworks);
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
 
@@ -69,11 +80,16 @@ namespace NuGet.CommandLine.Xplat.Tests
             var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
             var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
             string targetPackage = "NotARealPackage";
             var frameworks = new List<string>();
 
             // Act
-            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphs(assetsFile, targetPackage, frameworks);
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
 
@@ -89,11 +105,16 @@ namespace NuGet.CommandLine.Xplat.Tests
             var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
             var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
             string targetPackage = "Azure.Core";
             var frameworks = new List<string>();
 
             // Act
-            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphs(assetsFile, targetPackage, frameworks);
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
 
@@ -112,11 +133,16 @@ namespace NuGet.CommandLine.Xplat.Tests
             var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
             var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
             string targetPackage = "Azure.Core";
             List<string> frameworks = ["net472"];
 
             // Act
-            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphs(assetsFile, targetPackage, frameworks);
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
 
@@ -132,16 +158,70 @@ namespace NuGet.CommandLine.Xplat.Tests
             var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
             var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
             string targetPackage = "Azure.Core";
             List<string> frameworks = ["net6.0"];
 
             // Act
-            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphs(assetsFile, targetPackage, frameworks);
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
 
             // no paths found
             Assert.Null(dependencyGraphs);
+        }
+
+        [Fact]
+        public void WhyCommand_DependencyGraphFinder_DifferentCaseUsedForTargetPackageId_MatchesAreCaseInsensitive_AllPathsFound()
+        {
+            // Arrange
+            var lockFileFormat = new LockFileFormat();
+            var lockFileContent = ProtocolUtility.GetResource("NuGet.CommandLine.Xplat.Tests.compiler.resources.DNW.Test.SampleProject1.project.assets.json", GetType());
+            var assetsFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+
+            if (XunitAttributeUtility.CurrentPlatform == Platform.Linux || XunitAttributeUtility.CurrentPlatform == Platform.Darwin)
+            {
+                ConvertRelevantWindowsPathsToUnix(assetsFile);
+            }
+
+            string targetPackage = "system.text.jsoN";
+            var frameworks = new List<string>();
+
+            // Act
+            var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
+
+            // Assert
+
+            // direct dependency on target package is found
+            Assert.Contains(dependencyGraphs["net472"], dep => (dep.Id == "System.Text.Json") && (dep.Version == "8.0.0"));
+
+            // transitive dependency from a top-level package is found, with the correct resolved version
+            Assert.Contains(dependencyGraphs["net472"].First(dep => dep.Id == "Azure.Core").Children, dep => (dep.Id == "System.Text.Json") && (dep.Version == "8.0.0"));
+
+            // transitive dependency from a top-level project reference is found, with the correct resolved version
+            Assert.Contains(dependencyGraphs["net472"].First(dep => dep.Id == "DotnetNuGetWhyPackage").Children, dep => (dep.Id == "System.Text.Json") && (dep.Version == "8.0.0"));
+        }
+
+        private static void ConvertRelevantWindowsPathsToUnix(LockFile assetsFile)
+        {
+            assetsFile.PackageSpec.FilePath = ConvertWindowsPathToUnix(assetsFile.PackageSpec.FilePath);
+
+            var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
+
+            foreach (var library in projectLibraries)
+            {
+                library.Path = ConvertWindowsPathToUnix(library.Path);
+            }
+        }
+
+        private static string ConvertWindowsPathToUnix(string path)
+        {
+            char[] trimChars = [ 'C', ':' ];
+            return path.TrimStart(trimChars).Replace("\\", "/");
         }
     }
 }

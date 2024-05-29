@@ -188,5 +188,41 @@ namespace Dotnet.Integration.Test
             Assert.Equal(ExitCodes.InvalidArguments, result.ExitCode);
             Assert.Contains($"Required argument missing for command: 'why'.", result.Errors);
         }
+
+        [Fact]
+        public async void WhyCommand_InvalidFrameworksOption_WarnsCorrectly()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var inputFrameworksOption = "invalidFrameworkAlias";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1", projectFramework);
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
+            CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
+
+            string whyCommandArgs = $"nuget why {project.ProjectPath} {packageY.Id} -f {inputFrameworksOption} -f {projectFramework}";
+
+            // Act
+            CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
+
+            // Assert
+            Assert.Equal(ExitCodes.Success, result.ExitCode);
+            Assert.Contains($"warn : The assets file {project.AssetsFileOutputPath} for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", result.AllOutput);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
+        }
     }
 }

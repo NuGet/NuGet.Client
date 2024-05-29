@@ -2233,15 +2233,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to parse one of the given frameworks. Please make sure the given frameworks are valid. For a list of accepted values, please visit https://learn.microsoft.com/en-us/nuget/reference/target-frameworks#supported-frameworks.
-        /// </summary>
-        internal static string WhyCommand_Error_InvalidFramework {
-            get {
-                return ResourceManager.GetString("WhyCommand_Error_InvalidFramework", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. Missing or invalid project/solution file &apos;{0}&apos;..
         /// </summary>
         internal static string WhyCommand_Error_PathIsMissingOrInvalid {
@@ -2301,6 +2292,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string WhyCommand_PathArgument_Description {
             get {
                 return ResourceManager.GetString("WhyCommand_PathArgument_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The assets file {0} for project &apos;{1}&apos; does not contain a target for the specified input framework &apos;{2}&apos;..
+        /// </summary>
+        internal static string WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget {
+            get {
+                return ResourceManager.GetString("WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget", resourceCulture);
             }
         }
     }

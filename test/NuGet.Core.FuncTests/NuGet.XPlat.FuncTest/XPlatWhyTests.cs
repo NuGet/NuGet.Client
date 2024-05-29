@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
@@ -203,6 +201,51 @@ namespace NuGet.XPlat.FuncTest
 
             Assert.Equal(ExitCodes.InvalidArguments, result);
             Assert.Contains($"Unable to run 'dotnet nuget why'. Missing or invalid project/solution file 'FakeProjectPath.csproj'.", errorOutput);
+        }
+
+        [Fact]
+        public async void WhyCommand_InvalidFrameworksOption_WarnsCorrectly()
+        {
+            // Arrange
+            var logger = new TestCommandOutputLogger();
+
+            var pathContext = new SimpleTestPathContext();
+            var projectFramework = "net472";
+            var inputFrameworksOption = "invalidFrameworkAlias";
+            var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
+
+            var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
+            var packageY = XPlatTestUtils.CreatePackage("PackageY", "1.0.1", projectFramework);
+
+            packageX.Dependencies.Add(packageY);
+
+            project.AddPackageToFramework(projectFramework, packageX);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageX,
+                packageY);
+
+            var addPackageCommandArgs = XPlatTestUtils.GetPackageReferenceArgs(packageX.Id, packageX.Version, project);
+            var addPackageCommandRunner = new AddPackageReferenceCommandRunner();
+            var addPackageResult = await addPackageCommandRunner.ExecuteCommand(addPackageCommandArgs, MsBuild);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                    project.ProjectPath,
+                    packageY.Id,
+                    [inputFrameworksOption, projectFramework],
+                    logger);
+
+            // Act
+            var result = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+
+            // Assert
+            var output = logger.ShowMessages();
+
+            Assert.Equal(ExitCodes.Success, result);
+            Assert.Contains($"The assets file {project.AssetsFileOutputPath} for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", output);
+            Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", output);
         }
     }
 }

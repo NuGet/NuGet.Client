@@ -23,7 +23,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
         /// Dictionary mapping target framework aliases to their respective dependency graphs.
         /// Returns null if the project does not have a dependency on the target package.
         /// </returns>
-        public static Dictionary<string, List<DependencyNode>?>? GetAllDependencyGraphs(
+        public static Dictionary<string, List<DependencyNode>?>? GetAllDependencyGraphsForTarget(
             LockFile assetsFile,
             string targetPackage,
             List<string> userInputFrameworks)
@@ -40,22 +40,19 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 {
                     LockFileTarget target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: null);
 
-                    if (target != null)
-                    {
-                        // get all package libraries for the framework
-                        IList<LockFileTargetLibrary> packageLibraries = target.Libraries;
+                    // get all package libraries for the framework
+                    IList<LockFileTargetLibrary> packageLibraries = target.Libraries;
 
-                        // if the project has a dependency on the target package, get the dependency graph
-                        if (packageLibraries.Any(l => l.Name == targetPackage))
-                        {
-                            doesProjectHaveDependencyOnPackage = true;
-                            dependencyGraphPerFramework.Add(targetFrameworkAlias,
-                                                            GetDependencyGraphPerFramework(topLevelReferences, packageLibraries, targetPackage));
-                        }
-                        else
-                        {
-                            dependencyGraphPerFramework.Add(targetFrameworkAlias, null);
-                        }
+                    // if the project has a dependency on the target package, get the dependency graph
+                    if (packageLibraries.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true))
+                    {
+                        doesProjectHaveDependencyOnPackage = true;
+                        dependencyGraphPerFramework.Add(targetFrameworkAlias,
+                                                        GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
+                    }
+                    else
+                    {
+                        dependencyGraphPerFramework.Add(targetFrameworkAlias, null);
                     }
                 }
             }
@@ -74,7 +71,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
         /// <returns>
         /// List of all top-level package nodes in the dependency graph.
         /// </returns>
-        private static List<DependencyNode>? GetDependencyGraphPerFramework(
+        private static List<DependencyNode>? GetDependencyGraphForTargetPerFramework(
             List<string> topLevelReferences,
             IList<LockFileTargetLibrary> packageLibraries,
             string targetPackage)
@@ -82,16 +79,16 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
             List<DependencyNode>? dependencyGraph = null;
 
             // hashset tracking every package node that we've traversed
-            var visited = new HashSet<string>();
+            var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             // dictionary tracking all package nodes that have been added to the graph, mapped to their DependencyNode objects
-            var dependencyNodes = new Dictionary<string, DependencyNode>();
+            var dependencyNodes = new Dictionary<string, DependencyNode>(StringComparer.OrdinalIgnoreCase);
             // dictionary mapping all packageIds to their resolved version
             Dictionary<string, string> versions = GetAllResolvedVersions(packageLibraries);
 
             foreach (var topLevelReference in topLevelReferences)
             {
                 // use depth-first search to find dependency paths from the top-level package to the target package
-                DependencyNode? topLevelNode = FindDependencyPath(topLevelReference, packageLibraries, visited, dependencyNodes, versions, targetPackage);
+                DependencyNode? topLevelNode = FindDependencyPathForTarget(topLevelReference, packageLibraries, visited, dependencyNodes, versions, targetPackage);
 
                 if (topLevelNode != null)
                 {
@@ -115,7 +112,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
         /// <returns>
         /// The top-level package node in the dependency graph (if a path was found), or null (if no path was found).
         /// </returns>
-        private static DependencyNode? FindDependencyPath(
+        private static DependencyNode? FindDependencyPathForTarget(
             string topLevelPackage,
             IList<LockFileTargetLibrary> packageLibraries,
             HashSet<string> visited,
@@ -132,7 +129,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 var currentPackageId = currentPackageData.Id;
 
                 // if we reach the target node, or if we've already traversed this node and found dependency paths, add it to the graph
-                if (currentPackageId == targetPackage
+                if (currentPackageId.Equals(targetPackage, StringComparison.OrdinalIgnoreCase)
                     || dependencyNodes.ContainsKey(currentPackageId))
                 {
                     AddToGraph(currentPackageData, dependencyNodes, versions);
@@ -148,7 +145,7 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 visited.Add(currentPackageId);
 
                 // get all dependencies for the current package
-                var dependencies = packageLibraries?.FirstOrDefault(i => i.Name == currentPackageId)?.Dependencies;
+                var dependencies = packageLibraries?.FirstOrDefault(i => i?.Name?.Equals(currentPackageId, StringComparison.OrdinalIgnoreCase) == true)?.Dependencies;
 
                 if (dependencies?.Count > 0)
                 {
@@ -200,12 +197,6 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
                 if (i > 0)
                 {
                     var childNode = dependencyNodes[dependencyPath[i - 1]];
-
-                    if (dependencyNodes[currentPackageId].Children.Any(p => p.Id == childNode.Id))
-                    {
-                        continue;
-                    }
-
                     dependencyNodes[currentPackageId].Children.Add(childNode);
                 }
             }
@@ -237,11 +228,14 @@ namespace NuGet.CommandLine.XPlat.WhyCommandUtility
             // so we will store all project reference paths in a dictionary here
             var projectLibraries = assetsFile.Libraries.Where(l => l.Type == "project");
             var projectLibraryPathToName = new Dictionary<string, string>(projectLibraries.Count());
-            var projectDirectoryPath = Path.GetFullPath(assetsFile.PackageSpec.BaseDirectory);
+            var projectDirectoryPath = Path.GetDirectoryName(assetsFile.PackageSpec.FilePath);
 
-            foreach (var library in projectLibraries)
+            if (projectDirectoryPath != null)
             {
-                projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
+                foreach (var library in projectLibraries)
+                {
+                    projectLibraryPathToName.Add(Path.GetFullPath(library.Path, projectDirectoryPath), library.Name);
+                }
             }
 
             // get all top-level references for each target alias
