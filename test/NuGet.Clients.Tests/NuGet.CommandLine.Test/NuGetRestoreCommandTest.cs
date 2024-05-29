@@ -23,7 +23,6 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 using Test.Utility;
 using Xunit;
 
