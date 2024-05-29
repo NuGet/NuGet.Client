@@ -3618,7 +3618,6 @@ EndProject";
   <package id=""packageA"" version=""1.2.0"" />
   <package id=""packageB"" version=""2.2.0"" />
 </packages>");
-
             mockServer.Start();
 
             // Act
