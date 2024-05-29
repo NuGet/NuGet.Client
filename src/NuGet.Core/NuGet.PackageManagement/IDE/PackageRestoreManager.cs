@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement
                     // This is because the key is used to match the project name to the package references.
                     // If the key is not the same, the package references will not be matched to the project name and the audit properties will not be considered.
                     // The side-effects is that if 2 projects have the exact same name, they will share the same audit properties.
-                    // The chances of anyone configuring msbuild audit properties are low, but still a possibility nonetheless.
+                    // The chances of anyone configuring msbuild audit properties differently within the same solution are low, but still a possibility nonetheless.
                     // Given that the project names are used in a lot of places, changing it in a servicing release is a really large risk, so this will have the limitation of sharing audit properties.
                     // TODO: https://github.com/NuGet/Home/issues/13466
                     restoreAuditProperties[nuGetProjectName] = auditProperties;
