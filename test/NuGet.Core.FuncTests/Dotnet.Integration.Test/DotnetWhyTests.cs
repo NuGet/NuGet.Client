@@ -25,7 +25,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
+            var projectFramework = "net7.0";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
             var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
@@ -58,7 +58,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
+            var projectFramework = "net7.0";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
             var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
@@ -89,7 +89,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
+            var projectFramework = "net7.0";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
             var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
@@ -122,7 +122,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
+            var projectFramework = "net7.0";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
             var packageX = XPlatTestUtils.CreatePackage("PackageX", "1.0.0", projectFramework);
@@ -171,7 +171,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
+            var projectFramework = "net7.0";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
             string whyCommandArgs = $"nuget why {project.ProjectPath}";
@@ -189,7 +189,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-            var projectFramework = "net472";
+            var projectFramework = "net7.0";
             var inputFrameworksOption = "invalidFrameworkAlias";
             var project = XPlatTestUtils.CreateProject(ProjectName, pathContext, projectFramework);
 
