@@ -404,11 +404,9 @@ namespace NuGet.Test
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(simpleTestPathContext.PackageSource, packageA);
 
-            var testNuGetProjectContext = new TestNuGetProjectContext();
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new PackageSource(simpleTestPathContext.PackageSource));
             var testSettings = NullSettings.Instance;
             var resolutionContext = new ResolutionContext();
-            var token = CancellationToken.None;
 
             var nuGetPackageManager = new NuGetPackageManager(
                 sourceRepositoryProvider,
@@ -417,9 +415,9 @@ namespace NuGet.Test
                 new TestDeleteOnRestartManager());
 
             await nuGetPackageManager.InstallPackageAsync(projectA, packageA.Identity,
-                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, CancellationToken.None);
             await nuGetPackageManager.InstallPackageAsync(projectB, packageA.Identity,
-                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, CancellationToken.None);
 
             var packageRestoreManager = new PackageRestoreManager(
                 sourceRepositoryProvider,
@@ -433,7 +431,7 @@ namespace NuGet.Test
 
             // Act
             PackageRestoreResult result = await packageRestoreManager.RestoreMissingPackagesInSolutionAsync(testSolutionManager.SolutionDirectory,
-                testNuGetProjectContext,
+                new TestNuGetProjectContext(),
                 new TestLogger(),
                 CancellationToken.None);
 
@@ -441,7 +439,6 @@ namespace NuGet.Test
             result.Should().NotBeNull();
             nuGetPackageManager.PackageExistsInPackagesFolder((packageA.Identity)).Should().BeTrue();
         }
-
 
         private static DownloadResourceResult GetDownloadResult(string source, FileInfo packageFileInfo)
         {

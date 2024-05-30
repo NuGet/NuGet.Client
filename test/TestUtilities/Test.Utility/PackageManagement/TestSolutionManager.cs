@@ -79,7 +79,7 @@ namespace Test.Utility
             SolutionDirectory = solutionDirectory;
         }
 
-        public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null, string projectPath = null, bool validateExistingProject = true)
+        public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string projectPath = null, bool validateExistingProject = true)
         {
             if (validateExistingProject)
             {
