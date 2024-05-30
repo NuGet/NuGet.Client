@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Frameworks;
