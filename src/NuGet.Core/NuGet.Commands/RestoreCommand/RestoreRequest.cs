@@ -210,5 +210,7 @@ namespace NuGet.Commands
         /// It can be set to true through the updatePackageLastAccessTime configuration flag
         /// </summary>
         public bool UpdatePackageLastAccessTime { get; set; }
+
+        public string SDKAnalysisLevel { get; set; }
     }
 }

@@ -109,6 +109,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     </_GenerateRestoreGraphProjectEntryInputProperties>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!--SDK Analysis level value should be updated in correspondance with the version of SDK this targeting-->
+    <SDKAnalysisLevel Condition=" '$(SDKAnalysisLevel)' == ''">9.1.00</SDKAnalysisLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- $(MSBuildThisFileDirectory) gives the directory of this MSBuild file -->
+    <!-- Combine it with ".." to go one directory up, and then specify b.txt -->
+    <PathToBtxt>$(MSBuildThisFileDirectory)..\b.txt</PathToBtxt>
+  </PropertyGroup>
+  
   <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true' And '$(RestoreEnableGlobalPackageReference)' != 'false'">
     <!--
         Add GlobalPackageReference items to the PackageReference item group with no version.
@@ -153,7 +164,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetGlobalPropertyValueTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-
+ 
   <!--
     ============================================================
     Restore
@@ -183,7 +194,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Interactive="$(NuGetInteractive)"
       RestoreForceEvaluate="$(RestoreForceEvaluate)"
       RestorePackagesConfig="$(RestorePackagesConfig)"
-      EmbedFilesInBinlog="$(RestoreEmbedFilesInBinlog)">
+      EmbedFilesInBinlog="$(RestoreEmbedFilesInBinlog)"
+      SDKAnalysisLevel="$(SDKAnalysisLevel)">
       <Output TaskParameter="EmbedInBinlog" ItemName="EmbedInBinlog" />
     </RestoreTask>
   </Target>

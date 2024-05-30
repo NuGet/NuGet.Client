@@ -96,6 +96,8 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string EmbedFilesInBinlog { get; set; }
 
+        public string SDKAnalysisLevel { get; set; }
+
         public override bool Execute()
         {
 #if DEBUG
@@ -159,6 +161,7 @@ namespace NuGet.Build.Tasks
                 forceEvaluate: RestoreForceEvaluate,
                 hideWarningsAndErrors: HideWarningsAndErrors,
                 restorePC: RestorePackagesConfig,
+                SDKAnalysisLevel: SDKAnalysisLevel,
                 log: log,
                 cancellationToken: _cts.Token);
         }

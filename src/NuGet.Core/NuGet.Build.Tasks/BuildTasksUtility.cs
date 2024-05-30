@@ -132,7 +132,68 @@ namespace NuGet.Build.Tasks
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
-            return RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects: false, log, cancellationToken);
+            return RestoreAsync(dependencyGraphSpec,
+                interactive,
+                recursive,
+                noCache,
+                ignoreFailedSources,
+                disableParallel,
+                force,
+                forceEvaluate,
+                hideWarningsAndErrors,
+                restorePC,
+                cleanupAssetsForUnsupportedProjects: false,
+                log,
+                cancellationToken);
+        }
+
+        public static Task<bool> RestoreAsync(
+            DependencyGraphSpec dependencyGraphSpec,
+            bool interactive,
+            bool recursive,
+            bool noCache,
+            bool ignoreFailedSources,
+            bool disableParallel,
+            bool force,
+            bool forceEvaluate,
+            bool hideWarningsAndErrors,
+            bool restorePC,
+            string SDKAnalysisLevel,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return RestoreAsync(dependencyGraphSpec,
+                interactive,
+                recursive,
+                noCache,
+                ignoreFailedSources,
+                disableParallel,
+                force,
+                forceEvaluate,
+                hideWarningsAndErrors,
+                restorePC,
+                cleanupAssetsForUnsupportedProjects: false,
+                SDKAnalysisLevel,
+                log,
+                cancellationToken);
+        }
+
+        public static Task<bool> RestoreAsync(
+            DependencyGraphSpec dependencyGraphSpec,
+            bool interactive,
+            bool recursive,
+            bool noCache,
+            bool ignoreFailedSources,
+            bool disableParallel,
+            bool force,
+            bool forceEvaluate,
+            bool hideWarningsAndErrors,
+            bool restorePC,
+            bool cleanupAssetsForUnsupportedProjects,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects, "", log, cancellationToken);
         }
 
         public static async Task<bool> RestoreAsync(
@@ -147,6 +208,7 @@ namespace NuGet.Build.Tasks
             bool hideWarningsAndErrors,
             bool restorePC,
             bool cleanupAssetsForUnsupportedProjects,
+            string SDKAnalysisLevel,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -243,7 +305,8 @@ namespace NuGet.Build.Tasks
                             PreLoadedRequestProviders = providers,
                             AllowNoOp = !force,
                             HideWarningsAndErrors = hideWarningsAndErrors,
-                            RestoreForceEvaluate = forceEvaluate
+                            RestoreForceEvaluate = forceEvaluate,
+                            SDKAnalysisLevel = SDKAnalysisLevel
                         };
 
                         if (restoreContext.DisableParallel)
