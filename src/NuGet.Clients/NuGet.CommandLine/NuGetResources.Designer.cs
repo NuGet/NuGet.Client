@@ -720,6 +720,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Skipping installation of package &quot;{0}&quot; because higher version &quot;{1}&quot; is already installed..
+        /// </summary>
+        public static string InstallCommandHigherVersionAlreadyExists {
+            get {
+                return ResourceManager.GetString("InstallCommandHigherVersionAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contains invalid package references. .
         /// </summary>
         public static string InstallCommandInvalidPackageReference {
