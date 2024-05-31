@@ -2278,6 +2278,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos; for project &apos;{0}&apos;. This command only works on SDK-style projects..
+        /// </summary>
+        internal static string WhyCommand_Message_NonSDKStyleProjectsAreNotSupported {
+            get {
+                return ResourceManager.GetString("WhyCommand_Message_NonSDKStyleProjectsAreNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package name to lookup in the dependency graph..
         /// </summary>
         internal static string WhyCommand_PackageArgument_Description {

@@ -38,13 +38,13 @@ namespace NuGet.CommandLine.XPlat
             {
                 foreach (var (targetFrameworkAlias, topLevelReferences) in topLevelReferencesByFramework)
                 {
-                    LockFileTarget target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: null);
+                    LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: null);
 
                     // get all package libraries for the framework
-                    IList<LockFileTargetLibrary> packageLibraries = target.Libraries;
+                    IList<LockFileTargetLibrary>? packageLibraries = target?.Libraries;
 
                     // if the project has a dependency on the target package, get the dependency graph
-                    if (packageLibraries.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true))
+                    if (packageLibraries?.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true) == true)
                     {
                         doesProjectHaveDependencyOnPackage = true;
                         dependencyGraphPerFramework.Add(targetFrameworkAlias,
@@ -272,7 +272,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageLibraries">All package libraries for a given framework.</param>
         private static Dictionary<string, string> GetAllResolvedVersions(IList<LockFileTargetLibrary> packageLibraries)
         {
-            var versions = new Dictionary<string, string>();
+            var versions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var package in packageLibraries)
             {

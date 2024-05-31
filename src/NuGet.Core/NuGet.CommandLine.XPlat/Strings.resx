@@ -932,6 +932,9 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Unable to run 'dotnet nuget why'. Missing or invalid project/solution file '{0}'.</value>
     <comment>{0} - Project/solution file path</comment>
   </data>
+  <data name="WhyCommand_Message_NonSDKStyleProjectsAreNotSupported" xml:space="preserve">
+    <value>Unable to run 'dotnet nuget why' for project '{0}'. This command only works on SDK-style projects.</value>
+  </data>
   <data name="WhyCommand_Error_InvalidAssetsFile" xml:space="preserve">
     <value>The assets file {0} is invalid. Please run restore for project '{1}' before running this command.</value>
     <comment>{0} - Assets file path, {1} - Project name</comment>

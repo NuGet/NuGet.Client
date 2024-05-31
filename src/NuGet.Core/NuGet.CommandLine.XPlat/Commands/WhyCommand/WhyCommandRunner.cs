@@ -39,35 +39,48 @@ namespace NuGet.CommandLine.XPlat
             foreach (var projectPath in projectPaths)
             {
                 Project project = MSBuildAPIUtility.GetProject(projectPath);
-                LockFile? assetsFile = GetProjectAssetsFile(project, whyCommandArgs.Logger);
 
-                if (assetsFile != null)
+                string usingNetSdk = project.GetPropertyValue("UsingMicrosoftNETSdk");
+
+                if (!string.IsNullOrEmpty(usingNetSdk))
                 {
-                    ValidateFrameworksOptions(assetsFile, whyCommandArgs.Frameworks, whyCommandArgs.Logger);
+                    LockFile? assetsFile = GetProjectAssetsFile(project, whyCommandArgs.Logger);
 
-                    Dictionary<string, List<DependencyNode>?>? dependencyGraphPerFramework = DependencyGraphFinder.GetAllDependencyGraphsForTarget(
-                        assetsFile,
-                        whyCommandArgs.Package,
-                        whyCommandArgs.Frameworks);
-
-                    if (dependencyGraphPerFramework != null)
+                    if (assetsFile != null)
                     {
-                        whyCommandArgs.Logger.LogMinimal(
-                            string.Format(
-                                Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
-                                assetsFile.PackageSpec.Name,
-                                targetPackage));
+                        ValidateFrameworksOptions(assetsFile, whyCommandArgs.Frameworks, whyCommandArgs.Logger);
 
-                        DependencyGraphPrinter.PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
+                        Dictionary<string, List<DependencyNode>?>? dependencyGraphPerFramework = DependencyGraphFinder.GetAllDependencyGraphsForTarget(
+                            assetsFile,
+                            whyCommandArgs.Package,
+                            whyCommandArgs.Frameworks);
+
+                        if (dependencyGraphPerFramework != null)
+                        {
+                            whyCommandArgs.Logger.LogMinimal(
+                                string.Format(
+                                    Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
+                                    assetsFile.PackageSpec.Name,
+                                    targetPackage));
+
+                            DependencyGraphPrinter.PrintAllDependencyGraphs(dependencyGraphPerFramework, targetPackage, whyCommandArgs.Logger);
+                        }
+                        else
+                        {
+                            whyCommandArgs.Logger.LogMinimal(
+                                string.Format(
+                                    Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
+                                    assetsFile.PackageSpec.Name,
+                                    targetPackage));
+                        }
                     }
-                    else
-                    {
-                        whyCommandArgs.Logger.LogMinimal(
+                }
+                else
+                {
+                    whyCommandArgs.Logger.LogMinimal(
                             string.Format(
-                                Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
-                                assetsFile.PackageSpec.Name,
-                                targetPackage));
-                    }
+                                Strings.WhyCommand_Message_NonSDKStyleProjectsAreNotSupported,
+                                project.GetPropertyValue("MSBuildProjectName")));
                 }
 
                 ProjectCollection.GlobalProjectCollection.UnloadProject(project);
