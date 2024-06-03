@@ -123,8 +123,8 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VsixOutputDirName>VS15</VsixOutputDirName>
-    <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>8-None</AnalysisLevel>
+    <EnableNETAnalyzers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnableNETAnalyzers>
+    <AnalysisLevel Condition="'$(DotNetBuildSourceOnly)' != 'true'">8-None</AnalysisLevel>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
     <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
   </PropertyGroup>
