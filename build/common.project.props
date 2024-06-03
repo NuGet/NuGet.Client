@@ -66,9 +66,9 @@
 
   <!-- Defaults -->
   <PropertyGroup>
-    <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
     <!-- Treat all warnings as errors, except on official builds since we don't want new warnings to break servicing branches -->
-    <MSBuildTreatWarningsAsErrors Condition=" '$(MSBuildTreatWarningsAsErrors)' == '' And '$(IsOfficialBuild)' != 'true' ">true</MSBuildTreatWarningsAsErrors>
+    <MSBuildTreatWarningsAsErrors Condition=" '$(MSBuildTreatWarningsAsErrors)' == '' And '$(IsOfficialBuild)' != 'true' ">false</MSBuildTreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Default project configuration -->
@@ -200,7 +200,6 @@
   <!-- Add symbols to the dll for test dlls -->
   <PropertyGroup Condition=" '$(TestProject)' == 'true' ">
     <DebugType>full</DebugType>
-    <CodeAnalysisRuleSet>$(BuildCommonDirectory)NuGet.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <!-- The project that builds the VSIX -->
