@@ -146,6 +146,7 @@ dotnet_naming_rule.private_field_rule.style = private_member_style
 ; Diagnostics rule: Don't leave unnecessary suppressions
 dotnet_diagnostic.IDE0076.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0055.severity = warning
 
 dotnet_diagnostic.VSTHRD200.severity = none
 
@@ -264,7 +265,6 @@ dotnet_diagnostic.CA5385.severity = none
 dotnet_diagnostic.CA5386.severity = warning
 dotnet_diagnostic.CA5397.severity = none
 dotnet_diagnostic.CA9999.severity = none
-dotnet_diagnostic.IDE0055.severity = warning
 dotnet_diagnostic.VSTHRD103.severity = silent
 dotnet_diagnostic.VSTHRD105.severity = silent
 

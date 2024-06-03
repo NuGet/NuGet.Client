@@ -124,7 +124,7 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisMode>None</AnalysisMode>
+    <AnalysisLevel>$(NETCoreTargetFramework)-None</AnalysisLevel>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
     <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
   </PropertyGroup>
