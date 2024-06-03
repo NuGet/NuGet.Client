@@ -147,6 +147,8 @@ dotnet_naming_rule.private_field_rule.style = private_member_style
 dotnet_diagnostic.IDE0076.severity = warning
 dotnet_diagnostic.IDE0005.severity = warning
 
+dotnet_diagnostic.VSTHRD200.severity = none
+
 # NuGet Code Analysis Rules
 # Code files under src/ folder
 [src/**/*.cs]
@@ -265,7 +267,6 @@ dotnet_diagnostic.CA9999.severity = none
 dotnet_diagnostic.IDE0055.severity = warning
 dotnet_diagnostic.VSTHRD103.severity = silent
 dotnet_diagnostic.VSTHRD105.severity = silent
-dotnet_diagnostic.VSTHRD200.severity = silent
 
 # Code files under test/ folder
 [test/**/*.cs]
@@ -282,5 +283,4 @@ dotnet_diagnostic.VSTHRD103.severity = none
 dotnet_diagnostic.VSTHRD104.severity = none
 dotnet_diagnostic.VSTHRD105.severity = none
 dotnet_diagnostic.VSTHRD106.severity = none
-dotnet_diagnostic.VSTHRD200.severity = none
 
