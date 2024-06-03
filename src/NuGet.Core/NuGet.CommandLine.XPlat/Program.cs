@@ -191,7 +191,7 @@ namespace NuGet.CommandLine.XPlat
                     // Log the stack trace as verbose output.
                     log.LogVerbose(e.ToString());
 
-                    if (e.GetType().Name == "CommandParsingException")
+                    if (e is CommandParsingException)
                     {
                         ShowBestHelp(app, args);
                     }
