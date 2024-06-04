@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
@@ -16,7 +15,6 @@ namespace NuGet.CommandLine.Test
     {
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
         private static readonly string NuGetExePath = Util.GetNuGetExePath();
-        private string _httpErrorSingle = "You are running the '{0}' operation with an 'HTTP' source: {1}. NuGet requires HTTPS sources. To use an HTTP source, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere.";
 
         // Tests deleting a package from a source that is a file system directory.
         [Fact]
@@ -505,7 +503,6 @@ namespace NuGet.CommandLine.Test
     </packageSources>
 </configuration>";
                 File.WriteAllText(config.NuGetConfig, nugetConfigContent);
-                string expectedError = string.Format(CultureInfo.CurrentCulture, _httpErrorSingle, "delete", $"{server.Uri}nuget");
 
                 // Act
                 string[] args = new string[] {
