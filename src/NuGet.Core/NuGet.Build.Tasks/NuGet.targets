@@ -108,11 +108,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       SolutionExt=$(SolutionExt);
     </_GenerateRestoreGraphProjectEntryInputProperties>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <!--SDK Analysis level value should be updated in correspondance with the version of SDK this targeting-->
-    <SDKAnalysisLevel Condition=" '$(SDKAnalysisLevel)' == ''">9.1.00</SDKAnalysisLevel>
-  </PropertyGroup>
   
   <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true' And '$(RestoreEnableGlobalPackageReference)' != 'false'">
     <!--
@@ -158,6 +153,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetGlobalPropertyValueTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  
   <!--
     ============================================================
     Restore
