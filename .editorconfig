@@ -266,6 +266,7 @@ dotnet_diagnostic.CA5397.severity = none
 dotnet_diagnostic.CA9999.severity = none
 dotnet_diagnostic.VSTHRD103.severity = silent
 dotnet_diagnostic.VSTHRD105.severity = silent
+dotnet_diagnostic.IDE0055.severity = warning
 
 # Code files under test/ folder
 [test/**/*.cs]
