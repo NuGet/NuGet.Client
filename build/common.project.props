@@ -125,6 +125,7 @@
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <EnableNETAnalyzers Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</EnableNETAnalyzers>
+    <AnalysisLevel>8.0</AnalysisLevel>
     <AnalysisMode>None</AnalysisMode>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">true</EnforceCodeStyleInBuild>
     <NoWarn>$(NoWarn);EnableGenerateDocumentationFile</NoWarn>
