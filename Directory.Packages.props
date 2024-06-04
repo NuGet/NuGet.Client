@@ -6,7 +6,7 @@
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">7.0.3</SystemTextJsonVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
-    <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.8.37297</VSFrameworkVersion>
+    <VSFrameworkVersion Condition="'$(VSFrameworkVersion)' == ''">17.10.39524</VSFrameworkVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
   </PropertyGroup>
