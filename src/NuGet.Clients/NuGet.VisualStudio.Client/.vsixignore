@@ -76,6 +76,8 @@ Microsoft.TeamFoundation.WorkItemTracking.Proxy.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
 Microsoft.VisualStudio.Debugger.Interop.16.0.dll
+Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
+
 Microsoft.VisualStudio.Interop.dll
 Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.RpcContracts.dll
