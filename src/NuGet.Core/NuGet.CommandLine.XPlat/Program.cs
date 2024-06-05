@@ -277,7 +277,7 @@ namespace NuGet.CommandLine.XPlat
 
             app.FullName = Strings.App_FullName;
             app.HelpOption(XPlatUtility.HelpOption);
-            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+            app.VersionOption("--version", typeof(Program).Assembly.GetName().Version.ToString());
 
             return app;
         }
