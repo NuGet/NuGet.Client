@@ -36,7 +36,7 @@ namespace NuGet.Protocol
                 var endpoint = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress);
                 var packageBaseAddress = endpoint?.AbsoluteUri;
 
-                // Check for a not HTTPS source
+                // Check if the source is not HTTPS.
                 if (endpoint.Scheme == Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, endpoint));
