@@ -27,7 +27,7 @@ namespace NuGet.Protocol
 
             foreach (Uri endpoint in packageBaseAddress)
             {
-                PackageSource serviceSource = new PackageSource(endpoint.ToString(), endpoint.ToString());
+                PackageSource serviceSource = new PackageSource(endpoint.OriginalString, endpoint.OriginalString);
                 if (serviceSource.IsHttp && !serviceSource.IsHttps && !sourceRepository.PackageSource.AllowInsecureConnections)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, sourceRepository.PackageSource.SourceUri, endpoint));
