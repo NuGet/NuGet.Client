@@ -25,7 +25,7 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 var uri = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageDetailsUriTemplate);
-                // Check for a not HTTPS source
+                // Check if the source is not HTTPS.
                 if (uri.Scheme == Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
                 {
                     throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, uri));
