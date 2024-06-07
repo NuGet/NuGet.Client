@@ -34,7 +34,6 @@ namespace NuGet.ProjectModel
 
         internal static void Write(PackageSpec packageSpec, IObjectWriter writer, bool hashing, IEnvironmentVariableReader environmentVariableReader)
         {
-            Console.WriteLine($"SDKAL value {packageSpec.SDKAnalysisLevel}");
             if (packageSpec == null)
             {
                 throw new ArgumentNullException(nameof(packageSpec));
