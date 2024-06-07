@@ -41,7 +41,6 @@ namespace NuGet.Build.Tasks
                 Debugger.Launch();
             }
 #endif
-            Console.WriteLine($"SDKAL value : {SDKAnalysisLevel}");
             if (RestoreGraphItems.Length < 1)
             {
                 Log.LogWarning("Unable to find a project to restore!");
