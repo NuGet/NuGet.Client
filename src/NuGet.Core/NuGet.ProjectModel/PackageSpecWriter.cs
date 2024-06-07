@@ -34,6 +34,7 @@ namespace NuGet.ProjectModel
 
         internal static void Write(PackageSpec packageSpec, IObjectWriter writer, bool hashing, IEnvironmentVariableReader environmentVariableReader)
         {
+            Console.WriteLine($"SDKAL value {packageSpec.SDKAnalysisLevel}");
             if (packageSpec == null)
             {
                 throw new ArgumentNullException(nameof(packageSpec));
@@ -65,6 +66,7 @@ namespace NuGet.ProjectModel
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 #pragma warning restore CS0612 // Type or member is obsolete
 
+            SetValue(writer, "SDKAnalysisLevel", packageSpec.SDKAnalysisLevel);
 
             if (packageSpec.Dependencies.Count > 0)
             {

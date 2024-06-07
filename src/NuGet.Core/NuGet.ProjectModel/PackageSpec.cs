@@ -162,6 +162,8 @@ namespace NuGet.ProjectModel
         /// <remarks>Optional. This is normally set for internal use only.</remarks>
         public ProjectRestoreMetadata RestoreMetadata { get; set; }
 
+        public string SDKAnalysisLevel { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();

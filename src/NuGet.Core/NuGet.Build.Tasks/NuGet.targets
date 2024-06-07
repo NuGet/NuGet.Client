@@ -211,7 +211,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WriteRestoreGraphTask
       RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
       RestoreGraphOutputPath="$(RestoreGraphOutputPath)"
-      RestoreRecursive="$(RestoreRecursive)" />
+      RestoreRecursive="$(RestoreRecursive)"
+      SDKAnalysisLevel="$(SDKAnalysisLevel)"/>
   </Target>
 
   <!--

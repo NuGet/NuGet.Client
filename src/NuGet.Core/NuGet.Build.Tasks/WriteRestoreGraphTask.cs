@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using NuGet.Commands;
 
@@ -31,6 +30,8 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreRecursive { get; set; }
 
+        public string SDKAnalysisLevel { get; set; }
+
         public override bool Execute()
         {
 #if DEBUG
@@ -40,7 +41,7 @@ namespace NuGet.Build.Tasks
                 Debugger.Launch();
             }
 #endif
-
+            Console.WriteLine($"SDKAL value : {SDKAnalysisLevel}");
             if (RestoreGraphItems.Length < 1)
             {
                 Log.LogWarning("Unable to find a project to restore!");
@@ -53,7 +54,7 @@ namespace NuGet.Build.Tasks
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
 
             // Create file
-            var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
+            var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems, SDKAnalysisLevel);
 
             // Add all child projects
             if (RestoreRecursive)

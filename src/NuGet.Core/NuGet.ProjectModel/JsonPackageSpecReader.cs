@@ -211,6 +211,10 @@ namespace NuGet.ProjectModel
                             }
                         }
                         break;
+
+                    case "SDKAnalysisLevel":
+                        packageSpec.SDKAnalysisLevel = jsonReader.ReadNextTokenAsString();
+                        break;
                 }
             });
 

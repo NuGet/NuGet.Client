@@ -37,12 +37,23 @@ namespace NuGet.Commands
         {
             return GetDependencySpec(items, readOnly: false);
         }
+
+        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, string SDKAnalysisLevel)
+        {
+            return GetDependencySpec(items, readOnly: false, SDKAnalysisLevel);
+        }
+
+        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly)
+        {
+            return GetDependencySpec(items, readOnly, "");
+        }
+
         /// <summary>
         /// Creates a <see cref="DependencyGraphSpec" /> from the specified MSBuild items.
         /// </summary>
         /// <param name="items">An <see cref="IEnumerable{T}" /> of <see cref="IMSBuildItem" /> objects representing the MSBuild items gathered for restore.</param>
         /// <param name="readOnly"><see langword="true" /> to indicate that the <see cref="DependencyGraphSpec" /> is considered read-only and won't be changed, otherwise <see langword="false" />.</param>
-        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly)
+        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly, string SDKAnalysisLevel)
         {
             if (items == null)
             {
@@ -110,6 +121,7 @@ namespace NuGet.Commands
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
 
+                spec.SDKAnalysisLevel = SDKAnalysisLevel;
                 graphSpec.AddProject(spec);
             }
 

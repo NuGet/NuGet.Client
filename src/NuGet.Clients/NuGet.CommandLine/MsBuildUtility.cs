@@ -354,7 +354,31 @@ namespace NuGet.CommandLine
 
         public static XDocument GetRestoreInputFile(string restoreTargetPath, Dictionary<string, string> properties, IEnumerable<string> projectPaths)
         {
+            var commonProjectDirectory = Path.GetDirectoryName(projectPaths.First());
+            foreach (var path in projectPaths)
+            {
+                var directory = Path.GetDirectoryName(path);
+                while (!directory.StartsWith(commonProjectDirectory, StringComparison.OrdinalIgnoreCase))
+                {
+                    commonProjectDirectory = Path.GetDirectoryName(commonProjectDirectory);
+                    if (string.IsNullOrEmpty(commonProjectDirectory))
+                        throw new InvalidOperationException("Projects do not share a common directory.");
+                }
+            }
+
+            var directoryOneLevelUp = Path.GetDirectoryName(commonProjectDirectory);
+
+            // Paths for the Directory.Build.props and Directory.Solution.props one level up
+            var buildPropsPath = Path.Combine(directoryOneLevelUp, "Directory.Build.props");
+            var solutionPropsPath = Path.Combine(directoryOneLevelUp, "Directory.Solution.props");
+
             return GenerateMSBuildFile(
+                new XElement(MSBuildNamespace + "Import",
+                new XAttribute(XName.Get("Project"), solutionPropsPath),
+                new XAttribute(XName.Get("Condition"), $"Exists('{solutionPropsPath}')")),
+                new XElement(MSBuildNamespace + "Import",
+                new XAttribute(XName.Get("Project"), buildPropsPath),
+                new XAttribute(XName.Get("Condition"), $"Exists('{buildPropsPath}')")),
                 new XElement(MSBuildNamespace + "PropertyGroup", properties.Select(e => new XElement(MSBuildNamespace + e.Key, e.Value))),
                 new XElement(MSBuildNamespace + "ItemGroup", projectPaths.Select(GetRestoreGraphProjectInputItem)),
                 new XElement(MSBuildNamespace + "Import", new XAttribute(XName.Get("Project"), restoreTargetPath)));
