@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.ProjectModel;
@@ -204,6 +205,31 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // transitive dependency from a top-level project reference is found, with the correct resolved version
             Assert.Contains(dependencyGraphs["net472"].First(dep => dep.Id == "DotnetNuGetWhyPackage").Children, dep => (dep.Id == "System.Text.Json") && (dep.Version == "8.0.0"));
+        }
+
+        [Fact]
+        public void WhyCommand_GetListOfProjectPaths_AllPathsFound()
+        {
+            // Arrange
+            var directory = TestDirectory.Create();
+
+            var projectFilePath = Path.Combine(directory.Path, "Sample.csproj");
+            File.Create(projectFilePath);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                path: directory.Path,
+                package: "package",
+                frameworks: new List<string>(),
+                logger: new CommandOutputLogger(Common.LogLevel.Debug));
+
+            // Act
+            var projectList = whyCommandArgs.GetListOfProjectPaths();
+
+            // Assert
+
+            Assert.NotNull(projectList);
+            Assert.Equal(projectList.Count(), 1);
+            Assert.Contains(projectFilePath, projectList);
         }
 
         private static void ConvertRelevantWindowsPathsToUnix(LockFile assetsFile)

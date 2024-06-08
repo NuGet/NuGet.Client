@@ -2224,7 +2224,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assets file {0} is invalid. Please run restore for project &apos;{1}&apos; before running this command..
+        ///   Looks up a localized string similar to The assets file &apos;{0}&apos; is invalid. Please run restore for project &apos;{1}&apos; before running this command..
         /// </summary>
         internal static string WhyCommand_Error_InvalidAssetsFile {
             get {
@@ -2233,7 +2233,25 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. Missing or invalid project/solution file &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. The directory &apos;{0}&apos; contains multiple project or solution files. Please specify which project or solution file to use..
+        /// </summary>
+        internal static string WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. The directory &apos;{0}&apos; does not contain any project or solution files..
+        /// </summary>
+        internal static string WhyCommand_Error_NoProjectOrSolutionFilesInDirectory {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_NoProjectOrSolutionFilesInDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. Missing or invalid path &apos;{0}&apos;. Please provide a path to a project, solution file, or directory..
         /// </summary>
         internal static string WhyCommand_Error_PathIsMissingOrInvalid {
             get {
@@ -2305,7 +2323,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assets file {0} for project &apos;{1}&apos; does not contain a target for the specified input framework &apos;{2}&apos;..
+        ///   Looks up a localized string similar to The assets file &apos;{0}&apos; for project &apos;{1}&apos; does not contain a target for the specified input framework &apos;{2}&apos;..
         /// </summary>
         internal static string WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget {
             get {
