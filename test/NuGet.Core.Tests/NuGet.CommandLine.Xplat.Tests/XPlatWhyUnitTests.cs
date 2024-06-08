@@ -4,7 +4,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+//using FluentAssertions;
 using NuGet.CommandLine.XPlat;
+using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Test.Utility;
@@ -230,6 +232,45 @@ namespace NuGet.CommandLine.Xplat.Tests
             Assert.NotNull(projectList);
             Assert.Equal(projectList.Count(), 1);
             Assert.Contains(projectFilePath, projectList);
+        }
+
+        [Fact]
+        public void WhyCommand_SolutionWithProjects_GetListOfProjectPaths_AllPathsFound()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var net8 = NuGetFramework.Parse("net8.0");
+
+            var projectA = SimpleTestProjectContext.CreateNETCore(
+                "a",
+                pathContext.SolutionRoot,
+                net8);
+            var projectB = SimpleTestProjectContext.CreateNETCore(
+                "b",
+                pathContext.SolutionRoot,
+                net8);
+
+            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            var whyCommandArgs = new WhyCommandArgs(
+                path: pathContext.SolutionRoot,
+                package: "package",
+                frameworks: new List<string>(),
+                logger: new CommandOutputLogger(Common.LogLevel.Debug));
+
+            // Act
+            var projectList = whyCommandArgs.GetListOfProjectPaths();
+
+            // Assert
+            Assert.NotNull(projectList);
+            Assert.Equal(projectList.Count(), 2);
+
+            Assert.Contains(projectA.ProjectPath, projectList);
+            Assert.Contains(projectB.ProjectPath, projectList);
         }
 
         private static void ConvertRelevantWindowsPathsToUnix(LockFile assetsFile)
