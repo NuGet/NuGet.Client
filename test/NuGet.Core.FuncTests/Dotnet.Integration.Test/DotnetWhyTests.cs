@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
@@ -215,7 +216,7 @@ namespace Dotnet.Integration.Test
 
             // Assert
             Assert.Equal(ExitCodes.Success, result.ExitCode);
-            Assert.Contains($"warn : The assets file {project.AssetsFileOutputPath} for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", result.AllOutput);
+            Assert.Contains($"warn : The assets file '{project.AssetsFileOutputPath}' for project '{ProjectName}' does not contain a target for the specified input framework '{inputFrameworksOption}'.", result.AllOutput);
             Assert.Contains($"Project '{ProjectName}' has the following dependency graph(s) for '{packageY.Id}'", result.AllOutput);
         }
 
@@ -242,7 +243,8 @@ namespace Dotnet.Integration.Test
             string addPackageCommandArgs = $"add {project.ProjectPath} package {packageX.Id}";
             CommandRunnerResult addPackageResult = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, addPackageCommandArgs);
 
-            string whyCommandArgs = $"nuget why {pathContext.SolutionRoot} {packageY.Id}";
+            var projectDirectory = Path.GetDirectoryName(project.ProjectPath);
+            string whyCommandArgs = $"nuget why {projectDirectory} {packageY.Id}";
 
             // Act
             CommandRunnerResult result = _testFixture.RunDotnetExpectSuccess(pathContext.SolutionRoot, whyCommandArgs);
