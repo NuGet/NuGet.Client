@@ -168,33 +168,23 @@ namespace NuGet.CommandLine.XPlat
                                     .Where(file => IsProjectFile(file))
                                     .ToArray();
 
-            if (solutionFiles.Length > 0)
+            if (solutionFiles.Length + projectFiles.Length > 1)
             {
-                if (solutionFiles.Length > 1 || projectFiles.Length > 0)
-                {
-                    Logger.LogError(
+                Logger.LogError(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory,
                             directory));
-                    return null;
-                }
+                return null;
+            }
 
+            if (solutionFiles.Length == 1)
+            {
                 return solutionFiles[0];
             }
 
-            if (projectFiles.Length > 0)
+            if (projectFiles.Length == 1)
             {
-                if (projectFiles.Length > 1)
-                {
-                    Logger.LogError(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory,
-                            directory));
-                    return null;
-                }
-
                 return projectFiles[0];
             }
 
