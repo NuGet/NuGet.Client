@@ -165,7 +165,7 @@ namespace NuGet.DependencyResolver.Core.Tests
         }
 
         [Fact]
-        public async Task FindPackage_VerifyMissingListedPackageThrowsNotFoundAndLogsErrorAsync()
+        public async Task FindPackage_VerifyMissingListedPackage_ThrowsNotFoundAndLogsErrorAsync()
         {
             // Arrange
             var range = new LibraryRange("x", VersionRange.Parse("1.0.0-beta"), LibraryDependencyTarget.Package);
