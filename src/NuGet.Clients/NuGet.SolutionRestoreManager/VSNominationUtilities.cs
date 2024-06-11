@@ -712,5 +712,10 @@ namespace NuGet.SolutionRestoreManager
 
             return input;
         }
+
+        internal static string GetSdkAnalysisLevel(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
+        }
     }
 }

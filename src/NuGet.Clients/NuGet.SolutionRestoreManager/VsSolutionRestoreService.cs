@@ -389,7 +389,9 @@ namespace NuGet.SolutionRestoreManager
                     RestoreAuditProperties = VSNominationUtilities.GetRestoreAuditProperties(targetFrameworks),
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(targetFrameworks),
-                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
+                RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true },
+                SDKAnalysisLevel = VSNominationUtilities.GetSdkAnalysisLevel(targetFrameworks)
+
             };
 
             return packageSpec;

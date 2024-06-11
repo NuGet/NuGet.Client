@@ -356,7 +356,10 @@ namespace NuGet.PackageManagement
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 enableNuGetAudit: true,
                 restoreAuditProperties: auditProperties,
-                logger: logger);
+                logger: logger)
+            {
+                SdkAnalysisLevel = await GetSdkAnalysisLevelAsync()
+            };
 
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
@@ -367,6 +370,29 @@ namespace NuGet.PackageManagement
                     packageRestoreContext.Logger);
             }
             return await RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
+        }
+
+        private async Task<string> GetSdkAnalysisLevelAsync()
+        {
+            var sdkAnalysisLevel = "";
+
+            if (!await SolutionManager.IsSolutionAvailableAsync())
+            {
+                return sdkAnalysisLevel;
+            }
+
+            var allProjects = await SolutionManager.GetNuGetProjectsAsync();
+
+            foreach (var nuGetProject in allProjects.NoAllocEnumerate())
+            {
+                if (nuGetProject.ProjectStyle == ProjectStyle.PackagesConfig)
+                {
+                    var msbuildProject = (MSBuildNuGetProject)nuGetProject;
+                    sdkAnalysisLevel = (string)msbuildProject.GetMetadataOrNull(ProjectBuildProperties.SdkAnalysisLevel);
+                }
+            }
+
+            return sdkAnalysisLevel;
         }
 
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)

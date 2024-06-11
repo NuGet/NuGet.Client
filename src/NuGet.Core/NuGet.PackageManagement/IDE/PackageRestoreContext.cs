@@ -22,6 +22,7 @@ namespace NuGet.PackageManagement
         public ILogger Logger { get; }
         public bool EnableNuGetAudit { get; }
         public Dictionary<string, RestoreAuditProperties> RestoreAuditProperties { get; }
+        public string SdkAnalysisLevel { get; set; }
 
         private static Dictionary<string, RestoreAuditProperties> EmptyDictionary = new Dictionary<string, RestoreAuditProperties>();
         public PackageRestoreContext(NuGetPackageManager nuGetPackageManager,
