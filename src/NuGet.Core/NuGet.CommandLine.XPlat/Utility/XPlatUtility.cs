@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
+using System;
 using System.IO;
+using System.Linq;
 
 #if IS_CORECLR
 using System.Runtime.InteropServices;
@@ -83,6 +86,75 @@ namespace NuGet.CommandLine.XPlat
                 directory,
                 configFileName,
                 machineWideSettings: new XPlatMachineWideSetting());
+        }
+
+        /// <summary>
+        /// Get the project or solution file from the given directory.
+        /// </summary>
+        /// <param name="directory">A directory with exactly one project or solution file.</param>
+        /// <returns>A single project or solution file.</returns>
+        /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
+        internal static string GetProjectOrSolutionFileFromDirectory(string directory)
+        {
+            var topLevelFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
+
+            var solutionFiles = topLevelFiles
+                                    .Where(file => IsSolutionFile(file))
+                                    .ToArray();
+            var projectFiles = topLevelFiles
+                                    .Where(file => IsProjectFile(file))
+                                    .ToArray();
+
+            if (solutionFiles.Length + projectFiles.Length > 1)
+            {
+                throw new ArgumentException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory,
+                            directory));
+            }
+
+            if (solutionFiles.Length == 1)
+            {
+                return solutionFiles[0];
+            }
+
+            if (projectFiles.Length == 1)
+            {
+                return projectFiles[0];
+            }
+
+            throw new ArgumentException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.WhyCommand_Error_NoProjectOrSolutionFilesInDirectory,
+                    directory));
+        }
+
+        internal static bool IsSolutionFile(string fileName)
+        {
+            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
+            {
+                var extension = System.IO.Path.GetExtension(fileName);
+
+                return string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
+        }
+
+        internal static bool IsProjectFile(string fileName)
+        {
+            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
+            {
+                var extension = System.IO.Path.GetExtension(fileName);
+
+                var lastFourCharacters = extension.Length >= 4
+                                            ? extension.Substring(extension.Length - 4)
+                                            : string.Empty;
+
+                return string.Equals(lastFourCharacters, "proj", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
     }
 }

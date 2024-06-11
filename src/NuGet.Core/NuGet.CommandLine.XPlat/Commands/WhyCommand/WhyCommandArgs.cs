@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.XPlat
             // Check that the path is a directory, solution file or project file
             if (Directory.Exists(fullPath)
                 || (File.Exists(fullPath)
-                    && (IsSolutionFile(fullPath) || IsProjectFile(fullPath))))
+                    && (XPlatUtility.IsSolutionFile(fullPath) || XPlatUtility.IsProjectFile(fullPath))))
             {
                 return true;
             }
@@ -135,10 +135,13 @@ namespace NuGet.CommandLine.XPlat
             // the path points to a directory
             if (Directory.Exists(fullPath))
             {
-                projectOrSolutionFile = GetProjectOrSolutionFileFromDirectory(fullPath);
-
-                if (projectOrSolutionFile == null)
+                try
                 {
+                    projectOrSolutionFile = XPlatUtility.GetProjectOrSolutionFileFromDirectory(fullPath);
+                }
+                catch (ArgumentException ex)
+                {
+                    Logger.LogError(ex.Message);
                     return null;
                 }
             }
@@ -148,80 +151,9 @@ namespace NuGet.CommandLine.XPlat
                 projectOrSolutionFile = fullPath;
             }
 
-            return IsSolutionFile(projectOrSolutionFile)
+            return XPlatUtility.IsSolutionFile(projectOrSolutionFile)
                         ? MSBuildAPIUtility.GetProjectsFromSolution(projectOrSolutionFile).Where(f => File.Exists(f))
                         : [projectOrSolutionFile];
-        }
-
-        /// <summary>
-        /// Get the project or solution file from the given directory.
-        /// </summary>
-        /// <returns>A single project or solution file. Returns null if the directory has none or multiple project/solution files.</returns>
-        private string? GetProjectOrSolutionFileFromDirectory(string directory)
-        {
-            var topLevelFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
-
-            var solutionFiles = topLevelFiles
-                                    .Where(file => IsSolutionFile(file))
-                                    .ToArray();
-            var projectFiles = topLevelFiles
-                                    .Where(file => IsProjectFile(file))
-                                    .ToArray();
-
-            if (solutionFiles.Length + projectFiles.Length > 1)
-            {
-                Logger.LogError(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory,
-                            directory));
-                return null;
-            }
-
-            if (solutionFiles.Length == 1)
-            {
-                return solutionFiles[0];
-            }
-
-            if (projectFiles.Length == 1)
-            {
-                return projectFiles[0];
-            }
-
-            Logger.LogError(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_NoProjectOrSolutionFilesInDirectory,
-                    directory));
-            return null;
-        }
-
-        private static bool IsSolutionFile(string fileName)
-        {
-            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
-            {
-                var extension = System.IO.Path.GetExtension(fileName);
-
-                return string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
-
-        private static bool IsProjectFile(string fileName)
-        {
-            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
-            {
-                var extension = System.IO.Path.GetExtension(fileName);
-
-                var lastFourCharacters = extension.Length >= 4
-                                            ? extension.Substring(extension.Length - 4)
-                                            : string.Empty;
-
-                return string.Equals(lastFourCharacters, "proj", StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
         }
     }
 }
