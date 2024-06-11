@@ -109,7 +109,7 @@ namespace NuGet.CommandLine.XPlat
             {
                 throw new ArgumentException(string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory,
+                            Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
                             directory));
             }
 
@@ -125,10 +125,15 @@ namespace NuGet.CommandLine.XPlat
 
             throw new ArgumentException(string.Format(
                     CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_NoProjectOrSolutionFilesInDirectory,
+                    Strings.Error_NoProjectOrSolutionFilesInDirectory,
                     directory));
         }
 
+        /// <summary>
+        /// Checks if the given file is a solution file.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns>Returns true if the given file exists and has a .sln extension.</returns>
         internal static bool IsSolutionFile(string fileName)
         {
             if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
@@ -141,6 +146,11 @@ namespace NuGet.CommandLine.XPlat
             return false;
         }
 
+        /// <summary>
+        /// Checks if the given file is a project file.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns>Returns true if the given file exists and has a .*proj extension.</returns>
         internal static bool IsProjectFile(string fileName)
         {
             if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))

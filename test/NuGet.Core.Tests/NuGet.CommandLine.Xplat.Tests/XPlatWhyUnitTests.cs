@@ -386,10 +386,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 frameworks: new List<string>(),
                 logger: testLogger);
 
-            var expectedErrorMessage = string.Format(
-                                            CultureInfo.CurrentCulture,
-                                            Strings.WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory,
-                                            pathContext.SolutionRoot);
+            var expectedErrorMessage = string.Format(CultureInfo.CurrentCulture,
+                $"Unable to run 'dotnet nuget why'. The directory '{pathContext.SolutionRoot}' contains multiple project or solution files. Please specify which project or solution file to use.");
 
             // Act
             var projectList = whyCommandArgs.GetListOfProjectPaths();
@@ -419,10 +417,8 @@ namespace NuGet.CommandLine.Xplat.Tests
                 frameworks: new List<string>(),
                 logger: testLogger);
 
-            var expectedErrorMessage = string.Format(
-                                            CultureInfo.CurrentCulture,
-                                            Strings.WhyCommand_Error_NoProjectOrSolutionFilesInDirectory,
-                                            pathContext.SolutionRoot);
+            var expectedErrorMessage = string.Format(CultureInfo.CurrentCulture,
+                $"Unable to run 'dotnet nuget why'. The directory '{pathContext.SolutionRoot}' does not contain any project or solution files.");
 
             // Act
             var projectList = whyCommandArgs.GetListOfProjectPaths();

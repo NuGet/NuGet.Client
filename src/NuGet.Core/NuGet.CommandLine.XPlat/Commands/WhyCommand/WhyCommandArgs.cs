@@ -141,7 +141,11 @@ namespace NuGet.CommandLine.XPlat
                 }
                 catch (ArgumentException ex)
                 {
-                    Logger.LogError(ex.Message);
+                    Logger.LogError(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.WhyCommand_Error_ArgumentExceptionThrown,
+                            ex.Message));
                     return null;
                 }
             }

@@ -610,11 +610,29 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The directory &apos;{0}&apos; contains multiple project or solution files. Please specify which project or solution file to use..
+        /// </summary>
+        internal static string Error_MultipleProjectOrSolutionFilesInDirectory {
+            get {
+                return ResourceManager.GetString("Error_MultipleProjectOrSolutionFilesInDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to None or invalid DgSpec was passed to NuGet add package command..
         /// </summary>
         internal static string Error_NoDgSpec {
             get {
                 return ResourceManager.GetString("Error_NoDgSpec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The directory &apos;{0}&apos; does not contain any project or solution files..
+        /// </summary>
+        internal static string Error_NoProjectOrSolutionFilesInDirectory {
+            get {
+                return ResourceManager.GetString("Error_NoProjectOrSolutionFilesInDirectory", resourceCulture);
             }
         }
         
@@ -2224,29 +2242,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. {0}.
+        /// </summary>
+        internal static string WhyCommand_Error_ArgumentExceptionThrown {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_ArgumentExceptionThrown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The assets file &apos;{0}&apos; is invalid. Please run restore for project &apos;{1}&apos; before running this command..
         /// </summary>
         internal static string WhyCommand_Error_InvalidAssetsFile {
             get {
                 return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. The directory &apos;{0}&apos; contains multiple project or solution files. Please specify which project or solution file to use..
-        /// </summary>
-        internal static string WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory {
-            get {
-                return ResourceManager.GetString("WhyCommand_Error_MultipleProjectOrSolutionFilesInDirectory", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. The directory &apos;{0}&apos; does not contain any project or solution files..
-        /// </summary>
-        internal static string WhyCommand_Error_NoProjectOrSolutionFilesInDirectory {
-            get {
-                return ResourceManager.GetString("WhyCommand_Error_NoProjectOrSolutionFilesInDirectory", resourceCulture);
             }
         }
         
