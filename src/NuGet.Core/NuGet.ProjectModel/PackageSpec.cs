@@ -297,7 +297,8 @@ namespace NuGet.ProjectModel
                 IsDefaultVersion = IsDefaultVersion,
                 BuildOptions = BuildOptions?.Clone(),
 #pragma warning restore CS0612 // Type or member is obsolete
-                RestoreMetadata = RestoreMetadata?.Clone()
+                RestoreMetadata = RestoreMetadata?.Clone(),
+                SDKAnalysisLevel = SDKAnalysisLevel
             };
         }
 
