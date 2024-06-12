@@ -372,29 +372,6 @@ namespace NuGet.PackageManagement
             return await RestoreMissingPackagesAsync(packageRestoreContext, nuGetProjectContext, downloadContext);
         }
 
-        private async Task<string> GetSdkAnalysisLevelAsync()
-        {
-            var sdkAnalysisLevel = "";
-
-            if (!await SolutionManager.IsSolutionAvailableAsync())
-            {
-                return sdkAnalysisLevel;
-            }
-
-            var allProjects = await SolutionManager.GetNuGetProjectsAsync();
-
-            foreach (var nuGetProject in allProjects.NoAllocEnumerate())
-            {
-                if (nuGetProject.ProjectStyle == ProjectStyle.PackagesConfig)
-                {
-                    var msbuildProject = (MSBuildNuGetProject)nuGetProject;
-                    sdkAnalysisLevel = (string)msbuildProject.GetMetadataOrNull(ProjectBuildProperties.SdkAnalysisLevel);
-                }
-            }
-
-            return sdkAnalysisLevel;
-        }
-
         private NuGetPackageManager GetNuGetPackageManager(string solutionDirectory)
         {
             var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDirectory, Settings);
