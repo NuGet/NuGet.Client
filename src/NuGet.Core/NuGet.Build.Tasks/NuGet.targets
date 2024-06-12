@@ -184,7 +184,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreForceEvaluate="$(RestoreForceEvaluate)"
       RestorePackagesConfig="$(RestorePackagesConfig)"
       EmbedFilesInBinlog="$(RestoreEmbedFilesInBinlog)"
-      SDKAnalysisLevel="$(SDKAnalysisLevel)">
+      SdkAnalysisLevel="$(SdkAnalysisLevel)">
       <Output TaskParameter="EmbedInBinlog" ItemName="EmbedInBinlog" />
     </RestoreTask>
   </Target>
@@ -212,7 +212,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
       RestoreGraphOutputPath="$(RestoreGraphOutputPath)"
       RestoreRecursive="$(RestoreRecursive)"
-      SDKAnalysisLevel="$(SDKAnalysisLevel)"/>
+      SdkAnalysisLevel="$(SdkAnalysisLevel)"/>
   </Target>
 
   <!--

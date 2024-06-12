@@ -30,7 +30,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool RestoreRecursive { get; set; }
 
-        public string SDKAnalysisLevel { get; set; }
+        public string SdkAnalysisLevel { get; set; }
 
         public override bool Execute()
         {
@@ -53,7 +53,7 @@ namespace NuGet.Build.Tasks
             var wrappedItems = RestoreGraphItems.Select(GetMSBuildItem);
 
             // Create file
-            var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems, SDKAnalysisLevel);
+            var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems, SdkAnalysisLevel);
 
             // Add all child projects
             if (RestoreRecursive)

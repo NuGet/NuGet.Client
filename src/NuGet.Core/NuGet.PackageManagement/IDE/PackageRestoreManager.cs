@@ -356,10 +356,7 @@ namespace NuGet.PackageManagement
                 maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism,
                 enableNuGetAudit: true,
                 restoreAuditProperties: auditProperties,
-                logger: logger)
-            {
-                SdkAnalysisLevel = await GetSdkAnalysisLevelAsync()
-            };
+                logger: logger);
 
             if (nuGetProjectContext.PackageExtractionContext == null)
             {

@@ -390,7 +390,7 @@ namespace NuGet.SolutionRestoreManager
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(targetFrameworks),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true },
-                SDKAnalysisLevel = VSNominationUtilities.GetSdkAnalysisLevel(targetFrameworks)
+                SdkAnalysisLevel = VSNominationUtilities.GetSdkAnalysisLevel(targetFrameworks)
 
             };
 

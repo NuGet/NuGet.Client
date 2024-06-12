@@ -438,29 +438,29 @@ namespace NuGet.PackageManagement
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
                 ProgressReporter = progressReporter,
-                SDKAnalysisLevel = GetSmallestSDKAnalysisLevel(dgFile.Projects)
+                SdkAnalysisLevel = GetSmallestSdkAnalysisLevel(dgFile.Projects)
             };
 
             return restoreContext;
         }
 
-        private static string GetSmallestSDKAnalysisLevel(IReadOnlyList<PackageSpec> projects)
+        private static string GetSmallestSdkAnalysisLevel(IReadOnlyList<PackageSpec> projects)
         {
             string sdkAnalysisLevel = null;
             foreach (PackageSpec project in projects)
             {
                 if (sdkAnalysisLevel == null)
                 {
-                    if (!string.IsNullOrEmpty(project.SDKAnalysisLevel))
+                    if (!string.IsNullOrEmpty(project.SdkAnalysisLevel))
                     {
-                        sdkAnalysisLevel = project.SDKAnalysisLevel;
+                        sdkAnalysisLevel = project.SdkAnalysisLevel;
                     }
                 }
                 else
                 {
-                    if (string.Compare(sdkAnalysisLevel, project.SDKAnalysisLevel, StringComparison.OrdinalIgnoreCase) < 0)
+                    if (string.Compare(sdkAnalysisLevel, project.SdkAnalysisLevel, StringComparison.OrdinalIgnoreCase) < 0)
                     {
-                        sdkAnalysisLevel = project.SDKAnalysisLevel;
+                        sdkAnalysisLevel = project.SdkAnalysisLevel;
                     }
                 }
             }

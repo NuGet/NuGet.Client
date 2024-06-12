@@ -158,7 +158,7 @@ namespace NuGet.Build.Tasks
             bool forceEvaluate,
             bool hideWarningsAndErrors,
             bool restorePC,
-            string SDKAnalysisLevel,
+            string SdkAnalysisLevel,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -173,7 +173,7 @@ namespace NuGet.Build.Tasks
                 hideWarningsAndErrors,
                 restorePC,
                 cleanupAssetsForUnsupportedProjects: false,
-                SDKAnalysisLevel,
+                SdkAnalysisLevel,
                 log,
                 cancellationToken);
         }
@@ -208,7 +208,7 @@ namespace NuGet.Build.Tasks
             bool hideWarningsAndErrors,
             bool restorePC,
             bool cleanupAssetsForUnsupportedProjects,
-            string SDKAnalysisLevel,
+            string SdkAnalysisLevel,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -306,7 +306,7 @@ namespace NuGet.Build.Tasks
                             AllowNoOp = !force,
                             HideWarningsAndErrors = hideWarningsAndErrors,
                             RestoreForceEvaluate = forceEvaluate,
-                            SDKAnalysisLevel = SDKAnalysisLevel
+                            SdkAnalysisLevel = SdkAnalysisLevel
                         };
 
                         if (restoreContext.DisableParallel)

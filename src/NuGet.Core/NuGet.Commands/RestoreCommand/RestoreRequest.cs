@@ -211,6 +211,6 @@ namespace NuGet.Commands
         /// </summary>
         public bool UpdatePackageLastAccessTime { get; set; }
 
-        public string SDKAnalysisLevel { get; set; }
+        public string SdkAnalysisLevel { get; set; }
     }
 }

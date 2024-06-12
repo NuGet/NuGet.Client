@@ -184,7 +184,7 @@ namespace NuGet.CommandLine
                         restoreContext.RequestProviders.Add(new DependencyGraphFileRequestProvider(providerCache));
                     }
 
-                    restoreContext.SDKAnalysisLevel = GetSmallestSDKAnalysisLevel(restoreInputs.ProjectReferenceLookup.Projects);
+                    restoreContext.SdkAnalysisLevel = GetSmallestSdkAnalysisLevel(restoreInputs.ProjectReferenceLookup.Projects);
 
                     // Run restore
                     var v3Summaries = await RestoreRunner.RunAsync(restoreContext);
@@ -201,23 +201,23 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static string GetSmallestSDKAnalysisLevel(IReadOnlyList<PackageSpec> projects)
+        private static string GetSmallestSdkAnalysisLevel(IReadOnlyList<PackageSpec> projects)
         {
             string sdkAnalysisLevel = null;
             foreach (PackageSpec project in projects)
             {
                 if (sdkAnalysisLevel == null)
                 {
-                    if (!string.IsNullOrEmpty(project.SDKAnalysisLevel))
+                    if (!string.IsNullOrEmpty(project.SdkAnalysisLevel))
                     {
-                        sdkAnalysisLevel = project.SDKAnalysisLevel;
+                        sdkAnalysisLevel = project.SdkAnalysisLevel;
                     }
                 }
                 else
                 {
-                    if (string.Compare(sdkAnalysisLevel, project.SDKAnalysisLevel, StringComparison.OrdinalIgnoreCase) < 0)
+                    if (string.Compare(sdkAnalysisLevel, project.SdkAnalysisLevel, StringComparison.OrdinalIgnoreCase) < 0)
                     {
-                        sdkAnalysisLevel = project.SDKAnalysisLevel;
+                        sdkAnalysisLevel = project.SdkAnalysisLevel;
                     }
                 }
             }

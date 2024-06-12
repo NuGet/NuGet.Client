@@ -162,7 +162,7 @@ namespace NuGet.ProjectModel
         /// <remarks>Optional. This is normally set for internal use only.</remarks>
         public ProjectRestoreMetadata RestoreMetadata { get; set; }
 
-        public string SDKAnalysisLevel { get; set; }
+        public string SdkAnalysisLevel { get; set; }
 
         public override int GetHashCode()
         {
@@ -298,7 +298,7 @@ namespace NuGet.ProjectModel
                 BuildOptions = BuildOptions?.Clone(),
 #pragma warning restore CS0612 // Type or member is obsolete
                 RestoreMetadata = RestoreMetadata?.Clone(),
-                SDKAnalysisLevel = SDKAnalysisLevel
+                SdkAnalysisLevel = SdkAnalysisLevel
             };
         }
 

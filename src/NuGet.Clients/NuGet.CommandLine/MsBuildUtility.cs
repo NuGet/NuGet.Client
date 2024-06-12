@@ -368,14 +368,10 @@ namespace NuGet.CommandLine
 
             var directoryOneLevelUp = Path.GetDirectoryName(commonProjectDirectory);
 
-            // Paths for the Directory.Build.props and Directory.Solution.props one level up
+            // Paths for the Directory.Build.props one level up
             var buildPropsPath = Path.Combine(directoryOneLevelUp, "Directory.Build.props");
-            var solutionPropsPath = Path.Combine(directoryOneLevelUp, "Directory.Solution.props");
 
             return GenerateMSBuildFile(
-                new XElement(MSBuildNamespace + "Import",
-                new XAttribute(XName.Get("Project"), solutionPropsPath),
-                new XAttribute(XName.Get("Condition"), $"Exists('{solutionPropsPath}')")),
                 new XElement(MSBuildNamespace + "Import",
                 new XAttribute(XName.Get("Project"), buildPropsPath),
                 new XAttribute(XName.Get("Condition"), $"Exists('{buildPropsPath}')")),

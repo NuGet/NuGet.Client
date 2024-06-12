@@ -96,7 +96,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string EmbedFilesInBinlog { get; set; }
 
-        public string SDKAnalysisLevel { get; set; }
+        public string SdkAnalysisLevel { get; set; }
 
         public override bool Execute()
         {
@@ -161,7 +161,7 @@ namespace NuGet.Build.Tasks
                 forceEvaluate: RestoreForceEvaluate,
                 hideWarningsAndErrors: HideWarningsAndErrors,
                 restorePC: RestorePackagesConfig,
-                SDKAnalysisLevel: SDKAnalysisLevel,
+                SdkAnalysisLevel: SdkAnalysisLevel,
                 log: log,
                 cancellationToken: _cts.Token);
         }

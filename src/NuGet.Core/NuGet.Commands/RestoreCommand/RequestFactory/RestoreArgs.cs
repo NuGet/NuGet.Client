@@ -65,7 +65,7 @@ namespace NuGet.Commands
 
         public bool RestoreForceEvaluate { get; set; }
 
-        public string SDKAnalysisLevel { get; set; }
+        public string SdkAnalysisLevel { get; set; }
 
         /// <summary>
         /// Messages that should be written to the assets file, in addition to any messages generated during the restore.
