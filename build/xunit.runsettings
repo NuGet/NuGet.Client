@@ -1,20 +1,21 @@
 <RunSettings>
+  <xUnit>
+    <DiagnosticMessages>true</DiagnosticMessages>
+    <MethodDisplay>classAndMethod</MethodDisplay>
+    <ParallelizeAssembly>false</ParallelizeAssembly>
+    <ParallelizeTestCollections>false</ParallelizeTestCollections>
+    <LongRunningTestSeconds>120</LongRunningTestSeconds>
+    <MaxParallelThreads>4</MaxParallelThreads>
+    <ShadowCopy>false</ShadowCopy>
+  </xUnit>
     <RunConfiguration>
         <!-- Use as many testhosts as logical processors -->
-        <MaxCpuCount>0</MaxCpuCount>
+        <MaxCpuCount>4</MaxCpuCount>
         <!-- Consider it an error if no tests are discovered -->
         <TreatNoTestsAsError>true</TreatNoTestsAsError>
     </RunConfiguration>
     <DataCollectionRunSettings>
         <DataCollectors>
-            <DataCollector friendlyName="blame" enabled="True">
-                <Configuration>
-                    <!-- Enables crash dump-->
-                    <CollectDump DumpType="Mini" />
-                    <!-- Enables hang dump-->
-                    <CollectDumpOnTestSessionHang TestTimeout="15min" HangDumpType="Mini" />
-                </Configuration>
-            </DataCollector>
         </DataCollectors>
     </DataCollectionRunSettings>
 </RunSettings>

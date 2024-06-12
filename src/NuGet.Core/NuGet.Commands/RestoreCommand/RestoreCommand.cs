@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Drawing;
@@ -174,6 +175,11 @@ namespace NuGet.Commands
             ParentId = request.ParentId;
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
+
+            if (request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
+            {
+                _usePrototype = 0;
+            }
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -349,6 +355,8 @@ namespace NuGet.Commands
                             telemetry);
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                             prototypeTimeMs = sw.ElapsedMilliseconds;
+
+                            await UnexpectedDependencyMessages.LogAsync(prototypeGraphs, _request.Project, _logger);
                         }
 #if bswlog
                         _logger.LogMinimal($"BSW_Rt: orig={originalTimeMs}, prototype={prototypeTimeMs}, {_request.Project.FilePath}");
@@ -1354,7 +1362,7 @@ namespace NuGet.Commands
             }
 
             // Walk additional runtime graphs for supports checks
-            if (_success && _request.CompatibilityProfiles.Any())
+             if (_success && _request.CompatibilityProfiles.Any())
             {
                 Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> compatibilityResult = null;
                 using (telemetryActivity.StartIndependentInterval(CreateAdditionalRestoreTargetGraphDuration))
@@ -1445,8 +1453,6 @@ namespace NuGet.Commands
             context.ProjectLibraryProviders.Add(
                     new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
 
-            var remoteWalker = new RemoteDependencyWalker(context);
-
             var projectRange = new LibraryRange()
             {
                 Name = _request.Project.Name,
@@ -1459,6 +1465,7 @@ namespace NuGet.Commands
             var graphByTFM = new Dictionary<NuGetFramework, RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
+            RuntimeGraph allRuntimes = RuntimeGraph.Empty;
             int patience = 0;
             int maxOutstandingRefs = 0;
             int totalLookups = 0;
@@ -1475,8 +1482,16 @@ namespace NuGet.Commands
             LibraryRangeInterningTable libraryRangeInterningTable = new LibraryRangeInterningTable();
             LibraryDependencyInterningTable libraryDependencyInterningTable = new LibraryDependencyInterningTable();
 
+            bool hasInstallBeenCalledAlready = false;
             foreach (var pair in projectFrameworkRuntimePairs)
             {
+                if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) && !hasInstallBeenCalledAlready)
+                {
+                    await InstallPackagesAsync(allGraphs);
+
+                    hasInstallBeenCalledAlready = true;
+                }
+
                 sw3_preamble.Start();
 #if bswlog
                 _logger.LogMinimal($"BSW_R1, Starting {pair.Framework},{pair.RuntimeIdentifier},{_request.Project.FilePath}");
@@ -1485,7 +1500,7 @@ namespace NuGet.Commands
                 //                if (_request.Project.FilePath.Contains("Microsoft.Exchange.Diagnostics"))
                 //                    _logger.LogMinimal($"BSW_BP");
 
-
+                
                 //Build up our new RestoreTargetGraph.
                 //This is done by making everything on RTG setable.  We should move to using a normal constructor.
                 var newRTG = new RestoreTargetGraph();
@@ -1524,6 +1539,7 @@ namespace NuGet.Commands
                     }
 
                     runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
+                    allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
                 }
 
                 newRTG.Conventions = new Client.ManagedCodeConventions(runtimeGraph);
@@ -1551,6 +1567,8 @@ namespace NuGet.Commands
                                             new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], bool, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>(2048);
 
                 Dictionary<LibraryRangeIndex, LibraryRangeIndex[]> evictions = new Dictionary<LibraryRangeIndex, LibraryRangeIndex[] >(1024);
+
+                var moreDowngrades = new List<(LibraryDependency unchosen, LibraryDependency chosen)>();
 
                 sw3_preamble.Stop();
 
@@ -1604,6 +1622,8 @@ namespace NuGet.Commands
                     bool isProject = ((typeConstraint == LibraryDependencyTarget.Project) ||
                                       (typeConstraint == (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)));
 
+                    bool isDowngrade = false;
+
 #if verboseLog
                     _logger.LogMinimal($"BSW_DI2, dequed ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride}, ptr={pathToCurrentRef})");
 #endif
@@ -1622,7 +1642,7 @@ namespace NuGet.Commands
                                                     _logger.LogMinimal($"BSW_ERR, Found override of override {currentRef} as it matches the override of {currentOverrides[currentRef.Name]}");
                                                 }
                         */
-                        if (ov != currentRef.LibraryRange.VersionRange)
+                        if (!ov.Equals(currentRef.LibraryRange.VersionRange))
                         {
 #if verboseLog
                             if (currentRef.VersionOverride != null)
@@ -1643,8 +1663,18 @@ namespace NuGet.Commands
 
                         if (packageReferenceFromRootProject)
                         {
-                            continue;
+                            if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenRef.LibraryRange.VersionRange, currentRef.LibraryRange.VersionRange))
+                            {
+                                isDowngrade = true;
+                                // downgrade because of a project's direct reference
+                                //moreDowngrades.Add()
+                            }
+                            else
+                            {
+                                continue;
+                            }
                         }
+                        
 
 #if verboseLog
                         _logger.LogMinimal($"BSW_DE1, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
@@ -1658,8 +1688,15 @@ namespace NuGet.Commands
                         //if(VersionRange.PreciseEquals(ovr,nvr)!=(ovr.ToString()==nvr.ToString()))
                         //  _logger.LogMinimal($"BSW_ERR, Found a version range that is not equal but the string is {ovr} {nvr}");
 
-                        if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
+                        if (!isDowngrade && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
+                            if (packageReferenceFromRootProject)
+                            {
+                                moreDowngrades.Add((currentRef, chosenRef));
+                                //isDowngrade = true;
+                                //goto SkipEviction;
+                            }
+
                             //If we think the newer thing we are looking at is better, remove the old one and let it fall thru.
 #if verboseLog
                             _logger.LogMinimal($"BSW_DG1,{currentRef.LibraryRange} -> {chosenResolvedItems[currentRef.Name]}");
@@ -1735,7 +1772,7 @@ namespace NuGet.Commands
                             refImport = newRefImport;
                         }
                         //if its lower we'll never do anything other than skip it.
-                        else if (!VersionRange.PreciseEquals(ovr, nvr))
+                        else if (!isDowngrade && !VersionRange.PreciseEquals(ovr, nvr))
                         {
 #if verboseLog
                             _logger.LogMinimal($"BSW_PE1, is lower {currentRef.LibraryRange}");
@@ -1743,7 +1780,7 @@ namespace NuGet.Commands
                             continue;
 
                         }
-                        else
+                        else if(!isDowngrade)
                         //we are looking at same.  consider if its an upgrade.
                         {
 #if verboseLog
@@ -1838,13 +1875,29 @@ namespace NuGet.Commands
                     FindLibraryCachedAsyncResult refItemResult = null;
                     if (!allResolvedItems.TryGetValue(libraryRangeOfCurrentRef, out refItemResult))
                     {
-                        var refItem = ResolverUtility.FindLibraryCachedAsync(
-                        currentRef.LibraryRange,
-                                    newRTG.Framework,
-                                    newRTG.RuntimeIdentifier,
-                                    context,
-                                    CancellationToken.None,
-                                    noLock: true).GetAwaiter().GetResult();
+                        GraphItem<RemoteResolveResult> refItem;
+                        try
+                        {
+                            refItem = ResolverUtility.FindLibraryCachedAsync(
+                                currentRef.LibraryRange,
+                                newRTG.Framework,
+                                newRTG.RuntimeIdentifier,
+                                context,
+                                CancellationToken.None,
+                                noLock: true).GetAwaiter().GetResult();
+                        }
+                        catch (FatalProtocolException)
+                        {
+                            foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                            {
+                                allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                            }
+
+                            _success = false;
+
+                            return allGraphs;
+                        }
+
                         totalDeepLookups++;
 
                         refItemResult = new FindLibraryCachedAsyncResult(
@@ -1858,6 +1911,20 @@ namespace NuGet.Commands
                         _logger.LogMinimal($"BSW_PF1, {libraryRangeOfCurrentRef}");
 #endif
                         allResolvedItems.Add(libraryRangeOfCurrentRef, refItemResult);
+
+                        if (isDowngrade)
+                        {
+                            continue;
+                        }
+
+                        if (refItem.Key.Type == LibraryType.Unresolved)
+                        {
+                            newRTG.Unresolved.Add(currentRef.LibraryRange);
+
+                            _success = false;
+
+                            continue;
+                        }
                     }
 #if verboseLog
                     _logger.LogMinimal($"BSW_PF2, {libraryRangeOfCurrentRef}, {allResolvedItems[libraryRangeOfCurrentRef].Key.ToString()}");
@@ -1888,7 +1955,7 @@ namespace NuGet.Commands
                             }
                             newOverrides[depIndex] = dep.VersionOverride;
                         }
-                    }
+                        }
 
                     // If the override set has been mutated, then add the rest of the overrides.
                     // Otherwise, just use the incoming set of overrides.
@@ -1944,7 +2011,7 @@ namespace NuGet.Commands
 #if verboseLog
                         _logger.LogMinimal($"BSW_PF6, EnQued ({dep},it={dep.IncludeType},sp={dep.SuppressParent})");
 #endif
-                        refImport.Enqueue(new ImportRefItem()
+                        var newImportRefItem = new ImportRefItem()
                         {
                             Ref = dep,
                             DependencyIndex = depIndex,
@@ -1952,8 +2019,10 @@ namespace NuGet.Commands
                             PathToRef = PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef),
                             Suppressions = suppressions,
                             CurrentOverrides = finalVersionOverrides,
-                            DirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.RangeIndex) && (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package),
-                        });
+                            DirectPackageReferenceFromRootProject = (refItemResult.Item.Key.Type == LibraryType.Project || refItemResult.Item.Key.Type == LibraryType.ExternalProject) && (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package),
+                        };
+
+                        refImport.Enqueue(newImportRefItem);
                     }
 
                     // Add runtime dependencies of the current node if a runtime identifier has been specified.
@@ -2031,6 +2100,12 @@ namespace NuGet.Commands
                 rootGraphNode.Item = allResolvedItems[startRefLibraryRangeIndex].Item;
                 nGraph.Add(rootGraphNode);
 
+                var nodesById = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
+
+                var downgrades = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex ChosenLibraryRangeIndex, GraphNode<RemoteResolveResult> OuterNode)>();
+
+                var versionConflicts = new List<(GraphNode<RemoteResolveResult>, LibraryRangeIndex)>();
+
                 itemsToFlatten.Enqueue((initialProjectIndex, rootGraphNode));
                 while (itemsToFlatten.Count > 0)
                 {
@@ -2060,10 +2135,45 @@ namespace NuGet.Commands
                         for(int i=0; i<node.Item.Data.Dependencies.Count; i++)
                         {
                             var dep = node.Item.Data.Dependencies[i];
+                            if (StringComparer.OrdinalIgnoreCase.Equals(dep.Name, node.Item.Key.Name) || StringComparer.OrdinalIgnoreCase.Equals(dep.Name, rootGraphNode.Key.Name))
+                            {
+                                // Cycle
+                                var nodeWithCycle = new GraphNode<RemoteResolveResult>(dep.LibraryRange)
+                                {
+                                    OuterNode = currentGraphNode,
+                                    Disposition = Disposition.Cycle
+                                };
+
+                                newRTG.AnalyzeResult.Cycles.Add(nodeWithCycle);
+
+                                continue;
+                            }
+
                             LibraryDependencyIndex depIndex = node.GetDependencyIndexForDependency(i);
                             if (visitedItems.Contains(depIndex))
+                            {
+                                var rangeIndex = node.GetRangeIndexForDependency(i);
+                                var chosenDep = chosenResolvedItems[depIndex];
+
+                                if (chosenResolvedItems[node.DependencyIndex].pathToRef.Contains(rangeIndex))
+                                {
+                                    // Cycle
+                                    var nodeWithCycle = new GraphNode<RemoteResolveResult>(dep.LibraryRange);
+                                    nodeWithCycle.OuterNode = currentGraphNode;
+                                    nodeWithCycle.Disposition = Disposition.Cycle;
+                                    newRTG.AnalyzeResult.Cycles.Add(nodeWithCycle);
+
+                                    continue;
+                                }
+                                
+                                else if (rangeIndex != chosenDep.rangeIndex && !downgrades.ContainsKey(rangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenDep.libRef.LibraryRange.VersionRange, dep.LibraryRange.VersionRange))
+                                {
+                                    downgrades.Add(rangeIndex, (chosenDep.rangeIndex, currentGraphNode));
+                                }
+
                                 continue;
-                            visitedItems.Add(depIndex);
+                            }
+
 
                             if (!chosenResolvedItems.TryGetValue(depIndex, out var chosenItem))
                             {
@@ -2076,8 +2186,35 @@ namespace NuGet.Commands
                             var newGraphNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange);
                             newGraphNode.Item = allResolvedItems[chosenItemRangeIndex].Item;
                             currentGraphNode.InnerNodes.Add(newGraphNode);
+                            newGraphNode.OuterNode = currentGraphNode;
 
+                            if (!dep.LibraryRange.VersionRange.Satisfies(newGraphNode.Item.Key.Version))
+                            {
+                                currentGraphNode.InnerNodes.Remove(newGraphNode);
+
+                                // Conflict
+                                var conflictingNode = new GraphNode<RemoteResolveResult>(dep.LibraryRange)
+                                {
+                                    Disposition = Disposition.Acceptable
+                                };
+
+                                conflictingNode.Item = allResolvedItems[node.GetRangeIndexForDependency(i)].Item;
+                                currentGraphNode.InnerNodes.Add(conflictingNode);
+                                conflictingNode.OuterNode = currentGraphNode;
+
+                                versionConflicts.Add((conflictingNode, chosenItemRangeIndex));
+
+                                continue;
+                            }
+
+                            visitedItems.Add(depIndex);
+                            nodesById.Add(chosenItemRangeIndex, newGraphNode);
                             itemsToFlatten.Enqueue((depIndex, newGraphNode));
+
+                            newRTG.ResolvedDependencies.Add(new ResolvedDependencyKey(
+                                parent: newGraphNode.OuterNode.Item.Key,
+                                range: newGraphNode.Key.VersionRange,
+                                child: newGraphNode.Item.Key));
                         }
                     }
 #if bswlog
@@ -2088,11 +2225,72 @@ namespace NuGet.Commands
 #endif
                 }
 
+                if (versionConflicts.Count > 0)
+                {
+                    foreach (var versionConflict in versionConflicts)
+                    {
+                        newRTG.AnalyzeResult.VersionConflicts.Add(new VersionConflictResult<RemoteResolveResult>
+                        {
+                            Conflicting = versionConflict.Item1,
+                            Selected = nodesById[versionConflict.Item2]
+                        });
+                    }
+                }
+
+                if (downgrades.Count > 0)
+                {
+                    foreach (var downgrade in downgrades)
+                    {
+                        var resolvedItem = allResolvedItems[downgrade.Key];
+
+                        var downgradedFrom = new GraphNode<RemoteResolveResult>(resolvedItem.Item.Key)
+                        {
+                            Item = resolvedItem.Item,
+                            OuterNode = downgrade.Value.OuterNode
+                        };
+
+                        var downgradedTo = nodesById[downgrade.Value.ChosenLibraryRangeIndex];
+
+                        newRTG.AnalyzeResult.Downgrades.Add(new DowngradeResult<RemoteResolveResult>
+                        {
+                            DowngradedFrom = downgradedFrom,
+                            DowngradedTo = downgradedTo
+                        });
+                    }
+                }
+
                 sw6_flatten.Stop();
 
                 newRTG.Flattened = newFlattened;
-
+                
                 newRTG.Graphs = nGraph;
+
+                foreach (var profile in _request.Project.RuntimeGraph.Supports)
+                {
+                    var runtimes = allRuntimes;
+
+                    CompatibilityProfile compatProfile;
+                    if (profile.Value.RestoreContexts.Any())
+                    {
+                        // Just use the contexts from the project definition
+                        compatProfile = profile.Value;
+                    }
+                    else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                    {
+                        // No definition of this profile found, so just continue to the next one
+                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
+
+                        await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
+                        continue;
+                    }
+
+                    foreach (var frameworkRuntimePair in compatProfile.RestoreContexts)
+                    {
+                        _logger.LogDebug($" {profile.Value.Name} -> +{frameworkRuntimePair}");
+                        _request.CompatibilityProfiles.Add(frameworkRuntimePair);
+                    }
+                }
+
                 allGraphs.Add(newRTG);
 
                 if (string.IsNullOrEmpty(pair.RuntimeIdentifier))
@@ -2101,13 +2299,7 @@ namespace NuGet.Commands
                 }
             }
 
-            HashSet<LibraryIdentity> uniquePackages = new HashSet<LibraryIdentity>();
-            projectRestoreCommand.InstallPackagesAsync(
-                uniquePackages,
-                allGraphs,
-                Array.Empty<DownloadDependencyResolutionResult>(),
-                userPackageFolder,
-                token).Wait(token);
+            await InstallPackagesAsync(allGraphs);
 
             sw2_prototype.Stop();
 
@@ -2120,7 +2312,37 @@ namespace NuGet.Commands
                 $"tpr={sw3_preamble.ElapsedMilliseconds},tvo={sw4_voScan.ElapsedMilliseconds}," +
                 $"tfi={sw5_fullImport.ElapsedMilliseconds},tf={sw6_flatten.ElapsedMilliseconds},pa={patience},mor={maxOutstandingRefs},tl={totalLookups},tdl={totalDeepLookups},te={totalEvictions},the={totalHardEvictions}");
 #endif
+
+            if (!_success)
+            {
+                // Log message for any unresolved dependencies
+                await UnresolvedMessages.LogAsync(allGraphs, context, token);
+            }
+
             return allGraphs;
+
+            async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs)
+            {
+                DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, telemetryActivity, string.Empty, token);
+
+                HashSet<LibraryIdentity> uniquePackages = new HashSet<LibraryIdentity>();
+
+                _success &= await projectRestoreCommand.InstallPackagesAsync(
+                    uniquePackages,
+                    graphs,
+                    downloadDependencyResolutionResults,
+                    userPackageFolder,
+                    token);
+
+                if (downloadDependencyResolutionResults.Any(e => e.Unresolved.Count > 0))
+                {
+                    _success = false;
+
+                    await UnresolvedMessages.LogAsync(downloadDependencyResolutionResults, context, token);
+                }
+
+                return _success;
+            }
 
         }
 
@@ -2191,7 +2413,10 @@ namespace NuGet.Commands
             {
                 // We care about TFM only and null RID for compilation purposes
                 projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
+            }
 
+            foreach (var framework in packageSpec.TargetFrameworks)
+            {
                 foreach (var runtimeId in runtimeIds)
                 {
                     projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));

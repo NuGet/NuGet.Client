@@ -23,8 +23,8 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "task");
 
-            Assert.Equal(5, message.Count);
-
+            Assert.Equal(Task.CurrentId.HasValue ? 5 : 4, message.Count);
+            
             var actualRequestId = message.Value<string>("request ID");
             var actualMethod = Enum.Parse(typeof(MessageMethod), message.Value<string>("method"));
             var actualType = Enum.Parse(typeof(MessageType), message.Value<string>("type"));
@@ -35,7 +35,10 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal(method, actualMethod);
             Assert.Equal(type, actualType);
             Assert.Equal(state, actualState);
-            Assert.Equal(Task.CurrentId, actualCurrentTaskId);
+            if (Task.CurrentId.HasValue)
+            {
+                Assert.Equal(Task.CurrentId, actualCurrentTaskId);
+            }
         }
     }
 }

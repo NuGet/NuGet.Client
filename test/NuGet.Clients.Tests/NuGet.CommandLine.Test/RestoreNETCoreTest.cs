@@ -10335,8 +10335,8 @@ namespace NuGet.CommandLine.Test
                 });
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .SetPackageVersion("A", "1.0.0")
-                    .SetPackageVersion("B", "1.0.0");
+                    .SetPackageVersion("PackageA", "1.0.0")
+                    .SetPackageVersion("PackageB", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;
@@ -10416,8 +10416,8 @@ namespace NuGet.CommandLine.Test
                 });
 
                 var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
-                    .SetPackageVersion("A", "1.0.0")
-                    .SetPackageVersion("B", "1.0.0");
+                    .SetPackageVersion("PackageA", "1.0.0")
+                    .SetPackageVersion("PackageB", "1.0.0");
 
                 solution.Projects.Add(projectA);
                 solution.CentralPackageVersionsManagementFile = cpvmFile;

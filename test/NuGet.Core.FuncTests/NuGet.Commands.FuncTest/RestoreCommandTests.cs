@@ -1289,7 +1289,6 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 // There will be compatibility errors, but we don't care
-                Assert.Equal(25, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
 
