@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -28,10 +29,19 @@ namespace NuGet.CommandLine.XPlat
                 return ExitCodes.InvalidArguments;
             }
 
-            IEnumerable<string>? projectPaths = whyCommandArgs.GetListOfProjectPaths();
-
-            if (projectPaths == null)
+            IEnumerable<string> projectPaths;
+            try
             {
+                projectPaths = MSBuildAPIUtility.GetListOfProjectsFromPathArgument(whyCommandArgs.Path);
+            }
+            catch (ArgumentException ex)
+            {
+                whyCommandArgs.Logger.LogError(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WhyCommand_Error_ArgumentExceptionThrown,
+                        ex.Message));
+
                 return ExitCodes.InvalidArguments;
             }
 

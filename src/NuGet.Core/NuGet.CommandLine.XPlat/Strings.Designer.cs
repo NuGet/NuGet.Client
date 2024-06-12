@@ -664,6 +664,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing or invalid path &apos;{0}&apos;. Please provide a path to a project, solution file, or directory..
+        /// </summary>
+        internal static string Error_PathIsMissingOrInvalid {
+            get {
+                return ResourceManager.GetString("Error_PathIsMissingOrInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified path &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string Error_PathNotFound {
@@ -2256,15 +2265,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string WhyCommand_Error_InvalidAssetsFile {
             get {
                 return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos;. Missing or invalid path &apos;{0}&apos;. Please provide a path to a project, solution file, or directory..
-        /// </summary>
-        internal static string WhyCommand_Error_PathIsMissingOrInvalid {
-            get {
-                return ResourceManager.GetString("WhyCommand_Error_PathIsMissingOrInvalid", resourceCulture);
             }
         }
         

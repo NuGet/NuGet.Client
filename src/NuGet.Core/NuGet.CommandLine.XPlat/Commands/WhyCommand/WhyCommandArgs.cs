@@ -64,8 +64,8 @@ namespace NuGet.CommandLine.XPlat
                 Logger.LogError(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        Strings.WhyCommand_Error_PathIsMissingOrInvalid,
-                        Path));
+                        Strings.WhyCommand_Error_ArgumentExceptionThrown,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, Path)));
                 return false;
             }
 
@@ -79,10 +79,10 @@ namespace NuGet.CommandLine.XPlat
             else
             {
                 Logger.LogError(
-                string.Format(
-                    CultureInfo.CurrentCulture,
-                    Strings.WhyCommand_Error_PathIsMissingOrInvalid,
-                    Path));
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.WhyCommand_Error_ArgumentExceptionThrown,
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, Path)));
                 return false;
             }
         }
@@ -120,44 +120,6 @@ namespace NuGet.CommandLine.XPlat
                             frameworkAlias));
                 }
             }
-        }
-
-        /// <summary>
-        /// Get the list of project paths from the input 'path' argument.
-        /// </summary>
-        /// <returns>List of project paths. Returns null if path was a directory with none or multiple project/solution files.</returns>
-        public IEnumerable<string>? GetListOfProjectPaths()
-        {
-            string fullPath = System.IO.Path.GetFullPath(Path);
-
-            string? projectOrSolutionFile;
-
-            // the path points to a directory
-            if (Directory.Exists(fullPath))
-            {
-                try
-                {
-                    projectOrSolutionFile = XPlatUtility.GetProjectOrSolutionFileFromDirectory(fullPath);
-                }
-                catch (ArgumentException ex)
-                {
-                    Logger.LogError(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WhyCommand_Error_ArgumentExceptionThrown,
-                            ex.Message));
-                    return null;
-                }
-            }
-            // the path points to a project or solution file
-            else
-            {
-                projectOrSolutionFile = fullPath;
-            }
-
-            return XPlatUtility.IsSolutionFile(projectOrSolutionFile)
-                        ? MSBuildAPIUtility.GetProjectsFromSolution(projectOrSolutionFile).Where(f => File.Exists(f))
-                        : [projectOrSolutionFile];
         }
     }
 }

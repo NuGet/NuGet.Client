@@ -936,8 +936,8 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <value>Unable to run 'dotnet nuget why'. The '{0}' argument cannot be empty.</value>
     <comment>{0} - Argument that was not provided</comment>
   </data>
-  <data name="WhyCommand_Error_PathIsMissingOrInvalid" xml:space="preserve">
-    <value>Unable to run 'dotnet nuget why'. Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</value>
+  <data name="Error_PathIsMissingOrInvalid" xml:space="preserve">
+    <value>Missing or invalid path '{0}'. Please provide a path to a project, solution file, or directory.</value>
     <comment>{0} - Input path argument</comment>
   </data>
   <data name="WhyCommand_Error_ArgumentExceptionThrown" xml:space="preserve">

@@ -107,10 +107,11 @@ namespace NuGet.CommandLine.XPlat
 
             if (solutionFiles.Length + projectFiles.Length > 1)
             {
-                throw new ArgumentException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
-                            directory));
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                        directory));
             }
 
             if (solutionFiles.Length == 1)
@@ -123,7 +124,8 @@ namespace NuGet.CommandLine.XPlat
                 return projectFiles[0];
             }
 
-            throw new ArgumentException(string.Format(
+            throw new ArgumentException(
+                string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Error_NoProjectOrSolutionFilesInDirectory,
                     directory));
