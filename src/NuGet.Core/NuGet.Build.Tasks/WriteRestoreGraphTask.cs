@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using NuGet.Commands;
 
@@ -39,6 +40,7 @@ namespace NuGet.Build.Tasks
                 Debugger.Launch();
             }
 #endif
+
             if (RestoreGraphItems.Length < 1)
             {
                 Log.LogWarning("Unable to find a project to restore!");

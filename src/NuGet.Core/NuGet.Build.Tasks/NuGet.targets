@@ -153,7 +153,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.CheckForDuplicateNuGetItemsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetGlobalPropertyValueTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-  
+
   <!--
     ============================================================
     Restore
@@ -920,6 +920,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NuGetAudit>$(NuGetAudit)</NuGetAudit>
         <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
+	<SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
+        <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
       </_RestoreGraphEntry>
     </ItemGroup>
 

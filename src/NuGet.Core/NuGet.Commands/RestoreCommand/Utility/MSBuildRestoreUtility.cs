@@ -37,7 +37,6 @@ namespace NuGet.Commands
         {
             return GetDependencySpec(items, readOnly: false);
         }
-
         /// <summary>
         /// Creates a <see cref="DependencyGraphSpec" /> from the specified MSBuild items.
         /// </summary>
