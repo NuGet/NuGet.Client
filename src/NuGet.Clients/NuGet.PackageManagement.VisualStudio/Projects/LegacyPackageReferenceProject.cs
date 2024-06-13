@@ -556,7 +556,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
                     RestoreAuditProperties = auditProperties,
                 },
-                SdkAnalysisLevel = null,
+                SdkAnalysisLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel),
                 UsingMicrosoftNETSdk = IsSdk,
             };
         }
