@@ -158,7 +158,7 @@ namespace NuGet.Build.Tasks
             bool forceEvaluate,
             bool hideWarningsAndErrors,
             bool restorePC,
-            string SdkAnalysisLevel,
+            bool cleanupAssetsForUnsupportedProjects,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -172,28 +172,11 @@ namespace NuGet.Build.Tasks
                 forceEvaluate,
                 hideWarningsAndErrors,
                 restorePC,
-                cleanupAssetsForUnsupportedProjects: false,
-                SdkAnalysisLevel,
+                cleanupAssetsForUnsupportedProjects,
+                null,
+                null,
                 log,
                 cancellationToken);
-        }
-
-        public static Task<bool> RestoreAsync(
-            DependencyGraphSpec dependencyGraphSpec,
-            bool interactive,
-            bool recursive,
-            bool noCache,
-            bool ignoreFailedSources,
-            bool disableParallel,
-            bool force,
-            bool forceEvaluate,
-            bool hideWarningsAndErrors,
-            bool restorePC,
-            bool cleanupAssetsForUnsupportedProjects,
-            Common.ILogger log,
-            CancellationToken cancellationToken)
-        {
-            return RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects, "", log, cancellationToken);
         }
 
         public static async Task<bool> RestoreAsync(
@@ -209,6 +192,7 @@ namespace NuGet.Build.Tasks
             bool restorePC,
             bool cleanupAssetsForUnsupportedProjects,
             string SdkAnalysisLevel,
+            Dictionary<string, bool> UsingMicrosoftNETSdk,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -306,7 +290,8 @@ namespace NuGet.Build.Tasks
                             AllowNoOp = !force,
                             HideWarningsAndErrors = hideWarningsAndErrors,
                             RestoreForceEvaluate = forceEvaluate,
-                            SdkAnalysisLevel = SdkAnalysisLevel
+                            SdkAnalysisLevel = SdkAnalysisLevel,
+                            UsingMicrosoftNETSdk = UsingMicrosoftNETSdk
                         };
 
                         if (restoreContext.DisableParallel)

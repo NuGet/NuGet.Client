@@ -438,10 +438,23 @@ namespace NuGet.PackageManagement
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
                 ProgressReporter = progressReporter,
-                SdkAnalysisLevel = GetSmallestSdkAnalysisLevel(dgFile.Projects)
+                SdkAnalysisLevel = GetSmallestSdkAnalysisLevel(dgFile.Projects),
+                UsingMicrosoftNETSdk = GetUsingMicrosoftNetSdk(dgFile.Projects)
             };
 
             return restoreContext;
+        }
+
+        private static Dictionary<string, bool> GetUsingMicrosoftNetSdk(IReadOnlyList<PackageSpec> projects)
+        {
+            Dictionary<string, bool> UsingMicrosoftNetSdk = new Dictionary<string, bool>();
+
+            foreach (var project in projects)
+            {
+                UsingMicrosoftNetSdk.Add(project.Name, project.UsingMicrosoftNETSdk);
+            }
+
+            return UsingMicrosoftNetSdk;
         }
 
         private static string GetSmallestSdkAnalysisLevel(IReadOnlyList<PackageSpec> projects)

@@ -164,6 +164,11 @@ namespace NuGet.ProjectModel
 
         public string SdkAnalysisLevel { get; set; }
 
+        /// <summary>
+        /// Indicates that Microsoft.NET.Sdk is being used.
+        /// </summary>
+        public bool UsingMicrosoftNETSdk { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -298,7 +303,8 @@ namespace NuGet.ProjectModel
                 BuildOptions = BuildOptions?.Clone(),
 #pragma warning restore CS0612 // Type or member is obsolete
                 RestoreMetadata = RestoreMetadata?.Clone(),
-                SdkAnalysisLevel = SdkAnalysisLevel
+                SdkAnalysisLevel = SdkAnalysisLevel,
+                UsingMicrosoftNETSdk = UsingMicrosoftNETSdk,
             };
         }
 

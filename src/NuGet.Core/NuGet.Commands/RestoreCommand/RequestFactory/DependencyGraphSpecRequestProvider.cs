@@ -203,6 +203,7 @@ namespace NuGet.Commands
                 AdditionalMessages = projectAdditionalMessages,
                 UpdatePackageLastAccessTime = updateLastAccess,
                 SdkAnalysisLevel = restoreArgs.SdkAnalysisLevel,
+                UsingMicrosoftNETSdk = restoreArgs.UsingMicrosoftNETSdk
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

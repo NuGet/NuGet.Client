@@ -717,5 +717,10 @@ namespace NuGet.SolutionRestoreManager
         {
             return GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
         }
+
+        internal static bool GetUsingMicrosoftNETSdk(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
+        {
+            return string.Equals(GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.UsingMicrosoftNETSdk), v => v), "true", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

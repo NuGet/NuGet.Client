@@ -212,5 +212,10 @@ namespace NuGet.Commands
         public bool UpdatePackageLastAccessTime { get; set; }
 
         public string SdkAnalysisLevel { get; set; }
+
+        /// <summary>
+        /// Indicates that Microsoft.NET.Sdk is being used.
+        /// </summary>
+        public Dictionary<string, bool> UsingMicrosoftNETSdk { get; set; } = new Dictionary<string, bool>();
     }
 }

@@ -212,7 +212,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
       RestoreGraphOutputPath="$(RestoreGraphOutputPath)"
       RestoreRecursive="$(RestoreRecursive)"
-      SdkAnalysisLevel="$(SdkAnalysisLevel)"/>
+      SdkAnalysisLevel="$(SdkAnalysisLevel)" />
   </Target>
 
   <!--
