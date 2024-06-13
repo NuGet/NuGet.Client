@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
-
+        private const bool IsSdk = false; // default value for non sdk projects
         public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
@@ -555,7 +555,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
                     RestoreAuditProperties = auditProperties,
-                }
+                },
+                SdkAnalysisLevel = null,
+                UsingMicrosoftNETSdk = IsSdk,
             };
         }
 

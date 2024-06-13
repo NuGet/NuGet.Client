@@ -215,6 +215,21 @@ namespace NuGet.ProjectModel
                     case "SdkAnalysisLevel":
                         packageSpec.SdkAnalysisLevel = jsonReader.ReadNextTokenAsString();
                         break;
+                    case "UsingMicrosoftNETSdk":
+                        string isSdk = jsonReader.ReadNextTokenAsString();
+
+                        if (!string.IsNullOrEmpty(isSdk))
+                        {
+                            if (string.Equals(isSdk, "true", StringComparison.OrdinalIgnoreCase))
+                            {
+                                packageSpec.UsingMicrosoftNETSdk = true;
+                            }
+                            else if (string.Equals(isSdk, "false", StringComparison.OrdinalIgnoreCase))
+                            {
+                                packageSpec.UsingMicrosoftNETSdk = false;
+                            }
+                        }
+                        break;
                 }
             });
 
