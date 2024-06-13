@@ -442,41 +442,5 @@ namespace NuGet.PackageManagement
 
             return restoreContext;
         }
-
-        private static Dictionary<string, bool> GetUsingMicrosoftNetSdk(IReadOnlyList<PackageSpec> projects)
-        {
-            Dictionary<string, bool> UsingMicrosoftNetSdk = new Dictionary<string, bool>();
-
-            foreach (var project in projects)
-            {
-                UsingMicrosoftNetSdk.Add(project.Name, project.UsingMicrosoftNETSdk);
-            }
-
-            return UsingMicrosoftNetSdk;
-        }
-
-        private static string GetSmallestSdkAnalysisLevel(IReadOnlyList<PackageSpec> projects)
-        {
-            string sdkAnalysisLevel = null;
-            foreach (PackageSpec project in projects)
-            {
-                if (sdkAnalysisLevel == null)
-                {
-                    if (!string.IsNullOrEmpty(project.SdkAnalysisLevel))
-                    {
-                        sdkAnalysisLevel = project.SdkAnalysisLevel;
-                    }
-                }
-                else
-                {
-                    if (string.Compare(sdkAnalysisLevel, project.SdkAnalysisLevel, StringComparison.OrdinalIgnoreCase) < 0)
-                    {
-                        sdkAnalysisLevel = project.SdkAnalysisLevel;
-                    }
-                }
-            }
-
-            return sdkAnalysisLevel;
-        }
     }
 }

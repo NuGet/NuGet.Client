@@ -210,8 +210,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WriteRestoreGraphTask
       RestoreGraphItems="@(_RestoreGraphEntryFiltered)"
       RestoreGraphOutputPath="$(RestoreGraphOutputPath)"
-      RestoreRecursive="$(RestoreRecursive)"
-      SdkAnalysisLevel="$(SdkAnalysisLevel)" />
+      RestoreRecursive="$(RestoreRecursive)" />
   </Target>
 
   <!--

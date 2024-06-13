@@ -38,22 +38,12 @@ namespace NuGet.Commands
             return GetDependencySpec(items, readOnly: false);
         }
 
-        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, string SdkAnalysisLevel)
-        {
-            return GetDependencySpec(items, readOnly: false, SdkAnalysisLevel);
-        }
-
-        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly)
-        {
-            return GetDependencySpec(items, readOnly, "");
-        }
-
         /// <summary>
         /// Creates a <see cref="DependencyGraphSpec" /> from the specified MSBuild items.
         /// </summary>
         /// <param name="items">An <see cref="IEnumerable{T}" /> of <see cref="IMSBuildItem" /> objects representing the MSBuild items gathered for restore.</param>
         /// <param name="readOnly"><see langword="true" /> to indicate that the <see cref="DependencyGraphSpec" /> is considered read-only and won't be changed, otherwise <see langword="false" />.</param>
-        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly, string SdkAnalysisLevel)
+        public static DependencyGraphSpec GetDependencySpec(IEnumerable<IMSBuildItem> items, bool readOnly)
         {
             if (items == null)
             {
@@ -121,7 +111,6 @@ namespace NuGet.Commands
                     validForRestore.Add(spec.RestoreMetadata.ProjectUniqueName);
                 }
 
-                spec.SdkAnalysisLevel = SdkAnalysisLevel;
                 graphSpec.AddProject(spec);
             }
 
@@ -290,6 +279,8 @@ namespace NuGet.Commands
 
                     // NuGet audit properties
                     result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
+
+                    result.SdkAnalysisLevel = specItem.GetProperty("SdkAnalysisLevel");
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -320,6 +311,8 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
                 result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
+
+                result.UsingMicrosoftNETSdk = string.Equals(specItem.GetProperty("UsingMicrosoftNETSdk"), "true", StringComparison.OrdinalIgnoreCase);
             }
 
             return result;

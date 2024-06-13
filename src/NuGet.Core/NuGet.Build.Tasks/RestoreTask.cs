@@ -96,11 +96,6 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public string EmbedFilesInBinlog { get; set; }
 
-        /// <summary>
-        /// Indicates the current SDK Level Analysis being used. Example: "9.0.100".
-        /// </summary>
-        public string SdkAnalysisLevel { get; set; }
-
         public override bool Execute()
         {
 #if DEBUG
