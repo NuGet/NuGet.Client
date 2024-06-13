@@ -159,7 +159,6 @@ namespace NuGet.Build.Tasks
                 forceEvaluate: RestoreForceEvaluate,
                 hideWarningsAndErrors: HideWarningsAndErrors,
                 restorePC: RestorePackagesConfig,
-                cleanupAssetsForUnsupportedProjects: false,
                 log: log,
                 cancellationToken: _cts.Token);
         }
