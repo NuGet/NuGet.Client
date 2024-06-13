@@ -311,7 +311,19 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
 
-                result.UsingMicrosoftNETSdk = string.Equals(specItem.GetProperty("UsingMicrosoftNETSdk"), "true", StringComparison.OrdinalIgnoreCase);
+                string isSdk = specItem.GetProperty("UsingMicrosoftNETSdk");
+
+                if (!string.IsNullOrEmpty(isSdk))
+                {
+                    if (string.Equals(isSdk, "true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.UsingMicrosoftNETSdk = true;
+                    }
+                    else if (string.Equals(isSdk, "false", StringComparison.OrdinalIgnoreCase))
+                    {
+                        result.UsingMicrosoftNETSdk = false;
+                    }
+                }
             }
 
             return result;

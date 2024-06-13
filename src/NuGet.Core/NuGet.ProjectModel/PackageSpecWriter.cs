@@ -66,7 +66,11 @@ namespace NuGet.ProjectModel
 #pragma warning restore CS0612 // Type or member is obsolete
 
             SetValue(writer, "SdkAnalysisLevel", packageSpec.SdkAnalysisLevel);
-            SetValue(writer, "UsingMicrosoftNETSdk", packageSpec.UsingMicrosoftNETSdk.ToString());
+
+            if (packageSpec.UsingMicrosoftNETSdk is not null)
+            {
+                SetValue(writer, "UsingMicrosoftNETSdk", packageSpec.UsingMicrosoftNETSdk.ToString());
+            }
 
             if (packageSpec.Dependencies.Count > 0)
             {
