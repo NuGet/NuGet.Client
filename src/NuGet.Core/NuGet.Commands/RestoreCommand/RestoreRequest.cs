@@ -210,12 +210,5 @@ namespace NuGet.Commands
         /// It can be set to true through the updatePackageLastAccessTime configuration flag
         /// </summary>
         public bool UpdatePackageLastAccessTime { get; set; }
-
-        public string SdkAnalysisLevel { get; set; }
-
-        /// <summary>
-        /// Indicates that Microsoft.NET.Sdk is being used.
-        /// </summary>
-        public Dictionary<string, bool> UsingMicrosoftNETSdk { get; set; } = new Dictionary<string, bool>();
     }
 }

@@ -153,13 +153,6 @@ namespace NuGet.Build.Tasks
                 log.LogInformation(Strings.Log_RestoreNoCacheInformation);
             }
 
-            Dictionary<string, bool> usingMicrosoftNetSdk = new Dictionary<string, bool>();
-
-            foreach (var project in dgFile.Projects)
-            {
-                usingMicrosoftNetSdk.Add(project.Name, project.UsingMicrosoftNETSdk);
-            }
-
             return await BuildTasksUtility.RestoreAsync(
                 dependencyGraphSpec: dgFile,
                 interactive: Interactive,
@@ -172,8 +165,6 @@ namespace NuGet.Build.Tasks
                 hideWarningsAndErrors: HideWarningsAndErrors,
                 restorePC: RestorePackagesConfig,
                 cleanupAssetsForUnsupportedProjects: false,
-                SdkAnalysisLevel: SdkAnalysisLevel,
-                UsingMicrosoftNETSdk: usingMicrosoftNetSdk,
                 log: log,
                 cancellationToken: _cts.Token);
         }

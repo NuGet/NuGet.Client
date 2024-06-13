@@ -202,8 +202,6 @@ namespace NuGet.Commands
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
                 AdditionalMessages = projectAdditionalMessages,
                 UpdatePackageLastAccessTime = updateLastAccess,
-                SdkAnalysisLevel = restoreArgs.SdkAnalysisLevel,
-                UsingMicrosoftNETSdk = restoreArgs.UsingMicrosoftNETSdk
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory

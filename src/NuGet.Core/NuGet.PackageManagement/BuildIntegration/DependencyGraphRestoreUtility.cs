@@ -438,8 +438,6 @@ namespace NuGet.PackageManagement
                 RestoreForceEvaluate = restoreForceEvaluate,
                 AdditionalMessages = additionalMessasges,
                 ProgressReporter = progressReporter,
-                SdkAnalysisLevel = GetSmallestSdkAnalysisLevel(dgFile.Projects),
-                UsingMicrosoftNETSdk = GetUsingMicrosoftNetSdk(dgFile.Projects)
             };
 
             return restoreContext;

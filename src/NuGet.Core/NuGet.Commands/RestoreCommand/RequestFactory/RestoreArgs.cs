@@ -65,13 +65,6 @@ namespace NuGet.Commands
 
         public bool RestoreForceEvaluate { get; set; }
 
-        public string SdkAnalysisLevel { get; set; }
-
-        /// <summary>
-        /// Indicates that Microsoft.NET.Sdk is being used for each project.
-        /// </summary>
-        public Dictionary<string, bool> UsingMicrosoftNETSdk { get; set; } = new Dictionary<string, bool>();
-
         /// <summary>
         /// Messages that should be written to the assets file, in addition to any messages generated during the restore.
         /// </summary>

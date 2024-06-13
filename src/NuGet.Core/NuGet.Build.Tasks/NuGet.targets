@@ -183,8 +183,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Interactive="$(NuGetInteractive)"
       RestoreForceEvaluate="$(RestoreForceEvaluate)"
       RestorePackagesConfig="$(RestorePackagesConfig)"
-      EmbedFilesInBinlog="$(RestoreEmbedFilesInBinlog)"
-      SdkAnalysisLevel="$(SdkAnalysisLevel)">
+      EmbedFilesInBinlog="$(RestoreEmbedFilesInBinlog)">
       <Output TaskParameter="EmbedInBinlog" ItemName="EmbedInBinlog" />
     </RestoreTask>
   </Target>
