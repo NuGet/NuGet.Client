@@ -162,6 +162,11 @@ namespace NuGet.ProjectModel
         /// <remarks>Optional. This is normally set for internal use only.</remarks>
         public ProjectRestoreMetadata RestoreMetadata { get; set; }
 
+        /// <summary>
+        /// A unified flag to help users manage their SDK warning levels. Example: 9.0.100
+        /// When introducing a new warning or error use this property to
+        /// allow users to tell the sdk "treat me as if I were SDK x.y.z" and manage breaking changes
+        /// </summary>
         public string SdkAnalysisLevel { get; set; }
 
         /// <summary>

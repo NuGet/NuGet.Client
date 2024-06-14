@@ -810,8 +810,14 @@ namespace NuGet.Build.Tasks.Console
                         .Select(s => new CompatibilityProfile(s))
                         .ToList()
                     ),
-                Version = GetProjectVersion(project)
+                Version = GetProjectVersion(project),
+                SdkAnalysisLevel = project.GetProperty("SdkAnalysisLevel")
             };
+
+            if (bool.TryParse(project.GetProperty("UsingMicrosoftNETSdk"), out bool value))
+            {
+                packageSpec.UsingMicrosoftNETSdk = value;
+            }
 
             return packageSpec;
         }

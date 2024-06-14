@@ -313,16 +313,9 @@ namespace NuGet.Commands
 
                 string isSdk = specItem.GetProperty("UsingMicrosoftNETSdk");
 
-                if (!string.IsNullOrEmpty(isSdk))
+                if (bool.TryParse(isSdk, out bool value))
                 {
-                    if (string.Equals(isSdk, "true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.UsingMicrosoftNETSdk = true;
-                    }
-                    else if (string.Equals(isSdk, "false", StringComparison.OrdinalIgnoreCase))
-                    {
-                        result.UsingMicrosoftNETSdk = false;
-                    }
+                    result.UsingMicrosoftNETSdk = value;
                 }
             }
 
