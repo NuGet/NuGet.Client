@@ -36,17 +36,11 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var searchUrl = _serviceIndex.GetServiceEntryUri(ServiceTypes.SearchAutocompleteService);
+            var searchUrl = _serviceIndex.GetServiceEntryUri(_allowInsecureConnections, ServiceTypes.SearchAutocompleteService);
 
             if (searchUrl == null)
             {
                 throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
-            }
-
-            // Check for a not HTTPS source
-            if (searchUrl.Scheme == Uri.UriSchemeHttp && searchUrl.Scheme != Uri.UriSchemeHttps && !_allowInsecureConnections)
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, _client, searchUrl));
             }
 
             // Construct the query

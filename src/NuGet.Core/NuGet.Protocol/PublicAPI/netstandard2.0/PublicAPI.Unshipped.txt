@@ -12,3 +12,6 @@ static NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.CreateOrNull(S
 ~NuGet.Protocol.PackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.AutoCompleteResourceV3.AutoCompleteResourceV3(NuGet.Protocol.HttpSource client, NuGet.Protocol.ServiceIndexResourceV3 serviceIndex, NuGet.Protocol.RegistrationResourceV3 regResource, bool allowInsecureConnections) -> void
+~virtual NuGet.Protocol.ServiceIndexResourceV3.GetServiceEntryUri(bool allowInsecureConnections, params string[] orderedTypes) -> System.Uri
+~virtual NuGet.Protocol.ServiceIndexResourceV3.GetServiceEntryUris(bool allowInsecureConnections, params string[] orderedTypes) -> System.Collections.Generic.IReadOnlyList<System.Uri>
+~virtual NuGet.Protocol.ServiceIndexResourceV3.GetServiceEntryUris(bool allowInsecureConnections, NuGet.Versioning.NuGetVersion clientVersion, params string[] orderedTypes) -> System.Collections.Generic.IReadOnlyList<System.Uri>

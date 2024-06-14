@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -27,16 +25,7 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var endpoints = serviceIndex.GetServiceEntryUris(ServiceTypes.SearchQueryService);
-
-                foreach (Uri endpoint in endpoints)
-                {
-                    PackageSource serviceSource = new PackageSource(endpoint.OriginalString, endpoint.OriginalString);
-                    if (serviceSource.IsHttp && !serviceSource.IsHttps && !source.PackageSource.AllowInsecureConnections)
-                    {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, endpoint));
-                    }
-                }
+                var endpoints = serviceIndex.GetServiceEntryUris(source.PackageSource.AllowInsecureConnections, ServiceTypes.SearchQueryService);
 
                 if (endpoints.Count > 0)
                 {

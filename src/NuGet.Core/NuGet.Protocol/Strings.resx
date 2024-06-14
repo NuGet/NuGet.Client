@@ -531,7 +531,7 @@ The "s" should be localized to the abbreviation for seconds.</comment>
 {2} - max count allowed</comment>
   </data>
   <data name="Error_HttpServiceIndexUsage" xml:space="preserve">
-    <value>The NuGet source '{0}' has a non HTTPS service index: '{1}'. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information.</value>
+    <value>You have used a non HTTPS service index: '{0}'. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information.</value>
     <comment>'{0}' A NuGet source. For example https://api.nuget.org/v3/index.json
 '{1}' The service index URI in a specific source.</comment>
   </data>

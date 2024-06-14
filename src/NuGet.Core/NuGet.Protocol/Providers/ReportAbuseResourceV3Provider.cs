@@ -2,41 +2,42 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
-    public class ReportAbuseResourceV3Provider : ResourceProvider
+    public class RegistrationResourceV3Provider : ResourceProvider
     {
-        public ReportAbuseResourceV3Provider()
-            : base(typeof(ReportAbuseResourceV3),
-                  nameof(ReportAbuseResourceV3),
+        public RegistrationResourceV3Provider()
+            : base(typeof(RegistrationResourceV3),
+                  nameof(RegistrationResourceV3),
                   NuGetResourceProviderPositions.Last)
         {
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            ReportAbuseResourceV3 resource = null;
+            RegistrationResourceV3 regResource = null;
             var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
+
             if (serviceIndex != null)
             {
-                var baseUri = serviceIndex.GetServiceEntryUri(ServiceTypes.ReportAbuse);
-                var uriTemplate = baseUri?.AbsoluteUri;
+                //This will come back as null if there are no matching RegistrationsBaseUrl types
+                var baseUrl = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.RegistrationsBaseUrl);
 
-                // Check for a not HTTPS source
-                if (baseUri.Scheme == Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps && !source.PackageSource.AllowInsecureConnections)
+                if (baseUrl != null)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpServiceIndexUsage, source.PackageSource.SourceUri, baseUri));
+                    var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+
+                    // construct a new resource
+                    regResource = new RegistrationResourceV3(httpSourceResource.HttpSource, baseUrl);
                 }
-                // construct a new resource
-                resource = new ReportAbuseResourceV3(uriTemplate);
             }
 
-            return new Tuple<bool, INuGetResource>(resource != null, resource);
+            return new Tuple<bool, INuGetResource>(regResource != null, regResource);
         }
     }
 }

@@ -169,7 +169,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet source &apos;{0}&apos; has a non HTTPS service index: &apos;{1}&apos;. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information..
+        ///   Looks up a localized string similar to You have used a non HTTPS service index: &apos;{0}&apos;. NuGet requires HTTPS sources. To use HTTP sources, you must explicitly set &apos;allowInsecureConnections&apos; to true in your NuGet.Config file. Please refer to https://aka.ms/nuget-https-everywhere for more information..
         /// </summary>
         internal static string Error_HttpServiceIndexUsage {
             get {
