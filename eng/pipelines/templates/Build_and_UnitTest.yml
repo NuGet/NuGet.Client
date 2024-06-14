@@ -75,6 +75,17 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
+- task: CmdLine@2
+  displayName: "Restore packages to publish to the .NET Core build asset registry (BAR)"
+  inputs:
+    script: dotnet restore $(Build.Repository.LocalPath)\build\publish.proj -binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore-publish.binlog"
+    workingDirectory: cli
+    failOnStderr: true
+  env:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_MULTILEVEL_LOOKUP: true
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+
 - task: PowerShell@1
   displayName: "Set IncludeApex variable"
   name: "includeapex"
@@ -160,15 +171,6 @@ steps:
       searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
       publishRunAttachments: "false"
     condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-- task: PowerShell@1
-  displayName: "Initialize Git Commit Status on GitHub"
-  inputs:
-    scriptType: "inlineScript"
-    inlineScript: |
-      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Sign Assemblies"
@@ -393,17 +395,6 @@ steps:
     msbuildArguments: "/target:ValidateArtifacts /property:BuildRTM=$(BuildRTM) /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-- task: CmdLine@2
-  displayName: "Restore packages to publish to the .NET Core build asset registry (BAR)"
-  inputs:
-    script: dotnet restore $(Build.Repository.LocalPath)\build\publish.proj
-    workingDirectory: cli
-    failOnStderr: true
-  env:
-    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    DOTNET_MULTILEVEL_LOOKUP: true
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
   # Use dotnet msbuild instead of MSBuild CLI.
   # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
   # The Microsoft.DotNet.Build.Tasks.Feed package includes NuGet.Common 4.9.0.6 and a binding redirection in Microsoft.DotNet.Build.Tasks.Feed.dll.config but the binding redirection is not processed.
@@ -418,3 +409,12 @@ steps:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_MULTILEVEL_LOOKUP: true
   condition: "and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false'))"
+
+- task: PowerShell@1
+  displayName: "Initialize Git Commit Status on GitHub"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+      SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
+  condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
