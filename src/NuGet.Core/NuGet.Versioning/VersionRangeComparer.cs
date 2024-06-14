@@ -59,8 +59,8 @@ namespace NuGet.Versioning
         /// <summary>
         /// Get a <see cref="VersionRangeComparer"/> for a specific <see cref="VersionComparison"/>
         /// </summary>
-        /// <param name="versionComparison"><see cref="VersionComparison"/></param>
-        /// <returns><see cref="VersionRangeComparer"/></returns>
+        /// <param name="versionComparison">Version comparison modes</param>
+        /// <returns>A version range comparer capable of using different VersionComparers to check if ranges are equivalent.</returns>
         public static IVersionRangeComparer Get(VersionComparison versionComparison)
         {
             return versionComparison switch
@@ -79,6 +79,7 @@ namespace NuGet.Versioning
         /// </summary>
         public bool Equals(VersionRangeBase? x, VersionRangeBase? y)
         {
+            VersionRangeComparer.Get()
             if (ReferenceEquals(x, y))
             {
                 return true;

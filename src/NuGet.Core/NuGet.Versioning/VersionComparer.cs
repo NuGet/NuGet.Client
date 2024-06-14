@@ -15,8 +15,8 @@ namespace NuGet.Versioning
         /// <summary>
         /// Get a <see cref="VersionComparer"/> for a specific <see cref="VersionComparison"/>
         /// </summary>
-        /// <param name="versionComparison"><see cref="VersionComparison"/></param>
-        /// <returns><see cref="VersionComparer"/></returns>
+        /// <param name="versionComparison">Version comparison modes.</param>
+        /// <returns>An IVersionComparer for NuGetVersion and NuGetVersion types.</returns>
         public static IVersionComparer Get(VersionComparison versionComparison)
         {
             return versionComparison switch
