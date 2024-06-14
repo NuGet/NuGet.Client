@@ -1,5 +1,6 @@
 # assemblies not to be included in VSIX
 
+Azure.Core.dll
 Ben.Demystifier.dll
 MessagePack.Annotations.dll
 MessagePack.dll
@@ -101,6 +102,7 @@ System.Diagnostics.DiagnosticSource.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.IO.Pipelines.dll
 System.Management.Automation.dll
+System.Memory.Data.dll
 System.Net.Http.Formatting.dll
 System.Reflection.MetadataLoadContext.dll
 System.Resources.Extensions.dll
