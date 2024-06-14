@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
 
