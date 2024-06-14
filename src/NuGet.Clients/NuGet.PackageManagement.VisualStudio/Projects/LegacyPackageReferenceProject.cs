@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
+
         public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
@@ -510,11 +511,11 @@ namespace NuGet.PackageManagement.VisualStudio
             string centralPackageTransitivePinningEnabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled);
             // Do not add new properties here. Use BuildProperties.GetPropertyValue instead, without DTE fallback.
 #pragma warning restore CS0618 // Type or member is obsolete
-
             string skdAnalysisLevelString = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel);
             string usingNetSdk = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk);
             bool? usingMicrosoftNetSdk = null;
             NuGetVersion sdkAnalysisLevel = null;
+
             if (skdAnalysisLevelString != null)
             {
                 sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
