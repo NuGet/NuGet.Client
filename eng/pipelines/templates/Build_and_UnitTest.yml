@@ -75,6 +75,12 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
+- task: MSBuild@1
+  displayName: "Restore publish.proj"
+  inputs:
+    solution: "build\\publish.proj"
+    msbuildArguments: "/restore"
+
 - task: PowerShell@1
   displayName: "Set IncludeApex variable"
   name: "includeapex"
