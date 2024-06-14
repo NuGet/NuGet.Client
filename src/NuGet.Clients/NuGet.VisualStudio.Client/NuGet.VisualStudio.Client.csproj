@@ -31,6 +31,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="registration.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="..\..\NuGet.Core\NuGet.Build.Tasks\NuGet.targets">
       <Link>NuGet.targets</Link>
       <IncludeInVSIX>true</IncludeInVSIX>

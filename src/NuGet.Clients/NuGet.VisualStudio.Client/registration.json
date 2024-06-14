@@ -1,0 +1,18 @@
+{
+    "properties": {
+      "nuGetPackageManager.general.allowRestoreDownload": {
+        "type": "boolean",
+        "title": "Allow NuGet to download missing packages",
+        "default": true
+      }
+    },
+    "categories": {
+      "nuGetPackageManager": {
+        "title": "%Text_NuGetSettings%"
+      },
+      "nuGetPackageManager.general": {
+        "title": "%Text_ViewLicense%",
+        "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E"
+      }
+    }
+  }
