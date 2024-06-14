@@ -200,7 +200,9 @@ namespace NuGet.XPlat.FuncTest
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, isPrivateFeed: true);
             mockServer.Start();
-            pathContext.Settings.AddSource(sourceName: "private-source", sourceUri: mockServer.ServiceIndexUri, allowInsecureConnectionsValue: bool.TrueString);
+            PackageSource source = new PackageSource(mockServer.ServiceIndexUri, "private-source");
+            source.AllowInsecureConnections = true;
+            pathContext.Settings.AddSource(sourceName:source.Name , sourceUri: source.Source, allowInsecureConnectionsValue: bool.TrueString);
 
             var mockedCredentialService = new Mock<ICredentialService>();
             var expectedCredentials = new NetworkCredential("user", "password1");
@@ -215,7 +217,7 @@ namespace NuGet.XPlat.FuncTest
             ListPackageCommandRunner listPackageCommandRunner = new();
             var packageRefArgs = new ListPackageArgs(
                                         path: Path.Combine(pathContext.SolutionRoot, "solution.sln"),
-                                        packageSources: [new(mockServer.ServiceIndexUri)],
+                                        packageSources: [source],
                                         frameworks: ["net6.0"],
                                         reportType: ReportType.Vulnerable,
                                         renderer: new ListPackageConsoleRenderer(),

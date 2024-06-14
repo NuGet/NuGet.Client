@@ -63,6 +63,7 @@ namespace NuGet.Protocol.Providers.Tests
                 CreateServiceIndexResourceV3Provider(serviceEntry),
                 _target
             };
+            _packageSource.AllowInsecureConnections = true;
             var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
 
             var result = await _target.TryCreate(sourceRepository, CancellationToken.None);

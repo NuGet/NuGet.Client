@@ -55,11 +55,35 @@ namespace NuGet.Protocol.Providers.Tests
             Assert.Null(result.Item2);
         }
 
-        [Theory]
-        [InlineData("http://unit.test/4.9.0", ResourceType490)]
-        [InlineData(@"\\localhost\unit\test\4.9.0", ResourceType490)]
-        public async Task TryCreate_WhenUrlIsInvalid_Throws(string resourceUrl, string resourceType)
+        [Fact]
+        public async Task TryCreate_WhenHttpUrlIsInvalid_ThrowsAsync()
         {
+            string resourceUrl = "http://unit.test/4.9.0";
+            string resourceType = ResourceType490;
+            var serviceEntry = new ServiceIndexEntry(new Uri(resourceUrl), resourceType, DefaultVersion);
+            var resourceProviders = new ResourceProvider[]
+            {
+                MockServiceIndexResourceV3Provider.Create(serviceEntry),
+                StaticHttpSource.CreateHttpSource(
+                    new Dictionary<string, string>()
+                    {
+                        { serviceEntry.Uri.AbsoluteUri, GetRepositorySignaturesResourceJson(resourceUrl) }
+                    }),
+                _repositorySignatureResourceProvider
+            };
+            var sourceRepository = new SourceRepository(_packageSource, resourceProviders);
+
+            var exception = await Assert.ThrowsAsync<ArgumentException>(
+                () => _repositorySignatureResourceProvider.TryCreate(sourceRepository, CancellationToken.None));
+
+            Assert.Contains(serviceEntry.Uri.OriginalString, exception.Message);
+        }
+
+        [Fact]
+        public async Task TryCreate_WhenUrlIsInvalid_ThrowsAsync()
+        {
+            string resourceUrl = @"\\localhost\unit\test\4.9.0";
+            string resourceType = ResourceType490;
             var serviceEntry = new ServiceIndexEntry(new Uri(resourceUrl), resourceType, DefaultVersion);
             var resourceProviders = new ResourceProvider[]
             {
