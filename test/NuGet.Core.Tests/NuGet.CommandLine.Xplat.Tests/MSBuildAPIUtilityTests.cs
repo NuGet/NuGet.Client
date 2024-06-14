@@ -554,7 +554,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         [InlineData("X.sln", "A.csproj")]
         [InlineData()]
         [InlineData("random.txt")]
-        public void GetListOfProjectsFromPathArgument_WithDirectoryWithInvalidNumberOfSolutionsOrProjects_ReturnsNull(params string[] directoryFiles)
+        public void GetListOfProjectsFromPathArgument_WithDirectoryWithInvalidNumberOfSolutionsOrProjects_ThrowsException(params string[] directoryFiles)
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
