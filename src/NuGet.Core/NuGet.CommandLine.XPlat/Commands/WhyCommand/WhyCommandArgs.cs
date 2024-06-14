@@ -5,10 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -36,90 +32,6 @@ namespace NuGet.CommandLine.XPlat
             Package = package ?? throw new ArgumentNullException(nameof(package));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
-        /// <summary>
-        /// Validates that the input 'PATH' argument is a valid path to a directory, solution file or project file.
-        /// </summary>
-        public bool ValidatePathArgument()
-        {
-            if (string.IsNullOrEmpty(Path))
-            {
-                Logger.LogError(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                        "PROJECT|SOLUTION"));
-                return false;
-            }
-
-            // Check that the input is a valid path
-            string fullPath;
-            try
-            {
-                fullPath = System.IO.Path.GetFullPath(Path);
-            }
-            catch (ArgumentException)
-            {
-                Logger.LogError(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.WhyCommand_Error_ArgumentExceptionThrown,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, Path)));
-                return false;
-            }
-
-            // Check that the path is a directory, solution file or project file
-            if (Directory.Exists(fullPath)
-                || (File.Exists(fullPath)
-                    && (XPlatUtility.IsSolutionFile(fullPath) || XPlatUtility.IsProjectFile(fullPath))))
-            {
-                return true;
-            }
-            else
-            {
-                Logger.LogError(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.WhyCommand_Error_ArgumentExceptionThrown,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, Path)));
-                return false;
-            }
-        }
-
-        public bool ValidatePackageArgument()
-        {
-            if (string.IsNullOrEmpty(Package))
-            {
-                Logger.LogError(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.WhyCommand_Error_ArgumentCannotBeEmpty,
-                        "PACKAGE"));
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Validates that the input frameworks options have corresponding targets in the assets file. Outputs a warning message if a framework does not exist.
-        /// </summary>
-        public void ValidateFrameworksOptionsExistInAssetsFile(LockFile assetsFile)
-        {
-            foreach (var frameworkAlias in Frameworks)
-            {
-                if (assetsFile.GetTarget(frameworkAlias, runtimeIdentifier: null) == null)
-                {
-                    Logger.LogWarning(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.WhyCommand_Warning_AssetsFileDoesNotContainSpecifiedTarget,
-                            assetsFile.Path,
-                            assetsFile.PackageSpec.Name,
-                            frameworkAlias));
-                }
-            }
         }
     }
 }
