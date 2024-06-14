@@ -4088,13 +4088,12 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
-            string expectedError = string.Format(CultureInfo.CurrentCulture, NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", httpSourceUrl);
 
             result.Success.Should().BeFalse(because: logger.ShowMessages());
             result.LockFile.LogMessages.Should().HaveCount(1);
             IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
             logMessage.Code.Should().Be(NuGetLogCode.NU1302);
-            Assert.Equal(expectedError, logMessage.Message);
+            Assert.Contains(httpSourceUrl, logMessage.Message);
         }
 
         [Fact]

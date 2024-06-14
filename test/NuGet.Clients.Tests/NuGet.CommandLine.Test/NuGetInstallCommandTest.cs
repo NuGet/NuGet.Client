@@ -1619,7 +1619,7 @@ namespace NuGet.CommandLine.Test
                     var config = string.Format(
     @"<configuration>
   <packageSources>
-    <add key='test' value='{0}' />
+    <add key='test' value='{0}' allowInsecureConnections='true'/>
   </packageSources>
   <packageSourceCredentials>
     <test>
@@ -2213,7 +2213,7 @@ namespace NuGet.CommandLine.Test
             var settings = pathContext.Settings;
             SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
             var section = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
-            SimpleTestSettingsContext.AddEntry(section, "source", mockServer.ServiceIndexUri);
+            SimpleTestSettingsContext.AddEntry(section, "source", mockServer.ServiceIndexUri, additionalAtrributeName: "allowInsecureConnections", additionalAttributeValue: "true");
             settings.Save();
 
             // Arrange

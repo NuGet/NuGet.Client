@@ -187,7 +187,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 0, 0), "Citrus");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(4, 0, 0), "Citrus");
 
             Assert.True(endpoints.Count == 1);
 
@@ -217,7 +217,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 0, 0), "Fruit");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(4, 0, 0), "Fruit");
 
             Assert.True(endpoints.Count == 3);
 
@@ -249,7 +249,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 0, 0), "Chocolate", "Vegetable");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(4, 0, 0), "Chocolate", "Vegetable");
 
             Assert.True(endpoints.Count == 1);
 
@@ -279,7 +279,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 0, 0), "A", "B");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(4, 0, 0), "A", "B");
 
             Assert.True(endpoints.Count == 1);
 
@@ -336,7 +336,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 1, 0), "A", "B");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(4, 1, 0), "A", "B");
 
             Assert.True(endpoints.Count == 1);
 
@@ -366,7 +366,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(4, 1, 0), "A", "B");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(4, 1, 0), "A", "B");
 
             Assert.True(endpoints.Count == 1);
 
@@ -396,7 +396,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             Assert.NotNull(resource);
 
-            var endpoints = resource.GetServiceEntryUris(new NuGetVersion(5, 0, 0), "A", "B");
+            var endpoints = resource.GetServiceEntryUris(allowInsecureConnections: true, new NuGetVersion(5, 0, 0), "A", "B");
 
             Assert.True(endpoints.Count == 2);
 

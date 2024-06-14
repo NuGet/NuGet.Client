@@ -128,7 +128,7 @@ namespace NuGet.Protocol.Tests
             var repo = StaticHttpHandler.CreateSource(source, Repository.Provider.GetCoreV3(), responses);
 
             // Act & Assert
-            await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>(CancellationToken.None));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await repo.GetResourceAsync<RepositorySignatureResource>(CancellationToken.None));
         }
 
 

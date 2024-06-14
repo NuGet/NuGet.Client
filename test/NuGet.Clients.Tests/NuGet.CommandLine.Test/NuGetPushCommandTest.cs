@@ -2730,6 +2730,7 @@ $@"<configuration>
 
                         serverV3.Start();
                         serverV2.Start();
+                        pathContext.Settings.AddSource("httpsource", serverV3.Uri + "index.json", allowInsecureConnectionsValue: "true");
 
                         // Act
                         string[] args = new string[]
