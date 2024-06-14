@@ -79,7 +79,6 @@ namespace NuGet.Versioning
         /// </summary>
         public bool Equals(VersionRangeBase? x, VersionRangeBase? y)
         {
-            VersionRangeComparer.Get()
             if (ReferenceEquals(x, y))
             {
                 return true;
