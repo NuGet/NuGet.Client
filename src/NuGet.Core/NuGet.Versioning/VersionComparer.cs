@@ -12,9 +12,12 @@ namespace NuGet.Versioning
     /// </summary>
     public sealed class VersionComparer : IVersionComparer
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        /// <summary>
+        /// Get a <see cref="VersionComparer"/> for a specific <see cref="VersionComparison"/>
+        /// </summary>
+        /// <param name="versionComparison"><see cref="VersionComparison"/></param>
+        /// <returns><see cref="VersionComparer"/></returns>
         public static IVersionComparer Get(VersionComparison versionComparison)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return versionComparison switch
             {
