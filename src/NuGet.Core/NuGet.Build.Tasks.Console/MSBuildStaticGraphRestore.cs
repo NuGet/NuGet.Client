@@ -811,8 +811,13 @@ namespace NuGet.Build.Tasks.Console
                         .ToList()
                     ),
                 Version = GetProjectVersion(project),
-                SdkAnalysisLevel = project.GetProperty("SdkAnalysisLevel")
             };
+            string skdAnalysisLevelString = project.GetProperty("SdkAnalysisLevel");
+
+            if (skdAnalysisLevelString != null)
+            {
+                packageSpec.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+            }
 
             if (bool.TryParse(project.GetProperty("UsingMicrosoftNETSdk"), out bool value))
             {

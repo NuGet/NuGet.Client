@@ -279,7 +279,12 @@ namespace NuGet.Commands
                     // NuGet audit properties
                     result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
 
-                    result.SdkAnalysisLevel = specItem.GetProperty("SdkAnalysisLevel");
+                    string skdAnalysisLevelString = specItem.GetProperty("SdkAnalysisLevel");
+
+                    if (skdAnalysisLevelString != null)
+                    {
+                        result.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                    }
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)

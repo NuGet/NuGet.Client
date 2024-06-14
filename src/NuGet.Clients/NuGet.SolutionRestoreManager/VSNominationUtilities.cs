@@ -713,14 +713,28 @@ namespace NuGet.SolutionRestoreManager
             return input;
         }
 
-        internal static string GetSdkAnalysisLevel(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
+        internal static NuGetVersion? GetSdkAnalysisLevel(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
         {
-            return GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
+            string skdAnalysisLevelString = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
+            NuGetVersion? sdkAnalysisLevel = null;
+            if (skdAnalysisLevelString != null)
+            {
+                sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+            }
+
+            return sdkAnalysisLevel;
         }
 
-        internal static bool GetUsingMicrosoftNETSdk(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
+        internal static bool? GetUsingMicrosoftNETSdk(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
         {
-            return string.Equals(GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.UsingMicrosoftNETSdk), v => v), "true", StringComparison.OrdinalIgnoreCase);
+            string? usingNetSdk = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.UsingMicrosoftNETSdk), v => v);
+
+            if (bool.TryParse(usingNetSdk, out var result))
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }

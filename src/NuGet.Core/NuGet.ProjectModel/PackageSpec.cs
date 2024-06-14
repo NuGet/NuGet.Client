@@ -167,7 +167,7 @@ namespace NuGet.ProjectModel
         /// When introducing a new warning or error use this property to
         /// allow users to tell the sdk "treat me as if I were SDK x.y.z" and manage breaking changes
         /// </summary>
-        public string SdkAnalysisLevel { get; set; }
+        public NuGetVersion SdkAnalysisLevel { get; set; }
 
         /// <summary>
         /// Indicates that Microsoft.NET.Sdk is being used.
@@ -205,6 +205,12 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddObject(RuntimeGraph);
             hashCode.AddObject(RestoreMetadata);
+            hashCode.AddObject(SdkAnalysisLevel);
+
+            if (UsingMicrosoftNETSdk != null)
+            {
+                hashCode.AddObject(UsingMicrosoftNETSdk.Value);
+            }
 
             return hashCode.CombinedHash;
         }
@@ -254,7 +260,9 @@ namespace NuGet.ProjectModel
                    EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dep => dep.Name, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, tfm => tfm.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
-                   EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
+                   EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata) &&
+                   EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel) &&
+                   EqualityUtility.EqualsWithNullCheck(UsingMicrosoftNETSdk, other.UsingMicrosoftNETSdk);
         }
 
         /// <summary>

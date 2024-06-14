@@ -37,7 +37,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly IVsProjectThreadingService _threadingService;
-        private const bool IsSdk = false; // default value for non sdk projects
         public NuGetFramework TargetFramework { get; }
 
         public LegacyPackageReferenceProject(
@@ -512,6 +511,20 @@ namespace NuGet.PackageManagement.VisualStudio
             // Do not add new properties here. Use BuildProperties.GetPropertyValue instead, without DTE fallback.
 #pragma warning restore CS0618 // Type or member is obsolete
 
+            string skdAnalysisLevelString = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel);
+            string usingNetSdk = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk);
+            bool? usingMicrosoftNetSdk = null;
+            NuGetVersion sdkAnalysisLevel = null;
+            if (skdAnalysisLevelString != null)
+            {
+                sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+            }
+
+            if (bool.TryParse(usingNetSdk, out bool result))
+            {
+                usingMicrosoftNetSdk = result;
+            };
+
             return new PackageSpec(tfis)
             {
                 Name = projectName,
@@ -556,8 +569,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
                     RestoreAuditProperties = auditProperties,
                 },
-                SdkAnalysisLevel = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel),
-                UsingMicrosoftNETSdk = IsSdk,
+                SdkAnalysisLevel = sdkAnalysisLevel,
+                UsingMicrosoftNETSdk = usingMicrosoftNetSdk,
             };
         }
 
