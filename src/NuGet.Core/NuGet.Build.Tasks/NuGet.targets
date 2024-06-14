@@ -920,11 +920,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NuGetAudit>$(NuGetAudit)</NuGetAudit>
         <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
-<<<<<<< HEAD
-	<SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
-=======
         <SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
->>>>>>> 24dd40e58 (Clis and legacy projects)
         <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
       </_RestoreGraphEntry>
     </ItemGroup>
