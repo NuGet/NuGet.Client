@@ -9,7 +9,6 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <GenerateDocumentationFile Condition="'$(IsOfficialBuild)' == 'true'">false</GenerateDocumentationFile>
     <GenerateDocumentationFile Condition="'$(IsOfficialBuild)' != 'true'">true</GenerateDocumentationFile>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Description>NuGet Command Line Interface.</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Shipping>true</Shipping>
