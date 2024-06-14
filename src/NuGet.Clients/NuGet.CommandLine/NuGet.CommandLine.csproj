@@ -7,8 +7,6 @@
     <AssemblyTitle>NuGet Command Line</AssemblyTitle>
     <PackageId>NuGet.CommandLine</PackageId>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <GenerateDocumentationFile Condition="'$(IsOfficialBuild)' == 'true'">false</GenerateDocumentationFile>
-    <GenerateDocumentationFile Condition="'$(IsOfficialBuild)' != 'true'">true</GenerateDocumentationFile>
     <Description>NuGet Command Line Interface.</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Shipping>true</Shipping>
@@ -17,6 +15,7 @@
     <ComVisible>false</ComVisible>
     <!-- Pack properties-->
     <PackProject>true</PackProject>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreateCommandlineNupkg</TargetsForTfmSpecificContentInPackage>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
