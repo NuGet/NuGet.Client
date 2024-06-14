@@ -1562,7 +1562,7 @@ namespace NuGet.Commands
                 Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, bool directPackageReferenceFromRootProject, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
                                             new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], bool, List<(HashSet<LibraryDependencyIndex> currentSupressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>(2048);
 
-                Dictionary<LibraryRangeIndex, LibraryRangeIndex[]> evictions = new Dictionary<LibraryRangeIndex, LibraryRangeIndex[] >(1024);
+                Dictionary<LibraryRangeIndex,(LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)>(1024);
 
                 sw3_preamble.Stop();
 
@@ -1619,12 +1619,19 @@ namespace NuGet.Commands
 #if verboseLog
                     _logger.LogMinimal($"BSW_DI2, dequed ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride}, ptr={pathToCurrentRef})");
 #endif
-                    if (evictions.ContainsKey(libraryRangeOfCurrentRef))
+                    if (evictions.TryGetValue(libraryRangeOfCurrentRef, out var eviction))
                     {
+
+                        (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
 #if verboseLog
                         _logger.LogMinimal($"BSW_DI3, Skipping {currentRef.LibraryRange} due to eviction");
 #endif
-                        continue;
+                        // If we evicted this same version previously, but the type constrant of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
+                        if (!((evictedTypeConstraint == LibraryDependencyTarget.PackageProjectExternal || evictedTypeConstraint == LibraryDependencyTarget.ExternalProject) &&
+                            currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
+                        {
+                            continue;
+                        }
                     }
 
                     if (currentOverrides.TryGetValue(currentRefDependencyIndex, out var ov))
@@ -1658,6 +1665,19 @@ namespace NuGet.Commands
                             continue;
                         }
 
+                        // We should evict on type constraint if the type constraint of the current ref is more stringent than the chosen ref.
+                        // This happens when a previous type constraint is broader (e.g. PackageProjectExternal) than the current type constraint (e.g. Package).
+                        bool evictOnTypeConstraint = false;
+                        if ((chosenRefRangeIndex == currentRefRangeIndex) &&
+                            LibraryDependencyTargetUtils.EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
+                        {
+                            if (allResolvedItems.TryGetValue(chosenRefRangeIndex, out FindLibraryCachedAsyncResult resolvedItem) && resolvedItem.Item.Key.Type == LibraryType.Project)
+                            {
+                                // We need to evict the chosen item because this one has a more stringent type constraint.
+                                evictOnTypeConstraint = true;
+                            }
+                        }
+
 #if verboseLog
                         _logger.LogMinimal($"BSW_DE1, similar currentRef ({currentRef},it={currentRef.IncludeType},sp={currentRef.SuppressParent},vo={currentRef.VersionOverride})");
                         _logger.LogMinimal($"BSW_DE2, similar  chosenRef ({chosenRef},it={chosenRef.IncludeType},sp={chosenRef.SuppressParent},vo={chosenRef.VersionOverride})");
@@ -1670,7 +1690,7 @@ namespace NuGet.Commands
                         //if(VersionRange.PreciseEquals(ovr,nvr)!=(ovr.ToString()==nvr.ToString()))
                         //  _logger.LogMinimal($"BSW_ERR, Found a version range that is not equal but the string is {ovr} {nvr}");
 
-                        if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
+                        if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
                             //If we think the newer thing we are looking at is better, remove the old one and let it fall thru.
 #if verboseLog
@@ -1684,18 +1704,32 @@ namespace NuGet.Commands
                             chosenResolvedItems.Remove(currentRefDependencyIndex);
                             //Record an eviction for the node we are replacing.  The eviction path is for the current node.
                             LibraryRangeIndex evictedLR = chosenRefRangeIndex;
-                            evictions.Add(evictedLR, PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef));
+
+                            // If we're evicting on typeconstraint, then there is already an item in allResolvedItems that matches the old typeconstraint.
+                            // We must remove it, otherwise we won't call FindLibraryCachedAsync again to load the correct item and save it into allResolvedItems.
+                            if (evictOnTypeConstraint)
+                            {
+                                allResolvedItems.Remove(evictedLR);
+                            }
 
                             int deepEvictions = 0;
                             //unwind anything chosen by the node we're evicting..
                             HashSet<LibraryRangeIndex> evicteesToRemove = null;
                             foreach (var evictee in evictions)
                             {
-                                if (evictee.Value.Contains(evictedLR))
+                                (LibraryRangeIndex[] evicteePath, LibraryDependencyIndex evicteeDepIndex, LibraryDependencyTarget evicteeTypeConstraint) = evictee.Value;
+
+                                if (evicteePath.Contains(evictedLR))
                                 {
-                                    if (evicteesToRemove == null)
-                                        evicteesToRemove = new HashSet<LibraryRangeIndex>();
-                                    evicteesToRemove.Add(evictee.Key);
+                                    // if evictee.Key (depIndex) == currentDepIndex && evictee.TypeConstraint == ExternalProject --> Don't remove it.  It must remain evicted.
+                                    // If the evictee to remove is the same dependency, but the project version of said dependency, then do not remove it - it must remain evicted in favor of the package.
+                                    if (!(evicteeDepIndex == currentRefDependencyIndex &&
+                                        (evicteeTypeConstraint == LibraryDependencyTarget.ExternalProject || evicteeTypeConstraint == LibraryDependencyTarget.PackageProjectExternal)))
+                                    {
+                                        if (evicteesToRemove == null)
+                                            evicteesToRemove = new HashSet<LibraryRangeIndex>();
+                                        evicteesToRemove.Add(evictee.Key);
+                                    }
                                 }
                             }
                             if (evicteesToRemove != null)
@@ -1717,6 +1751,7 @@ namespace NuGet.Commands
                                     break;
                                 }
                             }
+                            evictions[evictedLR] = (PathToRef.Create(pathToCurrentRef, libraryRangeOfCurrentRef), currentRefDependencyIndex, chosenRef.LibraryRange.TypeConstraint);
                             totalEvictions++;
                             if (deepEvictions > 0)
                             {
