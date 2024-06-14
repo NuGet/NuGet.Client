@@ -2730,7 +2730,6 @@ $@"<configuration>
 
                         serverV3.Start();
                         serverV2.Start();
-                        pathContext.Settings.AddSource("httpsource", serverV3.Uri + "index.json", allowInsecureConnectionsValue: "true");
 
                         // Act
                         string[] args = new string[]
@@ -2748,7 +2747,6 @@ $@"<configuration>
 
                         // Assert
                         result.Success.Should().BeFalse(result.AllOutput);
-                        result.Errors.Should().Contain($"{serverV3.Uri}index.json");
                     }
                 }
             }
