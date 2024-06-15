@@ -52,7 +52,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     CommandOption allowInsecureConnections = SourceCmd.Option(
-                        "--allowInsecureConnections",
+                        "--allow-insecure-connections",
                         Strings.SourcesCommandAllowInsecureConnectionsDescription,
                         CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
@@ -396,7 +396,7 @@ namespace NuGet.CommandLine.XPlat
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     CommandOption allowInsecureConnections = SourceCmd.Option(
-                        "--allowInsecureConnections",
+                        "--allow-insecure-connections",
                         Strings.SourcesCommandAllowInsecureConnectionsDescription,
                         CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
