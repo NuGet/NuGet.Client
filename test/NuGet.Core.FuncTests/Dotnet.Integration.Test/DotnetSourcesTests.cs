@@ -62,6 +62,40 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void Sources_WhenAddingSource_GotAddedWithAllowInsecureConnections()
+        {
+            using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
+            {
+                var workingPath = pathContext.WorkingDirectory;
+                var settings = pathContext.Settings;
+
+                // Arrange
+                var args = new string[]
+                {
+                    "nuget",
+                    "add",
+                    "source",
+                    "https://source.test",
+                    "--name",
+                    "test_source",
+                    "--configfile",
+                    settings.ConfigPath,
+                    "--allow-insecure-connections"
+                };
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
+
+                // Act
+                var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
+
+                // Assert
+                Assert.Equal("True", sourceItem.AllowInsecureConnections);
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void Sources_WhenAddingSourceWithCredentials_CredentialsWereAddedAndEncrypted()
         {
             using (SimpleTestPathContext pathContext = _fixture.CreateSimpleTestPathContext())
