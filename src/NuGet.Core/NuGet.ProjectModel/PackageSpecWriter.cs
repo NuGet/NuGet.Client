@@ -70,10 +70,7 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "SdkAnalysisLevel", packageSpec.SdkAnalysisLevel.ToString());
             }
 
-            if (packageSpec.UsingMicrosoftNETSdk is not null)
-            {
-                SetValue(writer, "UsingMicrosoftNETSdk", packageSpec.UsingMicrosoftNETSdk.ToString());
-            }
+            SetValueIfTrue(writer, "UsingMicrosoftNETSdk", packageSpec.UsingMicrosoftNETSdk);
 
             if (packageSpec.Dependencies.Count > 0)
             {

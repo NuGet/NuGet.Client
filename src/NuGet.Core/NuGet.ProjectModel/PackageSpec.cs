@@ -172,7 +172,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Indicates that Microsoft.NET.Sdk is being used.
         /// </summary>
-        public bool? UsingMicrosoftNETSdk { get; set; }
+        public bool UsingMicrosoftNETSdk { get; set; } = true;
 
         public override int GetHashCode()
         {
@@ -206,11 +206,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(RuntimeGraph);
             hashCode.AddObject(RestoreMetadata);
             hashCode.AddObject(SdkAnalysisLevel);
-
-            if (UsingMicrosoftNETSdk != null)
-            {
-                hashCode.AddObject(UsingMicrosoftNETSdk.Value);
-            }
+            hashCode.AddStruct(UsingMicrosoftNETSdk);
 
             return hashCode.CombinedHash;
         }
