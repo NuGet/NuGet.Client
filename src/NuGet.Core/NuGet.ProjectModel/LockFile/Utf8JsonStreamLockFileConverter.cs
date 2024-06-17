@@ -38,10 +38,10 @@ namespace NuGet.ProjectModel
 
         public LockFile Read(ref Utf8JsonStreamReader reader)
         {
-            return Read(ref reader, LockFileFlags.All);
+            return Read(ref reader, LockFileReadFlags.All);
         }
 
-        public LockFile Read(ref Utf8JsonStreamReader reader, LockFileFlags flags)
+        public LockFile Read(ref Utf8JsonStreamReader reader, LockFileReadFlags flags)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -68,7 +68,7 @@ namespace NuGet.ProjectModel
                 {
                     reader.Read();
 
-                    if ((flags & LockFileFlags.Libraries) == LockFileFlags.Libraries)
+                    if ((flags & LockFileReadFlags.Libraries) == LockFileReadFlags.Libraries)
                     {
                         lockFile.Libraries = reader.ReadObjectAsList<LockFileLibrary>(Utf8JsonReaderExtensions.LockFileLibraryConverter);
                     }
@@ -82,7 +82,7 @@ namespace NuGet.ProjectModel
                 {
                     reader.Read();
 
-                    if ((flags & LockFileFlags.Targets) == LockFileFlags.Targets)
+                    if ((flags & LockFileReadFlags.Targets) == LockFileReadFlags.Targets)
                     {
                         lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverter);
                     }
@@ -96,7 +96,7 @@ namespace NuGet.ProjectModel
                 {
                     reader.Read();
 
-                    if ((flags & LockFileFlags.ProjectFileDependencyGroups) == LockFileFlags.ProjectFileDependencyGroups)
+                    if ((flags & LockFileReadFlags.ProjectFileDependencyGroups) == LockFileReadFlags.ProjectFileDependencyGroups)
                     {
                         lockFile.ProjectFileDependencyGroups = reader.ReadObjectAsList<ProjectFileDependencyGroup>(Utf8JsonReaderExtensions.ProjectFileDepencencyGroupConverter);
                     }
@@ -110,7 +110,7 @@ namespace NuGet.ProjectModel
                 {
                     reader.Read();
 
-                    if ((flags & LockFileFlags.PackageFolders) == LockFileFlags.PackageFolders)
+                    if ((flags & LockFileReadFlags.PackageFolders) == LockFileReadFlags.PackageFolders)
                     {
                         lockFile.PackageFolders = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                     }
@@ -124,7 +124,7 @@ namespace NuGet.ProjectModel
                 {
                     reader.Read();
 
-                    if ((flags & LockFileFlags.PackageSpec) == LockFileFlags.PackageSpec)
+                    if ((flags & LockFileReadFlags.PackageSpec) == LockFileReadFlags.PackageSpec)
                     {
                         lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
                             ref reader,
@@ -142,7 +142,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(CentralTransitiveDependencyGroupsPropertyName))
                 {
                     IList<CentralTransitiveDependencyGroup> results = null;
-                    if ((flags & LockFileFlags.CentralTransitiveDependencyGroups) == LockFileFlags.CentralTransitiveDependencyGroups)
+                    if ((flags & LockFileReadFlags.CentralTransitiveDependencyGroups) == LockFileReadFlags.CentralTransitiveDependencyGroups)
                     {
                         if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                         {
@@ -170,7 +170,7 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(LogsPropertyName))
                 {
                     reader.Read();
-                    if ((flags & LockFileFlags.LogMessages) == LockFileFlags.LogMessages)
+                    if ((flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages)
                     {
                         lockFile.LogMessages = reader.ReadListOfObjects<IAssetsLogMessage>(Utf8JsonReaderExtensions.IAssetsLogMessageConverter);
                     }

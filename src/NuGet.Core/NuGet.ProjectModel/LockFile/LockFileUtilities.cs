@@ -14,10 +14,10 @@ namespace NuGet.ProjectModel
 
         public static LockFile GetLockFile(string lockFilePath, Common.ILogger logger)
         {
-            return GetLockFile(lockFilePath, logger, LockFileFlags.All);
+            return GetLockFile(lockFilePath, logger, LockFileReadFlags.All);
         }
 
-        public static LockFile GetLockFile(string lockFilePath, Common.ILogger logger, LockFileFlags flags)
+        public static LockFile GetLockFile(string lockFilePath, Common.ILogger logger, LockFileReadFlags flags)
         {
             LockFile lockFile = null;
 
@@ -33,19 +33,5 @@ namespace NuGet.ProjectModel
 
             return lockFile;
         }
-    }
-
-    [Flags]
-    public enum LockFileFlags
-    {
-        Libraries = 1,
-        Targets = 2,
-        ProjectFileDependencyGroups = 4,
-        PackageFolders = 8,
-        PackageSpec = 16,
-        CentralTransitiveDependencyGroups = 32,
-        LogMessages = 64,
-
-        All = 127,
     }
 }

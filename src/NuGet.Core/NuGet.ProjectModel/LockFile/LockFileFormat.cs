@@ -88,15 +88,15 @@ namespace NuGet.ProjectModel
 
         public LockFile Read(Stream stream, ILogger log, string path)
         {
-            return Read(stream, log, path, EnvironmentVariableWrapper.Instance, flags: LockFileFlags.All);
+            return Read(stream, log, path, EnvironmentVariableWrapper.Instance, flags: LockFileReadFlags.All);
         }
 
-        internal LockFile Read(Stream stream, ILogger log, string path, LockFileFlags flags)
+        internal LockFile Read(Stream stream, ILogger log, string path, LockFileReadFlags flags)
         {
             return Read(stream, log, path, EnvironmentVariableWrapper.Instance, flags: flags);
         }
 
-        internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false, LockFileFlags flags = LockFileFlags.All)
+        internal LockFile Read(Stream stream, ILogger log, string path, IEnvironmentVariableReader environmentVariableReader, bool bypassCache = false, LockFileReadFlags flags = LockFileReadFlags.All)
         {
             if (!JsonUtility.UseNewtonsoftJsonForParsing(environmentVariableReader, bypassCache))
             {
@@ -116,17 +116,17 @@ namespace NuGet.ProjectModel
         [Obsolete("This method is deprecated. Use Read(Stream, string) instead.")]
         public LockFile Read(TextReader reader, string path)
         {
-            return Read(reader, NullLogger.Instance, path, LockFileFlags.All);
+            return Read(reader, NullLogger.Instance, path, LockFileReadFlags.All);
         }
 
         [Obsolete("This method is deprecated. Use Read(Stream, ILogger, string) instead.")]
         public LockFile Read(TextReader reader, ILogger log, string path)
         {
-            return Read(reader, log, path, LockFileFlags.All);
+            return Read(reader, log, path, LockFileReadFlags.All);
         }
 
         [Obsolete("This method is deprecated. Use Read(Stream, string) instead.")]
-        internal LockFile Read(TextReader reader, ILogger log, string path, LockFileFlags flags)
+        internal LockFile Read(TextReader reader, ILogger log, string path, LockFileReadFlags flags)
         {
             try
             {
@@ -194,7 +194,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static LockFile Utf8JsonRead(Stream stream, ILogger log, string path, LockFileFlags flags)
+        private static LockFile Utf8JsonRead(Stream stream, ILogger log, string path, LockFileReadFlags flags)
         {
             try
             {
@@ -218,33 +218,33 @@ namespace NuGet.ProjectModel
         }
 
         [Obsolete]
-        private static LockFile ReadLockFile(JObject cursor, string path, LockFileFlags flags)
+        private static LockFile ReadLockFile(JObject cursor, string path, LockFileReadFlags flags)
         {
-            var libraries = (flags & LockFileFlags.Libraries) == LockFileFlags.Libraries
+            var libraries = (flags & LockFileReadFlags.Libraries) == LockFileReadFlags.Libraries
                 ? JsonUtility.ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary)
                 : Array.Empty<LockFileLibrary>();
 
-            var targets = (flags & LockFileFlags.Targets) == LockFileFlags.Targets
+            var targets = (flags & LockFileReadFlags.Targets) == LockFileReadFlags.Targets
                 ? JsonUtility.ReadObject(cursor[TargetsProperty] as JObject, ReadTarget)
                 : Array.Empty<LockFileTarget>();
 
-            var projectFileDependencyGroups = (flags & LockFileFlags.ProjectFileDependencyGroups) == LockFileFlags.ProjectFileDependencyGroups
+            var projectFileDependencyGroups = (flags & LockFileReadFlags.ProjectFileDependencyGroups) == LockFileReadFlags.ProjectFileDependencyGroups
                 ? JsonUtility.ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup)
                 : Array.Empty<ProjectFileDependencyGroup>();
 
-            var packageFolders = (flags & LockFileFlags.PackageFolders) == LockFileFlags.PackageFolders
+            var packageFolders = (flags & LockFileReadFlags.PackageFolders) == LockFileReadFlags.PackageFolders
                 ? JsonUtility.ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem)
                 : Array.Empty<LockFileItem>();
 
-            var packagesSpec = (flags & LockFileFlags.PackageSpec) == LockFileFlags.PackageSpec
+            var packagesSpec = (flags & LockFileReadFlags.PackageSpec) == LockFileReadFlags.PackageSpec
                 ? ReadPackageSpec(cursor[PackageSpecProperty] as JObject)
                 : new PackageSpec(Array.Empty<TargetFrameworkInformation>());
 
-            var centralTransitiveDependencyGroups = (flags & LockFileFlags.CentralTransitiveDependencyGroups) == LockFileFlags.CentralTransitiveDependencyGroups
+            var centralTransitiveDependencyGroups = (flags & LockFileReadFlags.CentralTransitiveDependencyGroups) == LockFileReadFlags.CentralTransitiveDependencyGroups
                 ? ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject, path)
                 : new List<CentralTransitiveDependencyGroup>();
 
-            var logMessage = (flags & LockFileFlags.LogMessages) == LockFileFlags.LogMessages
+            var logMessage = (flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages
                 ? ReadLogMessageArray(cursor[LogsProperty] as JArray, packagesSpec?.RestoreMetadata?.ProjectPath)
                 : Array.Empty<IAssetsLogMessage>();
 
