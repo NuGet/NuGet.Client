@@ -1,3 +1,13 @@
 #nullable enable
+NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.All = NuGet.ProjectModel.LockFileFlags.Libraries | NuGet.ProjectModel.LockFileFlags.Targets | NuGet.ProjectModel.LockFileFlags.ProjectFileDependencyGroups | NuGet.ProjectModel.LockFileFlags.PackageFolders | NuGet.ProjectModel.LockFileFlags.PackageSpec | NuGet.ProjectModel.LockFileFlags.CentralTransitiveDependencyGroups | NuGet.ProjectModel.LockFileFlags.LogMessages -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.CentralTransitiveDependencyGroups = 32 -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.Libraries = 1 -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.LogMessages = 64 -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.PackageFolders = 8 -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.PackageSpec = 16 -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.ProjectFileDependencyGroups = 4 -> NuGet.ProjectModel.LockFileFlags
+NuGet.ProjectModel.LockFileFlags.Targets = 2 -> NuGet.ProjectModel.LockFileFlags
 NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.get -> System.Collections.Generic.HashSet<string!>?
 NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.set -> void
+~static NuGet.ProjectModel.LockFileUtilities.GetLockFile(string lockFilePath, NuGet.Common.ILogger logger, NuGet.ProjectModel.LockFileFlags flags) -> NuGet.ProjectModel.LockFile
