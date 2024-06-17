@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.UI.Options
             return WarningIcon;
         }
 
-        private Icon GetErrorIcon()
+        private static Icon GetErrorIcon()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

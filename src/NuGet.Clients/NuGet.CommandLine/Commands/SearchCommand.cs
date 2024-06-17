@@ -127,7 +127,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void AvoidHttpSources(IList<PackageSource> packageSources)
+        private static void AvoidHttpSources(IList<PackageSource> packageSources)
         {
             List<PackageSource> httpPackageSources = null;
             foreach (PackageSource packageSource in packageSources)
