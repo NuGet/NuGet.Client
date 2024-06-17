@@ -18,7 +18,19 @@ namespace NuGet.ProjectModel
 
         public string Path { get; }
 
-        public IDictionary<string, string> Properties { get; } = new Dictionary<string, string>();
+        private Dictionary<string, string> _properties;
+        public IDictionary<string, string> Properties
+        {
+            get
+            {
+                if (_properties == null)
+                {
+                    _properties = new Dictionary<string, string>();
+                }
+
+                return _properties;
+            }
+        }
 
         public override string ToString() => Path;
 
