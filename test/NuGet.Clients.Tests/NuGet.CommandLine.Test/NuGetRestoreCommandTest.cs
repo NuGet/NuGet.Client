@@ -3588,7 +3588,7 @@ EndProject";
                     (new Uri("https://contoso.com/advisories/12346"), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[1.2.0, 2.0.0)"))
                 });
             pathContext.Settings.RemoveSource("source");
-            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
 
             Util.CreateTestPackage("packageA", "1.1.0", pathContext.PackageSource);
             Util.CreateTestPackage("packageA", "1.2.0", pathContext.PackageSource);

@@ -84,12 +84,12 @@ namespace Dotnet.Integration.Test
                 };
                 var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
                 var packageSourcesSection = loadedSettings.GetSection("packageSources");
-                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
                 // Act
                 var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
+                var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("True", sourceItem.AllowInsecureConnections);
                 Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
             }
