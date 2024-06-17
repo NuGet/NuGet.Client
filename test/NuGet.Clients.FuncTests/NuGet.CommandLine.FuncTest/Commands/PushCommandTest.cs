@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         {
             _testOutputHelper = testOutputHelper;
         }
-        
+
         /// <summary>
         /// 100 seconds is significant because that is the default timeout on <see cref="HttpClient"/>.
         /// Related to https://github.com/NuGet/Home/issues/2785.
