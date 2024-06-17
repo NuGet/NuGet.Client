@@ -513,7 +513,7 @@ namespace NuGet.PackageManagement.VisualStudio
 #pragma warning restore CS0618 // Type or member is obsolete
             string skdAnalysisLevelString = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel);
             string usingNetSdk = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk);
-            bool usingMicrosoftNetSdk = true;
+            bool usingMicrosoftNetSdk = false;
             NuGetVersion sdkAnalysisLevel = null;
 
             if (skdAnalysisLevelString != null)

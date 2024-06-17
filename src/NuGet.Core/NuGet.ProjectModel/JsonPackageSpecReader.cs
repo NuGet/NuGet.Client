@@ -221,12 +221,12 @@ namespace NuGet.ProjectModel
                         }
                         break;
                     case "UsingMicrosoftNETSdk":
-                        string isSdk = jsonReader.ReadNextTokenAsString();
 
-                        if (bool.TryParse(isSdk, out bool value))
+                        if (jsonReader.TokenType == JsonToken.Boolean)
                         {
-                            packageSpec.UsingMicrosoftNETSdk = value;
+                            packageSpec.UsingMicrosoftNETSdk = jsonReader.ReadAsBoolean() ?? false;
                         }
+
                         break;
                 }
             });

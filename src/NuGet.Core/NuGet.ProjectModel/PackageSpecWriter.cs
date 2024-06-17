@@ -70,7 +70,7 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "SdkAnalysisLevel", packageSpec.SdkAnalysisLevel.ToString());
             }
 
-            SetValueIfTrue(writer, "UsingMicrosoftNETSdk", packageSpec.UsingMicrosoftNETSdk);
+            SetValueIfFalse(writer, "UsingMicrosoftNETSdk", packageSpec.UsingMicrosoftNETSdk);
 
             if (packageSpec.Dependencies.Count > 0)
             {
@@ -695,6 +695,14 @@ namespace NuGet.ProjectModel
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
         {
             if (value)
+            {
+                writer.WriteNameValue(name, value);
+            }
+        }
+
+        private static void SetValueIfFalse(IObjectWriter writer, string name, bool value)
+        {
+            if (!value)
             {
                 writer.WriteNameValue(name, value);
             }

@@ -725,7 +725,7 @@ namespace NuGet.SolutionRestoreManager
             return sdkAnalysisLevel;
         }
 
-        internal static bool? GetUsingMicrosoftNETSdk(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
+        internal static bool GetUsingMicrosoftNETSdk(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
         {
             string? usingNetSdk = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.UsingMicrosoftNETSdk), v => v);
 
@@ -734,7 +734,7 @@ namespace NuGet.SolutionRestoreManager
                 return result;
             }
 
-            return null;
+            return true;
         }
     }
 }

@@ -823,6 +823,10 @@ namespace NuGet.Build.Tasks.Console
             {
                 packageSpec.UsingMicrosoftNETSdk = value;
             }
+            else
+            {
+                packageSpec.UsingMicrosoftNETSdk = false;
+            }
 
             return packageSpec;
         }

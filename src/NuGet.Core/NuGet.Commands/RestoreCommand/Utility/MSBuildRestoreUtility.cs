@@ -322,6 +322,10 @@ namespace NuGet.Commands
                 {
                     result.UsingMicrosoftNETSdk = value;
                 }
+                else
+                {
+                    result.UsingMicrosoftNETSdk = false;
+                }
             }
 
             return result;
