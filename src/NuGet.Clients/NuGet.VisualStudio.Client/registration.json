@@ -2,7 +2,22 @@
     "properties": {
       "nuGetPackageManager.general.allowRestoreDownload": {
         "type": "boolean",
-        "title": "Allow NuGet to download missing packages",
+        "title": "@PackageRestoreConsent;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true
+      },
+      "nuGetPackageManager.general.packageRestoreAutomatic": {
+        "type": "boolean",
+        "title": "@packageRestoreAutomatic;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true
+      },
+      "nuGetPackageManager.general.skipBindingRedirects": {
+        "type": "boolean",
+        "title": "@skipBindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true
+      },
+      "nuGetPackageManager.general.showPackageManagementChooser": {
+        "type": "boolean",
+        "title": "@showPackageManagementChooser;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
         "default": true
       }
     },

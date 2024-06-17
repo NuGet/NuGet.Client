@@ -142,6 +142,24 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Automatically check for missing packages during build in Visual Studio.
+        /// </summary>
+        internal static string packageRestoreAutomatic {
+            get {
+                return ResourceManager.GetString("packageRestoreAutomatic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow NuGet to download missing packages.
+        /// </summary>
+        internal static string PackageRestoreConsent {
+            get {
+                return ResourceManager.GetString("PackageRestoreConsent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} nuget configuration is invalid..
         /// </summary>
         internal static string ProjectHasAnInvalidNuGetConfiguration {
@@ -156,6 +174,24 @@ namespace NuGetVSExtension {
         internal static string ProjectMigrateErrorMessage {
             get {
                 return ResourceManager.GetString("ProjectMigrateErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allow format selection on first package install.
+        /// </summary>
+        internal static string showPackageManagementChooser {
+            get {
+                return ResourceManager.GetString("showPackageManagementChooser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip applying binding redirects.
+        /// </summary>
+        internal static string skipBindingRedirects {
+            get {
+                return ResourceManager.GetString("skipBindingRedirects", resourceCulture);
             }
         }
         
