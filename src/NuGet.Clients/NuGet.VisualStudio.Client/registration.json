@@ -8,10 +8,10 @@
     },
     "categories": {
       "nuGetPackageManager": {
-        "title": "%Text_NuGetSettings%"
+        "title": "@110;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
       },
       "nuGetPackageManager.general": {
-        "title": "%Text_ViewLicense%",
+        "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
         "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E"
       }
     }
