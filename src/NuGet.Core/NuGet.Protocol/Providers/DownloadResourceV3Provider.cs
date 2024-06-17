@@ -33,7 +33,7 @@ namespace NuGet.Protocol
 
                 // If index.json contains a flat container resource use that to directly
                 // construct package download urls.
-                var packageBaseAddress = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.PackageBaseAddress)?.AbsoluteUri;
+                var packageBaseAddress = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress)?.AbsoluteUri;
 
                 if (packageBaseAddress != null)
                 {

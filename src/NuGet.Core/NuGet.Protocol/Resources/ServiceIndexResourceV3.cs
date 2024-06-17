@@ -22,7 +22,8 @@ namespace NuGet.Protocol
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
-        private bool _allowInsecureConnections = false; //by default don't allow non https service index
+
+        internal bool _allowInsecureConnections = false; //by default don't allow non https service index
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime)
         {
@@ -137,16 +138,6 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Get the best match service URI. Give the option to allow insecure connections or non https sources.
-        /// Default is false.
-        /// </summary>
-        public virtual Uri GetServiceEntryUri(bool allowInsecureConnections, params string[] orderedTypes)
-        {
-            _allowInsecureConnections = allowInsecureConnections;
-            return GetServiceEntryUri(orderedTypes);
-        }
-
-        /// <summary>
         /// Get the list of service URIs that best match the current clientVersion and type.
         /// </summary>
         public virtual IReadOnlyList<Uri> GetServiceEntryUris(params string[] orderedTypes)
@@ -154,16 +145,6 @@ namespace NuGet.Protocol
             var clientVersion = MinClientVersionUtility.GetNuGetClientVersion();
 
             return GetServiceEntryUris(clientVersion, orderedTypes);
-        }
-
-        /// <summary>
-        /// Get the list of service URIs that best match the current clientVersion and type. Give the option to allow insecure connections or non https sources.
-        /// Default is false.
-        /// </summary>
-        public virtual IReadOnlyList<Uri> GetServiceEntryUris(bool allowInsecureConnections, params string[] orderedTypes)
-        {
-            _allowInsecureConnections = allowInsecureConnections;
-            return GetServiceEntryUris(orderedTypes);
         }
 
         /// <summary>
@@ -177,16 +158,6 @@ namespace NuGet.Protocol
             }
 
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
-        }
-
-        /// <summary>
-        /// Get the list of service URIs that best match the clientVersion and type. Give the option to allow insecure connections or non https sources.
-        /// Default is false.
-        /// </summary>
-        public virtual IReadOnlyList<Uri> GetServiceEntryUris(bool allowInsecureConnections, NuGetVersion clientVersion, params string[] orderedTypes)
-        {
-            _allowInsecureConnections = allowInsecureConnections;
-            return GetServiceEntryUris(clientVersion, orderedTypes);
         }
 
         private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index)

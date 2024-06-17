@@ -25,7 +25,7 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var endpoints = serviceIndex.GetServiceEntryUris(source.PackageSource.AllowInsecureConnections, ServiceTypes.SearchQueryService);
+                var endpoints = serviceIndex.GetServiceEntryUris(ServiceTypes.SearchQueryService);
 
                 if (endpoints.Count > 0)
                 {

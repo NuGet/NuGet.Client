@@ -27,7 +27,7 @@ namespace NuGet.Protocol
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                curResource = new AutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource, source.PackageSource.AllowInsecureConnections);
+                curResource = new AutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

@@ -21,7 +21,7 @@ namespace NuGet.Protocol
         {
             INuGetResource resource = null;
             var serviceIndexResource = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>(token);
-            var packageBaseAddress = serviceIndexResource?.GetServiceEntryUris(sourceRepository.PackageSource.AllowInsecureConnections, ServiceTypes.PackageBaseAddress);
+            var packageBaseAddress = serviceIndexResource?.GetServiceEntryUris(ServiceTypes.PackageBaseAddress);
 
             if (packageBaseAddress != null
                 && packageBaseAddress.Count > 0)

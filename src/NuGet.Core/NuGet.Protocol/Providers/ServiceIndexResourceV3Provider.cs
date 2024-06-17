@@ -149,7 +149,7 @@ namespace NuGet.Protocol
                             },
                             async httpSourceResult =>
                             {
-                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, utcNow, token);
+                                var result = await ConsumeServiceIndexStreamAsync(httpSourceResult.Stream, source.PackageSource.AllowInsecureConnections, utcNow, token);
 
                                 return result;
                             },
@@ -194,7 +194,7 @@ namespace NuGet.Protocol
             return null;
         }
 
-        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, DateTime utcNow, CancellationToken token)
+        private async Task<ServiceIndexResourceV3> ConsumeServiceIndexStreamAsync(Stream stream, bool allowInsecureConnections, DateTime utcNow, CancellationToken token)
         {
             // Parse the JSON
             JObject json = await stream.AsJObjectAsync(token);
@@ -209,7 +209,9 @@ namespace NuGet.Protocol
                 if (SemanticVersion.TryParse((string)versionToken, out version) &&
                     version.Major == 3)
                 {
-                    return new ServiceIndexResourceV3(json, utcNow);
+                    ServiceIndexResourceV3 serviceIndexResourceV3 = new ServiceIndexResourceV3(json, utcNow);
+                    serviceIndexResourceV3._allowInsecureConnections = allowInsecureConnections;
+                    return serviceIndexResourceV3;
                 }
                 else
                 {

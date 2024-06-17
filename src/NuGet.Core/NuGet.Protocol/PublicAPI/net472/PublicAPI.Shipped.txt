@@ -14,6 +14,7 @@ NuGet.Protocol.AutoCompleteResourceV2Feed
 NuGet.Protocol.AutoCompleteResourceV2FeedProvider
 NuGet.Protocol.AutoCompleteResourceV2FeedProvider.AutoCompleteResourceV2FeedProvider() -> void
 NuGet.Protocol.AutoCompleteResourceV3
+~NuGet.Protocol.AutoCompleteResourceV3.AutoCompleteResourceV3(NuGet.Protocol.HttpSource client, NuGet.Protocol.ServiceIndexResourceV3 serviceIndex, NuGet.Protocol.RegistrationResourceV3 regResource) -> void
 NuGet.Protocol.AutoCompleteResourceV3Provider
 NuGet.Protocol.AutoCompleteResourceV3Provider.AutoCompleteResourceV3Provider() -> void
 NuGet.Protocol.CachingSourceProvider

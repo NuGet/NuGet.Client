@@ -19,15 +19,13 @@ namespace NuGet.Protocol
         private readonly RegistrationResourceV3 _regResource;
         private readonly ServiceIndexResourceV3 _serviceIndex;
         private readonly HttpSource _client;
-        private readonly bool _allowInsecureConnections;
 
-        public AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource, bool allowInsecureConnections)
+        public AutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource)
             : base()
         {
             _regResource = regResource;
             _serviceIndex = serviceIndex;
             _client = client;
-            _allowInsecureConnections = allowInsecureConnections;
         }
 
         public override async Task<IEnumerable<string>> IdStartsWith(
@@ -36,7 +34,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var searchUrl = _serviceIndex.GetServiceEntryUri(_allowInsecureConnections, ServiceTypes.SearchAutocompleteService);
+            var searchUrl = _serviceIndex.GetServiceEntryUri(ServiceTypes.SearchAutocompleteService);
 
             if (searchUrl == null)
             {

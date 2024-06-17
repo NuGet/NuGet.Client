@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Providers
             ServiceIndexResourceV3? serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                Uri? uriTemplate = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.OwnerDetailsUriTemplate);
+                Uri? uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.OwnerDetailsUriTemplate);
 
                 if (uriTemplate != null)
                 {

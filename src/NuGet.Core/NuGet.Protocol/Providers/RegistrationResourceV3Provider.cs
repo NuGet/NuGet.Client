@@ -26,7 +26,7 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 //This will come back as null if there are no matching RegistrationsBaseUrl types
-                var baseUrl = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.RegistrationsBaseUrl);
+                var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl);
 
                 if (baseUrl != null)
                 {

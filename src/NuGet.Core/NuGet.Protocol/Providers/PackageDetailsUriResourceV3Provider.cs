@@ -23,7 +23,7 @@ namespace NuGet.Protocol
             var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                var uri = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.PackageDetailsUriTemplate);
+                var uri = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageDetailsUriTemplate);
                 resource = PackageDetailsUriResourceV3.CreateOrNull(uri?.OriginalString);
             }
 

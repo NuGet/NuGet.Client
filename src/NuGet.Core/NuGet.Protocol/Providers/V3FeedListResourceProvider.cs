@@ -30,7 +30,7 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var baseUrl = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.LegacyGallery);
+                var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.LegacyGallery);
                 if (baseUrl != null)
                 {
                     var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);

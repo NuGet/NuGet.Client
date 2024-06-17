@@ -22,7 +22,7 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var endpoints = serviceIndex.GetServiceEntryUris(source.PackageSource.AllowInsecureConnections, ServiceTypes.SearchQueryService);
+                var endpoints = serviceIndex.GetServiceEntryUris(ServiceTypes.SearchQueryService);
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource

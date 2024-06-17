@@ -29,7 +29,7 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var baseUrl = serviceIndex.GetServiceEntryUri(source.PackageSource.AllowInsecureConnections, ServiceTypes.PackagePublish);
+                var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.PackagePublish);
 
                 HttpSource httpSource = null;
                 var sourceUri = baseUrl?.AbsoluteUri;
