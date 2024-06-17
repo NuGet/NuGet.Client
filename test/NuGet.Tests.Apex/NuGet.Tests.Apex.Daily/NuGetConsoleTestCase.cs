@@ -96,17 +96,17 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
+        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
+        public void InstallPackageForMauiProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
-                // Arrange
-                var packageName = "IOSTestPackage";
-                var v100 = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+                // Arrange
+                var packageName = "log4net";
+                var v100 = "2.0.17";
+                simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
@@ -130,20 +130,19 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
+        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task UpdatePackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
+        public void UpdatePackageForMauiProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageName = "IOSTestPackage";
-                var v100 = "1.0.0";
-                var v200 = "2.0.0";
+                var packageName = "log4net";
+                var v100 = "2.0.16";
+                var v200 = "2.0.17";
 
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
+                simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
@@ -171,18 +170,18 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetIOSTemplates), DynamicDataSourceType.Method)]
+        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallPackageForIOSProjectInPMC(ProjectTemplate projectTemplate)
+        public void UninstallPackageForMauiProjectInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 //Arrange
-                var PackageName = "IOSTestPackage";
-                var v100 = "1.0.0";
+                var PackageName = "log4net";
+                var v100 = "2.0.17";
 
-                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
+                simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
                 {
@@ -388,9 +387,9 @@ namespace NuGet.Tests.Apex.Daily
             yield return new object[] { ProjectTemplate.ClassLibrary };
         }
 
-        public static IEnumerable<object[]> GetIOSTemplates()
+        public static IEnumerable<object[]> GetMauiTemplates()
         {
-            yield return new object[] { ProjectTemplate.IOSLibraryApp };
+            yield return new object[] { ProjectTemplate.MauiClassLibrary };
         }
     }
 }
