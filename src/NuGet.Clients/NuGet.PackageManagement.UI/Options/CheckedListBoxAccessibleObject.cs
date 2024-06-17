@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI.Options
             {
                 var item = (PackageSourceContextInfo)CheckedListBox.Items[index];
                 PackageSource packageSource = new PackageSource(item.Source, item.Name);
+                packageSource.AllowInsecureConnections = item.AllowInsecureConnections;
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
                     var sourceMessage = string.Format(
