@@ -165,4 +165,13 @@
   <data name="showPackageManagementChooser" xml:space="preserve">
     <value>Allow format selection on first package install</value>
   </data>
+  <data name="PackagesConfig" xml:space="preserve">
+    <value>Packages.config</value>
+  </data>
+  <data name="PackageReference" xml:space="preserve">
+    <value>PackageReference</value>
+  </data>
+  <data name="defaultPackageManagementFormat" xml:space="preserve">
+    <value>Default package management format</value>
+  </data>
 </root>

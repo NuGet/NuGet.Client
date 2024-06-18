@@ -70,6 +70,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Default package management format.
+        /// </summary>
+        internal static string defaultPackageManagementFormat {
+            get {
+                return ResourceManager.GetString("defaultPackageManagementFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
         /// </summary>
         internal static string DTE_ProjectUnsupported {
@@ -142,6 +151,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to PackageReference.
+        /// </summary>
+        internal static string PackageReference {
+            get {
+                return ResourceManager.GetString("PackageReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Automatically check for missing packages during build in Visual Studio.
         /// </summary>
         internal static string packageRestoreAutomatic {
@@ -156,6 +174,15 @@ namespace NuGetVSExtension {
         internal static string PackageRestoreConsent {
             get {
                 return ResourceManager.GetString("PackageRestoreConsent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packages.config.
+        /// </summary>
+        internal static string PackagesConfig {
+            get {
+                return ResourceManager.GetString("PackagesConfig", resourceCulture);
             }
         }
         
