@@ -10,6 +10,7 @@ namespace NuGet.ProjectModel
     public class LockFileItem : IEquatable<LockFileItem>
     {
         public static readonly string AliasesProperty = "aliases";
+        private static readonly object PropertiesLock = new object();
 
         public LockFileItem(string path)
         {
@@ -25,7 +26,10 @@ namespace NuGet.ProjectModel
             {
                 if (_properties == null)
                 {
-                    _properties = new Dictionary<string, string>();
+                    lock (PropertiesLock)
+                    {
+                        _properties ??= new Dictionary<string, string>();
+                    }
                 }
 
                 return _properties;
