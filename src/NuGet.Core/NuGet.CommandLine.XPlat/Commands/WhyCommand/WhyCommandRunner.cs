@@ -100,7 +100,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Validates that the input 'PATH' argument is a valid path to a directory, solution file or project file.
+        /// Validates that the input 'path' argument is a valid path to a directory, solution file or project file.
         /// </summary>
         private static bool ValidatePathArgument(string path, ILoggerWithColor logger)
         {
