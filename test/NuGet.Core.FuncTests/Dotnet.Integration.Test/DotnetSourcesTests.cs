@@ -82,13 +82,13 @@ namespace Dotnet.Integration.Test
                     settings.ConfigPath,
                     "--allow-insecure-connections"
                 };
-                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
-                var packageSourcesSection = loadedSettings.GetSection("packageSources");
 
                 // Act
                 var result = _fixture.RunDotnetExpectSuccess(workingPath, string.Join(" ", args));
 
                 // Assert
+                var loadedSettings = Settings.LoadDefaultSettings(root: workingPath, configFileName: null, machineWideSettings: null);
+                var packageSourcesSection = loadedSettings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("True", sourceItem.AllowInsecureConnections);
                 Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
