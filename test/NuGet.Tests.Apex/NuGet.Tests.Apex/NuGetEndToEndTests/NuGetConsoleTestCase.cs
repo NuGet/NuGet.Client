@@ -1108,7 +1108,7 @@ namespace NuGet.Tests.Apex
 
         public static IEnumerable<object[]> GetMauiTemplates()
         {
-            yield return new object[] { ProjectTemplate.MauiApp };
+            yield return new object[] { ProjectTemplate.MauiClassLibrary };
         }
     }
 }

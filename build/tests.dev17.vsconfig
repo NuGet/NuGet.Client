@@ -106,6 +106,7 @@
     "Microsoft.VisualStudio.ComponentGroup.Maui.iOS",
     "Component.xamarin",
     "runtimes.ios",
-    "Microsoft.VisualStudio.Workload.NetCrossPlat"
+    "Microsoft.VisualStudio.Workload.NetCrossPlat",
+    "Component.Android.SDK.MAUI"
   ]
 }
