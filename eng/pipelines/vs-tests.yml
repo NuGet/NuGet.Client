@@ -52,8 +52,6 @@ parameters:
 
 variables:
   DOTNET_NOLOGO: 1
-  Codeql.Enabled: false
-  Codeql.TSAEnabled: false
 
 stages:
 - stage: Build

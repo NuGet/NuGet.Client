@@ -15,7 +15,7 @@ steps:
     scriptType: "inlineScript"
     inlineScript: |
       try {
-        $buildNumber = dotnet msbuild -getProperty:AssemblyVersion $(Build.Repository.LocalPath)\build\config.props
+        $buildNumber = dotnet msbuild -getProperty:PreReleaseVersion $(Build.Repository.LocalPath)\build\config.props
         Write-Host "Setting build number to: $buildNumber"
         Write-Host "##vso[task.setvariable variable=BuildNumber]$buildNumber"
 
