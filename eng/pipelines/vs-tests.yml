@@ -59,7 +59,7 @@ stages:
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     steps:
-    - template: vs-tests/build.yml
+    - template: vs-test/build.yml
       parameters:
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
 
