@@ -3,21 +3,25 @@
     "nuGetPackageManager.general.allowRestoreDownload": {
       "type": "boolean",
       "title": "@PackageRestoreConsent;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true
+      "default": true,
+      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#allow-nuget-to-download-missing-packages"
     },
     "nuGetPackageManager.general.packageRestoreAutomatic": {
       "type": "boolean",
       "title": "@packageRestoreAutomatic;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true
+      "default": true,
+      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#automatically-check-for-missing-packages-during-build"
     },
     "nuGetPackageManager.general.skipBindingRedirects": {
       "type": "boolean",
       "title": "@skipBindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true
+      "default": true,
+      "helpUri": "https://learn.microsoft.com/en-us/nuget/reference/nuget-config-file#bindingredirects-section"
     },
     "nuGetPackageManager.general.defaultPackageManagementFormat": {
       "type": "string",
       "title": "@defaultPackageManagementFormat;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#choose-the-default-package-management-format",
       "default": "packages-config",
 
       // Invariant monikers
