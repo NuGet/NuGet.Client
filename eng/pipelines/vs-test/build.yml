@@ -89,14 +89,14 @@ steps:
   inputs:
     solution: "NuGet.sln"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:RestoreVS /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+    msbuildArguments: "/restore:false /target:Restore /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
 
 - task: MSBuild@1
   displayName: "Build"
   inputs:
-    solution: "build\\build.proj"
+    solution: "NuGet.sln"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
+    msbuildArguments: "/restore:false /target:Build /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog /property:MicroBuild_SigningEnabled=false"
 
 - task: MSBuild@1
   displayName: "Localize Assemblies"
@@ -160,7 +160,7 @@ steps:
 - template: /eng/common/templates/steps/generate-sbom.yml@self
   parameters:
     PackageName: 'NuGet.Client'
-    PackageVersion: "$(SemanticVersion)"
+    PackageVersion: "$(NuGetVersion)"
 
 - task: MSBuild@1
   displayName: "Generate Build Tools package"

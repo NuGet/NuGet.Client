@@ -52,6 +52,7 @@ parameters:
 
 variables:
   DOTNET_NOLOGO: 1
+  CI: true
 
 stages:
 - stage: Build
