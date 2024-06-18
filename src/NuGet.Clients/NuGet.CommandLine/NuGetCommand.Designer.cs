@@ -443,6 +443,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Display NuGet.exe&apos;s End User Liscence Agreement (EULA).
+        /// </summary>
+        internal static string EulaDescription {
+            get {
+                return ResourceManager.GetString("EulaDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to If provided, a package added to offline feed is also expanded..
         /// </summary>
         internal static string ExpandDescription {
