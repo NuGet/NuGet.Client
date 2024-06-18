@@ -50,6 +50,11 @@ parameters:
   - delete
   - stop
 
+variables:
+  DOTNET_NOLOGO: 1
+  Codeql.Enabled: false
+  Codeql.TSAEnabled: false
+
 stages:
 - stage: Build
   displayName: Build NuGet and tests
