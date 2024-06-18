@@ -66,8 +66,7 @@ namespace NuGet.CommandLine
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
 
-            AvoidHttpSources(listEndpoints);
-
+            WarnForHTTPSources(listEndpoints);
             foreach (PackageSource source in listEndpoints)
             {
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
@@ -127,7 +126,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static void AvoidHttpSources(IList<PackageSource> packageSources)
+        private void WarnForHTTPSources(IList<PackageSource> packageSources)
         {
             List<PackageSource> httpPackageSources = null;
             foreach (PackageSource packageSource in packageSources)
@@ -146,17 +145,17 @@ namespace NuGet.CommandLine
             {
                 if (httpPackageSources.Count == 1)
                 {
-                    throw new ArgumentException(
+                    Console.LogWarning(
                         string.Format(CultureInfo.CurrentCulture,
-                        NuGetResources.Error_HttpSource_Single,
+                        NuGetResources.Warning_HttpServerUsage,
                         "search",
                         httpPackageSources[0]));
                 }
                 else
                 {
-                    throw new ArgumentException(
+                    Console.LogWarning(
                         string.Format(CultureInfo.CurrentCulture,
-                        NuGetResources.Error_HttpSources_Multiple,
+                        NuGetResources.Warning_HttpSources_Multiple,
                         "search",
                         Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }

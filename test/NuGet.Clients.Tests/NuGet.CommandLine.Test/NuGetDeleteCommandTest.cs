@@ -181,15 +181,11 @@ namespace NuGet.CommandLine.Test
                     deleteRequestIsCalled = true;
                     return HttpStatusCode.OK;
                 });
-                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget", "-NonInteractive", "-ConfigFile " + configFilePath };
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -222,10 +218,6 @@ namespace NuGet.CommandLine.Test
                 });
 
                 server.Start();
-                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 var args = new[] {
@@ -235,8 +227,7 @@ namespace NuGet.CommandLine.Test
                     testApiKey,
                     "-Source",
                     server.Uri + "nuget",
-                    "-NonInteractive",
-                    "-ConfigFile " + configFilePath
+                    "-NonInteractive"
                 };
 
                 var result = CommandRunner.Run(
@@ -272,10 +263,6 @@ namespace NuGet.CommandLine.Test
                 });
 
                 server.Start();
-                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 var args = new[]
@@ -288,8 +275,7 @@ namespace NuGet.CommandLine.Test
                     testApiKey,
                     "-Source",
                     server.Uri + "nuget",
-                    "-NonInteractive",
-                    "-ConfigFIle " + configFilePath
+                    "-NonInteractive"
                 };
 
                 var result = CommandRunner.Run(
@@ -350,7 +336,7 @@ namespace NuGet.CommandLine.Test
 
                 var source = server.Uri + "index.json";
                 var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
-                SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"MockServer", source, "AllowInsecureConnections", "true");
+                SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"MockServer", source);
 
                 var configKey = string.Format(configKeyFormatString, server.Uri);
                 var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
@@ -394,10 +380,7 @@ namespace NuGet.CommandLine.Test
             using (var server = new MockServer())
             {
                 server.Start();
-                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
-                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
-                var configFileName = "nuget.config";
-                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
+
                 server.Delete.Add("/nuget/testPackage1/1.1", request => HttpStatusCode.OK);
 
                 server.AddServerWarnings(serverWarnings);
@@ -405,7 +388,7 @@ namespace NuGet.CommandLine.Test
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget", "-NonInteractive", "-ConfigFile " + configFilePath };
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
 
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -431,52 +414,10 @@ namespace NuGet.CommandLine.Test
             Util.TestCommandInvalidArguments(args);
         }
 
-        [Fact]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            // Arrange
-            using (var server = new MockServer())
-            {
-                server.Start();
-
-                server.Delete.Add("/nuget/testPackage1/1.1", request =>
-                {
-                    return HttpStatusCode.OK;
-                });
-
-                using SimpleTestPathContext config = new SimpleTestPathContext();
-
-                // Arrange the NuGet.Config file
-                string nugetConfigContent =
-    $@"<configuration>
-    <packageSources>
-        <clear />
-        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""False"" />
-    </packageSources>
-</configuration>";
-                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
-
-                // Act
-                string[] args = new string[] {
-                    "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget",
-                    "-ConfigFile", config.NuGetConfig, "-NonInteractive" };
-
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args));
-
-                // Assert
-                Assert.Equal(1, result.ExitCode);
-                Assert.Contains($"{server.Uri}nuget", result.Errors);
-            }
-        }
-
-        [Fact]
-        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        [Theory]
+        [InlineData("true", false)]
+        [InlineData("false", true)]
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -499,7 +440,7 @@ namespace NuGet.CommandLine.Test
     $@"<configuration>
     <packageSources>
         <clear />
-        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""True"" />
+        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""{allowInsecureConnections}"" />
     </packageSources>
 </configuration>";
                 File.WriteAllText(config.NuGetConfig, nugetConfigContent);
@@ -510,15 +451,24 @@ namespace NuGet.CommandLine.Test
                     "-Source", server.Uri + "nuget",
                     "-ConfigFile", config.NuGetConfig, "-NonInteractive" };
 
-                var result = CommandRunner.Run(
+                var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, result.ExitCode);
+                Assert.Equal(0, r.ExitCode);
                 Assert.True(deleteRequestIsCalled);
-                Assert.DoesNotContain($"{server.Uri}nuget", result.Errors);
+
+                string expectedWarning = "WARNING: You are running the 'delete' operation with an 'HTTP' source";
+                if (isHttpWarningExpected)
+                {
+                    Assert.Contains(expectedWarning, r.AllOutput);
+                }
+                else
+                {
+                    Assert.DoesNotContain(expectedWarning, r.AllOutput);
+                }
             }
         }
 

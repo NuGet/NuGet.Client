@@ -20,8 +20,6 @@ namespace NuGet.PackageManagement.UI.Options
     {
         public Size CheckBoxSize { get; set; }
 
-        private static Icon ErrorIcon { get; set; }
-
         private static Icon WarningIcon { get; set; }
 
         private Icon GetWarningIcon()
@@ -47,31 +45,6 @@ namespace NuGet.PackageManagement.UI.Options
             }
 
             return WarningIcon;
-        }
-
-        private static Icon GetErrorIcon()
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (ErrorIcon == null)
-            {
-                ImageAttributes attributes = new ImageAttributes
-                {
-                    StructSize = Marshal.SizeOf(typeof(ImageAttributes)),
-                    ImageType = (uint)_UIImageType.IT_Icon,
-                    Format = (uint)_UIDataFormat.DF_WinForms,
-                    LogicalWidth = 16,
-                    LogicalHeight = 16,
-                    Flags = (uint)_ImageAttributesFlags.IAF_RequiredFlags
-                };
-
-                IVsImageService2 imageService = (IVsImageService2)Microsoft.VisualStudio.Shell.Package.GetGlobalService(typeof(SVsImageService));
-                IVsUIObject uIObj = imageService.GetImage(KnownMonikers.StatusError, attributes);
-
-                ErrorIcon = (Icon)GelUtilities.GetObjectData(uIObj);
-            }
-
-            return ErrorIcon;
         }
 
         public override int ItemHeight
@@ -164,37 +137,23 @@ namespace NuGet.PackageManagement.UI.Options
 
                         var packageSource = new PackageSource(currentItem.Source, currentItem.Name);
                         packageSource.AllowInsecureConnections = currentItem.AllowInsecureConnections;
-                        var shouldShowHttpErrorIcon = packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections;
-                        Rectangle bounds = default;
+                        var shouldShowHttpWarningIcon = packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections;
+                        Rectangle warningBounds = default;
 
-                        if (shouldShowHttpErrorIcon)
-                        {
-                            var errorIcon = GetErrorIcon();
-
-                            bounds = new Rectangle(
-                                nameBounds.Left,
-                                nameBounds.Bottom,
-                                errorIcon.Width,
-                                errorIcon.Height);
-                            graphics.DrawIcon(errorIcon, bounds);
-                        }
-
-                        if (packageSource.AllowInsecureConnections)
+                        if (shouldShowHttpWarningIcon)
                         {
                             var warningIcon = GetWarningIcon();
 
-                            bounds = new Rectangle(
+                            warningBounds = new Rectangle(
                                 nameBounds.Left,
                                 nameBounds.Bottom,
                                 warningIcon.Width,
                                 warningIcon.Height);
-                            graphics.DrawIcon(warningIcon, bounds);
+                            graphics.DrawIcon(warningIcon, warningBounds);
                         }
 
-                        bool showWarningOrError = shouldShowHttpErrorIcon || packageSource.AllowInsecureConnections;
-
                         var sourceBounds = new Rectangle(
-                            showWarningOrError ? bounds.Right : nameBounds.Left,
+                            shouldShowHttpWarningIcon ? warningBounds.Right : nameBounds.Left,
                             nameBounds.Bottom,
                             textWidth,
                             e.Bounds.Bottom - nameBounds.Bottom);
