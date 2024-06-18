@@ -11,6 +11,10 @@ namespace NuGet.Versioning
 {
     public partial class NuGetVersion
     {
+        // Cached mappings from string => NuGetVersion. On cache hit, avoids allocations during TryParse.
+        private static Dictionary<string, NuGetVersion> ParsedNuGetVersionsMapping = new Dictionary<string, NuGetVersion>();
+        private const int ParsedNuGetVersionsMappingMaxEntries = 500;
+
         /// <summary>
         /// Creates a NuGetVersion from a string representing the semantic version.
         /// </summary>
@@ -39,6 +43,14 @@ namespace NuGet.Versioning
 
             if (value != null)
             {
+                lock (ParsedNuGetVersionsMapping)
+                {
+                    if (ParsedNuGetVersionsMapping.TryGetValue(value, out version))
+                    {
+                        return true;
+                    }
+                }
+
                 Version? systemVersion;
 
                 // trim the value before passing it in since we not strict here
@@ -86,6 +98,16 @@ namespace NuGet.Versioning
                             releaseLabels: releaseLabels,
                             metadata: buildMetadata ?? string.Empty,
                             originalVersion: originalVersion);
+
+                        lock (ParsedNuGetVersionsMapping)
+                        {
+                            if (ParsedNuGetVersionsMapping.Count >= ParsedNuGetVersionsMappingMaxEntries)
+                            {
+                                ParsedNuGetVersionsMapping.Clear();
+                            }
+
+                            ParsedNuGetVersionsMapping[value] = version;
+                        }
 
                         return true;
                     }
