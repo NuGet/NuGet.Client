@@ -118,7 +118,7 @@ namespace NuGet.CommandLine.XPlat
             string fullPath;
             try
             {
-                fullPath = System.IO.Path.GetFullPath(path);
+                fullPath = Path.GetFullPath(path);
             }
             catch (ArgumentException)
             {

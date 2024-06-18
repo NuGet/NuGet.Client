@@ -439,13 +439,9 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-
             var net8 = NuGetFramework.Parse("net8.0");
 
-            var projectA = SimpleTestProjectContext.CreateNETCore(
-                "a",
-                pathContext.SolutionRoot,
-                net8);
+            var projectA = SimpleTestProjectContext.CreateNETCore("a", pathContext.SolutionRoot, net8);
 
             projectA.Save();
 
@@ -454,7 +450,6 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(projectList.Count(), 1);
-
             Assert.Contains(projectA.ProjectPath, projectList);
         }
 
@@ -463,13 +458,9 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-
             var net8 = NuGetFramework.Parse("net8.0");
 
-            var projectA = SimpleTestProjectContext.CreateNETCore(
-                "a",
-                pathContext.SolutionRoot,
-                net8);
+            var projectA = SimpleTestProjectContext.CreateNETCore("a", pathContext.SolutionRoot, net8);
 
             projectA.Save();
 
@@ -478,7 +469,6 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(projectList.Count(), 1);
-
             Assert.Contains(projectA.ProjectPath, projectList);
         }
 
@@ -487,19 +477,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
             var net8 = NuGetFramework.Parse("net8.0");
 
-            var projectA = SimpleTestProjectContext.CreateNETCore(
-                "a",
-                pathContext.SolutionRoot,
-                net8);
-            var projectB = SimpleTestProjectContext.CreateNETCore(
-                "b",
-                pathContext.SolutionRoot,
-                net8);
+            var projectA = SimpleTestProjectContext.CreateNETCore("a", pathContext.SolutionRoot, net8);
+            var projectB = SimpleTestProjectContext.CreateNETCore("b", pathContext.SolutionRoot, net8);
 
             solution.Projects.Add(projectA);
             solution.Projects.Add(projectB);
@@ -510,7 +492,6 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(projectList.Count(), 2);
-
             Assert.Contains(projectA.ProjectPath, projectList);
             Assert.Contains(projectB.ProjectPath, projectList);
         }
@@ -520,19 +501,11 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
             var net8 = NuGetFramework.Parse("net8.0");
 
-            var projectA = SimpleTestProjectContext.CreateNETCore(
-                "a",
-                pathContext.SolutionRoot,
-                net8);
-            var projectB = SimpleTestProjectContext.CreateNETCore(
-                "b",
-                pathContext.SolutionRoot,
-                net8);
+            var projectA = SimpleTestProjectContext.CreateNETCore("a", pathContext.SolutionRoot, net8);
+            var projectB = SimpleTestProjectContext.CreateNETCore("b", pathContext.SolutionRoot, net8);
 
             solution.Projects.Add(projectA);
             solution.Projects.Add(projectB);
@@ -543,7 +516,6 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Assert
             Assert.Equal(projectList.Count(), 2);
-
             Assert.Contains(projectA.ProjectPath, projectList);
             Assert.Contains(projectB.ProjectPath, projectList);
         }
@@ -558,7 +530,6 @@ namespace NuGet.CommandLine.Xplat.Tests
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
-
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
             foreach (var filename in directoryFiles)

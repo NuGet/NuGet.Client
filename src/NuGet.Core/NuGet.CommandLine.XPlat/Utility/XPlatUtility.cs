@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Globalization;
 using System;
 using System.IO;
@@ -86,6 +88,194 @@ namespace NuGet.CommandLine.XPlat
                 directory,
                 configFileName,
                 machineWideSettings: new XPlatMachineWideSetting());
+        }
+
+        /// <summary>
+        /// Get the project or solution file from the given directory.
+        /// </summary>
+        /// <param name="directory">A directory with exactly one project or solution file.</param>
+        /// <returns>A single project or solution file.</returns>
+        /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
+        internal static string ADVAY_GetProjectOrSolutionFileFromDirectory(string directory)
+        {
+            var topLevelFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
+            var projectOrSolutionFiles = topLevelFiles
+                                            .Where(file => IsSolutionFile(file) || IsProjectFile(file))
+                                            .ToArray();
+
+            if (projectOrSolutionFiles.Length > 1)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+            else if (projectOrSolutionFiles.Length == 0)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_NoProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            return projectOrSolutionFiles[0];
+        }
+
+        /// <summary>
+        /// Get the project or solution file from the given directory.
+        /// </summary>
+        /// <param name="directory">A directory with exactly one project or solution file.</param>
+        /// <returns>A single project or solution file.</returns>
+        /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
+        internal static string JP_GetProjectOrSolutionFileFromDirectory(string directory)
+        {
+            var topLevelFiles = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly);
+
+            string? candidateFile = null;
+            foreach (string file in topLevelFiles)
+            {
+                if (IsSolutionFile(file) || IsProjectFile(file))
+                {
+                    if (candidateFile == null)
+                    {
+                        candidateFile = file;
+                    }
+                    else
+                    {
+                        throw new ArgumentException(
+                            string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                                directory));
+                    }
+                }
+            }
+
+            if (candidateFile == null)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_NoProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            return candidateFile;
+        }
+
+        /// <summary>
+        /// Get the project or solution file from the given directory.
+        /// </summary>
+        /// <param name="directory">A directory with exactly one project or solution file.</param>
+        /// <returns>A single project or solution file.</returns>
+        /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
+        internal static string JP_LINQ_TAKE_GetProjectOrSolutionFileFromDirectory(string directory)
+        {
+            var projectOrSolutionFiles = Directory
+                                            .GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly)
+                                            .Where(file => IsSolutionFile(file) || IsProjectFile(file));
+
+            if (!projectOrSolutionFiles.Any())
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_NoProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            if (projectOrSolutionFiles.Take(2).Count() > 1)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            return projectOrSolutionFiles.Single();
+        }
+        // For readability, I prefer just iterating directly over the files instead of using LINQ's Take like we do here.
+
+        /// <summary>
+        /// Get the project or solution file from the given directory.
+        /// </summary>
+        /// <param name="directory">A directory with exactly one project or solution file.</param>
+        /// <returns>A single project or solution file.</returns>
+        /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
+        internal static string ADVAY_AVOIDARRAY_GetProjectOrSolutionFileFromDirectory(string directory)
+        {
+            var projectOrSolutionFiles = Directory
+                                            .GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly)
+                                            .Where(file => IsSolutionFile(file) || IsProjectFile(file));
+
+            string? projectOrSolutionFile = null;
+            foreach (var file in projectOrSolutionFiles)
+            {
+                if (projectOrSolutionFile == null)
+                {
+                    projectOrSolutionFile = file;
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                            directory));
+                }
+            }
+
+            if (projectOrSolutionFile == null)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_NoProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            return projectOrSolutionFile;
+        }
+
+        /// <summary>
+        /// Get the project or solution file from the given directory.
+        /// </summary>
+        /// <param name="directory">A directory with exactly one project or solution file.</param>
+        /// <returns>A single project or solution file.</returns>
+        /// <exception cref="ArgumentException">Throws an exception if the directory has none or multiple project/solution files.</exception>
+        internal static string JP_LINQ_GetProjectOrSolutionFileFromDirectory(string directory)
+        {
+            var projectOrSolutionFiles = Directory
+                                            .GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly)
+                                            .Where(file => IsSolutionFile(file) || IsProjectFile(file));
+
+            string? projectOrSolutionFile;
+            try
+            {
+                projectOrSolutionFile = projectOrSolutionFiles.SingleOrDefault();
+            }
+            catch (InvalidOperationException)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_MultipleProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            if (projectOrSolutionFile == default)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Error_NoProjectOrSolutionFilesInDirectory,
+                        directory));
+            }
+
+            return projectOrSolutionFile;
         }
 
         /// <summary>

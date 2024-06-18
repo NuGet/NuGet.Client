@@ -97,7 +97,11 @@ namespace NuGet.CommandLine.XPlat
             // the path points to a directory
             if (Directory.Exists(fullPath))
             {
-                projectOrSolutionFile = XPlatUtility.GetProjectOrSolutionFileFromDirectory(fullPath);
+                //projectOrSolutionFile = XPlatUtility.GetProjectOrSolutionFileFromDirectory(fullPath);
+                //projectOrSolutionFile = XPlatUtility.JP_GetProjectOrSolutionFileFromDirectory(fullPath);
+                //projectOrSolutionFile = XPlatUtility.JP_LINQ_GetProjectOrSolutionFileFromDirectory(fullPath);
+                //projectOrSolutionFile = XPlatUtility.JP_LINQ_TAKE_GetProjectOrSolutionFileFromDirectory(fullPath);
+                projectOrSolutionFile = XPlatUtility.JP_GetProjectOrSolutionFileFromDirectory(fullPath);
             }
             // the path points to a project or solution file
             else if (XPlatUtility.IsSolutionFile(fullPath) || XPlatUtility.IsProjectFile(fullPath))
