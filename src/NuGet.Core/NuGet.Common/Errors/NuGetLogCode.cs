@@ -223,7 +223,7 @@ namespace NuGet.Common
         NU1301 = 1301,
 
         /// <summary>
-        /// HTTP Source specified.
+        /// Insecure Source specified.
         /// </summary>
         NU1302 = 1302,
 
@@ -347,7 +347,7 @@ namespace NuGet.Common
         NU1802 = 1802,
 
         /// <summary>
-        /// HTTP Source specified, but HTTP sources will be deprecated.
+        /// HTTPHTTP Source specified, but HTTP sources will be deprecated.
         /// </summary>
         NU1803 = 1803,
 
