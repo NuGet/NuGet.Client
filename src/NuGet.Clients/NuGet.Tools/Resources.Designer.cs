@@ -61,11 +61,29 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Binding Redirects.
+        /// </summary>
+        internal static string BindingRedirects {
+            get {
+                return ResourceManager.GetString("BindingRedirects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Can not create tool window..
         /// </summary>
         internal static string CanNotCreateWindow {
             get {
                 return ResourceManager.GetString("CanNotCreateWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear NuGet local resources.
+        /// </summary>
+        internal static string clearLocalResources {
+            get {
+                return ResourceManager.GetString("clearLocalResources", resourceCulture);
             }
         }
         
@@ -151,11 +169,29 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package Management.
+        /// </summary>
+        internal static string PackageManagement {
+            get {
+                return ResourceManager.GetString("PackageManagement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PackageReference.
         /// </summary>
         internal static string PackageReference {
             get {
                 return ResourceManager.GetString("PackageReference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package Restore.
+        /// </summary>
+        internal static string PackageRestore {
+            get {
+                return ResourceManager.GetString("PackageRestore", resourceCulture);
             }
         }
         

@@ -1,24 +1,25 @@
 {
   "properties": {
-    "nuGetPackageManager.general.allowRestoreDownload": {
+    "nuGetPackageManager.general.packageRestore.allowRestoreDownload": {
       "type": "boolean",
       "title": "@PackageRestoreConsent;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "default": true,
       "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#allow-nuget-to-download-missing-packages"
     },
-    "nuGetPackageManager.general.packageRestoreAutomatic": {
+    "nuGetPackageManager.general.packageRestore.packageRestoreAutomatic": {
       "type": "boolean",
       "title": "@packageRestoreAutomatic;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "default": true,
+      "enableWhen": "${config:nuGetPackageManager.general.packageRestore.allowRestoreDownload}=='true'",
       "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#automatically-check-for-missing-packages-during-build"
     },
-    "nuGetPackageManager.general.skipBindingRedirects": {
+    "nuGetPackageManager.general.bindingRedirects.skipBindingRedirects": {
       "type": "boolean",
       "title": "@skipBindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "default": true,
       "helpUri": "https://learn.microsoft.com/en-us/nuget/reference/nuget-config-file#bindingredirects-section"
     },
-    "nuGetPackageManager.general.defaultPackageManagementFormat": {
+    "nuGetPackageManager.general.packageManagement.defaultPackageManagementFormat": {
       "type": "string",
       "title": "@defaultPackageManagementFormat;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#choose-the-default-package-management-format",
@@ -36,7 +37,7 @@
         "@PackageReference;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
       ]
     },
-    "nuGetPackageManager.general.showPackageManagementChooser": {
+    "nuGetPackageManager.general.packageManagement.showPackageManagementChooser": {
       "type": "boolean",
       "title": "@showPackageManagementChooser;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
       "default": true
@@ -48,7 +49,20 @@
     },
     "nuGetPackageManager.general": {
       "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E"
+      "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E",
+      "order":  0
+    },
+    "nuGetPackageManager.general.packageRestore": {
+      "title": "@PackageRestore;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "order": 0
+    },
+    "nuGetPackageManager.general.bindingRedirects": {
+      "title": "@BindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "order": 1
+    },
+    "nuGetPackageManager.general.packageManagement": {
+      "title": "@PackageManagement;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+      "order": 2
     }
   }
 }

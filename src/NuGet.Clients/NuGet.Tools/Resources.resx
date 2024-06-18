@@ -174,4 +174,16 @@
   <data name="defaultPackageManagementFormat" xml:space="preserve">
     <value>Default package management format</value>
   </data>
+  <data name="clearLocalResources" xml:space="preserve">
+    <value>Clear NuGet local resources</value>
+  </data>
+  <data name="PackageRestore" xml:space="preserve">
+    <value>Package Restore</value>
+  </data>
+  <data name="BindingRedirects" xml:space="preserve">
+    <value>Binding Redirects</value>
+  </data>
+  <data name="PackageManagement" xml:space="preserve">
+    <value>Package Management</value>
+  </data>
 </root>
