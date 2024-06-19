@@ -1888,8 +1888,7 @@ namespace NuGet.CommandLine.Test
             server.Start();
 
             var sourceUri = $"{server.Uri}nuget";
-            // Allow Insecure connections for restore
-            pathContext.Settings.AddSource("http-source", sourceUri, allowInsecureConnectionsValue: "True");
+
             var projectA = new SimpleTestProjectContext(
                   "a",
                   ProjectStyle.PackagesConfig,
@@ -1924,7 +1923,6 @@ namespace NuGet.CommandLine.Test
                     sourceUri
             };
 
-            pathContext.Settings.RemoveSource("http-source");
             // Act
             var r = CommandRunner.Run(
                 Util.GetNuGetExePath(),
@@ -1960,8 +1958,7 @@ namespace NuGet.CommandLine.Test
             server.Start();
 
             var sourceUri = $"{server.Uri}nuget";
-            // allow Insecure connections for restore
-            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "True");
+            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnections);
 
             var projectB = new SimpleTestProjectContext(
                   "b",
@@ -1992,9 +1989,6 @@ namespace NuGet.CommandLine.Test
                     "update",
                     solution.SolutionPath,
             };
-
-            pathContext.Settings.RemoveSource("http-feed");
-            pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: allowInsecureConnections);
 
             // Act
             CommandRunnerResult r = CommandRunner.Run(

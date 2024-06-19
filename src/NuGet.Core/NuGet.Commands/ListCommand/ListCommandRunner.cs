@@ -49,7 +49,7 @@ namespace NuGet.Commands
                 }
             }
 
-            AvoidHttpSources(listArgs);
+            WarnForHTTPSources(listArgs);
 
             var allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
@@ -64,7 +64,7 @@ namespace NuGet.Commands
             await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
         }
 
-        private static void AvoidHttpSources(ListArgs listArgs)
+        private static void WarnForHTTPSources(ListArgs listArgs)
         {
             List<PackageSource> httpPackageSources = null;
             foreach (PackageSource packageSource in listArgs.ListEndpoints)
@@ -83,17 +83,17 @@ namespace NuGet.Commands
             {
                 if (httpPackageSources.Count == 1)
                 {
-                    throw new ArgumentException(
+                    listArgs.Logger.LogWarning(
                         string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_HttpSource_Single,
+                        Strings.Warning_HttpServerUsage,
                         "list",
                         httpPackageSources[0]));
                 }
                 else
                 {
-                    throw new ArgumentException(
+                    listArgs.Logger.LogWarning(
                         string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_HttpSources_Multiple,
+                        Strings.Warning_HttpServerUsage_MultipleSources,
                         "list",
                         Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }

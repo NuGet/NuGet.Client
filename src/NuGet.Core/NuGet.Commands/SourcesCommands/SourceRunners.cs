@@ -62,13 +62,12 @@ namespace NuGet.Commands
             }
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
-            newPackageSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
             if (newPackageSource.IsHttp && !newPackageSource.IsHttps && !newPackageSource.AllowInsecureConnections)
             {
-                throw new ArgumentException(
+                getLogger().LogWarning(
                     string.Format(CultureInfo.CurrentCulture,
-                        Strings.Error_HttpSource_Single_Short,
+                        Strings.Warning_HttpServerUsage,
                         "add source",
                         args.Source));
             }
@@ -188,6 +187,8 @@ namespace NuGet.Commands
                             legend += " ";
                             getLogger().LogMinimal(legend + source.Source);
                         }
+
+                        WarnForHttpSources(sourcesList, getLogger);
                     }
                     break;
                 case SourcesListFormat.None:
@@ -217,14 +218,16 @@ namespace NuGet.Commands
                 {
                     getLogger().LogWarning(
                     string.Format(CultureInfo.CurrentCulture,
-                        Strings.Warning_List_HttpSource,
+                        Strings.Warning_HttpServerUsage,
+                        "list source",
                         httpPackageSources[0]));
                 }
                 else
                 {
                     getLogger().LogWarning(
                             string.Format(CultureInfo.CurrentCulture,
-                            Strings.Warning_List_HttpSources,
+                            Strings.Warning_HttpServerUsage_MultipleSources,
+                            "list source",
                             Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
                 }
             }
@@ -259,7 +262,6 @@ namespace NuGet.Commands
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
 
             var existingSource = sourceProvider.GetPackageSourceByName(args.Name);
-            existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
             if (existingSource == null)
             {
                 throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
@@ -280,12 +282,11 @@ namespace NuGet.Commands
                 }
 
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
-                existingSource.AllowInsecureConnections = args.AllowInsecureConnections;
 
-                // If the new source is not http, throw an error
+                // If the existing source is not http, warn the user
                 if (existingSource.IsHttp && !existingSource.IsHttps && !existingSource.AllowInsecureConnections)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "update source", args.Source));
+                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "update source", args.Source));
                 }
             }
 
@@ -379,7 +380,7 @@ namespace NuGet.Commands
                     Strings.SourcesCommandSourceEnabledSuccessfully, name));
                 if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "enable source", packageSource.Source));
+                    getLogger().LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "enable source", packageSource.Source));
                 }
             }
             else

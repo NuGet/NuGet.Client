@@ -51,10 +51,6 @@ namespace NuGet.CommandLine.XPlat
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
-                    CommandOption allowInsecureConnections = SourceCmd.Option(
-                        "--allow-insecure-connections",
-                        Strings.SourcesCommandAllowInsecureConnectionsDescription,
-                        CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
                     SourceCmd.Description = Strings.AddSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
@@ -69,7 +65,6 @@ namespace NuGet.CommandLine.XPlat
                             ValidAuthenticationTypes = validAuthenticationTypes.Value(),
                             ProtocolVersion = protocolVersion.Value(),
                             Configfile = configfile.Value(),
-                            AllowInsecureConnections = allowInsecureConnections.HasValue(),
                         };
 
                         AddSourceRunner.Run(args, getLogger);
@@ -395,10 +390,6 @@ namespace NuGet.CommandLine.XPlat
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
-                    CommandOption allowInsecureConnections = SourceCmd.Option(
-                        "--allow-insecure-connections",
-                        Strings.SourcesCommandAllowInsecureConnectionsDescription,
-                        CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
                     SourceCmd.Description = Strings.UpdateSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
@@ -413,7 +404,6 @@ namespace NuGet.CommandLine.XPlat
                             ValidAuthenticationTypes = validAuthenticationTypes.Value(),
                             ProtocolVersion = protocolVersion.Value(),
                             Configfile = configfile.Value(),
-                            AllowInsecureConnections = allowInsecureConnections.HasValue(),
                         };
 
                         UpdateSourceRunner.Run(args, getLogger);

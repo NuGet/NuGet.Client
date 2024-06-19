@@ -55,8 +55,5 @@
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     <InternalsVisibleTo Include="NuGet.PackageManagement.Test" />
     <InternalsVisibleTo Include="NuGet.SolutionRestoreManager.Test" />
-    <InternalsVisibleTo Include="NuGet.CommandLine.FuncTest" />
-    <InternalsVisibleTo Include="Msbuild.Integration.Test" />
-    <InternalsVisibleTo Include="NuGet.Commands.FuncTest" />
   </ItemGroup>
 </Project>
