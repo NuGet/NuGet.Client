@@ -215,10 +215,10 @@ namespace NuGetVSExtension
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
             var service = new ExternalSettingsProviderService();
-                //options,
-                //serviceBroker,
-                //authorizationServiceClient,
-                //telemetryProvider);
+            //options,
+            //serviceBroker,
+            //authorizationServiceClient,
+            //telemetryProvider);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             return service;
