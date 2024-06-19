@@ -24,7 +24,8 @@
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <GetSigningInputsDependsOn>GetSigningInputsCustom</GetSigningInputsDependsOn>
     <GetSymbolsToIndexDependsOn>GetSymbolsToIndexCustom</GetSymbolsToIndexDependsOn>
-</PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
 
   <Target Name="CreateCommandlineNupkg">
     <ItemGroup>
