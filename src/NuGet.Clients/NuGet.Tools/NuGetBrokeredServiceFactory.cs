@@ -10,6 +10,7 @@ using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackageManagement.VisualStudio.Services;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Implementation.Extensibility;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -58,6 +59,7 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, factory.CreateProjectUpgraderServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.PackageFileService, factory.CreatePackageFileServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.SearchService, factory.CreatePackageSearchServiceAsync);
+            brokeredServiceContainer.Proffer(NuGetServices.ExternalSettingsProviderService, factory.CreateExternalSettingsProviderAsync);
 
             return factory;
         }
@@ -199,6 +201,29 @@ namespace NuGetVSExtension
 
             return service;
         }
+
+        private async ValueTask<object> CreateExternalSettingsProviderAsync(
+            ServiceMoniker moniker,
+            ServiceActivationOptions options,
+            IServiceBroker serviceBroker,
+            AuthorizationServiceClient authorizationServiceClient,
+            CancellationToken cancellationToken)
+        {
+            await _lazyInitializer.InitializeAsync(cancellationToken);
+
+            INuGetTelemetryProvider telemetryProvider = await _lazyTelemetryProvider.GetValueAsync(cancellationToken);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var service = new ExternalSettingsProviderService();
+                //options,
+                //serviceBroker,
+                //authorizationServiceClient,
+                //telemetryProvider);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+            return service;
+        }
+
         private async Task InitializeAsync()
         {
             _lazySettings = new AsyncLazy<ISettings>(ServiceLocator.GetComponentModelServiceAsync<ISettings>, ThreadHelper.JoinableTaskFactory);
