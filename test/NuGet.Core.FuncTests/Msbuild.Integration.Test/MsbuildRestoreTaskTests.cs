@@ -1667,7 +1667,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             // The project enables CPM and Directory.Packages.props was already imported even if CPM was diabled
             projectA.Properties.Add("ManagePackageVersionsCentrally", bool.TrueString);
             projectA.Properties.Add("TreatWarningsAsErrors", bool.TrueString);
-            
+
             projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext()
             {
                 Id = packageX.Id,
@@ -1675,7 +1675,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             });
 
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot, projectA);
-            
+
             solution.Create(pathContext.SolutionRoot);
 
             // Act
