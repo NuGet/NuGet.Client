@@ -205,7 +205,7 @@ namespace NuGet.Tests.Apex.Daily
                     testContext.SolutionService.Build();
                     testContext.NuGetApexTestService.WaitForAutoRestore();
 
-                    // Asset
+                    // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, Logger);
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
