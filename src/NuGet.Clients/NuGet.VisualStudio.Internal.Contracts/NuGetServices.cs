@@ -23,8 +23,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
         private const string PackageFileServiceVersion = "1.0.0";
         private const string SearchServiceName = "Microsoft.VisualStudio.NuGet.PackageSearchService";
         private const string SearchServiceVersion = "1.0.0";
-        private const string ExternalSettingsProviderName = "Microsoft.VisualStudio.NuGet.ExternalSettingsProviderService";
-        private const string ExternalSettingsProviderVersion = "1.0.0";
 
         public static readonly ServiceRpcDescriptor SolutionService = new ServiceJsonRpcDescriptor(
             new ServiceMoniker(SolutionServiceName, new Version(SolutionServiceVersion)),
@@ -42,7 +40,5 @@ namespace NuGet.VisualStudio.Internal.Contracts
           new ServiceMoniker(PackageFileServiceName, new Version(PackageFileServiceVersion)));
         public static readonly ServiceRpcDescriptor SearchService = new NuGetServiceMessagePackRpcDescriptor(
             new ServiceMoniker(SearchServiceName, new Version(SearchServiceVersion)));
-        public static readonly ServiceRpcDescriptor ExternalSettingsProviderService = new NuGetServiceMessagePackRpcDescriptor(
-            new ServiceMoniker(ExternalSettingsProviderName, new Version(ExternalSettingsProviderVersion)));
     }
 }
