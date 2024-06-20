@@ -734,7 +734,7 @@ namespace NuGet.SolutionRestoreManager
                 return result;
             }
 
-            return true;
+            return false;
         }
     }
 }

@@ -810,7 +810,7 @@ namespace NuGet.Build.Tasks.Console
                         .Select(s => new CompatibilityProfile(s))
                         .ToList()
                     ),
-                Version = GetProjectVersion(project),
+                Version = GetProjectVersion(project)
             };
             string skdAnalysisLevelString = project.GetProperty("SdkAnalysisLevel");
 
