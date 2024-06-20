@@ -717,7 +717,8 @@ namespace NuGet.SolutionRestoreManager
         {
             string skdAnalysisLevelString = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
             NuGetVersion? sdkAnalysisLevel = null;
-            if (skdAnalysisLevelString != null)
+
+            if (!string.IsNullOrEmpty(skdAnalysisLevelString))
             {
                 sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
             }
