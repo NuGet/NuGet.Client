@@ -1,68 +1,101 @@
 {
-  "properties": {
-    "nuGetPackageManager.general.packageRestore.allowRestoreDownload": {
-      "type": "boolean",
-      "title": "@PackageRestoreConsent;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true,
-      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#allow-nuget-to-download-missing-packages"
-    },
-    "nuGetPackageManager.general.packageRestore.packageRestoreAutomatic": {
-      "type": "boolean",
-      "title": "@packageRestoreAutomatic;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true,
-      "enableWhen": "${config:nuGetPackageManager.general.packageRestore.allowRestoreDownload}=='true'",
-      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#automatically-check-for-missing-packages-during-build"
-    },
-    "nuGetPackageManager.general.bindingRedirects.skipBindingRedirects": {
-      "type": "boolean",
-      "title": "@skipBindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true,
-      "helpUri": "https://learn.microsoft.com/en-us/nuget/reference/nuget-config-file#bindingredirects-section"
-    },
-    "nuGetPackageManager.general.packageManagement.defaultPackageManagementFormat": {
-      "type": "string",
-      "title": "@defaultPackageManagementFormat;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#choose-the-default-package-management-format",
-      "default": "packages-config",
+  "nuGetPackageManager.externalSettings": {
+    "type": "external",
 
-      // Invariant monikers
-      "enum": [
-        "packages-config",
-        "package-reference"
-      ],
+    // should be a resource ID in real registration
+    "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
-      // Localizable titles
-      "enumItemLabels": [
-        "@PackagesConfig;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-        "@PackageReference;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
-      ]
+    // should be a resource ID in real registration
+    // The text inside %...%, if any, will be rendered as a link which invokes IExternalSettingsProvider.OpenBackingStoreAsync when clicked.
+    "backingStoreDescription": "These settings are stored in %NuGet.config%",
+
+    // callback has two members, packageId and serviceId.  Both are GUIDs.  Either or both may be supplied.  If only packageId is supplied,
+    // the package must implement IExternalSettingsProvider itself.  If only serviceId is supplied, the package must proffer a globally
+    // visible service with that GUID which implements IExternalSettingsProvider.  If both are supplied, the package may proffer a private
+    // service (i.e. with promote:false) instead of a public one.  In managed code, the GUID of a service is derived from the service type,
+    // and is typically specified with an explicit [Guid] attribute on it.
+    "callback": {
+      "serviceId": "6C09BBE2-4537-48B4-87D8-01BF5EB75901"
     },
-    "nuGetPackageManager.general.packageManagement.showPackageManagementChooser": {
-      "type": "boolean",
-      "title": "@showPackageManagementChooser;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "default": true
-    }
-  },
-  "categories": {
-    "nuGetPackageManager": {
-      "title": "@110;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+
+    // This should be true if the external settings provider can monitor the backing store for changes and raise SettingValuesChanged when
+    // they occur.  If the backing store cannot be efficiently monitored for changes, the provider should set this to false and implement
+    // ICachingExternalSettingsProvider.
+    "realtimeNotifications": true,
+
+    // Optional string array defining IDs which are passed to IExternalSettingsProvider.GetMessageTextAsync to retrieve the message text.
+    // Dynamic messages can be updated by raising IExternalSettingsProvider.DynamicMessageTextChanged, which results in another callback
+    // to GetMessageTextAsync.
+    "dynamicMessageIds": [ "msg1", "msg2" ],
+
+    // Settings within this external settings region.  Unlike "normal" settings, these have no registered default values.
+    // Their values are retrieved via IExternalSettingsProvider.GetValueAsync; when the user edits them, the new values are passed to
+    // IExternalSettingsProvider.SetValueAsync.
+    "properties": {
+      "allowRestoreDownload": {
+        "type": "boolean",
+        "title": "@PackageRestoreConsent;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true,
+        "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#allow-nuget-to-download-missing-packages"
+      },
+      "packageRestoreAutomatic": {
+        "type": "boolean",
+        "title": "@packageRestoreAutomatic;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true,
+        "enableWhen": "${config:nuGetPackageManager.general.packageRestore.allowRestoreDownload}=='true'",
+        "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#automatically-check-for-missing-packages-during-build"
+      },
+      "skipBindingRedirects": {
+        "type": "boolean",
+        "title": "@skipBindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true,
+        "helpUri": "https://learn.microsoft.com/en-us/nuget/reference/nuget-config-file#bindingredirects-section"
+      },
+      "defaultPackageManagementFormat": {
+        "type": "string",
+        "title": "@defaultPackageManagementFormat;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "helpUri": "https://learn.microsoft.com/nuget/consume-packages/package-restore#choose-the-default-package-management-format",
+        "default": "packages-config",
+
+        // Invariant monikers
+        "enum": [
+          "packages-config",
+          "package-reference"
+        ],
+
+        // Localizable titles
+        "enumItemLabels": [
+          "@PackagesConfig;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+          "@PackageReference;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+        ]
+      },
+      "showPackageManagementChooser": {
+        "type": "boolean",
+        "title": "@showPackageManagementChooser;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "default": true
+      }
     },
-    "nuGetPackageManager.general": {
-      "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E",
-      "order":  0
-    },
-    "nuGetPackageManager.general.packageRestore": {
-      "title": "@PackageRestore;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "order": 0
-    },
-    "nuGetPackageManager.general.bindingRedirects": {
-      "title": "@BindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "order": 1
-    },
-    "nuGetPackageManager.general.packageManagement": {
-      "title": "@PackageManagement;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-      "order": 2
+    "categories": {
+      "nuGetPackageManager": {
+        "title": "@110;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}"
+      },
+      "nuGetPackageManager.general": {
+        "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "legacyOptionPageId": "0F052CF7-BF62-4743-B190-87FA4D49421E",
+        "order":  0
+      },
+      "packageRestore": {
+        "title": "@PackageRestore;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "order": 0
+      },
+      "bindingRedirects": {
+        "title": "@BindingRedirects;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "order": 1
+      },
+      "packageManagement": {
+        "title": "@PackageManagement;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
+        "order": 2
+      }
     }
   }
 }
