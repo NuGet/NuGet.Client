@@ -59,7 +59,6 @@ namespace NuGetVSExtension
             brokeredServiceContainer.Proffer(NuGetServices.ProjectUpgraderService, factory.CreateProjectUpgraderServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.PackageFileService, factory.CreatePackageFileServiceAsync);
             brokeredServiceContainer.Proffer(NuGetServices.SearchService, factory.CreatePackageSearchServiceAsync);
-            brokeredServiceContainer.Proffer(NuGetServices.ExternalSettingsProviderService, factory.CreateExternalSettingsProviderAsync);
 
             return factory;
         }
