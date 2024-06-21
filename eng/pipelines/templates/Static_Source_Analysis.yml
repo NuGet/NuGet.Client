@@ -11,31 +11,33 @@ steps:
     inlineScript: |
       Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
-- task: CredScan@2
-  inputs:
-    toolMajorVersion: "V2"
+- task: CredScan@3
+  displayName: "CredScan"
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
+- task: PostAnalysis@2
+  displayName: "CredScan: Post Analysis"
+  inputs:
+    GdnBreakAllTools: false
+    GdnBreakGdnToolCredScan: true
+  continueOnError: ${{ parameters.isOfficialBuild }}
+
 - task: PowerShell@2
-  displayName: "Analyze CredScan artifact"
+  displayName: "Ensure all projects are in NuGet.sln"
   inputs:
     targetType: 'inline'
     script: |
       try {
-        $credentialScannerMatches = Join-Path $(Pipeline.Workspace)\_sdt\logs\CredentialScanner CredentialScanner-matches.xml
-        $credScannerXml = [xml](Get-Content $credentialScannerMatches)
-
-        if($credScannerXml.DEFECTS -eq $null)
+        $slnProjects = & dotnet sln list | Select-Object -Skip 2 | ForEach-Object { "$PWD\$_" } | sort
+        "Solution contains $($slnProjects.Length) projects"
+        $fsProjects = gci -Recurse -Filter *.csproj | ForEach-Object { $_.FullName } | Where-Object { $_ -notlike "*\EndToEnd\*" -and $_ -notlike "*\bin\*" -and $_ -notlike "*\compiler\resources\*" -and $_ -notlike "*\Assets\*" } | sort
+        "Repo contains $($fsProjects.Length) projects"
+        $diff = @(Compare-Object -ReferenceObject $fsProjects -DifferenceObject $slnProjects)
+        $diff
+        if ($diff.length -gt 0)
         {
-          Write-Host "Unable to verify CodeAnalysisLogs artifact content, please manually verify it."
-          exit 1
-        }
-
-        if ($credScannerXml.DEFECTS.DEFECT -ne $null) {
-          Write-Host "CredentialScanner found following credential in this PR, please revoke this credential immediately:"
-          $credScannerXml.DEFECTS.DEFECT
-          exit 1
+          throw "Repo has project file(s) not in NuGet.sln"
         }
       }
       catch
@@ -46,17 +48,14 @@ steps:
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
-- task: MSBuild@1
-  displayName: "Ensure msbuild.exe can parse nuget.sln"
-  inputs:
-    solution: "nuget.sln"
-    msbuildArguments: "/t:EnsureNewtonsoftJsonVersion /bl:$(Build.StagingDirectory)\\binlog\\01.EnsureNewtonsoftJsonVersion.binlog"
-    maximumCpuCount: true
+- script: dotnet format whitespace --verify-no-changes NuGet.sln
+  name: dotnetFormatWhitespace
+  displayName: Check whitespace formatting
   continueOnError: ${{ parameters.isOfficialBuild }}
   condition: succeededOrFailed()
 
-- task: PublishPipelineArtifact@1
-  displayName: "Publish binlogs"
+- task: PowerShell@2
+  displayName: "Initialize Git Commit Status on GitHub"
   inputs:
     targetType: "inline"
     script: |
