@@ -236,8 +236,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NuGetSdkRes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Common.Test", "test\NuGet.Clients.Tests\NuGet.VisualStudio.Common.Test\NuGet.VisualStudio.Common.Test.csproj", "{1EDFC48B-2CEC-49DD-90DA-3A69BDDAB8CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.Core", "src\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.csproj", "{02B7C422-C592-4BA6-89A7-ACBD7923B34D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Msbuild.Integration.Test", "test\NuGet.Core.FuncTests\Msbuild.Integration.Test\Msbuild.Integration.Test.csproj", "{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Console", "src\NuGet.Core\NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj", "{3ED13630-90EB-420E-8083-0959B2955C6E}"
@@ -634,10 +632,6 @@ Global
 		{1EDFC48B-2CEC-49DD-90DA-3A69BDDAB8CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EDFC48B-2CEC-49DD-90DA-3A69BDDAB8CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EDFC48B-2CEC-49DD-90DA-3A69BDDAB8CF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02B7C422-C592-4BA6-89A7-ACBD7923B34D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02B7C422-C592-4BA6-89A7-ACBD7923B34D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02B7C422-C592-4BA6-89A7-ACBD7923B34D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02B7C422-C592-4BA6-89A7-ACBD7923B34D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
