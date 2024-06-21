@@ -1,6 +1,8 @@
 parameters:
 - name: BuildRTM
   type: boolean
+- name: NuGetLocalizationType
+  type: string
 
 steps:
 - task: PowerShell@1
@@ -80,40 +82,70 @@ steps:
         exit 1
       }
 
+- task: CodeQL3000Init@0
+  displayName: Initialize CodeQL
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+
 - task: MSBuild@1
-  displayName: "Restore for VS2019"
+  displayName: "Restore"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m /p:IncludeApex=true /bl:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+    msbuildArguments: "/restore:false /target:RestoreVS /property:BuildNumber=$(BuildNumber) /property:BuildRTM=$(BuildRTM) /property:IncludeApex=true /binarylogger:$(Build.StagingDirectory)\\binlog\\01.Restore.binlog"
+
+- task: PowerShell@1
+  displayName: "Set IncludeApex variable"
+  name: "includeapex"
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        $IncludeApex = -not [bool]::Parse($env:BuildRTM)
+        Write-Host "IncludeApex URL: $IncludeApex"
+        Write-Host "##vso[task.setvariable variable=IncludeApex]$IncludeApex"
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set IncludeApex: $_"
+        exit 1
+      }
 
 - task: MSBuild@1
-  displayName: "Build for VS2019"
+  displayName: "Build"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /p:GitRepositoryRemoteName=github /p:IncludeApex=true /bl:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
+    msbuildArguments: "/restore:false /target:BuildNoVSIX /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /property:GitRepositoryRemoteName=github /property:IncludeApex=$(IncludeApex) /binarylogger:$(Build.StagingDirectory)\\binlog\\02.Build.binlog"
 
+- task: CodeQL3000Finalize@0
+  displayName: Finalize CodeQL
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['Codeql.Enabled'], 'true'))"
+  
 - task: MSBuild@1
   displayName: "Localize Assemblies"
   inputs:
     solution: "build\\loc.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:AfterBuild /bl:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
+    msbuildArguments: "/restore:false /target:AfterBuild /property:LocType=${{parameters.NuGetLocalizationType}} /binarylogger:$(Build.StagingDirectory)\\binlog\\03.Localize.binlog"
 
 - task: MSBuild@1
-  displayName: "Build Final NuGet.exe (via ILMerge)"
+  displayName: "Build NuGet.exe Localized"
   inputs:
     solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount) /bl:$(Build.StagingDirectory)\\binlog\\04.ILMergeNuGetExe.binlog"
+    msbuildArguments: "/t:Build /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\04.BuildNuGetExe.binlog"
+
+- task: MSBuild@1
+  displayName: "ILMerge NuGet.exe"
+  inputs:
+    solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
+    configuration: "$(BuildConfiguration)"
+    msbuildArguments: "/restore:false /target:ILMergeNuGetExe /binarylogger:$(Build.StagingDirectory)\\binlog\\05.ILMergeNuGetExe.binlog"
 
 - task: MSBuild@1
   displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
   inputs:
     solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath /bl:$(Build.StagingDirectory)\\binlog\\05.CopyFinalNuGetExeToOutputPath.binlog"
+    msbuildArguments: "/restore:false /target:CopyFinalNuGetExeToOutputPath /binarylogger:$(Build.StagingDirectory)\\binlog\\06.CopyFinalNuGetExeToOutputPath.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
@@ -122,7 +154,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\06.RunUnitTests.binlog"
+    msbuildArguments: "/restore:false /target:CoreUnitTests;UnitTestsVS /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /binarylogger:$(Build.StagingDirectory)\\binlog\\07.RunUnitTests.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), not(eq(variables['IsOfficialBuild'], 'true')))"
 
 - task: MSBuild@1
@@ -131,7 +163,7 @@ steps:
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true /bl:$(Build.StagingDirectory)\\binlog\\06.RunUnitTests.binlog"
+    msbuildArguments: "/restore:false /target:CoreUnitTests;UnitTestsVS /property:BuildRTM=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /property:SkipILMergeOfNuGetExe=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.RunUnitTests.binlog"
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'true'), eq(variables['IsOfficialBuild'], 'true'))"
 
 - task: PublishTestResults@2
@@ -158,28 +190,28 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:AfterBuild /bl:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
+    msbuildArguments: "/restore:false /target:AfterBuild /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
 
 - task: MSBuild@1
   displayName: "Pack Nupkgs"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)  /bl:$(Build.StagingDirectory)\\binlog\\08.Pack.binlog"
+    msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\09.Pack.binlog"
 
 - task: MSBuild@1
   displayName: "Ensure all Nupkgs and Symbols are created"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:EnsurePackagesExist /p:ExcludeTestProjects=$(BuildRTM) /bl:$(Build.StagingDirectory)\\binlog\\09.EnsurePackagesExist.binlog"
+    msbuildArguments: "/restore:false /target:EnsurePackagesExist /property:ExcludeTestProjects=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\10.EnsurePackagesExist.binlog"
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:BuildVSIX /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:IsCIBuild=true /bl:$(Build.StagingDirectory)\\binlog\\10.BuildVSIX.binlog"
+    msbuildArguments: "/restore:false /target:BuildVSIX /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\11.BuildVSIX.binlog"
   condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
 - ${{ if not(parameters.BuildRTM)}}:
   - template: /eng/common/templates/steps/generate-sbom.yml@self
@@ -200,7 +232,7 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/MaxCPUCount /ConsoleLoggerParameters:Verbosity=Minimal;Summary;ForceNoAlign /t:AfterBuild /p:SignPackages=true /bl:$(Build.StagingDirectory)\\binlog\\12.SignPackages.binlog"
+    msbuildArguments: "/restore:false /target:AfterBuild /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
 
 - task: NuGetToolInstaller@1
   displayName: Use NuGet 6.x
@@ -262,7 +294,14 @@ steps:
     arguments: 'install Microsoft.DevDiv.Validation.TestPlatform.Settings.Tasks -Version 1.0.655 -Source $(VsPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-# disable for 'release-6.3.x'
+- task: MicroBuildBuildVSBootstrapper@3
+  displayName: 'Build a Visual Studio bootstrapper for tests'
+  inputs:
+    channelName: "$(VsTargetChannelForTests)"
+    vsMajorVersion: "$(VsTargetMajorVersion)"
+    manifests: '$(Build.Repository.LocalPath)\artifacts\VS15\Microsoft.VisualStudio.NuGet.Core.vsman'
+    outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: PowerShell@1
   displayName: "Set Bootstrapper URL variable for tests"
@@ -325,19 +364,28 @@ steps:
     msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\16.GenerateRunSettings.binlog'
   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
-# - task: MSBuild@1
-#   displayName: 'Generate .runsettings files'
-#   inputs:
-#     solution: 'build\runsettings.proj'
-#     msbuildArguments: '/p:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /p:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /p:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /bl:$(Build.StagingDirectory)\\binlog\\15.GenerateRunSettings.binlog'
-#   condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+- task: PowerShell@1
+  displayName: 'Copy VS integration test binaries'
+  inputs:
+    scriptType: "inlineScript"
+    inlineScript: |
+      try {
+        Write-Output "Copying NuGet.OptProf binaries"
+        Copy-Item test\NuGet.Tests.Apex\NuGet.OptProf\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.OptProf\ -Recurse -ErrorAction Stop
+        Write-Output "Copying NuGet.Tests.Apex binaries"
+        Copy-Item test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\$(BuildConfiguration) artifacts\RunSettings\NuGet.Tests.Apex\ -Recurse -ErrorAction Stop
+      } catch {
+        Write-Host "##vso[task.LogIssue type=error;]$_"
+        exit 1
+      }
+  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
 - task: MSBuild@1
   displayName: "Collect Build Symbols"
   inputs:
     solution: "build\\symbols.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/p:IsSymbolBuild=true /p:BuildRTM=$(BuildRTM) /bl:$(Build.StagingDirectory)\\binlog\\15.CollectBuildSymbols.binlog"
+    msbuildArguments: "/restore:false /property:IsSymbolBuild=true /property:BuildRTM=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\17.CollectBuildSymbols.binlog"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -362,7 +410,7 @@ steps:
 - task: CmdLine@2
   displayName: "Publish to the .NET Core build asset registry (BAR)"
   inputs:
-    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /p:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken) /bl:$(Build.StagingDirectory)\binlog\PublishToBuildAssetRegistry.binlog
+    script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri)  /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /property:MaestroApiEndpoint=$(MaestroApiEndpoint) /property:MaestroAccessToken=$(MaestroAccessToken) /binarylogger:$(Build.StagingDirectory)\binlog\PublishToBuildAssetRegistry.binlog
     workingDirectory: cli
     failOnStderr: true
   env:
