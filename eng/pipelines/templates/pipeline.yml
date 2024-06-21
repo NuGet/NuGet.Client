@@ -205,6 +205,7 @@ stages:
     - template: /eng/pipelines/templates/Build_and_UnitTest.yml@self
       parameters:
         BuildRTM: false
+        NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
 
 - stage: Build_For_Publishing
   displayName: Build NuGet published to nuget.org
