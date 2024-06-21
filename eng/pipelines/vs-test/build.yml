@@ -3,13 +3,12 @@ parameters:
   type: string
 
 steps:
-- task: MicroBuildLocalizationPlugin@1
+- task: MicroBuildLocalizationPlugin@4
   displayName: "Install Localization Plugin"
 
-- task: MicroBuildSigningPlugin@1
+- task: MicroBuildSigningPlugin@4
   inputs:
     signType: "Test"
-    esrpSigning: "true"
   displayName: "Install Signing Plugin"
 
 - task: MicroBuildSwixPlugin@4
