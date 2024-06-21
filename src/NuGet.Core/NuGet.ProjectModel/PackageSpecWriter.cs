@@ -65,12 +65,15 @@ namespace NuGet.ProjectModel
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 #pragma warning restore CS0612 // Type or member is obsolete
 
-            if (packageSpec.RestoreMetadata.SdkAnalysisLevel is not null)
+            if (packageSpec.RestoreMetadata is not null)
             {
-                SetValue(writer, "SdkAnalysisLevel", packageSpec.RestoreMetadata.SdkAnalysisLevel.ToString());
-            }
+                if (packageSpec.RestoreMetadata.SdkAnalysisLevel is not null)
+                {
+                    SetValue(writer, "SdkAnalysisLevel", packageSpec.RestoreMetadata.SdkAnalysisLevel.ToString());
+                }
 
-            SetValueIfFalse(writer, "UsingMicrosoftNETSdk", packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
+                SetValueIfFalse(writer, "UsingMicrosoftNETSdk", packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
+            }
 
             if (packageSpec.Dependencies.Count > 0)
             {
