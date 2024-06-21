@@ -220,13 +220,9 @@ namespace NuGet.ProjectModel
                             packageSpec.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
                         }
                         break;
+
                     case "UsingMicrosoftNETSdk":
-
-                        if (jsonReader.TokenType == JsonToken.Boolean)
-                        {
-                            packageSpec.UsingMicrosoftNETSdk = jsonReader.ReadAsBoolean() ?? false;
-                        }
-
+                        packageSpec.UsingMicrosoftNETSdk = jsonReader.ReadAsBoolean() ?? true;
                         break;
                 }
             });
