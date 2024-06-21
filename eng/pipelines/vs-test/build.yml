@@ -8,7 +8,7 @@ steps:
 
 - task: MicroBuildSigningPlugin@1
   inputs:
-    signType: "$(SigningType)"
+    signType: "Test"
     esrpSigning: "true"
   displayName: "Install Signing Plugin"
 
@@ -337,3 +337,13 @@ steps:
     solution: "build\\BuildValidator.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/target:ValidateArtifacts /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish binlogs"
+  inputs:
+    artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+    targetPath: $(Build.StagingDirectory)\binlog
+  condition: " or(failed(), eq(variables['System.debug'], 'true')) "
+
+- task: MicroBuildCleanup@1
+  displayName: "Perform Cleanup Tasks"
