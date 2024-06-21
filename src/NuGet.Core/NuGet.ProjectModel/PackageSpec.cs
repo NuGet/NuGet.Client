@@ -162,18 +162,6 @@ namespace NuGet.ProjectModel
         /// <remarks>Optional. This is normally set for internal use only.</remarks>
         public ProjectRestoreMetadata RestoreMetadata { get; set; }
 
-        /// <summary>
-        /// A unified flag to help users manage their SDK warning levels. Example: 9.0.100
-        /// When introducing a new warning or error use this property to
-        /// allow users to tell the sdk "treat me as if I were SDK x.y.z" and manage breaking changes
-        /// </summary>
-        public NuGetVersion SdkAnalysisLevel { get; set; }
-
-        /// <summary>
-        /// Indicates that Microsoft.NET.Sdk is being used.
-        /// </summary>
-        public bool UsingMicrosoftNETSdk { get; set; } = true;
-
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -205,8 +193,6 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(TargetFrameworks);
             hashCode.AddObject(RuntimeGraph);
             hashCode.AddObject(RestoreMetadata);
-            hashCode.AddObject(SdkAnalysisLevel);
-            hashCode.AddStruct(UsingMicrosoftNETSdk);
 
             return hashCode.CombinedHash;
         }
@@ -256,9 +242,7 @@ namespace NuGet.ProjectModel
                    EqualityUtility.OrderedEquals(Dependencies, other.Dependencies, dep => dep.Name, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.OrderedEquals(TargetFrameworks, other.TargetFrameworks, tfm => tfm.TargetAlias, StringComparer.OrdinalIgnoreCase) &&
                    EqualityUtility.EqualsWithNullCheck(RuntimeGraph, other.RuntimeGraph) &&
-                   EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata) &&
-                   EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel) &&
-                   EqualityUtility.EqualsWithNullCheck(UsingMicrosoftNETSdk, other.UsingMicrosoftNETSdk);
+                   EqualityUtility.EqualsWithNullCheck(RestoreMetadata, other.RestoreMetadata);
         }
 
         /// <summary>
@@ -312,8 +296,6 @@ namespace NuGet.ProjectModel
                 BuildOptions = BuildOptions?.Clone(),
 #pragma warning restore CS0612 // Type or member is obsolete
                 RestoreMetadata = RestoreMetadata?.Clone(),
-                SdkAnalysisLevel = SdkAnalysisLevel,
-                UsingMicrosoftNETSdk = UsingMicrosoftNETSdk,
             };
         }
 

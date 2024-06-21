@@ -283,7 +283,7 @@ namespace NuGet.Commands
 
                     if (skdAnalysisLevelString != null)
                     {
-                        result.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                        result.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
                     }
                 }
 
@@ -320,11 +320,12 @@ namespace NuGet.Commands
 
                 if (bool.TryParse(isSdk, out bool value))
                 {
-                    result.UsingMicrosoftNETSdk = value;
+                    result.RestoreMetadata.UsingMicrosoftNETSdk = value;
                 }
                 else
                 {
-                    result.UsingMicrosoftNETSdk = false;
+                    result.RestoreMetadata.UsingMicrosoftNETSdk = value;
+                    result.RestoreMetadata.UsingMicrosoftNETSdk = false;
                 }
             }
 

@@ -812,21 +812,6 @@ namespace NuGet.Build.Tasks.Console
                     ),
                 Version = GetProjectVersion(project)
             };
-            string skdAnalysisLevelString = project.GetProperty("SdkAnalysisLevel");
-
-            if (skdAnalysisLevelString != null)
-            {
-                packageSpec.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-            }
-
-            if (bool.TryParse(project.GetProperty("UsingMicrosoftNETSdk"), out bool value))
-            {
-                packageSpec.UsingMicrosoftNETSdk = value;
-            }
-            else
-            {
-                packageSpec.UsingMicrosoftNETSdk = false;
-            }
 
             return packageSpec;
         }
@@ -907,6 +892,23 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
+
+
+            string skdAnalysisLevelString = project.GetProperty("SdkAnalysisLevel");
+
+            if (skdAnalysisLevelString != null)
+            {
+                restoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+            }
+
+            if (bool.TryParse(project.GetProperty("UsingMicrosoftNETSdk"), out bool value))
+            {
+                restoreMetadata.UsingMicrosoftNETSdk = value;
+            }
+            else
+            {
+                restoreMetadata.UsingMicrosoftNETSdk = false;
+            }
 
             return (restoreMetadata, targetFrameworkInfos);
 

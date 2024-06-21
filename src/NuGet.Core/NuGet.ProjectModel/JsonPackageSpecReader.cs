@@ -217,12 +217,12 @@ namespace NuGet.ProjectModel
 
                         if (skdAnalysisLevelString != null)
                         {
-                            packageSpec.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                            packageSpec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
                         }
                         break;
 
                     case "UsingMicrosoftNETSdk":
-                        packageSpec.UsingMicrosoftNETSdk = jsonReader.ReadAsBoolean() ?? true;
+                        packageSpec.RestoreMetadata.UsingMicrosoftNETSdk = jsonReader.ReadAsBoolean() ?? true;
                         break;
                 }
             });
