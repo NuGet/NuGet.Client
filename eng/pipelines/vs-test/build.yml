@@ -40,7 +40,7 @@ steps:
 
         $VsTargetMajorVersion = dotnet msbuild -getProperty:VsTargetMajorVersion $(Build.Repository.LocalPath)\src\NuGet.Clients\NuGet.VisualStudio.Client\
         Write-Host "Setting VsTargetMajorVersion to: $VsTargetMajorVersion"
-        Write-Host "##vso[task.setvariable variable=VsTargetMajorVersion]$version"
+        Write-Host "##vso[task.setvariable variable=VsTargetMajorVersion]$VsTargetMajorVersion"
       } catch {
         throw $_
       }
