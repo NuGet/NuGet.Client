@@ -1432,7 +1432,32 @@ namespace NuGet.ProjectModel.Test
         [InlineData(LockFileReadFlags.Targets)]
         [InlineData(LockFileReadFlags.PackageFolders | LockFileReadFlags.Targets)]
         [InlineData(LockFileReadFlags.All)]
-        public void LockFileFormat_ReadUsesReadFlags(LockFileReadFlags flags)
+        public void LockFileFormat_ReadUsesReadFlags_WithNewtonsoftEnvReader(LockFileReadFlags flags)
+        {
+            // Returns "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: true" which means Newtonsoft.Json code path is used to parse the file
+            var environmentVariableReader = LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader().First()[0] as IEnvironmentVariableReader;
+
+            LockFileFormat_ReadUsesReadFlags_WithEnvReader(flags, environmentVariableReader);
+        }
+
+        [Theory]
+        [InlineData(LockFileReadFlags.CentralTransitiveDependencyGroups)]
+        [InlineData(LockFileReadFlags.Libraries)]
+        [InlineData(LockFileReadFlags.PackageFolders)]
+        [InlineData(LockFileReadFlags.PackageSpec)]
+        [InlineData(LockFileReadFlags.ProjectFileDependencyGroups)]
+        [InlineData(LockFileReadFlags.Targets)]
+        [InlineData(LockFileReadFlags.PackageFolders | LockFileReadFlags.Targets)]
+        [InlineData(LockFileReadFlags.All)]
+        public void LockFileFormat_ReadUsesReadFlags_WithSystemTextJsonEnvReader(LockFileReadFlags flags)
+        {
+            // Returns "NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING: false" which means System.Text.Json code path is used to parse the file
+            var environmentVariableReader = LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader().Skip(1).First()[0] as IEnvironmentVariableReader;
+
+            LockFileFormat_ReadUsesReadFlags_WithEnvReader(flags, environmentVariableReader);
+        }
+
+        private void LockFileFormat_ReadUsesReadFlags_WithEnvReader(LockFileReadFlags flags, IEnvironmentVariableReader environmentVariableReader)
         {
             // Arrange
             var lockFileContent = @"{
@@ -1466,7 +1491,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
 
-            var environmentVariableReader = LockFileParsingEnvironmentVariable.TestEnvironmentVariableReader().First()[0] as IEnvironmentVariableReader;
+            // Act
             var lockFile = Parse(lockFileContent, "In Memory", environmentVariableReader, logger: null, flags);
 
             // Assert
