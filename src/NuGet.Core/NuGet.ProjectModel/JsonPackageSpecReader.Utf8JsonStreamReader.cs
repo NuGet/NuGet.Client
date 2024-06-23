@@ -109,6 +109,8 @@ namespace NuGet.ProjectModel
         private static readonly byte[] HashTagImportPropertyName = Encoding.UTF8.GetBytes("#import");
         private static readonly byte[] ProjectReferencesPropertyName = Encoding.UTF8.GetBytes("projectReferences");
         private static readonly byte[] EmptyStringPropertyName = Encoding.UTF8.GetBytes(string.Empty);
+        private static readonly byte[] SdkAnalysisLevel = Encoding.UTF8.GetBytes("SdkAnalysisLevel");
+        private static readonly byte[] UsingMicrosoftNETSdk = Encoding.UTF8.GetBytes("UsingMicrosoftNETSdk");
 
         internal static PackageSpec GetPackageSpecUtf8JsonStreamReader(Stream stream, string name, string packageSpecPath, IEnvironmentVariableReader environmentVariableReader, string snapshotValue = null)
         {
@@ -227,6 +229,29 @@ namespace NuGet.ProjectModel
                             {
                                 throw FileFormatException.Create(ex, version, packageSpec.FilePath);
                             }
+                        }
+                    }
+                    else if (jsonReader.ValueTextEquals(UsingMicrosoftNETSdk))
+                    {
+                        if (packageSpec.RestoreMetadata is null)
+                        {
+                            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+                        }
+
+                        packageSpec.RestoreMetadata.UsingMicrosoftNETSdk = jsonReader.ReadNextTokenAsBoolOrTrue();
+                    }
+                    else if (jsonReader.ValueTextEquals(SdkAnalysisLevel))
+                    {
+                        string sdkAnalysisLevelString = jsonReader.ReadNextTokenAsString();
+
+                        if (!string.IsNullOrEmpty(sdkAnalysisLevelString))
+                        {
+                            if (packageSpec.RestoreMetadata is null)
+                            {
+                                packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+                            }
+
+                            packageSpec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(sdkAnalysisLevelString);
                         }
                     }
                     else

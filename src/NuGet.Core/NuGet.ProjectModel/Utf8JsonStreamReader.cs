@@ -220,6 +220,17 @@ namespace NuGet.ProjectModel
             return false;
         }
 
+        internal bool ReadNextTokenAsBoolOrTrue()
+        {
+            ThrowExceptionIfDisposed();
+
+            if (Read() && (TokenType == JsonTokenType.False || TokenType == JsonTokenType.True))
+            {
+                return GetBoolean();
+            }
+            return true;
+        }
+
         internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()
         {
             ThrowExceptionIfDisposed();
