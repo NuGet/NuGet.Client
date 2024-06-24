@@ -331,6 +331,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} value: `{1}` is invalid. Valid example: `{2}`.
+        /// </summary>
+        public static string Invalid_AttributeValue {
+            get {
+                return ResourceManager.GetString("Invalid_AttributeValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The {0} MSBuild property could not be found for project &apos;{1}&apos;..
         /// </summary>
         public static string MSBuildPropertyNotFound {

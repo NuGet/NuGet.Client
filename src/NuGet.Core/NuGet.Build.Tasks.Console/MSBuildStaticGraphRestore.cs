@@ -898,17 +898,32 @@ namespace NuGet.Build.Tasks.Console
 
             if (skdAnalysisLevelString != null)
             {
-                restoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                try
+                {
+                    restoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
+                }
             }
 
-            if (bool.TryParse(project.GetProperty("UsingMicrosoftNETSdk"), out bool value))
+            string isSdk = project.GetProperty("UsingMicrosoftNETSdk");
+            bool usingMicrosoftNetSdk = false;
+
+            if (isSdk != null)
             {
-                restoreMetadata.UsingMicrosoftNETSdk = value;
+                if (bool.TryParse(isSdk, out bool result))
+                {
+                    usingMicrosoftNetSdk = result;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", isSdk, "false"));
+                }
             }
-            else
-            {
-                restoreMetadata.UsingMicrosoftNETSdk = false;
-            }
+
+            restoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
 
             return (restoreMetadata, targetFrameworkInfos);
 

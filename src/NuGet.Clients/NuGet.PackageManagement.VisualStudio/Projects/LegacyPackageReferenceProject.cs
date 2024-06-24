@@ -518,13 +518,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (skdAnalysisLevelString != null)
             {
-                sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                try
+                {
+                    sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.SdkAnalysisLevel, skdAnalysisLevelString, "9.0.100"), ex);
+                }
             }
 
-            if (bool.TryParse(usingNetSdk, out bool result))
+            if (!string.IsNullOrEmpty(usingNetSdk))
             {
-                usingMicrosoftNetSdk = result;
-            };
+                if (bool.TryParse(usingNetSdk, out bool result))
+                {
+                    usingMicrosoftNetSdk = result;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.UsingMicrosoftNETSdk, usingNetSdk, "false"));
+                };
+            }
 
             return new PackageSpec(tfis)
             {

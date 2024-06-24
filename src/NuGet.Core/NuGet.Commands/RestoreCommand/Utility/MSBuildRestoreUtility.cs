@@ -278,13 +278,6 @@ namespace NuGet.Commands
 
                     // NuGet audit properties
                     result.RestoreMetadata.RestoreAuditProperties = GetRestoreAuditProperties(specItem, GetAuditSuppressions(items));
-
-                    string skdAnalysisLevelString = specItem.GetProperty("SdkAnalysisLevel");
-
-                    if (skdAnalysisLevelString != null)
-                    {
-                        result.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-                    }
                 }
 
                 if (restoreType == ProjectStyle.PackagesConfig)
@@ -317,15 +310,33 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
 
                 string isSdk = specItem.GetProperty("UsingMicrosoftNETSdk");
+                string skdAnalysisLevelString = specItem.GetProperty("SdkAnalysisLevel");
+                bool usingMicrosoftNetSdk = false;
 
-                if (bool.TryParse(isSdk, out bool value))
+                if (!string.IsNullOrEmpty(isSdk))
                 {
-                    result.RestoreMetadata.UsingMicrosoftNETSdk = value;
+                    if (bool.TryParse(isSdk, out bool value))
+                    {
+                        usingMicrosoftNetSdk = value;
+                    }
+                    else
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", isSdk, "false"));
+                    }
                 }
-                else
+
+                result.RestoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
+
+                if (skdAnalysisLevelString != null)
                 {
-                    result.RestoreMetadata.UsingMicrosoftNETSdk = value;
-                    result.RestoreMetadata.UsingMicrosoftNETSdk = false;
+                    try
+                    {
+                        result.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
+                    }
                 }
             }
 

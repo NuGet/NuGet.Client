@@ -1120,5 +1120,10 @@ NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywh
     <value>The following are 'Non-HTTPS' sources: {0}
 NuGet requires HTTPS sources. Please refer to https://aka.ms/nuget-https-everywhere for more information.</value>
     <comment>{0} - list of server URIs</comment>
+  <data name="Invalid_AttributeValue" xml:space="preserve">
+    <value>The {0} value: `{1}` is invalid. Valid example: `{2}`</value>
+    <comment>{0} - is the attribute
+{1} is the invalid value of the attribute.
+{2} a valid attriibute value example</comment>
   </data>
 </root>

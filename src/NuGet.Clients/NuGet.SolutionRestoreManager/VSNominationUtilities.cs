@@ -720,7 +720,14 @@ namespace NuGet.SolutionRestoreManager
 
             if (!string.IsNullOrEmpty(skdAnalysisLevelString))
             {
-                sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                try
+                {
+                    sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.SdkAnalysisLevel, skdAnalysisLevelString, "9.0.100"), ex);
+                }
             }
 
             return sdkAnalysisLevel;
@@ -734,8 +741,10 @@ namespace NuGet.SolutionRestoreManager
             {
                 return result;
             }
-
-            return false;
+            else
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.UsingMicrosoftNETSdk, usingNetSdk, "false"));
+            }
         }
     }
 }
