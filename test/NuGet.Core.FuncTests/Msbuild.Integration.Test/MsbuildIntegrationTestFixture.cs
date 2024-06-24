@@ -99,13 +99,14 @@ namespace Msbuild.Integration.Test
         internal CommandRunnerResult RunMsBuild(string workingDirectory, string args, bool ignoreExitCode = false)
         {
             var restoreDllPath = Path.Combine(_testDir, "NuGet.Build.Tasks.dll");
+            var nugetRestorePropsPath = Path.Combine(_testDir, "NuGet.props");
             var nugetRestoreTargetsPath = Path.Combine(_testDir, "NuGet.targets");
             // Uncomment to debug the msbuild call
             // _processEnvVars.Add("DEBUG_RESTORE_TASK", "true");
             _processEnvVars["UNIT_TEST_RESTORE_TASK"] = bool.TrueString;
             var result = CommandRunner.Run(_msbuildPath.Value,
                 workingDirectory,
-                $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
+                $"/p:NuGetPropsFile={nugetRestorePropsPath} /p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
                 environmentVariables: _processEnvVars);
 
             if (!ignoreExitCode)
