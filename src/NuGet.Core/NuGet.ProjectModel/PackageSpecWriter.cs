@@ -65,16 +65,6 @@ namespace NuGet.ProjectModel
             SetDictionaryValues(writer, "scripts", packageSpec.Scripts);
 #pragma warning restore CS0612 // Type or member is obsolete
 
-            if (packageSpec.RestoreMetadata is not null)
-            {
-                if (packageSpec.RestoreMetadata.SdkAnalysisLevel is not null)
-                {
-                    SetValue(writer, "SdkAnalysisLevel", packageSpec.RestoreMetadata.SdkAnalysisLevel.ToString());
-                }
-
-                SetValueIfFalse(writer, "UsingMicrosoftNETSdk", packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
-            }
-
             if (packageSpec.Dependencies.Count > 0)
             {
                 SetDependencies(writer, packageSpec.Dependencies);
@@ -197,6 +187,11 @@ namespace NuGet.ProjectModel
                 SetValue(writer, "packagesConfigPath", pcMsbuildMetadata.PackagesConfigPath);
             }
 
+            if (packageSpec.RestoreMetadata.SdkAnalysisLevel is not null)
+            {
+                SetValue(writer, "SdkAnalysisLevel", packageSpec.RestoreMetadata.SdkAnalysisLevel.ToString());
+            }
+
             writer.WriteObjectEnd();
         }
 
@@ -219,6 +214,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "centralPackageFloatingVersionsEnabled", msbuildMetadata.CentralPackageFloatingVersionsEnabled);
             SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
             SetValueIfTrue(writer, "CentralPackageTransitivePinningEnabled", msbuildMetadata.CentralPackageTransitivePinningEnabled);
+            SetValueIfFalse(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
         }
 
 

@@ -211,19 +211,6 @@ namespace NuGet.ProjectModel
                             }
                         }
                         break;
-
-                    case "SdkAnalysisLevel":
-                        string skdAnalysisLevelString = jsonReader.ReadNextTokenAsString();
-
-                        if (skdAnalysisLevelString != null)
-                        {
-                            packageSpec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-                        }
-                        break;
-
-                    case "UsingMicrosoftNETSdk":
-                        packageSpec.RestoreMetadata.UsingMicrosoftNETSdk = jsonReader.ReadAsBoolean() ?? true;
-                        break;
                 }
             });
 
@@ -966,6 +953,8 @@ namespace NuGet.ProjectModel
             RestoreAuditProperties auditProperties = null;
             bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            bool usingMicrosoftNetSdk = true;
+            NuGetVersion sdkAnalysisLevel = null;
 
             jsonReader.ReadObject(propertyName =>
             {
@@ -1167,6 +1156,18 @@ namespace NuGet.ProjectModel
 
                         warningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors, warningsNotAsErrors);
                         break;
+                    case "SdkAnalysisLevel":
+                        string skdAnalysisLevelString = jsonReader.ReadNextTokenAsString();
+
+                        if (skdAnalysisLevelString != null)
+                        {
+                            sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                        }
+                        break;
+
+                    case "UsingMicrosoftNETSdk":
+                        usingMicrosoftNetSdk = jsonReader.ReadAsBoolean() ?? true;
+                        break;
                 }
             });
 
@@ -1187,6 +1188,8 @@ namespace NuGet.ProjectModel
             msbuildMetadata.CentralPackageVersionOverrideDisabled = centralPackageVersionOverrideDisabled;
             msbuildMetadata.CentralPackageTransitivePinningEnabled = CentralPackageTransitivePinningEnabled;
             msbuildMetadata.RestoreAuditProperties = auditProperties;
+            msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
+            msbuildMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
 
             if (configFilePaths != null)
             {
