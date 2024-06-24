@@ -10,29 +10,21 @@ namespace NuGet.CommandLine
 {
     [Command(typeof(NuGetCommand), "config", "ConfigCommandDesc", MaxArgs = 1,
             UsageSummaryResourceName = "ConfigCommandSummary", UsageExampleResourceName = "ConfigCommandExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class ConfigCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private const string HttpPasswordKey = "http_proxy.password";
 
         [Option(typeof(NuGetCommand), "ConfigCommandSetDesc")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Dictionary<string, string> Set { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ConfigCommandAsPathDesc")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool AsPath
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get;
             set;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (Settings == null)
             {

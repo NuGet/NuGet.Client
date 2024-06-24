@@ -9,54 +9,34 @@ namespace NuGet.CommandLine
 {
     [Command(typeof(NuGetCommand), "sources", "SourcesCommandDescription", UsageSummaryResourceName = "SourcesCommandUsageSummary",
         MinArgs = 0, MaxArgs = 1)]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SourcesCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "SourcesCommandNameDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Name { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandSourceDescription", AltName = "src")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Source { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandUserNameDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Username { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandPasswordDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Password { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandStorePasswordInClearTextDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool StorePasswordInClearText { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandValidAuthenticationTypesDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ValidAuthenticationTypes { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandProtocolVersionDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ProtocolVersion { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SourcesListFormat Format { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (SourceProvider == null)
             {

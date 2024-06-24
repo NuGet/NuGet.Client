@@ -17,39 +17,27 @@ namespace NuGet.CommandLine
          UsageDescriptionResourceName = "ListCommandUsageDescription",
          UsageExampleResourceName = "ListCommandUsageExamples")]
     [DeprecatedCommand(typeof(SearchCommand))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class ListCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly List<string> _sources = new List<string>();
 
         [Option(typeof(NuGetCommand), "ListCommandSourceDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Source
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get { return _sources; }
         }
 
         [Option(typeof(NuGetCommand), "ListCommandVerboseListDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Verbose { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ListCommandAllVersionsDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool AllVersions { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ListCommandPrerelease")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Prerelease { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ListCommandIncludeDelisted")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IncludeDelisted { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         private IList<Configuration.PackageSource> GetEndpointsAsync()
         {
@@ -71,9 +59,7 @@ namespace NuGet.CommandLine
             return packageSources;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public async override Task ExecuteCommandAsync()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (Verbose)
             {

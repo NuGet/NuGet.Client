@@ -7,22 +7,16 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class CommandLineRepositoryFactory : CoreV2.NuGet.PackageRepositoryFactory
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly IConsole _console;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public CommandLineRepositoryFactory(IConsole console)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             _console = console;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override CoreV2.NuGet.IPackageRepository CreateRepository(string packageSource)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var repository = base.CreateRepository(packageSource);
             var httpClientEvents = repository as CoreV2.NuGet.IHttpClientEvents;

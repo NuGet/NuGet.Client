@@ -20,9 +20,7 @@ using NuGet.PackageManagement;
 
 namespace NuGet.CommandLine
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class Program
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private const string Utf8Option = "-utf8";
         private const string ForceEnglishOutputOption = "-forceEnglishOutput";
@@ -38,28 +36,20 @@ namespace NuGet.CommandLine
         private static readonly string ThisExecutableName = NuGetExeAssembly.GetName().Name;
 
         [Import]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public HelpCommand HelpCommand { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [ImportMany]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public IEnumerable<ICommand> Commands { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Import]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICommandManager Manager { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// Flag meant for unit tests that prevents command line extensions from being loaded.
         /// </summary>
         public static bool IgnoreExtensions { get; set; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static int Main(string[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             AppContext.SetSwitch("Switch.System.IO.UseLegacyPathHandling", false);
             AppContext.SetSwitch("Switch.System.IO.BlockLongPaths", false);
@@ -84,9 +74,7 @@ namespace NuGet.CommandLine
             return MainCore(Directory.GetCurrentDirectory(), args);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static int MainCore(string workingDirectory, string[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var console = new Console();
 
@@ -345,9 +333,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool ArgumentCountValid(ICommand command)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var attribute = command.CommandAttribute;
             return command.Arguments.Count >= attribute.MinArgs &&

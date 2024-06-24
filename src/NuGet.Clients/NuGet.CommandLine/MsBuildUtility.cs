@@ -19,9 +19,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static class MsBuildUtility
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         internal const int MsBuildWaitTime = 2 * 60 * 1000; // 2 minutes in milliseconds
 
@@ -32,16 +30,12 @@ namespace NuGet.CommandLine
         private readonly static string[] MSBuildVersions = new string[] { "14", "12", "4" };
 
         private readonly static string[] ArchitectureFolderNames = new string[] { "arm64", "amd64" };
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static bool IsMsBuildBasedProject(string projectFullPath)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return projectFullPath.EndsWith("proj", StringComparison.OrdinalIgnoreCase);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static int Build(string msbuildDirectory,
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
                                     string args)
         {
             var msbuildPath = GetMsbuild(msbuildDirectory);
@@ -228,9 +222,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string GetMSBuildArguments(
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             string entryPointTargetPath,
             string nugetPropsPath,
             string inputTargetPath,
@@ -360,9 +352,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static XDocument GetRestoreInputFile(string restoreTargetPath, Dictionary<string, string> properties, IEnumerable<string> projectPaths)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return GenerateMSBuildFile(
                 new XElement(MSBuildNamespace + "PropertyGroup", properties.Select(e => new XElement(MSBuildNamespace + e.Key, e.Value))),
@@ -370,9 +360,7 @@ namespace NuGet.CommandLine
                 new XElement(MSBuildNamespace + "Import", new XAttribute(XName.Get("Project"), restoreTargetPath)));
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static XDocument GenerateMSBuildFile(params XElement[] elements)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return new XDocument(
                 new XDeclaration("1.0", "utf-8", "no"),
@@ -480,9 +468,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static IEnumerable<string> GetAllProjectFileNames(
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             string solutionFile,
             string pathToMsbuildDir)
         {
@@ -874,9 +860,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static Lazy<MsBuildToolset> GetMsBuildDirectoryFromMsBuildPath(string msbuildPath, string msbuildVersion, IConsole console)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (msbuildPath != null)
             {
@@ -1015,9 +999,7 @@ namespace NuGet.CommandLine
             return escaped;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static string EscapeQuoted(string argument)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (argument == string.Empty)
             {

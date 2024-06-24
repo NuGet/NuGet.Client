@@ -20,9 +20,7 @@ namespace NuGet.CommandLine
         private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _cachedSources
             = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public CommandLineSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             _packageSourceProvider = packageSourceProvider;
 
@@ -52,16 +50,12 @@ namespace NuGet.CommandLine
             return CreateRepository(source, FeedType.Undefined);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SourceRepository CreateRepository(Configuration.PackageSource source, FeedType type)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders, type));
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Configuration.IPackageSourceProvider PackageSourceProvider
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get { return _packageSourceProvider; }
         }

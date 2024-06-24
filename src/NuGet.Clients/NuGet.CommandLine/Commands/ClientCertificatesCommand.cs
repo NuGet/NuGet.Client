@@ -15,62 +15,40 @@ namespace NuGet.CommandLine.Commands
         MinArgs = 0,
         UsageSummaryResourceName = "ClientCertificatesCommandUsageSummary",
         UsageExampleResourceName = "ClientCertificatesCommandUsageExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class ClientCertificatesCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         internal ClientCertificatesCommand()
         {
         }
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindByDescription", AltName = nameof(IClientCertArgsWithStoreData.FindBy))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string FindBy { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindValueDescription", AltName = nameof(IClientCertArgsWithStoreData.FindValue))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string FindValue { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandForceDescription", AltName = nameof(IClientCertArgsWithForce.Force))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Force { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandPackageSourceDescription", AltName = nameof(IClientCertArgsWithPackageSource.PackageSource))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string PackageSource { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandPasswordDescription", AltName = nameof(IClientCertArgsWithFileData.Password))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Password { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandFilePathDescription", AltName = nameof(IClientCertArgsWithFileData.Path))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Path { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreLocationDescription", AltName = nameof(IClientCertArgsWithStoreData.StoreLocation))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string StoreLocation { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreNameDescription", AltName = nameof(IClientCertArgsWithStoreData.StoreName))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string StoreName { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "ClientCertificatesCommandStorePasswordInClearTextDescription", AltName = nameof(IClientCertArgsWithFileData.StorePasswordInClearText))]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool StorePasswordInClearText { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var actionString = Arguments.FirstOrDefault() ?? "list";
             switch (actionString.ToUpperInvariant())

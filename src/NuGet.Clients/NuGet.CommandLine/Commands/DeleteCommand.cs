@@ -6,33 +6,21 @@ namespace NuGet.CommandLine
     [Command(typeof(NuGetCommand), "delete", "DeleteCommandDescription",
         MinArgs = 2, MaxArgs = 3, UsageDescriptionResourceName = "DeleteCommandUsageDescription",
         UsageSummaryResourceName = "DeleteCommandUsageSummary", UsageExampleResourceName = "DeleteCommandUsageExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class DeleteCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "DeleteCommandSourceDescription", AltName = "src")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Source { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "DeleteCommandNoPromptDescription", AltName = "np")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NoPrompt { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandApiKey")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ApiKey { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "CommandNoServiceEndpointDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool NoServiceEndpoint { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (NoPrompt)
             {

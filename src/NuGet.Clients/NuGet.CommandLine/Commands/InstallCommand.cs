@@ -31,60 +31,38 @@ namespace NuGet.CommandLine
         MinArgs = 0, MaxArgs = 1, UsageSummaryResourceName = "InstallCommandUsageSummary",
         UsageDescriptionResourceName = "InstallCommandUsageDescription",
         UsageExampleResourceName = "InstallCommandUsageExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class InstallCommand : DownloadCommandBase
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "InstallCommandOutputDirDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string OutputDirectory { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandVersionDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Version { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandDependencyVersion")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string DependencyVersion { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandFrameworkDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Framework { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandExcludeVersionDescription", AltName = "x")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool ExcludeVersion { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandPrerelease")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Prerelease { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandRequireConsent")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool RequireConsent { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string SolutionDirectory { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [ImportingConstructor]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected internal InstallCommand()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override Task ExecuteCommandAsync()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // On mono, parallel builds are broken for some reason. See https://gist.github.com/4201936 for the errors
             // That are thrown.

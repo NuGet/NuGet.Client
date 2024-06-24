@@ -18,28 +18,20 @@ namespace NuGet.CommandLine
 
     [Command(typeof(NuGetCommand), "search", "SearchCommandDescription",
             UsageSummaryResourceName = "SearchCommandUsageSummary", UsageExampleResourceName = "SearchCommandUsageExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SearchCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly int _lineSeparatorLength = 20;
 
         private readonly List<string> _sources = new List<string>();
 
         [Option(typeof(NuGetCommand), "SearchCommandSourceDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICollection<string> Source => _sources;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SearchCommandPreRelease")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool PreRelease { get; set; } = false;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SearchCommandTake")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int Take { get; set; } = 20;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         private IList<PackageSource> GetEndpointsAsync()
         {
@@ -61,9 +53,7 @@ namespace NuGet.CommandLine
             return packageSources;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             string sourceSeparator = new string('=', _lineSeparatorLength);
             string packageSeparator = new string('-', _lineSeparatorLength);
@@ -217,9 +207,7 @@ namespace NuGet.CommandLine
             System.Console.WriteLine();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override bool IncludedInHelp(string optionName)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (string.Equals(optionName, "ConfigFile", StringComparison.OrdinalIgnoreCase))
             {

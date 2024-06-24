@@ -19,31 +19,23 @@ namespace NuGet.CommandLine
 
     [Command(typeof(NuGetCommand), "spec", "SpecCommandDescription", MaxArgs = 1,
             UsageSummaryResourceName = "SpecCommandUsageSummary", UsageExampleResourceName = "SpecCommandUsageExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SpecCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         [Option(typeof(NuGetCommand), "SpecCommandAssemblyPathDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string AssemblyPath
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get;
             set;
         }
 
         [Option(typeof(NuGetCommand), "SpecCommandForceDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Force
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get;
             set;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             string sampleProjectUrl = "http://project_url_here_or_delete_this_line/";
             string sampleIconFile = "icon.png";
@@ -158,9 +150,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override bool IncludedInHelp(string optionName)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (string.Equals(optionName, "ConfigFile", StringComparison.OrdinalIgnoreCase))
             {

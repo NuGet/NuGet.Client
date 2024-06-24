@@ -13,9 +13,7 @@ namespace NuGet.CommandLine
     [Command(typeof(NuGetCommand), "help", "HelpCommandDescription", AltName = "?", MaxArgs = 1,
         UsageSummaryResourceName = "HelpCommandUsageSummary", UsageDescriptionResourceName = "HelpCommandUsageDescription",
         UsageExampleResourceName = "HelpCommandUsageExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class HelpCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         private readonly string _commandExe;
         private readonly ICommandManager _commandManager;
@@ -33,27 +31,19 @@ namespace NuGet.CommandLine
         }
 
         [Option(typeof(NuGetCommand), "HelpCommandAll")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool All { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "HelpCommandMarkdown")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Markdown { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [ImportingConstructor]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public HelpCommand(ICommandManager commandManager)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             _commandManager = commandManager;
             _commandExe = typeof(HelpCommand).Assembly.GetName().Name;
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void ExecuteCommand()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (!string.IsNullOrEmpty(CommandName))
             {
@@ -73,9 +63,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void ViewHelp()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_Usage, _commandExe));
             Console.WriteLine(string.Format(CultureInfo.CurrentCulture, NuGetCommand.HelpCommand_Suggestion, _commandExe));
@@ -102,9 +90,7 @@ namespace NuGet.CommandLine
         }
 
         // Help command always outputs NuGet version
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected override bool ShouldOutputNuGetVersion { get { return true; } }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         private void PrintCommand(int maxWidth, CommandAttribute commandAttribute)
         {
@@ -120,9 +106,7 @@ namespace NuGet.CommandLine
             return commandAttribute.CommandName + GetAltText(commandAttribute.AltName);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void ViewHelpForCommand(string commandName)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             ICommand command = _commandManager.GetCommand(commandName);
             CommandAttribute attribute = command.CommandAttribute;

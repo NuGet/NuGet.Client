@@ -18,9 +18,7 @@ namespace NuGet.Credentials
         private readonly ICredentialService _credentialService;
         private IDictionary<Uri, Uri> _endpoints;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public CredentialServiceAdapter(ICredentialService service)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (service == null)
             {
@@ -43,9 +41,7 @@ namespace NuGet.Credentials
                     kv => kv.Key.SourceUri);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CoreV2.NuGet.CredentialType credentialType, bool retrying)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (uri == null)
             {

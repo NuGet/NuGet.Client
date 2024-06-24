@@ -6,38 +6,24 @@ using System.Reflection;
 
 namespace NuGet.Common
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public abstract class MSBuildUser
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         // the Microsoft.Build.dll assembly
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Assembly _msbuildAssembly;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         // the Microsoft.Build.Framework.dll assembly
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Assembly _frameworkAssembly;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         // The type of class Microsoft.Build.Evaluation.Project
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Type _projectType;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         // The type of class Microsoft.Build.Evaluation.ProjectCollection
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Type _projectCollectionType;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected string _msbuildDirectory;
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\15.0\Bin
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void LoadAssemblies(string msbuildDirectory)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (string.IsNullOrEmpty(msbuildDirectory))
             {
@@ -58,9 +44,7 @@ namespace NuGet.Common
             LoadTypes();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void LoadTypes()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             _projectType = _msbuildAssembly.GetType(
                 "Microsoft.Build.Evaluation.Project",
@@ -71,9 +55,7 @@ namespace NuGet.Common
         }
 
         // This handler is called only when the common language runtime tries to bind to the assembly and fails
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         protected Assembly AssemblyResolve(object sender, ResolveEventArgs args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (string.IsNullOrEmpty(_msbuildDirectory))
             {

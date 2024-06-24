@@ -8,13 +8,9 @@ using NuGet.Credentials;
 
 namespace NuGet.CommandLine
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class ConsoleCredentialProvider : Credentials.ICredentialProvider
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ConsoleCredentialProvider(IConsole console)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Console = console;
             Id = $"{typeof(ConsoleCredentialProvider).Name}_{Guid.NewGuid()}";
@@ -27,9 +23,7 @@ namespace NuGet.CommandLine
 
         private IConsole Console { get; set; }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Task<CredentialResponse> GetAsync(
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
             Uri uri,
             IWebProxy proxy,
             CredentialRequestType type,

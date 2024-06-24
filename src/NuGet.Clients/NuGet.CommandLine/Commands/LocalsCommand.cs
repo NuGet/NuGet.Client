@@ -10,35 +10,23 @@ namespace NuGet.CommandLine.Commands
     [Command(typeof(NuGetCommand), "locals", "LocalsCommandDescription", MinArgs = 0, MaxArgs = 1,
         UsageSummaryResourceName = "LocalsCommandSummary",
         UsageExampleResourceName = "LocalsCommandExamples")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class LocalsCommand
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         : Command
     {
         // Default constructor used only for testing, since the Command Default Constructor is protected
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public LocalsCommand() : base()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
         }
 
         [Option(typeof(NuGetCommand), "LocalsCommandClearDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Clear { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "LocalsCommandListDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool List { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ILocalsCommandRunner LocalsCommandRunner { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override Task ExecuteCommandAsync()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if ((!Arguments.Any() || string.IsNullOrWhiteSpace(Arguments[0]))
                 || (!Clear && !List)

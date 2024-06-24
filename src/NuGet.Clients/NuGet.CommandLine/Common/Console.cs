@@ -8,9 +8,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class Console : LoggerBase, IConsole
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         /// <summary>
         /// All operations writing to Out should be wrapped in a lock to 
@@ -21,9 +19,7 @@ namespace NuGet.CommandLine
         [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "isatty")]
         extern static int _isatty(int fd);
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Console()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             // setup CancelKeyPress handler so that the console colors are
             // restored to their original values when nuget.exe is interrupted
@@ -37,9 +33,7 @@ namespace NuGet.CommandLine
             };
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int CursorLeft
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -63,9 +57,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public int WindowWidth
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -107,9 +99,7 @@ namespace NuGet.CommandLine
 
         private Verbosity _verbosity;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public Verbosity Verbosity
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get
             {
@@ -123,9 +113,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool IsNonInteractive
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             get; set;
         }
@@ -135,9 +123,7 @@ namespace NuGet.CommandLine
             get { return Verbosity == Verbosity.Quiet ? TextWriter.Null : System.Console.Out; }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Write(object value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -145,9 +131,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Write(string value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -155,9 +139,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void Write(string format, params object[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -174,9 +156,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteLine()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -184,9 +164,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteLine(object value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -194,9 +172,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteLine(string value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -204,9 +180,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteLine(string format, params object[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             lock (_writerLock)
             {
@@ -214,51 +188,37 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteError(object value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteError(value.ToString());
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteError(string value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteError(value, Array.Empty<object>());
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteError(string format, params object[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteColor(System.Console.Error, ConsoleColor.Red, format, args);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteWarning(string value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteWarning(prependWarningText: true, value: value, args: Array.Empty<object>());
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteWarning(bool prependWarningText, string value)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteWarning(prependWarningText, value, Array.Empty<object>());
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteWarning(string value, params object[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteWarning(prependWarningText: true, value: value, args: args);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteWarning(bool prependWarningText, string value, params object[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             string message = prependWarningText
                                  ? String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("CommandLine_Warning"), value)
@@ -267,9 +227,7 @@ namespace NuGet.CommandLine
             WriteColor(System.Console.Out, ConsoleColor.Yellow, message, args);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void WriteLine(ConsoleColor color, string value, params object[] args)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             WriteColor(Out, color, value, args);
         }
@@ -300,16 +258,12 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void PrintJustified(int startIndex, string text)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             PrintJustified(startIndex, text, WindowWidth);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void PrintJustified(int startIndex, string text, int maxWidth)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (maxWidth > startIndex)
             {
@@ -357,9 +311,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Confirm(string description)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (IsNonInteractive)
             {
@@ -381,25 +333,19 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public ConsoleKeyInfo ReadKey()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             EnsureInteractive();
             return System.Console.ReadKey(intercept: true);
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string ReadLine()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             EnsureInteractive();
             return System.Console.ReadLine();
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public void ReadSecureString(SecureString secureString)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             EnsureInteractive();
             try
@@ -458,9 +404,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override void Log(ILogMessage message)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             if (DisplayMessage(message.Level))
             {
@@ -492,9 +436,7 @@ namespace NuGet.CommandLine
             }
         }
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override Task LogAsync(ILogMessage message)
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             Log(message);
 

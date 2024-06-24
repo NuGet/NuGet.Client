@@ -18,75 +18,47 @@ namespace NuGet.CommandLine
         UsageSummaryResourceName = "SignCommandUsageSummary",
         UsageExampleResourceName = "SignCommandUsageExamples",
         UsageDescriptionResourceName = "SignCommandUsageDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class SignCommand : Command
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     {
         // Default constructor used only for testing, since the Command Default Constructor is protected
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public SignCommand() : base()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
         }
 
         [Option(typeof(NuGetCommand), "SignCommandOutputDirectoryDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string OutputDirectory { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandCertificatePathDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificatePath { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandCertificateStoreNameDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificateStoreName { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandCertificateStoreLocationDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificateStoreLocation { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandCertificateSubjectNameDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificateSubjectName { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandCertificateFingerprintDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificateFingerprint { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandCertificatePasswordDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string CertificatePassword { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandHashAlgorithmDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string HashAlgorithm { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandTimestamperDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string Timestamper { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandTimestampHashAlgorithmDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public string TimestampHashAlgorithm { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         [Option(typeof(NuGetCommand), "SignCommandOverwriteDescription")]
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public bool Overwrite { get; set; }
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public override async Task ExecuteCommandAsync()
-#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         {
             var signArgs = GetSignArgs();
             var signCommandRunner = new SignCommandRunner();
