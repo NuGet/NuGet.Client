@@ -4054,6 +4054,55 @@ namespace NuGet.ProjectModel.Test
             packageSpec.RestoreMetadata.RestoreAuditProperties.SuppressedAdvisories.Last().Should().Be("e");
         }
 
+        [Theory]
+        [MemberData(nameof(TestEnvironmentVariableReader), "9.0.100", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [MemberData(nameof(TestEnvironmentVariableReader), "10.0.100", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [MemberData(nameof(TestEnvironmentVariableReader), "8.1.100", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void GetPackageSpec_WithSdkAnalysisLevelValue_ReturnsSdkAnalysisLevel(
+            IEnvironmentVariableReader environmentVariableReader,
+            string version)
+        {
+            // Arrange
+            NuGetVersion expectedNugetVersion = new NuGetVersion(version);
+            var json = $"{{\"restore\":{{\"SdkAnalysisLevel\":\"{version}\"}}}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+
+            // Assert
+            Assert.Equal(expectedNugetVersion, packageSpec.RestoreMetadata.SdkAnalysisLevel);
+        }
+
+        [Theory]
+        [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void GetPackageSpec_WithUsingMicrosoftNetSdk_ReturnsUsingMicrosoftNetSdk(
+            IEnvironmentVariableReader environmentVariableReader,
+            bool isSdk)
+        {
+            // Arrange
+            var json = $"{{\"restore\":{{\"UsingMicrosoftNETSdk\":{isSdk.ToString().ToLower()}}}}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json, environmentVariableReader);
+
+            // Assert
+            Assert.Equal(isSdk, packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithNoUsingMicrosoftNetSdkValuePassed_defaultsTrue()
+        {
+            // Arrange
+            var json = $"{{\"restore\":{{}}}}";
+
+            // Act
+            PackageSpec packageSpec = GetPackageSpec(json);
+
+            // Assert
+            Assert.True(packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
+        }
+
         [Fact]
         public void GetPackageSpec_RestoreMetadataWithoutMacros_WithMacrosEnabled()
         {
