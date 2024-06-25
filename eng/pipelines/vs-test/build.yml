@@ -13,6 +13,8 @@ steps:
 
 - task: MicroBuildSwixPlugin@4
   displayName: "Install Swix Plugin"
+  inputs:
+    dropName: "Tests/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)"
 
 - task: PowerShell@1
   displayName: "Run Configure.ps1"
@@ -242,7 +244,7 @@ steps:
     outputFolder: '$(Build.Repository.LocalPath)\artifacts\VS15'
 
 - task: PowerShell@1
-  displayName: "Set Bootstrapper URL variable for tests"
+  displayName: "Set DartLab variables for tests"
   name: "vsbootstrapper"
   inputs:
     scriptType: "inlineScript"
@@ -250,46 +252,21 @@ steps:
     inlineScript: |
       try {
         $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
+
         $bootstrapperUrl = $json[0].bootstrapperUrl;
         Write-Host "Bootstrapper URL: $bootstrapperUrl"
         Write-Host "##vso[task.setvariable variable=bootstrapperUrl;isOutput=true]$bootstrapperUrl"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set bootstrapperUrl: $_"
-        exit 1
-      }
 
-- task: PowerShell@1
-  displayName: "Set CloudBuild Session ID variable for tests"
-  name: "setcloudbuildsessionid"
-  continueOnError: true
-  inputs:
-    scriptType: "inlineScript"
-    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-    inlineScript: |
-      try {
-        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
         $qBuildSessionId = $json[0].QBuildSessionId;
         Write-Host "CloudBuild Session ID: $qBuildSessionId"
         Write-Host "##vso[task.setvariable variable=QBuildSessionId;isOutput=true]$qBuildSessionId"
-      } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set CloudBuild Session ID: $_"
-      }
 
-- task: PowerShell@1
-  displayName: "Set Base Build Drop variable for tests"
-  name: "setbasebuilddrop"
-  continueOnError: true
-  inputs:
-    scriptType: "inlineScript"
-    # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
-    inlineScript: |
-      try {
-        $json = Get-Content "${env:Build_StagingDirectory}\MicroBuild\Output\Bootstrapperinfo.json" | ConvertFrom-Json
         $buildDrop = $json[0].BuildDrop;
         Write-Host "Base Build Drop: $buildDrop"
         Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
       } catch {
-        Write-Host "##vso[task.LogIssue type=error;]Unable to set Base Build Drop: $_"
+        Write-Host "##vso[task.LogIssue type=error;]Unable to set variables for DartLab: $_"
+        exit 1
       }
 
 - task: MSBuild@1
@@ -337,6 +314,33 @@ steps:
     solution: "build\\BuildValidator.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/target:ValidateArtifacts /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish BootstrapperInfo.json as a build artifact'
+  inputs:
+    PathtoPublish: $(Build.StagingDirectory)\MicroBuild\Output
+    ArtifactName: MicroBuildOutputs
+    ArtifactType: Container
+
+- task: artifactDropTask@0
+  displayName: "Upload VS bootstapper Drop"
+  inputs:
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: '$(MicroBuild.ManifestDropName)'
+    sourcePath: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: "DropMetadata-Product"
+
+- task: artifactDropTask@0
+  displayName: 'Publish the .runsettings files to artifact services'
+  inputs:
+    dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
+    buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+    sourcePath: 'artifacts\RunSettings'
+    toLowerCase: false
+    usePat: true
+    dropMetadataContainerName: 'DropMetadata-RunSettings'
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish binlogs"
