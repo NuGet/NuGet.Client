@@ -11,9 +11,11 @@ namespace NuGet.Versioning
 {
     public partial class NuGetVersion
     {
+        // Nearest prime to 500. If dictionary exceeds this size, ParsedNuGetVersionsMapping will be cleared.
+        private const int ParsedNuGetVersionsMappingMaxEntries = 521;
+
         // Cached mappings from string => NuGetVersion. On cache hit, avoids allocations during TryParse.
-        private static Dictionary<string, NuGetVersion> ParsedNuGetVersionsMapping = new Dictionary<string, NuGetVersion>();
-        private const int ParsedNuGetVersionsMappingMaxEntries = 500;
+        private static Dictionary<string, NuGetVersion> ParsedNuGetVersionsMapping = new Dictionary<string, NuGetVersion>(ParsedNuGetVersionsMappingMaxEntries);
 
         /// <summary>
         /// Creates a NuGetVersion from a string representing the semantic version.
