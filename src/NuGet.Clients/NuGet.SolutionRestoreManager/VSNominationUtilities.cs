@@ -737,14 +737,19 @@ namespace NuGet.SolutionRestoreManager
         {
             string? usingNetSdk = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.UsingMicrosoftNETSdk), v => v);
 
-            if (bool.TryParse(usingNetSdk, out var result))
+            if (!string.IsNullOrEmpty(usingNetSdk))
             {
-                return result;
+                if (bool.TryParse(usingNetSdk, out var result))
+                {
+                    return result;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.UsingMicrosoftNETSdk, usingNetSdk, "false"));
+                }
             }
-            else
-            {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.UsingMicrosoftNETSdk, usingNetSdk, "false"));
-            }
+
+            return true;
         }
     }
 }
