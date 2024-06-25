@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,9 +13,11 @@ namespace NuGet.Versioning
     {
         // Static factory methods for creating version range objects.
 
+        // Nearest prime to 500. If dictionary exceeds this size, ParsedVersionRangeMapping will be cleared.
+        private const int ParsedNuGetVersionsMappingMaxEntries = 521;
+
         // Cached mappings from (string value, bool allowFloating) => VersionRange. On cache hit, avoids allocations during TryParse.
-        private static Dictionary<(string, bool), VersionRange> ParsedVersionRangeMapping = new Dictionary<(string, bool), VersionRange>();
-        private const int ParsedVersionRangeMappingMaxEntries = 500;
+        private static Dictionary<(string, bool), VersionRange> ParsedVersionRangeMapping = new Dictionary<(string, bool), VersionRange>(ParsedNuGetVersionsMappingMaxEntries);
 
         /// <summary>
         /// A range that accepts all versions, prerelease and stable.
