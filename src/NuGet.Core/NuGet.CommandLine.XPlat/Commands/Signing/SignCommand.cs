@@ -107,6 +107,7 @@ namespace NuGet.CommandLine.XPlat
                     StoreName storeName = ValidateAndParseStoreName(store);
                     HashAlgorithmName hashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(algorithm.Value(), algorithm.LongName, signingSpec);
                     HashAlgorithmName timestampHashAlgorithm = CommandLineUtility.ParseAndValidateHashAlgorithm(timestamperAlgorithm.Value(), timestamperAlgorithm.LongName, signingSpec);
+                    HashAlgorithmName fingerprintHashAlgorithmName = ValidateAndInferHashAlgorithmFromFingerprint(fingerprint.Value(), logger);
 
                     var args = new SignArgs()
                     {
@@ -117,6 +118,7 @@ namespace NuGet.CommandLine.XPlat
                         CertificateStoreLocation = storeLocation,
                         CertificateSubjectName = subject.Value(),
                         CertificateFingerprint = fingerprint.Value(),
+                        CertificateHashAlgorithmName = fingerprintHashAlgorithmName,
                         CertificatePassword = password.Value(),
                         SignatureHashAlgorithm = hashAlgorithm,
                         Logger = logger,
@@ -232,6 +234,23 @@ namespace NuGet.CommandLine.XPlat
                 // Thow if the user provided a fingerprint and a subject
                 throw new ArgumentException(Strings.SignCommandMultipleCertificateException);
             }
+        }
+
+        private static HashAlgorithmName ValidateAndInferHashAlgorithmFromFingerprint(string certificateFingerprint, ILogger logger)
+        {
+            if (string.IsNullOrEmpty(certificateFingerprint))
+                return HashAlgorithmName.Unknown;
+
+            if (!CertificateUtility.TryDeduceHashAlgorithm(certificateFingerprint, out HashAlgorithmName hashAlgorithmName))
+            {
+                throw new ArgumentException(Strings.SignCommandInvalidCertificateFingerprint);
+            }
+            else if (hashAlgorithmName == HashAlgorithmName.SHA1)
+            {
+                logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3043, Strings.SignCommandInvalidCertificateFingerprint));
+            }
+
+            return hashAlgorithmName;
         }
     }
 }

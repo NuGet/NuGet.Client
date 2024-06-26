@@ -97,6 +97,7 @@ namespace NuGet.CommandLine
                 CertificateStoreLocation = storeLocation,
                 CertificateSubjectName = CertificateSubjectName,
                 CertificateFingerprint = CertificateFingerprint,
+                CertificateHashAlgorithmName = HashAlgorithmName.SHA1,
                 CertificatePassword = CertificatePassword,
                 SignatureHashAlgorithm = hashAlgorithm,
                 Logger = Console,
