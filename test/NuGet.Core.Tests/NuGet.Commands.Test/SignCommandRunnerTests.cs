@@ -195,6 +195,7 @@ namespace NuGet.Commands.Test
                 testContext.Args.CertificateStoreName = StoreName.My;
                 testContext.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
                 testContext.Args.CertificateFingerprint = testContext.Certificate.Thumbprint;
+                testContext.Args.CertificateHashAlgorithmName = HashAlgorithmName.SHA1;
 
                 testContext.Args.SignatureHashAlgorithm = HashAlgorithmName.SHA256;
                 testContext.Args.TimestampHashAlgorithm = HashAlgorithmName.SHA256;

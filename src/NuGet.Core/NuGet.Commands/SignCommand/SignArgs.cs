@@ -77,6 +77,11 @@ namespace NuGet.Commands
         public string CertificateFingerprint { get; set; }
 
         /// <summary>
+        /// Fingerprint hash algorithm for the certificate that can be used to search the local certificate store.
+        /// </summary>
+        public HashAlgorithmName CertificateHashAlgorithmName { get; set; }
+
+        /// <summary>
         /// Hashing Algorithm to be used to digest the package files.
         /// </summary>
         public HashAlgorithmName SignatureHashAlgorithm { get; set; }
