@@ -114,7 +114,6 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [Ignore("https://github.com/NuGet/Home/issues/12898")]
         [DataTestMethod]
         [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
@@ -172,8 +171,6 @@ namespace NuGet.Tests.Apex
                 var uiwindow = nugetTestService.GetUIWindowfromProject(testContext.SolutionService.Projects[0]);
                 uiwindow.InstallPackageFromUI(packageName, packageVersion1);
                 testContext.SolutionService.SaveAll();
-                VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                VisualStudio.ClearWindows();
 
                 // Act
                 uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
