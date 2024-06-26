@@ -388,9 +388,7 @@ namespace NuGet.PackageManagement
 
             public Dictionary<string, bool>? SuppressedAdvisories { get; }
 
-            public ProjectAuditSettings(bool enableAudit,
-                PackageVulnerabilitySeverity auditLevel,
-                HashSet<string>? suppressedAdvisories)
+            public ProjectAuditSettings(bool enableAudit, PackageVulnerabilitySeverity auditLevel, HashSet<string>? suppressedAdvisories)
             {
                 IsAuditEnabled = enableAudit;
                 MinimumSeverity = auditLevel;
