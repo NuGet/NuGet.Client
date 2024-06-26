@@ -1630,7 +1630,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         }
 
         [Fact]
-        public async Task MsbuildRestore_PackagesConfigProject_PackagesWithVulnerabilities_WithSuppressions_RaisesAppropriateWarnings()
+        public async Task MsbuildRestore_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
         {
             // Arrange
             var pathContext = new SimpleTestPathContext();
@@ -1653,45 +1653,21 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             pathContext.Settings.RemoveSource("source");
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
 
-            // set up solution, projects and packages
+            // set up the solution, projects and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-            var projectA = new SimpleTestProjectContext(
-                "A",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-            projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(CommonFrameworks.Net472));
-
-            var projectB = new SimpleTestProjectContext(
-                "B",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(CommonFrameworks.Net472));
-
-            var packageA1 = new SimpleTestPackageContext()
-            {
-                Id = "packageA",
-                Version = "1.1.0"
-            };
-            var packageA2 = new SimpleTestPackageContext()
-            {
-                Id = "packageA",
-                Version = "1.2.0"
-            };
-            var packageB1 = new SimpleTestPackageContext()
-            {
-                Id = "packageB",
-                Version = "2.1.0"
-            };
-            var packageB2 = new SimpleTestPackageContext()
-            {
-                Id = "packageB",
-                Version = "2.2.0"
-            };
+            var projectA = new SimpleTestProjectContext("projectA", ProjectStyle.PackagesConfig, pathContext.SolutionRoot);
+            var projectB = new SimpleTestProjectContext("projectB", ProjectStyle.PackagesConfig, pathContext.SolutionRoot);
 
             solution.Projects.Add(projectA);
             solution.Projects.Add(projectB);
             solution.Create(pathContext.SolutionRoot);
+
+            var packageA1 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.1.0" };
+            var packageA2 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.2.0" };
+            var packageB1 = new SimpleTestPackageContext() { Id = "packageB", Version = "2.1.0" };
+            var packageB2 = new SimpleTestPackageContext() { Id = "packageB", Version = "2.2.0" };
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2, packageB1, packageB2);
 
             using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
             {
@@ -1732,13 +1708,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                                 properties: new Dictionary<string, string>(),
                                 attributes: new Dictionary<string, string>());
             xmlB.Save(projectB.ProjectPath);
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                pathContext.PackageSource,
-                packageA1,
-                packageA2,
-                packageB1,
-                packageB2);
 
             // Act
             mockServer.Start();

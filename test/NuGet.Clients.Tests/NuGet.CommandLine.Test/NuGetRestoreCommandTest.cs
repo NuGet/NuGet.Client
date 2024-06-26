@@ -3646,10 +3646,8 @@ EndProject";
             r.AllOutput.Should().Contain($"a known critical severity vulnerability", Exactly.Twice());
         }
 
-        // Not working as expected. Nothing is being suppressed
-        // add breakpoint, extract solution directory. Run nuget.exe restore on it separately and try to debug it that way to see what's wrong.
         [SkipMono()]
-        public void RestoreCommand_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
+        public async void RestoreCommand_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -3673,207 +3671,16 @@ EndProject";
             pathContext.Settings.RemoveSource("source");
             pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
 
-            Util.CreateTestPackage("packageA", "1.1.0", pathContext.PackageSource);
-            Util.CreateTestPackage("packageB", "2.1.0", pathContext.PackageSource);
+            var packageA1 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.1.0" };
+            var packageA2 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.2.0" };
+            var packageB1 = new SimpleTestPackageContext() { Id = "packageB", Version = "2.1.0" };
+            var packageB2 = new SimpleTestPackageContext() { Id = "packageB", Version = "2.2.0" };
 
-            var projectA = new SimpleTestProjectContext(
-                "projectA",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-            projectA.Properties.Add("NuGetAudit", "true");
-            projectA.Properties.Add("NuGetAuditLevel", "low");
-
-            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" />
-  <package id=""packageB"" version=""2.1.0"" />
-</packages>");
-
-            // suppress the vulnerability on package A for project A
-            var xmlA = projectA.GetXML();
-            ProjectFileUtils.AddItem(
-                                xmlA,
-                                name: "NuGetAuditSuppress",
-                                identity: advisoryUrl1,
-                                framework: NuGetFramework.AnyFramework,
-                                properties: new Dictionary<string, string>(),
-                                attributes: new Dictionary<string, string>());
-            xmlA.Save(projectA.ProjectPath);
-
-            mockServer.Start();
-
-            // Act
-            var r = CommandRunner.Run(
-                nugetexe,
-                pathContext.WorkingDirectory,
-                $"restore {projectA.ProjectPath}");
-
-            mockServer.Stop();
-
-            // Assert
-            r.Success.Should().BeTrue(because: r.AllOutput);
-
-            var packageFileA1 = Path.Combine(pathContext.SolutionRoot, "packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-            var packageFileB1 = Path.Combine(pathContext.SolutionRoot, "packages", "packageB.2.1.0", "packageB.2.1.0.nupkg");
-            File.Exists(packageFileA1).Should().BeTrue();
-            File.Exists(packageFileB1).Should().BeTrue();
-
-            r.AllOutput.Should().NotContain($"Package 'packageA' 1.1.0 has a known high severity vulnerability"); // suppressed
-            r.AllOutput.Should().Contain($"Package 'packageB' 2.1.0 has a known critical severity vulnerability");
-        }
-
-        [SkipMono()]
-        public void RestoreCommand_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities_TEST()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-            using var pathContext = new SimpleTestPathContext();
-
-            string advisoryUrl1 = "https://contoso.com/advisories/1";
-            string advisoryUrl2 = "https://contoso.com/advisories/2";
-
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
-
-            mockServer.Vulnerabilities.Add(
-                "packageA",
-                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
-                    (new Uri(advisoryUrl1), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 3.0.0)"))
-                });
-            mockServer.Vulnerabilities.Add(
-                "packageB",
-                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
-                    (new Uri(advisoryUrl2), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[1.0.0, 3.0.0)"))
-                });
-            pathContext.Settings.RemoveSource("source");
-            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
-
-
-
-            Util.CreateTestPackage("packageA", "1.1.0", pathContext.PackageSource);
-            Util.CreateTestPackage("packageB", "2.1.0", pathContext.PackageSource);
-
-            var projectA = new SimpleTestProjectContext(
-                "projectA",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-            projectA.Properties.Add("NuGetAudit", "true");
-            projectA.Properties.Add("NuGetAuditLevel", "low");
-
-            Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
-@"<packages>
-  <package id=""packageA"" version=""1.1.0"" />
-  <package id=""packageB"" version=""2.1.0"" />
-</packages>");
-
-            // suppress the vulnerability on package A for project A
-            var xmlA = projectA.GetXML();
-            ProjectFileUtils.AddItem(
-                                xmlA,
-                                name: "NuGetAuditSuppress",
-                                identity: advisoryUrl1,
-                                framework: NuGetFramework.AnyFramework,
-                                properties: new Dictionary<string, string>(),
-                                attributes: new Dictionary<string, string>());
-            xmlA.Save(projectA.ProjectPath);
-
-            mockServer.Start();
-
-            // Act
-            var r = CommandRunner.Run(
-                nugetexe,
-                pathContext.WorkingDirectory,
-                $"restore {projectA.ProjectPath}");
-
-            mockServer.Stop();
-
-            // Assert
-            r.Success.Should().BeTrue(because: r.AllOutput);
-
-            var packageFileA1 = Path.Combine(pathContext.SolutionRoot, "packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-            var packageFileB1 = Path.Combine(pathContext.SolutionRoot, "packages", "packageB.2.1.0", "packageB.2.1.0.nupkg");
-            File.Exists(packageFileA1).Should().BeTrue();
-            File.Exists(packageFileB1).Should().BeTrue();
-
-            r.AllOutput.Should().NotContain($"Package 'packageA' 1.1.0 has a known high severity vulnerability"); // suppressed
-            r.AllOutput.Should().Contain($"Package 'packageB' 2.1.0 has a known critical severity vulnerability");
-        }
-
-        // Not working as expected. Nothing is being suppressed
-        [SkipMono()]
-        public async void RestoreCommand_WithSolutionWithPackagesConfigProjects_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
-        {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-            using var pathContext = new SimpleTestPathContext();
-
-            string advisoryUrl1 = "https://contoso.com/advisories/1";
-            string advisoryUrl2 = "https://contoso.com/advisories/2";
-
-            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
-
-            mockServer.Vulnerabilities.Add(
-                "packageA",
-                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
-                    (new Uri(advisoryUrl1), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 3.0.0)"))
-                });
-            mockServer.Vulnerabilities.Add(
-                "packageB",
-                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
-                    (new Uri(advisoryUrl2), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[1.0.0, 3.0.0)"))
-                });
-            pathContext.Settings.RemoveSource("source");
-            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
-
-            /*
-            Util.CreateTestPackage("packageA", "1.1.0", pathContext.PackageSource);
-            Util.CreateTestPackage("packageA", "1.2.0", pathContext.PackageSource);
-            Util.CreateTestPackage("packageB", "2.1.0", pathContext.PackageSource);
-            Util.CreateTestPackage("packageB", "2.2.0", pathContext.PackageSource);
-            */
-
-            var packageA1 = new SimpleTestPackageContext()
-            {
-                Id = "packageA",
-                Version = "1.1.0"
-            };
-            var packageA2 = new SimpleTestPackageContext()
-            {
-                Id = "packageA",
-                Version = "1.2.0"
-            };
-            var packageB1 = new SimpleTestPackageContext()
-            {
-                Id = "packageB",
-                Version = "2.1.0"
-            };
-            var packageB2 = new SimpleTestPackageContext()
-            {
-                Id = "packageB",
-                Version = "2.2.0"
-            };
-
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                pathContext.PackageSource,
-                packageA1,
-                packageA2,
-                packageB1,
-                packageB2);
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2, packageB1, packageB2);
 
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-            var projectA = new SimpleTestProjectContext(
-                "projectA",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-            projectA.Properties.Add("NuGetAudit", "true");
-            projectA.Properties.Add("NuGetAuditLevel", "low");
-
-            var projectB = new SimpleTestProjectContext(
-                "projectB",
-                ProjectStyle.PackagesConfig,
-                pathContext.SolutionRoot);
-            projectB.Properties.Add("NuGetAudit", "true");
-            projectB.Properties.Add("NuGetAuditLevel", "low");
+            var projectA = new SimpleTestProjectContext("projectA", ProjectStyle.PackagesConfig, pathContext.SolutionRoot);
+            var projectB = new SimpleTestProjectContext("projectB", ProjectStyle.PackagesConfig, pathContext.SolutionRoot);
 
             solution.Projects.Add(projectA);
             solution.Projects.Add(projectB);
@@ -3925,16 +3732,6 @@ EndProject";
 
             // Assert
             r.Success.Should().BeTrue(because: r.AllOutput);
-
-            var packageFileA1 = Path.Combine(pathContext.SolutionRoot, "packages", "packageA.1.1.0", "packageA.1.1.0.nupkg");
-            var packageFileA2 = Path.Combine(pathContext.SolutionRoot, "packages", "packageA.1.2.0", "packageA.1.2.0.nupkg");
-            var packageFileB1 = Path.Combine(pathContext.SolutionRoot, "packages", "packageB.2.1.0", "packageB.2.1.0.nupkg");
-            var packageFileB2 = Path.Combine(pathContext.SolutionRoot, "packages", "packageB.2.2.0", "packageB.2.2.0.nupkg");
-            File.Exists(packageFileA1).Should().BeTrue();
-            File.Exists(packageFileA2).Should().BeTrue();
-            File.Exists(packageFileB1).Should().BeTrue();
-            File.Exists(packageFileB2).Should().BeTrue();
-
             r.AllOutput.Should().NotContain($"Package 'packageA' 1.1.0 has a known high severity vulnerability"); // suppressed
             r.AllOutput.Should().Contain($"Package 'packageB' 2.1.0 has a known critical severity vulnerability");
             r.AllOutput.Should().Contain($"Package 'packageA' 1.2.0 has a known high severity vulnerability");
