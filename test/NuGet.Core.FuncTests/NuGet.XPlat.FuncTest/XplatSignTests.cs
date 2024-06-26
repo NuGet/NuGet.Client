@@ -27,7 +27,7 @@ namespace NuGet.XPlat.FuncTest
         public XplatSignTests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
-        }
+        }        
 
         [Fact]
         public void SignCommandArgsParsing_MissingPackagePath_Throws()
@@ -477,7 +477,6 @@ namespace NuGet.XPlat.FuncTest
                     var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
                     Assert.IsType<ArgumentException>(ex.InnerException);
                     Assert.Equal(expected: Strings.SignCommandInvalidCertificateFingerprint, actual: ex.InnerException.Message);
-
                 });
         }
 

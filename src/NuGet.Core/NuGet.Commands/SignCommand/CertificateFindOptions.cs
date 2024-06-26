@@ -47,6 +47,11 @@ namespace NuGet.Commands
         public string Fingerprint { get; set; }
 
         /// <summary>
+        /// The SHA256 or SHA384 or SHA512 hash algorithm name used to calculate the fingerprint of the certificate.
+        /// </summary>
+        public HashAlgorithmName FingerprintHashAlgorithmName { get; set; }
+
+        /// <summary>
         /// bool used to indicate if the user can be prompted for password.
         /// </summary>
         public bool NonInteractive { get; set; }
