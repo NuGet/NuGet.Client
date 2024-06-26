@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,9 +20,47 @@ namespace NuGet.Protocol
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var set = JsonUtility.LoadJson(reader);
+            string fxName = null;
+            List<Packaging.Core.PackageDependency> packages = new List<Packaging.Core.PackageDependency>();
+            while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+            {
+                if (reader.TokenType.Equals(JsonToken.PropertyName))
+                {
+                    if (reader.Value.Equals(JsonProperties.Dependencies))
+                    {
+                        // Dependencies are stored in an array
+                        while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+                        {
+                            string id = null;
+                            string version = null;
+                            while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+                            {
+                                if (reader.TokenType.Equals(JsonToken.PropertyName) && reader.Value.Equals(JsonProperties.PackageId))
+                                {
+                                    reader.Read();
+                                    id = reader.Value.ToString();
+                                }
+                                if (reader.TokenType.Equals(JsonToken.PropertyName) && reader.Value.Equals(JsonProperties.Range))
+                                {
+                                    reader.Read();
+                                    version = reader.Value.ToString();
+                                }
+                            }
 
-            var fxName = set.Value<string>(JsonProperties.TargetFramework);
+                            if (id != null)
+                            {
+                                packages.Add(new Packaging.Core.PackageDependency(id, string.IsNullOrEmpty(version) ? null : VersionRange.Parse(version)));
+                            }
+                        }
+                        reader.Read();
+                    }
+                    if (reader.Value.Equals(JsonProperties.TargetFramework))
+                    {
+                        reader.Read();
+                        fxName = reader.Value.ToString();
+                    }
+                }
+            }
 
             var framework = NuGetFramework.AnyFramework;
 
@@ -31,17 +70,7 @@ namespace NuGet.Protocol
                 fxName = framework.GetShortFolderName();
             }
 
-            var packages = (set[JsonProperties.Dependencies] as JArray ?? Enumerable.Empty<JToken>())
-                .Select(LoadDependency).ToList();
             return new PackageDependencyGroup(framework, packages);
-        }
-
-        private static Packaging.Core.PackageDependency LoadDependency(JToken dependency)
-        {
-            var ver = dependency.Value<string>(JsonProperties.Range);
-            return new Packaging.Core.PackageDependency(
-                dependency.Value<string>(JsonProperties.PackageId),
-                string.IsNullOrEmpty(ver) ? null : VersionRange.Parse(ver));
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
