@@ -13,8 +13,8 @@ namespace NuGet.Versioning
     {
         // Static factory methods for creating version range objects.
 
-        // Nearest prime to 500. If dictionary exceeds this size, ParsedVersionRangeMapping will be cleared.
-        private const int ParsedVersionRangeMappingMaxEntries = 521;
+        // If dictionary exceeds this size, ParsedVersionRangeMapping will be cleared.
+        private const int ParsedVersionRangeMappingMaxEntries = 500;
 
         // Cached mappings from (string value, bool allowFloating) => VersionRange. On cache hit, avoids allocations during TryParse.
         private static Dictionary<(string, bool), VersionRange> ParsedVersionRangeMapping = new Dictionary<(string, bool), VersionRange>(ParsedVersionRangeMappingMaxEntries);
