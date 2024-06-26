@@ -58,7 +58,7 @@ namespace NuGet.ContentModel
     /// </remarks>
     public class PatternDefinition
     {
-        public string Pattern { get; }
+        public List<string> Pattern { get; }
         public IReadOnlyDictionary<string, object> Defaults { get; }
 
         /// <summary>
@@ -66,18 +66,18 @@ namespace NuGet.ContentModel
         /// </summary>
         public PatternTable Table { get; }
 
-        public PatternDefinition(string pattern)
+        public PatternDefinition(List<string> pattern)
             : this(pattern, table: null, defaults: Enumerable.Empty<KeyValuePair<string, object>>())
         {
         }
 
-        public PatternDefinition(string pattern, PatternTable table)
+        public PatternDefinition(List<string> pattern, PatternTable table)
             : this(pattern, table, Enumerable.Empty<KeyValuePair<string, object>>())
         {
         }
 
         public PatternDefinition(
-            string pattern,
+            List<string> pattern,
             PatternTable table,
             IEnumerable<KeyValuePair<string, object>> defaults)
         {
@@ -87,7 +87,7 @@ namespace NuGet.ContentModel
             Defaults = defaults.ToDictionary(p => p.Key, p => p.Value);
         }
 
-        public static implicit operator PatternDefinition(string pattern)
+        public static implicit operator PatternDefinition(List<string> pattern)
         {
             return new PatternDefinition(pattern);
         }

@@ -422,154 +422,289 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("{any}/{tfm}/{any?}", table: DotnetAnyTable),
-                        new PatternDefinition("runtimes/{rid}/{any}/{tfm}/{any?}", table: DotnetAnyTable),
+                        new PatternDefinition(new List<string> { "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                        new PatternDefinition(new List<string> { "runtimes", "{rid}", "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("{any}/{tfm}/{any?}", table: DotnetAnyTable),
-                        new PatternDefinition("runtimes/{rid}/{any}/{tfm}/{any?}", table: DotnetAnyTable),
-                    });
+                        new PatternDefinition(new List<string> { "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "runtimes", "{rid}", "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+    });
 
                 RuntimeAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{any?}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{tfm}/{any?}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{assembly?}", table: DotnetAnyTable, defaults: NetTFMTable)
+                new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "lib", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "lib", "{assembly?}" }, table: DotnetAnyTable, defaults: NetTFMTable)
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{assembly}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{tfm}/{assembly}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{assembly}", table: DotnetAnyTable, defaults: NetTFMTable)
+                new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "lib", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "lib", "{assembly}" }, table: DotnetAnyTable, defaults: NetTFMTable)
                     });
 
                 CompileRefAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("ref/{tfm}/{any?}", table: DotnetAnyTable),
-                        },
+                    {
+                new PatternDefinition(new List<string> { "ref", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                    },
                     pathPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("ref/{tfm}/{assembly}", table: DotnetAnyTable),
-                        });
+                    {
+                new PatternDefinition(new List<string> { "ref", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+                    });
 
                 CompileLibAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("lib/{tfm}/{any?}", table: DotnetAnyTable),
-                            new PatternDefinition("lib/{assembly?}", table: DotnetAnyTable, defaults: NetTFMTable)
-                        },
-                    pathPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("lib/{tfm}/{assembly}", table: DotnetAnyTable),
-                            new PatternDefinition("lib/{assembly}", table: DotnetAnyTable, defaults: NetTFMTable)
-                        });
-
-                NativeLibraries = new PatternSet(
-                    conventions.Properties,
-                    groupPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("runtimes/{rid}/nativeassets/{tfm}/{any?}", table: DotnetAnyTable),
-                            new PatternDefinition("runtimes/{rid}/native/{any?}", table: null, defaults: DefaultTfmAny)
-                        },
+                    {
+                new PatternDefinition(new List<string> { "lib", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "lib", "{assembly?}" }, table: DotnetAnyTable, defaults: NetTFMTable)
+                    },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("runtimes/{rid}/nativeassets/{tfm}/{any}", table: DotnetAnyTable),
-                        new PatternDefinition("runtimes/{rid}/native/{any}", table: null, defaults: DefaultTfmAny)
+                new PatternDefinition(new List<string> { "lib", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+                new PatternDefinition(new List<string> { "lib", "{assembly}" }, table: DotnetAnyTable, defaults: NetTFMTable)
                     });
+
+                NativeLibraries = new PatternSet(
+    conventions.Properties,
+    groupPatterns: new PatternDefinition[]
+    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "nativeassets", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "native", "{any?}" }, table: null, defaults: DefaultTfmAny)
+    },
+    pathPatterns: new PatternDefinition[]
+    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "nativeassets", "{tfm}", "{any}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "native", "{any}" }, table: null, defaults: DefaultTfmAny)
+    });
 
                 ResourceAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{locale?}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{locale?}", "{any?}" }, table: DotnetAnyTable),
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{locale}/{satelliteAssembly}", table: DotnetAnyTable),
-                        new PatternDefinition("lib/{tfm}/{locale}/{satelliteAssembly}", table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{locale}", "{satelliteAssembly}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{locale}", "{satelliteAssembly}" }, table: DotnetAnyTable),
                     });
 
                 MSBuildFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("build/{tfm}/{msbuild?}", table: DotnetAnyTable),
-                        new PatternDefinition("build/{msbuild?}", table: null, defaults: DefaultTfmAny)
+        new PatternDefinition(new List<string> { "build", "{tfm}", "{msbuild?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "build", "{msbuild?}" }, table: null, defaults: DefaultTfmAny)
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("build/{tfm}/{msbuild}", table: DotnetAnyTable),
-                        new PatternDefinition("build/{msbuild}", table: null, defaults: DefaultTfmAny)
+        new PatternDefinition(new List<string> { "build", "{tfm}", "{msbuild}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "build", "{msbuild}" }, table: null, defaults: DefaultTfmAny)
                     });
 
                 MSBuildMultiTargetingFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("buildMultiTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny),
-
-                        // deprecated
-                        new PatternDefinition("buildCrossTargeting/{msbuild?}", table: null, defaults: DefaultTfmAny)
+        new PatternDefinition(new List<string> { "buildMultiTargeting", "{msbuild?}" }, table: null, defaults: DefaultTfmAny),
+        new PatternDefinition(new List<string> { "buildCrossTargeting", "{msbuild?}" }, table: null, defaults: DefaultTfmAny) // deprecated
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("buildMultiTargeting/{msbuild}", table: null, defaults: DefaultTfmAny),
-
-                        // deprecated
-                        new PatternDefinition("buildCrossTargeting/{msbuild}", table: null, defaults: DefaultTfmAny)
+        new PatternDefinition(new List<string> { "buildMultiTargeting", "{msbuild}" }, table: null, defaults: DefaultTfmAny),
+        new PatternDefinition(new List<string> { "buildCrossTargeting", "{msbuild}" }, table: null, defaults: DefaultTfmAny) // deprecated
                     });
 
                 ContentFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
+        new PatternDefinition(new List<string> { "contentFiles", "{codeLanguage}", "{tfm}", "{any?}" }),
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("contentFiles/{codeLanguage}/{tfm}/{any?}"),
+        new PatternDefinition(new List<string> { "contentFiles", "{codeLanguage}", "{tfm}", "{any?}" }),
                     });
 
                 ToolsAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
-                        },
+                    {
+        new PatternDefinition(new List<string> { "tools", "{tfm}", "{rid}", "{any?}" }, table: AnyTable),
+                    },
                     pathPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("tools/{tfm}/{rid}/{any?}", table: AnyTable),
+                    {
+        new PatternDefinition(new List<string> { "tools", "{tfm}", "{rid}", "{any?}" }, table: AnyTable),
+                    });
+
+
+                EmbedAssemblies = new PatternSet(
+    conventions.Properties,
+    groupPatterns: new PatternDefinition[]
+    {
+        new PatternDefinition(new List<string> { "embed", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+    },
+    pathPatterns: new PatternDefinition[]
+    {
+        new PatternDefinition(new List<string> { "embed", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+    });
+
+                AnyTargettedFile = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "{any}", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                    });
+
+
+                RuntimeAssemblies = new PatternSet(
+    conventions.Properties,
+    groupPatterns: new PatternDefinition[]
+    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{assembly?}" }, table: DotnetAnyTable, defaults: NetTFMTable)
+    },
+    pathPatterns: new PatternDefinition[]
+    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{assembly}" }, table: DotnetAnyTable, defaults: NetTFMTable)
+    });
+
+                CompileRefAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "ref", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "ref", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+                    });
+
+                CompileLibAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{assembly?}" }, table: DotnetAnyTable, defaults: NetTFMTable)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{assembly}" }, table: DotnetAnyTable, defaults: NetTFMTable)
+                    });
+
+                NativeLibraries = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "nativeassets", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "native", "{any?}" }, table: null, defaults: DefaultTfmAny)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "nativeassets", "{tfm}", "{any}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "native", "{any}" }, table: null, defaults: DefaultTfmAny)
+                    });
+
+                ResourceAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{locale?}", "{any?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{locale?}", "{any?}" }, table: DotnetAnyTable),
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "runtimes", "{rid}", "lib", "{tfm}", "{locale}", "{satelliteAssembly}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "lib", "{tfm}", "{locale}", "{satelliteAssembly}" }, table: DotnetAnyTable),
+                    });
+
+                MSBuildFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "build", "{tfm}", "{msbuild?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "build", "{msbuild?}" }, table: null, defaults: DefaultTfmAny)
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "build", "{tfm}", "{msbuild}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "build", "{msbuild}" }, table: null, defaults: DefaultTfmAny)
+                    });
+
+                MSBuildMultiTargetingFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "buildMultiTargeting", "{msbuild?}" }, table: null, defaults: DefaultTfmAny),
+        new PatternDefinition(new List<string> { "buildCrossTargeting", "{msbuild?}" }, table: null, defaults: DefaultTfmAny) // deprecated
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "buildMultiTargeting", "{msbuild}" }, table: null, defaults: DefaultTfmAny),
+        new PatternDefinition(new List<string> { "buildCrossTargeting", "{msbuild}" }, table: null, defaults: DefaultTfmAny) // deprecated
+                    });
+
+                ContentFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "contentFiles", "{codeLanguage}", "{tfm}", "{any?}" }),
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "contentFiles", "{codeLanguage}", "{tfm}", "{any?}" }),
+                    });
+
+                ToolsAssemblies = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "tools", "{tfm}", "{rid}", "{any?}" }, table: AnyTable),
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+        new PatternDefinition(new List<string> { "tools", "{tfm}", "{rid}", "{any?}" }, table: AnyTable),
                     });
 
                 EmbedAssemblies = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("embed/{tfm}/{any?}", table: DotnetAnyTable),
-                        },
+                    {
+        new PatternDefinition(new List<string> { "embed", "{tfm}", "{any?}" }, table: DotnetAnyTable),
+                    },
                     pathPatterns: new PatternDefinition[]
-                        {
-                            new PatternDefinition("embed/{tfm}/{assembly}", table: DotnetAnyTable),
-                        });
+                    {
+        new PatternDefinition(new List<string> { "embed", "{tfm}", "{assembly}" }, table: DotnetAnyTable),
+                    });
 
                 MSBuildTransitiveFiles = new PatternSet(
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("buildTransitive/{tfm}/{msbuild?}", table: DotnetAnyTable),
-                        new PatternDefinition("buildTransitive/{msbuild?}", table: null, defaults: DefaultTfmAny)
+        new PatternDefinition(new List<string> { "buildTransitive", "{tfm}", "{msbuild?}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "buildTransitive", "{msbuild?}" }, table: null, defaults: DefaultTfmAny)
                     },
                     pathPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("buildTransitive/{tfm}/{msbuild}", table: DotnetAnyTable),
-                        new PatternDefinition("buildTransitive/{msbuild}", table: null, defaults: DefaultTfmAny)
+        new PatternDefinition(new List<string> { "buildTransitive", "{tfm}", "{msbuild}" }, table: DotnetAnyTable),
+        new PatternDefinition(new List<string> { "buildTransitive", "{msbuild}" }, table: null, defaults: DefaultTfmAny)
                     });
             }
         }

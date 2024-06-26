@@ -34,7 +34,7 @@ namespace NuGet.ContentModel
                 {
                     _assets.Add(new Asset()
                     {
-                        Path = path
+                        DelimitedPath = DelimitPath(path)
                     });
 
                     if (path.StartsWith("lib/contract", StringComparison.Ordinal))
@@ -48,6 +48,16 @@ namespace NuGet.ContentModel
                     }
                 }
             }
+        }
+
+        private static List<string> DelimitPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                return new List<string>(path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries));
+            }
+
+            return new List<string>();
         }
 
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
@@ -68,7 +78,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var groupPattern in groupPatterns)
                     {
-                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        var item = groupPattern.Match(asset.DelimitedPath, definition.PropertyDefinitions);
                         if (item != null)
                         {
                             groupAssets ??= new List<(ContentItem Item, Asset Asset)>(capacity: 1);
@@ -106,7 +116,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var groupPattern in groupPatterns)
                     {
-                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        var item = groupPattern.Match(asset.DelimitedPath, definition.PropertyDefinitions);
                         if (item != null)
                         {
                             groupAssets ??= new List<(ContentItem Item, Asset Asset)>(capacity: 1);
@@ -243,7 +253,7 @@ namespace NuGet.ContentModel
 
             foreach (var asset in assets.NoAllocEnumerate())
             {
-                var path = asset.Path;
+                var path = asset.DelimitedPath;
 
                 foreach (var pathPattern in pathPatterns)
                 {

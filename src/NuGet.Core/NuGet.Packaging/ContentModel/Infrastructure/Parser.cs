@@ -22,124 +22,88 @@ namespace NuGet.ContentModel.Infrastructure
             Initialize(pattern.Pattern);
         }
 
-        private void Initialize(string pattern)
+        private void Initialize(List<string> pattern)
         {
-            for (var scanIndex = 0; scanIndex < pattern.Length;)
+            foreach (var node in pattern)
             {
-                var beginToken = pattern.Length;
-                var endToken = pattern.Length;
-                for (var i = scanIndex; i < pattern.Length; i++)
+                if (node.StartsWith("{") && node.EndsWith("}"))
                 {
-                    var ch = pattern[i];
-                    if (beginToken == pattern.Length)
-                    {
-                        if (ch == '{')
-                        {
-                            beginToken = i;
-                        }
-                    }
-                    else if (ch == '}')
-                    {
-                        endToken = i;
-                        break;
-                    }
-                }
+                    // Extract the token name from the pattern, assuming format "{token}" or "{token?}"
+                    var matchOnly = node.EndsWith("?}");
+                    var tokenName = node.Substring(1, node.Length - (matchOnly ? 3 : 2));
 
-                if (scanIndex != beginToken)
+                    _segments.Add(new TokenSegment(tokenName, matchOnly, _table));
+                }
+                else
                 {
-                    _segments.Add(new LiteralSegment(pattern, scanIndex, beginToken - scanIndex));
+                    // Treat the entire string as a literal segment
+                    _segments.Add(new LiteralSegment(node));
                 }
-                if (beginToken != endToken)
-                {
-                    var delimiter = endToken + 1 < pattern.Length ? pattern[endToken + 1] : '\0';
-                    var matchOnly = pattern[endToken - 1] == '?';
-
-                    var beginName = beginToken + 1;
-                    var endName = endToken - (matchOnly ? 1 : 0);
-
-                    var tokenName = pattern.Substring(beginName, endName - beginName);
-                    _segments.Add(new TokenSegment(tokenName, delimiter, matchOnly, _table));
-                }
-                scanIndex = endToken + 1;
             }
         }
 
-        internal ContentItem Match(string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
+        internal ContentItem Match(List<string> path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
         {
             ContentItem item = null;
-            var startIndex = 0;
-            foreach (var segment in _segments)
+            for (int i = 0; i < _segments.Count; i++)
             {
-                int endIndex;
-                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
+                var segment = _segments[i];
+                var pathNode = path[i];
+                if (segment.TryMatch(ref item, pathNode, propertyDefinitions))
                 {
-                    startIndex = endIndex;
                     continue;
                 }
                 return null;
             }
 
-            if (startIndex == path.Length)
+            // Successful match!
+            // Apply defaults from the pattern
+            if (item == null)
             {
-                // Successful match!
-                // Apply defaults from the pattern
-                if (item == null)
+                // item not created, use shared defaults
+                item = new ContentItem
                 {
-                    // item not created, use shared defaults
-                    item = new ContentItem
-                    {
-                        Path = path,
-                        Properties = _defaults
-                    };
-                }
-                else
-                {
-                    // item already created, append defaults
-                    foreach (var pair in _defaults)
-                    {
-                        item.Properties[pair.Key] = pair.Value;
-                    }
-                }
-                return item;
+                    Path = string.Join("/", path),
+                    Properties = _defaults
+                };
             }
-            return null;
+            else
+            {
+                // item already created, append defaults
+                foreach (var pair in _defaults)
+                {
+                    item.Properties[pair.Key] = pair.Value;
+                }
+            }
+
+            return item;
         }
 
         private abstract class Segment
         {
-            internal abstract bool TryMatch(ref ContentItem item, string path, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions, int startIndex, out int endIndex);
+            internal abstract bool TryMatch(ref ContentItem item, string segment, IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions);
         }
 
         [DebuggerDisplay("{_pattern.Substring(_start, _length)}")]
         private class LiteralSegment : Segment
         {
-            private readonly string _pattern;
-            private readonly int _start;
-            private readonly int _length;
+            private readonly string _patternNode;
 
-            public LiteralSegment(string pattern, int start, int length)
+            public LiteralSegment(string patternNode)
             {
-                _pattern = pattern;
-                _start = start;
-                _length = length;
+                _patternNode = patternNode;
             }
 
             internal override bool TryMatch(
                 ref ContentItem item,
-                string path,
-                IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
-                int startIndex,
-                out int endIndex)
+                string segment,
+                IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
             {
-                if (path.Length >= startIndex + _length)
+                if (string.Compare(segment, _patternNode, StringComparison.OrdinalIgnoreCase) == 0)
                 {
-                    if (string.Compare(path, startIndex, _pattern, _start, _length, StringComparison.OrdinalIgnoreCase) == 0)
-                    {
-                        endIndex = startIndex + _length;
-                        return true;
-                    }
+                    return true;
                 }
-                endIndex = startIndex;
+
                 return false;
             }
         }
@@ -148,24 +112,20 @@ namespace NuGet.ContentModel.Infrastructure
         private class TokenSegment : Segment
         {
             private readonly string _token;
-            private readonly char _delimiter;
             private readonly bool _matchOnly;
             private readonly PatternTable _table;
 
-            public TokenSegment(string token, char delimiter, bool matchOnly, PatternTable table)
+            public TokenSegment(string token, bool matchOnly, PatternTable table)
             {
                 _token = token;
-                _delimiter = delimiter;
                 _matchOnly = matchOnly;
                 _table = table;
             }
 
             internal override bool TryMatch(
                 ref ContentItem item,
-                string path,
-                IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions,
-                int startIndex,
-                out int endIndex)
+                string segment,
+                IReadOnlyDictionary<string, ContentPropertyDefinition> propertyDefinitions)
             {
                 ContentPropertyDefinition propertyDefinition;
                 if (!propertyDefinitions.TryGetValue(_token, out propertyDefinition))
@@ -173,49 +133,29 @@ namespace NuGet.ContentModel.Infrastructure
                     throw new Exception(string.Format(CultureInfo.CurrentCulture, "Unable to find property definition for {{{0}}}", _token));
                 }
 
-                for (var scanIndex = startIndex; scanIndex != path.Length;)
+                object value;
+                if (propertyDefinition.TryLookup(segment, _table, out value))
                 {
-                    var delimiterIndex = path.Length;
-                    for (var i = scanIndex + 1; i < path.Length; i++)
+                    if (!_matchOnly)
                     {
-                        if (path[i] == _delimiter)
+                        // Adding property, create item if not already created
+                        if (item == null)
                         {
-                            delimiterIndex = i;
-                            break;
+                            item = new ContentItem
+                            {
+                                Path = segment
+                            };
                         }
+
+                        if (StringComparer.Ordinal.Equals(_token, "tfm"))
+                        {
+                            item.Properties.Add("tfm_raw", segment);
+                        }
+                        item.Properties.Add(_token, value);
                     }
 
-                    if (delimiterIndex == path.Length
-                        && _delimiter != '\0')
-                    {
-                        break;
-                    }
-                    var substring = path.Substring(startIndex, delimiterIndex - startIndex);
-                    object value;
-                    if (propertyDefinition.TryLookup(substring, _table, out value))
-                    {
-                        if (!_matchOnly)
-                        {
-                            // Adding property, create item if not already created
-                            if (item == null)
-                            {
-                                item = new ContentItem
-                                {
-                                    Path = path
-                                };
-                            }
-                            if (StringComparer.Ordinal.Equals(_token, "tfm"))
-                            {
-                                item.Properties.Add("tfm_raw", substring);
-                            }
-                            item.Properties.Add(_token, value);
-                        }
-                        endIndex = delimiterIndex;
-                        return true;
-                    }
-                    scanIndex = delimiterIndex;
+                    return true;
                 }
-                endIndex = startIndex;
                 return false;
             }
         }

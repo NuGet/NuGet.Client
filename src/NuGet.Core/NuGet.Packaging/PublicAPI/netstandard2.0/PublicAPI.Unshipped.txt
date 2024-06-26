@@ -1,1 +1,8 @@
 #nullable enable
+~NuGet.ContentModel.Asset.DelimitedPath.get -> System.Collections.Generic.List<string>
+~NuGet.ContentModel.Asset.DelimitedPath.set -> void
+~NuGet.ContentModel.PatternDefinition.Pattern.get -> System.Collections.Generic.List<string>
+~NuGet.ContentModel.PatternDefinition.PatternDefinition(System.Collections.Generic.List<string> pattern, NuGet.ContentModel.PatternTable table, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> defaults) -> void
+~NuGet.ContentModel.PatternDefinition.PatternDefinition(System.Collections.Generic.List<string> pattern, NuGet.ContentModel.PatternTable table) -> void
+~NuGet.ContentModel.PatternDefinition.PatternDefinition(System.Collections.Generic.List<string> pattern) -> void
+~static NuGet.ContentModel.PatternDefinition.implicit operator NuGet.ContentModel.PatternDefinition(System.Collections.Generic.List<string> pattern) -> NuGet.ContentModel.PatternDefinition

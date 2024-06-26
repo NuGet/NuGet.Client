@@ -67,10 +67,6 @@ NuGet.ContentModel.Infrastructure.PatternExpression
 ~NuGet.ContentModel.Infrastructure.PatternExpression.PatternExpression(NuGet.ContentModel.PatternDefinition pattern) -> void
 NuGet.ContentModel.PatternDefinition
 ~NuGet.ContentModel.PatternDefinition.Defaults.get -> System.Collections.Generic.IReadOnlyDictionary<string, object>
-~NuGet.ContentModel.PatternDefinition.Pattern.get -> string
-~NuGet.ContentModel.PatternDefinition.PatternDefinition(string pattern) -> void
-~NuGet.ContentModel.PatternDefinition.PatternDefinition(string pattern, NuGet.ContentModel.PatternTable table) -> void
-~NuGet.ContentModel.PatternDefinition.PatternDefinition(string pattern, NuGet.ContentModel.PatternTable table, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> defaults) -> void
 ~NuGet.ContentModel.PatternDefinition.Table.get -> NuGet.ContentModel.PatternTable
 NuGet.ContentModel.PatternSet
 ~NuGet.ContentModel.PatternSet.GroupPatterns.get -> System.Collections.Generic.IEnumerable<NuGet.ContentModel.PatternDefinition>
@@ -1486,7 +1482,6 @@ override NuGet.RuntimeModel.RuntimeGraph.GetHashCode() -> int
 ~override NuGet.RuntimeModel.RuntimePackageDependency.Equals(object obj) -> bool
 override NuGet.RuntimeModel.RuntimePackageDependency.GetHashCode() -> int
 ~override NuGet.RuntimeModel.RuntimePackageDependency.ToString() -> string
-~static NuGet.ContentModel.PatternDefinition.implicit operator NuGet.ContentModel.PatternDefinition(string pattern) -> NuGet.ContentModel.PatternDefinition
 ~static NuGet.Packaging.CollectionExtensions.AddRange<T>(this System.Collections.Generic.ICollection<T> collection, System.Collections.Generic.IEnumerable<T> items) -> void
 ~static NuGet.Packaging.Core.NuspecUtility.GetPackageTypes(System.Xml.Linq.XElement metadataNode, bool useMetadataNamespace) -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageType>
 ~static NuGet.Packaging.Core.NuspecUtility.IsServiceable(System.Xml.Linq.XElement metadataNode) -> bool
