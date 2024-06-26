@@ -12,29 +12,32 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project>
   <!--
     Determine the path to the 'Directory.Packages.props' file, if the user did not:
-      1. Set $(ManagePackageVersionsCentrally) to false
-      2. Set $(ImportDirectoryPackagesProps) to false
-      3. Already specify the path to a 'Directory.Packages.props' file via $(DirectoryPackagesPropsPath)
+      1. Set $(ImportDirectoryPackagesProps) to false
+      2. Already specify the path to a 'Directory.Packages.props' file via $(DirectoryPackagesPropsPath)
   -->
-  <PropertyGroup Condition="'$(ManagePackageVersionsCentrally)' != 'false' And '$(ImportDirectoryPackagesProps)' != 'false' And '$(DirectoryPackagesPropsPath)' == ''">
+  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' != 'false' And '$(DirectoryPackagesPropsPath)' == ''">
     <_DirectoryPackagesPropsFile Condition="'$(_DirectoryPackagesPropsFile)' == ''">Directory.Packages.props</_DirectoryPackagesPropsFile>
     <_DirectoryPackagesPropsBasePath Condition="'$(_DirectoryPackagesPropsBasePath)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove('$(MSBuildProjectDirectory)', '$(_DirectoryPackagesPropsFile)'))</_DirectoryPackagesPropsBasePath>
     <DirectoryPackagesPropsPath Condition="'$(_DirectoryPackagesPropsBasePath)' != '' and '$(_DirectoryPackagesPropsFile)' != ''">$([MSBuild]::NormalizePath('$(_DirectoryPackagesPropsBasePath)', '$(_DirectoryPackagesPropsFile)'))</DirectoryPackagesPropsPath>
   </PropertyGroup>
 
   <!--
-    Default $(ManagePackageVersionsCentrally) to true, import Directory.Packages.props, and set $(CentralPackageVersionsFileImported) to true if the user did not:
-      1. Set $(ManagePackageVersionsCentrally) to false
-      2. Set $(ImportDirectoryPackagesProps) to false
-      3. The path specified in $(DirectoryPackagesPropsPath) exists
+    Default $(ManagePackageVersionsCentrally) to true if a Directory.Packages.props will be imported and a value is not already set.
   -->
-  <PropertyGroup Condition="'$(ManagePackageVersionsCentrally)' != 'false' And '$(ImportDirectoryPackagesProps)' != 'false' And Exists('$(DirectoryPackagesPropsPath)')">
+  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' != 'false' And Exists('$(DirectoryPackagesPropsPath)')">
     <ManagePackageVersionsCentrally Condition="'$(ManagePackageVersionsCentrally)' == ''">true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
-  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(ManagePackageVersionsCentrally)' != 'false' And '$(ImportDirectoryPackagesProps)' != 'false' And Exists('$(DirectoryPackagesPropsPath)')" />
+  <!--
+    Import Directory.Packages.props if it exists and has not already been imported.  It is imported even if $(ManagePackageVersionsCentrally)
+    is set to false so that users can enable it for particular projects.
+  -->
+  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(ImportDirectoryPackagesProps)' != 'false' And Exists('$(DirectoryPackagesPropsPath)') And '$(CentralPackageVersionsFileImported)' != 'true'" />
 
-  <PropertyGroup Condition="'$(ManagePackageVersionsCentrally)' != 'false' And '$(ImportDirectoryPackagesProps)' != 'false' And Exists('$(DirectoryPackagesPropsPath)')">
+  <!--
+    Set a property indicating that the Directory.Packages.props file has been imported.  This is used to prevent the file from being imported again.
+  -->
+  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' != 'false' And Exists('$(DirectoryPackagesPropsPath)')">
     <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
   </PropertyGroup>
 </Project>
