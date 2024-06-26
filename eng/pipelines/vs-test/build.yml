@@ -245,7 +245,7 @@ steps:
 
 - task: PowerShell@1
   displayName: "Set DartLab variables for tests"
-  name: "vsbootstrapper"
+  name: "dartlab_variables"
   inputs:
     scriptType: "inlineScript"
     # MicroBuildOutputFolderOverride defined by template and redirects MicroBuildBuildVSBootstrapper output https://dev.azure.com/devdiv/1ESPipelineTemplates/_git/MicroBuildTemplate?path=/azure-pipelines/Jobs/Job.yml&version=GBrelease&line=21&lineEnd=22&lineStartColumn=1&lineEndColumn=36&lineStyle=plain&_a=contents
@@ -336,7 +336,7 @@ steps:
   displayName: 'Publish the .runsettings files to artifact services'
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)'
+    buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.DefinitionName)/$(Build.SourceBranchName)/$(Build.BuildId)'
     sourcePath: 'artifacts\RunSettings'
     toLowerCase: false
     usePat: true
