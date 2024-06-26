@@ -1608,6 +1608,7 @@ public class B
                     nugetexe,
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
+                    timeOutInMilliseconds: (int)TimeSpan.FromMinutes(4).TotalMilliseconds,
                     testOutputHelper: _testOutputHelper);
                 Assert.True(0 == r.ExitCode, r.Output + " " + r.Errors);
 
