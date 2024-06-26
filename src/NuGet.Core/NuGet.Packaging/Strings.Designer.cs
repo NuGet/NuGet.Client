@@ -286,7 +286,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified..
+        ///   Looks up a localized string similar to The configuration parameter &apos;signatureValidationMode&apos; is currently set to &apos;require&apos;. This means that only packages signed by designated trusted signers are permitted. However, it appears that no trusted signers have been specified in the configuration. Please define trusted signers to proceed..
         /// </summary>
         internal static string Error_NoClientAllowList {
             get {

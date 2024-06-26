@@ -575,7 +575,7 @@ Valid from:</comment>
     <value>This repository indicated that all its packages are repository signed; however, it listed no signing certificates.</value>
   </data>
   <data name="Error_NoClientAllowList" xml:space="preserve">
-    <value>signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified.</value>
+    <value>The configuration parameter 'signatureValidationMode' is currently set to 'require'. This means that only packages signed by designated trusted signers are permitted. However, it appears that no trusted signers have been specified in the configuration. Please define trusted signers to proceed.</value>
   </data>
   <data name="Error_NoMatchingRepositoryCertificate" xml:space="preserve">
     <value>This package was not repository signed with a certificate listed by this repository.</value>
