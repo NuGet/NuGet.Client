@@ -50,7 +50,6 @@ namespace NuGet.Protocol
                                 packages.Add(new Packaging.Core.PackageDependency(id, string.IsNullOrEmpty(version) ? null : VersionRange.Parse(version)));
                             }
                         }
-                        //reader.Read();
                     }
                     else if (reader.Value.Equals(JsonProperties.TargetFramework))
                     {
