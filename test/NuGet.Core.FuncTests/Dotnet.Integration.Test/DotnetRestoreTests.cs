@@ -1758,6 +1758,10 @@ EndGlobal";
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(
+                        xml,
+                        "ManagePackageVersionsCentrally",
+                        "true");
 
                     ProjectFileUtils.AddItem(
                          xml,
@@ -2302,6 +2306,10 @@ EndGlobal";
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(
+                        xml,
+                        "ManagePackageVersionsCentrally",
+                        "true");
 
                     ProjectFileUtils.AddItem(
                          xml,
@@ -2484,6 +2492,7 @@ EndGlobal";
                 {
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", Constants.DefaultTargetFramework.GetShortFolderName());
+                    ProjectFileUtils.AddProperty(xml, "ManagePackageVersionsCentrally", "true");
 
                     ProjectFileUtils.AddItem(
                         xml,
