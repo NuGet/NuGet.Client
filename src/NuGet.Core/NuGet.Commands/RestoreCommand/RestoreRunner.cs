@@ -76,8 +76,18 @@ namespace NuGet.Commands
                 // Throttle and wait for a task to finish if we have hit the limit
                 if (restoreTasks.Count == maxTasks)
                 {
-                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                    restoreSummaries.Add(restoreSummary);
+#pragma warning disable CA1031 // Do not catch general exception types
+                    try
+                    {
+                        var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                        restoreSummaries.Add(restoreSummary);
+                    }
+                    catch (Exception ex)
+                    {
+                        RestoreLogMessage restoreLogMessage = new RestoreLogMessage(LogLevel.Error, ex.Message);
+                        RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { restoreLogMessage });
+                    }
+#pragma warning restore CA1031 // Do not catch general exception types
                 }
 
                 var request = requests.Dequeue();
@@ -89,8 +99,18 @@ namespace NuGet.Commands
             // Wait for all restores to finish
             while (restoreTasks.Count > 0)
             {
-                var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                restoreSummaries.Add(restoreSummary);
+#pragma warning disable CA1031 // Do not catch general exception types
+                try
+                {
+                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                    restoreSummaries.Add(restoreSummary);
+                }
+                catch (Exception ex)
+                {
+                    RestoreLogMessage restoreLogMessage = new RestoreLogMessage(LogLevel.Error, ex.Message);
+                    RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { restoreLogMessage });
+                }
+#pragma warning restore CA1031 // Do not catch general exception types
             }
 
             // Summary
