@@ -226,7 +226,7 @@ namespace NuGet.PackageManagement
                     for (int i = 0; i < auditInfo.Projects.Count; i++)
                     {
                         string projectPath = auditInfo.Projects[i];
-                        auditSettings.TryGetValue(projectPath, out ProjectAuditSettings auditSetting);
+                        auditSettings.TryGetValue(projectPath, out ProjectAuditSettings? auditSetting);
 
                         if (auditSetting == default || auditSetting.IsAuditEnabled && (int)vulnerability.Severity >= (int)auditSetting.MinimumSeverity)
                         {
