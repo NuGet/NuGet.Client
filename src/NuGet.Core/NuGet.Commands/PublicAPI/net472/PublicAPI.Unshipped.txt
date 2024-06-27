@@ -1,2 +1,3 @@
 #nullable enable
+~NuGet.Commands.RestoreSummary.RestoreSummary(bool success, System.Collections.Generic.IEnumerable<NuGet.Common.RestoreLogMessage> errors) -> void
 ~static NuGet.Commands.MSBuildRestoreUtility.GetRestoreAuditProperties(NuGet.Commands.IMSBuildItem specItem, System.Collections.Generic.HashSet<string> suppressionItems) -> NuGet.ProjectModel.RestoreAuditProperties
