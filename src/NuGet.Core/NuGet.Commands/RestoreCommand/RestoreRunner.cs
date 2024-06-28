@@ -84,10 +84,7 @@ namespace NuGet.Commands
                     }
                     catch (Exception ex)
                     {
-                        var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
-                        RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
-                        ExceptionUtilities.LogException(ex, log);
-                        restoreSummaries.Add(restoreSummary);
+                        HandleRestoreException(ex, restoreSummaries, log);
                     }
 #pragma warning restore CA1031 // Do not catch general exception types
                 }
@@ -109,16 +106,21 @@ namespace NuGet.Commands
                 }
                 catch (Exception ex)
                 {
-                    var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
-                    RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
-                    ExceptionUtilities.LogException(ex, log);
-                    restoreSummaries.Add(restoreSummary);
+                    HandleRestoreException(ex, restoreSummaries, log);
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
 
             // Summary
             return restoreSummaries;
+        }
+
+        private static void HandleRestoreException(Exception ex, List<RestoreSummary> restoreSummaries, ILogger log)
+        {
+            var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
+            RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
+            ExceptionUtilities.LogException(ex, log);
+            restoreSummaries.Add(restoreSummary);
         }
 
         /// <summary>
