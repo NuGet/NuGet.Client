@@ -269,6 +269,7 @@ namespace NuGet.Commands
 
             // Run the restore
             var request = summaryRequest.Request;
+
             var command = new RestoreCommand(request);
             if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
