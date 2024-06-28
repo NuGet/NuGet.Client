@@ -25,8 +25,9 @@ namespace NuGet.Test.Utility
         /// <param name="inputAction">An optional <see cref="Action{T}" /> to invoke against the executables input stream.</param>
         /// <param name="environmentVariables">An optional <see cref="Dictionary{TKey, TValue}" /> containing environment variables to specify when running the executable.</param>
         /// <param name="testOutputHelper">An optional <see cref="ITestOutputHelper" /> to write output to.</param>
+        /// <param name="timeoutRetryCount">An optional number of times to retry running the command if it times out. Defaults to 1.</param>
         /// <returns>A <see cref="CommandRunnerResult" /> containing details about the result of the running the executable including the exit code and console output.</returns>
-        public static CommandRunnerResult Run(string filename, string workingDirectory = null, string arguments = null, int timeOutInMilliseconds = 60000, Action<StreamWriter> inputAction = null, IDictionary<string, string> environmentVariables = null, ITestOutputHelper testOutputHelper = null, int retryCount = 1)
+        public static CommandRunnerResult Run(string filename, string workingDirectory = null, string arguments = null, int timeOutInMilliseconds = 60000, Action<StreamWriter> inputAction = null, IDictionary<string, string> environmentVariables = null, ITestOutputHelper testOutputHelper = null, int timeoutRetryCount = 1)
         {
             return RetryRunner.RunWithRetries<CommandRunnerResult, TimeoutException>(() =>
             {
@@ -128,7 +129,7 @@ namespace NuGet.Test.Utility
                     }
                 }
             },
-            retryCount,
+            timeoutRetryCount,
             testOutputHelper);
         }
     }
