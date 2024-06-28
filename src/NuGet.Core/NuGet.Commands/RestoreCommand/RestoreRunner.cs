@@ -86,6 +86,8 @@ namespace NuGet.Commands
                     {
                         RestoreLogMessage restoreLogMessage = new RestoreLogMessage(LogLevel.Error, ex.Message);
                         RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { restoreLogMessage });
+                        log.LogError(ex.Message);
+                        restoreSummaries.Add(restoreSummary);
                     }
 #pragma warning restore CA1031 // Do not catch general exception types
                 }
@@ -109,6 +111,8 @@ namespace NuGet.Commands
                 {
                     RestoreLogMessage restoreLogMessage = new RestoreLogMessage(LogLevel.Error, ex.Message);
                     RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { restoreLogMessage });
+                    log.LogError(ex.Message);
+                    restoreSummaries.Add(restoreSummary);
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
             }
@@ -265,7 +269,7 @@ namespace NuGet.Commands
 
             // Run the restore
             var request = summaryRequest.Request;
-
+            if (request.Project.FilePath == "N:\\trash\\multiprojectWithOneErrors\\bad\\bad.csproj") { throw new Exception("Test error"); }
             var command = new RestoreCommand(request);
             if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
