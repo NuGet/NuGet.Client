@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
@@ -41,7 +41,7 @@
     <None Include="$(BuildCommonDirectory)NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" GeneratePathProperty="true" />
@@ -214,8 +214,8 @@
     <PropertyGroup>
       <!-- Build from source can't use ILMerge and XPLat builds don't run the ILmerge targets. -->
       <ILMergeSubpath Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(IsXPlat)' != 'true'">ilmerge\</ILMergeSubpath>
-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
+      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">netframework/</PackagePathDir>
+      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">net/</PackagePathDir>
     </PropertyGroup>
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll" Condition="'$(DotNetBuildSourceOnly)' != 'true'">

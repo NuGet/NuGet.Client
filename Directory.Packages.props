@@ -13,8 +13,6 @@
   <PropertyGroup>
     <!-- Default MSBuild version -->
     <MicrosoftBuildVersion Condition="'$(MicrosoftBuildVersion)' == ''">17.10.4</MicrosoftBuildVersion>
-    <!-- The last package version of MSBuild that works with netcoreapp3.1 or netstandard2.0 is 16.8.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
-    <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'">16.8.0</MicrosoftBuildVersion>
     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
   </PropertyGroup>
@@ -30,7 +28,7 @@
     <SystemSecurityCryptographyPkcsVersion Condition="'$(SystemSecurityCryptographyPkcsVersion)' == ''">6.0.4</SystemSecurityCryptographyPkcsVersion>
     <!-- System.Security.Cryptography.Xml is a dependency of Microsoft.Build.Tasks.Core. This property can be probably removed when MSBuild is updated to a newer version. -->
     <SystemSecurityCryptographyXmlVersion Condition="'$(SystemSecurityCryptographyXmlVersion)' == ''">6.0.1</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityCryptographyXmlVersion Condition="'$(MicrosoftBuildVersion)' == '16.8.0' Or '$(MicrosoftBuildVersion)' == '16.11.0'">4.7.1</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityCryptographyXmlVersion Condition="'$(MicrosoftBuildVersion)' == '16.11.0'">4.7.1</SystemSecurityCryptographyXmlVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,7 +40,6 @@
     <PackageVersion Include="Microsoft.Build.Artifacts" Version="4.2.0" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="1.5.5" />
-    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.3.1" />
@@ -50,7 +47,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="4.3.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.3.1" />
-    <PackageVersion Include="Microsoft.CSharp" Version="$(SystemPackagesVersion)" />
+    <PackageVersion Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageVersion Include="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Feed" Version="6.0.0-beta.20528.5" />
     <PackageVersion Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.21378.2" />
@@ -93,7 +90,6 @@
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="4.4.0" />
-    <PackageVersion Include="System.Diagnostics.Debug" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
@@ -185,7 +181,6 @@
       <_allowBuildFromSourcePackage Include="Newtonsoft.Json" />
       <_allowBuildFromSourcePackage Include="System.CommandLine" />
       <_allowBuildFromSourcePackage Include="System.ComponentModel.Composition" />
-      <_allowBuildFromSourcePackage Include="System.Diagnostics.Debug" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Cng" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Pkcs" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.ProtectedData" />

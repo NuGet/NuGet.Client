@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(NetStandardVersion)</TargetFramework>
-    <TargetFrameworks />
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />

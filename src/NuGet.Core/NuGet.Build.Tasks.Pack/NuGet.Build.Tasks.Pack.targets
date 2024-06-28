@@ -14,8 +14,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Load NuGet.Build.Tasks.Pack.dll, this can be overridden to use a different version with $(NuGetPackTaskAssemblyFile) -->
   <PropertyGroup Condition="$(NuGetPackTaskAssemblyFile) == ''">
-    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">..\CoreCLR\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
-    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\Desktop\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
+    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">..\net\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
+    <NuGetPackTaskAssemblyFile Condition="'$(MSBuildRuntimeType)' != 'Core'">..\netframework\NuGet.Build.Tasks.Pack.dll</NuGetPackTaskAssemblyFile>
   </PropertyGroup>
 
   <!-- Tasks -->
