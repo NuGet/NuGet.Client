@@ -118,6 +118,10 @@ namespace NuGet.Commands
         private static void HandleRestoreException(Exception ex, List<RestoreSummary> restoreSummaries, ILogger log)
         {
             var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
+            if (unWrapped is null)
+            {
+                unWrapped = new RestoreCommandException(new RestoreLogMessage(LogLevel.Error, ex.Message));
+            }
             RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
             ExceptionUtilities.LogException(ex, log);
             restoreSummaries.Add(restoreSummary);
@@ -271,7 +275,7 @@ namespace NuGet.Commands
 
             // Run the restore
             var request = summaryRequest.Request;
-
+            if (request.Project.FilePath == "N:\\trash\\multiprojectWithOneErrors\\bad\\bad.csproj") { throw new Exception("Test error"); }
             var command = new RestoreCommand(request);
             if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
