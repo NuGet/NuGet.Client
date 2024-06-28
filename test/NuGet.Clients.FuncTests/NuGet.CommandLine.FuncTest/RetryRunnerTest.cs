@@ -102,5 +102,22 @@ namespace NuGet.CommandLine.FuncTest
             Assert.Throws<InvalidOperationException>(() => RetryRunner.RunWithRetries<int, Exception>(func, maxRetries, _output));
             runCount.Should().Be(1);
         }
+
+        [Fact]
+        public void RunWithRetries_NonSpecifiedException_ShouldThrow()
+        {
+            // Arrange
+            int runCount = 0;
+            Func<int> func = () =>
+            {
+                runCount++;
+                throw new ArgumentException("Simulated exception");
+            };
+
+            // Act & Assert
+            Action act = () => RetryRunner.RunWithRetries<int, InvalidOperationException>(func);
+            act.Should().Throw<ArgumentException>(); // Should not catch and retry ArgumentException
+            runCount.Should().Be(1);
+        }
     }
 }
