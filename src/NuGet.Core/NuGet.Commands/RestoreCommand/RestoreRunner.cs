@@ -84,9 +84,9 @@ namespace NuGet.Commands
                     }
                     catch (Exception ex)
                     {
-                        RestoreLogMessage restoreLogMessage = new RestoreLogMessage(LogLevel.Error, ex.Message);
-                        RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { restoreLogMessage });
-                        log.LogError(ex.Message);
+                        var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
+                        RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
+                        ExceptionUtilities.LogException(ex, log);
                         restoreSummaries.Add(restoreSummary);
                     }
 #pragma warning restore CA1031 // Do not catch general exception types
@@ -109,9 +109,9 @@ namespace NuGet.Commands
                 }
                 catch (Exception ex)
                 {
-                    RestoreLogMessage restoreLogMessage = new RestoreLogMessage(LogLevel.Error, ex.Message);
-                    RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { restoreLogMessage });
-                    log.LogError(ex.Message);
+                    var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
+                    RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
+                    ExceptionUtilities.LogException(ex, log);
                     restoreSummaries.Add(restoreSummary);
                 }
 #pragma warning restore CA1031 // Do not catch general exception types
