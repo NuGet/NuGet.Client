@@ -148,28 +148,14 @@ steps:
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore /binarylogger:$(Build.StagingDirectory)\\binlog\\07.SignAssemblies.binlog"
-
-# - task: MSBuild@1
-#   displayName: "Pack Nupkgs"
-#   inputs:
-#     solution: "build\\build.proj"
-#     configuration: "$(BuildConfiguration)"
-#     msbuildArguments: "/restore:false /target:Pack /property:BuildRTM=$(BuildRTM) /property:ExcludeTestProjects=$(BuildRTM) /property:BuildNumber=$(BuildNumber) /binarylogger:$(Build.StagingDirectory)\\binlog\\09.Pack.binlog /property:MicroBuild_SigningEnabled=false"
-
-# - task: MSBuild@1
-#   displayName: "Ensure all Nupkgs and Symbols are created"
-#   inputs:
-#     solution: "build\\build.proj"
-#     configuration: "$(BuildConfiguration)"
-#     msbuildArguments: "/restore:false /target:EnsurePackagesExist /property:ExcludeTestProjects=$(BuildRTM) /binarylogger:$(Build.StagingDirectory)\\binlog\\10.EnsurePackagesExist.binlog"
+    msbuildArguments: "/restore /binarylogger:$(Build.StagingDirectory)\\binlog\\06.SignAssemblies.binlog"
 
 - task: MSBuild@1
   displayName: "Pack VSIX"
   inputs:
     solution: "build\\build.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /target:BuildVSIX /property:ExcludeTestProjects=false /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\11.PackVSIX.binlog"
+    msbuildArguments: "/restore:false /target:BuildVSIX /property:ExcludeTestProjects=false /property:IsCIBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\07.PackVSIX.binlog"
 
 - template: /eng/common/templates/steps/generate-sbom.yml@self
   parameters:
@@ -181,14 +167,14 @@ steps:
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\12.BuildToolsVSIX.binlog"
+    msbuildArguments: "/property:BuildNumber=$(BuildNumber) /property:IsVsixBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\08.BuildToolsVSIX.binlog"
 
 - task: MSBuild@1
   displayName: "Sign Nupkgs and VSIX"
   inputs:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\13.SignPackages.binlog"
+    msbuildArguments: "/restore /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\09.SignPackages.binlog"
 
 # - task: NuGetToolInstaller@1
 #   displayName: Use NuGet 6.x
@@ -207,21 +193,28 @@ steps:
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.Core\\Microsoft.VisualStudio.NuGet.Core.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\14.GenerateVSManifestForVSIX.binlog"
+    msbuildArguments: "/property:ManifestDirPath=$(Build.StagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\10.GenerateVSManifestForVSIX.binlog"
 
 - task: MSBuild@1
   displayName: "Generate VSMAN file for Build Tools VSIX"
   inputs:
     solution: "setup\\Microsoft.VisualStudio.NuGet.BuildTools\\Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.ArtifactStagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\15.GenerateVSManifestForToolsVSIX.binlog"
+    msbuildArguments: "/property:IsVsixBuild=false /property:ManifestDirPath=$(Build.StagingDirectory)/sbom /binarylogger:$(Build.StagingDirectory)\\binlog\\11.GenerateVSManifestForToolsVSIX.binlog"
 
 - task: MSBuild@1
   displayName: "Create EndToEnd Test Package"
   inputs:
     solution: "$(Build.Repository.LocalPath)\\test\\TestUtilities\\CreateEndToEndTestPackage\\CreateEndToEndTestPackage.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.Repository.LocalPath)\\artifacts\\VS15 /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\16.CreateEndToEndTestPackage.binlog"
+    msbuildArguments: "/property:EndToEndPackageOutputPath=$(Build.StagingDirectory)\\E2ETests /property:BuildProjectReferences=false /binarylogger:$(Build.StagingDirectory)\\binlog\\12.CreateEndToEndTestPackage.binlog"
+
+- task: CopyFiles@2
+  displayName: "Copy NuGet.exe for E2E Tests"
+  inputs:
+    SourceFolder: "$(Build.Repository.LocalPath)\\artifacts\\VS15"
+    Contents: "NuGet.exe"
+    TargetFolder: "$(Build.StagingDirectory)\\E2ETests"
 
 - task: NuGetCommand@2
   displayName: 'Add the VSEng package source'
@@ -264,6 +257,10 @@ steps:
         $buildDrop = $json[0].BuildDrop;
         Write-Host "Base Build Drop: $buildDrop"
         Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
+
+        $runSettingsDrop = "RunSettings/${env:System_TeamProject}/${env:Build_DefinitionName}/${Build_SourceBranchName}/${Build_BuildId}"
+        Write-Host "Run Settings Drop: $runSettingsDrop"
+        Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]Unable to set variables for DartLab: $_"
         exit 1
@@ -273,7 +270,7 @@ steps:
   displayName: 'Generate .runsettings files'
   inputs:
     solution: 'build\runsettings.proj'
-    msbuildArguments: '/restore:false /property:OutputPath="$(Build.Repository.LocalPath)\artifacts\RunSettings" /property:TestDrop="RunSettings/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /property:ProfilingInputsDrop="ProfilingInputs/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildId)" /binarylogger:$(Build.StagingDirectory)\\binlog\\17.GenerateRunSettings.binlog'
+    msbuildArguments: '/restore:false /property:OutputPath="$(Build.StagingDirectory)\RunSettings" /property:TestDrop="$(RunSettingsDrop)" /binarylogger:$(Build.StagingDirectory)\\binlog\\13.GenerateRunSettings.binlog'
 
 - task: PowerShell@1
   displayName: 'Copy VS integration test binaries'
@@ -297,7 +294,7 @@ steps:
   inputs:
     solution: "build\\symbols.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:IsSymbolBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\18.CollectBuildSymbols.binlog"
+    msbuildArguments: "/restore:false /property:BuildProjectReferences=false /property:IsSymbolBuild=true /binarylogger:$(Build.StagingDirectory)\\binlog\\14.CollectBuildSymbols.binlog"
     maximumCpuCount: true
   condition: "and(succeeded(), eq(variables['IsOfficialBuild'], 'true'))"
 
@@ -306,14 +303,14 @@ steps:
   inputs:
     solution: "build\\BuildValidator.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/target:ValidateVsix /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\19.ValidateVsixLocalization.binlog"
+    msbuildArguments: "/target:ValidateVsix /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\15.ValidateVsixLocalization.binlog"
 
 - task: MSBuild@1
   displayName: "LocValidation: Verify Artifacts"
   inputs:
     solution: "build\\BuildValidator.proj"
     configuration: "$(BuildConfiguration)"
-    msbuildArguments: "/target:ValidateArtifacts /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\20.ValidateArtifactsLocalization.binlog"
+    msbuildArguments: "/target:ValidateArtifacts /property:LogsBasePath=$(Build.Repository.LocalPath)\\logs\\BuildValidatorLogs /property:TempDirectory=$(Agent.TempDirectory) /binarylogger:$(Build.StagingDirectory)\\binlog\\16.ValidateArtifactsLocalization.binlog"
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish BootstrapperInfo.json as a build artifact'
@@ -336,11 +333,17 @@ steps:
   displayName: 'Publish the .runsettings files to artifact services'
   inputs:
     dropServiceURI: 'https://devdiv.artifacts.visualstudio.com'
-    buildNumber: 'RunSettings/$(System.TeamProject)/$(Build.DefinitionName)/$(Build.SourceBranchName)/$(Build.BuildId)'
+    buildNumber: '$(RunSettingsDrop)'
     sourcePath: 'artifacts\RunSettings'
     toLowerCase: false
     usePat: true
     dropMetadataContainerName: 'DropMetadata-RunSettings'
+
+- task: PublishPipelineArtifact@1
+  displayName: "Publish E2E tests"
+  inputs:
+    artifactName: "scripts"
+    targetPath: "$(Build.StagingDirectory)\\E2ETests"
 
 - task: PublishPipelineArtifact@1
   displayName: "Publish scripts"
