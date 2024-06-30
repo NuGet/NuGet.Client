@@ -56,6 +56,10 @@ stages:
       testExecutionJobTimeoutInMinutes: ${{parameters.testExecutionJobTimeoutInMinutes}}
       testMachineCleanUpStrategy: ${{parameters.testMachineCleanUpStrategy}}
       testAgentElevated: true
+
+##############################
+## preTestMachineConfigurationStepList
+##############################
       preTestMachineConfigurationStepList:
         - template: \steps\powershell\execute-script.yml@DartLabTemplates
           parameters:
@@ -117,6 +121,10 @@ stages:
               $buildDrop = "${{parameters.baseBuildDrop}}" -split "/"
               $dropName = "Products/DevDiv/VS/$($buildDrop[-2])/$($buildDrop[-1])"
               Write-Host "##vso[task.setvariable variable=VisualStudio.BaseBuild.ProductsDropName]$dropName"
+
+##############################
+## preDeployAndRunTestsStepList
+##############################
       preDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Print Environment Variables"
@@ -128,23 +136,17 @@ stages:
         - task: DownloadPipelineArtifact@0
           displayName: "Download Pipeline artifacts"
           inputs:
-            artifactName: "VS15"
-            downloadPath: "$(Build.Repository.LocalPath)/artifacts"
-
-        - powershell: |
-            $zipPath = "$(Build.Repository.Localpath)/artifacts/VS15/EndToEnd.zip"
-            $dest = "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/"
-            Write-Output "Extracting '$zipPath' to '$dest'"
-            Expand-Archive -Path "$zipPath" -DestinationPath "$dest"
-            $nugetExePath = "$(Build.Repository.Localpath)/artifacts/VS15/NuGet.exe"
-            Write-Output "Copying '$nugetExePath' to '$dest'"
-            Copy-Item -Path "$nugetExePath" -Destination "$dest"
-          displayName: "Extract EndToEnd.zip"
+            artifactName: "scripts"
+            downloadPath: "$(Build.ArtifactStagingDirectory)/scripts"
 
         - task: PowerShell@1
           displayName: "SetupFunctionalTests.ps1"
           inputs:
-            scriptName: "$(System.DefaultWorkingDirectory)/artifacts/EndToEnd/scripts/SetupFunctionalTests.ps1"
+            scriptName: "$(Build.ArtifactStagingDirectory)/scripts/e2etests/SetupFunctionalTests.ps1"
+
+##############################
+## postDeployAndRunTestsStepList
+##############################
       postDeployAndRunTestsStepList:
         - task: PowerShell@1
           displayName: "Initialize Git Commit Status on GitHub"

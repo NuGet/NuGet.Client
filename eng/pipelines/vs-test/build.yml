@@ -343,6 +343,12 @@ steps:
     dropMetadataContainerName: 'DropMetadata-RunSettings'
 
 - task: PublishPipelineArtifact@1
+  displayName: "Publish scripts"
+  inputs:
+    artifactName: "scripts"
+    targetPath: "$(Build.Repository.LocalPath)\\scripts"
+
+- task: PublishPipelineArtifact@1
   displayName: "Publish binlogs"
   inputs:
     artifactName: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
