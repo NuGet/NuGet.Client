@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -220,7 +221,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
-        internal bool ReadNextTokenAsBoolOrTrue()
+        internal bool ReadNextTokenAsBoolOrTrue(string propertyName)
         {
             ThrowExceptionIfDisposed();
 
@@ -228,7 +229,15 @@ namespace NuGet.ProjectModel
             {
                 return GetBoolean();
             }
-            return true;
+            else
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Invalid_AttributeValue,
+                    propertyName,
+                    _reader.GetString(),
+                    "false"));
+            }
         }
 
         internal IReadOnlyList<string> ReadNextStringOrArrayOfStringsAsReadOnlyList()

@@ -1159,14 +1159,36 @@ namespace NuGet.ProjectModel
                     case "SdkAnalysisLevel":
                         string skdAnalysisLevelString = jsonReader.ReadNextTokenAsString();
 
-                        if (skdAnalysisLevelString != null)
+                        if (!string.IsNullOrEmpty(skdAnalysisLevelString))
                         {
-                            sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                            try
+                            {
+                                sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
+                            }
+                            catch (ArgumentException ex)
+                            {
+                                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
+                            }
                         }
                         break;
 
                     case "UsingMicrosoftNETSdk":
-                        usingMicrosoftNetSdk = jsonReader.ReadAsBoolean() ?? true;
+                        string usingMicrosoftNetSdkString = jsonReader.ReadNextTokenAsString();
+
+                        if (bool.TryParse(usingMicrosoftNetSdkString, out bool isSdk))
+                        {
+                            usingMicrosoftNetSdk = isSdk;
+                        }
+                        else
+                        {
+                            throw new ArgumentException(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Invalid_AttributeValue,
+                                    "UsingMicrosoftNETSdk",
+                                    usingMicrosoftNetSdkString,
+                                    "false"));
+                        }
                         break;
                 }
             });

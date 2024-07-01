@@ -1175,7 +1175,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(UsingMicrosoftNETSdk))
                     {
-                        usingMicrosoftNetSdk = jsonReader.ReadNextTokenAsBoolOrTrue();
+                        usingMicrosoftNetSdk = jsonReader.ReadNextTokenAsBoolOrTrue(UsingMicrosoftNETSdk.ToString());
                     }
                     else if (jsonReader.ValueTextEquals(SdkAnalysisLevel))
                     {
@@ -1183,7 +1183,20 @@ namespace NuGet.ProjectModel
 
                         if (!string.IsNullOrEmpty(sdkAnalysisLevelString))
                         {
-                            sdkAnalysisLevel = new NuGetVersion(sdkAnalysisLevelString);
+                            try
+                            {
+                                sdkAnalysisLevel = new NuGetVersion(sdkAnalysisLevelString);
+                            }
+                            catch (ArgumentException ex)
+                            {
+                                throw new ArgumentException(
+                                    string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Invalid_AttributeValue,
+                                    SdkAnalysisLevel.ToString(),
+                                    sdkAnalysisLevelString,
+                                    "9.0.100"),
+                                    ex);
+                            }
                         }
                     }
                     else
