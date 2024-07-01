@@ -67,8 +67,7 @@ namespace NuGet.CommandLine.XPlat
         public static void SetUserAgent()
         {
 #if IS_CORECLR
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat")
-                .WithOSDescription(RuntimeInformation.OSDescription));
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
 #else
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
 #endif
