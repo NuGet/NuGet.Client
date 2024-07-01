@@ -4074,6 +4074,22 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Theory]
+        [MemberData(nameof(TestEnvironmentVariableReader), "notGood", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        [MemberData(nameof(TestEnvironmentVariableReader), "10invalid", MemberType = typeof(LockFileParsingEnvironmentVariable))]
+        public void GetPackageSpec_WithAnInvalidSdkAnalysisLevelValue_ThrowsAnException(
+            IEnvironmentVariableReader environmentVariableReader,
+            string version)
+        {
+            // Arrange
+            var json = $"{{\"restore\":{{\"SdkAnalysisLevel\":\"{version}\"}}}}";
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => GetPackageSpec(json, environmentVariableReader));
+            Assert.Contains("SdkAnalysisLevel", ex.Message);
+            Assert.Contains(version, ex.Message);
+        }
+
+        [Theory]
         [MemberData(nameof(TestEnvironmentVariableReader), true, MemberType = typeof(LockFileParsingEnvironmentVariable))]
         [MemberData(nameof(TestEnvironmentVariableReader), false, MemberType = typeof(LockFileParsingEnvironmentVariable))]
         public void GetPackageSpec_WithUsingMicrosoftNetSdk_ReturnsUsingMicrosoftNetSdk(
@@ -4088,6 +4104,18 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(isSdk, packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
+        }
+
+        [Fact]
+        public void GetPackageSpec_WithInvalidUsingMicrosoftNetSdk_ThrowsAnException()
+        {
+            // Arrange
+            var json = $"{{\"restore\":{{\"UsingMicrosoftNETSdk\":1}}}}";
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(() => GetPackageSpec(json));
+            Assert.Contains("UsingMicrosoftNETSdk", ex.Message);
+            Assert.Contains("1", ex.Message);
         }
 
         [Fact]

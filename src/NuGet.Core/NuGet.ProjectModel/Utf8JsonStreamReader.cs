@@ -235,7 +235,7 @@ namespace NuGet.ProjectModel
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.Invalid_AttributeValue,
                     propertyName,
-                    _reader.GetString(),
+                    _reader.ReadTokenAsString(),
                     "false"));
             }
         }

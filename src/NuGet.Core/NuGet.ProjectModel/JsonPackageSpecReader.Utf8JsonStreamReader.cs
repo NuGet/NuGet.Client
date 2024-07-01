@@ -1175,7 +1175,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(UsingMicrosoftNETSdk))
                     {
-                        usingMicrosoftNetSdk = jsonReader.ReadNextTokenAsBoolOrTrue(UsingMicrosoftNETSdk.ToString());
+                        usingMicrosoftNetSdk = jsonReader.ReadNextTokenAsBoolOrTrue(Encoding.UTF8.GetString(UsingMicrosoftNETSdk));
                     }
                     else if (jsonReader.ValueTextEquals(SdkAnalysisLevel))
                     {
@@ -1192,7 +1192,7 @@ namespace NuGet.ProjectModel
                                 throw new ArgumentException(
                                     string.Format(CultureInfo.CurrentCulture,
                                     Strings.Invalid_AttributeValue,
-                                    SdkAnalysisLevel.ToString(),
+                                    Encoding.UTF8.GetString(SdkAnalysisLevel),
                                     sdkAnalysisLevelString,
                                     "9.0.100"),
                                     ex);

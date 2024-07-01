@@ -1167,7 +1167,7 @@ namespace NuGet.ProjectModel
                             }
                             catch (ArgumentException ex)
                             {
-                                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
+                                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
                             }
                         }
                         break;
