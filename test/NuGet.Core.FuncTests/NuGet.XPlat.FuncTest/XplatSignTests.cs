@@ -434,9 +434,33 @@ namespace NuGet.XPlat.FuncTest
                 });
         }
 
+        [Fact]
+        public void SignCommandArgParsing_LogsAWarningForInsecureCertificateFingerprint()
+        {
+            var packagePath = @"\\path\package.nupkg";
+            var timestamper = "https://timestamper.test";
+            var timestampHashAlgorithm = "sha512";
+            Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out HashAlgorithmName parsedTimestampHashAlgorithm);
+
+            SignCommandArgs(
+                (mockCommandRunner, testApp, getLogLevel, getParsedArg, logger) =>
+                {
+                    //Arrange
+                    var argList = new List<string>() { "sign", packagePath, "--certificate-fingerprint", "89967D1DD995010B6C66AE24FF8E66885E6E03A8", "--certificate-password", "password", "--timestamper", timestamper, "--timestamp-hash-algorithm", timestampHashAlgorithm };
+
+                    //Act
+                    testApp.Execute(argList.ToArray());
+
+                    //Assert
+                    Assert.Equal(expected: 1, actual: logger.Warnings);
+                    Assert.True(logger.WarningMessages.First().Contains(NuGetLogCode.NU3043.ToString()));
+                });
+        }
+
         [Theory]
-        [InlineData("89967D1DD995010B6C66AE24FF8E66885E6E03A8")]
-        public void SignCommandArgParsing_LogsAWarningForInsecureCertificateFingerprint(string certificateFingerprint)
+        [InlineData("89967D1DD995010B6C66AE24FF8E66885E6E03")] // 39 characters long not SHA-1 hash
+        [InlineData("invalid-certificate-fingerprint")]
+        public void SignCommandArgParsing_ThrowsAnExceptionForInvalidCertificateFingerprint(string certificateFingerprint)
         {
             var packagePath = @"\\path\package.nupkg";
             var timestamper = "https://timestamper.test";
@@ -449,12 +473,11 @@ namespace NuGet.XPlat.FuncTest
                     //Arrange
                     var argList = new List<string>() { "sign", packagePath, "--certificate-fingerprint", certificateFingerprint, "--certificate-password", "password", "--timestamper", timestamper, "--timestamp-hash-algorithm", timestampHashAlgorithm };
 
-                    //Act
-                    testApp.Execute(argList.ToArray());
+                    //Act & Assert
+                    var ex = Assert.Throws<AggregateException>(() => testApp.Execute(argList.ToArray()));
+                    Assert.IsType<ArgumentException>(ex.InnerException);
+                    Assert.Equal(expected: Strings.SignCommandInvalidCertificateFingerprint, actual: ex.InnerException.Message);
 
-                    //Assert
-                    Assert.Equal(expected: 1, actual: logger.Warnings);
-                    Assert.True(logger.WarningMessages.First().Contains(NuGetLogCode.NU3043.ToString()));
                 });
         }
 

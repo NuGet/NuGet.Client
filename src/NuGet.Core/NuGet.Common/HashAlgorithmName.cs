@@ -6,9 +6,9 @@ namespace NuGet.Common
     public enum HashAlgorithmName
     {
         Unknown = 0,
-        SHA1 = 1,
-        SHA256 = 2,
-        SHA384 = 3,
-        SHA512 = 4
+        SHA256 = 1,
+        SHA384 = 2,
+        SHA512 = 3,
+        SHA1 = 4
     }
 }
