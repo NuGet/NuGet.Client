@@ -8,6 +8,4 @@ NuGet.ProjectModel.LockFileReadFlags.PackageFolders = 8 -> NuGet.ProjectModel.Lo
 NuGet.ProjectModel.LockFileReadFlags.PackageSpec = 16 -> NuGet.ProjectModel.LockFileReadFlags
 NuGet.ProjectModel.LockFileReadFlags.ProjectFileDependencyGroups = 4 -> NuGet.ProjectModel.LockFileReadFlags
 NuGet.ProjectModel.LockFileReadFlags.Targets = 2 -> NuGet.ProjectModel.LockFileReadFlags
-NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.get -> System.Collections.Generic.HashSet<string!>?
-NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.set -> void
 ~static NuGet.ProjectModel.LockFileUtilities.GetLockFile(string lockFilePath, NuGet.Common.ILogger logger, NuGet.ProjectModel.LockFileReadFlags flags) -> NuGet.ProjectModel.LockFile
