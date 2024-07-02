@@ -17,7 +17,7 @@ namespace NuGet.LibraryModel.Tests
         [InlineData("[1.0.0 , 2.0.0]", "packageA >= 1.0.0 <= 2.0.0")]
         [InlineData("(1.0.0 , 2.0.0)", "packageA > 1.0.0 < 2.0.0")]
         [InlineData("(1.0.0 , 2.0.0]", "packageA > 1.0.0 <= 2.0.0")]
-        [InlineData(null, "")]
+        [InlineData(null, "packageA")]
         public void LibraryRange_ToLockFileDependencyGroupString(string versionRange, string expected)
         {
             // Arrange
