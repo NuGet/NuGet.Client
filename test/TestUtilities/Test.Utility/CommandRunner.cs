@@ -53,6 +53,9 @@ namespace NuGet.Test.Utility
                     process.StartInfo.Environment["NUGET_SHOW_STACK"] = bool.TrueString;
                     process.StartInfo.Environment["NuGetTestModeEnabled"] = bool.TrueString;
                     process.StartInfo.Environment["UseSharedCompilation"] = bool.FalseString;
+                    process.StartInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = bool.TrueString;
+                    process.StartInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = bool.TrueString;
+                    process.StartInfo.Environment["SuppressNETCoreSdkPreviewMessage"] = bool.TrueString;
 
                     if (environmentVariables != null)
                     {
