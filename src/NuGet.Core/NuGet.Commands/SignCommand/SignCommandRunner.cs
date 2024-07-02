@@ -178,7 +178,6 @@ namespace NuGet.Commands
                 CertificatePath = signArgs.CertificatePath,
                 CertificatePassword = signArgs.CertificatePassword,
                 Fingerprint = signArgs.CertificateFingerprint,
-                FingerprintHashAlgorithmName = signArgs.CertificateHashAlgorithmName,
                 StoreLocation = signArgs.CertificateStoreLocation,
                 StoreName = signArgs.CertificateStoreName,
                 SubjectName = signArgs.CertificateSubjectName,
