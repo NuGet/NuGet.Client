@@ -294,7 +294,7 @@ namespace NuGet.XPlat.FuncTest
                 File.WriteAllText(projectPath, string.Empty);
 
                 var logLevel = LogLevel.Information;
-                var logger = new TestCommandOutputLogger();
+                var logger = new TestCommandOutputLogger(_testOutputHelper);
                 var testApp = new CommandLineApplication();
                 var mockCommandRunner = new Mock<IListPackageCommandRunner>();
                 mockCommandRunner
