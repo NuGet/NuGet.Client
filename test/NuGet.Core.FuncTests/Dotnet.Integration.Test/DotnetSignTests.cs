@@ -522,7 +522,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781
         public async Task DotnetSign_SignPackageWithInsecureCertificateFingerprint_RaisesWarningAsync()
         {
-            await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA256, expectInsecureFingerprintWarning: true);
+            await ExecuteSignPackageTestWithCertificateFingerprintAsync(HashAlgorithmName.SHA1, expectInsecureFingerprintWarning: true);
         }
 
         [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Client.Engineering/issues/2781

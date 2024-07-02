@@ -40,6 +40,9 @@ NuGet.Common.ExceptionLogger.ShowStack.get -> bool
 NuGet.Common.ExceptionUtilities
 NuGet.Common.FileUtility
 NuGet.Common.HashAlgorithmName
+NuGet.Common.HashAlgorithmName.SHA256 = 1 -> NuGet.Common.HashAlgorithmName
+NuGet.Common.HashAlgorithmName.SHA384 = 2 -> NuGet.Common.HashAlgorithmName
+NuGet.Common.HashAlgorithmName.SHA512 = 3 -> NuGet.Common.HashAlgorithmName
 NuGet.Common.HashAlgorithmName.Unknown = 0 -> NuGet.Common.HashAlgorithmName
 NuGet.Common.ICollectorLogger
 NuGet.Common.ICollectorLogger.Errors.get -> System.Collections.Generic.IEnumerable<NuGet.Common.IRestoreLogMessage!>!
