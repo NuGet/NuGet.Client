@@ -1,3 +1,1 @@
 #nullable enable
-NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.get -> System.Collections.Generic.HashSet<string!>?
-NuGet.ProjectModel.RestoreAuditProperties.SuppressedAdvisories.set -> void
