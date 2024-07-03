@@ -253,7 +253,7 @@ namespace NuGet.ProjectModel
 
             while (Read() && _reader.TokenType != JsonTokenType.EndArray)
             {
-                string value = _reader.ReadTokenAsString(); // TODO NK - why is this one null accepting?
+                string value = _reader.ReadTokenAsString();
 
                 strings ??= new List<string>();
 
