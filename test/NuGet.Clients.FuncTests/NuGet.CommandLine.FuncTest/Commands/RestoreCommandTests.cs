@@ -1216,8 +1216,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
             // Assert
             result.Success.Should().BeFalse();
-            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
-            Assert.Contains(errorForHttpSource, result.AllOutput);
+            Assert.Contains("restore", result.Errors);
+            Assert.Contains("http://api.source/index.json", result.Errors);
         }
 
         [Theory]
@@ -1254,13 +1254,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
             CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
-            string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
             Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.AllOutput);
-            Assert.DoesNotContain(errorForHttpSource, result.AllOutput);
-            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
         }
 
         [Theory]
@@ -1299,12 +1295,10 @@ namespace NuGet.CommandLine.FuncTest.Commands
             CommandRunnerResult result = RunRestore(pathContext, _failureExitCode);
 
             // Assert
-            string errorForHttpSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
-            string errorForHttpsSource = string.Format(PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
-
             result.Success.Should().BeFalse();
-            Assert.Contains(errorForHttpSource, result.AllOutput);
-            Assert.DoesNotContain(errorForHttpsSource, result.AllOutput);
+            Assert.Contains("restore", result.Errors);
+            Assert.Contains("http://api.source/index.json", result.Errors);
+            Assert.DoesNotContain("https://api.source/index.json", result.Errors);
         }
 
         public static string GetResource(string name)

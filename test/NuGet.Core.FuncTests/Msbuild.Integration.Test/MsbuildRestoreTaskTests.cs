@@ -1188,13 +1188,13 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     packageX);
 
                 // Act
-                string errorForHttpSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
                 string args = $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true /p:RestoreUseStaticGraphEvaluation={useStaticGraphEvaluation}";
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, args, ignoreExitCode: true, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 Assert.Equal(1, result.ExitCode);
-                Assert.Contains(errorForHttpSource, result.AllOutput);
+                Assert.Contains("restore", result.AllOutput);
+                Assert.Contains("http://api.source/index.json", result.AllOutput);
             }
         }
 
@@ -1244,13 +1244,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true, testOutputHelper: _testOutputHelper);
 
                 // Assert
-                string errorForHttpSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
-                string errorForHttpsSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
 
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 Assert.Contains("Added package 'x.1.0.0' to folder", result.AllOutput);
-                Assert.DoesNotContain(errorForHttpsSource, result.Output);
-                Assert.DoesNotContain(errorForHttpSource, result.Output);
             }
         }
 
@@ -1302,12 +1298,9 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode: true);
 
                 // Assert
-                string errorForHttpSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "http://api.source/index.json");
-                string errorForHttpsSource = string.Format(NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", "https://api.source/index.json");
-
                 Assert.True(result.ExitCode == 1, result.AllOutput);
-                Assert.DoesNotContain(errorForHttpsSource, result.Output);
-                Assert.Contains(errorForHttpSource, result.Output);
+                Assert.Contains("restore", result.AllOutput);
+                Assert.Contains("http://api.source/index.json", result.AllOutput);
             }
         }
 

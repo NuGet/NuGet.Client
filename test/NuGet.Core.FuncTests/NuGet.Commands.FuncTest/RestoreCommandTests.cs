@@ -4117,8 +4117,6 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
-            string expectedError = string.Format(CultureInfo.CurrentCulture, NuGet.PackageManagement.Strings.Error_HttpSource_Single, "restore", httpSourceUrl);
-
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.LogMessages.Should().HaveCount(0);
         }

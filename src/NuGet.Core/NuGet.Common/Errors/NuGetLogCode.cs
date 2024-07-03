@@ -347,7 +347,7 @@ namespace NuGet.Common
         NU1802 = 1802,
 
         /// <summary>
-        /// HTTPHTTP Source specified, but HTTP sources will be deprecated.
+        /// HTTP Source specified, but HTTP sources will be deprecated.
         /// </summary>
         NU1803 = 1803,
 
