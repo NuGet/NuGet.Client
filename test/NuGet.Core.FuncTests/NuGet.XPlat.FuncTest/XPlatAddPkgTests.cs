@@ -322,7 +322,6 @@ namespace NuGet.XPlat.FuncTest
             {
                     new object[] { new string[] { "1.0.0-preview.1", "1.0.0-preview.2", "1.0.0-preview.3" }, false },
             };
-        
 
         [Theory]
         [MemberData(nameof(AddPkg_PackageVersionsLatestPrereleasNoStableAvailableData))]
@@ -596,7 +595,7 @@ namespace NuGet.XPlat.FuncTest
                 var commandRunner = new AddPackageReferenceCommandRunner();
 
                 // Act
-                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger)  );
+                var result = await commandRunner.ExecuteCommand(packageArgs, new MSBuildAPIUtility(logger));
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
                 // Assert
@@ -920,7 +919,9 @@ namespace NuGet.XPlat.FuncTest
 
                 var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger,packageX_V3.Id, packageX_V3.Version.ToString(),
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger,
+                    packageX_V3.Id,
+                    packageX_V3.Version.ToString(),
                     projectA,
                     sources: customSourcePath);
 
@@ -969,7 +970,9 @@ namespace NuGet.XPlat.FuncTest
                 var logger = new TestCommandOutputLogger(_testOutputHelper);
 
                 // Since user is not inputing a version, it is converted to a "*" in the command
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger,packageX.Id, "*",
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger,
+                    packageX.Id,
+                    "*",
                     projectA,
                     frameworks: userInputFrameworks,
                     noVersion: true);

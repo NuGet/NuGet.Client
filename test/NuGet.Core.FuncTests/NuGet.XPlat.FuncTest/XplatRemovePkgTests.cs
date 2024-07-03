@@ -122,7 +122,7 @@ namespace NuGet.XPlat.FuncTest
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
                 var logger = new TestCommandOutputLogger(_testOutputHelper);
 
-                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger,unknownPackageId, projectA);
+                var packageArgs = XPlatTestUtils.GetPackageReferenceArgs(logger, unknownPackageId, projectA);
                 var commandRunner = new RemovePackageReferenceCommandRunner();
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
 
