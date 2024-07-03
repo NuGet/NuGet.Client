@@ -46,14 +46,10 @@ namespace NuGet.ProjectModel
             }
         }
 
-        internal static LockFile LoadJson(Stream stream, Utf8JsonStreamLockFileConverter converter, LockFileReadFlags flags)
+        internal static T LoadJson<T>(Stream stream, IUtf8JsonStreamReaderConverter<T> converter)
         {
             var streamingJsonReader = new Utf8JsonStreamReader(stream);
-            var lockFile = converter.Read(ref streamingJsonReader, flags);
-
-            streamingJsonReader.Dispose();
-
-            return lockFile;
+            return converter.Read(ref streamingJsonReader);
         }
 
         internal static PackageDependency ReadPackageDependency(string property, JToken json)

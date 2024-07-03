@@ -38,11 +38,6 @@ namespace NuGet.ProjectModel
 
         public LockFile Read(ref Utf8JsonStreamReader reader)
         {
-            return Read(ref reader, LockFileReadFlags.All);
-        }
-
-        public LockFile Read(ref Utf8JsonStreamReader reader, LockFileReadFlags flags)
-        {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new JsonException("Expected StartObject, found " + reader.TokenType);
@@ -67,118 +62,57 @@ namespace NuGet.ProjectModel
                 else if (reader.ValueTextEquals(LibrariesPropertyName))
                 {
                     reader.Read();
-
-                    if ((flags & LockFileReadFlags.Libraries) == LockFileReadFlags.Libraries)
-                    {
-                        lockFile.Libraries = reader.ReadObjectAsList<LockFileLibrary>(Utf8JsonReaderExtensions.LockFileLibraryConverter);
-                    }
-                    else
-                    {
-                        reader.Skip();
-                        lockFile.Libraries = Array.Empty<LockFileLibrary>();
-                    }
+                    lockFile.Libraries = reader.ReadObjectAsList<LockFileLibrary>(Utf8JsonReaderExtensions.LockFileLibraryConverter);
                 }
                 else if (reader.ValueTextEquals(TargetsPropertyName))
                 {
                     reader.Read();
-
-                    if ((flags & LockFileReadFlags.Targets) == LockFileReadFlags.Targets)
-                    {
-                        lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverter);
-                    }
-                    else
-                    {
-                        reader.Skip();
-                        lockFile.Targets = Array.Empty<LockFileTarget>();
-                    }
+                    lockFile.Targets = reader.ReadObjectAsList<LockFileTarget>(Utf8JsonReaderExtensions.LockFileTargetConverter);
                 }
                 else if (reader.ValueTextEquals(ProjectFileDependencyGroupsPropertyName))
                 {
                     reader.Read();
-
-                    if ((flags & LockFileReadFlags.ProjectFileDependencyGroups) == LockFileReadFlags.ProjectFileDependencyGroups)
-                    {
-                        lockFile.ProjectFileDependencyGroups = reader.ReadObjectAsList<ProjectFileDependencyGroup>(Utf8JsonReaderExtensions.ProjectFileDepencencyGroupConverter);
-                    }
-                    else
-                    {
-                        reader.Skip();
-                        lockFile.ProjectFileDependencyGroups = Array.Empty<ProjectFileDependencyGroup>();
-                    }
+                    lockFile.ProjectFileDependencyGroups = reader.ReadObjectAsList<ProjectFileDependencyGroup>(Utf8JsonReaderExtensions.ProjectFileDepencencyGroupConverter);
                 }
                 else if (reader.ValueTextEquals(PackageFoldersPropertyName))
                 {
                     reader.Read();
-
-                    if ((flags & LockFileReadFlags.PackageFolders) == LockFileReadFlags.PackageFolders)
-                    {
-                        lockFile.PackageFolders = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
-                    }
-                    else
-                    {
-                        reader.Skip();
-                        lockFile.PackageFolders = Array.Empty<LockFileItem>();
-                    }
+                    lockFile.PackageFolders = reader.ReadObjectAsList<LockFileItem>(Utf8JsonReaderExtensions.LockFileItemConverter);
                 }
                 else if (reader.ValueTextEquals(ProjectPropertyName))
                 {
                     reader.Read();
-
-                    if ((flags & LockFileReadFlags.PackageSpec) == LockFileReadFlags.PackageSpec)
-                    {
-                        lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
-                            ref reader,
-                            name: null,
-                            packageSpecPath: null,
-                            EnvironmentVariableWrapper.Instance,
-                            snapshotValue: null);
-                    }
-                    else
-                    {
-                        reader.Skip();
-                        lockFile.PackageSpec = new PackageSpec(Array.Empty<TargetFrameworkInformation>());
-                    }
+                    lockFile.PackageSpec = JsonPackageSpecReader.GetPackageSpec(
+                        ref reader,
+                        name: null,
+                        packageSpecPath: null,
+                        EnvironmentVariableWrapper.Instance,
+                        snapshotValue: null);
                 }
                 else if (reader.ValueTextEquals(CentralTransitiveDependencyGroupsPropertyName))
                 {
                     IList<CentralTransitiveDependencyGroup> results = null;
-                    if ((flags & LockFileReadFlags.CentralTransitiveDependencyGroups) == LockFileReadFlags.CentralTransitiveDependencyGroups)
+                    if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
                     {
-                        if (reader.Read() && reader.TokenType == JsonTokenType.StartObject)
+                        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
                         {
-                            while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
-                            {
-                                results ??= new List<CentralTransitiveDependencyGroup>();
-                                var frameworkPropertyName = reader.GetString();
-                                NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                            results ??= new List<CentralTransitiveDependencyGroup>();
+                            var frameworkPropertyName = reader.GetString();
+                            NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
 
-                                JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
-                                    jsonReader: ref reader,
-                                    results: out var dependencies,
-                                    packageSpecPath: string.Empty);
-                                results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
-                            }
+                            JsonPackageSpecReader.ReadCentralTransitiveDependencyGroup(
+                                jsonReader: ref reader,
+                                results: out var dependencies,
+                                packageSpecPath: string.Empty);
+                            results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
                         }
                     }
-                    else
-                    {
-                        reader.Skip();
-                    }
-
                     lockFile.CentralTransitiveDependencyGroups = results ?? Array.Empty<CentralTransitiveDependencyGroup>();
                 }
                 else if (reader.ValueTextEquals(LogsPropertyName))
                 {
                     reader.Read();
-                    if ((flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages)
-                    {
-                        lockFile.LogMessages = reader.ReadListOfObjects<IAssetsLogMessage>(Utf8JsonReaderExtensions.IAssetsLogMessageConverter);
-                    }
-                    else
-                    {
-                        reader.Skip();
-                        lockFile.LogMessages = Array.Empty<IAssetsLogMessage>();
-                    }
+                    lockFile.LogMessages = reader.ReadListOfObjects<IAssetsLogMessage>(Utf8JsonReaderExtensions.IAssetsLogMessageConverter);
                 }
                 else
                 {
