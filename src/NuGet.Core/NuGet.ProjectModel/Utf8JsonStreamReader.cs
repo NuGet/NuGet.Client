@@ -180,9 +180,12 @@ namespace NuGet.ProjectModel
                 {
                     string value = _reader.ReadTokenAsString();
 
-                    strings ??= new List<string>();
+                    if (value != null)
+                    {
+                        strings ??= new List<string>();
 
-                    strings.Add(value);
+                        strings.Add(value);
+                    }
                 }
             }
             return strings;
@@ -250,7 +253,7 @@ namespace NuGet.ProjectModel
 
             while (Read() && _reader.TokenType != JsonTokenType.EndArray)
             {
-                string value = _reader.ReadTokenAsString();
+                string value = _reader.ReadTokenAsString(); // TODO NK - why is this one null accepting?
 
                 strings ??= new List<string>();
 

@@ -569,8 +569,7 @@ namespace NuGet.ProjectModel.Test
                     actualValue => Assert.Equal("a", actualValue),
                     actualValue => Assert.Equal("-2", actualValue),
                     actualValue => Assert.Equal("3.14", actualValue),
-                    actualValue => Assert.Equal("True", actualValue),
-                    actualValue => Assert.Null(actualValue));
+                    actualValue => Assert.Equal("True", actualValue));
                 Assert.Equal(JsonTokenType.EndArray, reader.TokenType);
             }
         }
