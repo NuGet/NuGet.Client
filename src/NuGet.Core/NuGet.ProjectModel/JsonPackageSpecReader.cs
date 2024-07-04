@@ -1173,21 +1173,20 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "UsingMicrosoftNETSdk":
-                        string usingMicrosoftNetSdkString = jsonReader.ReadNextTokenAsString();
 
-                        if (bool.TryParse(usingMicrosoftNetSdkString, out bool isSdk))
+                        try
                         {
-                            usingMicrosoftNetSdk = isSdk;
+                            usingMicrosoftNetSdk = jsonReader.ReadAsBoolean() ?? usingMicrosoftNetSdk;
                         }
-                        else
+                        catch (ArgumentException ex)
                         {
                             throw new ArgumentException(
                                 string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.Invalid_AttributeValue,
                                     "UsingMicrosoftNETSdk",
-                                    usingMicrosoftNetSdkString,
-                                    "false"));
+                                    jsonReader.ReadNextTokenAsString(),
+                                    "false"), ex);
                         }
                         break;
                 }

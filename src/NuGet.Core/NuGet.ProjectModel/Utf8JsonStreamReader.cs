@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace NuGet.ProjectModel
@@ -221,7 +222,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
-        internal bool ReadNextTokenAsBoolOrTrue(string propertyName)
+        internal bool ReadNextTokenAsBoolOrTrue(byte[] propertyName)
         {
             ThrowExceptionIfDisposed();
 
@@ -234,7 +235,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentException(
                     string.Format(CultureInfo.CurrentCulture,
                     Strings.Invalid_AttributeValue,
-                    propertyName,
+                    Encoding.UTF8.GetString(propertyName),
                     _reader.ReadTokenAsString(),
                     "false"));
             }

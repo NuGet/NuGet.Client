@@ -896,7 +896,7 @@ namespace NuGet.Build.Tasks.Console
 
             string skdAnalysisLevelString = project.GetProperty("SdkAnalysisLevel");
 
-            if (skdAnalysisLevelString != null)
+            if (!string.IsNullOrEmpty(skdAnalysisLevelString))
             {
                 try
                 {
@@ -911,7 +911,7 @@ namespace NuGet.Build.Tasks.Console
             string isSdk = project.GetProperty("UsingMicrosoftNETSdk");
             bool usingMicrosoftNetSdk = false;
 
-            if (isSdk != null)
+            if (!string.IsNullOrEmpty(isSdk))
             {
                 if (bool.TryParse(isSdk, out bool result))
                 {
