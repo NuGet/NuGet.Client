@@ -4,7 +4,7 @@
 
 <!-- If this is an engineering change or test change only, you do not need an issue. -->
 <!-- Find or create an issue in NuGet/Home and paste the full url. -->
-<!-- Multiple changes may apply to a single issue, but only when the PRs are all created within a short period of time. -->
+<!-- At the maintainers discretion, multiple changes may apply to a single issue, but only when the PRs are all created within a short period of time. -->
 Fixes:
 
 ## Description
