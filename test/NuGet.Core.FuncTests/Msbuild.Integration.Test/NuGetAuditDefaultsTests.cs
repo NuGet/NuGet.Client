@@ -53,7 +53,14 @@ namespace Msbuild.Integration.Test
         }
 
         [Fact]
-        public void NuGetAuditModeDefaults_NuGetExeEmulation()
+        // Some customers run the latest Nuget.exe with old versions of MSBuild. MSBuild only added intrinsic functions
+        // needed for SdkAnalysisVersion comparisons in dev16, so NuGet.exe detects the MSBuild version and adds a
+        // global property when invoking MSBuild, so that our MSBuild script can avoid calling intrinstic functions
+        // that don't exist. In order to test this with a "real" integration test, we'd need an old version of MSBuild
+        // installed, which is not worth the effort, assuming it's even feasible. Therefore, while this test can't
+        // validate that the intrinstic functions are not called, it can set the same global property and validate that
+        // the default values are what we expect.
+        public void NuGetAuditModeDefaults_NuGetExeWithOldMSBuildEmulation()
         {
             // Arrange
             using var testDirectory = TestDirectory.Create();
