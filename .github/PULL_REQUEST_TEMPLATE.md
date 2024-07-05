@@ -1,31 +1,16 @@
 <!-- DO NOT MODIFY OR DELETE THIS TEMPLATE. IT IS USED IN AUTOMATION. -->
-## Bug
 
-<!-- Search https://github.com/NuGet/Home/issues, and create one if you can't find a suitable issue. -->
-<!-- Paste the full link, like https://github.com/nuget/home/issues/1000. GitHub will render is neatly. -->
+# Bug
+
+<!-- If this is an engineering change or test change only, you do not need an issue. -->
+<!-- Find or create an issue in NuGet/Home and paste the full url. -->
+<!-- Multiple changes may apply to a single issue, but only when the PRs are all created within a short period of time. -->
 Fixes:
 
-Regression? Last working version:
-
 ## Description
-<!-- Add details about the fix. Include any information that would help the maintainer review this change effective. -->
 
 ## PR Checklist
 
-- [ ] PR has a meaningful title
-- [ ] PR has a linked issue.
-- [ ] Described changes
-
-- **Tests**
-  - [ ] Automated tests added
-  - **OR**
-  <!-- Describe why you haven't added automation. -->
-  - [ ] Test exception
-  - **OR**
-  - [ ] N/A <!-- Infrastructure, documentation etc. -->
-
-- **Documentation**
-  <!-- Please link the PR/issue if appropriate -->
-  - [ ] Documentation PR or issue filled
-  - **OR**
-  - [ ] N/A
+- [ ] Meaningful title, helpful description and a linked issue
+- [ ] PR has automated tests added, I have described why I need an exception or test changes do not apply to this PR.
+- [ ] Link to a documentation issue or PR or these changes do not require documentation changes.
