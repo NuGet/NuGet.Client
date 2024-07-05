@@ -12,5 +12,5 @@ Fixes:
 ## PR Checklist
 
 - [ ] Meaningful title, helpful description and a linked issue
-- [ ] PR has automated tests added, I have described why I need an exception or test changes do not apply to this PR.
-- [ ] Link to a documentation issue or PR or these changes do not require documentation changes.
+- [ ] Automated tests, a test exception request or does not apply
+- [ ] Link to a documentation issue or PR or does not apply
