@@ -28,6 +28,7 @@ namespace NuGet.VisualStudio
         public const string TimeSinceLastRestoreCompleted = nameof(TimeSinceLastRestoreCompleted);
         public const string LastRestoreOperationSource = nameof(LastRestoreOperationSource);
         public const string NumHTTPFeeds = nameof(NumHTTPFeeds);
+        public const string NumNonHttpsFeeds = nameof(NumNonHttpsFeeds);
         public const string NumLocalFeeds = nameof(NumLocalFeeds);
         public const string NuGetOrg = nameof(NuGetOrg);
         public const string VsOfflinePackages = nameof(VsOfflinePackages);
@@ -56,6 +57,7 @@ namespace NuGet.VisualStudio
             IntervalTracker intervalTimingTracker,
             bool isPackageSourceMappingEnabled,
             int httpFeedsCount,
+            int nonHttpsFeedsCount,
             int localFeedsCount,
             bool hasNuGetOrg,
             bool hasVSOfflineFeed
@@ -74,6 +76,7 @@ namespace NuGet.VisualStudio
             base[nameof(ForceRestore)] = forceRestore;
             base[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
             base[NumHTTPFeeds] = httpFeedsCount;
+            base[NumNonHttpsFeeds] = nonHttpsFeedsCount;
             base[NumLocalFeeds] = localFeedsCount;
             base[NuGetOrg] = hasNuGetOrg;
             base[VsOfflinePackages] = hasVSOfflineFeed;

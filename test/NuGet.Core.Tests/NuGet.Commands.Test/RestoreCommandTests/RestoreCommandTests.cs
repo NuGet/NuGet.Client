@@ -2869,6 +2869,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["PackageSourceMapping.IsMappingEnabled"] = value => value.Should().Be(false),
                 ["SourcesCount"] = value => value.Should().Be(1),
                 ["HttpSourcesCount"] = value => value.Should().Be(0),
+                ["NonHttpsSourcesCount"] = value => value.Should().Be(0),
                 ["LocalSourcesCount"] = value => value.Should().Be(1),
                 ["FallbackFoldersCount"] = value => value.Should().Be(0),
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
@@ -2982,6 +2983,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
             projectInformationEvent["SourcesCount"].Should().Be(1);
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
+            projectInformationEvent["NonHttpsSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
             projectInformationEvent["IsLockFileEnabled"].Should().Be(false);
@@ -3043,7 +3045,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
             var projectInformationEvent = telemetryEvents.Single(e => e.Name.Equals("ProjectRestoreInformation"));
 
-            projectInformationEvent.Count.Should().Be(29);
+            projectInformationEvent.Count.Should().Be(30);
             projectInformationEvent["RestoreSuccess"].Should().Be(true);
             projectInformationEvent["NoOpResult"].Should().Be(false);
             projectInformationEvent["TotalUniquePackagesCount"].Should().Be(2);

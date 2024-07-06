@@ -24,6 +24,8 @@ namespace Test.Utility
 
         public bool IsHttp => false;
 
+        public bool IsHttps => false;
+
         public PackageSource Source => new PackageSource("Test");
 
         public SourceRepository SourceRepository => throw new NotImplementedException();

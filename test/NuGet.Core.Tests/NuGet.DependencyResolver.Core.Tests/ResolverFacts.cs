@@ -122,6 +122,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             public bool IsHttp => true;
 
+            public bool IsHttps => false;
+
             public PackageSource Source => new PackageSource("Test");
 
             public SourceRepository SourceRepository => throw new NotImplementedException();

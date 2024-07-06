@@ -54,6 +54,7 @@ namespace NuGet.Commands
         private const string NewPackagesInstalledCount = nameof(NewPackagesInstalledCount);
         private const string SourcesCount = nameof(SourcesCount);
         private const string HttpSourcesCount = nameof(HttpSourcesCount);
+        private const string NonHttpsSourcesCount = nameof(NonHttpsSourcesCount);
         private const string LocalSourcesCount = nameof(LocalSourcesCount);
         private const string FallbackFoldersCount = nameof(FallbackFoldersCount);
 
@@ -157,7 +158,9 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[PackageSourceMappingIsMappingEnabled] = isPackageSourceMappingEnabled;
                 telemetry.TelemetryEvent[SourcesCount] = _request.DependencyProviders.RemoteProviders.Count;
                 int httpSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => e.IsHttp).Count();
+                int nonHttpsSourcesCount = _request.DependencyProviders.RemoteProviders.Where(e => !e.IsHttps).Count();
                 telemetry.TelemetryEvent[HttpSourcesCount] = httpSourcesCount;
+                telemetry.TelemetryEvent[NonHttpsSourcesCount] = nonHttpsSourcesCount;
                 telemetry.TelemetryEvent[LocalSourcesCount] = _request.DependencyProviders.RemoteProviders.Count - httpSourcesCount;
                 telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
                 bool isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);

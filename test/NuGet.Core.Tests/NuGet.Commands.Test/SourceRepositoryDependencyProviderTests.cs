@@ -79,6 +79,7 @@ namespace NuGet.Commands.Test
             using (var test = SourceRepositoryDependencyProviderTest.Create())
             {
                 Assert.Equal(test.PackageSource.IsHttp, test.Provider.IsHttp);
+                Assert.Equal(test.PackageSource.IsHttps, test.Provider.IsHttps);
                 Assert.Same(test.PackageSource, test.Provider.Source);
             }
         }

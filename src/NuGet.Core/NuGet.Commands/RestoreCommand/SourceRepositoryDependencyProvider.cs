@@ -144,6 +144,11 @@ namespace NuGet.Commands
         public bool IsHttp => _sourceRepository.PackageSource.IsHttp;
 
         /// <summary>
+        /// Gets a flag indicating whether or not the provider source is HTTPS.
+        /// </summary>
+        public bool IsHttps => _sourceRepository.PackageSource.IsHttps;
+
+        /// <summary>
         /// Gets the package source.
         /// </summary>
         /// <remarks>Optional. This will be <see langword="null" /> for project providers.</remarks>

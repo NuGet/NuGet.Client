@@ -72,6 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 new IntervalTracker("Activity"),
                 isPackageSourceMappingEnabled: false,
                 httpFeedsCount: 1,
+                nonHttpsFeedsCount: 1,
                 localFeedsCount: 2,
                 hasNuGetOrg: true,
                 hasVSOfflineFeed: false);
@@ -138,6 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 tracker,
                 isPackageSourceMappingEnabled: isPackageSourceMappingEnabled,
                 httpFeedsCount: 1,
+                nonHttpsFeedsCount: 1,
                 localFeedsCount: 2,
                 hasNuGetOrg: true,
                 hasVSOfflineFeed: false);
@@ -150,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(27, lastTelemetryEvent.Count);
+            Assert.Equal(28, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -163,7 +165,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(26, actual.Count);
+            Assert.Equal(27, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
@@ -183,6 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected[RestoreTelemetryEvent.NuGetOrg], (bool)actual["NuGetOrg"]);
             Assert.Equal(expected[RestoreTelemetryEvent.VsOfflinePackages], (bool)actual["VsOfflinePackages"]);
             Assert.Equal(1, (int)actual["NumHTTPFeeds"]);
+            Assert.Equal(1, (int)actual["NumNonHttpsFeeds"]);
             Assert.Equal(2, (int)actual["NumLocalFeeds"]);
             Assert.True((bool)actual["NuGetOrg"]);
             Assert.False((bool)actual["VsOfflinePackages"]);

@@ -1,1 +1,3 @@
 #nullable enable
+NuGet.DependencyResolver.IRemoteDependencyProvider.IsHttps.get -> bool
+NuGet.DependencyResolver.LocalDependencyProvider.IsHttps.get -> bool

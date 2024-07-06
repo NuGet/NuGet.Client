@@ -45,6 +45,11 @@ namespace NuGet.DependencyResolver
         public bool IsHttp { get; private set; }
 
         /// <summary>
+        /// Gets a flag indicating whether or not the provider source is HTTPS.
+        /// </summary>
+        public bool IsHttps { get; private set; }
+
+        /// <summary>
         /// Gets the package source.
         /// </summary>
         /// <remarks>Optional. This will be <see langword="null" /> for project providers.</remarks>
