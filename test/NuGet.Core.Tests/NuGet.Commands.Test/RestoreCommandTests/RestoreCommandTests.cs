@@ -2869,7 +2869,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 ["PackageSourceMapping.IsMappingEnabled"] = value => value.Should().Be(false),
                 ["SourcesCount"] = value => value.Should().Be(1),
                 ["HttpSourcesCount"] = value => value.Should().Be(0),
-                ["NonHttpsSourcesCount"] = value => value.Should().Be(0),
+                ["HttpsSourcesCount"] = value => value.Should().Be(0),
                 ["LocalSourcesCount"] = value => value.Should().Be(1),
                 ["FallbackFoldersCount"] = value => value.Should().Be(0),
                 ["Audit.Enabled"] = value => value.Should().Be("enabled"),
@@ -2983,7 +2983,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["PackageSourceMapping.IsMappingEnabled"].Should().Be(false);
             projectInformationEvent["SourcesCount"].Should().Be(1);
             projectInformationEvent["HttpSourcesCount"].Should().Be(0);
-            projectInformationEvent["NonHttpsSourcesCount"].Should().Be(0);
+            projectInformationEvent["HttpsSourcesCount"].Should().Be(0);
             projectInformationEvent["LocalSourcesCount"].Should().Be(1);
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
             projectInformationEvent["IsLockFileEnabled"].Should().Be(false);

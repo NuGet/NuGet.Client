@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 new IntervalTracker("Activity"),
                 isPackageSourceMappingEnabled: false,
                 httpFeedsCount: 1,
-                nonHttpsFeedsCount: 1,
+                httpsFeedsCount: 1,
                 localFeedsCount: 2,
                 hasNuGetOrg: true,
                 hasVSOfflineFeed: false);
@@ -139,7 +139,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 tracker,
                 isPackageSourceMappingEnabled: isPackageSourceMappingEnabled,
                 httpFeedsCount: 1,
-                nonHttpsFeedsCount: 1,
+                httpsFeedsCount: 1,
                 localFeedsCount: 2,
                 hasNuGetOrg: true,
                 hasVSOfflineFeed: false);
@@ -185,7 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected[RestoreTelemetryEvent.NuGetOrg], (bool)actual["NuGetOrg"]);
             Assert.Equal(expected[RestoreTelemetryEvent.VsOfflinePackages], (bool)actual["VsOfflinePackages"]);
             Assert.Equal(1, (int)actual["NumHTTPFeeds"]);
-            Assert.Equal(1, (int)actual["NumNonHttpsFeeds"]);
+            Assert.Equal(1, (int)actual["NumHttpsFeeds"]);
             Assert.Equal(2, (int)actual["NumLocalFeeds"]);
             Assert.True((bool)actual["NuGetOrg"]);
             Assert.False((bool)actual["VsOfflinePackages"]);

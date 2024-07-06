@@ -336,7 +336,7 @@ namespace NuGet.SolutionRestoreManager
             var packageSources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
 
             int NumHTTPFeeds = 0;
-            int NumNonHttpsFeeds = 0;
+            int NumHttpsFeeds = 0;
             int NumLocalFeeds = 0;
             bool hasVSOfflineFeed = false;
             bool hasNuGetOrg = false;
@@ -349,9 +349,9 @@ namespace NuGet.SolutionRestoreManager
                     {
                         NumHTTPFeeds++;
 
-                        if (!packageSource.IsHttps)
+                        if (packageSource.IsHttps)
                         {
-                            NumNonHttpsFeeds++;
+                            NumHttpsFeeds++;
                         }
                         hasNuGetOrg |= UriUtility.IsNuGetOrg(packageSource.Source);
                     }
@@ -386,7 +386,7 @@ namespace NuGet.SolutionRestoreManager
                 intervalTimingTracker,
                 isPackageSourceMappingEnabled,
                 NumHTTPFeeds,
-                NumNonHttpsFeeds,
+                NumHttpsFeeds,
                 NumLocalFeeds,
                 hasNuGetOrg,
                 hasVSOfflineFeed);
