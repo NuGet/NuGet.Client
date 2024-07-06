@@ -84,7 +84,7 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideService(typeof(IExternalSettingsProvider), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
     [Guid(GuidList.guidNuGetPkgString)]
-    public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
+    public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts, IExternalSettingsProvider
     {
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
@@ -104,9 +104,48 @@ namespace NuGetVSExtension
         private bool _initialized;
         private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
+        public event EventHandler<ExternalSettingsChangedEventArgs> SettingValuesChanged;
+        public event EventHandler<EnumSettingChoicesChangedEventArgs> EnumSettingChoicesChanged;
+        public event EventHandler<DynamicMessageTextChangedEventArgs> DynamicMessageTextChanged;
+        public event EventHandler ErrorConditionResolved;
+
         public NuGetPackage()
         {
+            AddService(typeof(IExternalSettingsProvider),
+                (container, ct, serviceType) => Task.FromResult<object>(new ExternalSettingsProviderService()),
+                promote: true);
             ServiceLocator.InitializePackageServiceProvider(this);
+
+            SettingValuesChanged += NuGetPackage_SettingValuesChanged;
+            EnumSettingChoicesChanged += NuGetPackage_EnumSettingChoicesChanged;
+            DynamicMessageTextChanged += NuGetPackage_DynamicMessageTextChanged;
+            ErrorConditionResolved += NuGetPackage_ErrorConditionResolved;
+
+            DynamicMessageTextChanged.Invoke(this, new DynamicMessageTextChangedEventArgs(""));
+            SettingValuesChanged.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
+            EnumSettingChoicesChanged.Invoke(this, new EnumSettingChoicesChangedEventArgs(""));
+            ErrorConditionResolved.Invoke(this, EventArgs.Empty);
+
+        }
+
+        private void NuGetPackage_ErrorConditionResolved(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void NuGetPackage_DynamicMessageTextChanged(object sender, DynamicMessageTextChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void NuGetPackage_EnumSettingChoicesChanged(object sender, EnumSettingChoicesChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void NuGetPackage_SettingValuesChanged(object sender, ExternalSettingsChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
         }
 
         [Import]
@@ -191,10 +230,6 @@ namespace NuGetVSExtension
                     return vsMonitorSelection;
                 },
                 ThreadHelper.JoinableTaskFactory);
-
-            AddService(typeof(IExternalSettingsProvider),
-                (container, ct, serviceType) => Task.FromResult<object>(new ExternalSettingsProviderService()),
-                promote: true);
 
             await NuGetBrokeredServiceFactory.ProfferServicesAsync(this);
 
@@ -1334,6 +1369,36 @@ namespace NuGetVSExtension
             {
                 base.Dispose(disposing);
             }
+        }
+
+        public Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken) where T : notnull
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken) where T : notnull
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetMessageTextAsync(string messageId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OpenBackingStoreAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
