@@ -10,7 +10,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Protocol;
 
@@ -179,7 +178,6 @@ namespace NuGet.Commands
                 CertificatePath = signArgs.CertificatePath,
                 CertificatePassword = signArgs.CertificatePassword,
                 Fingerprint = signArgs.CertificateFingerprint,
-                FingerprintHashAlgorithmName = signArgs.CertificateHashAlgorithmName,
                 StoreLocation = signArgs.CertificateStoreLocation,
                 StoreName = signArgs.CertificateStoreName,
                 SubjectName = signArgs.CertificateSubjectName,
