@@ -169,17 +169,18 @@ namespace NuGet.Commands
             // validity checks ourselves.
             const bool validOnly = false;
 
-            if (!string.IsNullOrEmpty(options.Fingerprint))
+            if (!string.IsNullOrEmpty(options.Fingerprint) &&
+                CertificateUtility.TryDeduceHashAlgorithm(options.Fingerprint, out Common.HashAlgorithmName hashAlgorithmName))
             {
-                if (options.FingerprintHashAlgorithmName == Common.HashAlgorithmName.SHA1)
+                if (hashAlgorithmName == Common.HashAlgorithmName.SHA1)
                 {
                     resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly);
                 }
-                else if (options.FingerprintHashAlgorithmName != Common.HashAlgorithmName.Unknown)
+                else if (hashAlgorithmName != Common.HashAlgorithmName.Unknown)
                 {
                     foreach (var cert in store.Certificates)
                     {
-                        string actualFingerprint = CertificateUtility.GetHashString(cert, options.FingerprintHashAlgorithmName);
+                        string actualFingerprint = CertificateUtility.GetHashString(cert, hashAlgorithmName);
 
                         if (string.Equals(actualFingerprint, options.Fingerprint, StringComparison.InvariantCultureIgnoreCase))
                         {
