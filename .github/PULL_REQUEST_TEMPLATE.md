@@ -13,4 +13,4 @@ Fixes:
 
 - [ ] Meaningful title, helpful description and a linked issue
 - [ ] Automated tests, a test exception request or does not apply
-- [ ] Link to a documentation issue or PR or does not apply
+- [ ] Create and link to an issue to update docs if this PR changes settings, environment variables, new feature, etc.
