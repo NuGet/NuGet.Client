@@ -228,7 +228,7 @@ namespace NuGet.Commands
             return summaryRequest;
         }
 
-        private IReadOnlyList<SourceRepository> GetAuditSources(CachingSourceProvider cachingSourceProvider)
+        private static IReadOnlyList<SourceRepository> GetAuditSources(CachingSourceProvider cachingSourceProvider)
         {
             IReadOnlyList<PackageSource> auditSources = cachingSourceProvider.PackageSourceProvider.LoadAuditSources();
 

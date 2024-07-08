@@ -6,13 +6,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
@@ -345,7 +345,7 @@ namespace NuGet.Commands.Restore.Utility
 
                 if (_vulnerabilityInfoProviders[i].IsAuditSource && (result?.KnownVulnerabilities is null || result.KnownVulnerabilities.Count == 0))
                 {
-                    string message = string.Format(Strings.Warning_AuditSourceWithoutVulnerabilityData, _vulnerabilityInfoProviders[i].SourceName);
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Warning_AuditSourceWithoutVulnerabilityData, _vulnerabilityInfoProviders[i].SourceName);
                     RestoreLogMessage logMessage = RestoreLogMessage.CreateWarning(NuGetLogCode.NU1905, message);
                     _logger.Log(logMessage);
                 }
