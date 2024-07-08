@@ -407,7 +407,7 @@ namespace NuGet.PackageManagement
             ActivityCorrelationId.StartNew();
 
             List<SourceRepository> sourceRepositories = packageRestoreContext.SourceRepositories.AsList();
-            IReadOnlyList<SourceRepository> auditSources = packageRestoreContext.AuditSources.AsList();
+            IReadOnlyList<SourceRepository> auditSources = packageRestoreContext.AuditSources;
 
             var missingPackages = packageRestoreContext.Packages.Where(p => p.IsMissing).ToList();
             if (!missingPackages.Any())

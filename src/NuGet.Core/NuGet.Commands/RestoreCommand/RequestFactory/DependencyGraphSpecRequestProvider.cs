@@ -241,7 +241,10 @@ namespace NuGet.Commands
             for (int i = 0; i < auditSources.Count; i++)
             {
                 PackageSource source = auditSources[i];
-                auditSourceRepositories.Add(cachingSourceProvider.CreateRepository(source));
+                if (source.IsEnabled)
+                {
+                    auditSourceRepositories.Add(cachingSourceProvider.CreateRepository(source));
+                }
             }
 
             return auditSourceRepositories;
