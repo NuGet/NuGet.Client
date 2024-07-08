@@ -39,6 +39,10 @@ namespace NuGet.DependencyResolver
             RemoteWalkContext context,
             CancellationToken cancellationToken)
         {
+            if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
+            if (framework == null) throw new ArgumentNullException(nameof(framework));
+            if (context == null) throw new ArgumentNullException(nameof(context));
+
             GraphItem<RemoteResolveResult> graphItem = null;
             var currentCacheContext = context.CacheContext;
 
@@ -158,6 +162,15 @@ namespace NuGet.DependencyResolver
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
+            if (framework == null) throw new ArgumentNullException(nameof(framework));
+            if (remoteProviders == null) throw new ArgumentNullException(nameof(remoteProviders));
+            if (localProviders == null) throw new ArgumentNullException(nameof(localProviders));
+            if (projectProviders == null) throw new ArgumentNullException(nameof(projectProviders));
+            if (lockFileLibraries == null) throw new ArgumentNullException(nameof(lockFileLibraries));
+            if (cacheContext == null) throw new ArgumentNullException(nameof(cacheContext));
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
+
             var projectMatch = await FindProjectMatchAsync(libraryRange, framework, projectProviders, cancellationToken);
 
             if (projectMatch != null)
@@ -340,6 +353,12 @@ namespace NuGet.DependencyResolver
             IEnumerable<IDependencyProvider> projectProviders,
             CancellationToken cancellationToken)
         {
+            if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
+            if (framework == null) throw new ArgumentNullException(nameof(framework));
+            if (projectProviders == null) throw new ArgumentNullException(nameof(projectProviders));
+
+            // TODO NK - Does anyone throw if cancellation requested?
+
             RemoteMatch result = null;
 
             // Check if projects are allowed for this dependency
@@ -378,6 +397,12 @@ namespace NuGet.DependencyResolver
             ILogger logger,
             CancellationToken token)
         {
+            if(libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
+            if (framework == null) throw new ArgumentNullException(nameof(framework));
+            if (providers == null) throw new ArgumentNullException(nameof(providers));
+            if (cacheContext == null) throw new ArgumentNullException(nameof(cacheContext));
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
+
             if (libraryRange.VersionRange.IsFloating)
             {
                 // Don't optimize the non http path for floating versions or we'll miss things
