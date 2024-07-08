@@ -1,7 +1,7 @@
 {
   "properties": {
-    "type": "external",
     "nuGetPackageManager.externalSettings": {
+      "type": "external",
       // should be a resource ID in real registration
       "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
