@@ -513,33 +513,7 @@ namespace NuGet.PackageManagement.VisualStudio
 #pragma warning restore CS0618 // Type or member is obsolete
             string skdAnalysisLevelString = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel);
             string usingNetSdk = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk);
-            bool usingMicrosoftNetSdk = false;
-            NuGetVersion sdkAnalysisLevel = null;
-
-            if (skdAnalysisLevelString != null)
-            {
-                try
-                {
-                    sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.SdkAnalysisLevel, skdAnalysisLevelString, "9.0.100"), ex);
-                }
-            }
-
-            if (!string.IsNullOrEmpty(usingNetSdk))
-            {
-                if (bool.TryParse(usingNetSdk, out bool result))
-                {
-                    usingMicrosoftNetSdk = result;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.UsingMicrosoftNETSdk, usingNetSdk, "false"));
-                };
-            }
-
+            
             return new PackageSpec(tfis)
             {
                 Name = projectName,
@@ -583,8 +557,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
                     RestoreAuditProperties = auditProperties,
-                    SdkAnalysisLevel = sdkAnalysisLevel,
-                    UsingMicrosoftNETSdk = usingMicrosoftNetSdk,
+                    SdkAnalysisLevel = ProjectRestoreMetadata.GetSdkAnalysisLevel(skdAnalysisLevelString),
+                    UsingMicrosoftNETSdk = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(usingNetSdk),
                 }
             };
         }
