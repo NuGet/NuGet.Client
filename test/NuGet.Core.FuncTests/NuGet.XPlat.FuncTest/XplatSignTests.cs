@@ -27,7 +27,7 @@ namespace NuGet.XPlat.FuncTest
         public XplatSignTests(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
-        }        
+        }
 
         [Fact]
         public void SignCommandArgsParsing_MissingPackagePath_Throws()
