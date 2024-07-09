@@ -88,20 +88,7 @@ namespace NuGet.Commands
 
             telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkFrameworkDependencyDuration);
 
-            telemetryActivity.StartIntervalMeasure();
-
-            var downloadDependencyResolutionTasks = new List<Task<DownloadDependencyResolutionResult>>();
-            foreach (var targetFrameworkInformation in _request.Project.TargetFrameworks)
-            {
-                downloadDependencyResolutionTasks.Add(ResolveDownloadDependenciesAsync(
-                    context,
-                    targetFrameworkInformation,
-                    token));
-            }
-
-            var downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
-
-            telemetryActivity.EndIntervalMeasure(telemetryPrefix + EvaluateDownloadDependenciesDuration);
+            var downloadDependencyResolutionResults = await DownloadDependenciesAsync(_request.Project, context, telemetryActivity, telemetryPrefix, token);
 
             var uniquePackages = new HashSet<LibraryIdentity>();
 
@@ -231,14 +218,34 @@ namespace NuGet.Commands
             return null;
         }
 
-        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependenciesAsync(RemoteWalkContext context, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+        internal static async Task<DownloadDependencyResolutionResult[]> DownloadDependenciesAsync(PackageSpec packageSpec, RemoteWalkContext context, TelemetryActivity telemetryActivity, string telemetryPrefix, CancellationToken cancellationToken)
         {
-            var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency =>
-            ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
+            telemetryActivity.StartIntervalMeasure();
 
-            var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
+            var downloadDependencyResolutionTasks = new List<Task<DownloadDependencyResolutionResult>>();
+            foreach (var targetFrameworkInformation in packageSpec.TargetFrameworks)
+            {
+                downloadDependencyResolutionTasks.Add(ResolveDownloadDependenciesAsync(
+                context,
+                    targetFrameworkInformation,
+                    cancellationToken));
+            }
 
-            return DownloadDependencyResolutionResult.Create(targetFrameworkInformation.FrameworkName, packageDownloadMatches, context.RemoteLibraryProviders);
+            DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
+
+            telemetryActivity.EndIntervalMeasure(telemetryPrefix + EvaluateDownloadDependenciesDuration);
+
+            return downloadDependencyResolutionResults;
+
+            async Task<DownloadDependencyResolutionResult> ResolveDownloadDependenciesAsync(RemoteWalkContext context, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+            {
+                var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency =>
+                ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
+
+                var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
+
+                return DownloadDependencyResolutionResult.Create(targetFrameworkInformation.FrameworkName, packageDownloadMatches, context.RemoteLibraryProviders);
+            }
         }
 
         private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
