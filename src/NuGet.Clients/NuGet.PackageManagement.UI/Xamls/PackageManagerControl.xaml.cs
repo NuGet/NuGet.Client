@@ -66,6 +66,7 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
         private IPackageVulnerabilityService _packageVulnerabilityService;
+        private INuGetFeatureFlagService _nugetFeatureFlagService;
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
 
@@ -89,7 +90,7 @@ namespace NuGet.PackageManagement.UI
             _sinceLastRefresh = Stopwatch.StartNew();
 
             _installedTabTelemetryData = new PackageManagerInstalledTabData();
-
+            _nugetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
             Model = model;
             _uiLogger = uiLogger;
             Settings = await ServiceLocator.GetComponentModelServiceAsync<ISettings>();
@@ -140,7 +141,9 @@ namespace NuGet.PackageManagement.UI
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
-            InitializeSelectedPackageMetadataTab(settings);
+            var isReadmeTabEnabled = await _nugetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
+            _packageDetail._packageMetadataControl.SetReadmeTabVisibility(isReadmeTabEnabled ? Visibility.Visible : Visibility.Collapsed);
+            InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
@@ -438,10 +441,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void InitializeSelectedPackageMetadataTab(UserSettings settings)
+        private void InitializeSelectedPackageMetadataTab(UserSettings settings, bool isReadmeTabEnabled)
         {
             if (settings != null)
             {
+                if (!isReadmeTabEnabled)
+                {
+                    settings.SelectedPackageMetadataTab = PackageMetadataTab.PackageDetails;
+                }
                 _packageDetail._packageMetadataControl.SelectTab(settings.SelectedPackageMetadataTab);
             }
         }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -55,6 +54,11 @@ namespace NuGet.PackageManagement.UI
                     SelectedTabItem = tabReadMe;
                     break;
             }
+        }
+
+        public void SetReadmeTabVisibility(Visibility visibility)
+        {
+            tabReadMe.Visibility = visibility;
         }
 
         public void Dispose()

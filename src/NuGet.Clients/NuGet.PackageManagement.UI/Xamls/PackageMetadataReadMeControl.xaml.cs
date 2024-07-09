@@ -113,19 +113,23 @@ namespace NuGet.PackageManagement.UI
         private async void ViewModel_PropertyChangedAsync(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 #pragma warning restore VSTHRD100 // Avoid async void methods
         {
-            if (ReadMeViewModel is not null && e.PropertyName == nameof(ReadMeViewModel.ReadMeMarkdown))
+            var markdown = NuGet.PackageManagement.UI.Resources.Text_NoReadme;
+            if (ReadMeViewModel is not null
+                && e.PropertyName == nameof(ReadMeViewModel.ReadMeMarkdown)
+                && !string.IsNullOrWhiteSpace(ReadMeViewModel.ReadMeMarkdown))
             {
-                try
-                {
-                    await UpdateMarkdownAsync(ReadMeViewModel.ReadMeMarkdown);
-                }
-                catch (Exception ex)
-                {
-                    ReadMeViewModel.IsErrorWithReadMe = true;
-                    descriptionMarkdownPreview.Visibility = Visibility.Collapsed;
-                    noReadmeFoundTextBlock.Visibility = Visibility.Collapsed;
-                    await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
-                }
+                markdown = ReadMeViewModel.ReadMeMarkdown;
+            }
+
+            try
+            {
+                await UpdateMarkdownAsync(markdown);
+            }
+            catch (Exception ex)
+            {
+                ReadMeViewModel.IsErrorWithReadMe = true;
+                descriptionMarkdownPreview.Visibility = Visibility.Collapsed;
+                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
             }
         }
 
@@ -144,8 +148,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
                     descriptionMarkdownPreview.Visibility = string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
-                    noReadmeFoundTextBlock.Visibility = !string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
-
                 }
             }
         }

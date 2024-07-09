@@ -125,8 +125,9 @@
     <TabItem
       x:Name="tabReadMe"
       IsSelected="True"
+      Visibility="Visible"
       Tag="{x:Static nuget:PackageMetadataTab.Readme}"
-      Header="{x:Static nuget:Resources.Label_Readme}" >
+      Header="{x:Static nuget:Resources.Label_Readme_Tab}" >
       <nuget:PackageMetadataReadMeControl
         x:Name="_packageMetadataReadMeControl"
         PackageMetadata="{Binding RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageMetadataControl}}, Path=DataContext.PackageMetadata}"
