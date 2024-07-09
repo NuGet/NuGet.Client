@@ -106,17 +106,17 @@ NuGet.DependencyResolver.RemoteResolveResult
 ~NuGet.DependencyResolver.RemoteResolveResult.Match.set -> void
 NuGet.DependencyResolver.RemoteResolveResult.RemoteResolveResult() -> void
 NuGet.DependencyResolver.RemoteWalkContext
-~NuGet.DependencyResolver.RemoteWalkContext.CacheContext.get -> NuGet.Protocol.Core.Types.SourceCacheContext
-~NuGet.DependencyResolver.RemoteWalkContext.FilterDependencyProvidersForLibrary(NuGet.LibraryModel.LibraryRange libraryRange) -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider>
+NuGet.DependencyResolver.RemoteWalkContext.CacheContext.get -> NuGet.Protocol.Core.Types.SourceCacheContext!
+NuGet.DependencyResolver.RemoteWalkContext.FilterDependencyProvidersForLibrary(NuGet.LibraryModel.LibraryRange! libraryRange) -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider!>!
 NuGet.DependencyResolver.RemoteWalkContext.IsMsBuildBased.get -> bool
 NuGet.DependencyResolver.RemoteWalkContext.IsMsBuildBased.set -> void
-~NuGet.DependencyResolver.RemoteWalkContext.LocalLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider>
-~NuGet.DependencyResolver.RemoteWalkContext.LockFileLibraries.get -> System.Collections.Generic.IDictionary<NuGet.DependencyResolver.LockFileCacheKey, System.Collections.Generic.IList<NuGet.LibraryModel.LibraryIdentity>>
-~NuGet.DependencyResolver.RemoteWalkContext.Logger.get -> NuGet.Common.ILogger
-~NuGet.DependencyResolver.RemoteWalkContext.PackageSourceMapping.get -> NuGet.Configuration.PackageSourceMapping
-~NuGet.DependencyResolver.RemoteWalkContext.ProjectLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IDependencyProvider>
-~NuGet.DependencyResolver.RemoteWalkContext.RemoteLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider>
-~NuGet.DependencyResolver.RemoteWalkContext.RemoteWalkContext(NuGet.Protocol.Core.Types.SourceCacheContext cacheContext, NuGet.Configuration.PackageSourceMapping packageSourceMapping, NuGet.Common.ILogger logger) -> void
+NuGet.DependencyResolver.RemoteWalkContext.LocalLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider!>!
+NuGet.DependencyResolver.RemoteWalkContext.LockFileLibraries.get -> System.Collections.Generic.IDictionary<NuGet.DependencyResolver.LockFileCacheKey!, System.Collections.Generic.IList<NuGet.LibraryModel.LibraryIdentity!>!>!
+NuGet.DependencyResolver.RemoteWalkContext.Logger.get -> NuGet.Common.ILogger!
+NuGet.DependencyResolver.RemoteWalkContext.PackageSourceMapping.get -> NuGet.Configuration.PackageSourceMapping!
+NuGet.DependencyResolver.RemoteWalkContext.ProjectLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IDependencyProvider!>!
+NuGet.DependencyResolver.RemoteWalkContext.RemoteLibraryProviders.get -> System.Collections.Generic.IList<NuGet.DependencyResolver.IRemoteDependencyProvider!>!
+NuGet.DependencyResolver.RemoteWalkContext.RemoteWalkContext(NuGet.Protocol.Core.Types.SourceCacheContext! cacheContext, NuGet.Configuration.PackageSourceMapping! packageSourceMapping, NuGet.Common.ILogger! logger) -> void
 NuGet.DependencyResolver.ResolverUtility
 NuGet.DependencyResolver.Tracker<TItem>
 NuGet.DependencyResolver.Tracker<TItem>.GetDisputes(NuGet.DependencyResolver.GraphItem<TItem>! item) -> System.Collections.Generic.IEnumerable<NuGet.DependencyResolver.GraphItem<TItem>!>!

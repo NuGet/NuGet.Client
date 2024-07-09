@@ -358,7 +358,7 @@ namespace NuGet.DependencyResolver
             if (framework == null) throw new ArgumentNullException(nameof(framework));
             if (projectProviders == null) throw new ArgumentNullException(nameof(projectProviders));
 
-            // TODO NK - Does anyone throw if cancellation requested?
+            cancellationToken.ThrowIfCancellationRequested();
 
             RemoteMatch? result = null;
 
