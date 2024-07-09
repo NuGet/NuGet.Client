@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -9,6 +10,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.ProjectModel.Test
@@ -798,6 +800,69 @@ namespace NuGet.ProjectModel.Test
                 Sources = right.Split(';').Select(e => new PackageSource(e)).ToList()
             };
             AssertHashCode(expected, leftSide, rightSide);
+        }
+
+        [Theory]
+        [InlineData("9.0.100")]
+        [InlineData("7.0.100")]
+        [InlineData("9.1.100")]
+        [InlineData("9.2.101")]
+        public void GetSdkAnalysisLevel_WithValidVersions_ReturnsNuGetVersion(string sdkAnalysisLevel)
+        {
+            // Arrange
+            NuGetVersion expected = new NuGetVersion(sdkAnalysisLevel);
+
+            //Act
+            NuGetVersion actual = ProjectRestoreMetadata.GetSdkAnalysisLevel(sdkAnalysisLevel);
+
+            //Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("invalid")]
+        [InlineData("1.3e")]
+        public void GetSdkAnalysisLevel_WithInvalidVersions_ThrowsException(string sdkAnalysisLevel)
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ProjectRestoreMetadata.GetSdkAnalysisLevel(sdkAnalysisLevel));
+        }
+
+        [Theory]
+        [InlineData("true")]
+        [InlineData("True")]
+        [InlineData("trUe")]
+        [InlineData("TrUe")]
+        public void GetUsingMicrosoftNETSdk_WithTrueValue_ReturnsTrue(string usingMicrosoftNETSdk)
+        {
+            // Act
+            bool actual = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(usingMicrosoftNETSdk);
+
+            // Assert
+            Assert.True(actual);
+        }
+
+        [Theory]
+        [InlineData("false")]
+        [InlineData("False")]
+        [InlineData("falSe")]
+        [InlineData("FalsE")]
+        public void GetUsingMicrosoftNETSdk_WithFalseValue_ReturnsFalse(string usingMicrosoftNETSdk)
+        {
+            // Act
+            bool actual = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(usingMicrosoftNETSdk);
+
+            // Assert
+            Assert.False(actual);
+        }
+
+        [Theory]
+        [InlineData("t")]
+        [InlineData("1.3e")]
+        [InlineData("1")]
+        public void GetUsingMicrosoftNETSdk_WithInvalidValue_ThrowsException(string usingMicrosoftNETSdk)
+        {
+            Assert.Throws<ArgumentException>(() => ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(usingMicrosoftNETSdk));
         }
 
         private static void AssertEquality(ProjectRestoreMetadata leftSide, ProjectRestoreMetadata rightSide)
