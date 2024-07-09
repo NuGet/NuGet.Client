@@ -799,7 +799,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while trying to load the Readme..
+        ///   Looks up a localized string similar to An error occurred while trying to load the README..
         /// </summary>
         public static string Error_UnableToLoadReadme {
             get {
@@ -1267,11 +1267,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Readme.
+        ///   Looks up a localized string similar to Readme:.
         /// </summary>
         public static string Label_Readme {
             get {
                 return ResourceManager.GetString("Label_Readme", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to README.
+        /// </summary>
+        public static string Label_Readme_Tab {
+            get {
+                return ResourceManager.GetString("Label_Readme_Tab", resourceCulture);
             }
         }
         
@@ -2043,7 +2052,13 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No Readme was found for the selected package..
+        ///   Looks up a localized string similar to Could not read package README from selected package.
+        ///
+        ///Only the package maintainer can add a README.
+        ///
+        ///If you are not the maintainer, please consider filing an issue or contacting the maintainer to request a README.
+        ///
+        ///For instructions on how to add a README, please visit [aka.ms/nuget/readme](https://aka.ms/nuget/readme).
         /// </summary>
         public static string Text_NoReadme {
             get {

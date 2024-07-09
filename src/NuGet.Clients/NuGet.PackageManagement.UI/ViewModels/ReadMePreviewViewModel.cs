@@ -3,8 +3,6 @@
 
 using System;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -52,27 +50,22 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 if (!string.IsNullOrEmpty(packagePath))
                 {
-                    var fileInfo = new FileInfo(packagePath);
-                    if (fileInfo.Exists)
+                    var packageDirectory = Path.GetDirectoryName(packagePath);
+                    var nuspecPath = Path.Combine(packageDirectory, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
+                    var nuspectFileInfo = new FileInfo(nuspecPath);
+                    if (nuspectFileInfo.Exists)
                     {
-                        using var stream = fileInfo.OpenRead();
-                        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
-                        var nuspecZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.Name), $"{packageId}{PackagingCoreConstants.NuspecExtension}", StringComparison.OrdinalIgnoreCase));
-                        if (nuspecZipArchiveEntry is not null)
+                        var nuspecReader = new NuspecReader(nuspecPath);
+                        var readMePath = nuspecReader.GetReadme();
+                        if (!string.IsNullOrEmpty(readMePath))
                         {
-                            using var nuspecFile = nuspecZipArchiveEntry.Open();
-                            var nuspecReader = new NuspecReader(nuspecFile);
-                            var readMePath = nuspecReader.GetReadme();
-                            if (!string.IsNullOrEmpty(readMePath))
+                            var readMeFullPath = Path.Combine(packageDirectory, readMePath);
+                            var readMeFileInfo = new FileInfo(readMeFullPath);
+                            if (readMeFileInfo.Exists)
                             {
-                                var readmeZipArchiveEntry = archive.Entries.FirstOrDefault(zipEntry => string.Equals(UnescapePath(zipEntry.FullName), readMePath, StringComparison.OrdinalIgnoreCase));
-                                if (readmeZipArchiveEntry is not null)
-                                {
-                                    using var readMeFile = readmeZipArchiveEntry.Open();
-                                    using var readMeStreamReader = new StreamReader(readMeFile);
-                                    var readMeContents = await readMeStreamReader.ReadToEndAsync();
-                                    newReadMeValue = readMeContents;
-                                }
+                                using var readMeStreamReader = readMeFileInfo.OpenText();
+                                var readMeContents = await readMeStreamReader.ReadToEndAsync();
+                                newReadMeValue = readMeContents;
                             }
                         }
                     }
