@@ -3669,7 +3669,7 @@ EndProject";
                     (new Uri(advisoryUrl2), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[1.0.0, 3.0.0)"))
                 });
             pathContext.Settings.RemoveSource("source");
-            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, "true");
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
 
             var packageA1 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.1.0" };
             var packageA2 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.2.0" };
