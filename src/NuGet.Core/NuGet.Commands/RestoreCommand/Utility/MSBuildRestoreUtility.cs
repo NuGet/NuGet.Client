@@ -308,36 +308,8 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
                 result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
-
-                string isSdk = specItem.GetProperty("UsingMicrosoftNETSdk");
-                string skdAnalysisLevelString = specItem.GetProperty("SdkAnalysisLevel");
-                bool usingMicrosoftNetSdk = false;
-
-                if (!string.IsNullOrEmpty(isSdk))
-                {
-                    if (bool.TryParse(isSdk, out bool value))
-                    {
-                        usingMicrosoftNetSdk = value;
-                    }
-                    else
-                    {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", isSdk, "false"));
-                    }
-                }
-
-                result.RestoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
-
-                if (skdAnalysisLevelString != null)
-                {
-                    try
-                    {
-                        result.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
-                    }
-                }
+                result.RestoreMetadata.UsingMicrosoftNETSdk = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(specItem.GetProperty("UsingMicrosoftNETSdk"));
+                result.RestoreMetadata.SdkAnalysisLevel = ProjectRestoreMetadata.GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel")) ?? result.RestoreMetadata.SdkAnalysisLevel;
             }
 
             return result;

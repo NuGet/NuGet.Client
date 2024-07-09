@@ -892,39 +892,9 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
-
-
-            string skdAnalysisLevelString = project.GetProperty("SdkAnalysisLevel");
-
-            if (!string.IsNullOrEmpty(skdAnalysisLevelString))
-            {
-                try
-                {
-                    restoreMetadata.SdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", skdAnalysisLevelString, "9.0.100"), ex);
-                }
-            }
-
-            string isSdk = project.GetProperty("UsingMicrosoftNETSdk");
-            bool usingMicrosoftNetSdk = false;
-
-            if (!string.IsNullOrEmpty(isSdk))
-            {
-                if (bool.TryParse(isSdk, out bool result))
-                {
-                    usingMicrosoftNetSdk = result;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", isSdk, "false"));
-                }
-            }
-
-            restoreMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
-
+            restoreMetadata.UsingMicrosoftNETSdk = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
+            NuGetVersion skdAnalysisLevel = ProjectRestoreMetadata.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
+            restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel ?? restoreMetadata.SdkAnalysisLevel;
             return (restoreMetadata, targetFrameworkInfos);
 
             static (ProjectStyle, string packagesConfigPath) GetProjectStyle(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> tfms, Common.ILogger log)
