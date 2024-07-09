@@ -944,9 +944,9 @@ namespace NuGet.Build.Tasks.Console
 
                 int nodeCount = 1;
                 string strNodeCount = Environment.GetEnvironmentVariable("RESTORE_MSBUILD_NODE_COUNT");
-                if (!string.IsNullOrEmpty(strNodeCount))
+                if (string.IsNullOrEmpty(strNodeCount) || !int.TryParse(strNodeCount, out nodeCount))
                 {
-                    nodeCount = int.Parse(strNodeCount);
+                    nodeCount = 1;
                 }
 
                 var projects = new ConcurrentDictionary<string, ProjectWithInnerNodes>(StringComparer.OrdinalIgnoreCase);
