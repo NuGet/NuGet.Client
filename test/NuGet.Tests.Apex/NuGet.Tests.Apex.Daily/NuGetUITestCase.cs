@@ -430,6 +430,10 @@ namespace NuGet.Tests.Apex.Daily
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             solutionService.Build();
 
+            var solutionExplorer = VisualStudio.ObjectModel.Shell.ToolWindows.SolutionExplorer;
+            var referencesRoot = solutionExplorer.FindItemRecursive("Dependencies");
+            referencesRoot.Expand();
+
             uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
             uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
 
@@ -464,6 +468,10 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             solutionService.Build();
+
+            var solutionExplorer = VisualStudio.ObjectModel.Shell.ToolWindows.SolutionExplorer;
+            var referencesRoot = solutionExplorer.FindItemRecursive("Dependencies");
+            referencesRoot.Expand();
 
             uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
             uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
@@ -511,16 +519,22 @@ namespace NuGet.Tests.Apex.Daily
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
             solutionService.Build();
 
+            var references = "References";
             if (projectTemplate.Equals(ProjectTemplate.NetCoreConsoleApp))
             {
                 packageFolderPath = _pathContext.UserPackagesFolder;
                 installedPackageFolderPath = Path.Combine(packageFolderPath, TestPackageName);
+                references = "Dependencies";
             }
             else
             {
                 packageFolderPath = _pathContext.PackagesV2;
                 installedPackageFolderPath = Path.Combine(packageFolderPath, "Contoso.A.1.0.0");
             }
+
+            var solutionExplorer = VisualStudio.ObjectModel.Shell.ToolWindows.SolutionExplorer;
+            var referencesRoot = solutionExplorer.FindItemRecursive(references);
+            referencesRoot.Expand();
 
             Directory.Exists(installedPackageFolderPath).Should().BeTrue();
 
