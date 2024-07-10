@@ -21,6 +21,7 @@ using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using static Microsoft.TeamFoundation.Client.CommandLine.Options;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager
@@ -715,15 +716,11 @@ namespace NuGet.SolutionRestoreManager
 
         internal static NuGetVersion? GetSdkAnalysisLevel(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
         {
-            string? skdAnalysisLevelString = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
-            NuGetVersion? sdkAnalysisLevel = null;
+            string? skdAnalysisLevelString = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v);
 
-            if (skdAnalysisLevelString is not null)
-            {
-                sdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString);
-            }
-
-            return sdkAnalysisLevel;
+            return skdAnalysisLevelString is null
+            ? null
+            : MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString);
         }
 
         internal static bool GetUsingMicrosoftNETSdk(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)

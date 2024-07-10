@@ -1654,8 +1654,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(packageSpecs);
             var actualRestoreSpec = packageSpecs.Single();
             SpecValidationUtility.ValidateProjectSpec(actualRestoreSpec);
-
-            Assert.Equal(expectedVersion, actualRestoreSpec.RestoreMetadata.SdkAnalysisLevel);
+            actualRestoreSpec.RestoreMetadata.SdkAnalysisLevel.Should().Be(expectedVersion);
         }
 
         [Fact]

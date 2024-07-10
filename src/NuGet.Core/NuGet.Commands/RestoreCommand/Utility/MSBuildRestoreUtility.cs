@@ -945,36 +945,32 @@ namespace NuGet.Commands
 
         public static NuGetVersion GetSdkAnalysisLevel(string sdkAnalysisLevel)
         {
-            if (!string.IsNullOrEmpty(sdkAnalysisLevel))
+            if (string.IsNullOrEmpty(sdkAnalysisLevel))
             {
-                if (NuGetVersion.TryParse(sdkAnalysisLevel, out NuGetVersion version))
-                {
-                    return version;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", sdkAnalysisLevel, "9.0.100"));
-                }
+                return null;
             }
 
-            return null;
+            if (!NuGetVersion.TryParse(sdkAnalysisLevel, out NuGetVersion version))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", sdkAnalysisLevel, "9.0.100"));
+            }
+
+            return version;
         }
 
         public static bool GetUsingMicrosoftNETSdk(string usingMicrosoftNETSdk)
         {
-            if (!string.IsNullOrEmpty(usingMicrosoftNETSdk))
+            if (string.IsNullOrEmpty(usingMicrosoftNETSdk))
             {
-                if (bool.TryParse(usingMicrosoftNETSdk, out var result))
-                {
-                    return result;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", usingMicrosoftNETSdk, "false"));
-                }
+                return false;
             }
 
-            return false;
+            if (!bool.TryParse(usingMicrosoftNETSdk, out var result))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", usingMicrosoftNETSdk, "false"));
+            }
+
+            return result;
         }
 
         private static HashSet<string> GetAuditSuppressions(IEnumerable<IMSBuildItem> items)
