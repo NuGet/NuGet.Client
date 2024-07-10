@@ -894,7 +894,12 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
             restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
             NuGetVersion skdAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
-            restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel ?? restoreMetadata.SdkAnalysisLevel;
+
+            if (skdAnalysisLevel is not null)
+            {
+                restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel
+            }
+
             return (restoreMetadata, targetFrameworkInfos);
 
             static (ProjectStyle, string packagesConfigPath) GetProjectStyle(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> tfms, Common.ILogger log)
