@@ -566,6 +566,7 @@ namespace Dotnet.Integration.Test
                     testOutputHelper: _testOutputHelper);
 
                 // Assert
+                Assert.True(result.Success, result.AllOutput);
                 if (expectInsecureFingerprintWarning)
                 {
                     Assert.True(result.AllOutput.Contains(_insecureCertificateFingerprintCode), result.AllOutput);
