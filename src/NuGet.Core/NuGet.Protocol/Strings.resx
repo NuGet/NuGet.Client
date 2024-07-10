@@ -530,4 +530,9 @@ The "s" should be localized to the abbreviation for seconds.</comment>
 {1} - number of vulerabilitiy files reported
 {2} - max count allowed</comment>
   </data>
+  <data name="Error_HttpServiceIndexUsage" xml:space="preserve">
+    <value>There is a non-HTTPS resource: '{0}', defined by your package source: '{1}'. NuGet requires HTTPS endpoints. To allow unencrypted HTTP, you must explicitly set 'allowInsecureConnections' to true in your NuGet.Config file, or talk to the administrator of your source and ask them to migrate to a secure HTTPS URL. Please refer to https://aka.ms/nuget-https-everywhere for more information.</value>
+    <comment>0 - resource url
+1 - package source. Example nuget.org.</comment>
+  </data>
 </root>

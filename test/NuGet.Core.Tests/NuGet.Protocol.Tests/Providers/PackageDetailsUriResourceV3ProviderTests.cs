@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Providers.Tests
         public PackageDetailsUriResourceV3ProviderTests()
         {
             _packageSource = new PackageSource("https://unit.test");
+            _packageSource.AllowInsecureConnections = true;
             _target = new PackageDetailsUriResourceV3Provider();
         }
 
@@ -121,6 +122,7 @@ namespace NuGet.Protocol.Providers.Tests
                     new JProperty("comment", "http://www.w3.org/2000/01/rdf-schema#comment")));
 
             var serviceIndexResource = new ServiceIndexResourceV3(index, DateTime.UtcNow);
+            serviceIndexResource._allowInsecureConnections = true;
             var tryCreateResult = new Tuple<bool, INuGetResource>(true, serviceIndexResource);
 
             provider.Setup(x => x.TryCreate(It.IsAny<SourceRepository>(), It.IsAny<CancellationToken>()))

@@ -29,6 +29,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource(location);
+            packageSource.AllowInsecureConnections = true;
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(packageSource, new[] { provider });
 
@@ -47,6 +48,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var packageSource = new PackageSource(location);
+            packageSource.AllowInsecureConnections = true;
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(packageSource, new[] { provider });
 
@@ -66,7 +68,9 @@ namespace NuGet.Protocol.Tests
             // This will return a 404 - NotFound.
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, string.Empty } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -89,7 +93,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             var source = $"https://fake.server-{new Guid().ToString()}/users.json";
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act and assert
@@ -111,7 +117,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             var source = $"https://fake.server-{new Guid().ToString()}/users.json";
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -134,7 +142,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             var source = $"https://fake.server-{new Guid().ToString()}/users.json";
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -155,7 +165,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             var content = @"{ version: '3.1.0-beta' }";
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -174,7 +186,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -204,7 +218,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -236,7 +252,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -266,7 +284,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -296,7 +316,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -323,7 +345,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -353,7 +377,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -383,7 +409,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
@@ -418,7 +446,9 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 httpSource: null,
                 throwOperationCancelledException: true);
             var provider = new ServiceIndexResourceV3Provider();
-            var sourceRepository = new SourceRepository(new PackageSource(source),
+            PackageSource pkgSource = new PackageSource(source);
+            pkgSource.AllowInsecureConnections = true;
+            var sourceRepository = new SourceRepository(pkgSource,
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
