@@ -1693,7 +1693,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                     (new Uri(advisoryUrl2), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 3.0.0)"))
                 });
             pathContext.Settings.RemoveSource("source");
-            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri);
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
 
             // set up the solution, projects and packages
             var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
