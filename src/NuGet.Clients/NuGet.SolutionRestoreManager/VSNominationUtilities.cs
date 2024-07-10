@@ -715,19 +715,12 @@ namespace NuGet.SolutionRestoreManager
 
         internal static NuGetVersion? GetSdkAnalysisLevel(IReadOnlyList<IVsTargetFrameworkInfo4> targetFrameworks)
         {
-            string skdAnalysisLevelString = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
+            string? skdAnalysisLevelString = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.SdkAnalysisLevel), v => v) ?? string.Empty;
             NuGetVersion? sdkAnalysisLevel = null;
 
-            if (!string.IsNullOrEmpty(skdAnalysisLevelString))
+            if (skdAnalysisLevelString is not null)
             {
-                try
-                {
-                    sdkAnalysisLevel = new NuGetVersion(skdAnalysisLevelString);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.SdkAnalysisLevel, skdAnalysisLevelString, "9.0.100"), ex);
-                }
+                sdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString);
             }
 
             return sdkAnalysisLevel;
@@ -737,19 +730,12 @@ namespace NuGet.SolutionRestoreManager
         {
             string? usingNetSdk = GetSingleNonEvaluatedPropertyOrNull(targetFrameworks, nameof(ProjectBuildProperties.UsingMicrosoftNETSdk), v => v);
 
-            if (!string.IsNullOrEmpty(usingNetSdk))
+            if (usingNetSdk is not null)
             {
-                if (bool.TryParse(usingNetSdk, out var result))
-                {
-                    return result;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, ProjectBuildProperties.UsingMicrosoftNETSdk, usingNetSdk, "false"));
-                }
+                return MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(usingNetSdk);
             }
 
-            return true;
+            return false;
         }
     }
 }

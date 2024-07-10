@@ -13,5 +13,3 @@ NuGet.ProjectModel.LockFileReadFlags.Targets = 2 -> NuGet.ProjectModel.LockFileR
 ~NuGet.ProjectModel.ProjectRestoreMetadata.SdkAnalysisLevel.set -> void
 NuGet.ProjectModel.ProjectRestoreMetadata.UsingMicrosoftNETSdk.get -> bool
 NuGet.ProjectModel.ProjectRestoreMetadata.UsingMicrosoftNETSdk.set -> void
-~static NuGet.ProjectModel.ProjectRestoreMetadata.GetSdkAnalysisLevel(string sdkAnalysisLevel) -> NuGet.Versioning.NuGetVersion
-~static NuGet.ProjectModel.ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(string usingMicrosoftNETSdk) -> bool

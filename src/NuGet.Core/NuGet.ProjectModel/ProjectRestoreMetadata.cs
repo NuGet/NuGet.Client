@@ -249,40 +249,6 @@ namespace NuGet.ProjectModel
             return clone;
         }
 
-        public static NuGetVersion GetSdkAnalysisLevel(string sdkAnalysisLevel)
-        {
-            if (!string.IsNullOrEmpty(sdkAnalysisLevel))
-            {
-                try
-                {
-                    return new NuGetVersion(sdkAnalysisLevel);
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", sdkAnalysisLevel, "9.0.100"), ex);
-                }
-            }
-
-            return null;
-        }
-
-        public static bool GetUsingMicrosoftNETSdk(string usingMicrosoftNETSdk)
-        {
-            if (!string.IsNullOrEmpty(usingMicrosoftNETSdk))
-            {
-                if (bool.TryParse(usingMicrosoftNETSdk, out var result))
-                {
-                    return result;
-                }
-                else
-                {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", usingMicrosoftNETSdk, "false"));
-                }
-            }
-
-            return false;
-        }
-
         protected void FillClone(ProjectRestoreMetadata clone)
         {
             clone.ProjectStyle = ProjectStyle;

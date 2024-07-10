@@ -557,8 +557,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     CentralPackageFloatingVersionsEnabled = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.CentralPackageFloatingVersionsEnabled)),
                     CentralPackageTransitivePinningEnabled = MSBuildStringUtility.IsTrue(centralPackageTransitivePinningEnabled),
                     RestoreAuditProperties = auditProperties,
-                    SdkAnalysisLevel = ProjectRestoreMetadata.GetSdkAnalysisLevel(skdAnalysisLevelString),
-                    UsingMicrosoftNETSdk = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(usingNetSdk),
+                    SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(skdAnalysisLevelString),
+                    UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(usingNetSdk),
                 }
             };
         }

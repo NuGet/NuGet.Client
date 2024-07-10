@@ -308,8 +308,8 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageVersionOverrideDisabled = isCentralPackageVersionOverrideDisabled;
                 result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
-                result.RestoreMetadata.UsingMicrosoftNETSdk = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(specItem.GetProperty("UsingMicrosoftNETSdk"));
-                result.RestoreMetadata.SdkAnalysisLevel = ProjectRestoreMetadata.GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel")) ?? result.RestoreMetadata.SdkAnalysisLevel;
+                result.RestoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(specItem.GetProperty("UsingMicrosoftNETSdk"));
+                result.RestoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel")) ?? result.RestoreMetadata.SdkAnalysisLevel;
             }
 
             return result;
@@ -941,6 +941,40 @@ namespace NuGet.Commands
             }
 
             return null;
+        }
+
+        public static NuGetVersion GetSdkAnalysisLevel(string sdkAnalysisLevel)
+        {
+            if (!string.IsNullOrEmpty(sdkAnalysisLevel))
+            {
+                if (NuGetVersion.TryParse(sdkAnalysisLevel, out NuGetVersion version))
+                {
+                    return version;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "SdkAnalysisLevel", sdkAnalysisLevel, "9.0.100"));
+                }
+            }
+
+            return null;
+        }
+
+        public static bool GetUsingMicrosoftNETSdk(string usingMicrosoftNETSdk)
+        {
+            if (!string.IsNullOrEmpty(usingMicrosoftNETSdk))
+            {
+                if (bool.TryParse(usingMicrosoftNETSdk, out var result))
+                {
+                    return result;
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Invalid_AttributeValue, "UsingMicrosoftNETSdk", usingMicrosoftNETSdk, "false"));
+                }
+            }
+
+            return false;
         }
 
         private static HashSet<string> GetAuditSuppressions(IEnumerable<IMSBuildItem> items)
