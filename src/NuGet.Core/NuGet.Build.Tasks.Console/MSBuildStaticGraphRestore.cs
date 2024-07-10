@@ -892,8 +892,8 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
-            restoreMetadata.UsingMicrosoftNETSdk = ProjectRestoreMetadata.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
-            NuGetVersion skdAnalysisLevel = ProjectRestoreMetadata.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
+            restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
+            NuGetVersion skdAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
             restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel ?? restoreMetadata.SdkAnalysisLevel;
             return (restoreMetadata, targetFrameworkInfos);
 
