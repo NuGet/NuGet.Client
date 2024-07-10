@@ -510,7 +510,8 @@ namespace NuGet.PackageManagement.VisualStudio
             string centralPackageVersionOverrideDisabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageVersionOverrideEnabled);
             string centralPackageTransitivePinningEnabled = GetPropertySafe(_vsProjectAdapter.BuildProperties, ProjectBuildProperties.CentralPackageTransitivePinningEnabled);
             // Do not add new properties here. Use BuildProperties.GetPropertyValue instead, without DTE fallback.
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete       
+            
             string skdAnalysisLevelString = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.SdkAnalysisLevel);
             string usingNetSdk = _vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk);
             
