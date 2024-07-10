@@ -289,10 +289,4 @@
     <value>Error occurred while getting package vulnerability data: {0}</value>
     <comment>{0} is an error message</comment>
   </data>
-  <data name="Invalid_AttributeValue" xml:space="preserve">
-    <value>The {0} value: `{1}` is invalid. Valid example: `{2}`</value>
-    <comment>{0} - is the attribute
-{1} is the invalid value of the attribute.
-{2} a valid attriibute value example</comment>
-  </data>
 </root>
