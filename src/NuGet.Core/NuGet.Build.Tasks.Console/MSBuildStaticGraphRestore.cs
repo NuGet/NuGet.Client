@@ -897,7 +897,7 @@ namespace NuGet.Build.Tasks.Console
 
             if (skdAnalysisLevel is not null)
             {
-                restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel
+                restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel;
             }
 
             return (restoreMetadata, targetFrameworkInfos);
