@@ -35,6 +35,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             var expectedDefaultColoredMessage =
                 "| Package ID           | Latest Version | Owners            | Total Downloads |" +
                 "| -------------------- | -------------- | ----------------- | --------------- |" +
@@ -49,7 +52,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Normal,
                 Format = PackageSearchFormat.Table
             };
@@ -78,6 +81,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             var expectedDefaultColorMessage =
                 "| Package ID           | Latest Version |" +
                 "| -------------------- | -------------- |" +
@@ -92,7 +98,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Minimal,
                 Format = PackageSearchFormat.Table
             };
@@ -122,6 +128,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             var expectedDefaultColorMessage =
                 "| Package ID           | Latest Version | Owners            | Total Downloads | Vulnerable | Deprecation                      | Project URL   | Description     |" +
                 "| -------------------- | -------------- | ----------------- | --------------- | ---------- | -------------------------------- | ------------- | --------------- |" +
@@ -136,7 +145,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Detailed,
                 Format = PackageSearchFormat.Table
             };
@@ -166,7 +175,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = skip,
@@ -175,7 +186,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Normal,
                 Format = PackageSearchFormat.Json
             };
@@ -204,7 +215,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = skip,
@@ -213,7 +226,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Minimal,
                 Format = PackageSearchFormat.Json
             };
@@ -242,7 +255,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = skip,
@@ -251,7 +266,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Detailed,
                 Format = PackageSearchFormat.Json
             };
@@ -276,6 +291,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             var expectedDefaultColorMessage =
                "| Package ID      | Version | Owners | Total Downloads |" +
                "| --------------- | ------- | ------ | --------------- |" +
@@ -290,7 +308,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = true,
                 Logger = GetLogger(),
                 SearchTerm = "Newtonsoft.Json",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" }
+                Sources = new List<string> { source.Source }
             };
 
             // Act
@@ -417,7 +435,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
@@ -426,7 +446,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "NullInfoPackage",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Normal,
                 Format = PackageSearchFormat.Json
             };
@@ -451,7 +471,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
@@ -460,7 +482,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "NullInfoPackage",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Minimal,
                 Format = PackageSearchFormat.Json
             };
@@ -485,7 +507,9 @@ namespace NuGet.CommandLine.Xplat.Tests
                 configFileName: null,
                 machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
-
+            PackageSource source = new PackageSource($"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json");
+            source.AllowInsecureConnections = true;
+            sourceProvider.AddPackageSource(source);
             PackageSearchArgs packageSearchArgs = new()
             {
                 Skip = 0,
@@ -494,7 +518,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                 ExactMatch = false,
                 Logger = GetLogger(),
                 SearchTerm = "NullInfoPackage",
-                Sources = new List<string> { $"{_fixture.ServerWithMultipleEndpoints.Uri}v3/index.json" },
+                Sources = new List<string> { source.Source },
                 Verbosity = PackageSearchVerbosity.Detailed,
                 Format = PackageSearchFormat.Json
             };
