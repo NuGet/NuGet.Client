@@ -717,10 +717,8 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
-        [InlineData("true", false)]
-        [InlineData("false", true)]
-        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool isHttpWarningExpected)
+        [Fact]
+        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnectionsFalse_Fails()
         {
             // Arrange
             using var pathContext = _fixture.CreateSimpleTestPathContext();
@@ -741,7 +739,38 @@ namespace Dotnet.Integration.Test
 
             using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
             mockServer.Start();
-            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri, allowInsecureConnections);
+            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "false");
+
+            _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
+
+            // Act & Assert
+            CommandRunnerResult listResult = _fixture.RunDotnetExpectFailure(Directory.GetParent(projectA.ProjectPath).FullName, $"list package --outdated", testOutputHelper: _testOutputHelper);
+            mockServer.Stop();
+        }
+
+        [Fact]
+        public async Task ListPackage_WithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        {
+            // Arrange
+            using var pathContext = _fixture.CreateSimpleTestPathContext();
+            var emptyHttpCache = new Dictionary<string, string>
+                {
+                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder },
+                };
+
+            var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
+            var packageA200 = new SimpleTestPackageContext("A", "2.0.0");
+
+            var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net472");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    packageA100,
+                    packageA200);
+
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource);
+            mockServer.Start();
+            pathContext.Settings.AddSource("http-source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
 
             _fixture.RunDotnetExpectSuccess(Directory.GetParent(projectA.ProjectPath).FullName, $"add package A --version 1.0.0", testOutputHelper: _testOutputHelper);
 
@@ -752,14 +781,6 @@ namespace Dotnet.Integration.Test
             // Assert
             var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             Assert.True(lines.Any(l => l.Contains("> A                    1.0.0       1.0.0      2.0.0")), listResult.AllOutput);
-            if (isHttpWarningExpected)
-            {
-                Assert.Contains("warn : You are running the 'list package' operation with an 'HTTP' source", listResult.AllOutput);
-            }
-            else
-            {
-                Assert.DoesNotContain("warn : You are running the 'list package' operation with an 'HTTP' source", listResult.AllOutput);
-            }
         }
 
         private static string CollapseSpaces(string input)
