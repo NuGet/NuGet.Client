@@ -1,1 +1,2 @@
 #nullable enable
+~NuGet.DependencyResolver.RemoteDependencyWalker.WalkAsync(NuGet.LibraryModel.LibraryRange library, NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier, NuGet.RuntimeModel.RuntimeGraph runtimeGraph, System.Collections.Generic.Dictionary<string, NuGet.Versioning.VersionRange> prunablePackages) -> System.Threading.Tasks.Task<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>>

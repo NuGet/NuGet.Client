@@ -26,17 +26,11 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public async Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
+        public async Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, Dictionary<string, VersionRange> prunablePackages)
         {
             if (library == null) throw new ArgumentNullException(nameof(library));
             if (framework == null) throw new ArgumentNullException(nameof(framework));
             if (runtimeGraph == null) throw new ArgumentNullException(nameof(runtimeGraph));
-
-            Dictionary<string, VersionRange> prunablePackages = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "NuGet.Common", new VersionRange(maxVersion: new NuGetVersion("6.10.0"), includeMaxVersion: true) },
-                { "NuGet.LibraryModel", new VersionRange(maxVersion: new NuGetVersion("6.10.0"), includeMaxVersion: true) }
-            };
 
             var transitiveCentralPackageVersions = new TransitiveCentralPackageVersions();
             var rootNode = await CreateGraphNodeAsync(
@@ -44,7 +38,7 @@ namespace NuGet.DependencyResolver
                 framework: framework,
                 runtimeName: runtimeIdentifier,
                 runtimeGraph: runtimeGraph,
-                predicate: _ => (recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, null),
+                predicate: _ => (DependencyResult.Acceptable, null),
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions,
                 prunablePackages: prunablePackages,
@@ -155,7 +149,7 @@ namespace NuGet.DependencyResolver
                         {
                             if (dependency.LibraryRange.VersionRange.Satisfies(prunableVersion.MaxVersion))
                             {
-                                _context.Logger.LogDebug($"Pruning {dependency.Name} {dependency.LibraryRange.VersionRange.OriginalString} because it is pruned by {prunableVersion.MaxVersion.OriginalVersion}");
+                                _context.Logger.LogDebug($"Pruning {dependency.Name} {dependency.LibraryRange.VersionRange.OriginalString}. Max prunable version: {prunableVersion.MaxVersion}");
                                 continue;
                             }
                         }
