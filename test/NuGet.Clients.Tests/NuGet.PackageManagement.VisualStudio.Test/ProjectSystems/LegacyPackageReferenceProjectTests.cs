@@ -1657,13 +1657,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             actualRestoreSpec.RestoreMetadata.SdkAnalysisLevel.Should().Be(expectedVersion);
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithFalseUsingMicrosoftNetSdk_ReadsFalse()
+        [Theory]
+        [InlineData("False")]
+        [InlineData("FaLse")]
+        [InlineData("false")]
+        public async Task GetPackageSpec_WithFalseUsingMicrosoftNetSdk_ReadsFalse(string usingSdk)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Arrange
-            string usingSdk = "FalSe";
             using var testDirectory = TestDirectory.Create();
             var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
             projectBuildProperties.Setup(b => b.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk))
@@ -1693,13 +1695,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.False(actualRestoreSpec.RestoreMetadata.UsingMicrosoftNETSdk);
         }
 
-        [Fact]
-        public async Task GetPackageSpec_WithTrueUsingMicrosoftNetSdk_ReadsTrue()
+        [Theory]
+        [InlineData("True")]
+        [InlineData("true")]
+        [InlineData("TrUe")]
+        public async Task GetPackageSpec_WithTrueUsingMicrosoftNetSdk_ReadsTrue(string usingSdk)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // Arrange
-            string usingSdk = "TruE";
             using var testDirectory = TestDirectory.Create();
             var projectBuildProperties = new Mock<IVsProjectBuildProperties>();
             projectBuildProperties.Setup(b => b.GetPropertyValue(ProjectBuildProperties.UsingMicrosoftNETSdk))

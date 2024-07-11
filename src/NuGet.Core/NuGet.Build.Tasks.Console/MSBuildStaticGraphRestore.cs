@@ -893,12 +893,7 @@ namespace NuGet.Build.Tasks.Console
             restoreMetadata.Sources = GetSources(project, innerNodes, settings);
             restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(targetFrameworkInfos, projectsByTargetFramework);
             restoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(project.GetProperty("UsingMicrosoftNETSdk"));
-            NuGetVersion skdAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
-
-            if (skdAnalysisLevel is not null)
-            {
-                restoreMetadata.SdkAnalysisLevel = skdAnalysisLevel;
-            }
+            restoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(project.GetProperty("SdkAnalysisLevel"));
 
             return (restoreMetadata, targetFrameworkInfos);
 

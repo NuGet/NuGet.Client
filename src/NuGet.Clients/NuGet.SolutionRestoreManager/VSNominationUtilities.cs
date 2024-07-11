@@ -21,7 +21,6 @@ using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
-using static Microsoft.TeamFoundation.Client.CommandLine.Options;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager

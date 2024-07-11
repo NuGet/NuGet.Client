@@ -144,7 +144,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Indicates that Microsoft.NET.Sdk is being used.
         /// </summary>
-        public bool UsingMicrosoftNETSdk { get; set; } = true;
+        public bool UsingMicrosoftNETSdk { get; set; }
 
         public override int GetHashCode()
         {

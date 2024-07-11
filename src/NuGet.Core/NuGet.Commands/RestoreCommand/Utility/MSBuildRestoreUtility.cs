@@ -309,12 +309,7 @@ namespace NuGet.Commands
                 result.RestoreMetadata.CentralPackageFloatingVersionsEnabled = isCentralPackageFloatingVersionsEnabled;
                 result.RestoreMetadata.CentralPackageTransitivePinningEnabled = isCentralPackageTransitivePinningEnabled;
                 result.RestoreMetadata.UsingMicrosoftNETSdk = MSBuildRestoreUtility.GetUsingMicrosoftNETSdk(specItem.GetProperty("UsingMicrosoftNETSdk"));
-                NuGetVersion sdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel")) ?? result.RestoreMetadata.SdkAnalysisLevel;
-
-                if (sdkAnalysisLevel is not null)
-                {
-                    result.RestoreMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
-                }
+                result.RestoreMetadata.SdkAnalysisLevel = MSBuildRestoreUtility.GetSdkAnalysisLevel(specItem.GetProperty("SdkAnalysisLevel"));
             }
 
             return result;
