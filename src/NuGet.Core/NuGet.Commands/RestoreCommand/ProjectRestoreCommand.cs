@@ -65,8 +65,10 @@ namespace NuGet.Commands
 
                 frameworkTasks.Add(WalkDependenciesAsync(projectRange,
                     pair.Key,
-                    remoteWalker,
-                    context,
+                    runtimeIdentifier: null,
+                    runtimeGraph: RuntimeGraph.Empty,
+                    walker: remoteWalker,
+                    context: context,
                     token: token));
             }
 
@@ -227,21 +229,6 @@ namespace NuGet.Commands
             var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
 
             return DownloadDependencyResolutionResult.Create(targetFrameworkInformation.FrameworkName, packageDownloadMatches, context.RemoteLibraryProviders);
-        }
-
-        private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
-            NuGetFramework framework,
-            RemoteDependencyWalker walker,
-            RemoteWalkContext context,
-            CancellationToken token)
-        {
-            return WalkDependenciesAsync(projectRange,
-                framework,
-                runtimeIdentifier: null,
-                runtimeGraph: RuntimeGraph.Empty,
-                walker: walker,
-                context: context,
-                token: token);
         }
 
         private async Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
