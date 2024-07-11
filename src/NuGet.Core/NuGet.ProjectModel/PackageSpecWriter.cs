@@ -214,7 +214,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "centralPackageFloatingVersionsEnabled", msbuildMetadata.CentralPackageFloatingVersionsEnabled);
             SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
             SetValueIfTrue(writer, "CentralPackageTransitivePinningEnabled", msbuildMetadata.CentralPackageTransitivePinningEnabled);
-            SetValueIfFalse(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
+            SetValueIfTrue(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
         }
 
 
@@ -694,14 +694,6 @@ namespace NuGet.ProjectModel
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
         {
             if (value)
-            {
-                writer.WriteNameValue(name, value);
-            }
-        }
-
-        private static void SetValueIfFalse(IObjectWriter writer, string name, bool value)
-        {
-            if (!value)
             {
                 writer.WriteNameValue(name, value);
             }
