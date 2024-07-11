@@ -135,7 +135,7 @@ namespace NuGet.ProjectModel
         public RestoreAuditProperties RestoreAuditProperties { get; set; }
 
         /// <summary>
-        /// A unified flag to help users manage their SDK warning levels. Example: 9.0.100
+        /// A unified flag to help users manage their SDK warning levels. Example: 9.0.100.
         /// When introducing a new warning or error use this property to
         /// allow users to tell the sdk "treat me as if I were SDK x.y.z" and manage breaking changes
         /// </summary>

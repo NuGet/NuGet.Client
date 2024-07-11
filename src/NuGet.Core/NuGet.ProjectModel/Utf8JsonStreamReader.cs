@@ -222,7 +222,7 @@ namespace NuGet.ProjectModel
             return false;
         }
 
-        internal bool ReadNextTokenAsBoolOrTrue(byte[] propertyName)
+        internal bool ReadNextTokenAsBoolOrThrowAnException(byte[] propertyName)
         {
             ThrowExceptionIfDisposed();
 

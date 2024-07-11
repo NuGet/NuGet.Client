@@ -1175,7 +1175,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(UsingMicrosoftNETSdk))
                     {
-                        usingMicrosoftNetSdk = jsonReader.ReadNextTokenAsBoolOrTrue(UsingMicrosoftNETSdk);
+                        usingMicrosoftNetSdk = jsonReader.ReadNextTokenAsBoolOrThrowAnException(UsingMicrosoftNETSdk);
                     }
                     else if (jsonReader.ValueTextEquals(SdkAnalysisLevel))
                     {
