@@ -717,7 +717,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task ListPackage_WithHttpSourceAndAllowInsecureConnectionsFalse_Fails()
         {
             // Arrange
@@ -748,7 +748,7 @@ namespace Dotnet.Integration.Test
             mockServer.Stop();
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public async Task ListPackage_WithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
         {
             // Arrange
