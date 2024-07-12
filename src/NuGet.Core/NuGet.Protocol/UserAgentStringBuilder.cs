@@ -106,6 +106,10 @@ namespace NuGet.Protocol.Core.Types
                 return OSPlatform.OSX.ToString();
             }
 #if NETCOREAPP
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD))
+            {
+                return OSPlatform.FreeBSD.ToString();
+            }
             else if (OperatingSystem.IsBrowser())
             {
                 return "BROWSER";
