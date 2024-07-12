@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using Newtonsoft.Json;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -214,7 +213,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "centralPackageFloatingVersionsEnabled", msbuildMetadata.CentralPackageFloatingVersionsEnabled);
             SetValueIfTrue(writer, "centralPackageVersionOverrideDisabled", msbuildMetadata.CentralPackageVersionOverrideDisabled);
             SetValueIfTrue(writer, "CentralPackageTransitivePinningEnabled", msbuildMetadata.CentralPackageTransitivePinningEnabled);
-            SetValueIfTrue(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
+            SetValueIfFalse(writer, "UsingMicrosoftNETSdk", msbuildMetadata.UsingMicrosoftNETSdk);
         }
 
 
@@ -694,6 +693,14 @@ namespace NuGet.ProjectModel
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)
         {
             if (value)
+            {
+                writer.WriteNameValue(name, value);
+            }
+        }
+
+        private static void SetValueIfFalse(IObjectWriter writer, string name, bool value)
+        {
+            if (!value)
             {
                 writer.WriteNameValue(name, value);
             }

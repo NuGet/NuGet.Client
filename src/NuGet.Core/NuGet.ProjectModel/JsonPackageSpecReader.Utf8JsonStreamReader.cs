@@ -947,7 +947,7 @@ namespace NuGet.ProjectModel
             RestoreAuditProperties auditProperties = null;
             bool useMacros = MSBuildStringUtility.IsTrue(environmentVariableReader.GetEnvironmentVariable(MacroStringsUtility.NUGET_ENABLE_EXPERIMENTAL_MACROS));
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            bool usingMicrosoftNetSdk = false;
+            bool usingMicrosoftNetSdk = true;
             NuGetVersion sdkAnalysisLevel = null;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)

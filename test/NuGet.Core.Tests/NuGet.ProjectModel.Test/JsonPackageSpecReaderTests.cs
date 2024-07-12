@@ -4119,7 +4119,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void GetPackageSpec_WithNoUsingMicrosoftNetSdkValuePassed_defaultsFalse()
+        public void GetPackageSpec_WithNoUsingMicrosoftNetSdkValuePassed_defaultsTrue()
         {
             // Arrange
             var json = $"{{\"restore\":{{}}}}";
@@ -4128,7 +4128,7 @@ namespace NuGet.ProjectModel.Test
             PackageSpec packageSpec = GetPackageSpec(json);
 
             // Assert
-            Assert.False(packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
+            Assert.True(packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
         }
 
         [Fact]

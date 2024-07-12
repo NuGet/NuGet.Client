@@ -749,7 +749,7 @@ namespace NuGet.ProjectModel.Test
             var json = @"{
                   ""restore"": {
                     ""projectUniqueName"": ""projectUniqueName"",
-                    ""UsingMicrosoftNETSdk"": true
+                    ""UsingMicrosoftNETSdk"": false
                   }
                 }";
 
