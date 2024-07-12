@@ -18,27 +18,48 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _rawReadMe = string.Empty;
         }
 
-        private bool _isErrorWithReadMe;
+        private bool _isErrorWithReadMe = false;
 
         public bool IsErrorWithReadMe
         {
             get => _isErrorWithReadMe;
             set
             {
-                _isErrorWithReadMe = value;
-                RaisePropertyChanged(nameof(IsErrorWithReadMe));
+                if (_isErrorWithReadMe != value)
+                {
+                    _isErrorWithReadMe = value;
+                    RaisePropertyChanged(nameof(IsErrorWithReadMe));
+                }
             }
         }
 
-        private string _rawReadMe;
+        private string _rawReadMe = string.Empty;
 
         public string ReadMeMarkdown
         {
             get => _rawReadMe;
             set
             {
-                _rawReadMe = value;
-                RaisePropertyChanged(nameof(ReadMeMarkdown));
+                if (_rawReadMe != value)
+                {
+                    _rawReadMe = value;
+                    RaisePropertyChanged(nameof(ReadMeMarkdown));
+                }
+            }
+        }
+
+        private bool _canDetermineReadMeDefined = true;
+
+        public bool CanDetermineReadMeDefined
+        {
+            get => _canDetermineReadMeDefined;
+            set
+            {
+                if (_canDetermineReadMeDefined != value)
+                {
+                    _canDetermineReadMeDefined = value;
+                    RaisePropertyChanged(nameof(CanDetermineReadMeDefined));
+                }
             }
         }
 
@@ -46,6 +67,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
+            bool canDetermineReadMeDefined = false;
             try
             {
                 if (!string.IsNullOrEmpty(packagePath))
@@ -55,6 +77,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     var nuspectFileInfo = new FileInfo(nuspecPath);
                     if (nuspectFileInfo.Exists)
                     {
+                        canDetermineReadMeDefined = true;
                         var nuspecReader = new NuspecReader(nuspecPath);
                         var readMePath = nuspecReader.GetReadme();
                         if (!string.IsNullOrEmpty(readMePath))
@@ -80,6 +103,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 IsErrorWithReadMe = isErrorWithReadMe;
                 ReadMeMarkdown = newReadMeValue;
+                CanDetermineReadMeDefined = canDetermineReadMeDefined;
             }
         }
 

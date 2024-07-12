@@ -38,6 +38,20 @@ namespace NuGet.PackageManagement.UI
             ReadMePreviewViewModel = new ReadMePreviewViewModel();
             _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
             DataContextChanged += PackageMetadataControl_DataContextChanged;
+            ReadMePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
+        }
+
+        private void ReadMePreviewViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (ReadMePreviewViewModel is not null
+                && e.PropertyName == nameof(ReadMePreviewViewModel.CanDetermineReadMeDefined))
+            {
+                SetReadmeTabVisibility(ReadMePreviewViewModel.CanDetermineReadMeDefined ? Visibility.Visible : Visibility.Collapsed);
+                if (!ReadMePreviewViewModel.CanDetermineReadMeDefined)
+                {
+                    SelectTab(PackageMetadataTab.PackageDetails);
+                }
+            }
         }
 
         public ReadMePreviewViewModel ReadMePreviewViewModel { get => _readMePreviewViewModel; set => _readMePreviewViewModel = value; }
@@ -72,6 +86,7 @@ namespace NuGet.PackageManagement.UI
             if (disposing)
             {
                 _packageMetadataReadMeControl?.Dispose();
+                ReadMePreviewViewModel.PropertyChanged -= ReadMePreviewViewModel_PropertyChanged;
             }
         }
 
