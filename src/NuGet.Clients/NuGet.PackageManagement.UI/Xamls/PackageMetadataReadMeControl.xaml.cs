@@ -113,12 +113,15 @@ namespace NuGet.PackageManagement.UI
         private async void ViewModel_PropertyChangedAsync(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 #pragma warning restore VSTHRD100 // Avoid async void methods
         {
-            var markdown = NuGet.PackageManagement.UI.Resources.Text_NoReadme;
-            if (ReadMeViewModel is not null
-                && e.PropertyName == nameof(ReadMeViewModel.ReadMeMarkdown)
-                && !string.IsNullOrWhiteSpace(ReadMeViewModel.ReadMeMarkdown))
+            var markdown = string.Empty;
+            if (ReadMeViewModel is not null)
             {
-                markdown = ReadMeViewModel.ReadMeMarkdown;
+                if (ReadMeViewModel.CanDetermineReadMeDefined)
+                {
+                    markdown = string.IsNullOrWhiteSpace(ReadMeViewModel.ReadMeMarkdown)
+                        ? UI.Resources.Text_NoReadme
+                        : ReadMeViewModel.ReadMeMarkdown;
+                }
             }
 
             try
