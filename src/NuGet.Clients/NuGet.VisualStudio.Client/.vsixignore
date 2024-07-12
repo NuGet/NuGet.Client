@@ -70,14 +70,10 @@ Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
-Microsoft.VisualStudio.Debugger.Interop.16.0.dll
 Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
-
-Microsoft.VisualStudio.Interop.dll
 Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.Markdown.Core.dll
 Microsoft.VisualStudio.Markdown.Platform.dll
-Microsoft.VisualStudio.RpcContracts.dll
 Microsoft.VisualStudio.Markdown.Platform.resources.dll
 Microsoft.VisualStudio.Services.Client.Interactive.dll
 Microsoft.VisualStudio.Services.Client.Interactive.resources.dll
@@ -99,9 +95,6 @@ System.Memory.Data.dll
 System.Net.Http.Formatting.dll
 System.Reflection.MetadataLoadContext.dll
 System.Resources.Extensions.dll
-System.Security.AccessControl.dll
-System.Security.Principal.Windows.dll
-System.Security.Permissions.dll
 System.Text.Encodings.Web.dll
 System.Text.Json.dll
 System.Web.Http.dll

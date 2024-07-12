@@ -124,6 +124,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 await UpdateMarkdownAsync(markdown);
@@ -134,6 +135,7 @@ namespace NuGet.PackageManagement.UI
                 descriptionMarkdownPreview.Visibility = Visibility.Collapsed;
                 await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private async Task UpdateMarkdownAsync(string markDown)

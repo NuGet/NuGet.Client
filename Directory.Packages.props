@@ -106,7 +106,6 @@
     <PackageVersion Include="xunit" Version="2.6.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.StaFact" Version="1.1.11" />
-    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
   <!--
     Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure

@@ -68,6 +68,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
             bool canDetermineReadMeDefined = false;
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 if (!string.IsNullOrEmpty(packagePath))
@@ -105,6 +106,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 ReadMeMarkdown = newReadMeValue;
                 CanDetermineReadMeDefined = canDetermineReadMeDefined;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private static string UnescapePath(string path)
