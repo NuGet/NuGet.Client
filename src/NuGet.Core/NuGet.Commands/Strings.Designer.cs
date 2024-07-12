@@ -1015,6 +1015,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The {0} value: `{1}` is invalid. Valid example: `{2}`.
+        /// </summary>
+        internal static string Invalid_AttributeValue {
+            get {
+                return ResourceManager.GetString("Invalid_AttributeValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid restore input. {0}.
         /// </summary>
         internal static string InvalidRestoreInput {

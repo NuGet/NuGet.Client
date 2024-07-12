@@ -926,6 +926,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NuGetAudit>$(NuGetAudit)</NuGetAudit>
         <NuGetAuditLevel>$(NuGetAuditLevel)</NuGetAuditLevel>
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
+        <SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
+        <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
       </_RestoreGraphEntry>
     </ItemGroup>
 
