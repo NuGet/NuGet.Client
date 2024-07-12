@@ -30,7 +30,6 @@ namespace NuGet.DependencyResolver
         {
             if (library == null) throw new ArgumentNullException(nameof(library));
             if (framework == null) throw new ArgumentNullException(nameof(framework));
-            if (runtimeGraph == null) throw new ArgumentNullException(nameof(runtimeGraph));
 
             var transitiveCentralPackageVersions = new TransitiveCentralPackageVersions();
             var rootNode = await CreateGraphNodeAsync(

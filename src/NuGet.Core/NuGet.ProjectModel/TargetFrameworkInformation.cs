@@ -8,6 +8,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Shared;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -50,6 +51,10 @@ namespace NuGet.ProjectModel
         /// </summary>
         public ISet<FrameworkDependency> FrameworkReferences { get; }
 
+        public IDictionary<string, VersionRange> PackagesToPrune { get; }
+
+        public bool EnablePackagePruning { get; set; }
+
         /// <summary>
         /// The project provided runtime.json
         /// </summary>
@@ -63,6 +68,7 @@ namespace NuGet.ProjectModel
             DownloadDependencies = new List<DownloadDependency>();
             CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
             FrameworkReferences = new HashSet<FrameworkDependency>();
+            PackagesToPrune = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
         }
 
         internal TargetFrameworkInformation(TargetFrameworkInformation cloneFrom)
@@ -77,6 +83,9 @@ namespace NuGet.ProjectModel
             CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(cloneFrom.CentralPackageVersions, StringComparer.OrdinalIgnoreCase);
             FrameworkReferences = new HashSet<FrameworkDependency>(cloneFrom.FrameworkReferences);
             RuntimeIdentifierGraphPath = cloneFrom.RuntimeIdentifierGraphPath;
+            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(cloneFrom.CentralPackageVersions, StringComparer.OrdinalIgnoreCase);
+            PackagesToPrune = new Dictionary<string, VersionRange>(cloneFrom.PackagesToPrune, StringComparer.OrdinalIgnoreCase);
+            EnablePackagePruning = cloneFrom.EnablePackagePruning;
 
             static IList<T> CloneList<T>(IList<T> source, Func<T, T> cloneFunc)
             {
@@ -110,6 +119,8 @@ namespace NuGet.ProjectModel
                 hashCode.AddObject(PathUtility.GetStringComparerBasedOnOS().GetHashCode(RuntimeIdentifierGraphPath));
             }
             hashCode.AddUnorderedSequence(CentralPackageVersions.Values);
+            hashCode.AddUnorderedSequence(PackagesToPrune.Values);
+            hashCode.AddObject(EnablePackagePruning);
             hashCode.AddStringIgnoreCase(TargetAlias);
             return hashCode.CombinedHash;
         }

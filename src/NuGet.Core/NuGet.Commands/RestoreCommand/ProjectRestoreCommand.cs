@@ -243,8 +243,8 @@ namespace NuGet.Commands
             token.ThrowIfCancellationRequested();
 
             var name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
-            Dictionary<string, VersionRange> prunablePackages = GetPrunablePackagesForFramework(framework);
 
+            var prunablePackages = _request.Project.TargetFrameworks.FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, framework))?.PackagesToPrune;
             var graphs = new List<GraphNode<RemoteResolveResult>>
             {
                 await walker.WalkAsync(
@@ -252,7 +252,7 @@ namespace NuGet.Commands
                 framework,
                 runtimeIdentifier,
                 runtimeGraph,
-                prunablePackages)
+                (Dictionary<string, VersionRange>)prunablePackages)
             };
 
             // Resolve conflicts
@@ -260,60 +260,6 @@ namespace NuGet.Commands
 
             // Flatten and create the RestoreTargetGraph to hold the packages
             return RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
-        }
-
-        private Dictionary<string, VersionRange> GetPrunablePackagesForFramework(NuGetFramework nuGetFramework)
-        {
-            if (nuGetFramework.Framework.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp))
-            {
-                var runtimeGraphPath = _request.Project.TargetFrameworks.FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, nuGetFramework))?.RuntimeIdentifierGraphPath;
-                var rootDotnetPath = Path.GetFullPath(Path.Combine(runtimeGraphPath, "..", "..", ".."));
-                var directory = new DirectoryInfo(Path.Combine(rootDotnetPath, "packs", "Microsoft.NETCore.App.Ref"));
-
-                if (directory.Exists)
-                {
-                    var files = directory.GetDirectories();
-                    string packageOverridesFile = null;
-                    foreach (var file in files)
-                    {
-                        var frameworkVersion = nuGetFramework.Version.Major + "." + nuGetFramework.Version.Minor;
-                        if (file.Name.StartsWith(frameworkVersion, StringComparison.OrdinalIgnoreCase))
-                        {
-                            packageOverridesFile = Path.Combine(file.FullName, "data", "PackageOverrides.txt");
-                            break;
-                        }
-                    }
-
-                    if (packageOverridesFile != null)
-                    {
-                        if (File.Exists(packageOverridesFile))
-                        {
-                            _request.Log.LogVerbose("Reading packackage overrides file: " + packageOverridesFile);
-                            string[] text = File.ReadAllLines(packageOverridesFile);
-
-                            var prunablePackages = new Dictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
-                            foreach (var line in text)
-                            {
-                                if (!string.IsNullOrWhiteSpace(line))
-                                {
-                                    string[] elements = line.Split('|');
-                                    if (elements.Length == 2)
-                                    {
-                                        if (NuGetVersion.TryParse(elements[1], out NuGetVersion version))
-                                        {
-                                            prunablePackages.Add(elements[0], new VersionRange(maxVersion: version, includeMaxVersion: true));
-                                        }
-                                    }
-                                }
-                            }
-
-                            return prunablePackages;
-                        }
-                    }
-                }
-            }
-
-            return new();
         }
 
         private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
