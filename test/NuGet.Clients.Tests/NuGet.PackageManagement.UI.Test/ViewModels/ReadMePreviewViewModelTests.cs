@@ -21,6 +21,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
 
             Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
             Assert.True(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
+            Assert.False(readMePreviewViewModel.CanDetermineReadMeDefined);
         }
 
         [LocalOnlyFact]
@@ -42,6 +43,8 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
 
             Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
             Assert.True(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
+            Assert.True(readMePreviewViewModel.CanDetermineReadMeDefined);
+
         }
 
         [LocalOnlyFact]
@@ -64,6 +67,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
             Assert.False(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
             Assert.Equal("some readme content", readMePreviewViewModel.ReadMeMarkdown);
+            Assert.True(readMePreviewViewModel.CanDetermineReadMeDefined);
         }
 
         [LocalOnlyFact]
@@ -73,6 +77,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             await readMePreviewViewModel.LoadReadme("path/to/nowhere", "packageId");
 
             Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
+            Assert.False(readMePreviewViewModel.CanDetermineReadMeDefined);
             Assert.True(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
         }
 
