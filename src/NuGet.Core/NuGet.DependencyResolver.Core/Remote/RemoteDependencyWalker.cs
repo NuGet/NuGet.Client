@@ -148,7 +148,7 @@ namespace NuGet.DependencyResolver
                         {
                             if (dependency.LibraryRange.VersionRange.Satisfies(prunableVersion.MaxVersion))
                             {
-                                _context.Logger.LogDebug($"Pruning {dependency.Name} {dependency.LibraryRange.VersionRange.OriginalString}. Max prunable version: {prunableVersion.MaxVersion}");
+                                _context.Logger.LogDebug($"Pruning {dependency.Name} {dependency.LibraryRange.VersionRange.OriginalString}. Max prunable version: {prunableVersion.MaxVersion}"); //TODO NK - This will double log.
                                 continue;
                             }
                         }

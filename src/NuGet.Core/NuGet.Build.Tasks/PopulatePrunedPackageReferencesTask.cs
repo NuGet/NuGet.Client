@@ -62,10 +62,9 @@ namespace NuGet.Build.Tasks
                             var packageVersion = elements[1];
                             var properties = new Dictionary<string, string>
                             {
-                                { "Id", packageId },
                                 { "Version", packageVersion }
                             };
-                            entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
+                            entries.Add(new TaskItem(packageId, properties));
                         }
                     }
                 }
