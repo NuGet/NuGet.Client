@@ -46,7 +46,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public IReadOnlyList<(string id, string[] metadata)> GetItems(string itemName, params string[] metadataNames)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
             return VsManagedLanguagesProjectSystemServices.GetItems(_adapter, itemName, metadataNames);
         }
     }

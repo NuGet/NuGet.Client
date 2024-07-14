@@ -112,7 +112,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<IReadOnlyList<(string id, string[] metadata)>> GetItemsAsync(string itemTypeName, params string[] metadataNames)
         {
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             return VsManagedLanguagesProjectSystemServices.GetItems(_vsProjectAdapter, itemTypeName, metadataNames);
         }
     }

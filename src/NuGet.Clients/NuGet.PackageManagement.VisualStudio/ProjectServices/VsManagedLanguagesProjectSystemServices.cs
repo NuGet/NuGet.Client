@@ -365,7 +365,6 @@ namespace NuGet.PackageManagement.VisualStudio
             } while (enumerator.MoveNext());
 
             return result;
-
         }
 
         private class ProjectReference
