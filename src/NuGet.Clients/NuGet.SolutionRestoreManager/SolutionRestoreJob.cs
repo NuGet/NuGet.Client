@@ -785,7 +785,7 @@ namespace NuGet.SolutionRestoreManager
             static HashSet<string> GetSuppressions(VsMSBuildNuGetProject msbuildProject)
             {
                 var items = msbuildProject.GetItems(ProjectItems.NuGetAuditSuppress);
-                if (items?.Count > 1)
+                if (items?.Count > 0)
                 {
                     var suppressions = new HashSet<string>(items.Count, StringComparer.Ordinal);
                     for (int i = 0; i < items.Count; i++)
