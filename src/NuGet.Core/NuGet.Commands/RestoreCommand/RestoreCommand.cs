@@ -256,7 +256,7 @@ namespace NuGet.Commands
                         {
                             if ((_request.Project.RestoreMetadata.SdkAnalysisLevel is not null &&
                                 _request.Project.RestoreMetadata.SdkAnalysisLevel >= new NuGetVersion(Shared.SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue)) ||
-                                _request.Project.RestoreMetadata.UsingMicrosoftNETSdk == false)
+                                (_request.Project.RestoreMetadata.UsingMicrosoftNETSdk == false && _request.Project.RestoreMetadata.SdkAnalysisLevel is null))
                             {
                                 // SdkAnalysisLevel >= 9.0.100
                                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
