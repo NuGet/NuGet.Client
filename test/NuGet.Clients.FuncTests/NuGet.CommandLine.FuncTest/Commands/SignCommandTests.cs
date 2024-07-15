@@ -6,7 +6,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using EnvDTE80;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
