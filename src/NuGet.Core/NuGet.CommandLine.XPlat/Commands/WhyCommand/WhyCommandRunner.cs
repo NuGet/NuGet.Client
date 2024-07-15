@@ -33,7 +33,7 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<(string assetsFilePath, string? projectPath)> assetsFiles;
             try
             {
-                assetsFiles = GetAssetsFiles(whyCommandArgs.Path, whyCommandArgs.Logger);
+                assetsFiles = FindAssetsFiles(whyCommandArgs.Path, whyCommandArgs.Logger);
             }
             catch (ArgumentException ex)
             {
@@ -88,7 +88,7 @@ namespace NuGet.CommandLine.XPlat
             return anyErrors ? ExitCodes.Error : ExitCodes.Success;
         }
 
-        private static IEnumerable<(string assetsFilepath, string? projectPath)> GetAssetsFiles(string path, ILoggerWithColor logger)
+        private static IEnumerable<(string assetsFilepath, string? projectPath)> FindAssetsFiles(string path, ILoggerWithColor logger)
         {
             var extension = Path.GetExtension(path);
             if (string.Equals(".json", extension, StringComparison.OrdinalIgnoreCase))
@@ -117,10 +117,14 @@ namespace NuGet.CommandLine.XPlat
                             continue;
                         }
 
-                        string assetsFilePath = project.GetPropertyValue(ProjectAssetsFile);
+                        string? assetsFilePath = project.GetPropertyValue(ProjectAssetsFile);
                         if (string.IsNullOrEmpty(assetsFilePath))
                         {
-                            // TODO: show error message
+                            logger.LogError(
+                                string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Error_ProjectAssetsFilePropertyNotFound,
+                                    project.FullPath));
                             continue;
                         }
 
@@ -179,7 +183,7 @@ namespace NuGet.CommandLine.XPlat
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.WhyCommand_Error_ArgumentExceptionThrown,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid_AllowAssetsFile, path)));
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, path)));
                 return false;
             }
 
@@ -196,7 +200,7 @@ namespace NuGet.CommandLine.XPlat
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.WhyCommand_Error_ArgumentExceptionThrown,
-                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid_AllowAssetsFile, path)));
+                        string.Format(CultureInfo.CurrentCulture, Strings.Error_PathIsMissingOrInvalid, path)));
                 return false;
             }
         }
@@ -246,11 +250,22 @@ namespace NuGet.CommandLine.XPlat
         {
             if (!File.Exists(assetsFilePath))
             {
-                logger.LogError(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Error_AssetsFileNotFound,
-                        assetsFilePath));
+                if (!string.IsNullOrEmpty(projectPath))
+                {
+                    logger.LogError(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_AssetsFileNotFound,
+                            projectPath));
+                }
+                else
+                {
+                    logger.LogError(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_PathIsMissingOrInvalid,
+                            assetsFilePath));
+                }
 
                 return null;
             }

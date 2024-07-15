@@ -673,15 +673,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Missing or invalid path &apos;{0}&apos;. Please provide a path to a project, solution, or NuGet assets file, or directory..
-        /// </summary>
-        internal static string Error_PathIsMissingOrInvalid_AllowAssetsFile {
-            get {
-                return ResourceManager.GetString("Error_PathIsMissingOrInvalid_AllowAssetsFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The specified path &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string Error_PathNotFound {
@@ -714,6 +705,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_PrereleaseWhenVersionSpecified {
             get {
                 return ResourceManager.GetString("Error_PrereleaseWhenVersionSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have MSBuild property ProjectAssetsFile defined. This may indicate that this project does not support NuGet PackageReference, or that project customization has prevented the .NET SDK setting default values..
+        /// </summary>
+        internal static string Error_ProjectAssetsFilePropertyNotFound {
+            get {
+                return ResourceManager.GetString("Error_ProjectAssetsFilePropertyNotFound", resourceCulture);
             }
         }
         
