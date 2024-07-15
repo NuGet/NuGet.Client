@@ -223,6 +223,11 @@ namespace NuGet.Common
         NU1301 = 1301,
 
         /// <summary>
+        /// Insecure Source specified.
+        /// </summary>
+        NU1302 = 1302,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,
@@ -370,6 +375,11 @@ namespace NuGet.Common
         /// Package with known critical severity vulnerability
         /// </summary>
         NU1904 = 1904,
+
+        /// <summary>
+        /// Audit source did not provide vulnerability data
+        /// </summary>
+        NU1905 = 1905,
 
         /// <summary>
         /// Undefined signature error

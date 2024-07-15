@@ -64,5 +64,7 @@
     <InternalsVisibleTo Include="NuGet.ProjectModel.Test" />
     <InternalsVisibleTo Include="NuGet.SolutionRestoreManager.Test" />
     <InternalsVisibleTo Include="Test.Utility" />
+    <InternalsVisibleTo Include="NuGet.Commands.FuncTest"/>
+    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
   </ItemGroup>
 </Project>

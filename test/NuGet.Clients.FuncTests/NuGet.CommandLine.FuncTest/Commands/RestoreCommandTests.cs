@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,8 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -1184,7 +1187,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
 
         [Fact]
-        public async Task Restore_WithHttpSource_Warns()
+        public async Task Restore_WithHttpSource_Fails()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1212,22 +1215,18 @@ namespace NuGet.CommandLine.FuncTest.Commands
             solution.Create(pathContext.SolutionRoot);
 
             // Act
-            var result = RunRestore(pathContext, _successExitCode);
+            var result = RunRestore(pathContext, _failureExitCode);
 
             // Assert
-            result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectAPackages}'", result.Output);
-            Assert.Contains("You are running the 'restore' operation with an 'HTTP' source, 'http://api.source/index.json'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.", result.Output);
+            result.Success.Should().BeFalse();
+            Assert.Contains("restore", result.Errors);
+            Assert.Contains("http://api.source/index.json", result.Errors);
         }
 
         [Theory]
-        [InlineData("false", true)]
-        [InlineData("FALSE", true)]
-        [InlineData("invalidString", true)]
-        [InlineData("", true)]
-        [InlineData("true", false)]
-        [InlineData("TRUE", false)]
-        public async Task Restore_WithHttpSourceAndFalseAllowInsecureConnections_WarnsCorrectly(string allowInsecureConnections, bool hasHttpWarning)
+        [InlineData("true")]
+        [InlineData("TRUE")]
+        public async Task Restore_WithHttpSourceAndAllowInsecureConnectionsAttributeSetTrue_DoesNotFail(string allowInsecureConnections)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1258,21 +1257,146 @@ namespace NuGet.CommandLine.FuncTest.Commands
             CommandRunnerResult result = RunRestore(pathContext, _successExitCode);
 
             // Assert
-            string formatString = "You are running the 'restore' operation with an 'HTTP' source, '{0}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS'";
-            string warningForHttpSource = string.Format(formatString, "http://api.source/index.json");
-            string warningForHttpsSource = string.Format(formatString, "https://api.source/index.json");
 
             result.Success.Should().BeTrue();
-            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.Output);
-            Assert.DoesNotContain(warningForHttpsSource, result.Output);
-            if (hasHttpWarning)
+            Assert.Contains($"Added package 'A.1.0.0' to folder '{projectBPackages}'", result.AllOutput);
+        }
+
+        [Theory]
+        [InlineData("false")]
+        [InlineData("FALSE")]
+        [InlineData("invalidString")]
+        [InlineData("")]
+        public async Task Restore_WithHttpSourceAndAllowInsecureConnectionsAttributeSetFalse_Fails(string allowInsecureConnections)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            // Set up solution, project, and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
+            pathContext.Settings.AddSource("http-feed", "http://api.source/index.json", allowInsecureConnections);
+            pathContext.Settings.AddSource("https-feed", "https://api.source/index.json", allowInsecureConnections);
+
+            var net461 = NuGetFramework.Parse("net461");
+            var projectB = new SimpleTestProjectContext(
+                "b",
+                ProjectStyle.PackagesConfig,
+                pathContext.SolutionRoot);
+            projectB.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+            var projectBPackages = Path.Combine(pathContext.SolutionRoot, "packages");
+
+            Util.CreateFile(Path.GetDirectoryName(projectB.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""A"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            // Act
+            CommandRunnerResult result = RunRestore(pathContext, _failureExitCode);
+
+            // Assert
+            result.Success.Should().BeFalse();
+            Assert.Contains("restore", result.Errors);
+            Assert.Contains("http://api.source/index.json", result.Errors);
+            Assert.DoesNotContain("https://api.source/index.json", result.Errors);
+        }
+
+        [Fact]
+        public async Task Restore_WithPackagesConfigProject_PackageWithVulnerabilities_WithSuppressedAdvisories_SuppressesExpectedVulnerabilities()
+        {
+            // Arrange
+            var pathContext = new SimpleTestPathContext();
+            var advisoryUrl1 = "https://contoso.com/advisories/12345";
+            var advisoryUrl2 = "https://contoso.com/advisories/12346";
+
+            // set up vulnerability server
+            using var mockServer = new FileSystemBackedV3MockServer(pathContext.PackageSource, sourceReportsVulnerabilities: true);
+
+            mockServer.Vulnerabilities.Add(
+                "packageA",
+                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
+                    (new Uri(advisoryUrl1), PackageVulnerabilitySeverity.Critical, VersionRange.Parse("[1.0.0, 3.0.0)"))
+                });
+            mockServer.Vulnerabilities.Add(
+                "packageB",
+                new List<(Uri, PackageVulnerabilitySeverity, VersionRange)> {
+                    (new Uri(advisoryUrl2), PackageVulnerabilitySeverity.High, VersionRange.Parse("[1.0.0, 3.0.0)"))
+                });
+            pathContext.Settings.RemoveSource("source");
+            pathContext.Settings.AddSource("source", mockServer.ServiceIndexUri, allowInsecureConnectionsValue: "true");
+
+            // set up solution, projects and packages
+            var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+            var projectA = new SimpleTestProjectContext("A", ProjectStyle.PackagesConfig, pathContext.SolutionRoot);
+            var projectB = new SimpleTestProjectContext("B", ProjectStyle.PackagesConfig, pathContext.SolutionRoot);
+
+            var packageA1 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.1.0" };
+            var packageA2 = new SimpleTestPackageContext() { Id = "packageA", Version = "1.2.0" };
+            var packageB1 = new SimpleTestPackageContext() { Id = "packageB", Version = "2.1.0" };
+            var packageB2 = new SimpleTestPackageContext() { Id = "packageB", Version = "2.2.0" };
+
+            solution.Projects.Add(projectA);
+            solution.Projects.Add(projectB);
+            solution.Create(pathContext.SolutionRoot);
+
+            using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
             {
-                Assert.Contains(warningForHttpSource, result.Output);
+                writer.Write(
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" />
+  <package id=""packageB"" version=""2.1.0"" />
+</packages>");
             }
-            else
+            using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectB.ProjectPath), "packages.config")))
             {
-                Assert.DoesNotContain(warningForHttpSource, result.Output);
+                writer.Write(
+@"<packages>
+  <package id=""packageA"" version=""1.2.0"" />
+  <package id=""packageB"" version=""2.2.0"" />
+</packages>");
             }
+
+            // suppress the vulnerability on package A for project A
+            var xmlA = projectA.GetXML();
+            ProjectFileUtils.AddItem(
+                                xmlA,
+                                name: "NuGetAuditSuppress",
+                                identity: advisoryUrl1,
+                                framework: NuGetFramework.AnyFramework,
+                                properties: new Dictionary<string, string>(),
+                                attributes: new Dictionary<string, string>());
+            xmlA.Save(projectA.ProjectPath);
+
+            // suppress the vulnerability on package B for project B
+            var xmlB = projectB.GetXML();
+            ProjectFileUtils.AddItem(
+                                xmlB,
+                                name: "NuGetAuditSuppress",
+                                identity: advisoryUrl2,
+                                framework: NuGetFramework.AnyFramework,
+                                properties: new Dictionary<string, string>(),
+                                attributes: new Dictionary<string, string>());
+            xmlB.Save(projectB.ProjectPath);
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageA1, packageA2, packageB1, packageB2);
+
+            // Act
+            mockServer.Start();
+
+            var result = RunRestore(pathContext, _successExitCode);
+
+            mockServer.Stop();
+
+            // Assert
+            result.Success.Should().BeTrue();
+            Assert.DoesNotContain($"Package 'packageA' 1.1.0 has a known critical severity vulnerability", result.Output); // suppressed
+            Assert.Contains($"Package 'packageB' 2.1.0 has a known high severity vulnerability", result.Output);
+            Assert.Contains($"Package 'packageA' 1.2.0 has a known critical severity vulnerability", result.Output);
+            Assert.DoesNotContain($"Package 'packageB' 2.2.0 has a known high severity vulnerability", result.Output); // suppressed
         }
 
         public static string GetResource(string name)
