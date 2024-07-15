@@ -673,6 +673,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Missing or invalid path &apos;{0}&apos;. Please provide a path to a project, solution, or NuGet assets file, or directory..
+        /// </summary>
+        internal static string Error_PathIsMissingOrInvalid_AllowAssetsFile {
+            get {
+                return ResourceManager.GetString("Error_PathIsMissingOrInvalid_AllowAssetsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified path &apos;{0}&apos; does not exist..
         /// </summary>
         internal static string Error_PathNotFound {
@@ -2269,11 +2278,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assets file &apos;{0}&apos; is invalid. Please run restore for project &apos;{1}&apos; before running this command..
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet-nuget-why.
         /// </summary>
-        internal static string WhyCommand_Error_InvalidAssetsFile {
+        internal static string WhyCommand_Error_InvalidAssetsFile_WithoutProject {
             get {
-                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile", resourceCulture);
+                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile_WithoutProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a NuGet assets file. Please run restore for project &apos;{1}&apos; before running this command..
+        /// </summary>
+        internal static string WhyCommand_Error_InvalidAssetsFile_WithProject {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile_WithProject", resourceCulture);
             }
         }
         
