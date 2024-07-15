@@ -254,8 +254,14 @@ namespace NuGet.Commands
                         var source = remoteProvider.Source;
                         if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                         {
-                            await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
+                            if ((_request.Project.RestoreMetadata.SdkAnalysisLevel is not null &&
+                                _request.Project.RestoreMetadata.SdkAnalysisLevel >= new NuGetVersion(Shared.SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue)) ||
+                                _request.Project.RestoreMetadata.UsingMicrosoftNETSdk == false)
+                            {
+                                // SdkAnalysisLevel >= 9.0.100
+                                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
                                 string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
+                            }
                         }
                     }
                 }

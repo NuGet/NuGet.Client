@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D0
 		build\Shared\NoAllocEnumerateExtensions.cs = build\Shared\NoAllocEnumerateExtensions.cs
 		build\Shared\NullableAttributes.cs = build\Shared\NullableAttributes.cs
 		build\Shared\RequiredModifierAttributes.cs = build\Shared\RequiredModifierAttributes.cs
+		build\Shared\SdkAnalysisLevelMinimums.cs = build\Shared\SdkAnalysisLevelMinimums.cs
 		build\Shared\SharedExtensions.cs = build\Shared\SharedExtensions.cs
 		build\Shared\SimplePool.cs = build\Shared\SimplePool.cs
 		build\Shared\StringBuilderPool.cs = build\Shared\StringBuilderPool.cs
