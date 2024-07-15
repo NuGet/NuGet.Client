@@ -292,6 +292,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- The project must specify PublishRepositoryUrl=true in order to publish the URL, in order to prevent inadvertent leak of internal URL. -->
       <RepositoryUrl Condition="'$(RepositoryUrl)' == '' and '$(PublishRepositoryUrl)' == 'true'">$(PrivateRepositoryUrl)</RepositoryUrl>
       <RepositoryCommit Condition="'$(RepositoryCommit)' == ''">$(SourceRevisionId)</RepositoryCommit>
+      <RepositoryBranch Condition="'$(RepositoryBranch)' == '' and '$(SourceBranchName)' != ''">$(SourceBranchName)</RepositoryBranch>
     </PropertyGroup>
   </Target>
 
