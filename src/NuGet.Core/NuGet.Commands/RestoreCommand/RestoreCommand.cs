@@ -262,6 +262,12 @@ namespace NuGet.Commands
                                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
                                 string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
                             }
+                            else
+                            {
+                                // SdkAnalysisLevel < 9.0.100
+                                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1803,
+                                string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
+                            }
                         }
                     }
                 }

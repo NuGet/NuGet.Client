@@ -4095,11 +4095,8 @@ namespace NuGet.Commands.FuncTest
             Assert.Contains(httpSourceUrl, logMessage.Message);
         }
 
-        [Theory]
-        [InlineData("8.0.100")]
-        [InlineData("8.0.400")]
-        [InlineData("7.8.100")]
-        public async Task Restore_WithHttpSourceSdkAnalysisLevelLowerThan90100_Succeeds(string version)
+        [Fact]
+        public async Task Restore_WithHttpSourceSdkAnalysisLevelLowerThan90100_Warns()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -4113,7 +4110,7 @@ namespace NuGet.Commands.FuncTest
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
-            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(version);
+            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("7.8.100");
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
             var command = new RestoreCommand(request);
 
@@ -4121,15 +4118,14 @@ namespace NuGet.Commands.FuncTest
             var result = await command.ExecuteAsync();
 
             // Assert
-            result.Success.Should().BeTrue(because: logger.ShowMessages());
-            result.LockFile.LogMessages.Should().HaveCount(0);
+            result.LockFile.LogMessages.Should().HaveCount(1);
+            IAssetsLogMessage logMessage = result.LockFile.LogMessages[0];
+            logMessage.Code.Should().Be(NuGetLogCode.NU1803);
+            Assert.Contains(httpSourceUrl, logMessage.Message);
         }
 
-        [Theory]
-        [InlineData("9.0.100")]
-        [InlineData("9.0.400")]
-        [InlineData("9.8.100")]
-        public async Task Restore_WithHttpSourceSdkAnalysisLevelHigherThan90100_ThrowsAnError(string version)
+        [Fact]
+        public async Task Restore_WithHttpSourceSdkAnalysisLevelHigherThan90100_ThrowsAnError()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -4143,7 +4139,7 @@ namespace NuGet.Commands.FuncTest
             var logger = new TestLogger();
             ISettings settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var project1Spec = ProjectTestHelpers.GetPackageSpec(settings, "Project1", pathContext.SolutionRoot, framework: "net5.0");
-            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion(version);
+            project1Spec.RestoreMetadata.SdkAnalysisLevel = new NuGetVersion("9.0.400");
             var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1Spec);
             var command = new RestoreCommand(request);
 
@@ -4160,7 +4156,6 @@ namespace NuGet.Commands.FuncTest
 
         [Theory]
         [InlineData("8.0.100")]
-        [InlineData("9.0.400")]
         [InlineData("9.8.100")]
         public async Task Restore_WithHttpSourceAnySdkAnalysisLevelWithAllowInsecureConnectionsTrue_Succeeds(string version)
         {
