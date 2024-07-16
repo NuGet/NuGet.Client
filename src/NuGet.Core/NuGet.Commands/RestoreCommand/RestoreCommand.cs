@@ -254,16 +254,19 @@ namespace NuGet.Commands
                         var source = remoteProvider.Source;
                         if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                         {
-                            if (_request.Project.RestoreMetadata.SdkAnalysisLevel != null &&
-                                _request.Project.RestoreMetadata.SdkAnalysisLevel >= new NuGetVersion(Shared.SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue))
+                            var sdkLevel = _request.Project.RestoreMetadata.SdkAnalysisLevel;
+                            var minSdkLevel = new NuGetVersion(Shared.SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue);
+
+                            if (sdkLevel != null && sdkLevel >= minSdkLevel ||
+                                sdkLevel == null && _request.Project.RestoreMetadata.UsingMicrosoftNETSdk == false)
                             {
-                                // SdkAnalysisLevel >= 9.0.100
+                                // SdkAnalysisLevel >= 9.0.100 or SdkAnalysisLevel is null and not using Microsoft NET Sdk
                                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1302,
                                 string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source)));
                             }
                             else
                             {
-                                // SdkAnalysisLevel < 9.0.100 or UsingMicrosoftNETSdk is true or SdkAnalysisLevel is null
+                                // SdkAnalysisLevel < 9.0.100 or SdkAnalysisLevel is null and using Microsoft NET Sdk
                                 await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
                                 string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
                             }
