@@ -20,6 +20,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Shared;
+using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 using TransitiveEntry = System.Collections.Generic.IDictionary<NuGet.Frameworks.FrameworkRuntimePair, System.Collections.Generic.IList<NuGet.Packaging.PackageReference>>;
 
@@ -218,7 +219,27 @@ namespace NuGet.PackageManagement.VisualStudio
                             targetsList = await GetTargetsListAsync(assetsFilePath, token);
                         }
 
-                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedInstalledPackages, targetsList, token) : new Dictionary<string, TransitiveEntry>();
+                        List<LockFileTargetLibrary> projectReferences = targetsList.SelectMany(t => t.Libraries).Where(l => l.Type == LibraryType.Project).ToList();
+                        List<PackageReference> installedProjectReferences = new List<PackageReference>(projectReferences.Count());
+
+                        // Since ProjectReferences are not in the dependencies section of the package spec (installed packages), we need to manually add them
+                        // to the installed packages list to compute transitive origins
+                        foreach (var projectReference in projectReferences)
+                        {
+                            var packageReference = new PackageReference(
+                                identity: new PackageIdentity(projectReference.Name, projectReference.Version),
+                                targetFramework: new NuGetFramework(projectReference.Framework),
+                                userInstalled: false,
+                                developmentDependency: false,
+                                requireReinstallation: false,
+                                allowedVersions: VersionRange.Parse(projectReference.Version.ToString()));
+                            installedProjectReferences.Add(packageReference);
+                        }
+
+                        installedProjectReferences.AddRange(calculatedInstalledPackages);
+
+                        // Compute Transitive Origins
+                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(installedProjectReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>();
                     }
                     else
                     {
@@ -323,7 +344,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return targets
                     .SelectMany(target => target.Libraries)
-                    .Where(library => library.Type == LibraryType.Package)
                     .SelectMany(library => GetPackageReferenceUtility.UpdateTransitiveDependencies(library, targetFramework, targets, installedPackages, transitivePackages))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
@@ -434,7 +454,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Find first target node that matches current
             foreach (LockFileTargetLibrary lib in graph.Libraries)
             {
-                if (lib.Type == LibraryType.Package.Value
+                if ((lib.Type == LibraryType.Package.Value || lib.Type == LibraryType.Project.Value)
                     && string.Equals(lib.Name, current.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)
                     && ((current.HasAllowedVersions && current.AllowedVersions.Satisfies(lib.Version)) ||
                         (current.PackageIdentity.HasVersion && current.PackageIdentity.Version.Equals(lib.Version))))
@@ -463,7 +483,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     cachedEntry[fxRidEntry] = new List<PackageReference>();
                 }
 
-                if (!cachedEntry[fxRidEntry].Contains(top)) // Dictionary value is a List. If perf. is bad, change to HashSet.
+                // In order to hide Projects from the PM UI, we don't add them to the transitive origins cache
+                if (!cachedEntry[fxRidEntry].Contains(top) && node.Type == LibraryType.Package.Value) // Dictionary value is a List. If perf. is bad, change to HashSet.
                 {
                     cachedEntry[fxRidEntry].Add(top);
                 }

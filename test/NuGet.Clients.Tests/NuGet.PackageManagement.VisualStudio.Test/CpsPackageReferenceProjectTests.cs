@@ -4053,9 +4053,36 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.Empty(result.InstalledPackages); // No installed packages
-            // Foreign transitive packages in assets file don't have dependencies.
-            // Those are not considered transitive packages
-            Assert.Empty(result.TransitivePackages);
+            Assert.Equal(1, result.TransitivePackages.Count);
+        }
+
+        [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_MutipleProjectReferencesWithSinglePackage_EmptyInstalledAndTransitivePackagesAsync()
+        {
+            // Project3 -> Project2 ->  PackageA (1.0.0)
+            //                          Project1 -> PackageB (1.0.0)
+            // PackageA (1.0.0) -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageB");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageA").WithTestProjectReference(prj1Spec);
+            PackageSpec prj3Spec = ProjectTestHelpers.GetPackageSpec("Project3", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj2Spec);
+
+            await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec, prj3Spec);
+
+            CpsPackageReferenceProject project3 = PrepareCpsRestoredProject(prj3Spec);
+
+            // Act
+            ProjectPackages result = await project3.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert
+            Assert.Empty(result.InstalledPackages); // No installed packages
+            // Inner project references need to be considered as transitive packages in order to calculate transitive origins.
+            Assert.Equal(3, result.TransitivePackages.Count);
         }
 
         [Fact]
