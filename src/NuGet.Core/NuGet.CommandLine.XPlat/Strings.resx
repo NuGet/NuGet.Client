@@ -942,10 +942,10 @@ Non-HTTPS access will be removed in a future version. Consider migrating to 'HTT
     <comment>{0} - Exception mssage</comment>
   </data>
   <data name="WhyCommand_Message_NonSDKStyleProjectsAreNotSupported" xml:space="preserve">
-    <value>Unable to run 'dotnet nuget why' for project '{0}'. This command only works on SDK-style projects.</value>
+    <value>Unable to run 'dotnet nuget why' for project '{0}'. See https://aka.ms/dotnet/nuget/why#older-project-format</value>
   </data>
   <data name="WhyCommand_Error_InvalidAssetsFile_WithoutProject" xml:space="preserve">
-    <value>The file '{0}' does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet-nuget-why</value>
+    <value>The file '{0}' does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet/nuget/why#older-project-format</value>
     <comment>{0} - Assets file path</comment>
   </data>
   <data name="WhyCommand_Error_InvalidAssetsFile_WithProject" xml:space="preserve">

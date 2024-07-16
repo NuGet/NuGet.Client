@@ -2278,7 +2278,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet-nuget-why.
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet/nuget/why#older-project-format.
         /// </summary>
         internal static string WhyCommand_Error_InvalidAssetsFile_WithoutProject {
             get {
@@ -2332,7 +2332,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos; for project &apos;{0}&apos;. This command only works on SDK-style projects..
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos; for project &apos;{0}&apos;. See https://aka.ms/dotnet/nuget/why#older-project-format.
         /// </summary>
         internal static string WhyCommand_Message_NonSDKStyleProjectsAreNotSupported {
             get {

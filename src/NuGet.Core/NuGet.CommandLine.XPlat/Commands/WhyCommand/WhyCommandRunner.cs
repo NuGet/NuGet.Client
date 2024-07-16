@@ -91,7 +91,7 @@ namespace NuGet.CommandLine.XPlat
         private static IEnumerable<(string assetsFilepath, string? projectPath)> FindAssetsFiles(string path, ILoggerWithColor logger)
         {
             var extension = Path.GetExtension(path);
-            if (string.Equals(".json", extension, StringComparison.OrdinalIgnoreCase))
+            if (XPlatUtility.IsJsonFile(extension))
             {
                 yield return (path, null);
                 yield break;
