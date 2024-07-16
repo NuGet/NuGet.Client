@@ -1,1 +1,4 @@
 #nullable enable
+NuGet.Versioning.SdkAnalysisLevelMinimums
+static NuGet.Versioning.SdkAnalysisLevelMinimums.IsEnabled(NuGet.Versioning.NuGetVersion! sdkAnalysisLevel, bool usingMicrosoftNetSdk, NuGet.Versioning.NuGetVersion! minSdkVersion) -> bool
+static readonly NuGet.Versioning.SdkAnalysisLevelMinimums.HttpErrorSdkAnalysisLevelMinimumValue -> NuGet.Versioning.NuGetVersion!

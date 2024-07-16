@@ -4073,8 +4073,8 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            string httpSourceUrl = "http://api.source/index.json";
-            string httpsSourceUrl = "https://api.source/index.json";
+            string httpSourceUrl = "http://unit.test/index.json";
+            string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "False");
             pathContext.Settings.AddSource("https-feed", httpsSourceUrl, "False");
 
@@ -4102,8 +4102,8 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            string httpSourceUrl = "http://api.source/index.json";
-            string httpsSourceUrl = "https://api.source/index.json";
+            string httpSourceUrl = "http://unit.test/index.json";
+            string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "False");
             pathContext.Settings.AddSource("https-feed", httpsSourceUrl, "False");
 
@@ -4131,8 +4131,8 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            string httpSourceUrl = "http://api.source/index.json";
-            string httpsSourceUrl = "https://api.source/index.json";
+            string httpSourceUrl = "http://unit.test/index.json";
+            string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "False");
             pathContext.Settings.AddSource("https-feed", httpsSourceUrl, "False");
 
@@ -4156,15 +4156,15 @@ namespace NuGet.Commands.FuncTest
 
         [Theory]
         [InlineData("8.0.100")]
-        [InlineData("9.8.100")]
+        [InlineData("9.0.400")]
         public async Task Restore_WithHttpSourceAnySdkAnalysisLevelWithAllowInsecureConnectionsTrue_Succeeds(string version)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            string httpSourceUrl = "http://api.source/index.json";
-            string httpsSourceUrl = "https://api.source/index.json";
+            string httpSourceUrl = "http://unit.test/index.json";
+            string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "True");
             pathContext.Settings.AddSource("https-feed", httpsSourceUrl, "True");
 
@@ -4190,8 +4190,8 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            string httpSourceUrl = "http://api.source/index.json";
-            string httpsSourceUrl = "https://api.source/index.json";
+            string httpSourceUrl = "http://unit.test/index.json";
+            string httpsSourceUrl = "https://unit.test/index.json";
             pathContext.Settings.AddSource("http-feed", httpSourceUrl, "True");
             pathContext.Settings.AddSource("https-feed", httpsSourceUrl, "True");
 
