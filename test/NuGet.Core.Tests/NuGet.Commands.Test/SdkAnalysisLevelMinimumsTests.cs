@@ -25,7 +25,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void IsEnabled_WhenSdkAnalysisLevelIsLessThanMinSdkVersion_ShouldReturnFalse()
         {
-            var result = SdkAnalysisLevelMinimums.IsEnabled(new NuGetVersion("9.0.900"), true, new NuGetVersion("9.0.100"));
+            var result = SdkAnalysisLevelMinimums.IsEnabled(new NuGetVersion("8.0.900"), true, new NuGetVersion("9.0.100"));
             Assert.False(result);
         }
 
