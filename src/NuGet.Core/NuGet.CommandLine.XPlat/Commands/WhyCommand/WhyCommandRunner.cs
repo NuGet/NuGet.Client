@@ -118,23 +118,13 @@ namespace NuGet.CommandLine.XPlat
                         }
 
                         string? assetsFilePath = project.GetPropertyValue(ProjectAssetsFile);
-                        if (string.IsNullOrEmpty(assetsFilePath))
-                        {
-                            logger.LogError(
-                                string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.Error_ProjectAssetsFilePropertyNotFound,
-                                    project.FullPath));
-                            continue;
-                        }
-
-                        if (!File.Exists(assetsFilePath))
+                        if (string.IsNullOrEmpty(assetsFilePath) || !File.Exists(assetsFilePath))
                         {
                             logger.LogError(
                                 string.Format(
                                     CultureInfo.CurrentCulture,
                                     Strings.Error_AssetsFileNotFound,
-                                    assetsFilePath));
+                                    project.FullPath));
                             continue;
                         }
 

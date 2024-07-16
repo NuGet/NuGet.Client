@@ -302,7 +302,7 @@ namespace Dotnet.Integration.Test
             CommandRunnerResult result = _testFixture.RunDotnetExpectFailure(testDirectory, whyCommandArgs);
 
             // Assert
-            result.AllOutput.Should().Contain("https://aka.ms/dotnet-nuget-why");
+            result.AllOutput.Should().Contain("https://aka.ms/dotnet/nuget/why");
         }
     }
 }
