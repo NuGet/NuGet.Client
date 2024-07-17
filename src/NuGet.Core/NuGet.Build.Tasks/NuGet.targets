@@ -149,7 +149,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePackageDownloadsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreNuGetAuditSuppressionsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePrunedPackageReferenceTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePrunedPackageReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSolutionProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
@@ -378,11 +378,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="CollectPrunedPackageReference" Returns="@(PackageReference)" >
+  <Target Name="CollectPrunedPackageReferences" Returns="@(PackageReference)" >
     <!-- NOTE for design-time builds we need to ensure that we continue on error. -->
     <PropertyGroup>
-      <CollectPrunedPackageReferenceContinueOnError>$(ContinueOnError)</CollectPrunedPackageReferenceContinueOnError>
-      <CollectPrunedPackageReferenceContinueOnError Condition="'$(ContinueOnError)' == '' ">false</CollectPrunedPackageReferenceContinueOnError>
+      <CollectPrunedPackageReferencesContinueOnError>$(ContinueOnError)</CollectPrunedPackageReferencesContinueOnError>
+      <CollectPrunedPackageReferencesContinueOnError Condition="'$(ContinueOnError)' == '' ">false</CollectPrunedPackageReferencesContinueOnError>
   </PropertyGroup>
 
     <CheckForDuplicateNuGetItemsTask
@@ -395,7 +395,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       WarningsAsErrors="$(WarningsAsErrors)"
       WarningsNotAsErrors="$(WarningsNotAsErrors)"
       NoWarn="$(NoWarn)"
-      ContinueOnError="$(CollectPrunedPackageReferenceContinueOnError)"
+      ContinueOnError="$(CollectPrunedPackageReferencesContinueOnError)"
       >
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPrunedPackageReference" />
     </CheckForDuplicateNuGetItemsTask>
@@ -415,10 +415,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_CollectRestoreInputs"
-          DependsOnTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences;CollectCentralPackageVersions;CollectNuGetAuditSuppressions;CollectPrunedPackageReference">
+          DependsOnTargets="CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences;CollectCentralPackageVersions;CollectNuGetAuditSuppressions;CollectPrunedPackageReferences">
   </Target>
 
-  <Target Name="_PopulatePrunedPackageReferencesTarget" BeforeTargets="CollectPrunedPackageReference">
+  <!-- Dummy target to make testing easier.-->
+  <Target Name="_PopulatePrunedPackageReferencesTarget" BeforeTargets="CollectPrunedPackageReferences"  Condition=" '$(AddDummyPrunedPackageReferences)' == 'true' ">
 
     <PopulatePrunedPackageReferencesTask
       RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
@@ -1184,7 +1185,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetRestoreNuGetAuditSuppressionsTask>
 
     <!-- Write out pruned package references-->
-    <GetRestorePrunedPackageReferenceTask
+    <GetRestorePrunedPackageReferencesTask
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       PrunedPackageReferences="@(PrunedPackageReference)"
       TargetFrameworks="$(TargetFramework)"
@@ -1192,7 +1193,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
-    </GetRestorePrunedPackageReferenceTask>
+    </GetRestorePrunedPackageReferencesTask>
 
     <!-- Write out target framework information -->
     <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true'">
