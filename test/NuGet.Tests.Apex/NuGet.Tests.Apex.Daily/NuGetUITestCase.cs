@@ -210,6 +210,7 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
+            Thread.Sleep(25000);
 
             // Assert
             CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
@@ -236,7 +237,7 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion1);
             solutionService.Build();
-
+            Thread.Sleep(25000);
             // Assert
             CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion1, Logger);
             uiwindow.AssertInstalledPackageVulnerable();
@@ -269,7 +270,7 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
-
+            Thread.Sleep(25000);
             // Assert
             CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
             uiwindow.AssertInstalledPackageVulnerable();
@@ -302,7 +303,7 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion);
             solutionService.Build();
-
+            Thread.Sleep(25000);
             // Assert
             CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion, Logger);
             uiwindow.AssertInstalledPackageDeprecated();
@@ -328,7 +329,7 @@ namespace NuGet.Tests.Apex.Daily
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(packageName, packageVersion1);
             solutionService.Build();
-
+            Thread.Sleep(25000);
             // Assert
             CommonUtility.AssertInstalledPackageByProjectType(VisualStudio, projectTemplate, project, packageName, packageVersion1, Logger);
             uiwindow.AssertInstalledPackageDeprecated();
