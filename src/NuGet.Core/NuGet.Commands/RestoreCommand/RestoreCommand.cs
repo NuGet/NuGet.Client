@@ -268,7 +268,6 @@ namespace NuGet.Commands
                                 await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1803,
                                 string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source)));
                             }
-
                         }
                     }
                 }
