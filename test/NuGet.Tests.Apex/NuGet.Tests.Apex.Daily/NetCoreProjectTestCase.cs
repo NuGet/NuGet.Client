@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -69,6 +70,9 @@ namespace NuGet.Tests.Apex.Daily
                 uiwindow.UpdatePackageFromUI(packageName, packageVersion2);
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
+                uiwindow.SwitchTabToBrowse();
+                uiwindow.SwitchTabToInstalled();
+                Thread.Sleep(25000);
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
@@ -100,10 +104,16 @@ namespace NuGet.Tests.Apex.Daily
                 uiwindow.InstallPackageFromUI(packageName, packageVersion);
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
+                uiwindow.SwitchTabToBrowse();
+                uiwindow.SwitchTabToInstalled();
+                Thread.Sleep(25000);
 
                 uiwindow.UninstallPackageFromUI(packageName);
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
+                uiwindow.SwitchTabToBrowse();
+                uiwindow.SwitchTabToInstalled();
+                Thread.Sleep(25000);
 
                 // Assert
                 VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
