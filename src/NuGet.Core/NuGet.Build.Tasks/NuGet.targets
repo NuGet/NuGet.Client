@@ -87,6 +87,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
+    <NuGetPrunePlatformPackages Condition="$(NuGetPrunePlatformPackages) == '' ">true</NuGetPrunePlatformPackages>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Exclude packages from changing restore inputs.  -->
     <_GenerateRestoreGraphProjectEntryInputProperties>ExcludeRestorePackageImports=true</_GenerateRestoreGraphProjectEntryInputProperties>
 
@@ -976,6 +980,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <NuGetAuditMode>$(NuGetAuditMode)</NuGetAuditMode>
         <SdkAnalysisLevel>$(SdkAnalysisLevel)</SdkAnalysisLevel>
         <UsingMicrosoftNETSdk>$(UsingMicrosoftNETSdk)</UsingMicrosoftNETSdk>
+        <NuGetPrunePlatformPackages>$(NuGetPrunePlatformPackages)</NuGetPrunePlatformPackages>
       </_RestoreGraphEntry>
     </ItemGroup>
 
