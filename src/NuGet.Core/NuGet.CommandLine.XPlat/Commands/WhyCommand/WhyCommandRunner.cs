@@ -88,10 +88,9 @@ namespace NuGet.CommandLine.XPlat
             return anyErrors ? ExitCodes.Error : ExitCodes.Success;
         }
 
-        private static IEnumerable<(string assetsFilepath, string? projectPath)> FindAssetsFiles(string path, ILoggerWithColor logger)
+        private static IEnumerable<(string assetsFilePath, string? projectPath)> FindAssetsFiles(string path, ILoggerWithColor logger)
         {
-            var extension = Path.GetExtension(path);
-            if (XPlatUtility.IsJsonFile(extension))
+            if (XPlatUtility.IsJsonFile(path))
             {
                 yield return (path, null);
                 yield break;
