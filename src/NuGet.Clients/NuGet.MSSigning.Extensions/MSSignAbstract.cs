@@ -90,8 +90,7 @@ namespace NuGet.MSSigning.Extensions
         {
             X509Certificate2Collection matchingCertCollection = [];
 
-            if (!string.IsNullOrEmpty(CertificateFingerprint) &&
-                CertificateUtility.TryDeduceHashAlgorithm(CertificateFingerprint, out Common.HashAlgorithmName hashAlgorithmName))
+            if (CertificateUtility.TryDeduceHashAlgorithm(CertificateFingerprint, out Common.HashAlgorithmName hashAlgorithmName))
             {
                 if (hashAlgorithmName == Common.HashAlgorithmName.SHA1)
                 {
