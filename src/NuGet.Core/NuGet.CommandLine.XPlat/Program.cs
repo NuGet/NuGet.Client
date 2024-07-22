@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
@@ -276,6 +275,8 @@ namespace NuGet.CommandLine.XPlat
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
                 TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
                 SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
+                ConfigCommand.Register(app);
+                WhyCommand.Register(app);
             }
 
             app.FullName = Strings.App_FullName;
