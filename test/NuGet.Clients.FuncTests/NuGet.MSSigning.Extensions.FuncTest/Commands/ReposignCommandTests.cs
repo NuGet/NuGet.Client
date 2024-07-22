@@ -41,7 +41,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             _nugetExePath = _testFixture.NuGetExePath;
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void GetRepositorySignRequest_InvalidCertificateFile()
         {
             var mockConsole = new Mock<IConsole>();
@@ -70,7 +70,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void GetRepositorySignRequest_InvalidCSPName()
         {
             var mockConsole = new Mock<IConsole>();
@@ -99,7 +99,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void GetRepositorySignRequest_InvalidKeyContainer()
         {
             var mockConsole = new Mock<IConsole>();
@@ -128,7 +128,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void GetRepositorySignRequest_InvalidFingerprint()
         {
             var mockConsole = new Mock<IConsole>();
@@ -157,7 +157,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public void GetRepositorySignRequest_Success()
         {
             var mockConsole = new Mock<IConsole>();
@@ -192,7 +192,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ReposignCommand_PrimarySignPackage_WithNoTimestampAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -213,7 +213,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ReposignCommand_PrimarySignPackage_WithTimestampAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -235,7 +235,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ReposignCommand_Countersign_RepositorySignedPackage_FailAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -265,7 +265,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ReposignCommand_Countersign_AuthorSignedPackage_WithNoTimestampAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -295,7 +295,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ReposignCommand_Countersign_AuthorSignedPackage_WithTimestampAsync()
         {
             var package = new SimpleTestPackageContext();
@@ -326,7 +326,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task ReposignCommand_Countersign_RepositoryCountersignedPackage_FailAsync()
         {
             var package = new SimpleTestPackageContext();
