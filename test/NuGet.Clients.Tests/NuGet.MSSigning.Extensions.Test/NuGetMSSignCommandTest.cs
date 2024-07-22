@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using Moq;
@@ -12,8 +11,10 @@ namespace NuGet.MSSigning.Extensions.Test
     public class NuGetMSSignCommandTest
     {
         private const string _noPackageException = "No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference";
-        private const string _invalidArgException = "Invalid value provided for '{0}'. For a list of accepted values, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string _invalidArgException = "Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign";
         private const string _noCertificateException = "No {0} provided or provided file is not a p7b file.";
+        private const string _invalidCertificateFingerprint = "Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).";
+        private const string _sha1Hash = "89967D1DD995010B6C66AE24FF8E66885E6E03A8";
 
         [Fact]
         public void MSSignCommandArgParsing_NoPackagePath()
@@ -83,7 +84,7 @@ namespace NuGet.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = new Guid().ToString();
+                var certificateFingerprint = _sha1Hash;
                 var keyContainer = new Guid().ToString();
 
                 var mockConsole = new Mock<IConsole>();
@@ -113,7 +114,7 @@ namespace NuGet.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = new Guid().ToString();
+                var certificateFingerprint = _sha1Hash;
                 var cspName = "cert provider";
 
                 var mockConsole = new Mock<IConsole>();
@@ -160,7 +161,40 @@ namespace NuGet.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(signCommand.CertificateFingerprint)), ex.Message);
+                Assert.Equal(_invalidCertificateFingerprint, ex.Message);
+            }
+        }
+
+        [Theory]
+        [InlineData("89967D1DD995010B6C66AE24FF8E66885E6E03")] // 39 characters long not SHA-1
+        [InlineData("invalid-certificate-fingerprint")]
+        public void MSSignCommandArgParsing_InvalidCertificateFingerprint_Throws_Exception(string certificateFingerprint)
+        {
+            using (var dir = TestDirectory.Create())
+            {
+                // Arrange
+                var packagePath = Path.Combine(dir, "package.nupkg");
+                var timestamper = "https://timestamper.test";
+                var certFile = Path.Combine(dir, "cert.p7b");
+                var keyContainer = new Guid().ToString();
+                var cspName = "cert provider";
+
+                var mockConsole = new Mock<IConsole>();
+                var signCommand = new MSSignCommand
+                {
+                    Console = mockConsole.Object,
+                    Timestamper = timestamper,
+                    CertificateFile = certFile,
+                    CertificateFingerprint = certificateFingerprint,
+                    CSPName = cspName,
+                    KeyContainer = keyContainer,
+                };
+
+                signCommand.Arguments.Add(packagePath);
+
+                // Act & Assert
+                var ex = Assert.Throws<ArgumentException>(() => signCommand.GetAuthorSignRequest());
+                Assert.Equal(_invalidCertificateFingerprint, ex.Message);
             }
         }
 
@@ -180,7 +214,7 @@ namespace NuGet.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = new Guid().ToString();
+                var certificateFingerprint = _sha1Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var parsable = Enum.TryParse(hashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
@@ -214,7 +248,7 @@ namespace NuGet.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = new Guid().ToString();
+                var certificateFingerprint = _sha1Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var hashAlgorithm = "MD5";
@@ -255,7 +289,7 @@ namespace NuGet.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = new Guid().ToString();
+                var certificateFingerprint = _sha1Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var parsable = Enum.TryParse(timestampHashAlgorithm, ignoreCase: true, result: out Common.HashAlgorithmName parsedHashAlgorithm);
@@ -289,7 +323,7 @@ namespace NuGet.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = new Guid().ToString();
+                var certificateFingerprint = _sha1Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var timestampHashAlgorithm = "MD5";
