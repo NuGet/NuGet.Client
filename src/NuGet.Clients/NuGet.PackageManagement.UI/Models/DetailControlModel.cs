@@ -933,7 +933,5 @@ namespace NuGet.PackageManagement.UI
                 }
             }
         }
-
-
     }
 }
