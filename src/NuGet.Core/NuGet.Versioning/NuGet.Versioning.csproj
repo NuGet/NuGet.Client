@@ -7,7 +7,6 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <XPLATProject>true</XPLATProject>
     <NoWarn>$(NoWarn);RS0041</NoWarn>
     <nullable>enable</nullable>
