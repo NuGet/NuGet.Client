@@ -108,15 +108,5 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
-
-        private static string UnescapePath(string path)
-        {
-            if (path != null && path.IndexOf("%", StringComparison.Ordinal) > -1)
-            {
-                return Uri.UnescapeDataString(path);
-            }
-
-            return path;
-        }
     }
 }
