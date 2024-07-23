@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace NuGet.XPlat.FuncTest
 {
+    [Collection("NuGet XPlat dotnet help test collection")]
     public class XPlatHelpOutputTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
@@ -121,11 +122,7 @@ namespace NuGet.XPlat.FuncTest
             var commandPattern = @"^\s{2}(\w+)\s{2,}"; // Matches lines starting with two spaces, a word (command), followed by at least two spaces
             IEnumerable<string> matches = Regex.Matches(output, commandPattern, RegexOptions.Multiline).Select(m => m.ToString().Trim());
 
-            foreach (var command in HelpCommands)
-            {
-                Assert.Contains(command, matches);
-            }
-
+            Assert.Equal(HelpCommands, matches);
             Assert.Equal(0, exitCode);
         }
     }
