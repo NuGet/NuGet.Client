@@ -4034,12 +4034,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task GetInstalledAndTransitivePackagesAsync_ProjectReferenceWithSinglePackage_EmptyInstalledAndTransitivePackagesAsync()
         {
             // Project2 -> Project1 -> PackageB (1.0.0)
-            // PackageA (1.0.0) -> PackageB (1.0.0)
 
             // Arrange
             using var rootDir = new SimpleTestPathContext();
 
-            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+            await CreatePackagesAsync(rootDir, packageBVersion: "1.0.0");
 
             PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageB");
             PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj1Spec);

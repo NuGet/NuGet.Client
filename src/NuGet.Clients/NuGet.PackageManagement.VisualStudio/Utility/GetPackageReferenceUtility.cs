@@ -60,38 +60,30 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         }
 
         /// <summary>
-        /// Gets the dependencies of a top level package and caches these if the assets file has changed
+        /// Updates the transitive dependencies for the project.
         /// </summary>
-        /// <param name="library">Library from the project file.</param>
-        /// <param name="targetFramework">Target framework from the project file.</param>
-        /// <param name="targets">Target assets file with the package information.</param>
+        /// <param name="libraries">Libraries from the project file.</param>
         /// <param name="installedPackages">Cached installed package information</param>
         /// <param name="transitivePackages">Cached transitive package information</param>
-        internal static IReadOnlyList<PackageIdentity> UpdateTransitiveDependencies(LockFileTargetLibrary library, NuGetFramework targetFramework, IList<LockFileTarget> targets, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
+        internal static IReadOnlyList<PackageIdentity> UpdateTransitiveDependencies(IList<LockFileTargetLibrary> libraries, Dictionary<string, ProjectInstalledPackage> installedPackages, Dictionary<string, ProjectInstalledPackage> transitivePackages)
         {
             NuGetVersion resolvedVersion = default;
 
             var packageIdentities = new List<PackageIdentity>();
 
             // get the dependencies for this target framework
-            IReadOnlyList<PackageDependency> transitiveDependencies = GetTransitivePackagesForLibrary(library, targetFramework, targets);
-
-            if (transitiveDependencies != null)
+            if (libraries != null)
             {
-                foreach (PackageDependency package in transitiveDependencies)
+                foreach (LockFileTargetLibrary package in libraries)
                 {
                     // don't add transitive packages if they are also top level packages
-                    if (!installedPackages.ContainsKey(package.Id))
+                    // don't add transitive packages if they are not packages
+                    if (!installedPackages.ContainsKey(package.Name) && package.Type == LibraryType.Package.Value)
                     {
-                        resolvedVersion = GetInstalledVersion(package.Id, targetFramework, targets);
+                        resolvedVersion = package.Version ?? new NuGetVersion(0, 0, 0);
 
-                        if (resolvedVersion == null)
-                        {
-                            resolvedVersion = package.VersionRange?.MinVersion ?? new NuGetVersion(0, 0, 0);
-                        }
-
-                        var packageIdentity = new PackageIdentity(package.Id, resolvedVersion);
-                        transitivePackages[package.Id] = new ProjectInstalledPackage(package.VersionRange, packageIdentity);
+                        var packageIdentity = new PackageIdentity(package.Name, resolvedVersion);
+                        transitivePackages[package.Name] = new ProjectInstalledPackage(new VersionRange(package.Version), packageIdentity);
                         packageIdentities.Add(packageIdentity);
                     }
                 }
