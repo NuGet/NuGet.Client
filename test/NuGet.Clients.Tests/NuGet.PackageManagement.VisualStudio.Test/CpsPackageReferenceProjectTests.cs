@@ -4053,14 +4053,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             Assert.Empty(result.InstalledPackages); // No installed packages
             Assert.Equal(1, result.TransitivePackages.Count);
+
+            var origins = result.TransitivePackages[0].TransitiveOrigins.Select(transitivePackage => transitivePackage.PackageIdentity.Id);
+            Assert.Contains("Project1", origins);
         }
 
         [Fact]
-        public async Task GetInstalledAndTransitivePackagesAsync_MutipleProjectReferencesWithSinglePackage_EmptyInstalledAndTransitivePackagesAsync()
+        public async Task GetInstalledAndTransitivePackagesAsync_MutipleProjectReferencesWithSamePackage_EmptyInstalledAndTransitivePackagesAsync()
         {
-            // Project3 -> Project2 ->  PackageA (1.0.0)
+            // Project3 -> Project2 ->  PackageA (1.0.0) -> PackageB (1.0.0)
             //                          Project1 -> PackageB (1.0.0)
-            // PackageA (1.0.0) -> PackageB (1.0.0)
 
             // Arrange
             using var rootDir = new SimpleTestPathContext();
@@ -4080,8 +4082,21 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.Empty(result.InstalledPackages); // No installed packages
-            // Inner project references need to be considered as transitive packages in order to calculate transitive origins.
-            Assert.Equal(3, result.TransitivePackages.Count);
+            Assert.Equal(2, result.TransitivePackages.Count);
+
+            foreach (var transitivePackage in result.TransitivePackages)
+            {
+                var origins = transitivePackage.TransitiveOrigins.Select(transitivePackage => transitivePackage.PackageIdentity.Id);
+                if (transitivePackage.PackageIdentity.Id.Equals("PackageB"))
+                {
+                    Assert.Contains("Project1", origins);
+                    Assert.Contains("Project2", origins);
+                }
+                if (transitivePackage.PackageIdentity.Id.Equals("PackageA"))
+                {
+                    Assert.Contains("Project2", origins);
+                }
+            }
         }
 
         [Fact]

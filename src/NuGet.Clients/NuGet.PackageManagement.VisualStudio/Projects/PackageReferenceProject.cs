@@ -259,7 +259,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out TransitiveEntry cacheEntry);
                             return MergeTransitiveOrigin(packageRef, cacheEntry);
-                        });
+                        }).ToList();
 
                     lock (_transitiveOriginsLock)
                     {
@@ -347,7 +347,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return targets
                     .Where(target => target.TargetFramework.Equals(targetFramework))
-                    .SelectMany(target => GetPackageReferenceUtility.UpdateTransitiveDependencies2(target.Libraries, installedPackages, transitivePackages))
+                    .SelectMany(target => GetPackageReferenceUtility.UpdateTransitiveDependencies(target.Libraries, installedPackages, transitivePackages))
                     .Select(packageIdentity => new PackageReference(packageIdentity, targetFramework))
                     .ToList();
             }
@@ -434,7 +434,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await TaskScheduler.Default;
 
-            LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance, LockFileReadFlags.PackageFolders | LockFileReadFlags.Targets | LockFileReadFlags.Libraries | LockFileReadFlags.ProjectFileDependencyGroups);
+            LockFile lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance, LockFileReadFlags.PackageFolders | LockFileReadFlags.Targets);
             _packageFolders = lockFile?.PackageFolders ?? Array.Empty<LockFileItem>();
 
             return lockFile?.Targets;
