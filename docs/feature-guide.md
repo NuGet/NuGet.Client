@@ -98,6 +98,7 @@ These considerations are also useful for smaller changes that might not require 
   * Reviewed by the community
 * Partner dependencies considered
   * Partner to NuGet asks
+  * NuGet to partner asks
 * Threat model document
   * Reviewed by the Engineering team
   * Reviewed by the Security experts
