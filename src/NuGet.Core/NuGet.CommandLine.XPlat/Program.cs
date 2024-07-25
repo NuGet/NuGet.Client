@@ -275,6 +275,7 @@ namespace NuGet.CommandLine.XPlat
                 VerifyCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new VerifyCommandRunner());
                 TrustedSignersCommand.Register(app, getHidePrefixLogger, setLogLevel);
                 SignCommand.Register(app, getHidePrefixLogger, setLogLevel, () => new SignCommandRunner());
+                // The commands below are implemented with System.CommandLine, and are here only for `dotnet nuget --help`
                 ConfigCommand.Register(app);
                 WhyCommand.Register(app);
             }

@@ -12,7 +12,6 @@ using System.Text.RegularExpressions;
 
 namespace NuGet.XPlat.FuncTest
 {
-    [Collection("NuGet XPlat dotnet help test collection")]
     public class XPlatHelpOutputTests
     {
         private readonly ITestOutputHelper _testOutputHelper;
