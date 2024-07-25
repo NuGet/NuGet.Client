@@ -68,6 +68,12 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             }
         }
 
+        // For testing only
+        internal static AssetsFileDependenciesSnapshot FromLockFile(LockFile lockFile)
+        {
+            return new(lockFile, Empty);
+        }
+
         private AssetsFileDependenciesSnapshot(LockFile? lockFile, AssetsFileDependenciesSnapshot? previous)
         {
             if (lockFile == null)
