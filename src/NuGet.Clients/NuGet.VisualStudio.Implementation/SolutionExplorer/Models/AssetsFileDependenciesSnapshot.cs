@@ -261,8 +261,9 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
                     }
                     else
                     {
-                        // Higher level is more severe. If we already have a higher level, don't change it.
-                        // Also, if we already have a level, assume we have propagated it to all ancestors and can return.
+                        // Higher level is more severe.
+                        // - If we already have a higher level, don't change it.
+                        // - If the level matches, we will have already propagated it to ancestors, so can return.
                         if (currentLevel >= level)
                         {
                             return;
