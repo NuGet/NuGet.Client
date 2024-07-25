@@ -64,6 +64,7 @@ resources:
 variables:
   DOTNET_NOLOGO: 1
   CI: true
+  Codeql.Enabled: false
 
 stages:
 - stage: Build
