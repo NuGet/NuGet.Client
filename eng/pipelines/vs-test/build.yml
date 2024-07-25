@@ -258,8 +258,9 @@ steps:
         Write-Host "Base Build Drop: $buildDrop"
         Write-Host "##vso[task.setvariable variable=BaseBuildDrop;isOutput=true]$buildDrop"
 
-        $runSettingsDrop = "RunSettings/${env:System_TeamProject}/${env:Build_DefinitionName}/${Build_SourceBranchName}/${Build_BuildId}"
+        $runSettingsDrop = "RunSettings/${env:System_TeamProject}/${env:Build_DefinitionName}/${env:Build_SourceBranchName}/${env:Build_BuildId}"
         Write-Host "Run Settings Drop: $runSettingsDrop"
+        Write-Host "##vso[task.setvariable variable=RunSettingsDrop]$runSettingsDrop"
         Write-Host "##vso[task.setvariable variable=RunSettingsDrop;isOutput=true]$runSettingsDrop"
       } catch {
         Write-Host "##vso[task.LogIssue type=error;]Unable to set variables for DartLab: $_"
