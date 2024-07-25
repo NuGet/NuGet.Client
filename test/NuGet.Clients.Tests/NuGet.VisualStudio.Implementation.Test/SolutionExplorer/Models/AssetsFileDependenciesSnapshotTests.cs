@@ -61,7 +61,7 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
 
             var lockFile = new LockFileFormat().Parse(lockFileContent, lockFilePath);
 
-            var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFile, lockFile.Targets.First(), ImmutableArray<AssetsFileLogMessage>.Empty);
+            var dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(lockFile, lockFile.Targets.First(), []);
 
             var dependency = Assert.Single(dependencies);
             Assert.Equal("System.Runtime", dependency.Key);
@@ -172,8 +172,8 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         {
             var lockFileTarget = new LockFileTarget
             {
-                Libraries = new LockFileTargetLibrary[]
-                {
+                Libraries =
+                [
                     new()
                     {
                         Name = "packageA",
@@ -186,10 +186,10 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                         Type = "package",
                         Version = NuGetVersion.Parse("1.0.0")
                     }
-                }
+                ]
             };
 
-            var exception = Assert.Throws<ArgumentException>(() => AssetsFileDependenciesSnapshot.ParseLibraries(new LockFile(), lockFileTarget, ImmutableArray<AssetsFileLogMessage>.Empty));
+            var exception = Assert.Throws<ArgumentException>(() => AssetsFileDependenciesSnapshot.ParseLibraries(new LockFile(), lockFileTarget, []));
 
             Assert.Contains("PackageA", exception.Message);
         }
@@ -199,8 +199,8 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
         {
             var lockFileTarget = new LockFileTarget
             {
-                Libraries = new LockFileTargetLibrary[]
-                {
+                Libraries =
+                [
                     new()
                     {
                         Name = "packageA",
@@ -225,10 +225,10 @@ namespace NuGet.VisualStudio.Implementation.Test.SolutionExplorer.Models
                         Type = "project",
                         Version = NuGetVersion.Parse("1.0.0")
                     }
-                }
+                ]
             };
 
-            ImmutableDictionary<string, AssetsFileTargetLibrary> dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(new LockFile(), lockFileTarget, ImmutableArray<AssetsFileLogMessage>.Empty);
+            ImmutableDictionary<string, AssetsFileTargetLibrary> dependencies = AssetsFileDependenciesSnapshot.ParseLibraries(new LockFile(), lockFileTarget, []);
 
             Assert.Equal(lockFileTarget.Libraries.Count, dependencies.Count);
             Assert.All(lockFileTarget.Libraries,

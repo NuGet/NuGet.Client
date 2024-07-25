@@ -25,12 +25,12 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
         /// <summary>
         /// Gets the singleton empty instance.
         /// </summary>
-        public static AssetsFileDependenciesSnapshot Empty { get; } = new AssetsFileDependenciesSnapshot(null, null);
+        public static AssetsFileDependenciesSnapshot Empty { get; } = new(null, null);
 
         /// <summary>
         /// Shared object for parsing the lock file. May be used in parallel.
         /// </summary>
-        private static readonly LockFileFormat LockFileFormat = new LockFileFormat();
+        private static readonly LockFileFormat LockFileFormat = new();
 
         public ImmutableDictionary<string, AssetsFileTarget> DataByTarget { get; }
 
