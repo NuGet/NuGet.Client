@@ -343,7 +343,7 @@ steps:
 - task: PublishPipelineArtifact@1
   displayName: "Publish E2E tests"
   inputs:
-    artifactName: "scripts"
+    artifactName: "E2ETests"
     targetPath: "$(Build.StagingDirectory)\\E2ETests"
 
 - task: PublishPipelineArtifact@1
