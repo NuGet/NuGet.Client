@@ -172,7 +172,7 @@ stages:
       displayName: "Download scripts"
       inputs:
         artifactName: "scripts"
-        downloadPath: "$(Build.StagingDirectory)\\scripts"
+        downloadPath: "$(Build.StagingDirectory)/scripts"
 
     - task: PowerShell@1
       displayName: "SetupFunctionalTests.ps1"
@@ -184,7 +184,7 @@ stages:
       timeoutInMinutes: 75
       continueOnError: "false"
       inputs:
-        scriptName: "$(System.StagingDirectory)/scripts/e2etests/RunFunctionalTests.ps1"
+        scriptName: "$(Build.StagingDirectory)/scripts/e2etests/RunFunctionalTests.ps1"
         arguments: "-PMCCommand $(EndToEndTestCommandToRunPart) -PMCLaunchWaitTimeInSecs 30 -EachTestTimoutInSecs 600 -NuGetDropPath $(System.DefaultWorkingDirectory)\\artifacts -FuncTestRoot $(System.DefaultWorkingDirectory)\\artifacts -RunCounter $(Build.BuildNumber)"
       condition: "and(succeeded(), not(eq(variables['IsOfficialBuild'], 'true')))"
 
@@ -198,11 +198,11 @@ stages:
         testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
       condition: "succeededOrFailed()"
 
-    - task: PowerShell@1
-      displayName: "Initialize Git Commit Status on GitHub"
-      inputs:
-        scriptType: "inlineScript"
-        inlineScript: |
-          . $(System.StagingDirectory)\\scripts\\utils\\PostGitCommitStatus.ps1
-          SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
-      condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+    # - task: PowerShell@1
+    #   displayName: "Initialize Git Commit Status on GitHub"
+    #   inputs:
+    #     scriptType: "inlineScript"
+    #     inlineScript: |
+    #       . $(Build.StagingDirectory)\\scripts\\utils\\PostGitCommitStatus.ps1
+    #       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$(GitHubStatusName)"
+    #   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
