@@ -133,16 +133,6 @@ steps:
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:ILMergeNuGetExe /binarylogger:$(Build.StagingDirectory)\\binlog\\05.ILMergeNuGetExe.binlog"
 
-## TODO: set only Apex and E2E status
-# - task: PowerShell@1
-#   displayName: "Initialize Git Commit Status on GitHub"
-#   inputs:
-#     scriptType: "inlineScript"
-#     inlineScript: |
-#       . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-#       SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "$env:AGENT_JOBNAME"
-#   condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
-
 - task: MSBuild@1
   displayName: "Sign Assemblies"
   inputs:
@@ -175,11 +165,6 @@ steps:
     solution: "build\\sign.proj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore /property:SignPackages=true /binarylogger:$(Build.StagingDirectory)\\binlog\\09.SignPackages.binlog"
-
-# - task: NuGetToolInstaller@1
-#   displayName: Use NuGet 6.x
-#   inputs:
-#     versionSpec: 6.x
 
 - task: MicroBuildCodesignVerify@3
   displayName: Verify Assembly Signatures and StrongName for the VSIX & exes
