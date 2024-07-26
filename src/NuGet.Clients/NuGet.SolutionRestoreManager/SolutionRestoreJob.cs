@@ -717,9 +717,7 @@ namespace NuGet.SolutionRestoreManager
                         using SourceCacheContext sourceCacheContext = new();
                         List<SourceRepository> sourceRepositories = _sourceRepositoryProvider.GetRepositories().AsList();
 
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
-                        Dictionary<string, RestoreAuditProperties> auditProperties = GetRestoreAuditProperties(allProjects);
-                        await TaskScheduler.Default;
+                        Dictionary<string, RestoreAuditProperties> auditProperties = await GetRestoreAuditProperties(allProjects, token);
 
                         AuditChecker auditChecker = new(sourceRepositories, sourceCacheContext, _logger);
                         AuditCheckResult result = await auditChecker.CheckPackageVulnerabilitiesAsync(packages, auditProperties, token);
@@ -755,9 +753,11 @@ namespace NuGet.SolutionRestoreManager
                 token);
         }
 
-        private static Dictionary<string, RestoreAuditProperties> GetRestoreAuditProperties(IEnumerable<NuGetProject> projects)
+        private static async Task<Dictionary<string, RestoreAuditProperties>> GetRestoreAuditProperties(IEnumerable<NuGetProject> projects, CancellationToken cancellationToken)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+
             var restoreAuditProperties = new Dictionary<string, RestoreAuditProperties>(PathUtility.GetStringComparerBasedOnOS());
 
             foreach (var nuGetProject in projects.NoAllocEnumerate())
