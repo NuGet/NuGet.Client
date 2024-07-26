@@ -3694,8 +3694,10 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void PackCommand_PackWithSourceControlInformation_PrivateUrl_VerifyNuspec()
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PackCommand_PackWithSourceControlInformation_PrivateUrl_VerifyNuspec(bool shouldEmitPublishProperty)
         {
             using (var testDirectory = _dotnetFixture.CreateTestDirectory())
             {
@@ -3712,6 +3714,10 @@ namespace ClassLibrary
                     var ns = xml.Root.Name.Namespace;
 
                     ProjectFileUtils.AddProperty(xml, "RepositoryType", "git");
+                    if (shouldEmitPublishProperty)
+                    {
+                        ProjectFileUtils.AddProperty(xml, "PublishRepositoryUrl", "false");
+                    }
 
                     xml.Root.Add(
                         new XElement(ns + "PropertyGroup",
@@ -3726,6 +3732,7 @@ namespace ClassLibrary
     <PropertyGroup>
       <SourceRevisionId>e1c65e4524cd70ee6e22abe33e6cb6ec73938cb1</SourceRevisionId>
       <PrivateRepositoryUrl>https://github.com/NuGet/NuGet.Client.git</PrivateRepositoryUrl>
+      <SourceBranchName>refs/heads/abc</SourceBranchName>
     </PropertyGroup>
 </Target>
 </Project>";
