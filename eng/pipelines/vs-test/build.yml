@@ -201,6 +201,8 @@ steps:
     Contents: "NuGet.exe"
     TargetFolder: "$(Build.StagingDirectory)\\E2ETests"
 
+- task: NuGetToolInstaller@1
+
 - task: NuGetCommand@2
   displayName: 'Add the VSEng package source'
   inputs:
