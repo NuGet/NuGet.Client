@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
         }
 
         /// <summary>
-        /// Updates the transitive dependencies for the project.
+        /// Get the dependencies from the assets file and updates the packages cache.
         /// </summary>
         /// <param name="libraries">Libraries from the project file.</param>
         /// <param name="installedPackages">Cached installed package information</param>

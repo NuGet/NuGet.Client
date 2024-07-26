@@ -219,8 +219,6 @@ namespace NuGet.PackageManagement.VisualStudio
                             targetsList = await GetTargetsListAsync(assetsFilePath, token);
                         }
 
-                        Dictionary<string, TransitiveEntry> transitiveOriginsCache = new();
-
                         // If the project has project references, we need to compute transitive origins for their packages
                         List<LockFileTargetLibrary> projectReferences = targetsList.SelectMany(t => t.Libraries).Where(l => l.Type == LibraryType.Project).ToList();
                         List<PackageReference> calculatedLibraryReferences = new List<PackageReference>(projectReferences.Count + calculatedInstalledPackages.Count);
