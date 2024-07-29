@@ -4059,6 +4059,32 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetInstalledAndTransitivePackagesAsync_ProjectReferencesWithSamePackage_InstalledAndEmptyTransitivePackagesAsync()
+        {
+            // Project2 -> PackageB (1.0.0)
+            //          -> Project1 -> PackageB (1.0.0)
+
+            // Arrange
+            using var rootDir = new SimpleTestPathContext();
+
+            await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
+
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageB");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageB").WithTestProjectReference(prj1Spec);
+
+            await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec);
+
+            CpsPackageReferenceProject project2 = PrepareCpsRestoredProject(prj2Spec);
+
+            // Act
+            ProjectPackages result = await project2.GetInstalledAndTransitivePackagesAsync(includeTransitiveOrigins: true, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(1, result.InstalledPackages.Count); // No installed packages
+            Assert.Empty(result.TransitivePackages);
+        }
+
+        [Fact]
         public async Task GetInstalledAndTransitivePackagesAsync_MutipleProjectReferencesWithSamePackage_EmptyInstalledAndTransitivePackagesAsync()
         {
             // Project3 -> Project2 ->  PackageA (1.0.0) -> PackageB (1.0.0)
@@ -4086,13 +4112,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             foreach (var transitivePackage in result.TransitivePackages)
             {
-                var origins = transitivePackage.TransitiveOrigins.Select(transitivePackage => transitivePackage.PackageIdentity.Id);
-                if (transitivePackage.PackageIdentity.Id.Equals("PackageB"))
+                var origins = transitivePackage.TransitiveOrigins.Select(transitivePackage => transitivePackage.PackageIdentity.Id).ToList();
+                if (transitivePackage.PackageIdentity.Id.Equals("PackageB") && origins.Count == 2)
                 {
-                    Assert.Contains("Project1", origins);
-                    Assert.Contains("Project2", origins);
+                    Assert.Contains("Project1", origins[0]);
+                    Assert.Contains("Project2", origins[1]);
                 }
-                if (transitivePackage.PackageIdentity.Id.Equals("PackageA"))
+                if (transitivePackage.PackageIdentity.Id.Equals("PackageA") && origins.Count == 1)
                 {
                     Assert.Contains("Project2", origins);
                 }

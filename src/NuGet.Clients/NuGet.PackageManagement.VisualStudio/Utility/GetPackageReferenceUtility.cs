@@ -123,45 +123,6 @@ namespace NuGet.PackageManagement.VisualStudio.Utility
 
             return null;
         }
-
-        private static IReadOnlyList<PackageDependency> GetTransitivePackagesForLibrary(LockFileTargetLibrary library, NuGetFramework targetFramework, IList<LockFileTarget> targets)
-        {
-            // PERF: Intentionally avoiding LINQ and foreach to avoid allocating capture classes and enumerators
-            if (targets != null)
-            {
-                LockFileTarget target = default;
-                for (int i = 0; i < targets.Count; ++i)
-                {
-                    LockFileTarget t = targets[i];
-                    if (t.TargetFramework.Equals(targetFramework) && string.IsNullOrEmpty(t.RuntimeIdentifier))
-                    {
-                        target = t;
-                        break;
-                    }
-                }
-
-                if (target != null && target.Libraries != null)
-                {
-                    var packageDependencies = new List<PackageDependency>();
-                    for (int i = 0; i < target.Libraries.Count; ++i)
-                    {
-                        LockFileTargetLibrary lib = target.Libraries[i];
-                        if (lib.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (lib.Dependencies != null)
-                            {
-                                packageDependencies.AddRange(lib.Dependencies);
-                            }
-                        }
-                    }
-
-                    return packageDependencies;
-                }
-            }
-
-            return null;
-        }
-
         internal static int ComparePackageReferenceByIdentity(PackageReference a, PackageReference b)
         {
             if (a?.PackageIdentity == null && b?.PackageIdentity == null)

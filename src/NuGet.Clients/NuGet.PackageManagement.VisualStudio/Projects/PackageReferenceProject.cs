@@ -222,7 +222,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         // If the project has project references, we need to compute transitive origins for their packages
                         List<LockFileTargetLibrary> projectReferences = targetsList.SelectMany(t => t.Libraries).Where(l => l.Type == LibraryType.Project).ToList();
                         List<PackageReference> calculatedLibraryReferences = new List<PackageReference>(projectReferences.Count + calculatedInstalledPackages.Count);
-                        if (projectReferences.Any())
+                        if (projectReferences.Count > 0)
                         {
                             foreach (var projectReference in projectReferences)
                             {
@@ -235,6 +235,10 @@ namespace NuGet.PackageManagement.VisualStudio
                                     allowedVersions: new VersionRange(projectReference.Version));
                                 calculatedLibraryReferences.Add(packageReference);
                             }
+
+                            calculatedLibraryReferences = calculatedLibraryReferences
+                                .GroupBy(p => p.PackageIdentity)
+                                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First()).ToList();
                         }
 
                         calculatedLibraryReferences.AddRange(calculatedInstalledPackages);
@@ -257,7 +261,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             transitiveOrigins.TryGetValue(packageRef.PackageIdentity.Id, out TransitiveEntry cacheEntry);
                             return MergeTransitiveOrigin(packageRef, cacheEntry);
-                        }).ToList();
+                        });
 
                     lock (_transitiveOriginsLock)
                     {
