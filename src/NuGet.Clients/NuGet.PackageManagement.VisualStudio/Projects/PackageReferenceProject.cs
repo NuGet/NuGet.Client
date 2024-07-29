@@ -235,10 +235,6 @@ namespace NuGet.PackageManagement.VisualStudio
                                     allowedVersions: new VersionRange(projectReference.Version));
                                 calculatedLibraryReferences.Add(packageReference);
                             }
-
-                            calculatedLibraryReferences = calculatedLibraryReferences
-                                .GroupBy(p => p.PackageIdentity)
-                                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First()).ToList();
                         }
 
                         calculatedLibraryReferences.AddRange(calculatedInstalledPackages);
