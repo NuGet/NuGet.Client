@@ -13,25 +13,28 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Theory]
         [InlineData("ABCDEFG", "ABCDEFG", true)]
         [InlineData("ABCDEFG", "abcdefg", false)]
-        [InlineData("ref/four/foo.dll", "lib/four/bar.dll", true, 4, 4)]
-        [InlineData("ref/four/foo.dll", "lib/five/bar.dll", false, 4, 4)]
-        public void Equals_ReturnsExpectedValue(string x, string y, bool expected, int? start = default, int? length = default)
+        [InlineData("ABCDEFGH", "ABCDEFG", false)]
+        [InlineData("ZABCDEFG", "ABCDEFG", false)]
+        [InlineData("ABCEFGD", "ABCDEFG", false)]
+        [InlineData("12345", "123465", false)]
+        [InlineData("12345", "1234765", false)]
+        public void Equals_ReturnsExpectedValue(string x, string y, bool expected)
         {
-            ReadOnlyMemoryCharComparerOrdinal.Instance.Equals(
-                x.AsMemory(start ?? 0, length ?? x.Length),
-                y.AsMemory(start ?? 0, length ?? y.Length))
-                .Should().Be(expected);
+            ReadOnlyMemoryCharComparerOrdinal.Instance.Equals(x.AsMemory(), y.AsMemory()).Should().Be(expected);
         }
 
         [Theory]
         [InlineData("ABCDEFG", "ABCDEFG", true)]
-        [InlineData("ABCDEFGH", "ABCDefgH", false)]
-        [InlineData("ref/four/foo.dll", "lib/four/bar.dll", true, 4, 4)]
-        [InlineData("ref/four/foo.dll", "lib/five/bar.dll", false, 4, 4)]
-        public void GetHashCode_ReturnsExpectedValue(string x, string y, bool expected, int? start = default, int? length = default)
+        [InlineData("ABCDEFG", "abcdefg", false)]
+        [InlineData("ABCDEFGH", "ABCDEFG", false)]
+        [InlineData("ZABCDEFG", "ABCDEFG", false)]
+        [InlineData("ABCEFGD", "ABCDEFG", false)]
+        [InlineData("12345", "123465", false)]
+        [InlineData("12345", "1234765", false)]
+        public void GetHashCode_ReturnsExpectedValue(string x, string y, bool expected)
         {
-            int hashX = ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(x.AsMemory(start ?? 0, length ?? x.Length));
-            int hashY = ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(y.AsMemory(start ?? 0, length ?? y.Length));
+            int hashX = ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(x.AsMemory());
+            int hashY = ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(y.AsMemory());
 
             hashX.Equals(hashY).Should().Be(expected, $"hashX is {hashX} and hashY is {hashY}");
         }
