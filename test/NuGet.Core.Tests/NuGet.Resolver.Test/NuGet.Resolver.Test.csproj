@@ -3,6 +3,7 @@
     <TargetFrameworks>$(TargetFrameworksUnitTestForSigning)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Resolver.</Description>
+    <NoWarn>$(NoWarn);CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

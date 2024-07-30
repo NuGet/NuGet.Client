@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <Description>Optimization Profiling (OptProf) tests, used to generate partial ngen training data.</Description>
     <DefaultItemExcludes>Assets/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <NoWarn>$(NoWarn);CS1591;IDE1006;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,11 +25,7 @@
   
   <ItemGroup>
     <!-- Manually consuming compile-time assets from Microsoft.Test.Apex.VisualStudio and excluding ones that cause compile warnings -->
-    <Reference Include="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\*.dll"
-               Exclude="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.PrismIntegration.dll;
-                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.dll;
-                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.x64.dll"
-               Name="%(Filename)" />
+    <Reference Include="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\*.dll" Exclude="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.PrismIntegration.dll;&#xD;&#xA;                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.dll;&#xD;&#xA;                        $(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\Microsoft.Test.Apex.RemoteCodeInjector.x64.dll" Name="%(Filename)" />
   </ItemGroup>
 
   <ItemGroup>

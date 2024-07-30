@@ -7,6 +7,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <GetLocalizedFilesForVsixDependsOn>GetLocalizedPowerShellCmdletHelpFile</GetLocalizedFilesForVsixDependsOn>
     <AdditionalSignTargetsForRealSigning>GetScriptsForSigning</AdditionalSignTargetsForRealSigning>
+    <NoWarn>$(NoWarn);CS1572;CS1573;CS1574;CS1587;CS1591;IDE0005;IDE0049;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

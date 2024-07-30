@@ -3,6 +3,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <SkipShared>true</SkipShared>
     <Description>Unit and integration tests for NuGet.VisualStudio.Implementation.</Description>
+    <NoWarn>$(NoWarn);CS1570;CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

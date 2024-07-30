@@ -5,6 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>GenerateLicenseList</AssemblyName>
     <Description>A utility for updating the NuGet license list from the SPDX source.</Description>
+    <NoWarn>$(NoWarn);CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

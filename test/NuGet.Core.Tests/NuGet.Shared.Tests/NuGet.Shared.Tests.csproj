@@ -3,6 +3,7 @@
     <TargetFrameworks>$(TargetFrameworksUnitTest)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for the utilities included using shared compilation.</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <!-- Include shared files for netcore projects -->

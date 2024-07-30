@@ -10,6 +10,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
     <PackProject>false</PackProject>
+    <NoWarn>$(NoWarn);CS1570;CS1591;IDE0005;CS1572;CS1573;CS1574</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

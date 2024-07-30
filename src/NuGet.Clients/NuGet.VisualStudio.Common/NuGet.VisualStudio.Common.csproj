@@ -5,6 +5,7 @@
     <IncludeInVsix>true</IncludeInVsix>
     <RootNamespace>NuGet.VisualStudio</RootNamespace>
     <Description>NuGet's Visual Studio common types and interfaces used for both Package Manager UI, Package Manager Console, restore and install functionalities.</Description>
+    <NoWarn>$(NoWarn);CS1584;CS1591;CS1658;CS1570;IDE0005;CS1572;CS1573</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

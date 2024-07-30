@@ -3,6 +3,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit and integration tests for NuGet.VisualStudio.</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

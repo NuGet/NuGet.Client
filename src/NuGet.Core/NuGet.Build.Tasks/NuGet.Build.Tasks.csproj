@@ -6,7 +6,7 @@
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
     <Description>NuGet tasks for MSBuild and dotnet restore.</Description>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1572;CS1573;CS1574;CS1591;IDE0005;IDE0049;IDE1006</NoWarn>
     <XPLATProject>true</XPLATProject>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
   </PropertyGroup>

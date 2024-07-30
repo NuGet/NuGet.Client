@@ -10,6 +10,7 @@
     <DeployExtension>false</DeployExtension>
     <Description>NuGet's Visual Studio extension Package.</Description>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
+    <NoWarn>$(NoWarn);CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

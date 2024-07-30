@@ -13,6 +13,7 @@
     <CreateVsixContainer>false</CreateVsixContainer>
     <PackProject>false</PackProject>
     <DeployExtension>false</DeployExtension>
+    <NoWarn>$(NoWarn);IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

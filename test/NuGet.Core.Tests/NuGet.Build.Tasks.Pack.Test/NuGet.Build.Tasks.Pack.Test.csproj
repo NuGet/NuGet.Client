@@ -3,6 +3,7 @@
     <TargetFrameworks>$(TargetFrameworksUnitTest)</TargetFrameworks>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Build.Tasks.Pack.</Description>
+    <NoWarn>$(NoWarn);CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

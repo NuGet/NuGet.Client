@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <SkipSigning>true</SkipSigning>
-    <NoWarn>$(NoWarn);1762</NoWarn>
+    <NoWarn>$(NoWarn);1762;CS1591;IDE0005;IDE1006</NoWarn>
     <Description>An integration wrapper over the NuGet extensibility APIs for the Package Manager Console based end-to-end tests.</Description>
   </PropertyGroup>
 

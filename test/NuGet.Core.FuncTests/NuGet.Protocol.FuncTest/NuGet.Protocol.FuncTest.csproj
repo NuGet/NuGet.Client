@@ -3,6 +3,7 @@
     <TargetFrameworks>$(TargetFrameworksUnitTestForSigning)</TargetFrameworks>
     <Description>Integration tests for the more involved NuGet.Protocol functionality, such as plugins.</Description>
     <UseParallelXunit>true</UseParallelXunit>
+    <NoWarn>$(NoWarn);CS1591;IDE0005;CS1572;CS1573;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

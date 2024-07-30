@@ -4,6 +4,7 @@
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Configuration.</Description>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);IDE0005;CS1591;CS1573</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

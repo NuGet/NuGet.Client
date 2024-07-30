@@ -5,6 +5,7 @@
     <IncludeInVsix>true</IncludeInVsix>
     <RootNamespace>NuGet.PackageManagement.VisualStudio</RootNamespace>
     <Description>NuGet's Visual Studio functionalities, integrations and utilities.</Description>
+    <NoWarn>$(NoWarn);CS0419;CS1572;CS1573;CS1574;CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
  <ItemGroup>

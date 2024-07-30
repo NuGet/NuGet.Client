@@ -11,6 +11,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <NoWarn>$(NoWarn);CS1570;CS1573;CS1574;CS1591;IDE0005;IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

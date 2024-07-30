@@ -3,6 +3,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Indexing.</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,6 +7,7 @@
     <Guid>9623cf30-192c-4864-b419-29649169ae30</Guid>
     <ImportedFromTypeLib>NuGet.VisualStudio.Implementation</ImportedFromTypeLib>
     <ExcludeFromDotNetBuild>true</ExcludeFromDotNetBuild>
+    <NoWarn>$(NoWarn);CS1572;CS1591;IDE0005</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

@@ -3,6 +3,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <Description>Unit and integration tests for NuGet.PackageManagement.VisualStudio.</Description>
+    <NoWarn>$(NoWarn);CS1570;CS1591;IDE0005;CS1572;CS1573;IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

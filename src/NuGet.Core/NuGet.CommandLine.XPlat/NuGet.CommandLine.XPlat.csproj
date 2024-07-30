@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>NuGet executable wrapper for the dotnet CLI nuget functionality.</Description>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591;CS1701;NU5104;CA1307;CA2000</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1701;NU5104;CA1307;CA2000;CS1572;CS1573;IDE0005;</NoWarn>
     <OutputType>Exe</OutputType>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>

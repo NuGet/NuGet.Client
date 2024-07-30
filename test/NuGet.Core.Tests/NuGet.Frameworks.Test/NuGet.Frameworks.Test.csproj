@@ -4,6 +4,7 @@
     <UseParallelXunit>true</UseParallelXunit>
     <Description>Unit tests for NuGet.Frameworks.</Description>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS1591;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

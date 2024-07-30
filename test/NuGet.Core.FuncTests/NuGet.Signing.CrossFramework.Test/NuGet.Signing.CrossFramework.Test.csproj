@@ -4,6 +4,7 @@
     <UseParallelXunit>true</UseParallelXunit>
     <Description>NuGet package signing cross framework test.</Description>
     <TestProjectType Condition="'$(IsXPlat)' == 'true'">None</TestProjectType>
+    <NoWarn>$(NoWarn);CS1591;IDE0005</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj" />

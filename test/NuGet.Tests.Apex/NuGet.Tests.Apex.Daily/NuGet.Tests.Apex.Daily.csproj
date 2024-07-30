@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
-    <NoWarn>$(NoWarn);1762</NoWarn>
+    <NoWarn>$(NoWarn);1762;CS1591</NoWarn>
     <Description>End-to-end tests for the Package Manager Console and Package Manager UI built on top of Apex framework.</Description>
   </PropertyGroup>
 

@@ -3,6 +3,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Description>Unit and integration tests for NuGet.VisualStudio.Internal.Contracts.</Description>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

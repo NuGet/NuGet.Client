@@ -3,6 +3,7 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <Description>Functional tests for nuget in dotnet CLI scenarios, using the NuGet.CommandLine.XPlat assembly.</Description>
     <UseParallelXunit>true</UseParallelXunit>
+    <NoWarn>$(NoWarn);CS1591;IDE0005;CS1572;CS1573</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

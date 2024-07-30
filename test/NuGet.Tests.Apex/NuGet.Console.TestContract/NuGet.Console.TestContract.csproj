@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
-    <NoWarn>$(NoWarn);CS1998</NoWarn>
+    <NoWarn>$(NoWarn);CS1998;CS1591;IDE0005;IDE1006</NoWarn>
     <Description>A contract assembly providing a wrapper for testing the NuGet PowerShell functionality.</Description>
   </PropertyGroup>
   <ItemGroup>

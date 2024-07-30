@@ -35,12 +35,6 @@
     <LocTargets>GetBuildOutputWithLocMetadata</LocTargets>
   </PropertyGroup>
 
-  <!-- Write out .XML files for projects that will be packed. -->
-  <PropertyGroup Condition=" '$(PackProject)' == 'true' ">
-    <GenerateDocumentationFile Condition=" '$(GenerateDocumentationFile)' == '' ">true</GenerateDocumentationFile>
-    <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(GenerateDocumentationFile)' == 'true' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-
   <ImportGroup Condition=" '$(PackProject)' == 'true' AND '$(NuGetBuildTasksPackTargets)' != '' ">
       <Import Project="$(NuGetBuildTasksPackTargets)" />
   </ImportGroup>

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Description>An end-to-end test suite for NuGet.MSSigning.Extensions. Overlaps in tests with NuGet.MSSigning.Extensions.FuncTest.</Description>
+    <NoWarn>$(NoWarn);CS1572;CS1573;CS1574;CS1591;IDE1006;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

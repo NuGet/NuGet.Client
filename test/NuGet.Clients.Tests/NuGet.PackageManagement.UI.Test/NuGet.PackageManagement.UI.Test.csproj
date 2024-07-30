@@ -4,6 +4,7 @@
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <Description>Unit and integration tests for NuGet.PackageManagement.UI.</Description>
     <UseParallelXunit>true</UseParallelXunit>
+    <NoWarn>$(NoWarn);CS1572;CS1573;CS1591;IDE0005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

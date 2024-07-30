@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>NuGet's configuration settings implementation.</Description>
-    <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;CS1573;IDE0005</NoWarn>
     <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">$(NETFXTargetFramework)</TargetFramework>
     <PackProject>true</PackProject>

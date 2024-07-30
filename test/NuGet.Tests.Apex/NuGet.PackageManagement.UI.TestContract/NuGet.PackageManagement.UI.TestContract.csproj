@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <OutputType>Library</OutputType>
-    <NoWarn>$(NoWarn);CS1591;1762</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;1762;IDE0005</NoWarn>
     <Description>A contract assembly providing a wrapper for testing the NuGet Package Manager UI functionality.</Description>
     <SkipAnalyzers>true</SkipAnalyzers>
   </PropertyGroup>

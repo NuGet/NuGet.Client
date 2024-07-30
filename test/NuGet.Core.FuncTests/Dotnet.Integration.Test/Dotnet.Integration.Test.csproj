@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <Description>Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.</Description>
+    <NoWarn>$(NoWarn);IDE0005;;CS1572;CS1573;CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
