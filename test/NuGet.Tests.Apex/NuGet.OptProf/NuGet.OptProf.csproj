@@ -21,7 +21,16 @@
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
-  
+
+  <ItemGroup Label="transitive package pinning">
+    <!--
+      These packages are dependencies of directly referenced PackageReferences.
+      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
+      -->
+    <PackageReference Include="Microsoft.IO.Redist" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Manually consuming compile-time assets from Microsoft.Test.Apex.VisualStudio and excluding ones that cause compile warnings -->
     <Reference Include="$(PkgMicrosoft_Test_Apex_VisualStudio)\lib\net46\*.dll"

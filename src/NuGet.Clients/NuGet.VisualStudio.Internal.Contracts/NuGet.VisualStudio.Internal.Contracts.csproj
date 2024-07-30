@@ -12,6 +12,14 @@
     <PackageReference Include="Microsoft.VisualStudio.Sdk" />
   </ItemGroup>
 
+  <ItemGroup Label="transitive package pinning">
+    <!--
+      These packages are dependencies of directly referenced PackageReferences.
+      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
+      -->
+    <PackageReference Include="Microsoft.IO.Redist" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
   </ItemGroup>
