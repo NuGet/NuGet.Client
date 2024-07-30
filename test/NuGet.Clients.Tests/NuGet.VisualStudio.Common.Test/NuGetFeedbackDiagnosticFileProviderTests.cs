@@ -55,7 +55,7 @@ namespace NuGet.VisualStudio.Common.Test
         }
 
         [Fact]
-        public async void GetFiles_NoSolutionMock_ReturnsZip()
+        public async Task GetFiles_NoSolutionMock_ReturnsZip()
         {
             // Arrange - also see constructor
             List<Task> backgroundTasks = new();

@@ -625,7 +625,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("3.0.0", "3.0.0", true, false)]
         [InlineData("3", "3.0.0", true, false)]
         [InlineData("3.0.1-beta", "3.0.1-beta", true, true)]
-        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
+        public async Task WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
@@ -730,7 +730,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Theory]
         [MemberData(nameof(FloatingVersions_TestCases))]
 
-        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
+        public async Task WhenPackageStyleIsPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Assert
             // Updates Tab wont show package if it is latest
@@ -855,7 +855,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("3.0.0", "3.0.0", true, false)]
         [InlineData("3", "3.0.0", true, false)]
         [InlineData("3.0.1-beta", "3.0.1-beta", true, true)]
-        public async void WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
+        public async Task WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
@@ -1065,7 +1065,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3,)", "3", true, false)]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0,)", "3.0", true, false)]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", true, false)]
-        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
+        public async Task WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
@@ -1168,7 +1168,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3,)", "3", true, false)]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0,)", "3.0", true, false)]
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", true, false)]
-        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
+        public async Task WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
@@ -1271,7 +1271,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
         [Theory]
         [MemberData(nameof(FloatingVersions_TestCases_NonPackageReferenceProject))]
-        public async void WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
+        public async Task WhenPackageStyleIsNotPackageReference_And_CustomVersion_UpdatesTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
             // Arrange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
