@@ -9,7 +9,6 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
   </PropertyGroup>
 

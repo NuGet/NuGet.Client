@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Shared;
 
 namespace NuGet.ContentModel
 {
@@ -22,36 +23,19 @@ namespace NuGet.ContentModel
             return x.Span.Equals(y.Span, StringComparison.Ordinal);
         }
 
-        public unsafe int GetHashCode(ReadOnlyMemory<char> obj)
+        public int GetHashCode(ReadOnlyMemory<char> obj)
         {
             if (obj.Length == 0)
             {
                 return 0;
             }
 
-            fixed (char* pSpan0 = obj.Span)
+            var combiner = new HashCodeCombiner();
+            foreach (var character in obj.Span)
             {
-                int num1 = 0x15051505;
-                int num2 = num1;
-
-                int* pSpan = (int*)pSpan0;
-
-                int charactersRemaining;
-
-                for (charactersRemaining = obj.Length; charactersRemaining >= 4; charactersRemaining -= 4)
-                {
-                    num1 = ((num1 << 5) + num1 + (num1 >> 27)) ^ *pSpan;
-                    num2 = ((num2 << 5) + num2 + (num2 >> 27)) ^ pSpan[1];
-                    pSpan += 2;
-                }
-
-                if (charactersRemaining > 0)
-                {
-                    num1 = ((num1 << 5) + num1 + (num1 >> 27)) ^ pSpan0[obj.Length - 1];
-                }
-
-                return (num1 + (num2 * 0x5D588B65)) & 0x7FFFFFFF;
+                combiner.AddObject(character);
             }
+            return combiner.CombinedHash;
         }
     }
 }
