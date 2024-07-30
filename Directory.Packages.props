@@ -85,7 +85,7 @@
     <PackageVersion Include="System.Collections" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
-    <PackageVersion Include="System.Formats.Asn1" Version="7.0.0" />
+    <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
     <PackageVersion Include="System.IO.FileSystem.Primitives" Version="$(SystemPackagesVersion)" />
     <PackageVersion Include="System.Memory" Version="4.5.5" />
     <PackageVersion Include="System.Resources.ResourceManager" Version="$(SystemPackagesVersion)" />
