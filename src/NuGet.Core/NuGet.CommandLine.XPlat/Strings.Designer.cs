@@ -709,6 +709,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Project &apos;{0}&apos; does not have MSBuild property ProjectAssetsFile defined. This may indicate that this project does not support NuGet PackageReference, or that project customization has prevented the .NET SDK setting default values..
+        /// </summary>
+        internal static string Error_ProjectAssetsFilePropertyNotFound {
+            get {
+                return ResourceManager.GetString("Error_ProjectAssetsFilePropertyNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A trusted repository with the service index &apos;{0}&apos; already exists..
         /// </summary>
         internal static string Error_TrustedRepoAlreadyExists {
@@ -1697,7 +1706,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options..
+        ///   Looks up a localized string similar to SHA-256, SHA-384 or SHA-512 fingerprint of the certificate used to search a local certificate store for the certificate. The certificate store can be specified by --certificate-store-name and --certificate-store-location options..
         /// </summary>
         internal static string SignCommandCertificateFingerprintDescription {
             get {
@@ -1769,6 +1778,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string SignCommandHashAlgorithmDescription {
             get {
                 return ResourceManager.GetString("SignCommandHashAlgorithmDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid value for &apos;--certificate-fingerprint&apos; option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal)..
+        /// </summary>
+        internal static string SignCommandInvalidCertificateFingerprint {
+            get {
+                return ResourceManager.GetString("SignCommandInvalidCertificateFingerprint", resourceCulture);
             }
         }
         
@@ -1863,6 +1881,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allows HTTP connections for adding or updating packages. Note: This method is not secure. For secure options, see https://aka.ms/nuget-https-everywhere for more information..
+        /// </summary>
+        internal static string SourcesCommandAllowInsecureConnectionsDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandAllowInsecureConnectionsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The format of the list command output: `Detailed` (the default) and `Short`..
         /// </summary>
         internal static string SourcesCommandFormatDescription {
@@ -1940,15 +1967,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string SourcesCommandValidProtocolVersion {
             get {
                 return ResourceManager.GetString("SourcesCommandValidProtocolVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string String1 {
-            get {
-                return ResourceManager.GetString("String1", resourceCulture);
             }
         }
         
@@ -2260,11 +2278,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The assets file &apos;{0}&apos; is invalid. Please run restore for project &apos;{1}&apos; before running this command..
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a NuGet assets file. For more information, see https://aka.ms/dotnet/nuget/why#older-project-format.
         /// </summary>
-        internal static string WhyCommand_Error_InvalidAssetsFile {
+        internal static string WhyCommand_Error_InvalidAssetsFile_WithoutProject {
             get {
-                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile", resourceCulture);
+                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile_WithoutProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file &apos;{0}&apos; does not appear to be a NuGet assets file. Please run restore for project &apos;{1}&apos; before running this command..
+        /// </summary>
+        internal static string WhyCommand_Error_InvalidAssetsFile_WithProject {
+            get {
+                return ResourceManager.GetString("WhyCommand_Error_InvalidAssetsFile_WithProject", resourceCulture);
             }
         }
         
@@ -2305,7 +2332,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos; for project &apos;{0}&apos;. This command only works on SDK-style projects..
+        ///   Looks up a localized string similar to Unable to run &apos;dotnet nuget why&apos; for project &apos;{0}&apos;. See https://aka.ms/dotnet/nuget/why#older-project-format.
         /// </summary>
         internal static string WhyCommand_Message_NonSDKStyleProjectsAreNotSupported {
             get {

@@ -223,6 +223,11 @@ namespace NuGet.Common
         NU1301 = 1301,
 
         /// <summary>
+        /// Insecure Source specified.
+        /// </summary>
+        NU1302 = 1302,
+
+        /// <summary>
         /// Package MinClientVersion did not match.
         /// </summary>
         NU1401 = 1401,
@@ -281,6 +286,11 @@ namespace NuGet.Common
         /// Central package management is in use but there are multiple feeds configured without using package source mapping.
         /// </summary>
         NU1507 = 1507,
+
+        /// <summary>
+        /// Duplicate NuGetAuditSuppress found
+        /// </summary>
+        NU1508 = 1508,
 
         /// <summary>
         /// Dependency bumped up
@@ -370,6 +380,11 @@ namespace NuGet.Common
         /// Package with known critical severity vulnerability
         /// </summary>
         NU1904 = 1904,
+
+        /// <summary>
+        /// Audit source did not provide vulnerability data
+        /// </summary>
+        NU1905 = 1905,
 
         /// <summary>
         /// Undefined signature error
@@ -591,6 +606,11 @@ namespace NuGet.Common
         /// An X.509 trust store does not contain a root certificate observed in a package signature.
         /// </summary>
         NU3042 = 3042,
+
+        /// <summary>
+        /// The certificate fingerprint is invalid.
+        /// </summary>
+        NU3043 = 3043,
 
         /// <summary>
         /// Undefined Package Error.

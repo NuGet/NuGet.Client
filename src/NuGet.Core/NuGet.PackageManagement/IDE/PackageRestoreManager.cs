@@ -196,10 +196,13 @@ namespace NuGet.PackageManagement
                     var nuGetProjectName = (string)msbuildProject.GetMetadataOrNull(NuGetProjectMetadataKeys.Name);
                     var nugetAudit = (string)msbuildProject.GetMetadataOrNull(ProjectBuildProperties.NuGetAudit);
                     var auditLevel = (string)msbuildProject.GetMetadataOrNull(ProjectBuildProperties.NuGetAuditLevel);
+                    var suppressions = await GetSuppressionsAsync(msbuildProject);
+
                     var auditProperties = new RestoreAuditProperties()
                     {
                         EnableAudit = nugetAudit,
                         AuditLevel = auditLevel,
+                        SuppressedAdvisories = suppressions
                     };
                     // Here be dragons.
                     // The key here, nuGetProjectName, needs to match the key in the dictionary in GetPackagesReferencesDictionaryAsync and all the constructors of PackageRestoreData.
@@ -214,6 +217,23 @@ namespace NuGet.PackageManagement
             }
 
             return restoreAuditProperties;
+
+            async Task<HashSet<string>> GetSuppressionsAsync(MSBuildNuGetProject msbuildProject)
+            {
+                var items = await msbuildProject.ProjectServices.ReferencesReader.GetItemsAsync(ProjectItems.NuGetAuditSuppress);
+                if (items?.Count > 0)
+                {
+                    var suppressions = new HashSet<string>();
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        (string url, _) = items[i];
+                        suppressions.Add(url);
+                    }
+                    return suppressions;
+                }
+
+                return null;
+            }
         }
 
         /// <summary>
@@ -407,11 +427,12 @@ namespace NuGet.PackageManagement
             ActivityCorrelationId.StartNew();
 
             List<SourceRepository> sourceRepositories = packageRestoreContext.SourceRepositories.AsList();
+            IReadOnlyList<SourceRepository> auditSources = packageRestoreContext.AuditSources;
 
             var missingPackages = packageRestoreContext.Packages.Where(p => p.IsMissing).ToList();
             if (!missingPackages.Any())
             {
-                AuditCheckResult auditCheckResult = await RunNuGetAudit(packageRestoreContext, sourceRepositories);
+                AuditCheckResult auditCheckResult = await RunNuGetAudit(packageRestoreContext, sourceRepositories, auditSources);
                 return new PackageRestoreResult(true, Enumerable.Empty<PackageIdentity>(), auditCheckResult);
             }
 
@@ -429,7 +450,8 @@ namespace NuGet.PackageManagement
                 PackageSource source = enabledSource.PackageSource;
                 if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
                 {
-                    packageRestoreContext.Logger.Log(LogLevel.Warning, string.Format(CultureInfo.CurrentCulture, Strings.Warning_HttpServerUsage, "restore", source.Source));
+                    packageRestoreContext.Logger.Log(LogLevel.Error, string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "restore", source.Source));
+                    return new PackageRestoreResult(false, []);
                 }
             }
 
@@ -446,7 +468,7 @@ namespace NuGet.PackageManagement
                 packageRestoreContext,
                 nuGetProjectContext);
 
-            AuditCheckResult result = await RunNuGetAudit(packageRestoreContext, sourceRepositories);
+            AuditCheckResult result = await RunNuGetAudit(packageRestoreContext, sourceRepositories, auditSources);
 
             return new PackageRestoreResult(
                 attemptedPackages.All(p => p.Restored),
@@ -454,13 +476,14 @@ namespace NuGet.PackageManagement
                 result);
         }
 
-        private static async Task<AuditCheckResult> RunNuGetAudit(PackageRestoreContext packageRestoreContext, List<SourceRepository> sourceRepositories)
+        private static async Task<AuditCheckResult> RunNuGetAudit(PackageRestoreContext packageRestoreContext, List<SourceRepository> sourceRepositories, IReadOnlyList<SourceRepository> auditSources)
         {
             if (packageRestoreContext.EnableNuGetAudit)
             {
                 using SourceCacheContext sourceCacheContext = new();
                 var auditUtility = new AuditChecker(
                     sourceRepositories,
+                    auditSources,
                     sourceCacheContext,
                     packageRestoreContext.Logger);
                 return await auditUtility.CheckPackageVulnerabilitiesAsync(packageRestoreContext.Packages, packageRestoreContext.RestoreAuditProperties, packageRestoreContext.Token);

@@ -6,12 +6,6 @@
 using System.Globalization;
 using System;
 using System.IO;
-using System.Linq;
-
-#if IS_CORECLR
-using System.Runtime.InteropServices;
-#endif
-
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -66,12 +60,7 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetUserAgent()
         {
-#if IS_CORECLR
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat")
-                .WithOSDescription(RuntimeInformation.OSDescription));
-#else
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
-#endif
         }
 
         internal static ISettings ProcessConfigFile(string configFile)
@@ -168,6 +157,12 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return false;
+        }
+
+        internal static bool IsJsonFile(string filename)
+        {
+            var extension = Path.GetExtension(filename);
+            return string.Equals(".json", extension, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
