@@ -26,8 +26,6 @@ namespace Benchmarks
         public LockFileBuilderCache _cache = new();
         public List<(List<SelectionCriteria>, bool)> _orderedCriteria;
 
-        public List<string> strings = new List<string> { "ABCDEFG", "abcdefg", "ABCDEFGH", "ZABCDEFG", "123465", "12345", "1234765", "net9.0", "net10.0", "netcoreapp3.1", "Newtonsoft.Json" };
-
         private List<(LocalPackageInfo, NuspecReader)> _packages = new();
         private (LocalPackageInfo, NuspecReader) _microsoftBuildRuntime;
         private (LocalPackageInfo, NuspecReader) _newtonsoftJson;

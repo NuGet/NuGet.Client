@@ -185,7 +185,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Populate assets for a <see cref="LockFileLibrary"/>.
         /// </summary>
-        private static void AddAssets(
+        internal static void AddAssets(
             string aliases,
             LockFileLibrary library,
             LocalPackageInfo package,
