@@ -61,6 +61,7 @@ namespace NuGet.ContentModel
             if (_assets.Count > 0)
             {
                 var groupPatterns = definition.GroupExpressions;
+
                 List<(ContentItem Item, Asset Asset)> groupAssets = null;
 
                 foreach (var asset in _assets)
@@ -85,17 +86,6 @@ namespace NuGet.ContentModel
                             items: FindItemsImplementation(definition, grouping.Select(match => match.Asset)));
                     }
                 }
-
-                //foreach (Asset asset in _assets)
-                //{
-                //    var items = FindItemsImplementation(definition, new[] { asset });
-                //    if (items.Count > 0)
-                //    {
-                //        yield return new ContentItemGroup(
-                //            properties: new Dictionary<string, object>(),
-                //            items: items);
-                //    }
-                //}
             }
         }
 
@@ -247,7 +237,7 @@ namespace NuGet.ContentModel
 
         private List<ContentItem> FindItemsImplementation(PatternSet definition, IEnumerable<Asset> assets)
         {
-            var pathPatterns = definition.PathExpressions; // Do I really need the group thing? Why not do them immediately?
+            var pathPatterns = definition.PathExpressions;
 
             List<ContentItem> items = new();
 
