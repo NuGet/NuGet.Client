@@ -123,6 +123,10 @@ namespace NuGet.Client
             }
         }
 
+        /// <summary>
+        /// If matchOnly is true, then an empty string may be returned as a performance optimization.
+        /// If matchOnly is false, the parsed result will be returned.
+        /// </summary>
         private static object CodeLanguage_Parser(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly)
         {
             if (table != null)
@@ -152,6 +156,10 @@ namespace NuGet.Client
             return name.ToString();
         }
 
+        /// <summary>
+        /// If matchOnly is true, then an empty string may be returned as a performance optimization.
+        /// If matchOnly is false, the parsed result will be returned.
+        /// </summary>
         private static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly)
         {
             if (table != null)
@@ -239,6 +247,11 @@ namespace NuGet.Client
             return new NuGetFramework(name, FrameworkConstants.EmptyVersion);
         }
 
+        /// <summary>
+        /// Identity parser, returns the input string as is.
+        /// If matchOnly is true, then an empty string is returned as a performance optimization.
+        /// If matchOnly is false, the string will be actualized.
+        /// </summary>
         private static object IdentityParser(ReadOnlyMemory<char> s, PatternTable _, bool matchOnly)
         {
             if (matchOnly)
@@ -248,6 +261,11 @@ namespace NuGet.Client
             return s.ToString();
         }
 
+
+        /// <summary>
+        /// If matchOnly is true, then an empty string is returned as a performance optimization.
+        /// If matchOnly is false, the parsed result will be returned.
+        /// </summary>
         private static object AllowEmptyFolderParser(ReadOnlyMemory<char> s, PatternTable table, bool matchOnly)
         {
             // Accept "_._" as a pseudo-assembly
@@ -257,7 +275,7 @@ namespace NuGet.Client
                 {
                     return string.Empty;
                 }
-                return s.ToString();
+                return PackagingCoreConstants.EmptyFolder;
             }
 
             return null;

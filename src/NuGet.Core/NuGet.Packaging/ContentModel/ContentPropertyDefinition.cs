@@ -68,6 +68,12 @@ namespace NuGet.ContentModel
 
         public bool FileExtensionAllowSubFolders { get; }
 
+        /// <summary>
+        /// Parse a ReadOnlyMemory char if it's off the form of this definition.
+        /// A null return value means the ReadOnlyMemory char does not match this definition.
+        /// If the bool is true, the return object will be non-null, and match what the ReadOnlyMemory char represents.
+        /// If the bool is false, the return object will be non-null if the ReadOnlyMemory char represents a valid value for this definition. This is a performance optimization.
+        /// </summary>
         internal Func<ReadOnlyMemory<char>, PatternTable, bool, object> Parser { get; }
 
         /// <summary>
