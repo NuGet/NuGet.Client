@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace NuGet.Packaging.Licenses
 {
@@ -28,7 +29,7 @@ namespace NuGet.Packaging.Licenses
 
         public override string ToString()
         {
-            return $"{Left.ToString()} {LogicalOperatorType.ToString().ToUpper()} {Right.ToString()}";
+            return $"{Left.ToString()} {LogicalOperatorType.ToString().ToUpper(CultureInfo.InvariantCulture)} {Right.ToString()}";
         }
     }
 }

@@ -11,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
@@ -1909,7 +1907,7 @@ namespace ProjectManagement.Test
                 // Assert
                 // Check that the packages.config file exists after the installation
                 Assert.True(File.Exists(packagesProjectNameConfigPath));
-                Assert.True(msBuildNuGetProjectSystem.Files.Contains(Path.GetFileName(packagesProjectNameConfigPath)));
+                Assert.Contains(Path.GetFileName(packagesProjectNameConfigPath), msBuildNuGetProjectSystem.Files);
 
                 // Check the number of packages and packages returned by PackagesConfigProject after the installation
                 packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
@@ -2031,6 +2029,7 @@ namespace ProjectManagement.Test
         {
             public IDictionary<string, int> ScriptsExecuted { get; } = new Dictionary<string, int>();
 
+            [Obsolete]
             public IProjectBuildProperties BuildProperties => throw new NotImplementedException();
 
             public IProjectSystemCapabilities Capabilities => throw new NotImplementedException();
@@ -2068,7 +2067,7 @@ namespace ProjectManagement.Test
                 }
 
                 ScriptsExecuted[scriptRelativePath]++;
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             }
 
             public Task<bool> ExecutePackageInitScriptAsync(PackageIdentity packageIdentity, string packageInstallPath, INuGetProjectContext projectContext, bool throwOnFailure, CancellationToken token)

@@ -1,8 +1,9 @@
 param (
-    [ValidateSet("16.0")]
-    [string]$VSVersion = "16.0")
+    [ValidateSet("17.0")]
+    [string]$VSVersion = "17.0")
 
  . "$PSScriptRoot\Utils.ps1"
+ . "$PSScriptRoot\VSUtils.ps1"
 
 function EnableWindowsDeveloperMode()
 {
@@ -44,12 +45,22 @@ function DisableTextTemplateSecurityWarning([string]$VSVersion)
 
 Function SuppressNuGetUI([Parameter(Mandatory = $True)] [string] $registryValueName)
 {
-    $success = SetRegistryKey -RegKey 'HKCU:\Software\NuGet' -RegName $registryValueName -ExpectedValue '1' -FriendlyKeyName $registryValueName
+    $success = SetRegistryKey -RegKey 'HKCU:\Software\NuGet' -RegName $registryValueName -ExpectedValue '1'
 
     If (!$success)
     {
         Exit 1
     }
+}
+
+function  Set-VSINSTALLDIR
+{
+    # E2E CI agents should only have a single version of VS installed
+    $VSInstance = Get-LatestVSInstance
+    $installationPath = $VSInstance.installationPath
+    Write-Host "Setting $$env:VSINSTALLDIR = $installationPath"
+    $env:VSINSTALLDIR = $installationPath
+    Write-Host "##vso[task.setvariable variable=VSINSTALLDIR]$installationPath"
 }
 
 trap
@@ -61,7 +72,9 @@ trap
 
 $NuGetRoot = Split-Path $PSScriptRoot -Parent
 
-$NuGetTestsPSM1 = Join-Path $NuGetRoot "test\EndToEnd\NuGet.Tests.psm1"
+$NuGetTestsPSM1 = Join-Path $NuGetRoot "NuGet.Tests.psm1"
+
+Write-Host "NuGetTestsPSM1 variable value is:" $NuGetTestsPSM1
 
 Write-Host 'If successful, this script needs to be run only once on your machine!'
 
@@ -72,9 +85,6 @@ Write-Host 'Setting the environment variable needed to load NuGet.Tests powershe
 Write-Host -ForegroundColor Cyan 'You can now call Run-Test from any instance of Visual Studio ' `
 'as soon as you open Package Manager Console!'
 
-Write-Host -ForegroundColor Cyan 'Before running all the functional tests, ' `
-'please ensure that you have VS Enterprise with F#, Windows Phone tooling and Silverlight installed'
-
 Write-Host
 Write-Host 'Trying to set some registry keys to avoid dialog boxes popping during the functional test run...'
 
@@ -82,15 +92,7 @@ DisableTextTemplateSecurityWarning $VSVersion
 SuppressNuGetUI -registryValueName 'DoNotShowPreviewWindow'
 SuppressNuGetUI -registryValueName 'SuppressUILegalDisclaimer'
 
-$net35x86 = "C:\windows\Microsoft.NET\Framework\v3.5\msbuild.exe"
-$net35x64 = "C:\windows\Microsoft.NET\Framework64\v3.5\msbuild.exe"
-
-if (!(Test-Path $net35x86) -or !(Test-Path $net35x64))
-{
-    Write-Host -ForegroundColor Yellow 'WARNING: .NET 3.5 is not installed on the machine. Please install'
-    exit 1
-}
-
-EnableWindowsDeveloperMode
+#EnableWindowsDeveloperMode
+Set-VSINSTALLDIR
 
 Write-Host 'THE END!'

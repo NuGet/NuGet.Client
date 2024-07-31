@@ -10,7 +10,6 @@
 
 namespace NuGet.DependencyResolver {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace NuGet.DependencyResolver {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -40,7 +39,7 @@ namespace NuGet.DependencyResolver {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.DependencyResolver.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.DependencyResolver.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -67,6 +66,24 @@ namespace NuGet.DependencyResolver {
         internal static string Error_PackageNotFoundWhenExpected {
             get {
                 return ResourceManager.GetString("Error_PackageNotFoundWhenExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source mapping matches found for package ID &apos;{0}&apos; are: &apos;{1}&apos;..
+        /// </summary>
+        internal static string Log_MatchingSourceFoundForPackage {
+            get {
+                return ResourceManager.GetString("Log_MatchingSourceFoundForPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source mapping match not found for package ID &apos;{0}&apos;..
+        /// </summary>
+        internal static string Log_NoMatchingSourceFoundForPackage {
+            get {
+                return ResourceManager.GetString("Log_NoMatchingSourceFoundForPackage", resourceCulture);
             }
         }
     }

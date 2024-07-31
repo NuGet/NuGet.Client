@@ -25,7 +25,7 @@ namespace NuGet.Protocol.Plugins
         /// Instantiates a new <see cref="StandardInputReceiver" /> class.
         /// </summary>
         /// <param name="reader">A text reader.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="reader" /> is <see langword="null" />.</exception>
         public StandardInputReceiver(TextReader reader)
         {
             if (reader == null)
@@ -37,41 +37,39 @@ namespace NuGet.Protocol.Plugins
             _receiveCancellationTokenSource = new CancellationTokenSource();
         }
 
-        /// <summary>
-        /// Disposes of this instance.
-        /// </summary>
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            Close();
-
-            try
+            if (disposing)
             {
-                using (_receiveCancellationTokenSource)
+                Close();
+
+                try
                 {
-                    _receiveCancellationTokenSource.Cancel();
+                    using (_receiveCancellationTokenSource)
+                    {
+                        _receiveCancellationTokenSource.Cancel();
 
-                    // Do not attempt to wait on completion of the receive thread task.
-                    // In scenarios where standard input is backed by a non-blocking stream
-                    // (e.g.:  a MemoryStream in unit tests) waiting on the receive thread task
-                    // is fine.  However, when standard input is backed by a blocking stream,
-                    // reading from standard input is a blocking call, and while the receive
-                    // thread is in a read call it cannot respond to cancellation requests.
-                    // We would likely hang if we attempted to wait on completion of the
-                    // receive thread task.
+                        // Do not attempt to wait on completion of the receive thread task.
+                        // In scenarios where standard input is backed by a non-blocking stream
+                        // (e.g.:  a MemoryStream in unit tests) waiting on the receive thread task
+                        // is fine.  However, when standard input is backed by a blocking stream,
+                        // reading from standard input is a blocking call, and while the receive
+                        // thread is in a read call it cannot respond to cancellation requests.
+                        // We would likely stop responding if we attempted to wait on completion of the
+                        // receive thread task.
+                    }
                 }
-            }
-            catch (Exception)
-            {
-            }
+                catch (Exception)
+                {
+                }
 
-            _reader.Dispose();
-
-            GC.SuppressFinalize(this);
+                _reader.Dispose();
+            }
 
             IsDisposed = true;
         }

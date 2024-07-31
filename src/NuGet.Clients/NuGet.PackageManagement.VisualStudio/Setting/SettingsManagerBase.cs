@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (serviceProvider == null)
             {
-                throw new ArgumentNullException("serviceProvider");
+                throw new ArgumentNullException(nameof(serviceProvider));
             }
 
             _settingsManager = new SettingsManagerWrapper(serviceProvider);

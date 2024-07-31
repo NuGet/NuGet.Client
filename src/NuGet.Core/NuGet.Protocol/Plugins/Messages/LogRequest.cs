@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Plugins
         /// <param name="message">The message to be logged.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="logLevel" /> is an undefined
         /// <see cref="LogLevel" /> value.</exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="message" /> is either <c>null</c>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="message" /> is either <see langword="null" />
         /// or an empty string.</exception>
         [JsonConstructor]
         public LogRequest(LogLevel logLevel, string message)

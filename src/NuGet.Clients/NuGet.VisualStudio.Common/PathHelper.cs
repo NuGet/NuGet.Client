@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,12 +15,12 @@ namespace NuGet.VisualStudio
             if (maxWidth < 6)
             {
                 string message = String.Format(CultureInfo.CurrentCulture, Resources.Argument_Must_Be_GreaterThanOrEqualTo, 6);
-                throw new ArgumentOutOfRangeException("maxWidth", message);
+                throw new ArgumentOutOfRangeException(nameof(maxWidth), message);
             }
 
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (path.Length <= maxWidth)
@@ -59,7 +59,7 @@ namespace NuGet.VisualStudio
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             // The and [ the ] characters are interpreted as wildcard delimiters. Escape them first.

@@ -78,7 +78,7 @@ namespace NuGet.Commands.Test
                 };
 
                 var request = (await RestoreRunner.GetRequests(restoreContext)).Single();
-                var providers = providerCache.GetOrCreate(pathContext.UserPackagesFolder, sources, new List<SourceRepository>(), cacheContext, logger);
+                var providers = providerCache.GetOrCreate(pathContext.UserPackagesFolder, sources, new List<SourceRepository>(), cacheContext, logger, false);
                 var command = new RestoreCommand(request.Request);
 
                 // Add to cache before install on all providers

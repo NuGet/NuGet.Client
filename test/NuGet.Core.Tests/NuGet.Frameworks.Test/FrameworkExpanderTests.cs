@@ -1,12 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
-using NuGet.Frameworks;
 using Xunit;
 
-namespace NuGet.Test
+namespace NuGet.Frameworks.Test
 {
     public class FrameworkExpanderTests
     {
@@ -19,7 +18,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), string.Join("|", expanded.Select(e => e.ToString())));
         }
 
         [Fact]
@@ -31,7 +30,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), string.Join("|", expanded.Select(e => e.ToString())));
         }
 
         [Fact]
@@ -43,7 +42,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), string.Join("|", expanded.Select(e => e.ToString())));
         }
 
         [Fact]
@@ -55,7 +54,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander.Expand(framework).ToArray();
 
-            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), String.Join("|", expanded.Select(e => e.ToString())));
+            Assert.True(expanded.Contains(indirect, NuGetFramework.Comparer), string.Join("|", expanded.Select(e => e.ToString())));
         }
 
         [Fact]
@@ -66,7 +65,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander
                 .Expand(framework)
-                .OrderBy(f => f, new NuGetFrameworkSorter())
+                .OrderBy(f => f, NuGetFrameworkSorter.Instance)
                 .ToArray();
 
             Assert.Equal(7, expanded.Length);
@@ -89,7 +88,7 @@ namespace NuGet.Test
             FrameworkExpander expander = new FrameworkExpander();
             var expanded = expander
                 .Expand(framework)
-                .OrderBy(f => f, new NuGetFrameworkSorter())
+                .OrderBy(f => f, NuGetFrameworkSorter.Instance)
                 .ToArray();
 
             Assert.Equal(10, expanded.Length);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,9 +19,9 @@ namespace NuGet.Common
     public static class ActivityCorrelationId
     {
 #if IS_CORECLR
-        private static readonly AsyncLocal<string> _correlationId = new AsyncLocal<string>();
+        private static readonly AsyncLocal<string?> _correlationId = new AsyncLocal<string?>();
 #else
-        private static readonly string CorrelationIdSlot = "NuGet.Common.ActivityCorrelationId";
+        private const string CorrelationIdSlot = "NuGet.Common.ActivityCorrelationId";
 #endif
 
         private static readonly string DefaultCorrelationId = Guid.Empty.ToString();

@@ -26,6 +26,9 @@ test/EndToEnd/nuget.exe
 # remove ilmerge log
 mergelog.txt
 
+# MSBuild binlog
+*.binlog
+
 # User-specific files
 *.suo
 *.user
@@ -93,6 +96,7 @@ ipch/
 # ReSharper is a .NET coding add-in
 _ReSharper*/
 *.[Rr]e[Ss]harper
+*.DotSettings
 
 # TeamCity is a build add-in
 _TeamCity*
@@ -193,3 +197,9 @@ launchSettings.json
 # include the test packages
 !test/EndToEnd/Packages/**/*
 !test/EndToEnd/ProjectTemplates/**/*.pfx
+
+.idea
+.ionide
+
+# Image manifests are generated at build-time for VSIX
+*.imagemanifest

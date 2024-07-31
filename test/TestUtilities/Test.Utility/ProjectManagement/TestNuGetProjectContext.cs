@@ -17,17 +17,37 @@ namespace Test.Utility
     {
         private Guid _operationId;
         public TestExecutionContext TestExecutionContext { get; set; }
+        public Lazy<List<string>> Logs { get; } = new Lazy<List<string>>();
+        public bool EnableLogging { get; set; }
+
+        private object _lock = new object();
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
             // Uncomment when you want to debug tests.
             // Console.WriteLine(message, args);
+
+            if (EnableLogging)
+            {
+                lock (_lock)
+                {
+                    Logs.Value.Add(args != null ? message + " " + string.Join(",", args) : message);
+                }
+            }
         }
 
         public void Log(ILogMessage message)
         {
             // Uncomment when you want to debug tests.
             // Console.WriteLine(message.FormatWithCode());
+
+            if (EnableLogging)
+            {
+                lock (_lock)
+                {
+                    Logs.Value.Add(message.Message);
+                }
+            }
         }
 
         public FileConflictAction ResolveFileConflict(string message)
@@ -43,7 +63,7 @@ namespace Test.Utility
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 
-        public ExecutionContext ExecutionContext
+        public NuGet.ProjectManagement.ExecutionContext ExecutionContext
         {
             get { return TestExecutionContext; }
         }
@@ -81,7 +101,7 @@ namespace Test.Utility
         }
     }
 
-    public class TestExecutionContext : ExecutionContext
+    public class TestExecutionContext : NuGet.ProjectManagement.ExecutionContext
     {
         public TestExecutionContext(PackageIdentity directInstall)
         {
@@ -94,7 +114,7 @@ namespace Test.Utility
         public override Task OpenFile(string fullPath)
         {
             FilesOpened.Add(fullPath);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

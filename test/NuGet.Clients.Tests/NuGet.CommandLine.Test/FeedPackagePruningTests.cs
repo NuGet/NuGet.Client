@@ -10,12 +10,21 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
     public class FeedPackagePruningTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public FeedPackagePruningTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public async Task FeedPackagePruning_GivenThatAV3FeedPrunesAPackageDuringRestoreVerifyRestoreRecoversAsync()
         {
@@ -65,16 +74,16 @@ namespace NuGet.CommandLine.Test
                 server.Start();
 
                 var feedUrl = server.Uri + "index.json";
-
+                pathContext.Settings.AddSource(feedUrl, feedUrl, allowInsecureConnectionsValue: "true");
                 // Restore x 2.0.0 and populate the http cache
-                var r = Util.Restore(pathContext, projectA.ProjectPath, 0, "-Source", feedUrl);
+                var r = Util.Restore(pathContext, projectA.ProjectPath, 0, _testOutputHelper, "-Source", feedUrl);
 
                 // Delete x 1.0.0
                 File.Delete(LocalFolderUtility.GetPackageV2(serverRepoPath, packageX100.Identity, testLogger).Path);
 
                 // Act
                 // Restore x 1.0.0
-                r = Util.Restore(pathContext, projectB.ProjectPath, 0, "-Source", feedUrl);
+                r = Util.Restore(pathContext, projectB.ProjectPath, 0, _testOutputHelper, "-Source", feedUrl);
 
                 var xLib = projectB.AssetsFile.Libraries.SingleOrDefault(e => e.Name == "x");
 

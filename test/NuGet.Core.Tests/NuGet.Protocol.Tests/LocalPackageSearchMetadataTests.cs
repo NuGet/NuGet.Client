@@ -28,11 +28,28 @@ namespace NuGet.Protocol.Tests
                 "path",
                 new DateTime(2019, 8, 19),
                 new Lazy<NuspecReader>(() => null),
-                () => null);
+                useFolder: false
+                );
 
             var localPackageSearchMetadata = new LocalPackageSearchMetadata(localPackageInfo);
 
             Assert.Null(await localPackageSearchMetadata.GetDeprecationMetadataAsync());
+        }
+
+        [Fact]
+        public void DownloadCount_Always_Null()
+        {
+            var localPackageInfo = new LocalPackageInfo(
+                new PackageIdentity("id", NuGetVersion.Parse("1.0.0")),
+                "path",
+                new DateTime(2019, 8, 19),
+                new Lazy<NuspecReader>(() => null),
+                useFolder: false
+                );
+
+            var localPackageSearchMetadata = new LocalPackageSearchMetadata(localPackageInfo);
+
+            Assert.Null(localPackageSearchMetadata.DownloadCount);
         }
 
         [Fact]

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using NuGet.Common;
 
 namespace NuGet.Packaging
@@ -35,7 +36,11 @@ namespace NuGet.Packaging
         private static string UnescapePath(string path)
         {
             if (path != null
+#if NETCOREAPP
+                && path.IndexOf('%', StringComparison.Ordinal) > -1)
+#else
                 && path.IndexOf('%') > -1)
+#endif
             {
                 return Uri.UnescapeDataString(path);
             }
@@ -63,25 +68,80 @@ namespace NuGet.Packaging
 
         public static void UpdateFileTimeFromEntry(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
         {
-            var attr = File.GetAttributes(fileFullPath);
+            Testable.Default.UpdateFileTimeFromEntry(entry, fileFullPath, logger);
+        }
 
-            if (!attr.HasFlag(FileAttributes.Directory) &&
-                entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
-                entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
+        internal static void UpdateFileTime(string fileFullPath, DateTime dateTime)
+        {
+            Testable.Default.UpdateFileTimeEntry(fileFullPath, dateTime);
+        }
+
+        internal class Testable
+        {
+            public static Testable Default { get; } = new Testable(EnvironmentVariableWrapper.Instance);
+
+            internal Testable(IEnvironmentVariableReader environmentVariableReader)
             {
-                try
+                _updateFileTimeFromEntryMaxRetries = 9;
+                string value = environmentVariableReader.GetEnvironmentVariable("NUGET_UPDATEFILETIME_MAXRETRIES");
+                if (int.TryParse(value, out int maxRetries) && maxRetries > 0)
                 {
-                    File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.UtcDateTime);
+                    _updateFileTimeFromEntryMaxRetries = maxRetries;
                 }
-                catch (ArgumentOutOfRangeException ex)
-                {
-                    string message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.FailedFileTime,
-                        fileFullPath, // {0}
-                        ex.Message); // {1}
+            }
 
-                    logger.LogVerbose(message);
+            private readonly int _updateFileTimeFromEntryMaxRetries;
+
+            internal void UpdateFileTimeFromEntry(ZipArchiveEntry entry, string fileFullPath, ILogger logger)
+            {
+                if (entry == null) throw new ArgumentNullException(nameof(entry));
+                if (fileFullPath == null) throw new ArgumentNullException(nameof(fileFullPath));
+                logger ??= NullLogger.Instance;
+
+                FileAttributes attr = File.GetAttributes(fileFullPath);
+
+                if (!attr.HasFlag(FileAttributes.Directory) &&
+                    entry.LastWriteTime.DateTime != DateTime.MinValue && // Ignore invalid times
+                    entry.LastWriteTime.UtcDateTime <= DateTime.UtcNow) // Ignore future times
+                {
+                    try
+                    {
+                        DateTime dateTime = entry.LastWriteTime.Add(entry.LastWriteTime.Offset).UtcDateTime;
+                        UpdateFileTimeEntry(fileFullPath, dateTime);
+                    }
+                    catch (ArgumentOutOfRangeException ex)
+                    {
+                        string message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.FailedFileTime,
+                            fileFullPath, // {0}
+                            ex.Message); // {1}
+
+                        logger.LogVerbose(message);
+                    }
+                }
+            }
+
+            internal void UpdateFileTimeEntry(string fileFullPath, DateTime dateTime)
+            {
+                if (string.IsNullOrEmpty(fileFullPath)) throw new ArgumentNullException(nameof(fileFullPath));
+
+                int retry = 0;
+                bool successful = false;
+                while (!successful)
+                {
+                    try
+                    {
+                        File.SetLastWriteTimeUtc(fileFullPath, dateTime);
+                        successful = true;
+                    }
+                    catch (IOException) when (retry < _updateFileTimeFromEntryMaxRetries)
+                    {
+                        // Use exponentional backoff, to reduce CPU usage, allowing other threads to work, even if this
+                        // isn't an async method and therefore requires the ThreadPool to spin up new threads.
+                        Thread.Sleep(1 << retry);
+                        retry++;
+                    }
                 }
             }
         }

@@ -3,6 +3,7 @@
 
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
@@ -19,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var settingsManager =  await serviceProvider.GetServiceAsync<SVsSettingsManager, IVsSettingsManager>();
+                var settingsManager = await serviceProvider.GetServiceAsync<SVsSettingsManager, IVsSettingsManager>();
                 Assumes.Present(settingsManager);
 
                 return settingsManager;

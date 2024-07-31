@@ -26,12 +26,12 @@ namespace NuGet.Protocol
         {
             if (client == null)
             {
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             }
 
             if (baseUrl == null)
             {
-                throw new ArgumentNullException("baseUrl");
+                throw new ArgumentNullException(nameof(baseUrl));
             }
 
             _client = client;

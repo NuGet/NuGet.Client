@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -29,6 +29,14 @@ namespace NuGet.Test.Utility
                     skip = XunitAttributeUtility.GetMonoMessage(OnlyOnMono, SkipMono);
                 }
 
+                if (string.IsNullOrEmpty(skip))
+                {
+                    if (CIOnly && !XunitAttributeUtility.IsCI)
+                    {
+                        skip = "This test only runs on the CI. To run it locally set the env var CI=true";
+                    }
+                }
+
                 // If this is null the test will run.
                 return skip;
             }
@@ -50,6 +58,8 @@ namespace NuGet.Test.Utility
         public bool OnlyOnMono { get; set; }
 
         public bool SkipMono { get; set; }
+
+        public bool CIOnly { get; set; }
 
         /// <summary>
         /// Provide property values to use this attribute.

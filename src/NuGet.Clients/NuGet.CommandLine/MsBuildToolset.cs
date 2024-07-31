@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
@@ -16,7 +17,7 @@ namespace NuGet.CommandLine
     /// ISetupInstance in the new (with MSBuild v15.1) installation story. Allows all discovered installations
     /// to be contained in the same collection.
     /// </summary>
-    public class MsBuildToolset: IComparable<MsBuildToolset>
+    public class MsBuildToolset : IComparable<MsBuildToolset>
     {
         private Version _parsedToolsVersion;
 
@@ -25,7 +26,7 @@ namespace NuGet.CommandLine
         /// </summary>
         public MsBuildToolset(string version, string path)
         {
-            Version = version;
+            Version = version ?? GetMsBuildVersionFromMsBuildDir(path);
             Path = path;
         }
 
@@ -134,7 +135,7 @@ namespace NuGet.CommandLine
         {
             var dirName = new DirectoryInfo(directoryName).Name;
             float dirValue;
-            if (float.TryParse(dirName, out dirValue))
+            if (float.TryParse(dirName, NumberStyles.Float, CultureInfo.InvariantCulture, out dirValue))
             {
                 return dirValue;
             }

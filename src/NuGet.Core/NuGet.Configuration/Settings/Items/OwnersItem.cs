@@ -71,7 +71,7 @@ namespace NuGet.Configuration
                 return Node;
             }
 
-            _content.Value = string.Join(OwnersListSeparator.ToString(), Content);
+            _content.Value = string.Join(OwnersListSeparator.ToString(CultureInfo.CurrentCulture), Content);
 
             var element = new XElement(ElementName, _content.AsXNode());
 
@@ -83,7 +83,7 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (other is OwnersItem owners)
             {
@@ -102,7 +102,7 @@ namespace NuGet.Configuration
 
         internal override void Update(SettingItem other)
         {
-            var owners = other as OwnersItem;
+            var owners = (OwnersItem)other;
 
             if (!owners.Content.Any())
             {
@@ -116,7 +116,7 @@ namespace NuGet.Configuration
                 XElementUtility.RemoveIndented(_content.Node);
                 Content = owners.Content;
 
-                _content = new SettingText(string.Join(OwnersListSeparator.ToString(), Content));
+                _content = new SettingText(string.Join(OwnersListSeparator.ToString(CultureInfo.CurrentCulture), Content));
 
                 if (Origin != null)
                 {
@@ -125,7 +125,7 @@ namespace NuGet.Configuration
                     if (Node != null)
                     {
                         _content.SetNode(_content.AsXNode());
-                        (Node as XElement).Add(_content.Node);
+                        ((XElement)Node).Add(_content.Node);
                         Origin.IsDirty = true;
                     }
                 }

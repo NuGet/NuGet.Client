@@ -1,12 +1,13 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using NuGet.Packaging;
 
 namespace NuGet.ProjectModel
 {
-    public class LockFileContentFile: LockFileItem
+    public class LockFileContentFile : LockFileItem
     {
         public static readonly string BuildActionProperty = "buildAction";
         public static readonly string CodeLanguageProperty = "codeLanguage";
@@ -76,7 +77,7 @@ namespace NuGet.ProjectModel
             }
             set
             {
-                SetProperty(CopyToOutputProperty, value.ToString());
+                SetProperty(CopyToOutputProperty, value.ToString(CultureInfo.CurrentCulture));
             }
         }
     }

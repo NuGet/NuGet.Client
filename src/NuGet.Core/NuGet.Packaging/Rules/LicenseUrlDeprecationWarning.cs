@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            
+
             var nuspecReader = builder?.NuspecReader;
             var licenseMetadata = nuspecReader?.GetLicenseMetadata();
             var licenseUrl = nuspecReader?.GetLicenseUrl();

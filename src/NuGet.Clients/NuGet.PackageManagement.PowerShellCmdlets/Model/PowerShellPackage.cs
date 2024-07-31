@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (nVersion != null)
                 {
                     NuGet.SemanticVersion sVersion;
-                    NuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
+                    _ = NuGet.SemanticVersion.TryParse(nVersion.ToNormalizedString(), out sVersion);
                     return sVersion;
                 }
 

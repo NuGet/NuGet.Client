@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -19,7 +20,7 @@ namespace NuGet.Packaging
         internal static IEnumerable<string> GetFiles(string root, string path, string filter, bool recursive)
         {
             path = PathUtility.EnsureTrailingSlash(Path.Combine(root, path));
-            if (String.IsNullOrEmpty(filter))
+            if (string.IsNullOrEmpty(filter))
             {
                 filter = "*.*";
             }
@@ -72,7 +73,7 @@ namespace NuGet.Packaging
             // Check for package files one level deep. We use this at package install time
             // to determine the set of installed packages. Installed packages are copied to 
             // {id}.{version}\{packagefile}.{extension}.
-            foreach (var dir in GetDirectories(root, String.Empty))
+            foreach (var dir in GetDirectories(root, string.Empty))
             {
                 foreach (var path in GetFiles(root, dir, filter, recursive: false))
                 {
@@ -81,7 +82,7 @@ namespace NuGet.Packaging
             }
 
             // Check top level directory
-            foreach (var path in GetFiles(root, String.Empty, filter, recursive: false))
+            foreach (var path in GetFiles(root, string.Empty, filter, recursive: false))
             {
                 yield return path;
             }
@@ -104,17 +105,19 @@ namespace NuGet.Packaging
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (packageIdentity.Version == null)
             {
-                throw new ArgumentNullException("packageIdentity.Version");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(packageIdentity.Version)),
+                    nameof(packageIdentity));
             }
 
             if (packagePathResolver == null)
             {
-                throw new ArgumentNullException("packagePathResolver");
+                throw new ArgumentNullException(nameof(packagePathResolver));
             }
 
             var packageId = packageIdentity.Id.ToLowerInvariant();
@@ -140,8 +143,8 @@ namespace NuGet.Packaging
                 // To achieve this, we would look for files named 1.2*.nupkg if both build and revision are 0 and
                 // 1.2.3*.nupkg if only the revision is set to 0.
                 var partialName = version.Version.Build < 1 ?
-                    String.Join(".", packageId, version.Version.Major, version.Version.Minor) :
-                    String.Join(".", packageId, version.Version.Major, version.Version.Minor, version.Version.Build);
+                    string.Join(".", packageId, version.Version.Major, version.Version.Minor) :
+                    string.Join(".", packageId, version.Version.Major, version.Version.Minor, version.Version.Build);
                 var partialManifestName = partialName + "*" + PackagingCoreConstants.NuspecExtension;
                 partialName += "*" + PackagingCoreConstants.NupkgExtension;
 

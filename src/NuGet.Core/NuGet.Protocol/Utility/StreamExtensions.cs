@@ -34,7 +34,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Read a stream into a memory stream if CanSeek is false.
         /// This method is used to ensure that network streams
-        /// can be read by non-async reads without hanging.
+        /// can be read by non-async reads without blocking.
         ///
         /// Closes the original stream by default.
         /// </summary>
@@ -46,7 +46,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Read a stream into a memory stream if CanSeek is false.
         /// This method is used to ensure that network streams
-        /// can be read by non-async reads without hanging.
+        /// can be read by non-async reads without blocking.
         /// </summary>
         internal static async Task<Stream> AsSeekableStreamAsync(this Stream stream, bool leaveStreamOpen, CancellationToken token)
         {

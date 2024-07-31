@@ -59,9 +59,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 ref _lockObj,
                 () =>
                     {
-                        #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
                         IPackageSourceProvider packageSourceProvider = new PackageSourceProvider(_settings.Value, enablePackageSourcesChangedEvent: true);
-                        #pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
                         packageSourceProvider.PackageSourcesChanged += ResetRepositories;
                         return packageSourceProvider;
                     });

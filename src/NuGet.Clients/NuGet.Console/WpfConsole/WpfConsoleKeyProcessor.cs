@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,17 +9,19 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.Win32;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using ActivityLog = Microsoft.VisualStudio.Shell.ActivityLog;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
 {
@@ -142,12 +144,16 @@ namespace NuGetConsole.Implementation.Console
         /// </summary>
         private void ExecuteCommand(VSConstants.VSStd2KCmdID idCommand, object args = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             OldChain.Execute(idCommand, args);
         }
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         protected override int InternalExec(ref Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             int hr = OLECMDERR_E_NOTSUPPORTED;
 
             if (WpfConsole == null
@@ -341,7 +347,9 @@ namespace NuGetConsole.Implementation.Console
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.END);
                                 ExecuteCommand(VSConstants.VSStd2KCmdID.RETURN);
 
-                                WpfConsole.EndInputLine();
+                                NuGetUIThreadHelper.JoinableTaskFactory
+                                    .RunAsync(() => EndInputLineAsync(WpfConsole))
+                                    .PostOnFailure(nameof(WpfConsoleKeyProcessor));
                             }
                             hr = VSConstants.S_OK;
                             break;
@@ -355,7 +363,8 @@ namespace NuGetConsole.Implementation.Console
                                 }
                                 else
                                 {
-                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); });
+                                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate { await TriggerCompletionAsync(); })
+                                                                           .PostOnFailure(nameof(WpfConsoleKeyProcessor));
                                 }
                             }
                             hr = VSConstants.S_OK;
@@ -384,6 +393,12 @@ namespace NuGetConsole.Implementation.Console
                 }
             }
             return hr;
+        }
+
+        private static Task EndInputLineAsync(WpfConsole wpfConsole)
+        {
+            wpfConsole.EndInputLine();
+            return Task.CompletedTask;
         }
 
         private VsKeyInfo GetVsKeyInfo(IntPtr pvaIn, VSConstants.VSStd2KCmdID commandID)
@@ -442,6 +457,8 @@ namespace NuGetConsole.Implementation.Console
 
         private void PasteText(ref int hr)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             string text = Clipboard.GetText();
             int iLineStart = 0;
             int iNewLine = -1;
@@ -532,7 +549,7 @@ namespace NuGetConsole.Implementation.Console
             Debug.Assert(caretIndex >= 0);
 
             // Cancel tab expansion if it takes more than 'TabExpansionTimeout' secs (defaults to 3 secs) to get any results
-            CancellationTokenSource ctSource = new CancellationTokenSource(TabExpansionTimeout * 1000);
+            using var ctSource = new CancellationTokenSource(TabExpansionTimeout * 1000);
             SimpleExpansion simpleExpansion = null;
             try
             {

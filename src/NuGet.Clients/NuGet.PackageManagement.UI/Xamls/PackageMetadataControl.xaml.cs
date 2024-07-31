@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
-using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -30,7 +29,6 @@ namespace NuGet.PackageManagement.UI
         {
             if (DataContext is DetailedPackageMetadata metadata)
             {
-          
                 var window = new LicenseFileWindow()
                 {
                     DataContext = new LicenseFileData
@@ -42,19 +40,15 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    var content = metadata.LoadFileAsText(metadata.LicenseMetadata.License);
+                    string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(new Packaging.Core.PackageIdentity(metadata.Id, metadata.Version), CancellationToken.None);
+
                     var flowDoc = new FlowDocument();
                     flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     (window.DataContext as LicenseFileData).LicenseText = flowDoc;
-                });
+                }).PostOnFailure(nameof(PackageMetadataControl), nameof(ViewLicense_Click));
 
-                using (NuGetEventTrigger.TriggerEventBeginEnd(
-                    NuGetEvent.EmbeddedLicenseWindowBegin,
-                    NuGetEvent.EmbeddedLicenseWindowEnd))
-                {
-                    window.ShowModal();
-                }
+                window.ShowModal();
             }
         }
 

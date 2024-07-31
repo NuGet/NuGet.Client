@@ -32,7 +32,7 @@ namespace NuGet.Console.TestContract
             {
                 try
                 {
-                    var outputConsoleWindow = ServiceLocator.GetInstance<IPowerConsoleWindow>();
+                    var outputConsoleWindow = await ServiceLocator.GetComponentModelServiceAsync<IPowerConsoleWindow>();
                     powershellConsole = outputConsoleWindow as PowerConsoleWindow;
                 }
                 catch when (timer.Elapsed < _timeout)
@@ -74,7 +74,7 @@ namespace NuGet.Console.TestContract
             var powerConsoleToolWindowGUID = new Guid("0AD07096-BBA9-4900-A651-0598D26F6D24");
             var stopwatch = Stopwatch.StartNew();
 
-            var uiShell = ServiceLocator.GetInstance<IVsUIShell>();
+            var uiShell = await ServiceLocator.GetGlobalServiceAsync<SVsUIShell, IVsUIShell>();
 
             // Open PMC in VS
             do
@@ -107,7 +107,7 @@ namespace NuGet.Console.TestContract
                     {
                         try
                         {
-                            powerConsole.StartDispatcher();
+                            await powerConsole.StartDispatcherAsync();
                             dispatcherStarted = true;
                         }
                         catch

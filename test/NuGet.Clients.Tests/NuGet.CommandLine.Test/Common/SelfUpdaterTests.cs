@@ -8,6 +8,7 @@ using Moq;
 using NuGet.Commands;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -38,7 +39,7 @@ namespace NuGet.CommandLine.Test
                         tc.Target.AssemblyLocation,
                         prerelease: false,
                         currentVersion: new NuGetVersion("5.5.0"),
-                        mockServer.ServiceIndexUri,
+                        new Configuration.PackageSource(mockServer.ServiceIndexUri),
                         CancellationToken.None);
 
                     // Assert
@@ -65,7 +66,7 @@ namespace NuGet.CommandLine.Test
                            tc.Target.AssemblyLocation,
                            prerelease: false,
                            currentVersion,
-                           tc.SourceDirectory,
+                           new Configuration.PackageSource(tc.SourceDirectory),
                            CancellationToken.None));
                 tc.VerifyReplacedState(replaced: false);
             }
@@ -90,7 +91,7 @@ namespace NuGet.CommandLine.Test
                         tc.Target.AssemblyLocation,
                         prerelease: false,
                         currentVersion: new NuGetVersion("5.5.0"),
-                        mockServer.ServiceIndexUri,
+                        new Configuration.PackageSource(mockServer.ServiceIndexUri),
                         CancellationToken.None);
 
                     // Assert
@@ -122,7 +123,7 @@ namespace NuGet.CommandLine.Test
                     tc.Target.AssemblyLocation,
                     prerelease,
                     currentVersion,
-                    tc.SourceDirectory,
+                    new Configuration.PackageSource(tc.SourceDirectory),
                     CancellationToken.None);
 
                 // Assert
@@ -155,7 +156,7 @@ namespace NuGet.CommandLine.Test
                     tc.Target.AssemblyLocation,
                     prerelease,
                     currentVersion,
-                    tc.SourceDirectory,
+                    new Configuration.PackageSource(tc.SourceDirectory),
                     CancellationToken.None);
 
                 // Assert

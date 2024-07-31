@@ -1,23 +1,28 @@
-﻿<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>NuGet Package Management.</Description>
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591;CS1580;CS1574;CS1573</NoWarn>
+    <Description>NuGet Package Management functionality for Visual Studio installation flow.</Description>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFramework />
+    <NoWarn>$(NoWarn);CS1591;CS1580;CS1574;CS1573;RS0041</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
+    <XPLATProject>true</XPLATProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
+    <TargetFrameworks />
+    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NuGet.Commands\NuGet.Commands.csproj" />
     <ProjectReference Include="..\NuGet.Resolver\NuGet.Resolver.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.Xdt" />
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
@@ -25,9 +30,12 @@
     <Reference Include="Microsoft.Build" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-  
+
+  <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
+    <PackageReference Include="System.ComponentModel.Composition" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -35,7 +43,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -43,6 +51,9 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.PackageManagement.Test" />
+    <InternalsVisibleTo Include="NuGet.SolutionRestoreManager.Test" />
+  </ItemGroup>
 </Project>

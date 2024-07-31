@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,7 +33,7 @@ namespace NuGet.Commands
 
             foreach (PackageSource packageSource in listArgs.ListEndpoints)
             {
-                var sourceRepository = Repository.Factory.GetCoreV3(packageSource.Source);
+                var sourceRepository = Repository.Factory.GetCoreV3(packageSource);
                 var feed = await sourceRepository.GetResourceAsync<ListResource>(listArgs.CancellationToken);
 
                 if (feed != null)
@@ -45,9 +45,11 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    listArgs.Logger.LogWarning(string.Format(listArgs.ListCommandListNotSupported, packageSource.Source));
+                    listArgs.Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, listArgs.ListCommandListNotSupported, packageSource.Source));
                 }
             }
+
+            AvoidHttpSources(listArgs);
 
             var allPackages = new List<IEnumerableAsync<IPackageSearchMetadata>>();
             var log = listArgs.IsDetailed ? listArgs.Logger : NullLogger.Instance;
@@ -60,6 +62,42 @@ namespace NuGet.Commands
             }
             ComparePackageSearchMetadata comparer = new ComparePackageSearchMetadata();
             await PrintPackages(listArgs, new AggregateEnumerableAsync<IPackageSearchMetadata>(allPackages, comparer, comparer).GetEnumeratorAsync());
+        }
+
+        private static void AvoidHttpSources(ListArgs listArgs)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in listArgs.ListEndpoints)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_HttpSource_Single,
+                        "list",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    throw new ArgumentException(
+                        string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_HttpSources_Multiple,
+                        "list",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
+            }
         }
 
         private class ComparePackageSearchMetadata : IComparer<IPackageSearchMetadata>, IEqualityComparer<IPackageSearchMetadata>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Xml.Linq;
@@ -80,8 +80,7 @@ namespace NuGet.Packaging.Test
             var nuspec = GetNuspec("99.0.0");
 
             // Act & Assert
-            Assert.Throws(typeof(MinClientVersionException),
-                () => MinClientVersionUtility.VerifyMinClientVersion(nuspec));
+            Assert.Throws<MinClientVersionException>(() => MinClientVersionUtility.VerifyMinClientVersion(nuspec));
         }
 
         [Fact]

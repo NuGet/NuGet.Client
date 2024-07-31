@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
@@ -37,7 +38,7 @@ namespace NuGet.Commands.Test
             ILogger log)
             : this(
                   project,
-                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  sources.Select(Repository.Factory.GetCoreV3).ToList(),
                   packagesDirectory,
                   new List<string>(),
                   new TestSourceCacheContext(),
@@ -70,16 +71,17 @@ namespace NuGet.Commands.Test
             ClientPolicyContext clientPolicyContext,
             ILogger log) : base(
                 project,
-                RestoreCommandProviders.Create(
+                new RestoreCommandProvidersCache().GetOrCreate(
                     packagesDirectory,
-                    fallbackPackageFolderPaths: new List<string>(),
-                    sources: sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                    fallbackPackagesPaths: new List<string>(),
+                    sources: sources.Select(Repository.Factory.GetCoreV3).ToList(),
                     cacheContext: cacheContext,
-                    packageFileCache: new LocalPackageFileCache(),
                     log: log),
                 cacheContext,
                 clientPolicyContext,
-                log)
+                packageSourceMapping: PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance),
+                log,
+                new LockFileBuilderCache())
         {
         }
 
@@ -108,7 +110,7 @@ namespace NuGet.Commands.Test
             ILogger log)
             : this(
                   project,
-                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  sources.Select(Repository.Factory.GetCoreV3).ToList(),
                   packagesDirectory,
                   fallbackPackageFolders,
                   cacheContext,
@@ -119,7 +121,7 @@ namespace NuGet.Commands.Test
 
         public TestRestoreRequest(
             PackageSpec project,
-            IEnumerable<SourceRepository> sources,
+            IReadOnlyList<SourceRepository> sources,
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
             ILogger log) : this(
@@ -135,24 +137,72 @@ namespace NuGet.Commands.Test
 
         public TestRestoreRequest(
             PackageSpec project,
-            IEnumerable<SourceRepository> sources,
+            IReadOnlyList<SourceRepository> sources,
             string packagesDirectory,
             IEnumerable<string> fallbackPackageFolders,
             SourceCacheContext cacheContext,
             ClientPolicyContext clientPolicyContext,
+            ILogger log) : this(
+            project,
+            sources,
+            packagesDirectory,
+            fallbackPackageFolders,
+            cacheContext,
+            clientPolicyContext,
+            log,
+            new LockFileBuilderCache())
+        {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
+            SourceCacheContext cacheContext,
+            PackageSourceMapping packageSourceMappingConfiguration,
             ILogger log) : base(
                 project,
-                RestoreCommandProviders.Create(
+                new RestoreCommandProvidersCache().GetOrCreate(
                     packagesDirectory,
-                    fallbackPackageFolderPaths: fallbackPackageFolders,
-                    sources: sources,
+                    Array.Empty<string>(),
+                    sources: sources.Select(Repository.Factory.GetCoreV3).ToList(),
                     cacheContext: cacheContext,
-                    packageFileCache: new LocalPackageFileCache(),
                     log: log),
                 cacheContext,
-                clientPolicyContext,
-                log)
+                ClientPolicyContext.GetClientPolicy(NullSettings.Instance, log),
+                packageSourceMappingConfiguration,
+                log,
+                new LockFileBuilderCache())
         {
+        }
+
+        public TestRestoreRequest(
+            PackageSpec project,
+            IReadOnlyList<SourceRepository> sources,
+            string packagesDirectory,
+            IEnumerable<string> fallbackPackageFolders,
+            SourceCacheContext cacheContext,
+            ClientPolicyContext clientPolicyContext,
+            ILogger log,
+            LockFileBuilderCache lockFileBuilderCache) : base(
+            project,
+            new RestoreCommandProvidersCache().GetOrCreate(
+                packagesDirectory,
+                fallbackPackagesPaths: fallbackPackageFolders.ToList(),
+                sources: sources,
+                cacheContext: cacheContext,
+                log: log),
+            cacheContext,
+            clientPolicyContext,
+            packageSourceMapping: PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance),
+            log,
+            lockFileBuilderCache)
+        {
+            // We need the dependency graph spec to go through the proper no-op code paths
+            DependencyGraphSpec = new DependencyGraphSpec();
+            DependencyGraphSpec.AddProject(project);
+            DependencyGraphSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
+            AllowNoOp = true;
         }
     }
 }

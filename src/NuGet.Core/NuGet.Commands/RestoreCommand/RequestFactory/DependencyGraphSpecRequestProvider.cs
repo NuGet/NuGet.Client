@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 
@@ -25,6 +26,8 @@ namespace NuGet.Commands
 
         private readonly DependencyGraphSpec _dgFile;
         private readonly RestoreCommandProvidersCache _providerCache;
+        private readonly LockFileBuilderCache _lockFileBuilderCache;
+        private readonly ISettings _settings;
 
         public DependencyGraphSpecRequestProvider(
             RestoreCommandProvidersCache providerCache,
@@ -32,9 +35,20 @@ namespace NuGet.Commands
         {
             _dgFile = dgFile;
             _providerCache = providerCache;
+            _lockFileBuilderCache = new LockFileBuilderCache();
         }
 
-        public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(RestoreArgs restoreContext)
+        public DependencyGraphSpecRequestProvider(
+            RestoreCommandProvidersCache providerCache,
+            DependencyGraphSpec dgFile,
+            ISettings settings)
+            : this(providerCache, dgFile)
+        {
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        public Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
+            RestoreArgs restoreContext)
         {
             var requests = GetRequestsFromItems(restoreContext, _dgFile);
 
@@ -54,7 +68,15 @@ namespace NuGet.Commands
             }
 
             // Validate the dg file input, this throws if errors are found.
-            SpecValidationUtility.ValidateDependencySpec(dgFile);
+            var projectsWithErrors = new HashSet<string>();
+            if (restoreContext.AdditionalMessages != null)
+            {
+                foreach (var projectPath in restoreContext.AdditionalMessages.Where(m => m.Level == Common.LogLevel.Error).Select(m => m.ProjectPath))
+                {
+                    projectsWithErrors.Add(projectPath);
+                }
+            }
+            SpecValidationUtility.ValidateDependencySpec(dgFile, projectsWithErrors);
 
             // Create requests
             var requests = new ConcurrentBag<RestoreSummaryRequest>();
@@ -146,18 +168,25 @@ namespace NuGet.Commands
             //fallback paths, global packages path and sources need to all be passed in the dg spec
             var fallbackPaths = projectPackageSpec.RestoreMetadata.FallbackFolders;
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
-            var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
-            var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
+            var settings = _settings ?? Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
+            var packageSources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
+            var auditSources = GetAuditSources(restoreArgs.CachingSourceProvider);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
+            var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            var updateLastAccess = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
 
             var sharedCache = _providerCache.GetOrCreate(
                 globalPath,
                 fallbackPaths.AsList(),
-                sources,
+                packageSources,
+                auditSources,
                 restoreArgs.CacheContext,
-                restoreArgs.Log);
+                restoreArgs.Log,
+                updateLastAccess);
 
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
+
+            IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages = GetMessagesForProject(restoreArgs.AdditionalMessages, project.PackageSpec.FilePath);
 
             // Create request
             var request = new RestoreRequest(
@@ -165,14 +194,18 @@ namespace NuGet.Commands
                 sharedCache,
                 restoreArgs.CacheContext,
                 clientPolicyContext,
-                restoreArgs.Log)
+                packageSourceMapping,
+                restoreArgs.Log,
+                _lockFileBuilderCache)
             {
                 // Set properties from the restore metadata
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
                 //  Project.json is special cased to put assets file and generated .props and targets in the project folder
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath
+                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
+                AdditionalMessages = projectAdditionalMessages,
+                UpdatePackageLastAccessTime = updateLastAccess,
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
@@ -190,9 +223,31 @@ namespace NuGet.Commands
                 request,
                 project.MSBuildProjectPath,
                 settings.GetConfigFilePaths(),
-                sources);
+                packageSources);
 
             return summaryRequest;
+        }
+
+        private static IReadOnlyList<SourceRepository> GetAuditSources(CachingSourceProvider cachingSourceProvider)
+        {
+            IReadOnlyList<PackageSource> auditSources = cachingSourceProvider.PackageSourceProvider.LoadAuditSources();
+
+            if (auditSources is null || auditSources.Count == 0)
+            {
+                return Array.Empty<SourceRepository>();
+            }
+
+            var auditSourceRepositories = new List<SourceRepository>(auditSources.Count);
+            for (int i = 0; i < auditSources.Count; i++)
+            {
+                PackageSource source = auditSources[i];
+                if (source.IsEnabled)
+                {
+                    auditSourceRepositories.Add(cachingSourceProvider.CreateRepository(source));
+                }
+            }
+
+            return auditSourceRepositories;
         }
 
         private string GetPackagesPath(RestoreArgs restoreArgs, PackageSpec project)
@@ -229,6 +284,29 @@ namespace NuGet.Commands
                     CollectReferences(childProject, allProjects, references);
                 }
             }
+        }
+
+        internal static IReadOnlyList<IAssetsLogMessage> GetMessagesForProject(IReadOnlyList<IAssetsLogMessage> allMessages, string projectPath)
+        {
+            List<IAssetsLogMessage> projectAdditionalMessages = null;
+
+            if (allMessages != null)
+            {
+                foreach (var message in allMessages)
+                {
+                    if (message.ProjectPath == projectPath)
+                    {
+                        if (projectAdditionalMessages == null)
+                        {
+                            projectAdditionalMessages = new List<IAssetsLogMessage>();
+                        }
+
+                        projectAdditionalMessages.Add(message);
+                    }
+                }
+            }
+
+            return projectAdditionalMessages;
         }
     }
 }

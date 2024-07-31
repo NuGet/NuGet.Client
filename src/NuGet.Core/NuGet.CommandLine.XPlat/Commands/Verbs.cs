@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
                     CommandOption username = SourceCmd.Option(
                         "-u|--username",
-                        Strings.SourcesCommandUserNameDescription,
+                        Strings.SourcesCommandUsernameDescription,
                         CommandOptionType.SingleValue);
                     CommandOption password = SourceCmd.Option(
                         "-p|--password",
@@ -43,10 +43,18 @@ namespace NuGet.CommandLine.XPlat
                         "--valid-authentication-types",
                         Strings.SourcesCommandValidAuthenticationTypesDescription,
                         CommandOptionType.SingleValue);
+                    CommandOption protocolVersion = SourceCmd.Option(
+                        "--protocol-version",
+                        Strings.SourcesCommandProtocolVersionDescription,
+                        CommandOptionType.SingleValue);
                     CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
+                    CommandOption allowInsecureConnections = SourceCmd.Option(
+                        "--allow-insecure-connections",
+                        Strings.SourcesCommandAllowInsecureConnectionsDescription,
+                        CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
                     SourceCmd.Description = Strings.AddSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
@@ -59,10 +67,76 @@ namespace NuGet.CommandLine.XPlat
                             Password = password.Value(),
                             StorePasswordInClearText = storePasswordInClearText.HasValue(),
                             ValidAuthenticationTypes = validAuthenticationTypes.Value(),
+                            ProtocolVersion = protocolVersion.Value(),
                             Configfile = configfile.Value(),
+                            AllowInsecureConnections = allowInsecureConnections.HasValue(),
                         };
 
                         AddSourceRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
+                AddCmd.Command("client-cert", ClientCertCmd =>
+                {
+                    CommandOption packagesource = ClientCertCmd.Option(
+                        "-s|--package-source",
+                        Strings.Option_PackageSource,
+                        CommandOptionType.SingleValue);
+                    CommandOption path = ClientCertCmd.Option(
+                        "--path",
+                        Strings.Option_Path,
+                        CommandOptionType.SingleValue);
+                    CommandOption password = ClientCertCmd.Option(
+                        "--password",
+                        Strings.Option_Password,
+                        CommandOptionType.SingleValue);
+                    CommandOption storepasswordincleartext = ClientCertCmd.Option(
+                        "--store-password-in-clear-text",
+                        Strings.Option_StorePasswordInClearText,
+                        CommandOptionType.NoValue);
+                    CommandOption storelocation = ClientCertCmd.Option(
+                        "--store-location",
+                        Strings.Option_StoreLocation,
+                        CommandOptionType.SingleValue);
+                    CommandOption storename = ClientCertCmd.Option(
+                        "--store-name",
+                        Strings.Option_StoreName,
+                        CommandOptionType.SingleValue);
+                    CommandOption findby = ClientCertCmd.Option(
+                        "--find-by",
+                        Strings.Option_FindBy,
+                        CommandOptionType.SingleValue);
+                    CommandOption findvalue = ClientCertCmd.Option(
+                        "--find-value",
+                        Strings.Option_FindValue,
+                        CommandOptionType.SingleValue);
+                    CommandOption force = ClientCertCmd.Option(
+                        "-f|--force",
+                        Strings.Option_Force,
+                        CommandOptionType.NoValue);
+                    CommandOption configfile = ClientCertCmd.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+                    ClientCertCmd.HelpOption("-h|--help");
+                    ClientCertCmd.Description = Strings.AddClientCertCommandDescription;
+                    ClientCertCmd.OnExecute(() =>
+                    {
+                        var args = new AddClientCertArgs()
+                        {
+                            PackageSource = packagesource.Value(),
+                            Path = path.Value(),
+                            Password = password.Value(),
+                            StorePasswordInClearText = storepasswordincleartext.HasValue(),
+                            StoreLocation = storelocation.Value(),
+                            StoreName = storename.Value(),
+                            FindBy = findby.Value(),
+                            FindValue = findvalue.Value(),
+                            Force = force.HasValue(),
+                            Configfile = configfile.Value(),
+                        };
+
+                        AddClientCertRunner.Run(args, getLogger);
                         return 0;
                     });
                 });
@@ -188,6 +262,25 @@ namespace NuGet.CommandLine.XPlat
                         return 0;
                     });
                 });
+                ListCmd.Command("client-cert", ClientCertCmd =>
+                {
+                    CommandOption configfile = ClientCertCmd.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+                    ClientCertCmd.HelpOption("-h|--help");
+                    ClientCertCmd.Description = Strings.ListClientCertCommandDescription;
+                    ClientCertCmd.OnExecute(() =>
+                    {
+                        var args = new ListClientCertArgs()
+                        {
+                            Configfile = configfile.Value(),
+                        };
+
+                        ListClientCertRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
                 ListCmd.HelpOption("-h|--help");
                 ListCmd.Description = Strings.List_Description;
                 ListCmd.OnExecute(() =>
@@ -228,6 +321,30 @@ namespace NuGet.CommandLine.XPlat
                         return 0;
                     });
                 });
+                RemoveCmd.Command("client-cert", ClientCertCmd =>
+                {
+                    CommandOption packagesource = ClientCertCmd.Option(
+                        "-s|--package-source",
+                        Strings.Option_PackageSource,
+                        CommandOptionType.SingleValue);
+                    CommandOption configfile = ClientCertCmd.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+                    ClientCertCmd.HelpOption("-h|--help");
+                    ClientCertCmd.Description = Strings.RemoveClientCertCommandDescription;
+                    ClientCertCmd.OnExecute(() =>
+                    {
+                        var args = new RemoveClientCertArgs()
+                        {
+                            PackageSource = packagesource.Value(),
+                            Configfile = configfile.Value(),
+                        };
+
+                        RemoveClientCertRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
                 RemoveCmd.HelpOption("-h|--help");
                 RemoveCmd.Description = Strings.Remove_Description;
                 RemoveCmd.OnExecute(() =>
@@ -256,7 +373,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
                     CommandOption username = SourceCmd.Option(
                         "-u|--username",
-                        Strings.SourcesCommandUserNameDescription,
+                        Strings.SourcesCommandUsernameDescription,
                         CommandOptionType.SingleValue);
                     CommandOption password = SourceCmd.Option(
                         "-p|--password",
@@ -270,10 +387,18 @@ namespace NuGet.CommandLine.XPlat
                         "--valid-authentication-types",
                         Strings.SourcesCommandValidAuthenticationTypesDescription,
                         CommandOptionType.SingleValue);
+                    CommandOption protocolVersion = SourceCmd.Option(
+                        "--protocol-version",
+                        Strings.SourcesCommandProtocolVersionDescription,
+                        CommandOptionType.SingleValue);
                     CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
+                    CommandOption allowInsecureConnections = SourceCmd.Option(
+                        "--allow-insecure-connections",
+                        Strings.SourcesCommandAllowInsecureConnectionsDescription,
+                        CommandOptionType.NoValue);
                     SourceCmd.HelpOption("-h|--help");
                     SourceCmd.Description = Strings.UpdateSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
@@ -286,10 +411,76 @@ namespace NuGet.CommandLine.XPlat
                             Password = password.Value(),
                             StorePasswordInClearText = storePasswordInClearText.HasValue(),
                             ValidAuthenticationTypes = validAuthenticationTypes.Value(),
+                            ProtocolVersion = protocolVersion.Value(),
                             Configfile = configfile.Value(),
+                            AllowInsecureConnections = allowInsecureConnections.HasValue(),
                         };
 
                         UpdateSourceRunner.Run(args, getLogger);
+                        return 0;
+                    });
+                });
+                UpdateCmd.Command("client-cert", ClientCertCmd =>
+                {
+                    CommandOption packagesource = ClientCertCmd.Option(
+                        "-s|--package-source",
+                        Strings.Option_PackageSource,
+                        CommandOptionType.SingleValue);
+                    CommandOption path = ClientCertCmd.Option(
+                        "--path",
+                        Strings.Option_Path,
+                        CommandOptionType.SingleValue);
+                    CommandOption password = ClientCertCmd.Option(
+                        "--password",
+                        Strings.Option_Password,
+                        CommandOptionType.SingleValue);
+                    CommandOption storepasswordincleartext = ClientCertCmd.Option(
+                        "--store-password-in-clear-text",
+                        Strings.Option_StorePasswordInClearText,
+                        CommandOptionType.NoValue);
+                    CommandOption storelocation = ClientCertCmd.Option(
+                        "--store-location",
+                        Strings.Option_StoreLocation,
+                        CommandOptionType.SingleValue);
+                    CommandOption storename = ClientCertCmd.Option(
+                        "--store-name",
+                        Strings.Option_StoreName,
+                        CommandOptionType.SingleValue);
+                    CommandOption findby = ClientCertCmd.Option(
+                        "--find-by",
+                        Strings.Option_FindBy,
+                        CommandOptionType.SingleValue);
+                    CommandOption findvalue = ClientCertCmd.Option(
+                        "--find-value",
+                        Strings.Option_FindValue,
+                        CommandOptionType.SingleValue);
+                    CommandOption force = ClientCertCmd.Option(
+                        "-f|--force",
+                        Strings.Option_Force,
+                        CommandOptionType.NoValue);
+                    CommandOption configfile = ClientCertCmd.Option(
+                        "--configfile",
+                        Strings.Option_ConfigFile,
+                        CommandOptionType.SingleValue);
+                    ClientCertCmd.HelpOption("-h|--help");
+                    ClientCertCmd.Description = Strings.UpdateClientCertCommandDescription;
+                    ClientCertCmd.OnExecute(() =>
+                    {
+                        var args = new UpdateClientCertArgs()
+                        {
+                            PackageSource = packagesource.Value(),
+                            Path = path.Value(),
+                            Password = password.Value(),
+                            StorePasswordInClearText = storepasswordincleartext.HasValue(),
+                            StoreLocation = storelocation.Value(),
+                            StoreName = storename.Value(),
+                            FindBy = findby.Value(),
+                            FindValue = findvalue.Value(),
+                            Force = force.HasValue(),
+                            Configfile = configfile.Value(),
+                        };
+
+                        UpdateClientCertRunner.Run(args, getLogger);
                         return 0;
                     });
                 });

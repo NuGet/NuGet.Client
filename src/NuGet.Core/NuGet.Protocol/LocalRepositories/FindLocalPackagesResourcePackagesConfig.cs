@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace NuGet.Protocol
 
         public override IEnumerable<LocalPackageInfo> GetPackages(ILogger logger, CancellationToken token)
         {
-            var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(Root, logger);
+            var packages = LocalFolderUtility.GetPackagesConfigFolderPackages(Root, logger, token);
 
             // Filter out any duplicates that may appear in the folder multiple times.
             return LocalFolderUtility.GetDistinctPackages(packages);

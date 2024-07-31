@@ -128,7 +128,7 @@ namespace NuGet.CommandLine.Test
                 List<PackageIdentity> packages,
                 int packageLevel)
             {
-                foreach(var package in packages)
+                foreach (var package in packages)
                 {
                     var packageDirectory = SourceFeed;
                     if (packageLevel == 2)
@@ -187,8 +187,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -215,8 +214,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -246,8 +244,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -274,8 +271,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
@@ -284,13 +280,12 @@ namespace NuGet.CommandLine.Test
                 result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Main Assert
                 Util.VerifyResultSuccess(result);
-                var output = result.Item2;
-                foreach(var p in packages)
+                var output = result.Output;
+                foreach (var p in packages)
                 {
                     output.Contains(string.Format(
                     NuGetResources.AddCommand_PackageAlreadyExists,
@@ -319,8 +314,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
@@ -342,8 +336,7 @@ namespace NuGet.CommandLine.Test
                 result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Main Assert
                 Util.VerifyResultSuccess(result, string.Format(
@@ -351,7 +344,7 @@ namespace NuGet.CommandLine.Test
                     firstPackage.ToString(),
                     testInfo.DestinationFeed));
 
-                var output = result.Item2;
+                var output = result.Output;
                 foreach (var p in packages.Skip(1))
                 {
                     output.Contains(string.Format(
@@ -381,8 +374,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.SourceFeed, // Source Feed is the working path
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -409,8 +401,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 var expectedMessage = string.Format(
@@ -448,8 +439,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 var expectedWarningMessage = string.Format(
@@ -485,8 +475,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 var expectedErrorMessage
@@ -513,8 +502,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 var expectedErrorMessage
@@ -541,8 +529,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 var expectedErrorMessage
@@ -562,8 +549,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"",
-                    waitForExit: true);
+                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"");
 
                 // Assert
                 var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
@@ -588,8 +574,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"",
-                    waitForExit: true);
+                    $"init \"{testInfo.SourceFeed}\" \"{testInfo.DestinationFeed}\"");
 
                 // Assert
                 var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
@@ -619,8 +604,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -648,8 +632,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -677,8 +660,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);
@@ -706,8 +688,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
                     testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 Util.VerifyResultSuccess(result);

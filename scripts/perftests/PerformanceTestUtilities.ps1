@@ -92,6 +92,11 @@ function IsClientDotnetExe([string]$nugetClient)
     return $nugetClient.EndsWith("dotnet.exe")
 }
 
+function IsClientMSBuildExe([string]$nugetClient)
+{
+    return $nugetClient.EndsWith("MSBuild.exe", "CurrentCultureIgnoreCase")
+}
+
 # Downloads the repository at the given path.
 Function DownloadRepository([string] $repository, [string] $commitHash, [string] $sourceFolderPath)
 {
@@ -145,12 +150,17 @@ Function SetupGitRepository([string] $repository, [string] $commitHash, [string]
 }
 
 # runs locals clear all with the given client
+# If the client is msbuild.exe, the locals clear all *will* be run with dotnet.exe
 Function LocalsClearAll([string] $nugetClientFilePath)
 {
     $nugetClientFilePath = GetAbsolutePath $nugetClientFilePath
     If ($(IsClientDotnetExe $nugetClientFilePath))
     {
         . $nugetClientFilePath nuget locals -c all *>>$null
+    }
+    Elseif($(IsClientMSBuildExe $nugetClientFilePath))
+    {
+        . dotnet.exe nuget locals -c all *>>$null
     }
     Else
     {
@@ -166,6 +176,13 @@ Function GetClientVersion([string] $nugetClientFilePath)
     If (IsClientDotnetExe $nugetClientFilePath)
     {
         $version = . $nugetClientFilePath --version
+    }
+    ElseIf($(IsClientMSBuildExe $nugetClientFilePath))
+    {
+        $clientDir = Split-Path -Path $nugetClientFilePath
+        $nugetClientPath = Resolve-Path (Join-Path -Path $clientDir -ChildPath "../../../Common7/IDE/CommonExtensions/Microsoft/NuGet/NuGet.Build.Tasks.dll")
+        $versionInfo = Get-ChildItem $nugetClientPath | % versioninfo | Select-Object FileVersion
+        Return $(($versionInfo -split '\n')[0]).TrimStart("@{").TrimEnd('}').Substring("FileVersion=".Length)
     }
     Else
     {
@@ -198,6 +215,7 @@ Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $nugetFolders
 
     # This environment variable is not recognized by any NuGet client.
     $Env:NUGET_SOLUTION_PACKAGES_FOLDER_PATH = [System.IO.Path]::Combine($nugetFoldersPath, "sp")
+    $Env:DOTNET_MULTILEVEL_LOOKUP=0
 
     LocalsClearAll $nugetClientFilePath
 }
@@ -217,6 +235,7 @@ Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $nugetFolders
     [Environment]::SetEnvironmentVariable("NUGET_PLUGINS_CACHE_PATH", $Null)
     [Environment]::SetEnvironmentVariable("NUGET_SOLUTION_PACKAGES_FOLDER_PATH", $Null)
     [Environment]::SetEnvironmentVariable("NUGET_FOLDERS_PATH", $Null)
+    [Environment]::SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", $Null)
 }
 
 # Given a repository, a client and directories for the results/logs, runs the configured performance tests.
@@ -229,7 +248,8 @@ Function RunPerformanceTestsOnGitRepository(
     [string] $resultsFilePath,
     [string] $nugetFoldersPath,
     [string] $logsFolderPath,
-    [int] $iterationCount)
+    [int] $iterationCount,
+    [switch] $staticGraphRestore)
 {
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
@@ -239,7 +259,8 @@ Function RunPerformanceTestsOnGitRepository(
         -resultsFilePath $resultsFilePath `
         -logsFolderPath $logsFolderPath `
         -nugetFoldersPath $nugetFoldersPath `
-        -iterationCount $iterationCount
+        -iterationCount $iterationCount `
+        -staticGraphRestore:$staticGraphRestore
 }
 
 Function GetProcessorInfo()
@@ -328,9 +349,11 @@ Function RunRestore(
     [switch] $cleanHttpCache,
     [switch] $cleanPluginsCache,
     [switch] $killMsBuildAndDotnetExeProcesses,
-    [switch] $force)
+    [switch] $force,
+    [switch] $staticGraphRestore)
 {
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
+    $isClientMSBuild = IsClientMSBuildExe $nugetClientFilePath
 
     If ($isClientDotnetExe -And $isPackagesConfig)
     {
@@ -371,6 +394,10 @@ Function RunRestore(
         {
             . $nugetClientFilePath nuget locals -c $localsArguments *>>$null
         }
+        ElseIf($isClientMSBuild)
+        {
+            . dotnet.exe nuget locals -c $localsArguments *>>$null
+        }
         Else
         {
             . $nugetClientFilePath locals -clear $localsArguments -Verbosity quiet
@@ -390,7 +417,14 @@ Function RunRestore(
 
     $arguments = [System.Collections.Generic.List[string]]::new()
 
-    $arguments.Add("restore")
+    If ($isClientMSBuild)
+    {
+        $arguments.Add("/t:restore")
+    }
+    Else 
+    {
+        $arguments.Add("restore")
+    }
     $arguments.Add($solutionFilePath)
 
     If ($isPackagesConfig)
@@ -413,20 +447,45 @@ Function RunRestore(
         {
             $arguments.Add("--force")
         }
+        ElseIf($isClientMSBuild)
+        {
+            $arguments.Add("/p:RestoreForce=true")
+        }
         Else
         {
             $arguments.Add("-Force")
         }
     }
 
-    If (!$isClientDotnetExe)
+    If (!$isClientDotnetExe -And !$isClientMSBuild)
     {
         $arguments.Add("-NonInteractive")
+    }
+    
+    If($isClientDotnetExe -Or $isClientMSBuild)
+    {   
+        If ($staticGraphRestore)
+        {
+            $staticGraphOutputValue = "true"
+            $arguments.Add("/p:RestoreUseStaticGraphEvaluation=true")
+        }
+        Else 
+        {
+            $staticGraphOutputValue = "false"
+        }
+    }
+    Else 
+    {
+        $staticGraphOutputValue = "N/A"
     }
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     $logs = . $nugetClientFilePath $arguments | Out-String
+    if($LASTEXITCODE -ne 0)
+    { 
+        throw "The command `"$nugetClientFilePath $arguments`" finished with exit code $LASTEXITCODE.`n" + $logs
+    }
 
     $totalTime = $stopwatch.Elapsed.TotalSeconds
     $restoreCoreTime = ExtractRestoreElapsedTime $logs
@@ -457,7 +516,7 @@ Function RunRestore(
 
     If (!(Test-Path $resultsFilePath))
     {
-        $columnHeaders = "Client Name,Client Version,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force," + `
+        $columnHeaders = "Client Name,Client Version,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force,Static Graph," + `
             "Global Packages Folder .nupkg Count,Global Packages Folder .nupkg Size (MB),Global Packages Folder File Count,Global Packages Folder File Size (MB),Clean Global Packages Folder," + `
             "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes," + `
             "Processor Name,Processor Physical Core Count,Processor Logical Core Count"
@@ -465,7 +524,7 @@ Function RunRestore(
         OutFileWithCreateFolders $resultsFilePath $columnHeaders
     }
 
-    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force," + `
+    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue," + `
         "$($globalPackagesFolderNupkgFilesInfo.Count),$($globalPackagesFolderNupkgFilesInfo.TotalSizeInMB),$($globalPackagesFolderFilesInfo.Count),$($globalPackagesFolderFilesInfo.TotalSizeInMB),$cleanGlobalPackagesFolder," + `
         "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses," + `
         "$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"

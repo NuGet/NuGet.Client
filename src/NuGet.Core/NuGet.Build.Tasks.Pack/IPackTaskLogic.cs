@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Commands;
@@ -37,6 +37,6 @@ namespace NuGet.Build.Tasks.Pack
         /// <summary>
         /// Build the package. This method actually writes the .nupkg to disk.
         /// </summary>
-        void BuildPackage(PackCommandRunner runner);
+        bool BuildPackage(PackCommandRunner runner);
     }
 }

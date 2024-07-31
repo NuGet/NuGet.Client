@@ -11,13 +11,11 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.CommandLine.XPlat;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 
 namespace NuGet.XPlat.FuncTest
 {
@@ -171,7 +169,7 @@ namespace NuGet.XPlat.FuncTest
                     solutionRoot: pathContext.SolutionRoot,
                     frameworks: MSBuildStringUtility.Split(projectFrameworks));
 
-            project.FallbackFolders = (IList<string>) SettingsUtility.GetFallbackPackageFolders(settings);
+            project.FallbackFolders = (IList<string>)SettingsUtility.GetFallbackPackageFolders(settings);
             project.GlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
             var packageSourceProvider = new PackageSourceProvider(settings);
             project.Sources = packageSourceProvider.LoadPackageSources();
@@ -209,31 +207,32 @@ namespace NuGet.XPlat.FuncTest
             return package;
         }
 
-        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, SimpleTestProjectContext project)
+        internal static PackageReferenceArgs GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, SimpleTestProjectContext project)
         {
-            var logger = new TestCommandOutputLogger();
-            var packageDependency = new PackageDependency(packageId);
-            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger);
+            return new PackageReferenceArgs(project.ProjectPath, logger)
+            {
+                PackageId = packageId
+            };
         }
 
-        public static PackageReferenceArgs GetPackageReferenceArgs(string packageId, string packageVersion, SimpleTestProjectContext project,
-            string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false)
+        internal static PackageReferenceArgs GetPackageReferenceArgs(TestCommandOutputLogger logger, string packageId, string packageVersion, SimpleTestProjectContext project, string frameworks = "", string packageDirectory = "", string sources = "", bool noRestore = false, bool noVersion = false, bool prerelease = false)
         {
-            var logger = new TestCommandOutputLogger();
-            var packageDependency = new PackageDependency(packageId, VersionRange.Parse(packageVersion));
             var dgFilePath = string.Empty;
             if (!noRestore)
             {
                 dgFilePath = CreateDGFileForProject(project);
             }
-            return new PackageReferenceArgs(project.ProjectPath, packageDependency, logger)
+            return new PackageReferenceArgs(project.ProjectPath, logger)
             {
                 Frameworks = MSBuildStringUtility.Split(frameworks),
                 Sources = MSBuildStringUtility.Split(sources),
                 PackageDirectory = packageDirectory,
                 NoRestore = noRestore,
                 NoVersion = noVersion,
-                DgFilePath = dgFilePath
+                DgFilePath = dgFilePath,
+                Prerelease = prerelease,
+                PackageVersion = packageVersion,
+                PackageId = packageId
             };
         }
 
@@ -324,7 +323,7 @@ namespace NuGet.XPlat.FuncTest
                     .Descendants(GetReferenceType(packageType))
                     .Where(d => d.FirstAttribute.Value.Equals(packageId, StringComparison.OrdinalIgnoreCase));
 
-            return !(packageReferences.Count() > 0);
+            return !(packageReferences.Any());
         }
 
         public static XElement GetItemGroupForFramework(XElement root, string framework, PackageType packageType = null)
@@ -342,12 +341,12 @@ namespace NuGet.XPlat.FuncTest
         {
             var itemGroups = root.Descendants("ItemGroup");
             var referenceType = GetReferenceType(packageType);
-            foreach(var i in itemGroups)
+            foreach (var i in itemGroups)
             {
                 var x = i.Descendants(referenceType);
             }
             return itemGroups
-                    .Where(i => i.Descendants(referenceType).Count() > 0 &&
+                    .Where(i => i.Descendants(referenceType).Any() &&
                                 i.FirstAttribute == null)
                      .First();
         }
@@ -363,7 +362,7 @@ namespace NuGet.XPlat.FuncTest
             return Directory.Exists(packageDirectoryPath) &&
                 Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower())) &&
                 Directory.Exists(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())) &&
-                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Count() > 0;
+                Directory.EnumerateFiles(Path.Combine(packageDirectoryPath, package.Id.ToLower(), package.Version.ToLower())).Any();
         }
 
         public static string CreateDGFileForProject(SimpleTestProjectContext project)

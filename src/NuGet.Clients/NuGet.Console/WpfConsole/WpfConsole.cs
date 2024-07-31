@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -98,12 +99,17 @@ namespace NuGetConsole.Implementation.Console
         {
             get
             {
-                if (_vsStatusBar == null)
-                {
-                    _vsStatusBar = ServiceProvider.GetService<IVsStatusbar>(typeof(SVsStatusbar));
-                }
-                return _vsStatusBar;
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetVsStatusBarAsync);
             }
+        }
+
+        private async Task<IVsStatusbar> GetVsStatusBarAsync()
+        {
+            if (_vsStatusBar == null)
+            {
+                _vsStatusBar = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsStatusbar, IVsStatusbar>(throwOnFailure: false);
+            }
+            return _vsStatusBar;
         }
 
         private IOleServiceProvider OleServiceProvider
@@ -342,7 +348,7 @@ namespace NuGetConsole.Implementation.Console
                     WpfTextView.ZoomLevelChanged += (sender, e) => ResetConsoleWidth();
 
                     // Create my Command Filter
-                    new WpfConsoleKeyProcessor(this);
+                    _ = new WpfConsoleKeyProcessor(this);
                 }
 
                 return _view;
@@ -579,7 +585,7 @@ namespace NuGetConsole.Implementation.Console
                 _historyInputs = InputHistory.History;
                 if (_historyInputs == null)
                 {
-                    _historyInputs = new string[] { };
+                    _historyInputs = Array.Empty<string>();
                 }
 
                 _currentHistoryInputIndex = _historyInputs.Count;
@@ -600,13 +606,11 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        private void WriteProgress(string operation, int percentComplete)
+        private async Task WriteProgressAsync(string operation, int percentComplete)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (operation == null)
             {
-                throw new ArgumentNullException("operation");
+                throw new ArgumentNullException(nameof(operation));
             }
 
             if (percentComplete < 0)
@@ -621,11 +625,14 @@ namespace NuGetConsole.Implementation.Console
 
             if (percentComplete == 100)
             {
-                HideProgress();
+                await HideProgressAsync();
             }
             else
             {
-                VsStatusBar.Progress(
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var vsStatusBar = await GetVsStatusBarAsync();
+                vsStatusBar.Progress(
                     ref _pdwCookieForStatusBar,
                     1 /* in progress */,
                     operation,
@@ -637,8 +644,19 @@ namespace NuGetConsole.Implementation.Console
         private void HideProgress()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
             VsStatusBar.Progress(
+                ref _pdwCookieForStatusBar,
+                0 /* completed */,
+                string.Empty,
+                (uint)100,
+                (uint)100);
+        }
+
+        private async Task HideProgressAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            var vsStatusBar = await GetVsStatusBarAsync();
+            vsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
                 string.Empty,
@@ -693,11 +711,6 @@ namespace NuGetConsole.Implementation.Console
         }
 
         [SuppressMessage(
-            "Microsoft.Usage",
-            "CA2213:DisposableFieldsShouldBeDisposed",
-            MessageId = "_marshaler",
-            Justification = "The Dispose() method on _marshaler is called when the tool window is closed.")]
-        [SuppressMessage(
             "Microsoft.Design",
             "CA1031:DoNotCatchGeneralExceptionTypes",
             Justification = "We don't want to crash VS when it exits.")]
@@ -732,6 +745,12 @@ namespace NuGetConsole.Implementation.Console
                 if (disposable != null)
                 {
                     disposable.Dispose();
+                }
+
+                if (_view is not null)
+                {
+                    _view.CloseView();
+                    _view = null;
                 }
             }
         }
@@ -840,7 +859,12 @@ namespace NuGetConsole.Implementation.Console
 
             public void SetExecutionMode(bool isExecuting)
             {
-                Invoke(() => _impl.SetExecutionMode(isExecuting));
+                Invoke(() =>
+                {
+                    ThreadHelper.ThrowIfNotOnUIThread();
+
+                    _impl.SetExecutionMode(isExecuting);
+                });
             }
 
             public object Content
@@ -848,10 +872,9 @@ namespace NuGetConsole.Implementation.Console
                 get { return Invoke(() => _impl.Content); }
             }
 
-            public async Task WriteProgressAsync(string operation, int percentComplete)
+            public Task WriteProgressAsync(string operation, int percentComplete)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _impl.WriteProgress(operation, percentComplete);
+                return _impl.WriteProgressAsync(operation, percentComplete);
             }
 
             public object VsTextView

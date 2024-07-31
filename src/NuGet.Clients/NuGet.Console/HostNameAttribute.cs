@@ -30,7 +30,7 @@ namespace NuGetConsole
         {
             if (hostName == null)
             {
-                throw new ArgumentNullException("hostName");
+                throw new ArgumentNullException(nameof(hostName));
             }
             this.HostName = hostName;
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageSearchResource = await repo.GetResourceAsync<PackageSearchResource>();
+            var packageSearchResource = await repo.GetResourceAsync<PackageSearchResource>(CancellationToken.None);
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -46,7 +46,8 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("WindowsAzure.Storage", package.Title);
             Assert.Equal("Microsoft", package.Authors);
             Assert.Equal("", package.Owners);
-            Assert.True(package.Description.StartsWith("This client library enables"));
+            Assert.Empty(package.OwnersList);
+            Assert.StartsWith("This client library enables", package.Description);
             Assert.Equal(3957668, package.DownloadCount);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkID=288890", package.IconUrl.AbsoluteUri);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", package.LicenseUrl.AbsoluteUri);
@@ -75,7 +76,7 @@ namespace NuGet.Protocol.Tests
 
             var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
-            var packageSearchResource = await repo.GetResourceAsync<PackageSearchResource>();
+            var packageSearchResource = await repo.GetResourceAsync<PackageSearchResource>(CancellationToken.None);
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {

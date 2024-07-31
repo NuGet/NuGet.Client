@@ -157,8 +157,12 @@
     <value>Error parsing packages.config file at {0}: {1}</value>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
-    <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
-    <comment>0 - the version string that's not exact</comment>
+    <value>Package '{0} {1}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'. 1 - the version string that's not exact.</comment>
+  </data>
+  <data name="Error_PackageDownload_NoVersion" xml:space="preserve">
+    <value>Package '{0}' does not have an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
+    <comment>0 - The package that does not have an exact version. Do not translate 'PackageDownload'.</comment>
   </data>
   <data name="CreatedDependencyGraphSpec" xml:space="preserve">
     <value>Created DependencyGraphSpec in {0:D2}ms.</value>
@@ -168,5 +172,61 @@
   </data>
   <data name="DeterminingProjectsToRestore" xml:space="preserve">
     <value>Determining projects to restore...</value>
+  </data>
+  <data name="Error_DgSpecGenerationFailed" xml:space="preserve">
+    <value>Cannot write the dependency graph spec because the generation failed.</value>
+  </data>
+  <data name="Error_MissingRestoreGraphOutputPath" xml:space="preserve">
+    <value>Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing.</value>
+  </data>
+  <data name="Log_ProjectsInSolutionNotKnowntoMSBuild" xml:space="preserve">
+    <value>The solution contains '{0}' project(s) '{1}' that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution.</value>
+    <comment>0 - number of projects not known to msbuild
+1 - list of projects</comment>
+  </data>
+  <data name="Log_NoProjectsForRestore" xml:space="preserve">
+    <value>The solution did not have any projects to restore, ensure that all projects are known to be MSBuild and that the projects exist.</value>
+  </data>
+  <data name="Error_DuplicateItems" xml:space="preserve">
+    <value>Duplicate '{0}' items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate '{0}' items are: {1}.</value>
+  </data>
+  <data name="Error_StaticGraphNonZeroExitCode" xml:space="preserve">
+    <value>Static graph-based restore failed with exit code '{0}' but did not log an error. Please file an issue at https://github.com/NuGet/Home.</value>
+    <comment>0 - the exit code of the process</comment>
+  </data>
+  <data name="Error_StaticGraphUnhandledException" xml:space="preserve">
+    <value>Static graph-based restore encountered an unhandled exception. Please file an issue at https://github.com/NuGet/Home.  The exception was:
+{0}</value>
+    <comment>0 - The exception as a string.</comment>
+  </data>
+  <data name="Log_RunningStaticGraphRestoreCommand" xml:space="preserve">
+    <value>Running command: '{0}' {1}</value>
+    <comment>0 - the path to the EXE being launched
+1 - The command-line arguments</comment>
+  </data>
+  <data name="Log_RestoreNoCacheInformation" xml:space="preserve">
+    <value>RestoreNoCache is deprecated and has been renamed to RestoreNoHttpCache. Please use RestoreNoHttpCache instead.</value>
+    <comment>Do not translate RestoreNoCache and RestoreNoHttpCache</comment>
+  </data>
+  <data name="Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments" xml:space="preserve">
+    <value>An error occurred parsing command-line arguments in static graph-based restore as there was an unexpected number of arguments, {0}. Please file an issue at https://github.com/NuGet/Home</value>
+    <comment>0 - The number of arguments</comment>
+  </data>
+  <data name="Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream" xml:space="preserve">
+    <value>An error occurred parsing command-line arguments in static graph-based restore as end of the standard input stream was unexpectedly encountered. Please file an issue at https://github.com/NuGet/Home</value>
+  </data>
+  <data name="Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream" xml:space="preserve">
+    <value>An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0} Please file an issue at https://github.com/NuGet/Home
+{1}</value>
+    <comment>0 - The exception message
+1 - The string representation of the exception</comment>
+  </data>
+  <data name="Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue" xml:space="preserve">
+    <value>An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, is not an allowable value. Please file an issue at https://github.com/NuGet/Home</value>
+    <comment>0 - The value of the first integer read from the stream</comment>
+  </data>
+  <data name="Error_StaticGraphRestoreFailedToStart" xml:space="preserve">
+    <value>An error occurred starting static graph-based restore. {0}. Please file an issue at https://github.com/NuGet/Home</value>
+    <comment>0 - The exception message</comment>
   </data>
 </root>

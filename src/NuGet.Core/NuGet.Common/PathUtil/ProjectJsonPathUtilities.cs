@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.IO;
 
 namespace NuGet.Common
 {
-    public class ProjectJsonPathUtilities
+    public static class ProjectJsonPathUtilities
     {
         /// <summary>
         /// project.json
@@ -30,9 +30,9 @@ namespace NuGet.Common
         /// <returns>Returns the full path to the project.json file.</returns>
         public static string GetProjectConfigPath(string directoryPath, string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(nameof(projectName));
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectName));
             }
 
             // Check for the project name based file first
@@ -52,9 +52,9 @@ namespace NuGet.Common
         /// </summary>
         public static string GetProjectConfigWithProjectName(string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(nameof(projectName));
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectName));
             }
 
             return $"{projectName}.{ProjectConfigFileName}";
@@ -65,9 +65,9 @@ namespace NuGet.Common
         /// </summary>
         public static string GetProjectLockFileNameWithProjectName(string projectName)
         {
-            if (String.IsNullOrEmpty(projectName))
+            if (string.IsNullOrEmpty(projectName))
             {
-                throw new ArgumentException(nameof(projectName));
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectName));
             }
 
             return $"{projectName}.{ProjectLockFileName}";
@@ -81,9 +81,13 @@ namespace NuGet.Common
         /// </summary>
         public static string GetLockFilePath(string configFilePath)
         {
-            string lockFilePath = null;
+            string lockFilePath;
 
             var dir = Path.GetDirectoryName(configFilePath);
+            if (dir is null)
+            {
+                throw new ArgumentException(paramName: nameof(configFilePath), message: "Couldn't calculate directory path");
+            }
 
             var projectName = GetProjectNameFromConfigFileName(configFilePath);
 
@@ -104,7 +108,7 @@ namespace NuGet.Common
         /// Parses a projectName.project.json file name into a project name.
         /// If there is no project name null will be returned.
         /// </summary>
-        public static string GetProjectNameFromConfigFileName(string configPath)
+        public static string? GetProjectNameFromConfigFileName(string configPath)
         {
             if (configPath == null)
             {
@@ -113,7 +117,7 @@ namespace NuGet.Common
 
             var file = Path.GetFileName(configPath);
 
-            string projectName = null;
+            string? projectName = null;
 
             if (file != null && file.EndsWith(ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase))
             {
@@ -136,7 +140,7 @@ namespace NuGet.Common
 
             if (configPath.EndsWith(ProjectConfigFileName, StringComparison.OrdinalIgnoreCase))
             {
-                string file = null;
+                string file;
 
                 try
                 {

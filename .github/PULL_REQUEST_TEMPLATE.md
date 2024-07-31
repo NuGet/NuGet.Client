@@ -1,16 +1,16 @@
-## Bug
+<!-- DO NOT MODIFY OR DELETE THIS TEMPLATE. IT IS USED IN AUTOMATION. -->
 
-Fixes: Link_to_issue  
-Regression: Yes/No  
-* Last working version:   
-* How are we preventing it in future:   
+# Bug
 
-## Fix
+<!-- If this is an engineering change or test change only, you do not need an issue. -->
+<!-- Find or create an issue in NuGet/Home and paste the full url. -->
+<!-- At the maintainers discretion, multiple changes may apply to a single issue, but only when the PRs are all created within a short period of time. -->
+Fixes: 
 
-Details: Details_about_the_fix  
+## Description
 
-## Testing/Validation
+## PR Checklist
 
-Tests Added: Yes/No  
-Reason for not adding tests:  
-Validation:  
+- [ ] Meaningful title, helpful description and a linked NuGet/Home issue
+- [ ] Added tests
+- [ ] Link to an issue or pull request to update docs if this PR changes settings, environment variables, new feature, etc.

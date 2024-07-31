@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestoreFrameworkReferencesTask : Task
+    public class GetRestoreFrameworkReferencesTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.
@@ -34,11 +34,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) FrameworkReferences '{string.Join(";", FrameworkReferences.Select(p => p.ItemSpec))}'");
-
             var entries = new List<ITaskItem>();
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

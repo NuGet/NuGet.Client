@@ -31,12 +31,14 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpFileSystemBasedFindPackageByIdResource : FindPackageByIdResource
     {
-        private const int MaxRetries = 3;
+        private const int DefaultMaxRetries = 3;
+        private int _maxRetries;
         private readonly HttpSource _httpSource;
         private readonly ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
             new ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
         private const string ResourceTypeName = nameof(FindPackageByIdResource);
         private const string ThisTypeName = nameof(HttpFileSystemBasedFindPackageByIdResource);
@@ -46,12 +48,16 @@ namespace NuGet.Protocol
         /// </summary>
         /// <param name="baseUris">Base URI's.</param>
         /// <param name="httpSource">An HTTP source.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="baseUris" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="baseUris" /> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="baseUris" /> is empty.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <see langword="null" />.</exception>
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
-            HttpSource httpSource)
+            HttpSource httpSource) : this(baseUris, httpSource, EnvironmentVariableWrapper.Instance) { }
+
+        internal HttpFileSystemBasedFindPackageByIdResource(
+            IReadOnlyList<Uri> baseUris,
+            HttpSource httpSource, IEnvironmentVariableReader environmentVariableReader)
         {
             if (baseUris == null)
             {
@@ -69,12 +75,14 @@ namespace NuGet.Protocol
             }
 
             _baseUris = baseUris
-                .Take(MaxRetries)
+                .Take(DefaultMaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
 
             _httpSource = httpSource;
             _nupkgDownloader = new FindPackagesByIdNupkgDownloader(httpSource);
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
+            _maxRetries = _enhancedHttpRetryHelper.IsEnabled ? _enhancedHttpRetryHelper.RetryCount : DefaultMaxRetries;
         }
 
         /// <summary>
@@ -88,9 +96,9 @@ namespace NuGet.Protocol
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
-        /// is either <c>null</c> or an empty string.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(
@@ -146,10 +154,10 @@ namespace NuGet.Protocol
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
-        /// is either <c>null</c> or an empty string.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(
@@ -225,11 +233,11 @@ namespace NuGet.Protocol
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="bool" /> indicating whether or not the .nupkg file was copied.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
-        /// is either <c>null</c> or an empty string.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="destination" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="destination" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<bool> CopyNupkgToStreamAsync(
@@ -306,9 +314,9 @@ namespace NuGet.Protocol
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns an <see cref="IPackageDownloader" />.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<IPackageDownloader> GetPackageDownloaderAsync(
@@ -357,10 +365,10 @@ namespace NuGet.Protocol
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{NuGetVersion}" />.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="id" />
-        /// is either <c>null</c> or an empty string.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <c>null</c>.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="version" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="cacheContext" /> <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<bool> DoesPackageExistAsync(
@@ -446,8 +454,8 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            // Try each base URI 3 times.
-            var maxTries = 3 * _baseUris.Count;
+            // Try each base URI _maxRetries times.
+            var maxTries = _maxRetries * _baseUris.Count;
             var packageIdLowerCase = id.ToLowerInvariant();
 
             for (var retry = 1; retry <= maxTries; ++retry)
@@ -497,14 +505,27 @@ namespace NuGet.Protocol
                         logger,
                         cancellationToken);
                 }
-                catch (Exception ex) when (retry < 3)
+                catch (Exception ex) when (retry < _maxRetries)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);
+
+                    if (_enhancedHttpRetryHelper.IsEnabled &&
+                        ex.InnerException != null &&
+                        ex.InnerException is IOException &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                    {
+                        // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                        // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                        // Stalling an extra <ExperimentalRetryDelayMilliseconds> gives Azure more of a chance to recover.
+                        logger.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                        await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds), cancellationToken);
+                    }
                 }
-                catch (Exception ex) when (retry == 3)
+                catch (Exception ex) when (retry == _maxRetries)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
@@ -548,10 +569,26 @@ namespace NuGet.Protocol
         {
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersionString = parsedVersion.ToNormalizedString();
+            string idInLowerCase = id.ToLowerInvariant();
+
+            var builder = StringBuilderPool.Shared.Rent(256);
+
+            builder.Append(baseUri);
+            builder.Append(idInLowerCase);
+            builder.Append('/');
+            builder.Append(normalizedVersionString);
+            builder.Append('/');
+            builder.Append(idInLowerCase);
+            builder.Append('.');
+            builder.Append(normalizedVersionString);
+            builder.Append(".nupkg");
+
+            string contentUri = StringBuilderPool.Shared.ToStringAndReturn(builder);
+
             return new PackageInfo
             {
                 Identity = new PackageIdentity(id, parsedVersion),
-                ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
+                ContentUri = contentUri,
             };
         }
 

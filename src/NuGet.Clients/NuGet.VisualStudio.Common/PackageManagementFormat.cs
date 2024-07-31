@@ -43,11 +43,11 @@ namespace NuGet.VisualStudio
             {
                 if (ProjectNames.Count == 1)
                 {
-                    return string.Format(Resources.Text_PackageFormatSelection, ProjectNames.First());
+                    return string.Format(CultureInfo.CurrentCulture, Resources.Text_PackageFormatSelection, ProjectNames.First());
                 }
                 else
                 {
-                    return string.Format(Resources.Text_PackageFormatSelection_Solution);
+                    return string.Format(CultureInfo.CurrentCulture, Resources.Text_PackageFormatSelection_Solution);
                 }
             }
         }

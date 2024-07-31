@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -28,7 +28,7 @@ namespace NuGet.Protocol
                     var firstTokenFound = jsonReader.Read();
                     if (!firstTokenFound || jsonReader.TokenType != JsonToken.StartObject)
                     {
-                        throw new JsonReaderException("The JSON document is not an object.");   
+                        throw new JsonReaderException("The JSON document is not an object.");
                     }
 
                     while (jsonReader.Read())
@@ -61,7 +61,7 @@ namespace NuGet.Protocol
                     leaveStreamOpen: true))
                 using (var nuspec = reader.GetNuspec()) // This method throws if no .nuspec exists.
                 {
-                    new NuspecReader(nuspec); // This method throws if reading the .nuspec fails
+                    _ = new NuspecReader(nuspec); // This method throws if reading the .nuspec fails
                 }
             }
             catch (Exception e)

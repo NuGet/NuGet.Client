@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -18,17 +17,18 @@ namespace NuGet.Protocol
 {
     public class FindPackagesByIdNupkgDownloader
     {
-        private readonly object _cacheEntriesLock = new object();
-        private readonly Dictionary<string, Task<CacheEntry>> _cacheEntries =
-            new Dictionary<string, Task<CacheEntry>>();
+        private readonly TaskResultCache<string, CacheEntry> _cacheEntries = new();
 
         private readonly object _nuspecReadersLock = new object();
         private readonly ConcurrentDictionary<string, NuspecReader> _nuspecReaders =
             new ConcurrentDictionary<string, NuspecReader>();
 
         private readonly HttpSource _httpSource;
+        private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
 
-        public FindPackagesByIdNupkgDownloader(HttpSource httpSource)
+        public FindPackagesByIdNupkgDownloader(HttpSource httpSource) : this(httpSource, EnvironmentVariableWrapper.Instance) { }
+
+        internal FindPackagesByIdNupkgDownloader(HttpSource httpSource, IEnvironmentVariableReader environmentVariableReader)
         {
             if (httpSource == null)
             {
@@ -36,6 +36,7 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSource;
+            _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace NuGet.Protocol
                 {
                     reader = PackageUtilities.OpenNuspecFromNupkg(identity.Id, stream, logger);
 
-                    return Task.FromResult(true);
+                    return TaskResult.True;
                 },
                 cacheContext,
                 logger,
@@ -112,17 +113,41 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            return await ProcessNupkgStreamAsync(
-                identity,
-                url,
-                async stream => 
-                {
-                    await stream.CopyToAsync(destination, token);
-                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
-                },
-                cacheContext,
-                logger,
-                token);
+            if (!destination.CanSeek)
+            {
+                // In order to handle retries, we need to write to a temporary file, then copy to destination in one pass.
+                string tempFilePath = Path.GetTempFileName();
+                using Stream tempFile = new FileStream(tempFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None, bufferSize: 4096, FileOptions.DeleteOnClose);
+                bool result = await CopyNupkgToStreamAsync(identity, url, tempFile, cacheContext, logger, token);
+
+                tempFile.Position = 0;
+                await tempFile.CopyToAsync(destination, token);
+
+                return result;
+            }
+            else
+            {
+                return await ProcessNupkgStreamAsync(
+                    identity,
+                    url,
+                    async stream =>
+                    {
+                        try
+                        {
+                            await stream.CopyToAsync(destination, token);
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                        }
+                        catch when (!token.IsCancellationRequested)
+                        {
+                            destination.Position = 0;
+                            destination.SetLength(0);
+                            throw;
+                        }
+                    },
+                    cacheContext,
+                    logger,
+                    token);
+            }
         }
 
         /// <summary>
@@ -162,54 +187,25 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(cacheContext));
             }
 
-            if (cacheContext.DirectDownload)
-            {
-                // Don't read from the in-memory cache if we are doing a direct download.
-                var cacheEntry = await ProcessStreamAndGetCacheEntryAsync(
-                    identity,
-                    url,
-                    processStreamAsync,
-                    cacheContext,
-                    logger,
-                    token);
+            token.ThrowIfCancellationRequested();
 
-                // If we get back a cache file result from the cache, we can save it to the in-memory cache.
-                lock (_cacheEntriesLock)
-                {
-                    if (cacheEntry.CacheFile != null && !_cacheEntries.ContainsKey(url))
-                    {
-                        _cacheEntries[url] = Task.FromResult(cacheEntry);
-                    }
-                }
+            // Try to get the NupkgEntry from the in-memory cache. If we find a match, we can open the cache file
+            // and use that as the source stream, instead of going to the package source.
+            CacheEntry cacheEntry = await _cacheEntries.GetOrAddAsync(
+                url,
+                refresh: cacheContext.DirectDownload, // Don't read from the in-memory cache if we are doing a direct download.
+                static state => state.caller.ProcessStreamAndGetCacheEntryAsync(
+                    state.identity,
+                    state.url,
+                    state.processStreamAsync,
+                    state.cacheContext,
+                    state.logger,
+                    state.token),
+                (caller: this, identity, url, processStreamAsync, cacheContext, logger, token),
+                token);
 
-                // Process the NupkgEntry
-                return await ProcessCacheEntryAsync(cacheEntry, processStreamAsync, token);
-            }
-            else
-            {
-                // Try to get the NupkgEntry from the in-memory cache. If we find a match, we can open the cache file
-                // and use that as the source stream, instead of going to the package source.
-                Task<CacheEntry> nupkgEntryTask;
-                lock (_cacheEntriesLock)
-                {
-                    if (!_cacheEntries.TryGetValue(url, out nupkgEntryTask))
-                    {
-                        nupkgEntryTask = ProcessStreamAndGetCacheEntryAsync(
-                            identity,
-                            url,
-                            processStreamAsync,
-                            cacheContext,
-                            logger,
-                            token);
-
-                        _cacheEntries[url] = nupkgEntryTask;
-                    }
-                }
-
-                var nupkgEntry = await nupkgEntryTask;
-
-                return await ProcessCacheEntryAsync(nupkgEntry, processStreamAsync, token);
-            }
+            // Process the NupkgEntry
+            return await ProcessCacheEntryAsync(cacheEntry, processStreamAsync, token);
         }
 
         private async Task<CacheEntry> ProcessStreamAndGetCacheEntryAsync(
@@ -259,7 +255,8 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            const int maxRetries = 3;
+            int maxRetries = _enhancedHttpRetryHelper.IsEnabled ? _enhancedHttpRetryHelper.RetryCount : 3;
+
             for (var retry = 1; retry <= maxRetries; ++retry)
             {
                 var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
@@ -300,6 +297,19 @@ namespace NuGet.Protocol
                         + ExceptionUtilities.DisplayMessage(ex);
 
                     logger.LogMinimal(message);
+
+                    if (_enhancedHttpRetryHelper.IsEnabled &&
+                        ex.InnerException != null &&
+                        ex.InnerException is IOException &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException is System.Net.Sockets.SocketException)
+                    {
+                        // An IO Exception with inner SocketException indicates server hangup ("Connection reset by peer").
+                        // Azure DevOps feeds sporadically do this due to mandatory connection cycling.
+                        // Delaying gives Azure more of a chance to recover.
+                        logger.LogVerbose("Enhanced retry: Encountered SocketException, delaying between tries to allow recovery");
+                        await Task.Delay(TimeSpan.FromMilliseconds(_enhancedHttpRetryHelper.DelayInMilliseconds), token);
+                    }
                 }
                 catch (Exception ex) when (retry == maxRetries)
                 {

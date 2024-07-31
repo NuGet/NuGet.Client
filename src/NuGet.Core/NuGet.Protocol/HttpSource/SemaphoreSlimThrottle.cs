@@ -33,7 +33,7 @@ namespace NuGet.Protocol
 
         public static SemaphoreSlimThrottle CreateBinarySemaphore()
         {
-            return CreateSemaphoreThrottle(initialCount : 1);
+            return CreateSemaphoreThrottle(initialCount: 1);
         }
 
         public static SemaphoreSlimThrottle CreateSemaphoreThrottle(int initialCount)

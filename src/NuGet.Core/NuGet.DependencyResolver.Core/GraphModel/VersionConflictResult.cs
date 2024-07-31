@@ -1,4 +1,4 @@
-﻿
+
 namespace NuGet.DependencyResolver
 {
     public class VersionConflictResult<TItem>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !IS_CORECLR
@@ -88,15 +88,20 @@ namespace NuGet.Protocol
                 // keep the token store version
                 var cacheVersion = _tokenStore.Version;
 
-                PrepareSTSRequest(request);
+                using (var req = request.Clone())
+                {
+                    PrepareSTSRequest(req);
 
-                response = await base.SendAsync(request, cancellationToken);
+                    response = await base.SendAsync(req, cancellationToken);
+                }
 
                 if (!shouldRetry && response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     try
                     {
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
                         await _credentialPromptLock.WaitAsync();
+#pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
 
                         if (cacheVersion != _tokenStore.Version)
                         {
@@ -168,10 +173,8 @@ namespace NuGet.Protocol
         private static string AcquireSTSToken(string endpoint, string realm)
         {
             var binding = new WS2007HttpBinding(SecurityMode.Transport);
-            var factory = new WSTrustChannelFactory(binding, endpoint)
-            {
-                TrustVersion = TrustVersion.WSTrust13
-            };
+
+            using var factory = new WSTrustChannelFactory(binding, endpoint) { TrustVersion = TrustVersion.WSTrust13 };
 
             var endPointReference = new EndpointReference(realm);
             var requestToken = new RequestSecurityToken

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -74,7 +74,7 @@ namespace NuGetVSExtension
         /// </summary>
         public string RegKeyName(RegistrationContext context)
         {
-            return string.Format(CultureInfo.InvariantCulture, "Packages\\{0}", context.ComponentType.GUID.ToString("B"));
+            return string.Format(CultureInfo.InvariantCulture, "Packages\\{0}", context.ComponentType.GUID.ToString("B", CultureInfo.InvariantCulture));
         }
 
         public override void Register(RegistrationContext context)

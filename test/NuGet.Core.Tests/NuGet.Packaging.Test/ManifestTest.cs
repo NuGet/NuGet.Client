@@ -10,10 +10,12 @@ using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
+    [UseCulture("en-US")] // We are asserting exception messages in English
     public class ManifestTest
     {
         [Fact]
@@ -308,7 +310,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
 
@@ -341,7 +342,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>true</developmentDependency>
     <description>Descriptions</description>
@@ -375,7 +375,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>true</developmentDependency>
     <description>Descriptions</description>
@@ -522,7 +521,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -546,7 +544,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
@@ -586,7 +583,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>

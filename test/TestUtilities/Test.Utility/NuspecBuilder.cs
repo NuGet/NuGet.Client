@@ -16,6 +16,7 @@ namespace NuGet.Test.Utility
         public List<Tuple<string, string>> FileEntries { get; private set; }
         public string IconEntry { get; private set; }
         public string IconUrlEntry { get; private set; }
+        public string ReadmeEntry { get; private set; }
         public string PackageIdEntry { get; private set; } = "testPackage";
         public string PackageVersionEntry { get; private set; } = "0.0.1";
 
@@ -37,6 +38,12 @@ namespace NuGet.Test.Utility
         public NuspecBuilder WithIcon(string icon)
         {
             IconEntry = icon;
+            return this;
+        }
+
+        public NuspecBuilder WithReadme(string readme)
+        {
+            ReadmeEntry = readme;
             return this;
         }
 
@@ -109,6 +116,13 @@ namespace NuGet.Test.Utility
                 sb.Write("    <iconUrl>");
                 sb.Write(IconUrlEntry);
                 sb.WriteLine("</iconUrl>");
+            }
+
+            if (ReadmeEntry != null)
+            {
+                sb.Write("    <readme>");
+                sb.Write(ReadmeEntry);
+                sb.WriteLine("</readme>");
             }
 
             sb.WriteLine("  </metadata>");

@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using NuGet.ProjectModel;
 using NuGet.VisualStudio;
@@ -10,16 +13,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class ProjectSystemCacheTests
     {
+        private static readonly string _projectGuid1 = Guid.NewGuid().ToString();
+        private static readonly string _projectGuid2 = Guid.NewGuid().ToString();
+
         [Fact]
         public void TryGetVsProjectAdapter_ReturnsProjectByFullName()
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
+            var projectNames = GetTestProjectNames();
             var vsProjectAdapter = new Mock<IVsProjectAdapter>();
 
             target.AddProject(projectNames, vsProjectAdapter.Object, nuGetProject: null);
@@ -38,11 +40,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"custom");
+            var projectNames = GetTestProjectNames();
             var vsProjectAdapter = new Mock<IVsProjectAdapter>();
 
             target.AddProject(projectNames, vsProjectAdapter.Object, nuGetProject: null);
@@ -61,11 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
+            var projectNames = GetTestProjectNames();
             var vsProjectAdapter = new Mock<IVsProjectAdapter>();
 
             target.AddProject(projectNames, vsProjectAdapter.Object, nuGetProject: null);
@@ -84,11 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
+            var projectNames = GetTestProjectNames();
             var vsProjectAdapter = new Mock<IVsProjectAdapter>();
 
             target.AddProject(projectNames, vsProjectAdapter.Object, nuGetProject: null);
@@ -112,14 +102,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 fullName: @"C:\src\projectA\project.csproj",
                 uniqueName: @"folderA\project",
                 shortName: "project",
-                customUniqueName: @"folderA\project");
+                customUniqueName: @"folderA\project",
+                projectId: _projectGuid1);
 
             var projectNamesB = new ProjectNames(
                 fullName: @"C:\src\projectB\project.csproj",
                 uniqueName: @"folderB\project",
                 shortName: projectNamesA.ShortName,
-                customUniqueName: @"folderB\project");
-            
+                customUniqueName: @"folderB\project",
+                projectId: _projectGuid2);
+
             target.AddProject(projectNamesA, vsProjectAdapter: null, nuGetProject: null);
             target.AddProject(projectNamesB, vsProjectAdapter: null, nuGetProject: null);
 
@@ -138,21 +130,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
 
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
 
             // Assert
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual, out _);
             var getProjectNameFromUniqueNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names1);
             var getProjectNameFromFullNameSuccess = target.TryGetProjectNames(projectNames.FullName, out var names2);
 
@@ -169,15 +156,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
 
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
 
             // Act
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
@@ -186,7 +168,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             DependencyGraphSpec actual;
             ProjectNames names;
 
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual, out _);
             var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
@@ -200,22 +182,17 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Assert
             DependencyGraphSpec actual;
             ProjectNames names;
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual, out _);
             var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
@@ -231,12 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
             target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
@@ -248,13 +220,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);            
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Assert
             DependencyGraphSpec actual;
             ProjectNames names;
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual, out _);
             var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
@@ -270,12 +242,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
             target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
@@ -284,14 +251,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Assert
             DependencyGraphSpec actual;
             ProjectNames names;
-            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual);
+            var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out actual, out _);
             var getProjectNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out names);
 
             Assert.True(getPackageSpecSuccess);
@@ -309,12 +276,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
             target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
@@ -326,10 +288,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages: null);
 
             // Assert
             Assert.Equal(target.IsCacheDirty, 0);
@@ -337,16 +299,32 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public void AddProjectRestoreInfo_WithAdditionalMessages_ReturnsMessagesOnGet()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = GetTestProjectNames();
+            var additionalMessages = new List<IAssetsLogMessage>()
+            {
+                new AssetsLogMessage(Common.LogLevel.Error, Common.NuGetLogCode.NU1000, "Test error")
+            };
+            var projectRestoreInfo = new DependencyGraphSpec();
+
+            // Act
+            target.AddProjectRestoreInfo(projectNames, projectRestoreInfo, additionalMessages);
+
+            // Assert
+            target.TryGetProjectRestoreInfo(projectNames.FullName, out _, out var projectAdditionalMessages);
+            Assert.NotNull(projectAdditionalMessages);
+            Assert.Equal(additionalMessages.Count, projectAdditionalMessages.Count);
+        }
+
+        [Fact]
         public void AddProject_RemoveProject_Clear_TriggerNoEvent_WithEventHandler()
         {
             // Arrange
             var target = new ProjectSystemCache();
-            var projectNames = new ProjectNames(
-                fullName: @"C:\src\project\project.csproj",
-                uniqueName: @"folder\project",
-                shortName: "project",
-                customUniqueName: @"folder\project");
-            var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
+            var projectNames = GetTestProjectNames();
             var projectRestoreInfo = new DependencyGraphSpec();
             var eventCount = 0;
             target.CacheUpdated += delegate (object sender, NuGetEventArgs<string> e)
@@ -365,6 +343,69 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // Assert
             Assert.Equal(target.IsCacheDirty, 0);
             Assert.Equal(eventCount, 0);
+        }
+
+        [Fact]
+        public void AddProjectRestoreInfoSource_AfterAddProject_UpdatesCacheEntry()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = GetTestProjectNames();
+            object projectRestoreInfoSource = new();
+
+            target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
+
+            // Act
+            target.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+
+            // Assert
+            var getProjectRestoreInfoSources = target.GetProjectRestoreInfoSources();
+            var getProjectNameFromUniqueNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names1);
+            var getProjectNameFromFullNameSuccess = target.TryGetProjectNames(projectNames.FullName, out var names2);
+
+            Assert.True(getProjectRestoreInfoSources.Any());
+            Assert.Equal(projectRestoreInfoSource, getProjectRestoreInfoSources.Single());
+            Assert.True(getProjectNameFromUniqueNameSuccess);
+            Assert.True(getProjectNameFromFullNameSuccess);
+            Assert.Equal(@"folder\project", names1.CustomUniqueName);
+            Assert.Equal(@"folder\project", names2.CustomUniqueName);
+        }
+
+        [Fact]
+        public void AddProjectRestoreInfoSource_Succeeds()
+        {
+            // Arrange
+            var target = new ProjectSystemCache();
+            var projectNames = GetTestProjectNames();
+            object projectRestoreInfoSource = new();
+
+            // Act
+            var result = target.AddProjectRestoreInfoSource(projectNames, projectRestoreInfoSource);
+
+            // Assert
+            Assert.True(result);
+
+            var getProjectRestoreInfoSources = target.GetProjectRestoreInfoSources();
+            var getProjectNameFromUniqueNameSuccess = target.TryGetProjectNames(projectNames.UniqueName, out var names1);
+            var getProjectNameFromFullNameSuccess = target.TryGetProjectNames(projectNames.FullName, out var names2);
+
+            Assert.True(getProjectRestoreInfoSources.Any());
+            Assert.Equal(projectRestoreInfoSource, getProjectRestoreInfoSources.Single());
+            Assert.True(getProjectNameFromUniqueNameSuccess);
+            Assert.True(getProjectNameFromFullNameSuccess);
+            Assert.Equal(@"folder\project", names1.CustomUniqueName);
+            Assert.Equal(@"folder\project", names2.CustomUniqueName);
+        }
+
+        private ProjectNames GetTestProjectNames()
+        {
+            var projectNames = new ProjectNames(
+                fullName: @"C:\src\project\project.csproj",
+                uniqueName: @"folder\project",
+                shortName: "project",
+                customUniqueName: @"folder\project",
+                projectId: _projectGuid1);
+            return projectNames;
         }
     }
 }

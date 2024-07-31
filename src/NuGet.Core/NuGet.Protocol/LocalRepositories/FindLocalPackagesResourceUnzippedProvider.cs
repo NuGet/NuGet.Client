@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,7 +27,7 @@ namespace NuGet.Protocol
 
             if (await source.GetFeedType(token) == FeedType.FileSystemUnzipped)
             {
-                curResource = _cache.GetOrAdd(source.PackageSource, 
+                curResource = _cache.GetOrAdd(source.PackageSource,
                     (packageSource) => new FindLocalPackagesResourceUnzipped(packageSource.Source));
             }
 

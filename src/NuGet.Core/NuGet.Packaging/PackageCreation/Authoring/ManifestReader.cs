@@ -8,12 +8,12 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
-using NuGet.Packaging.Core;
-using NuGet.Frameworks;
-using NuGet.Common;
-using NuGet.Packaging.Licenses;
 
 namespace NuGet.Packaging
 {
@@ -53,7 +53,7 @@ namespace NuGet.Packaging
             // now check for required elements, which include <id>, <version>, <authors> and <description>
             foreach (var requiredElement in RequiredElements)
             {
-                if (requiredElement.Equals("authors") && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
+                if (requiredElement.Equals("authors", StringComparison.Ordinal) && manifestMetadata.PackageTypes.Contains(PackageType.SymbolsPackage))
                 {
                     continue;
                 }
@@ -130,6 +130,9 @@ namespace NuGet.Packaging
                     case "tags":
                         manifestMetadata.Tags = value;
                         break;
+                    case "readme":
+                        manifestMetadata.Readme = value;
+                        break;
                     case "serviceable":
                         manifestMetadata.Serviceable = XmlConvert.ToBoolean(value);
                         break;
@@ -159,18 +162,11 @@ namespace NuGet.Packaging
                         break;
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is InvalidDataException))
             {
                 // Wrap the exception to pinpoint the exact property that is problematic,
                 // and include a hint about replacement tokens.
-                if (ex is InvalidDataException)
-                {
-                    throw ex;
-                }
-                else
-                {
-                    throw new InvalidDataException(string.Format(NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
-                }
+                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_PropertyValueReadFailure, value, element.Name.LocalName), ex);
             }
         }
 
@@ -385,16 +381,16 @@ namespace NuGet.Packaging
             // element is <dependency>
 
             var dependency = (from element in containerElement.ElementsNoNamespace("dependency")
-                    let idElement = element.Attribute("id")
-                    where idElement != null && !string.IsNullOrEmpty(idElement.Value)
-                    let elementVersion = element.GetOptionalAttributeValue("version")
-                    select new PackageDependency(
-                        idElement.Value?.Trim(),
-                        // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
-                        elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
-                        element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
-                        element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
-                    )).ToList();
+                              let idElement = element.Attribute("id")
+                              where idElement != null && !string.IsNullOrEmpty(idElement.Value)
+                              let elementVersion = element.GetOptionalAttributeValue("version")
+                              select new PackageDependency(
+                                  idElement.Value?.Trim(),
+                                  // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
+                                  elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
+                                  element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
+                                  element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
+                              )).ToList();
             return new HashSet<PackageDependency>(dependency);
         }
 

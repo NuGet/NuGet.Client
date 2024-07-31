@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Commands;
@@ -79,7 +78,7 @@ namespace NuGet.CommandLine
         {
             ValidatePackagePath();
             WarnIfNoTimestamper(Console);
-            ValidateCertificateInputs();
+            ValidateCertificateInputs(Console);
             ValidateOutputDirectory();
 
             var signingSpec = SigningSpecifications.V1;
@@ -90,7 +89,7 @@ namespace NuGet.CommandLine
 
             return new SignArgs()
             {
-                PackagePath = Arguments[0],
+                PackagePaths = new[] { Arguments[0] },
                 OutputDirectory = OutputDirectory,
                 CertificatePath = CertificatePath,
                 CertificateStoreName = storeName,
@@ -165,7 +164,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void ValidateCertificateInputs()
+        private void ValidateCertificateInputs(ILogger logger)
         {
             if (string.IsNullOrEmpty(CertificatePath) &&
                 string.IsNullOrEmpty(CertificateFingerprint) &&
@@ -175,18 +174,29 @@ namespace NuGet.CommandLine
                 throw new ArgumentException(NuGetCommand.SignCommandNoCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificatePath) &&
-                ((!string.IsNullOrEmpty(CertificateFingerprint) ||
-                 !string.IsNullOrEmpty(CertificateSubjectName)) ||
+                (!string.IsNullOrEmpty(CertificateFingerprint) ||
+                 !string.IsNullOrEmpty(CertificateSubjectName) ||
                  !string.IsNullOrEmpty(CertificateStoreLocation) ||
                  !string.IsNullOrEmpty(CertificateStoreName)))
             {
-                // Thow if the user provided a path and any one of the other options
+                // Throw if the user provided a path and any one of the other options
                 throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
             }
             else if (!string.IsNullOrEmpty(CertificateFingerprint) && !string.IsNullOrEmpty(CertificateSubjectName))
             {
-                // Thow if the user provided a fingerprint and a subject
+                // Throw if the user provided a fingerprint and a subject
                 throw new ArgumentException(NuGetCommand.SignCommandMultipleCertificateException);
+            }
+            else if (CertificateFingerprint != null)
+            {
+                if (!CertificateUtility.TryDeduceHashAlgorithm(CertificateFingerprint, out HashAlgorithmName hashAlgorithmName))
+                {
+                    throw new ArgumentException(NuGetCommand.SignCommandInvalidCertificateFingerprint);
+                }
+                else if (hashAlgorithmName == HashAlgorithmName.SHA1)
+                {
+                    logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU3043, NuGetCommand.SignCommandInvalidCertificateFingerprint));
+                }
             }
         }
     }

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,12 +36,13 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            return await Task.Run(() =>
+            return await Task.Factory.StartNew(() =>
             {
                 // Check if source is available.
                 if (!IsLocalOrUNC(_localResource.Root))
                 {
                     throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
                         Strings.Protocol_Search_LocalSourceNotFound,
                         _localResource.Root));
                 }
@@ -57,8 +59,10 @@ namespace NuGet.Protocol
                     query = query.Where(package => ContainsAnyTerm(terms, package));
                 }
 
-                // Collapse to the highest version per id
-                var collapsedQuery = CollapseToHighestVersion(query);
+                // Collapse to the highest version per id, if necessary
+                var collapsedQuery = filters?.Filter == SearchFilterType.IsLatestVersion ||
+                                     filters?.Filter == SearchFilterType.IsAbsoluteLatestVersion
+                                     ? CollapseToHighestVersion(query) : query;
 
                 // execute the query
                 var packages = collapsedQuery
@@ -70,7 +74,7 @@ namespace NuGet.Protocol
                 return packages
                     .Select(package => CreatePackageSearchResult(package, filters, log, token))
                     .ToArray();
-            });
+            }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -108,6 +112,8 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var metadata = new LocalPackageSearchMetadata(package);
 
             return metadata

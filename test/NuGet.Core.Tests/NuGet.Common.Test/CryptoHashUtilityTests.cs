@@ -109,20 +109,20 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void GetSha1HashProvider_ReturnsCorrectImplementation()
+        public void GetHashProvider_WhenHashAlgorithmNameIsSupported_ReturnsCorrectImplementation()
         {
-            using (var hashAlgorithm = CryptoHashUtility.GetSha1HashProvider())
+            using (var hashAlgorithm = CryptoHashUtility.GetHashProvider(HashAlgorithmName.SHA256))
             {
-                Assert.True(hashAlgorithm is SHA1);
+                Assert.True(hashAlgorithm is SHA256);
 
 #if !IS_CORECLR
                 if (AllowOnlyFipsAlgorithms())
                 {
-                    Assert.IsType<SHA1CryptoServiceProvider>(hashAlgorithm);
+                    Assert.IsType<SHA256CryptoServiceProvider>(hashAlgorithm);
                 }
                 else
                 {
-                    Assert.IsType<SHA1Managed>(hashAlgorithm);
+                    Assert.IsType<SHA256Managed>(hashAlgorithm);
                 }
 #endif
             }

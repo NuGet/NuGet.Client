@@ -24,6 +24,7 @@ namespace NuGet.Protocol
         private string _httpCacheDirectory;
         private readonly PackageSource _packageSource;
         private readonly IThrottle _throttle;
+        private bool _disposed = false;
         private readonly IHttpCacheUtility _httpCacheUtility;
         private readonly IConcurrencyUtility _concurrencyUtility;
 
@@ -178,7 +179,12 @@ namespace NuGet.Protocol
                             // the cache. We cannot seek on the network stream and it is not valuable to download the
                             // content twice just to validate the first time (considering that the second download could
                             // be different from the first thus rendering the first validation meaningless).
+#if NETCOREAPP2_0_OR_GREATER
+
+                            using (var stream = await throttledResponse.Response.Content.ReadAsStreamAsync(lockedToken))
+#else
                             using (var stream = await throttledResponse.Response.Content.ReadAsStreamAsync())
+#endif
                             using (var httpSourceResult = new HttpSourceResult(
                                 HttpSourceResultStatus.OpenedFromNetwork,
                                 cacheFileName: null,
@@ -199,6 +205,31 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             return ProcessStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
+        }
+
+        internal async Task<T> ProcessHttpStreamAsync<T>(
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<T>> processAsync,
+            ILogger log,
+            CancellationToken token)
+        {
+            return await ProcessResponseAsync(
+                request,
+                async response =>
+                {
+                    if ((request.IgnoreNotFounds && response.StatusCode == HttpStatusCode.NotFound) ||
+                         response.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        return await processAsync(null);
+                    }
+
+                    response.EnsureSuccessStatusCode();
+
+                    return await processAsync(response);
+                },
+                cacheContext: null,
+                log,
+                token);
         }
 
         public async Task<T> ProcessStreamAsync<T>(
@@ -272,7 +303,7 @@ namespace NuGet.Protocol
                 {
                     if (stream == null)
                     {
-                        return Task.FromResult<JObject>(null);
+                        return TaskResult.Null<JObject>();
                     }
 
                     return stream.AsJObjectAsync(token);
@@ -411,19 +442,41 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(source));
             }
 
-            Func<Task<HttpHandlerResource>> factory = () => source.GetResourceAsync<HttpHandlerResource>();
+
+            if (throttle == null)
+            {
+                throw new ArgumentNullException(nameof(throttle));
+            }
+
+            Func<Task<HttpHandlerResource>> factory = () => source.GetResourceAsync<HttpHandlerResource>(CancellationToken.None);
 
             return new HttpSource(source.PackageSource, factory, throttle, httpCacheUtility, concurrencyUtility);
         }
 
         public void Dispose()
         {
-            if (_httpClient != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                _httpClient.Dispose();
+                return;
             }
 
-            _httpClientLock.Dispose();
+            if (disposing)
+            {
+                if (_httpClient != null)
+                {
+                    _httpClient.Dispose();
+                }
+
+                _httpClientLock.Dispose();
+            }
+
+            _disposed = true;
         }
 
         private class ThrottledResponse : IDisposable

@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentAssertions;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -228,7 +229,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
             solution.Add(CreatePackage("d", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
-            solution.Add(CreatePackage("e", "1.0.0",null));
+            solution.Add(CreatePackage("e", "1.0.0", null));
 
             solution.Add(CreatePackage("f", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("g", VersionRange.Parse("[1.0.0]"))));
@@ -259,7 +260,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("j", VersionRange.Parse("[1.0.0]"))));
             solution.Add(CreatePackage("c", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
-            solution.Add(CreatePackage("d", "1.0.0",null));
+            solution.Add(CreatePackage("d", "1.0.0", null));
             solution.Add(CreatePackage("g", "1.0.0",
                 new NuGet.Packaging.Core.PackageDependency("h", VersionRange.Parse("[1.0.0]"))));
             solution.Add(CreatePackage("h", "1.0.0", null));
@@ -270,7 +271,7 @@ namespace NuGet.Resolver.Test
 
             // Assert
             Assert.False(result.Any());
-        }        
+        }
 
         [Fact]
         public void ResolverUtility_GetDiagnosticMessageVerifyDiamondDependencySortsById()
@@ -343,6 +344,7 @@ namespace NuGet.Resolver.Test
             Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (= 1.0.0)'. 'b' has an additional constraint (= 2.0.0) defined in packages.config.", message);
         }
 
+        [Fact]
         public void ResolverUtility_GetDiagnosticMessageForIncompatibleDependencyWithAllowedVersion()
         {
             // Install a 1.0.0 - which requires d 1.0.0 but d 2.0.0 is already installed.
@@ -369,9 +371,10 @@ namespace NuGet.Resolver.Test
             var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
-            Assert.Equal("Unable to resolve dependencies. 'd 2.0.0' is not compatible with 'a 1.0.0 constraint: d (= 1.0.0)'.", message);
+            message.Should().Be("Unable to resolve dependencies. 'd 2.0.0' is not compatible with 'b 1.0.0 constraint: d (= 1.0.0-1234)'.");
         }
 
+        [Fact]
         public void ResolverUtility_GetDiagnosticMessageForMissingTargetDependency()
         {
             // Install b 1.1.0 - which requires d 1.0.0 which is missing from any source.
@@ -396,7 +399,7 @@ namespace NuGet.Resolver.Test
             var message = ResolverUtility.GetDiagnosticMessage(solution, available, installed, new string[] { "b" }, Enumerable.Empty<PackageSource>());
 
             // Assert
-            Assert.Equal("Unable to find a version of 'd' that is compatible with 'b 1.1.0 constraint: d (= 1.0.0)'.", message);
+            Assert.Equal("Unable to resolve dependency 'd'.", message);
         }
 
         [Fact]
@@ -548,8 +551,8 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, 
-                new List<PackageSource>() { new PackageSource("http://test","test")});
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" },
+                new List<PackageSource>() { new PackageSource("http://test", "test") });
 
             // Assert
             Assert.Equal("Unable to resolve dependency 'b'. Source(s) used: 'test'.", message);

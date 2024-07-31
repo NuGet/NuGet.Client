@@ -7,16 +7,11 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    sealed class DefaultFrameworkMappings : IFrameworkMappings
+    public sealed class DefaultFrameworkMappings : IFrameworkMappings
     {
         private static Lazy<KeyValuePair<string, string>[]> IdentifierSynonymsLazy = new Lazy<KeyValuePair<string, string>[]>(() =>
         {
-            return new []{
+            return new[]{
                 // .NET
                 new KeyValuePair<string, string>("NETFramework", FrameworkConstants.FrameworkIdentifiers.Net),
                 new KeyValuePair<string, string>(".NET", FrameworkConstants.FrameworkIdentifiers.Net),
@@ -50,7 +45,7 @@ namespace NuGet.Frameworks
 
         private static readonly Lazy<KeyValuePair<string, string>[]> IdentifierShortNamesLazy = new Lazy<KeyValuePair<string, string>[]>(() =>
         {
-            return new []
+            return new[]
             {
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, "netcoreapp"),
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetStandardApp, "netstandardapp"),
@@ -84,6 +79,7 @@ namespace NuGet.Frameworks
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.WinRT, "winrt"), // legacy
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.UAP, "uap"),
                 new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Tizen, "tizen"),
+                new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NanoFramework, "netnano"),
             };
         });
 
@@ -97,7 +93,7 @@ namespace NuGet.Frameworks
 
         private static readonly Lazy<FrameworkSpecificMapping[]> ProfileShortNamesLazy = new Lazy<FrameworkSpecificMapping[]>(() =>
         {
-            return new []
+            return new[]
             {
                 new FrameworkSpecificMapping(FrameworkConstants.FrameworkIdentifiers.Net, "Client", "Client"),
                 new FrameworkSpecificMapping(FrameworkConstants.FrameworkIdentifiers.Net, "CF", "CompactFramework"),
@@ -557,7 +553,7 @@ namespace NuGet.Frameworks
 
         private static readonly Lazy<string[]> NonPackageBasedFrameworkPrecedenceLazy = new Lazy<string[]>(() =>
         {
-            return new []
+            return new[]
             {
                 FrameworkConstants.FrameworkIdentifiers.Net,
                 FrameworkConstants.FrameworkIdentifiers.NetCore,
@@ -622,7 +618,7 @@ namespace NuGet.Frameworks
 
         private static readonly Lazy<KeyValuePair<NuGetFramework, NuGetFramework>[]> ShortNameReplacementsLazy = new Lazy<KeyValuePair<NuGetFramework, NuGetFramework>[]>(() =>
         {
-            return new []
+            return new[]
             {
                 new KeyValuePair<NuGetFramework, NuGetFramework>(FrameworkConstants.CommonFrameworks.DotNet50, FrameworkConstants.CommonFrameworks.DotNet)
             };
@@ -638,7 +634,7 @@ namespace NuGet.Frameworks
 
         private static readonly Lazy<KeyValuePair<NuGetFramework, NuGetFramework>[]> FullNameReplacementsLazy = new Lazy<KeyValuePair<NuGetFramework, NuGetFramework>[]>(() =>
         {
-            return new []
+            return new[]
             {
                 new KeyValuePair<NuGetFramework, NuGetFramework>(FrameworkConstants.CommonFrameworks.DotNet, FrameworkConstants.CommonFrameworks.DotNet50)
             };

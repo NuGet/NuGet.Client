@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using NuGet.ProjectManagement;
@@ -15,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [PartCreationPolicy(CreationPolicy.Shared)]
     [Export(typeof(IProjectSystemCache))]
-    internal class ProjectSystemCache : IProjectSystemCache
+    internal class ProjectSystemCache : IProjectSystemCache, IDisposable
     {
         // Int used to indicate if the cache has been dirty.
         // 0 - Cache is clean
@@ -29,6 +30,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         // Non-unique names index. We need another dictionary for short names since there may be more than project name per short name
         private readonly Dictionary<string, HashSet<ProjectNames>> _shortNameCache = new Dictionary<string, HashSet<ProjectNames>>(StringComparer.OrdinalIgnoreCase);
+
+        private bool _disposed = false;
 
         // Returns the current value of _isCacheDirty.
         public int IsCacheDirty
@@ -78,7 +81,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return project != null;
         }
 
-        public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo)
+        public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo, out IReadOnlyList<IAssetsLogMessage> additionalMessages)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -86,11 +89,13 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             projectRestoreInfo = null;
+            additionalMessages = null;
 
             CacheEntry cacheEntry;
             if (TryGetCacheEntry(name, out cacheEntry))
             {
                 projectRestoreInfo = cacheEntry.ProjectRestoreInfo;
+                additionalMessages = cacheEntry.AdditionalMessages;
             }
 
             return projectRestoreInfo != null;
@@ -235,7 +240,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (projectNames.FullName == null)
             {
-                throw new ArgumentNullException(nameof(projectNames.FullName));
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(projectNames.FullName)),
+                    paramName: nameof(projectNames));
             }
 
             _readerWriterLock.EnterWriteLock();
@@ -268,7 +275,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo)
+        public bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo, IReadOnlyList<IAssetsLogMessage> additionalMessages)
         {
             if (projectNames == null)
             {
@@ -277,7 +284,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (projectNames.FullName == null)
             {
-                throw new ArgumentNullException(nameof(projectNames.FullName));
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(projectNames.FullName)),
+                    paramName: nameof(projectNames));
             }
 
             _readerWriterLock.EnterWriteLock();
@@ -293,11 +302,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectNames.FullName,
                     addEntryFactory: k => new CacheEntry
                     {
-                        ProjectRestoreInfo = projectRestoreInfo
+                        ProjectRestoreInfo = projectRestoreInfo,
+                        AdditionalMessages = additionalMessages
                     },
                     updateEntryFactory: (k, e) =>
                     {
                         e.ProjectRestoreInfo = projectRestoreInfo;
+                        e.AdditionalMessages = additionalMessages;
                         return e;
                     });
             }
@@ -312,14 +323,14 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         private CacheEntry AddOrUpdateCacheEntry(
-            string primaryKey, 
+            string primaryKey,
             Func<string, CacheEntry> addEntryFactory,
             Func<string, CacheEntry, CacheEntry> updateEntryFactory)
         {
             Debug.Assert(_readerWriterLock.IsWriteLockHeld);
 
             CacheEntry newCacheEntry, oldCacheEntry;
-            if(_primaryCache.TryGetValue(primaryKey, out oldCacheEntry))
+            if (_primaryCache.TryGetValue(primaryKey, out oldCacheEntry))
             {
                 newCacheEntry = updateEntryFactory(primaryKey, oldCacheEntry);
                 _primaryCache[primaryKey] = newCacheEntry;
@@ -342,6 +353,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache[projectNames.CustomUniqueName] = projectNames;
             _projectNamesCache[projectNames.UniqueName] = projectNames;
             _projectNamesCache[projectNames.FullName] = projectNames;
+            _projectNamesCache[projectNames.ProjectId] = projectNames;
         }
 
         public bool TryGetProjectNameByShortName(string name, out ProjectNames projectNames)
@@ -375,7 +387,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // If there is only one project name instance, that means the short name is unambiguous, in which
                 // case we can return that one project.
                 projectNames = values.Count == 1 ? values.Single() : null;
-                
+
                 return projectNames != null;
             }
 
@@ -430,6 +442,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache.Remove(projectNames.CustomUniqueName);
             _projectNamesCache.Remove(projectNames.UniqueName);
             _projectNamesCache.Remove(projectNames.FullName);
+            _projectNamesCache.Remove(projectNames.ProjectId);
             _primaryCache.Remove(projectNames.FullName);
         }
 
@@ -479,6 +492,8 @@ namespace NuGet.PackageManagement.VisualStudio
             public IVsProjectAdapter VsProjectAdapter { get; set; }
             public DependencyGraphSpec ProjectRestoreInfo { get; set; }
             public ProjectNames ProjectNames { get; set; }
+            public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
+            public object ProjectRestoreInfoSource { get; set; }
         }
 
         private void FireCacheUpdatedEvent(string projectFullName)
@@ -486,7 +501,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // We should fire the event only if the cache was clean before.
             // If the cache was dirty already then the VSSolutionsManager is yet to consume the event
             // and will consume current changes as well.
-            if(CacheUpdated != null && TestSetDirtyFlag())
+            if (CacheUpdated != null && TestSetDirtyFlag())
             {
                 CacheUpdated(this, new NuGetEventArgs<string>(projectFullName));
             }
@@ -511,6 +526,96 @@ namespace NuGet.PackageManagement.VisualStudio
         public bool TestResetDirtyFlag()
         {
             return (Interlocked.CompareExchange(location1: ref _isCacheDirty, value: 0, comparand: 1) == 1);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _readerWriterLock.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public bool AddProjectRestoreInfoSource(ProjectNames projectNames, object restoreInfoSource)
+        {
+            if (projectNames == null)
+            {
+                throw new ArgumentNullException(nameof(projectNames));
+            }
+
+            if (projectNames.FullName == null)
+            {
+                throw new ArgumentException(
+                    message: string.Format(CultureInfo.CurrentCulture, Strings.PropertyCannotBeNull, nameof(projectNames.FullName)),
+                    paramName: nameof(projectNames));
+            }
+
+            if (restoreInfoSource == null)
+            {
+                throw new ArgumentNullException(nameof(restoreInfoSource));
+            }
+
+            _readerWriterLock.EnterWriteLock();
+
+            try
+            {
+                if (!_projectNamesCache.ContainsKey(projectNames.FullName))
+                {
+                    UpdateProjectNamesCache(projectNames);
+                }
+
+                AddOrUpdateCacheEntry(
+                    projectNames.FullName,
+                    addEntryFactory: k => new CacheEntry
+                    {
+                        ProjectNames = projectNames,
+                        ProjectRestoreInfoSource = restoreInfoSource,
+                    },
+                    updateEntryFactory: (k, e) =>
+                    {
+                        e.ProjectRestoreInfoSource = restoreInfoSource;
+                        return e;
+                    });
+            }
+            finally
+            {
+                _readerWriterLock.ExitWriteLock();
+            }
+            // Do not fire a cache update event when the restore project info source is updated
+            // as it provides no value to any other components other than restore.
+
+            return true;
+        }
+
+        // Returns the project restore info sources available.
+        public IReadOnlyList<object> GetProjectRestoreInfoSources()
+        {
+            _readerWriterLock.EnterReadLock();
+
+            try
+            {
+                return _primaryCache
+                    .Select(kv => kv.Value.ProjectRestoreInfoSource)
+                    .Where(e => e != null)
+                    .ToList();
+            }
+            finally
+            {
+                _readerWriterLock.ExitReadLock();
+            }
         }
     }
 }

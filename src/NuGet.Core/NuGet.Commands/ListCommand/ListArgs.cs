@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -40,8 +40,8 @@ namespace NuGet.Commands
         public IList<Configuration.PackageSource> ListEndpoints { get; }
 
         public ListArgs(IList<string> arguments, IList<Configuration.PackageSource> listEndpoints,
-            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl, 
-            string listCommandNoPackages, string listCommandLicenseUrl, string listCommandListNotSupported, 
+            ISettings settings, ILogger logger, Log printJustified, bool isDetailedl,
+            string listCommandNoPackages, string listCommandLicenseUrl, string listCommandListNotSupported,
             bool allVersions, bool includeDelisted, bool prerelease, CancellationToken token)
         {
             if (arguments == null)

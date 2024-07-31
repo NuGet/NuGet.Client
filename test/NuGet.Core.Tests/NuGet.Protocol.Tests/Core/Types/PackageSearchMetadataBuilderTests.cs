@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Core.Types.Tests
             _testData = testData;
         }
 
-        [Fact]        
+        [Fact]
         public void LocalPackageInfo_NotNull()
         {
             var copy1 = PackageSearchMetadataBuilder
@@ -24,15 +24,15 @@ namespace NuGet.Protocol.Core.Types.Tests
             Assert.True(copy1 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
 
             var clone1 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy1;
-            Assert.NotNull(clone1.PackageReader);
 
             var copy2 = PackageSearchMetadataBuilder
                 .FromMetadata(copy1)
                 .Build();
             Assert.True(copy2 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
-                
+
             var clone2 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy2;
-            Assert.NotNull(clone2.PackageReader);
+            Assert.NotNull(clone2.PackagePath);
+            Assert.Equal(clone1.PackagePath, clone2.PackagePath);
         }
     }
 }

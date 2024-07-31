@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using NuGet.PackageManagement;
 
@@ -29,7 +30,7 @@ namespace NuGetConsole
             }
         }
 
-        public static void Raise<T>(this EventHandler<NuGetEventArgs<T>> ev, object sender, T arg) where T: class
+        public static void Raise<T>(this EventHandler<NuGetEventArgs<T>> ev, object sender, T arg) where T : class
         {
             if (ev != null)
             {
@@ -42,6 +43,8 @@ namespace NuGetConsole
         /// </summary>
         public static void Execute(this IOleCommandTarget target, Guid guidCommand, uint idCommand, object args = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             IntPtr varIn = IntPtr.Zero;
             try
             {
@@ -69,6 +72,8 @@ namespace NuGetConsole
         /// </summary>
         public static void Execute(this IOleCommandTarget target, VSConstants.VSStd2KCmdID idCommand, object args = null)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             target.Execute(VSConstants.VSStd2K, (uint)idCommand, args);
         }
     }

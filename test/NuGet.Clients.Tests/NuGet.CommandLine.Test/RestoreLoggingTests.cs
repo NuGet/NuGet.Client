@@ -8,16 +8,25 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using NuGet.Commands.Test;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
     public class RestoreLoggingTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public RestoreLoggingTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public async Task RestoreLogging_VerifyNU1605DowngradeWarningAsync()
         {
@@ -63,7 +72,7 @@ namespace NuGet.CommandLine.Test
                 doc.Save(projectA.ProjectPath);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -126,7 +135,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
                 var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1608);
 
                 // Assert
@@ -147,32 +156,26 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
             {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var netcoreapp1 = FrameworkConstants.CommonFrameworks.NetCoreApp10;
-
-                var projectA = SimpleTestProjectContext.CreateNETCore(
-                    "a",
-                    pathContext.SolutionRoot,
-                    netcoreapp1);
-
-                var packageX = new SimpleTestPackageContext("x", "1.0.0");          
-
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
-                projectA.AddPackageToAllFrameworks(packageX);                
 
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-                
                 File.Delete(Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
 
-                // Act                
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var logger = new TestLogger();
+                // Set-up command.
+                var request = ProjectTestHelpers.CreateRestoreRequest(
+                        pathContext,
+                        logger,
+                        ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0", dependencyName: packageX.Id));
+                var command = new NuGet.Commands.RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
 
                 // Assert
-                r.Success.Should().BeFalse();                
-                r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+                result.Success.Should().BeFalse(because: logger.ShowMessages());
+                result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU5037);
+                logger.ShowMessages().Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
             }
         }
 
@@ -201,11 +204,11 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act                
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
                 //delete the project.assets file to avoid no-op restore
                 File.Delete(projectA.AssetsFileOutputPath);
                 File.Delete(Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
-                r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -276,7 +279,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -313,7 +316,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
                 var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1201 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
@@ -322,7 +325,7 @@ namespace NuGet.CommandLine.Test
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("b");
                 log.Level.Should().Be(LogLevel.Error);
-                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.TargetGraphs.Should().BeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
                 log.Message.Should().Be("Project b is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Project b supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
             }
         }
@@ -355,7 +358,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
                 var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1202 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
@@ -364,7 +367,7 @@ namespace NuGet.CommandLine.Test
                 log.FilePath.Should().Be(projectA.ProjectPath);
                 log.LibraryId.Should().Be("x");
                 log.Level.Should().Be(LogLevel.Error);
-                log.TargetGraphs.ShouldBeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
+                log.TargetGraphs.Should().BeEquivalentTo(new[] { netcoreapp1.DotNetFrameworkName });
                 log.Message.Should().Be("Package x 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package x 1.0.0 supports: netcoreapp2.0 (.NETCoreApp,Version=v2.0)");
             }
         }
@@ -399,7 +402,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
                 var log = projectA.AssetsFile.LogMessages.OrderBy(e => e.Message, StringComparer.Ordinal).FirstOrDefault(e => e.Code == NuGetLogCode.NU1203);
 
                 // Assert
@@ -442,7 +445,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
                 var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1108 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
@@ -518,7 +521,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
                 var log = projectA.AssetsFile.LogMessages.SingleOrDefault(e => e.Code == NuGetLogCode.NU1107 && e.TargetGraphs.All(g => !g.Contains("/")));
 
                 // Assert
@@ -599,7 +602,7 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -646,7 +649,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -696,7 +699,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -751,7 +754,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -807,7 +810,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -858,7 +861,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -911,7 +914,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -962,7 +965,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -1013,7 +1016,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1064,7 +1067,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -1113,7 +1116,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1164,7 +1167,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1215,7 +1218,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1264,7 +1267,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1316,7 +1319,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1367,7 +1370,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1415,7 +1418,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1465,7 +1468,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -1520,7 +1523,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1576,7 +1579,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -1627,7 +1630,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1680,7 +1683,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1731,7 +1734,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -1782,7 +1785,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1833,7 +1836,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -1882,7 +1885,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1931,7 +1934,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -1983,7 +1986,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -2035,7 +2038,7 @@ namespace NuGet.CommandLine.Test
                     packageX9);
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeTrue();
@@ -2068,7 +2071,7 @@ namespace NuGet.CommandLine.Test
                 File.Create(projectA.NuGetLockFileOutputPath).Close();
 
                 // Act
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
@@ -2116,18 +2119,20 @@ namespace NuGet.CommandLine.Test
                     pathContext.PackageSource,
                     packageX, packageY);
 
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0, testOutputHelper: _testOutputHelper);
 
                 projectA.AddPackageToAllFrameworks(packageY);
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Save();
 
                 // Act
-                r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 1, testOutputHelper: _testOutputHelper);
 
                 // Assert
                 r.Success.Should().BeFalse();
                 r.AllOutput.Should().Contain("NU1004");
+                var logCodes = projectA.AssetsFile.LogMessages.Select(e => e.Code);
+                logCodes.Should().Contain(NuGetLogCode.NU1004);
             }
         }
     }

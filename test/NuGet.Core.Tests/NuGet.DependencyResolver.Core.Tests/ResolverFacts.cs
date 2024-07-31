@@ -8,13 +8,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.DependencyResolver.Core.Tests
@@ -29,14 +29,16 @@ namespace NuGet.DependencyResolver.Core.Tests
             slowProvider.AddLibrary(new LibraryIdentity
             {
                 Name = "A",
-                Version = new NuGetVersion("1.0.0")
+                Version = new NuGetVersion("1.0.0"),
+                Type = LibraryType.Package
             });
 
             var fastProvider = new TestProvider(TimeSpan.Zero);
             fastProvider.AddLibrary(new LibraryIdentity
             {
                 Name = "A",
-                Version = new NuGetVersion("1.0.0")
+                Version = new NuGetVersion("1.0.0"),
+                Type = LibraryType.Package
             });
 
             var context = new TestRemoteWalkContext();
@@ -69,14 +71,16 @@ namespace NuGet.DependencyResolver.Core.Tests
             slowProvider.AddLibrary(new LibraryIdentity
             {
                 Name = "A",
-                Version = new NuGetVersion("1.0.0")
+                Version = new NuGetVersion("1.0.0"),
+                Type = LibraryType.Package
             });
 
             var fastProvider = new TestProvider(TimeSpan.Zero);
             fastProvider.AddLibrary(new LibraryIdentity
             {
                 Name = "A",
-                Version = new NuGetVersion("1.1.0")
+                Version = new NuGetVersion("1.1.0"),
+                Type = LibraryType.Package
             });
 
             var context = new TestRemoteWalkContext();
@@ -120,6 +124,8 @@ namespace NuGet.DependencyResolver.Core.Tests
 
             public PackageSource Source => new PackageSource("Test");
 
+            public SourceRepository SourceRepository => throw new NotImplementedException();
+
             public async Task<LibraryIdentity> FindLibraryAsync(
                 LibraryRange libraryRange,
                 NuGetFramework targetFramework,
@@ -129,7 +135,7 @@ namespace NuGet.DependencyResolver.Core.Tests
             {
                 if (_delay != TimeSpan.Zero)
                 {
-                    await Task.Delay(_delay);
+                    await Task.Delay(_delay, cancellationToken);
                 }
 
                 return _libraries.FindBestMatch(libraryRange.VersionRange, l => l?.Version);

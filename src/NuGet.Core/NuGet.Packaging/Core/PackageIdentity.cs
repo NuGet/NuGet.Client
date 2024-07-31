@@ -25,7 +25,7 @@ namespace NuGet.Packaging.Core
         {
             if (id == null)
             {
-                throw new ArgumentNullException("id");
+                throw new ArgumentNullException(nameof(id));
             }
 
             _id = id;
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public virtual bool Equals(PackageIdentity other, VersionComparison versionComparison)
         {
-            var comparer = new PackageIdentityComparer(versionComparison);
+            var comparer = PackageIdentityComparer.Get(versionComparison);
 
             return comparer.Equals(this, other);
         }

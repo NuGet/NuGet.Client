@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
@@ -54,62 +53,5 @@ namespace NuGet.ProjectManagement
         NuGetActionType ActionType { get; set; }
 
         Guid OperationId { get; set; }
-    }
-
-    /// <summary>
-    /// MessageLevel
-    /// </summary>
-    public enum MessageLevel
-    {
-        /// <summary>
-        /// Information
-        /// </summary>
-        Info,
-
-        /// <summary>
-        /// Warning
-        /// </summary>
-        Warning,
-
-        /// <summary>
-        /// Debug only
-        /// </summary>
-        Debug,
-
-        /// <summary>
-        /// Error
-        /// </summary>
-        Error
-    }
-
-    /// <summary>
-    /// Enum for the type of NuGetAction
-    /// </summary>
-    public enum NuGetActionType
-    {
-        /// <summary>
-        /// Install
-        /// </summary>
-        Install,
-
-        /// <summary>
-        /// Uninstall
-        /// </summary>
-        Uninstall,
-        
-        /// <summary>
-        /// Reinstall
-        /// </summary>
-        Reinstall,
-        
-        /// <summary>
-        /// Update
-        /// </summary>
-        Update,
-        
-        /// <summary>
-        /// UpdateAll
-        /// </summary>
-        UpdateAll
     }
 }

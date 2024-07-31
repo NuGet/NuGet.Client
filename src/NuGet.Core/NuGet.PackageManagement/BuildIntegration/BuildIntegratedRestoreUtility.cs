@@ -43,7 +43,7 @@ namespace NuGet.PackageManagement
                 if (packagesToExecute.Remove(package))
                 {
                     var packageInstallPath = pathResolver.GetPackageDirectory(package.Id, package.Version);
-                    
+
                     if (packageInstallPath == null)
                     {
                         continue;

@@ -32,21 +32,41 @@ namespace NuGet.Protocol
         public string Description => _nuspec.GetDescription();
 
         /// <remarks>
-        /// Local packages always have 0 as the download count
+        /// Local package sources never provide a download count.
         /// </remarks>
-        public long? DownloadCount => 0;
+        public long? DownloadCount => null;
 
-        public Uri IconUrl =>  GetIconUri();
+        public Uri IconUrl => GetIconUri();
 
         public PackageIdentity Identity => _nuspec.GetIdentity();
 
         public Uri LicenseUrl => Convert(_nuspec.GetLicenseUrl());
+
+        private IReadOnlyList<string> _ownersList;
+
+        public IReadOnlyList<string> OwnersList
+        {
+            get
+            {
+                if (_ownersList is null)
+                {
+                    _ownersList = Owners != null ? Owners.Split(',').Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList() : null;
+                }
+
+                return _ownersList;
+            }
+        }
 
         public string Owners => _nuspec.GetOwners();
 
         public Uri ProjectUrl => Convert(_nuspec.GetProjectUrl());
 
         public DateTimeOffset? Published => _package.LastWriteTimeUtc;
+
+        /// <remarks>
+        /// There is no readme url for local packages. Later releases may display the readme file in a VS window.
+        /// </remarks>
+        public Uri ReadmeUrl => null;
 
         /// <remarks>
         /// There is no report abuse url for local packages.
@@ -63,7 +83,7 @@ namespace NuGet.Protocol
         {
             get
             {
-                var tags = _nuspec.GetTags()?.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[] { };
+                var tags = _nuspec.GetTags()?.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
                 return string.Join(" ", tags);
             }
         }
@@ -84,7 +104,8 @@ namespace NuGet.Protocol
             }
         }
 
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
+        /// <inheritdoc cref="IPackageSearchMetadata.GetVersionsAsync" />
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => TaskResult.EmptyEnumerable<VersionInfo>();
 
         /// <summary>
         /// Convert a string to a URI safely. This will return null if there are errors.
@@ -110,10 +131,13 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        /// <remarks>
-        /// Deprecation metadata is not stored within the package and requires an online package source.
-        /// </remarks>
-        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
+        /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => TaskResult.Null<PackageDeprecationMetadata>();
+
+        /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
+        public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => null;
+
+        public string PackagePath => _package.Path;
 
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 

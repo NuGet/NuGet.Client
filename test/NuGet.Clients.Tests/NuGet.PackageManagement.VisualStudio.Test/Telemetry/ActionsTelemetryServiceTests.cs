@@ -13,13 +13,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class ActionsTelemetryServiceTests
     {
         [Theory]
-        [InlineData(NuGetOperationType.Install, OperationSource.UI)]
-        [InlineData(NuGetOperationType.Update, OperationSource.UI)]
-        [InlineData(NuGetOperationType.Uninstall, OperationSource.UI)]
-        [InlineData(NuGetOperationType.Install, OperationSource.PMC)]
-        [InlineData(NuGetOperationType.Update, OperationSource.PMC)]
-        [InlineData(NuGetOperationType.Uninstall, OperationSource.PMC)]
-        public void ActionsTelemetryService_EmitActionEvent_OperationSucceed(NuGetOperationType operationType, OperationSource source)
+        [InlineData(NuGetProjectActionType.Install, OperationSource.UI)]
+        [InlineData(NuGetProjectActionType.Update, OperationSource.UI)]
+        [InlineData(NuGetProjectActionType.Uninstall, OperationSource.UI)]
+        [InlineData(NuGetProjectActionType.Install, OperationSource.PMC)]
+        [InlineData(NuGetProjectActionType.Update, OperationSource.PMC)]
+        [InlineData(NuGetProjectActionType.Uninstall, OperationSource.PMC)]
+        public void ActionsTelemetryService_EmitActionEvent_OperationSucceed(NuGetProjectActionType operationType, OperationSource source)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -39,7 +39,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: 2.10);
+                duration: 2.10,
+                isPackageSourceMappingEnabled: true);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -50,13 +52,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(NuGetOperationType.Install, OperationSource.UI)]
-        [InlineData(NuGetOperationType.Update, OperationSource.UI)]
-        [InlineData(NuGetOperationType.Uninstall, OperationSource.UI)]
-        [InlineData(NuGetOperationType.Install, OperationSource.PMC)]
-        [InlineData(NuGetOperationType.Update, OperationSource.PMC)]
-        [InlineData(NuGetOperationType.Uninstall, OperationSource.PMC)]
-        public void ActionsTelemetryService_EmitActionEvent_OperationFailed(NuGetOperationType operationType, OperationSource source)
+        [InlineData(NuGetProjectActionType.Install, OperationSource.UI)]
+        [InlineData(NuGetProjectActionType.Update, OperationSource.UI)]
+        [InlineData(NuGetProjectActionType.Uninstall, OperationSource.UI)]
+        [InlineData(NuGetProjectActionType.Install, OperationSource.PMC)]
+        [InlineData(NuGetProjectActionType.Update, OperationSource.PMC)]
+        [InlineData(NuGetProjectActionType.Uninstall, OperationSource.PMC)]
+        public void ActionsTelemetryService_EmitActionEvent_OperationFailed(NuGetProjectActionType operationType, OperationSource source)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -76,7 +78,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Failed,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: 1.30);
+                duration: 1.30,
+                isPackageSourceMappingEnabled: false);
+
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -87,10 +91,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Theory]
-        [InlineData(NuGetOperationType.Install)]
-        [InlineData(NuGetOperationType.Update)]
-        [InlineData(NuGetOperationType.Uninstall)]
-        public void ActionsTelemetryService_EmitActionEvent_OperationNoOp(NuGetOperationType operationType)
+        [InlineData(NuGetProjectActionType.Install)]
+        [InlineData(NuGetProjectActionType.Update)]
+        [InlineData(NuGetProjectActionType.Uninstall)]
+        public void ActionsTelemetryService_EmitActionEvent_OperationNoOp(NuGetProjectActionType operationType)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -110,7 +114,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.NoOp,
                 packageCount: 1,
                 endTime: DateTimeOffset.Now,
-                duration: .40);
+                duration: .40,
+                isPackageSourceMappingEnabled: false);
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -162,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(ActionsTelemetryEvent.NugetActionEventName, actual.Name);
-            Assert.Equal(10, actual.Count);
+            Assert.Equal(11, actual.Count);
 
             Assert.Equal(expected.OperationType.ToString(), actual["OperationType"].ToString());
             Assert.Equal(expected.Source.ToString(), actual["Source"].ToString());

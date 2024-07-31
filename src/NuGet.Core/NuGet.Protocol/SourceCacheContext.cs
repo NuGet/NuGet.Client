@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -99,9 +100,7 @@ namespace NuGet.Protocol.Core.Types
                 if (_generatedTempFolder == null)
                 {
                     var newTempFolder = Path.Combine(
-                        Path.GetTempPath(),
-                        "NuGet",
-                        "TempCache",
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
                         Guid.NewGuid().ToString());
 
                     Interlocked.CompareExchange(ref _generatedTempFolder, newTempFolder, comparand: null);

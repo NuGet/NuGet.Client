@@ -2,20 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
-using Xunit;
 
 namespace NuGet.Tests.Apex
 {
     public class SignedPackagesTestsApexFixture : VisualStudioHostFixtureFactory
     {
-        private const string _testPackageName = "TestPackage";
-        private const string _packageVersion = "1.0.0";
+        private const string TestPackageName = "TestPackage";
+        private const string TestPackageVersion = "1.0.0";
 
         private TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
         private TrustedTestCert<TestCertificate> _trustedRepositoryTestCert;
@@ -25,15 +22,15 @@ namespace NuGet.Tests.Apex
         private SimpleTestPackageContext _repoSignedTestPackageV1;
         private SimpleTestPackageContext _repoCountersignedTestPackageV1;
 
-        private Lazy<Task<SigningTestServer>> _testServer;
-        private Lazy<Task<CertificateAuthority>> _defaultTrustedCertificateAuthority;
-        private Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
+        private readonly Lazy<Task<SigningTestServer>> _testServer;
+        private readonly Lazy<Task<CertificateAuthority>> _defaultTrustedTimestampRootCertificateAuthority;
+        private readonly Lazy<Task<TimestampService>> _defaultTrustedTimestampService;
         private readonly DisposableList<IDisposable> _responders;
 
         public SignedPackagesTestsApexFixture()
         {
             _testServer = new Lazy<Task<SigningTestServer>>(SigningTestServer.CreateAsync);
-            _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
+            _defaultTrustedTimestampRootCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedTimestampRootCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
         }
@@ -71,8 +68,8 @@ namespace NuGet.Tests.Apex
                 if (_authorSignedTestPackageV1 == null)
                 {
                     _authorSignedTestPackageV1 = CommonUtility.CreateAuthorSignedPackage(
-                        _testPackageName,
-                        _packageVersion,
+                        TestPackageName,
+                        TestPackageVersion,
                         TrustedAuthorTestCertificate.Source.Cert);
                 }
 
@@ -87,8 +84,8 @@ namespace NuGet.Tests.Apex
                 if (_repoSignedTestPackageV1 == null)
                 {
                     _repoSignedTestPackageV1 = CommonUtility.CreateRepositorySignedPackage(
-                        _testPackageName,
-                        _packageVersion,
+                        TestPackageName,
+                        TestPackageVersion,
                         TrustedRepositoryTestCertificate.Source.Cert,
                         new Uri("https://v3serviceIndex.test/api/index.json"));
                 }
@@ -104,8 +101,8 @@ namespace NuGet.Tests.Apex
                 if (_repoCountersignedTestPackageV1 == null)
                 {
                     _repoCountersignedTestPackageV1 = CommonUtility.CreateRepositoryCountersignedPackage(
-                        _testPackageName,
-                        _packageVersion,
+                        TestPackageName,
+                        TestPackageVersion,
                         TrustedAuthorTestCertificate.Source.Cert,
                         TrustedRepositoryTestCertificate.Source.Cert,
                         new Uri("https://v3serviceIndex.test/api/index.json"));
@@ -123,7 +120,7 @@ namespace NuGet.Tests.Apex
         private async Task<TimestampService> CreateDefaultTrustedTimestampServiceAsync()
         {
             var testServer = await _testServer.Value;
-            var ca = await _defaultTrustedCertificateAuthority.Value;
+            var ca = await _defaultTrustedTimestampRootCertificateAuthority.Value;
             var timestampService = TimestampService.Create(ca);
 
             _responders.Add(testServer.RegisterResponder(timestampService));
@@ -131,15 +128,16 @@ namespace NuGet.Tests.Apex
             return timestampService;
         }
 
-        private async Task<CertificateAuthority> CreateDefaultTrustedCertificateAuthorityAsync()
+        private async Task<CertificateAuthority> CreateDefaultTrustedTimestampRootCertificateAuthorityAsync()
         {
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
-            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            var rootCertificate = new X509Certificate2(rootCa.Certificate);
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
+                X509StorePurpose.Timestamping,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 

@@ -42,7 +42,7 @@ namespace NuGet.Build.Tasks.Test
             RestoreSettingsUtils.GetValue(
                 () => null,
                 () => null,
-                () => Array.Empty<string>()).ShouldBeEquivalentTo(Array.Empty<string>());
+                () => Array.Empty<string>()).Should().BeEquivalentTo(Array.Empty<string>());
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace NuGet.Build.Tasks.Test
                 </packageSources>
             </configuration>";
 
-     
+
 
             var baseConfigPath = "NuGet.Config";
 
@@ -91,7 +91,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Test
 
-                var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory,null, machineWideSettings);
+                var settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, null, machineWideSettings);
                 var filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(3, filePaths.Count()); // Solution, app data + machine wide
@@ -99,8 +99,8 @@ namespace NuGet.Build.Tasks.Test
                 Assert.True(filePaths.Contains(Path.Combine(machineWide, baseConfigPath)));
 
                 // Test 
-                 settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
-                 filePaths = settings.GetConfigFilePaths();
+                settings = RestoreSettingsUtils.ReadSettings(mockBaseDirectory, mockBaseDirectory, Path.Combine(subFolder, baseConfigPath), machineWideSettings);
+                filePaths = settings.GetConfigFilePaths();
 
                 Assert.Equal(1, filePaths.Count());
                 Assert.True(filePaths.Contains(Path.Combine(subFolder, baseConfigPath)));
@@ -168,7 +168,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
             }
         }
 
@@ -200,7 +200,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB"), Path.Combine(testDir, "sourceC") });
             }
         }
 
@@ -237,7 +237,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") });
             }
         }
 
@@ -291,8 +291,8 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "a"), Path.Combine(testDir, "b"), Path.Combine(testDir, "c"), Path.Combine(testDir, "d") });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "m"), Path.Combine(testDir, "n"), Path.Combine(testDir, "s"), Path.Combine(testDir, "t") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "a"), Path.Combine(testDir, "b"), Path.Combine(testDir, "c"), Path.Combine(testDir, "d") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base"), Path.Combine(testDir, "m"), Path.Combine(testDir, "n"), Path.Combine(testDir, "s"), Path.Combine(testDir, "t") });
             }
         }
 
@@ -319,8 +319,8 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
             }
         }
 
@@ -347,8 +347,8 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(testDir, "base") });
             }
         }
 
@@ -384,7 +384,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { @"https://nuget.org/v2/api" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { @"https://nuget.org/v2/api" });
             }
         }
 
@@ -545,7 +545,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(configFile);
             }
@@ -588,7 +588,7 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
                 task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
@@ -633,11 +633,81 @@ namespace NuGet.Build.Tasks.Test
 
                 // Assert
                 result.Should().BeTrue();
-                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputSources.Should().BeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
                 task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
 
+            }
+        }
+
+        [Fact]
+        public void GetRestoreSettingsTask_WithRestoreSourcesOverride_ResolvesAgainstWorkingDirectory()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+                var startupDirectory = Path.Combine(testDir, "innerPath");
+                var relativePath = "relativeSource";
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = startupDirectory,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreSources = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
+                    RestoreSourcesOverride = new[] { relativePath },
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.Should().BeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
+            }
+        }
+
+        [Fact]
+        public void GetRestoreSettingsTask_WithFallbackFoldersOverride_ResolvesAgainstWorkingDirectory()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+                var startupDirectory = Path.Combine(testDir, "innerPath");
+                var relativePath = "relativeSource";
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    MSBuildStartupDirectory = startupDirectory,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreFallbackFolders = new[] { Path.Combine(testDir, "sourceA"), Path.Combine(testDir, "sourceB") },
+                    RestoreFallbackFoldersOverride = new[] { relativePath },
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputFallbackFolders.Should().BeEquivalentTo(new[] { Path.Combine(startupDirectory, relativePath) });
             }
         }
 

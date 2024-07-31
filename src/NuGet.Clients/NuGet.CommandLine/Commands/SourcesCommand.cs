@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
 using System.Linq;
 using NuGet.Commands;
 
@@ -30,8 +29,14 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SourcesCommandValidAuthenticationTypesDescription")]
         public string ValidAuthenticationTypes { get; set; }
 
+        [Option(typeof(NuGetCommand), "SourcesCommandProtocolVersionDescription")]
+        public string ProtocolVersion { get; set; }
+
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
+
+        [Option(typeof(NuGetCommand), "SourcesCommandAllowInsecureConnectionsDescription")]
+        public bool AllowInsecureConnections { get; set; }
 
 
         public override void ExecuteCommand()
@@ -58,11 +63,33 @@ namespace NuGet.CommandLine
             switch (action)
             {
                 case SourcesAction.Add:
-                    var addArgs = new AddSourceArgs() { Name = Name, Source = Source, Username = Username, Password = Password, StorePasswordInClearText = StorePasswordInClearText, ValidAuthenticationTypes = ValidAuthenticationTypes, Configfile = ConfigFile };
+                    var addArgs = new AddSourceArgs()
+                    {
+                        Name = Name,
+                        Source = Source,
+                        Username = Username,
+                        Password = Password,
+                        StorePasswordInClearText = StorePasswordInClearText,
+                        ValidAuthenticationTypes = ValidAuthenticationTypes,
+                        Configfile = ConfigFile,
+                        ProtocolVersion = ProtocolVersion,
+                        AllowInsecureConnections = AllowInsecureConnections
+                    };
                     AddSourceRunner.Run(addArgs, () => Console);
                     break;
                 case SourcesAction.Update:
-                    var updateSourceArgs = new UpdateSourceArgs() { Name = Name, Source = Source, Username = Username, Password = Password, StorePasswordInClearText = StorePasswordInClearText, ValidAuthenticationTypes = ValidAuthenticationTypes, Configfile = ConfigFile };
+                    var updateSourceArgs = new UpdateSourceArgs()
+                    {
+                        Name = Name,
+                        Source = Source,
+                        Username = Username,
+                        Password = Password,
+                        StorePasswordInClearText = StorePasswordInClearText,
+                        ValidAuthenticationTypes = ValidAuthenticationTypes,
+                        Configfile = ConfigFile,
+                        ProtocolVersion = ProtocolVersion,
+                        AllowInsecureConnections = AllowInsecureConnections
+                    };
                     UpdateSourceRunner.Run(updateSourceArgs, () => Console);
                     break;
                 case SourcesAction.Remove:
@@ -78,6 +105,10 @@ namespace NuGet.CommandLine
                     EnableSourceRunner.Run(enableSourceArgs, () => Console);
                     break;
                 case SourcesAction.List:
+                    if (Format == SourcesListFormat.None)
+                    {
+                        Format = SourcesListFormat.Detailed;
+                    }
                     var listSourceArgs = new ListSourceArgs() { Configfile = ConfigFile, Format = Format.ToString() };
                     ListSourceRunner.Run(listSourceArgs, () => Console);
                     break;

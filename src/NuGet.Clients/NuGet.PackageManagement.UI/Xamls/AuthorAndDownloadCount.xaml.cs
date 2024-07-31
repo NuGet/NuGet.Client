@@ -1,12 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using NuGet.PackageManagement.UI.ViewModels;
 using Resx = NuGet.PackageManagement.UI.Resources;
 
 namespace NuGet.PackageManagement.UI
@@ -17,6 +20,13 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class AuthorAndDownloadCount : UserControl, INotifyPropertyChanged
     {
+        public static readonly DependencyProperty KnownOwnerViewModelsProperty =
+            DependencyProperty.Register(
+                nameof(KnownOwnerViewModels),
+                typeof(ImmutableList<KnownOwnerViewModel>),
+                typeof(AuthorAndDownloadCount),
+                new PropertyMetadata(OnPropertyChanged));
+
         public static readonly DependencyProperty AuthorProperty =
             DependencyProperty.Register(
                 nameof(Author),
@@ -36,25 +46,17 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public long? DownloadCount
+        public ImmutableList<KnownOwnerViewModel> KnownOwnerViewModels
         {
             get
             {
-                return GetValue(DownloadCountProperty) as long?;
+                return GetValue(KnownOwnerViewModelsProperty) as ImmutableList<KnownOwnerViewModel>;
             }
             set
             {
-                SetValue(DownloadCountProperty, value);
+                SetValue(KnownOwnerViewModelsProperty, value);
                 UpdateControl();
             }
-        }
-
-        private static void OnPropertyChanged(
-            DependencyObject dependencyObject, 
-            DependencyPropertyChangedEventArgs e)
-        {
-            var control = dependencyObject as AuthorAndDownloadCount;
-            control?.UpdateControl();
         }
 
         public string Author
@@ -70,6 +72,27 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public long? DownloadCount
+        {
+            get
+            {
+                return GetValue(DownloadCountProperty) as long?;
+            }
+            set
+            {
+                SetValue(DownloadCountProperty, value);
+                UpdateControl();
+            }
+        }
+
+        private static void OnPropertyChanged(
+            DependencyObject dependencyObject,
+            DependencyPropertyChangedEventArgs e)
+        {
+            var control = dependencyObject as AuthorAndDownloadCount;
+            control?.UpdateControl();
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string propertyName)
@@ -82,12 +105,9 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateControl()
         {
-            if (!string.IsNullOrEmpty(Author))
+            if (KnownOwnerViewModels == null && !string.IsNullOrEmpty(Author))
             {
-                _textBlockAuthor.Text = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Text_ByAuthor,
-                    Author);
+                _textBlockAuthor.Text = Author;
                 _textBlockAuthor.Visibility = Visibility.Visible;
             }
             else
@@ -99,12 +119,12 @@ namespace NuGet.PackageManagement.UI
             _textBlockDownloadCount.Inlines.Clear();
 
             if (DownloadCount.HasValue && DownloadCount.Value > 0)
-            {   
+            {
                 // Processing the format string ourselves. We only support "{0}".
                 var formatString = Resx.Text_Downloads;
                 string begin = string.Empty;
                 string end = string.Empty;
-                var index = formatString.IndexOf("{0}");
+                var index = formatString.IndexOf("{0}", StringComparison.Ordinal);
                 if (index == -1)
                 {
                     // Cannot find "{0}".
@@ -117,7 +137,7 @@ namespace NuGet.PackageManagement.UI
                     end = formatString.Substring(index + "{0}".Length);
                 }
 
-                _textBlockDownloadCount.Inlines.Add(new Run(begin)); 
+                _textBlockDownloadCount.Inlines.Add(new Run(begin));
                 _textBlockDownloadCount.Inlines.Add(
                     new Run(UIUtility.NumberToString(DownloadCount.Value, CultureInfo.CurrentCulture))
                     {
@@ -125,15 +145,15 @@ namespace NuGet.PackageManagement.UI
                     });
                 _textBlockDownloadCount.Inlines.Add(new Run(end));
                 _textBlockDownloadCount.Visibility = Visibility.Visible;
-            }        
+            }
             else
             {
                 _textBlockDownloadCount.Visibility = Visibility.Collapsed;
             }
 
-            // set the visiblity of the separator.
-            if (_textBlockAuthor.Visibility == Visibility.Visible &&
-                _textBlockDownloadCount.Visibility == Visibility.Visible)
+            // set the visibility of the separator.
+            if ((_panelOwners.Visibility == Visibility.Visible || _textBlockAuthor.Visibility == Visibility.Visible)
+                && _textBlockDownloadCount.Visibility == Visibility.Visible)
             {
                 _separator.Visibility = Visibility.Visible;
             }
@@ -143,7 +163,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             // set the visibility of the control itself.
-            if (_textBlockAuthor.Visibility == Visibility.Collapsed &&
+            if (_panelOwners.Visibility == Visibility.Collapsed &&
+                _textBlockAuthor.Visibility == Visibility.Collapsed &&
                 _textBlockDownloadCount.Visibility == Visibility.Collapsed)
             {
                 _self.Visibility = Visibility.Collapsed;

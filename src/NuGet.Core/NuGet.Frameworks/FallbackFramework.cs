@@ -1,35 +1,21 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using NuGet.Shared;
 
-#if IS_NET40_CLIENT
-using FallbackList = System.Collections.Generic.IList<NuGet.Frameworks.NuGetFramework>;
-#else
 using FallbackList = System.Collections.Generic.IReadOnlyList<NuGet.Frameworks.NuGetFramework>;
-#endif
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
+    public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
     {
         /// <summary>
         /// List framework to fall back to.
         /// </summary>
-        public FallbackList Fallback
-        {
-            get { return _fallback; }
-        }
+        public FallbackList Fallback { get; }
 
-        private readonly FallbackList _fallback;
         private int? _hashCode;
 
         public FallbackFramework(NuGetFramework framework, FallbackList fallbackFrameworks)
@@ -37,23 +23,23 @@ namespace NuGet.Frameworks
         {
             if (framework == null)
             {
-                throw new ArgumentNullException("framework");
+                throw new ArgumentNullException(nameof(framework));
             }
 
             if (fallbackFrameworks == null)
             {
-                throw new ArgumentNullException("fallbackFrameworks");
+                throw new ArgumentNullException(nameof(fallbackFrameworks));
             }
 
             if (fallbackFrameworks.Count == 0)
             {
-                throw new ArgumentException("Empty fallbackFrameworks is invalid", "fallbackFrameworks");
+                throw new ArgumentException("Empty fallbackFrameworks is invalid", nameof(fallbackFrameworks));
             }
 
-            _fallback = fallbackFrameworks;
+            Fallback = fallbackFrameworks;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as FallbackFramework);
         }
@@ -77,7 +63,7 @@ namespace NuGet.Frameworks
             return _hashCode.Value;
         }
 
-        public bool Equals(FallbackFramework other)
+        public bool Equals(FallbackFramework? other)
         {
             if (other == null)
             {

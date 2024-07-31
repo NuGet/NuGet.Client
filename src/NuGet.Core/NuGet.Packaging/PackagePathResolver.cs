@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using NuGet.Packaging.Core;
@@ -28,13 +29,13 @@ namespace NuGet.Packaging
             if (string.IsNullOrEmpty(rootDirectory))
             {
                 throw new ArgumentException(
-                    string.Format(Strings.StringCannotBeNullOrEmpty, nameof(rootDirectory)),
+                    string.Format(CultureInfo.CurrentCulture, Strings.StringCannotBeNullOrEmpty, nameof(rootDirectory)),
                     nameof(rootDirectory));
             }
             if (!Path.IsPathRooted(rootDirectory))
             {
                 throw new ArgumentException(
-                    string.Format(Strings.MustContainAbsolutePath, nameof(rootDirectory), rootDirectory),
+                    string.Format(CultureInfo.CurrentCulture, Strings.MustContainAbsolutePath, nameof(rootDirectory), rootDirectory),
                     nameof(rootDirectory));
             }
 

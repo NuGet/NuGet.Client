@@ -52,7 +52,13 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Disposes of this instance.
         /// </summary>
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected abstract void Dispose(bool disposing);
 
         protected void FireFaultEvent(Exception exception, Message message)
         {

@@ -3,10 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Frameworks;
 using Xunit;
 
-namespace NuGet.Test
+namespace NuGet.Frameworks.Test
 {
     public class CompatibilityTableTests
     {
@@ -21,10 +20,9 @@ namespace NuGet.Test
 
             CompatibilityTable table = new CompatibilityTable(all);
 
-            IEnumerable<NuGetFramework> compatible = null;
-            table.TryGetCompatible(win81, out compatible);
+            table.TryGetCompatible(win81, out IEnumerable<NuGetFramework>? compatible);
 
-            var results = compatible.ToArray();
+            var results = compatible!.ToArray();
 
             Assert.Equal(3, results.Count());
             Assert.Equal(win81, results[0]);
@@ -44,10 +42,9 @@ namespace NuGet.Test
 
             CompatibilityTable table = new CompatibilityTable(all);
 
-            IEnumerable<NuGetFramework> compatible = null;
-            table.TryGetCompatible(win9, out compatible);
+            table.TryGetCompatible(win9, out IEnumerable<NuGetFramework>? compatible);
 
-            var results = compatible.ToArray();
+            var results = compatible!.ToArray();
 
             Assert.Equal(4, results.Count());
             Assert.Equal(win7, results[0]);
@@ -68,12 +65,11 @@ namespace NuGet.Test
 
             CompatibilityTable table = new CompatibilityTable(all);
 
-            IEnumerable<NuGetFramework> compatible = null;
-            table.TryGetCompatible(net40, out compatible);
+            table.TryGetCompatible(net40, out IEnumerable<NuGetFramework>? compatible);
 
-            Assert.Equal(2, compatible.Count());
-            Assert.Equal(net35, compatible.First());
-            Assert.Equal(net40, compatible.Skip(1).First());
+            Assert.Equal(2, compatible!.Count());
+            Assert.Equal(net35, compatible!.First());
+            Assert.Equal(net40, compatible!.Skip(1).First());
         }
 
         [Fact]
@@ -88,10 +84,9 @@ namespace NuGet.Test
 
             CompatibilityTable table = new CompatibilityTable(all);
 
-            IEnumerable<NuGetFramework> compatible = null;
-            table.TryGetCompatible(wp8, out compatible);
+            table.TryGetCompatible(wp8, out IEnumerable<NuGetFramework>? compatible);
 
-            Assert.Equal(wp8, compatible.Single());
+            Assert.Equal(wp8, compatible!.Single());
         }
 
         [Fact]

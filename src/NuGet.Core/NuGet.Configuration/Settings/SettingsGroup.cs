@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -14,15 +16,17 @@ namespace NuGet.Configuration
 
         protected virtual bool CanBeCleared => true;
 
-        protected SettingsGroup()
-            : base()
+        public override string ElementName { get; }
+
+        protected SettingsGroup(string name)
+            : this(name, attributes: null, children: null)
         {
-            Children = new List<T>();
         }
 
-        protected SettingsGroup(IReadOnlyDictionary<string, string> attributes, IEnumerable<T> children)
+        protected SettingsGroup(string name, IReadOnlyDictionary<string, string>? attributes, IEnumerable<T>? children)
             : base(attributes)
         {
+            ElementName = name ?? throw new ArgumentNullException(message: Resources.Argument_Cannot_Be_Null_Or_Empty, paramName: nameof(name));
             if (children == null)
             {
                 Children = new List<T>();
@@ -35,10 +39,10 @@ namespace NuGet.Configuration
 
         public override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
 
-        internal SettingsGroup(XElement element, SettingsFile origin)
+        internal SettingsGroup(string name, XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            ElementName = element.Name.LocalName;
+            ElementName = name;
 
             Children = SettingFactory.ParseChildren<T>(element, origin, CanBeCleared).ToList();
 
@@ -92,9 +96,19 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(setting));
             }
 
+            if (Origin is null)
+            {
+                throw new InvalidOperationException("Cannot call this method on a setting where Origin is null.");
+            }
+
             if (Origin.IsMachineWide)
             {
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
+            }
+
+            if (Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
             }
 
             if (!Children.Contains(setting) && !setting.IsEmpty())
@@ -127,6 +141,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (Origin != null && Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (TryGetChild(setting, out var currentSetting) && Children.Remove(currentSetting))
             {
                 currentSetting.RemoveFromSettings();
@@ -138,7 +157,7 @@ namespace NuGet.Configuration
             }
         }
 
-        protected bool TryGetChild(T expectedChild, out T currentChild)
+        protected bool TryGetChild(T expectedChild, [NotNullWhen(true)] out T? currentChild)
         {
             currentChild = null;
 
@@ -157,7 +176,7 @@ namespace NuGet.Configuration
 
         void ISettingsGroup.Remove(SettingElement setting)
         {
-            Remove(setting as T);
+            Remove((T)setting);
         }
     }
 }

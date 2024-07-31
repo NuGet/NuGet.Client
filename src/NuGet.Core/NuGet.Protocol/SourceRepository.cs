@@ -125,7 +125,7 @@ namespace NuGet.Protocol.Core.Types
         public virtual T GetResource<T>(CancellationToken token) where T : class, INuGetResource
         {
             var task = GetResourceAsync<T>(token);
-            task.Wait();
+            task.Wait(token);
 
             return task.Result;
         }
@@ -189,7 +189,7 @@ namespace NuGet.Protocol.Core.Types
             var items = new List<INuGetResourceProvider>(
                 group.Select(e => e.Value).OrderBy(e => e.Name).ThenBy(e => e.After.Count()).ThenBy(e => e.Before.Count()));
 
-            var comparer = new ProviderComparer();
+            var comparer = ProviderComparer.Instance;
 
             var ordered = new Queue<INuGetResourceProvider>();
 

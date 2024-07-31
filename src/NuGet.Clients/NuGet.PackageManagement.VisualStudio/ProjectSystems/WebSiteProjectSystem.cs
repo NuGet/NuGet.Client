@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -25,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string GeneratedFilesFolder = "Generated___Files";
         private readonly HashSet<string> _excludedCodeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly string[] _sourceFileExtensions = { ".cs", ".vb" };
+        private static readonly string[] SourceFileExtensions = { ".cs", ".vb" };
 
         public WebSiteProjectSystem(IVsProjectAdapter vsProjectAdapter, INuGetProjectContext nuGetProjectContext)
             : base(vsProjectAdapter, nuGetProjectContext)
@@ -91,6 +90,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <remarks>This is identical to VsProjectSystem.RemoveReference except in the way we process exceptions.</remarks>
         private void RemoveDTEReference(string name)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             // Get the reference name without extension
             var referenceName = Path.GetFileNameWithoutExtension(name);
 
@@ -148,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static bool IsSourceFile(string path)
         {
             var extension = Path.GetExtension(path);
-            return _sourceFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
+            return SourceFileExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         }
 
         public override void RemoveImport(string targetFullPath)
@@ -167,13 +168,18 @@ namespace NuGet.PackageManagement.VisualStudio
             return false;
         }
 
+#pragma warning disable CS0672 // Member overrides obsolete member
+        // Website project properties are only available via DTE.
         public override dynamic GetPropertyValue(string propertyName)
+#pragma warning restore CS0672 // Member overrides obsolete member
         {
             if (propertyName.Equals(RootNamespace, StringComparison.OrdinalIgnoreCase))
             {
                 return DefaultNamespace;
             }
+#pragma warning disable CS0618 // Type or member is obsolete
             return base.GetPropertyValue(propertyName);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public override IEnumerable<string> GetDirectories(string path)
@@ -189,7 +195,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override Task BeginProcessingAsync()
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public override void RegisterProcessedFiles(IEnumerable<string> files)
@@ -221,7 +227,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             _excludedCodeFiles.Clear();
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using Microsoft.Win32;
 using NuGet.Common;
@@ -28,7 +29,7 @@ namespace NuGet.VisualStudio
              = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
 
         public PreinstalledRepositoryProvider(
-            Action<string> errorHandler, 
+            Action<string> errorHandler,
             ISourceRepositoryProvider provider)
             : this(DefaultRegistryKeyRoot, errorHandler, provider)
         {
@@ -121,7 +122,7 @@ namespace NuGet.VisualStudio
 
             if (!extensionManagerShim.TryGetExtensionInstallPath(extensionId, out installPath))
             {
-                var errorMessage = string.Format(VsResources.PreinstalledPackages_InvalidExtensionId, extensionId);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidExtensionId, extensionId);
                 _errorHandler(errorMessage);
 
                 // The error is fatal, cannot continue
@@ -142,10 +143,11 @@ namespace NuGet.VisualStudio
             string repositoryValue = null;
 
             // When pulling the repository from the registry, use CurrentUser first, falling back onto LocalMachine
+            // Documented here: https://docs.microsoft.com/nuget/visual-studio-extensibility/visual-studio-templates#registry-specified-folder-path
             var registryKeys = new[]
                                {
-                                   new RegistryKeyWrapper(Registry.CurrentUser),
-                                   new RegistryKeyWrapper(Registry.LocalMachine)
+                                   new RegistryKeyWrapper(RegistryHive.CurrentUser),
+                                   new RegistryKeyWrapper(RegistryHive.LocalMachine, RegistryView.Registry32)
                                };
 
             // Find the first registry key that supplies the necessary subkey/value
@@ -168,7 +170,7 @@ namespace NuGet.VisualStudio
 
             if (repositoryKey == null)
             {
-                var errorMessage = string.Format(VsResources.PreinstalledPackages_RegistryKeyError, _registryKeyRoot);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_RegistryKeyError, _registryKeyRoot);
                 _errorHandler(errorMessage);
 
                 // The error is fatal, cannot continue
@@ -177,7 +179,7 @@ namespace NuGet.VisualStudio
 
             if (string.IsNullOrEmpty(repositoryValue))
             {
-                var errorMessage = string.Format(VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, _registryKeyRoot);
+                var errorMessage = string.Format(CultureInfo.CurrentCulture, VsResources.PreinstalledPackages_InvalidRegistryValue, keyName, _registryKeyRoot);
                 _errorHandler(errorMessage);
 
                 // The error is fatal, cannot continue

@@ -1,4 +1,5 @@
 function Test-ProjectRetargeting-ShowErrorUponRetargeting {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -25,6 +26,7 @@ function Test-ProjectRetargeting-ShowErrorUponRetargeting {
 }
 
 function Test-ProjectRetargeting-ClearErrorUponCleanProject {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -55,6 +57,7 @@ function Test-ProjectRetargeting-ClearErrorUponCleanProject {
 }
 
 function Test-ProjectRetargeting-ClearErrorUponCloseSolution {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -83,6 +86,7 @@ function Test-ProjectRetargeting-ClearErrorUponCloseSolution {
 }
 
 function Test-ProjectRetargeting-ClearErrorAndWarningRetargetBackToOriginalFramework {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -120,6 +124,7 @@ function Test-ProjectRetargeting-ClearErrorAndWarningRetargetBackToOriginalFrame
 }
 
 function Test-ProjectRetargeting-ConvertBuildErrorToBuildWarningUponBuild {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -157,8 +162,8 @@ function Test-ProjectRetargeting-ConvertBuildErrorToBuildWarningUponBuild {
     Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $warning
 }
 
-function Test-ProjectRetargeting-ShowWarningOnCleanBuild
-{
+function Test-ProjectRetargeting-ShowWarningOnCleanBuild {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -191,8 +196,8 @@ function Test-ProjectRetargeting-ShowWarningOnCleanBuild
     Assert-AreEqual 'Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit https://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: PackageTargetingNet40AndNet40Client' $warning
 }
 
-function Test-ProjectRetargeting-ClearWarningUponCleanProject
-{
+function Test-ProjectRetargeting-ClearWarningUponCleanProject {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -232,8 +237,8 @@ function Test-ProjectRetargeting-ClearWarningUponCleanProject
     Assert-AreEqual 0 $warnings.Count
 }
 
-function Test-ProjectRetargeting-ClearWarningUponCloseSolution
-{
+function Test-ProjectRetargeting-ClearWarningUponCloseSolution {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -274,8 +279,8 @@ function Test-ProjectRetargeting-ClearWarningUponCloseSolution
 }
 
 
-function Test-ProjectRetargeting-ClearWarningUponPackageReinstallationAndBuild
-{
+function Test-ProjectRetargeting-ClearWarningUponPackageReinstallationAndBuild {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -317,6 +322,7 @@ function Test-ProjectRetargeting-ClearWarningUponPackageReinstallationAndBuild
 }
 
 function Test-ProjectRetargeting-ClearReinstallationFlagRetargetBackToOriginalFramework {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -352,6 +358,7 @@ function Test-ProjectRetargeting-ClearReinstallationFlagRetargetBackToOriginalFr
 }
 
 function Test-ProjectRetargeting-ClearReinstallationFlagUponPackageReinstallation {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange

@@ -10,7 +10,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
-    public class V2FeedUtilities
+    public static class V2FeedUtilities
     {
         public static IPackageSearchMetadata CreatePackageSearchResult(
           V2FeedPackageInfo package,

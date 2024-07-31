@@ -68,7 +68,8 @@ namespace NuGet.Build
                         logMessage = new RestoreLogMessage(message.Level, message.Message)
                         {
                             Code = message.Code,
-                            FilePath = message.ProjectPath
+                            FilePath = message.ProjectPath,
+                            ProjectPath = message.ProjectPath,
                         };
                     }
                     LogForNonMono(logMessage);
@@ -194,7 +195,7 @@ namespace NuGet.Build
         {
             Log(message);
 
-            return System.Threading.Tasks.Task.FromResult(0);
+            return System.Threading.Tasks.Task.CompletedTask;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using NuGet.Packaging.Core;
+using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine.Test.Caching
 {

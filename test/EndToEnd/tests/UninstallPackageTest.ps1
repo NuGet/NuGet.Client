@@ -120,29 +120,22 @@ function Test-UninstallPackageWithNestedContentFiles {
 }
 
 function Test-SimpleFSharpUninstall {
+    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
+    param($context)
+
     # Arrange
     $p = New-FSharpLibrary
+    Build-Solution # wait for project nomination
 
     # Act
-    Install-Package Ninject -ProjectName $p.Name -Source $context.RepositoryPath
-    Assert-NotNull (Get-ProjectItem $p two.txt)
-    Assert-Package $p Ninject
-    Assert-SolutionPackage Ninject
+    Install-Package Ninject -ProjectName $p.Name -Source $context.RepositoryPath -version 2.0.1
+    Build-Solution # wait for assets file to be updated
+    Assert-NetCorePackageInLockFile $p Ninject 2.0.1
     Uninstall-Package Ninject -ProjectName $p.Name
+    Build-Solution # wait for assets file to be updated
 
     # Assert
-    Assert-Null (Get-ProjectPackage $p Ninject)
-    Assert-Null (Get-SolutionPackage Ninject)
-    Assert-Null (Get-ProjectItem $ two.txt)
-}
-
-function Test-FSharpDependentPackageUninstall {
-    # Arrange
-    $p = New-FSharpLibrary
-    $p | Install-Package -Source $context.RepositoryRoot PackageWithDependencyOnPrereleaseTestPackage -FileConflictAction Overwrite
-
-    # Act & Assert
-    Assert-Throws { $p | Uninstall-Package PreReleaseTestPackage } "Unable to uninstall 'PreReleaseTestPackage.1.0.0' because 'PackageWithDependencyOnPrereleaseTestPackage.1.0.0' depends on it."
+    Assert-NetCorePackageNotInLockFile $p Ninject
 }
 
 function Test-UninstallPackageThatIsNotInstalledThrows {
@@ -240,7 +233,7 @@ function UninstallSpecificPackageThrowsIfNotInstalledInProject {
 function Test-UninstallSpecificVersionOfPackage {
     # Arrange
     $p1 = New-ClassLibrary
-    $p2 = New-FSharpLibrary
+    $p2 = New-ClassLibrary
     $p1 | Install-Package Antlr -Version 3.1.1 -Source $context.RepositoryPath
     $p2 | Install-Package Antlr -Version 3.1.3.42154 -Source $context.RepositoryPath
 
@@ -661,8 +654,8 @@ function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
     Assert-AreEqual '<?xml version="1.0" encoding="utf-8"?>' $content[0]
     Assert-AreEqual '<packages>' $content[1]
     # Currently, when running NuGet api V2, we write the non-normalized version. So, replace 1.3.2.0 with 1.3.2. Related to bug: https://github.com/NuGet/Home/issues/577
-    Assert-AreEqual '  <package id="RazorGenerator.MsBuild" version="1.3.2" targetFramework="net45" />' $content[2].Replace("1.3.2.0", "1.3.2")
-    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net45" />' $content[3]
+    Assert-AreEqual '  <package id="RazorGenerator.MsBuild" version="1.3.2" targetFramework="net48" />' $content[2].Replace("1.3.2.0", "1.3.2")
+    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net48" />' $content[3]
     Assert-AreEqual '</packages>' $content[4]
 
     # Act
@@ -673,7 +666,7 @@ function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
     Assert-AreEqual 4 $content.Length
     Assert-AreEqual '<?xml version="1.0" encoding="utf-8"?>' $content[0]
     Assert-AreEqual '<packages>' $content[1]
-    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net45" />' $content[2]
+    Assert-AreEqual '  <package id="SolutionLevelPkg" version="1.0.0" targetFramework="net48" />' $content[2]
     Assert-AreEqual '</packages>' $content[3]
 }
 
@@ -778,6 +771,7 @@ function Test-WebSiteSimpleUninstall
 
 function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveContentFiles
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -810,6 +804,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveConten
 
 function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemblies
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -842,6 +837,7 @@ function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToRemoveAssemb
 
 function Test-UninstallPackageUseTargetFxPersistedInPackagesConfigToInvokeUninstallScript
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/11221')]
     param($context)
 
     # Arrange
@@ -1002,30 +998,6 @@ function UninstallPackageRemoveImportStatement
     Assert-NoProjectImport $p "..\packages\PackageWithImport.2.0.0\build\PackageWithImport.props"
 }
 
-function UninstallPackageFromJsWinStoreApplication
-{
-    if ((Get-VSVersion) -eq "10.0")
-    {
-        return
-    }
-
-    # Arrange
-    $p = New-JavaScriptApplication
-
-    Install-Package jQuery.Validation -IgnoreDependencies -ProjectName $p.Name
-    Assert-Package $p "jQuery.Validation"
-
-    # Act
-    Uninstall-Package jQuery.Validation -ProjectName $p.Name
-
-    # Assert
-    Assert-NoPackage $p "jQuery.Validation"
-
-    # verify the Scripts folder is completely removed
-    $scriptFolder = Get-ProjectItem $p "Scripts"
-    Assert-Null $scriptFolder
-}
-
 function Test-UninstallPackageWithContentInLicenseBlocks
 {
 	param($context)
@@ -1054,4 +1026,24 @@ From the package' > $fooFilePath
 	# Assert
 	Assert-NoPackage $p $name
 	Assert-Null (Get-ProjectItem $p 'foo')
+}
+
+function RemoveDirectory {
+    param($dir)
+
+    $iteration = 0
+    while ($iteration++ -lt 10)
+    {
+        if (Test-Path $dir)
+        {
+            # because -Recurse parameter in Remove-Item has a known issue so using Get-ChildItem to
+            # first delete all the children and then delete the folder.
+            Get-ChildItem $dir -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            break;
+        }
+    }
 }

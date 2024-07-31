@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,24 +6,27 @@ using System.Collections.Concurrent;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;
 using NuGet.Test.Utility;
+using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {
-    public class TestCommandOutputLogger : CommandOutputLogger
+    internal class TestCommandOutputLogger : CommandOutputLogger
     {
         private readonly bool _observeLogLevel;
 
-        public TestLogger Logger { get; set; } = new TestLogger();
+        public TestLogger Logger { get; set; }
 
-        public TestCommandOutputLogger(bool observeLogLevel = false)
+        public TestCommandOutputLogger(ITestOutputHelper testOutputHelper, bool observeLogLevel = false)
             : base(LogLevel.Debug)
         {
             _observeLogLevel = observeLogLevel;
+
+            Logger = new TestLogger(testOutputHelper);
         }
 
         protected override void LogInternal(LogLevel logLevel, string message)
         {
-            if (_observeLogLevel && logLevel < LogLevel)
+            if (_observeLogLevel && logLevel < VerbosityLevel)
             {
                 return;
             }
@@ -54,6 +57,11 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        public override void LogMinimal(string data, ConsoleColor color)
+        {
+            LogInternal(LogLevel.Minimal, data);
+        }
+
         public ConcurrentQueue<string> Messages
         {
             get
@@ -61,6 +69,8 @@ namespace NuGet.XPlat.FuncTest
                 return Logger.Messages;
             }
         }
+
+        public ConcurrentQueue<string> WarningMessages => Logger.WarningMessages;
 
         public ConcurrentQueue<string> ErrorMessages
         {

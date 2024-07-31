@@ -5,17 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
     public sealed class UnknownItem : SettingItem, ISettingsGroup
     {
-        public override string ElementName { get; protected set; }
+        public override string ElementName { get; }
 
         public IReadOnlyList<SettingBase> Children => _mutableChildren.Select(c => c.Value).ToList();
-
-        public new IReadOnlyDictionary<string, string> Attributes => base.Attributes;
 
         public override bool IsEmpty() => false;
 
@@ -40,7 +37,7 @@ namespace NuGet.Configuration
             }
         }
 
-        public UnknownItem(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingBase> children)
+        public UnknownItem(string name, IReadOnlyDictionary<string, string>? attributes, IEnumerable<SettingBase>? children)
             : base(attributes)
         {
             if (string.IsNullOrEmpty(name))
@@ -85,6 +82,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (Origin != null && Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (!_mutableChildren.ContainsKey(setting) && !setting.IsEmpty())
             {
                 _mutableChildren.Add(setting, setting);
@@ -95,7 +97,7 @@ namespace NuGet.Configuration
 
                     if (Node != null)
                     {
-                        setting.SetNode(setting.AsXNode());
+                        setting.SetNode(setting.AsXNode()!);
 
                         XElementUtility.AddIndented(Node as XElement, setting.Node);
                         Origin.IsDirty = true;
@@ -127,6 +129,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (Origin != null && Origin.IsReadOnly)
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (_mutableChildren.TryGetValue(setting, out var currentSetting) && _mutableChildren.Remove(currentSetting))
             {
                 currentSetting.RemoveFromSettings();
@@ -154,7 +161,7 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             var unknown = other as UnknownItem;
 
@@ -177,7 +184,7 @@ namespace NuGet.Configuration
         {
             base.Update(setting);
 
-            var unknown = setting as UnknownItem;
+            var unknown = (UnknownItem)setting;
 
             var otherChildren = new Dictionary<SettingBase, SettingBase>(unknown._mutableChildren);
             foreach (var child in Children)
@@ -193,7 +200,7 @@ namespace NuGet.Configuration
                 }
                 else if (child is SettingItem item)
                 {
-                    item.Update(otherChild as SettingItem);
+                    item.Update((SettingItem)otherChild);
                 }
             }
 
@@ -221,7 +228,7 @@ namespace NuGet.Configuration
                 {
                     if (existingChild is SettingItem childItem)
                     {
-                        childItem.Update(child as SettingItem);
+                        childItem.Update((SettingItem)child);
                     }
                 }
                 else
@@ -235,7 +242,7 @@ namespace NuGet.Configuration
         {
             base.SetOrigin(origin);
 
-            foreach(var child in _mutableChildren)
+            foreach (var child in _mutableChildren)
             {
                 child.Value.SetOrigin(origin);
             }

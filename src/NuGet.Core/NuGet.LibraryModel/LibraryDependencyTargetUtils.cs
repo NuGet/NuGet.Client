@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -10,12 +11,12 @@ namespace NuGet.LibraryModel
     /// <summary>
     /// Helper methods for dealing with LibraryDependencyTarget strings.
     /// </summary>
-    public class LibraryDependencyTargetUtils
+    public static class LibraryDependencyTargetUtils
     {
         /// <summary>
         /// Convert flag string into a LibraryTypeFlag.
         /// </summary>
-        public static LibraryDependencyTarget Parse(string flag)
+        public static LibraryDependencyTarget Parse(string? flag)
         {
             // If the LibraryDependency does not have a flag value it is considered all
             if (string.IsNullOrEmpty(flag))
@@ -23,7 +24,7 @@ namespace NuGet.LibraryModel
                 return LibraryDependencyTarget.All;
             }
 
-            var flagEnd = flag.IndexOf(',');
+            var flagEnd = flag!.IndexOf(',');
             if (flagEnd == -1)
             {
                 var segment = StringSegment.CreateTrimmed(flag, 0, flag.Length - 1);
@@ -133,6 +134,24 @@ namespace NuGet.LibraryModel
             }
 
             return string.Join(",", flagStrings);
+        }
+
+        private static readonly ConcurrentDictionary<LibraryDependencyTarget, string> LibraryDependencyTargetCache = new();
+
+        /// <summary>
+        /// Efficiently converts <see cref="LibraryDependencyTarget"/> to it's <see cref="string"/> representation.
+        /// </summary>
+        /// <param name="includeFlags">The <see cref="LibraryDependencyTarget"/> instance to get the <see cref="string"/> representation for.</param>
+        /// <returns>The <see cref="string"/> representation of <paramref name="includeFlags"/>.</returns>
+        public static string AsString(this LibraryDependencyTarget includeFlags)
+        {
+            if (!LibraryDependencyTargetCache.TryGetValue(includeFlags, out string? enumAsString))
+            {
+                enumAsString = includeFlags.ToString();
+                LibraryDependencyTargetCache.TryAdd(includeFlags, enumAsString);
+            }
+
+            return enumAsString;
         }
 
         [DebuggerDisplay("{String.Substring(Start, Length)}")]

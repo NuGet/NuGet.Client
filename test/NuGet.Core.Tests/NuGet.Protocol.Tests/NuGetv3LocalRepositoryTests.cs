@@ -10,12 +10,14 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Tests;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Repositories.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class NuGetv3LocalRepositoryTests
     {
         [Fact]
@@ -47,25 +49,25 @@ namespace NuGet.Repositories.Test
                         PackageIdentity identity;
                         while (packages.TryDequeue(out identity))
                         {
-                                // Fetch
-                                var result = target.FindPackagesById(identity.Id)
-                                        .FirstOrDefault(f => f.Version == identity.Version);
+                            // Fetch
+                            var result = target.FindPackagesById(identity.Id)
+                                    .FirstOrDefault(f => f.Version == identity.Version);
 
                             Assert.Null(result);
 
-                                // Create package
-                                await SimpleTestPackageUtility.CreateFolderFeedV3Async(workingDir,
-                                        PackageSaveMode.Defaultv3,
-                                        identity);
+                            // Create package
+                            await SimpleTestPackageUtility.CreateFolderFeedV3Async(workingDir,
+                                    PackageSaveMode.Defaultv3,
+                                    identity);
 
-                                // Clear
-                                target.ClearCacheForIds(new[] { identity.Id });
+                            // Clear
+                            target.ClearCacheForIds(new[] { identity.Id });
 
                             result = target.FindPackagesById(identity.Id)
                                 .FirstOrDefault(f => f.Version == identity.Version);
 
-                                // Assert the package was found
-                                Assert.NotNull(result);
+                            // Assert the package was found
+                            Assert.NotNull(result);
                         }
                     }));
                 }
@@ -90,7 +92,7 @@ namespace NuGet.Repositories.Test
 
                 var packages = new List<PackageIdentity>();
 
-                for (int i=0; i < 100; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     packages.Add(new PackageIdentity(id, NuGetVersion.Parse($"{i + 1}.0.0")));
                 }
@@ -106,7 +108,7 @@ namespace NuGet.Repositories.Test
                     {
                         sem.Wait();
 
-                        for (int j=0; j < 100; j++)
+                        for (int j = 0; j < 100; j++)
                         {
                             // Fetch
                             var result = target.FindPackagesById(id);
@@ -203,7 +205,7 @@ namespace NuGet.Repositories.Test
                 Assert.Equal("1.0.0", packages.ElementAt(0).Version.ToNormalizedString());
             }
         }
-        
+
         [Fact]
         public async Task NuGetv3LocalRepository_FindPackagesById_LeavesVersionCaseFoundOnFileSystem()
         {

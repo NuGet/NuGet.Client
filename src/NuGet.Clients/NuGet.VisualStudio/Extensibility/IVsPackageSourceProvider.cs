@@ -18,6 +18,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Provides the list of package sources.
         /// </summary>
+        /// <remarks>Can be called from a background thread.</remarks>
         /// <param name="includeUnOfficial">Unofficial sources will be included in the results</param>
         /// <param name="includeDisabled">Disabled sources will be included in the results</param>
         /// <remarks>Does not require the UI thread.</remarks>

@@ -32,11 +32,11 @@ namespace NuGet.ProjectModel
         {
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(StringComparer.Ordinal.GetHashCode(ProjectPath));
-            combiner.AddObject(StringComparer.OrdinalIgnoreCase.GetHashCode(ProjectUniqueName));
-            combiner.AddObject(IncludeAssets);
-            combiner.AddObject(ExcludeAssets);
-            combiner.AddObject(PrivateAssets);
+            combiner.AddObject(ProjectPath);
+            combiner.AddStringIgnoreCase(ProjectUniqueName);
+            combiner.AddStruct(IncludeAssets);
+            combiner.AddStruct(ExcludeAssets);
+            combiner.AddStruct(PrivateAssets);
 
             return combiner.CombinedHash;
         }

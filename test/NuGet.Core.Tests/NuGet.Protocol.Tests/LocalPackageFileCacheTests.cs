@@ -12,6 +12,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class LocalPackageFileCacheTests
     {
         [Fact]
@@ -158,6 +159,34 @@ namespace NuGet.Protocol.Tests
 
                 // This should throw
                 Assert.Throws<DirectoryNotFoundException>(() => result.Value);
+            }
+        }
+
+        [Fact]
+        public async Task LocalPackageFileCache_UpdateLastAccessTimestampVerifyOnce()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var cache = new LocalPackageFileCache();
+                var pathResolver = new VersionFolderPathResolver(pathContext.PackageSource);
+
+                var identity = new PackageIdentity("X", NuGetVersion.Parse("1.0.0"));
+                var path = pathResolver.GetInstallPath(identity.Id, identity.Version);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    identity);
+
+                var metadataPath = pathResolver.GetNupkgMetadataPath(identity.Id, identity.Version);
+
+                cache.UpdateLastAccessTime(metadataPath);
+
+                var lastAccess = File.GetLastAccessTimeUtc(metadataPath);
+
+                cache.UpdateLastAccessTime(metadataPath);
+
+                // Verify the last access timestamp was cached
+                Assert.Equal(lastAccess, File.GetLastAccessTimeUtc(metadataPath));
             }
         }
     }

@@ -2,10 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Loaded="UserControl_Loaded"
-             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI">
+             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
+             Visibility="{Binding InnerVisibility, Mode=OneWay}">
     <UserControl.Resources>
       <Storyboard x:Key="ShowSmoothly">
-        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="RestoreBar">
+        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="InnerVisibility" Storyboard.Target="{Binding}">
           <DiscreteObjectKeyFrame KeyTime="0:0:0.3" Value="{x:Static Visibility.Visible}"/>
         </ObjectAnimationUsingKeyFrames>
         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
@@ -17,12 +18,12 @@
         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
           <EasingDoubleKeyFrame KeyTime="0:0:0.6" Value="0"/>
         </DoubleAnimationUsingKeyFrames>
-        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="RestoreBar">
+        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="InnerVisibility" Storyboard.Target="{Binding}">
           <DiscreteObjectKeyFrame KeyTime="0:0:0.6" Value="{x:Static Visibility.Collapsed}"/>
         </ObjectAnimationUsingKeyFrames>
       </Storyboard>
     </UserControl.Resources>
-    <Border x:Name="RestoreBar" VerticalAlignment="Center" Visibility="Collapsed" Opacity="0" BorderThickness="0,0,0,1">
+    <Border x:Name="RestoreBar" VerticalAlignment="Center" Visibility="{Binding InnerVisibility, Mode=OneWay}" Opacity="0" BorderThickness="0,0,0,1">
         <Grid Margin="0,4,0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -31,7 +32,7 @@
             
             <TextBlock x:Name="StatusMessage" Grid.Column="0" Text="{x:Static resx:Resources.AskForRestoreMessage}" TextWrapping="Wrap" TextOptions.TextFormattingMode="Display" VerticalAlignment="Center" Margin="5,0,5,0" />
             <Button x:Name="RestoreButton" VerticalAlignment="Center" Grid.Column="1" Content="{x:Static resx:Resources.RestoreButtonLabel}" Click="OnRestoreLinkClick" Margin="5,0,3,0" Padding="8,2,8,2" />
-            <ProgressBar x:Name="ProgressBar" Grid.Column="1" IsIndeterminate="True" Height="{Binding ActualHeight, ElementName=RestoreButton, Mode=OneWay}" Width="170" Margin="5,0,3,0" />
+      <ProgressBar x:Name="ProgressBar" Grid.Column="1" IsIndeterminate="{Binding RelativeSource={RelativeSource Self}, Path=IsVisible}" Height="{Binding ActualHeight, ElementName=RestoreButton, Mode=OneWay}" Width="170" Margin="5,0,3,0" />
         </Grid>
     </Border>
 </UserControl>

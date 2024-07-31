@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -11,7 +11,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class PrimarySignatureTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class PrimarySignatureTests
     {
         private const string NotExactlyOnePrimarySignature = "The package signature file does not contain exactly one primary signature.";
 
@@ -102,7 +103,7 @@ namespace NuGet.Packaging.Test
                 var attribute = AttributeUtility.CreateSigningCertificateV2(test.Certificate, HashAlgorithmName.SHA256);
 
                 attribute.Values.Add(attribute.Values[0]);
-                
+
                 test.CmsSigner.SignedAttributes.Add(attribute);
 
                 test.SignedCms.ComputeSignature(test.CmsSigner);

@@ -1,21 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text;
+using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -73,7 +70,7 @@ namespace NuGet.Commands.Test
                 }".Replace("_FRAMEWORK_", framework));
 
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
 
                 var request = new TestRestoreRequest(spec, sources, packagesDir, logger);
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");

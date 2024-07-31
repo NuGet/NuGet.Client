@@ -41,6 +41,8 @@ namespace NuGet.CommandLine
         /// <see cref="IEnumerable{PackageReference}" />.</returns>
         public Task<IEnumerable<PackageReference>> GetFolderPackagesAsync(CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var packages = Enumerable.Empty<LocalPackageInfo>();
 
             if (Directory.Exists(Root))
@@ -54,7 +56,7 @@ namespace NuGet.CommandLine
                 {
                     // Id
                     // Ignore packages that are in SxS or a different format.
-                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance)
+                    packages = LocalFolderUtility.GetPackagesV2(Root, NullLogger.Instance, token)
                         .Where(PackageIsValidForPathResolver);
                 }
             }
@@ -81,7 +83,7 @@ namespace NuGet.CommandLine
             }
 
             // For SxS scenarios PackageManagement should not read these references, this would cause uninstalls.
-            return Task.FromResult(Enumerable.Empty<PackageReference>());
+            return TaskResult.EmptyEnumerable<PackageReference>();
         }
 
         /// <summary>

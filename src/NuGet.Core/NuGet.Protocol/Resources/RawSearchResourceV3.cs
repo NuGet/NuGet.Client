@@ -14,6 +14,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
+    [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
     public class RawSearchResourceV3 : INuGetResource
     {
         private readonly HttpSource _client;
@@ -29,13 +30,14 @@ namespace NuGet.Protocol
 
             if (searchEndpoints == null)
             {
-                throw new ArgumentNullException("searchEndpoints");
+                throw new ArgumentNullException(nameof(searchEndpoints));
             }
 
             _client = client;
             _searchEndpoints = searchEndpoints.ToArray();
         }
 
+        [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
         public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             for (var i = 0; i < _searchEndpoints.Length; i++)
@@ -46,9 +48,9 @@ namespace NuGet.Protocol
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
                 var queryString =
                     "q=" + searchTerm +
-                    "&skip=" + skip.ToString() +
-                    "&take=" + take.ToString() +
-                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+                    "&skip=" + skip.ToString(CultureInfo.CurrentCulture) +
+                    "&take=" + take.ToString(CultureInfo.CurrentCulture) +
+                    "&prerelease=" + filters.IncludePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant();
 
                 if (filters.IncludeDelisted)
                 {
@@ -61,7 +63,7 @@ namespace NuGet.Protocol
                     var frameworks =
                         string.Join("&",
                             filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString()));
+                                fx => "supportedFramework=" + fx.ToString(CultureInfo.InvariantCulture)));
                     queryString += "&" + frameworks;
                 }
 
@@ -113,6 +115,7 @@ namespace NuGet.Protocol
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
+        [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
         public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
@@ -120,5 +123,6 @@ namespace NuGet.Protocol
             var data = results[JsonProperties.Data] as JArray ?? Enumerable.Empty<JToken>();
             return data.OfType<JObject>();
         }
+
     }
 }

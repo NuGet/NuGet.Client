@@ -1,64 +1,63 @@
-﻿<UserControl x:Class="NuGet.PackageManagement.UI.LoadingStatusBar"
+<UserControl x:Class="NuGet.PackageManagement.UI.LoadingStatusBar"
              x:ClassModifier="internal"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+             xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
              mc:Ignorable="d"
              d:DesignHeight="30" d:DesignWidth="800">
   <UserControl.DataContext>
     <nuget:LoadingStatusViewModel/>
   </UserControl.DataContext>
   <UserControl.Resources>
-    <BitmapImage 
-      x:Key="BitmapImage_SearchFailed"
-      UriSource="/NuGet.PackageManagement.UI;component/Resources/StatusStop_32x.png"/>
-    <BitmapImage 
-      x:Key="BitmapImage_SearchCompleted"
-      UriSource="/NuGet.PackageManagement.UI;component/Resources/StatusOK_32x.png"/>
-    <nuget:BooleanToVisibilityConverter 
+    <BooleanToVisibilityConverter
       x:Key="BooleanToVisibilityConverter" />
-    <nuget:EnumDescriptionValueConverter 
+    <nuget:EnumDescriptionValueConverter
       x:Key="EnumDescriptionValueConverter"/>
     <nuget:CollectionToStringConverter
       x:Key="CollectionToStringConverter"/>
     <nuget:EnumerableToVisibilityConverter
       x:Key="EnumerableToVisibilityConverter" />
+    <ui:BrushToColorConverter x:Key="BrushToColorConverter" />
     <Style
         x:Key="LinkButtonStyle"
         TargetType="{x:Type Button}">
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="{x:Type Button}">
-            <TextBlock TextDecorations="Underline">
+        <Setter Property="Template">
+          <Setter.Value>
+            <ControlTemplate TargetType="{x:Type Button}">
+              <TextBlock TextDecorations="Underline">
                 <ContentPresenter />
-            </TextBlock>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-      <Setter Property="HorizontalContentAlignment" 
+              </TextBlock>
+            </ControlTemplate>
+          </Setter.Value>
+        </Setter>
+        <Setter Property="HorizontalContentAlignment" 
               Value="Center" />
-      <Setter Property="VerticalContentAlignment" 
+        <Setter Property="VerticalContentAlignment" 
               Value="Center" />
-      <Setter Property="Foreground" 
+        <Setter Property="Foreground" 
               Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextKey}}" />
-      <Setter Property="Cursor" 
+        <Setter Property="Cursor" 
               Value="Hand" />
-      <Setter Property="Margin" 
+        <Setter Property="Margin" 
               Value="5,0"/>
-      <Setter Property="FontFamily" 
+        <Setter Property="FontFamily" 
               Value="SegoeUI"/>
-      <Setter Property="FontSize" 
+        <Setter Property="FontSize" 
               Value="12"/>
-      <Style.Triggers>
-        <Trigger Property="IsMouseOver" 
+        <Style.Triggers>
+          <Trigger Property="IsMouseOver" 
                  Value="true">
-          <Setter Property="Foreground" 
+            <Setter Property="Foreground" 
                   Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextHoverKey}}" />
-        </Trigger>
-      </Style.Triggers>
-    </Style>
+          </Trigger>
+        </Style.Triggers>
+      </Style>
     <Style
       x:Key="StatusMessageTextBlockStyle"
       TargetType="TextBlock">
@@ -83,6 +82,7 @@
   <Grid
       d:DataContext="{d:DesignData Source=/Design/LoadingStatusViewModelSampleData.xaml,IsDesignTimeCreatable=True}"
       Background="{DynamicResource {x:Static nuget:Brushes.InfoBackgroundKey}}"
+      imagingTheme:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource Self}, Converter={StaticResource BrushToColorConverter}}"
       VerticalAlignment="Center"
       Visibility="Visible"
       Margin="0"
@@ -150,8 +150,8 @@
       <ColumnDefinition Width="Auto"/>
       <ColumnDefinition Width="16"/>
     </Grid.ColumnDefinitions>
-    <Image Grid.Column="1"
-           Source="{StaticResource BitmapImage_SearchFailed}"
+    <imaging:CrispImage Grid.Column="1"
+           Moniker="{x:Static catalog:KnownMonikers.StatusStopped}"
            Stretch="Uniform">
       <Image.Style>
         <Style TargetType="{x:Type Image}">
@@ -171,9 +171,9 @@
           </Style.Triggers>
         </Style>
       </Image.Style>
-    </Image>
-    <Image Grid.Column="1"
-           Source="{StaticResource BitmapImage_SearchCompleted}"
+    </imaging:CrispImage>
+    <imaging:CrispImage Grid.Column="1"
+           Moniker="{x:Static catalog:KnownMonikers.StatusOK}"
            Stretch="Uniform">
       <Image.Style>
         <Style TargetType="{x:Type Image}">
@@ -193,7 +193,7 @@
           </Style.Triggers>
         </Style>
       </Image.Style>
-    </Image>
+    </imaging:CrispImage>
     <nuget:Spinner Grid.Column="1"
                    Height="16">
       <nuget:Spinner.Style>

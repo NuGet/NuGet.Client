@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -23,6 +21,7 @@ namespace NuGet.PackageManagement
         private readonly DateTimeOffset _downloadStartTime;
         private DateTimeOffset _packageFetchTime;
         private DateTimeOffset _taskReturnTime;
+        private bool _disposed = false;
 
         /// <summary>
         /// True if the result came from the packages folder.
@@ -156,11 +155,27 @@ namespace NuGet.PackageManagement
 
         public void Dispose()
         {
-            // The task should be awaited before calling dispose
-            if (_result != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                _result.Dispose();
+                return;
             }
+
+            if (disposing)
+            {
+                // The task should be awaited before calling dispose
+                if (_result != null)
+                {
+                    _result.Dispose();
+                }
+            }
+
+            _disposed = true;
         }
 
         public void EmitTelemetryEvent(Guid parentId)
@@ -171,7 +186,6 @@ namespace NuGet.PackageManagement
             telemetryEvent["PackageFetchTime"] = _packageFetchTime;
             telemetryEvent["TaskReturnTime"] = _taskReturnTime;
 
-            var packageId = CryptoHashUtility.GenerateUniqueToken(Package.ToString());
             telemetryEvent.AddPiiData("PackageId", Package.ToString());
 
             if (parentId != Guid.Empty)

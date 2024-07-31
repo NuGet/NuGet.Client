@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Documents;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -14,34 +15,33 @@ namespace NuGet.PackageManagement.UI
         private string _text;
         private FlowDocument _licenseText;
         private string _licenseHeader;
+        private string _packagePath;
         private readonly string _licenseFileLocation;
-        private Func<string, string> _loadFileFromPackage;
 
         private int _initialized;
 
-        internal LicenseFileText(string text, string licenseFileHeader, Func<string, string> loadFileFromPackage, string licenseFileLocation)
+        internal LicenseFileText(string text, string licenseFileHeader, string packagePath, string licenseFileLocation, PackageIdentity packageIdentity)
         {
             _text = text;
             _licenseHeader = licenseFileHeader;
             _licenseText = new FlowDocument(new Paragraph(new Run(Resources.LicenseFile_Loading)));
-            _loadFileFromPackage = loadFileFromPackage;
+            _packagePath = packagePath;
             _licenseFileLocation = licenseFileLocation;
+            PackageIdentity = packageIdentity;
         }
 
-        internal void LoadLicenseFile()
+        internal async Task LoadLicenseFileAsync()
         {
             if (Interlocked.CompareExchange(ref _initialized, 1, 0) == 0)
             {
-                if (_loadFileFromPackage != null)
+                if (_packagePath != null)
                 {
-                    NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-                    {
-                        var content = _loadFileFromPackage(_licenseFileLocation);
-                        var flowDoc = new FlowDocument();
-                        flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                        LicenseText = flowDoc;
-                    });
+                    string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(PackageIdentity, CancellationToken.None);
+
+                    var flowDoc = new FlowDocument();
+                    flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    LicenseText = flowDoc;
                 }
             }
         }
@@ -75,6 +75,8 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged("LicenseText");
             }
         }
+
+        public PackageIdentity PackageIdentity { get; internal set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

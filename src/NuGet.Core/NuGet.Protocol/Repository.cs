@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.LocalRepositories;
+using NuGet.Protocol.Providers;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -46,7 +47,9 @@ namespace NuGet.Protocol.Core.Types
                 yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourcePluginProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
+#pragma warning disable CS0618 // Type or member is obsolete
                 yield return new Lazy<INuGetResourceProvider>(() => new RawSearchResourceV3Provider());
+#pragma warning restore CS0618 // Type or member is obsolete
                 yield return new Lazy<INuGetResourceProvider>(() => new RegistrationResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new SymbolPackageUpdateResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new ReportAbuseResourceV3Provider());
@@ -77,6 +80,8 @@ namespace NuGet.Protocol.Core.Types
                 yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new PluginResourceProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new RepositorySignatureResourceProvider());
+                yield return new Lazy<INuGetResourceProvider>(() => new VulnerabilityInfoResourceV3Provider());
+                yield return new Lazy<INuGetResourceProvider>(() => new OwnerDetailsUriResourceV3Provider());
 
                 // Local repository providers
                 yield return new Lazy<INuGetResourceProvider>(() => new FindLocalPackagesResourceUnzippedProvider());

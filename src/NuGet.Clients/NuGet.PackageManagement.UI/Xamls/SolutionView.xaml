@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d"
+             DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
   <UserControl.Resources>
     <ResourceDictionary>
@@ -16,14 +17,14 @@
       <local:TooltipConverter
         x:Key="TooltipConverter" />
       <local:NotNullToBooleanConverter
-        x:Key="NotNullToBooleanConverter" />  
+        x:Key="NotNullToBooleanConverter" />
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
             HorizontalAlignment="Stretch"
             IsEnabled="False" />
       </ControlTemplate>
-      
+
       <!-- style of the list view headers -->
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />
@@ -182,7 +183,7 @@
       Grid.Row="0"
       Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
-    <ListView
+    <local:ToggleableListView
       Grid.Row="1"
       x:Name="_projectList"
       Margin="0,8,0,0"
@@ -192,7 +193,6 @@
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static local:Brushes.UIText}}"
       AutomationProperties.LabeledBy="{Binding ElementName=_installedVersionsCount}"
-      KeyboardNavigation.TabNavigation="Local"
       SelectionMode="Single">
 
       <ListView.Style>
@@ -233,7 +233,7 @@
           </Setter>
         </Style>
       </ListView.Style>
-      
+
       <!-- set the list view item style -->
       <ListView.ItemContainerStyle>
         <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource ListViewItemStyle1}" >
@@ -241,10 +241,9 @@
           <Setter Property="IsTabStop" Value="True"/>
         </Style>
       </ListView.ItemContainerStyle>
-      
-      <ListView.View>
-        <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
 
+      <ListView.View>
+        <GridView x:Name="_gridProjects" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
           <!-- checkbox column -->
           <GridViewColumn>
             <GridViewColumn.Header>
@@ -266,9 +265,12 @@
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <CheckBox
+                  Style="{StaticResource CheckBoxSelectorAware}"
                   IsTabStop="False"
                   AutomationProperties.AutomationId="{Binding ProjectName, Mode=OneWay, StringFormat='ProjectCheckBox_{0}'}"
                   IsChecked="{Binding IsSelected}"
+                  Checked="ItemCheckBox_Toggled"
+                  Unchecked="ItemCheckBox_Toggled"
                   AutomationProperties.Name="{Binding ProjectName, Mode=OneWay}"
                   AutomationProperties.HelpText="{Binding ProjectName, Mode=OneWay, StringFormat='{x:Static local:Resources.CheckBox_SelectProject_HelpText}'}"/>
               </DataTemplate>
@@ -290,30 +292,27 @@
               Focusable="True"
               IsTabStop="True"
               FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
-            
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <StackPanel Orientation="Horizontal">
                   <TextBlock
                     Text="{Binding ProjectName}" />
-                  <local:PackageManagerProvidersLabel
-                    Margin="4,0,0,0"
-                    FormatString="{x:Static local:Resources.Label_UseInsteadInSolutionPackageManager}"
-                    DataContext="{Binding Providers}" />
                 </StackPanel>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
 
-          <!-- the version column -->
+          <!-- the version column may be inserted here dynamically from code -->
+
+          <!-- the installed column -->
           <GridViewColumn
-            DisplayMemberBinding="{Binding InstalledVersion,Converter={StaticResource VersionToStringConverter}}">
+            DisplayMemberBinding="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}">
             <GridViewColumn.Header>
               <GridViewColumnHeader
-                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_Version}"
-                x:Name="_versionColumnHeader"
+                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
+                x:Name="_installedVersionColumnHeader"
                 Click="ColumnHeader_Clicked"
-                Content="{x:Static local:Resources.ColumnHeader_Version}"
+                Content="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
                 local:SortableColumnHeaderAttachedProperties.SortPropertyName="InstalledVersion"
                 HorizontalContentAlignment="Left"
                 SizeChanged="SortableColumnHeader_SizeChanged"
@@ -325,7 +324,7 @@
           </GridViewColumn>
         </GridView>
       </ListView.View>
-    </ListView>
+    </local:ToggleableListView>
 
     <Grid
       Grid.Row="2"
@@ -334,6 +333,7 @@
         <RowDefinition Height="auto" />
         <RowDefinition Height="10" />
         <RowDefinition Height="auto" />
+        <RowDefinition Height="auto"/>
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />
@@ -351,7 +351,7 @@
         VerticalAlignment="Center"
         Text="{x:Static local:Resources.Label_InstalledColon}" />
 
-        <TextBox
+      <TextBox
           FocusVisualStyle="{DynamicResource MarginFocusVisualStyle}"
           Grid.Row="0"
           Grid.Column="2"
@@ -395,31 +395,32 @@
         Grid.Column="2"
         MinWidth="150"
         MinHeight="22"
+        PreviewKeyDown="Versions_PreviewKeyDown"
         AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
         ItemsSource="{Binding Path=Versions}"
         SelectedItem="{Binding Path=SelectedVersion}">
-        
-          <ComboBox.ItemContainerStyle>
-            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource ComboBoxItemStyle}"> 
-                <Style.Triggers>
-                    <DataTrigger 
+
+        <ComboBox.ItemContainerStyle>
+          <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+            <Style.Triggers>
+              <DataTrigger 
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
                         Value="True" >
-                        <Setter 
+                <Setter 
                             Property="ToolTipService.ShowOnDisabled"
                             Value="True" />
-                        <Setter 
+                <Setter 
                             Property="ToolTip" 
                             Value="{Binding Converter={StaticResource TooltipConverter}}" />
-                        <Setter
+                <Setter
                             Property="IsEnabled"
                             Value="{Binding IsValidVersion}" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
         </ComboBox.ItemContainerStyle>
       </ComboBox>
-        
+
       <!-- install button -->
       <Button
         x:Name="_installButton"
@@ -432,6 +433,14 @@
         Click="InstallButton_Clicked"
         IsEnabled="{Binding CanInstall}"
         Content="{x:Static local:Resources.Button_Install}" />
+
+      <local:PackageSourceMappingActionControl
+        Grid.Row="3"
+        Grid.ColumnSpan="5"
+        HorizontalContentAlignment="Left"
+        VerticalContentAlignment="Top"
+        x:Name="_packageSourceMappingActionControl"
+        DataContext="{Binding PackageSourceMappingViewModel}" />
     </Grid>
   </Grid>
 </UserControl>

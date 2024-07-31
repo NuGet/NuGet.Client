@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,15 +57,26 @@ namespace NuGet.Protocol
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            HttpResponseMessage response = null;
             var logger = request.GetOrCreateConfiguration().Logger;
+
             while (true)
             {
+                // Clean up any previous responses
+                if (response != null)
+                {
+                    response.Dispose();
+                }
+
                 // Store the auth start before sending the request
                 var cacheVersion = _credentialCache.Version;
 
                 try
                 {
-                    var response = await base.SendAsync(request, cancellationToken);
+                    using (var req = request.Clone())
+                    {
+                        response = await base.SendAsync(req, cancellationToken);
+                    }
 
                     if (response.StatusCode != HttpStatusCode.ProxyAuthenticationRequired)
                     {
@@ -137,7 +148,7 @@ namespace NuGet.Protocol
         {
             try
             {
-                await _credentialPromptLock.WaitAsync();
+                await _credentialPromptLock.WaitAsync(cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -209,7 +220,7 @@ namespace NuGet.Protocol
                 promptCredentials = null;
             }
 
-            return promptCredentials?.GetCredential(proxyAddress, BasicAuthenticationType);;
+            return promptCredentials?.GetCredential(proxyAddress, BasicAuthenticationType);
         }
     }
 }

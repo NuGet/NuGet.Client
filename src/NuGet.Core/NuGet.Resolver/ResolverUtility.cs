@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,7 +21,7 @@ namespace NuGet.Resolver
         /// <param name="availablePackages">all packages that were available for the solution</param>
         /// <param name="packagesConfig">packages already installed in the project</param>
         /// <param name="newPackageIds">new packages that are not already installed</param>
-        /// <returns>A user friendly diagonstic message</returns>
+        /// <returns>A user friendly diagnostic message</returns>
         public static string GetDiagnosticMessage(IEnumerable<ResolverPackage> solution,
             IEnumerable<PackageDependencyInfo> availablePackages,
             IEnumerable<PackageReference> packagesConfig,
@@ -117,7 +117,7 @@ namespace NuGet.Resolver
             var problemPackage = solution.Where(package => StringComparer.OrdinalIgnoreCase.Equals(package.Id, problemPackageId)).FirstOrDefault();
 
             // List the package that has an issue, and all packages dependant on the package.
-            var dependantPackages = solution.Where(package => package.FindDependencyRange(problemPackageId) != null && 
+            var dependantPackages = solution.Where(package => package.FindDependencyRange(problemPackageId) != null &&
                 !IsDependencySatisfied(package.Dependencies.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, problemPackageId)), problemPackage))
                 .Select(package => FormatDependencyConstraint(package, problemPackageId))
                 .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
@@ -204,7 +204,7 @@ namespace NuGet.Resolver
         /// <returns>list of broken dependencies</returns>
         private static IEnumerable<PackageDependency> GetBrokenDependenciesWithInstalledPackages(ResolverPackage package, IEnumerable<ResolverPackage> solution, IEnumerable<PackageDependencyInfo> availablePackages, HashSet<string> visitedPackages)
         {
-            if(visitedPackages.Contains(package.Id))
+            if (visitedPackages.Contains(package.Id))
             {
                 yield break;
             }
@@ -398,7 +398,7 @@ namespace NuGet.Resolver
 
             // check each package to see if it is part of a loop, sort by id to keep the result deterministic
             foreach (var package in solution)
-            {                
+            {
                 var result = FindCircularDependency(package, packageLookUp, visitedPackages);
                 if (result.Any())
                 {
@@ -413,7 +413,7 @@ namespace NuGet.Resolver
         {
             // avoid checking depths beyond 20 packages deep
             if (package != null && !package.Absent && package.Dependencies.Any())
-            {                
+            {
                 var queue = new Queue<QueueNode>();
 
                 // added the first initial node to queue
@@ -436,7 +436,7 @@ namespace NuGet.Resolver
 
                         // If already visited, then it means it doesn't have any circular dependency so we can avoid processing this node again
                         if (!visitedPackages.Contains(dependencyPackage))
-                        {                            
+                        {
                             if (parentPackages.Contains(dependencyPackage))
                             {
                                 // circular dependency detected
@@ -478,6 +478,6 @@ namespace NuGet.Resolver
             /// Complete Parent list for the given package
             /// </summary>
             public List<ResolverPackage> ParentPackages { get; }
-        }         
+        }
     }
 }

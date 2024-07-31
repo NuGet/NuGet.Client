@@ -560,8 +560,8 @@ namespace NuGet.Packaging.Signing.DerEncoding
 #if DEBUG
                     ,
                     new InvalidOperationException(
-                        "Expected tag '0x" + expectedByte.ToString("X2") +
-                            "', got '0x" + actual.ToString("X2") +
+                        "Expected tag '0x" + expectedByte.ToString("X2", CultureInfo.CurrentCulture) +
+                            "', got '0x" + actual.ToString("X2", CultureInfo.CurrentCulture) +
                             "' at position " + position)
 #endif
                     );

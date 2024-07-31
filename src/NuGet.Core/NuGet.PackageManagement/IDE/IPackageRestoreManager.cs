@@ -16,25 +16,14 @@ namespace NuGet.PackageManagement
     public interface IPackageRestoreManager
     {
         /// <summary>
-        /// Gets a value indicating whether the current solution is configured for Package Restore mode.
-        /// </summary>
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        bool IsCurrentSolutionEnabledForRestore { get; }
-
-        /// <summary>
-        /// Configures the current solution for Package Restore mode.
-        /// </summary>
-        /// <param name="fromActivation">
-        /// if set to <c>false</c>, the method will not show any error message, and will
-        /// not set package restore consent.
-        /// </param>
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        void EnableCurrentSolutionForRestore(bool fromActivation);
-
-        /// <summary>
         /// Occurs when it is detected that the packages are missing or restored for the current solution.
         /// </summary>
         event EventHandler<PackagesMissingStatusEventArgs> PackagesMissingStatusChanged;
+
+        /// <summary>
+        /// Occurs when it is detected that the assets file is missing.
+        /// </summary>
+        event AssetsFileMissingStatusChanged AssetsFileMissingStatusChanged;
 
         /// <summary>
         /// PackageRestoredEvent which is raised after a package is restored.
@@ -61,8 +50,10 @@ namespace NuGet.PackageManagement
         /// <param name="solutionDirectory">Current solution directory</param>
         /// <param name="packageReferencesDict">Dictionary of package reference with project names</param>
         /// <returns>List of packages restore data with missing package details.</returns>
-	    IEnumerable<PackageRestoreData> GetPackagesRestoreData(string solutionDirectory,
+#pragma warning disable IDE0055
+        IEnumerable<PackageRestoreData> GetPackagesRestoreData(string solutionDirectory,
             Dictionary<PackageReference, List<string>> packageReferencesDict);
+#pragma warning restore IDE0055
 
         /// <summary>
         /// Checks the current solution if there is any package missing.
@@ -70,6 +61,12 @@ namespace NuGet.PackageManagement
         Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token);
 
         /// <summary>
+        /// Checks if something is listening to the event of missing assets and change the status
+        /// </summary>
+        /// <param name="isAssetsFileMissing"></param>
+        void RaiseAssetsFileMissingEventForProjectAsync(bool isAssetsFileMissing);
+
+        /// <summary>
         /// Restores the missing packages for the current solution.
         /// </summary>
         /// <remarks>
@@ -90,6 +87,7 @@ namespace NuGet.PackageManagement
         /// are missing
         /// </remarks>
         /// <returns>Returns true if atleast one package was restored.</returns>
+        [Obsolete("This method is deprecated to reduce complexity, please use one of the other RestoreMissingPackagesAsync methods.")]
         Task<PackageRestoreResult> RestoreMissingPackagesInSolutionAsync(string solutionDirectory,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token);
@@ -133,12 +131,15 @@ namespace NuGet.PackageManagement
         /// Returns true if at least one package is restored. Raised package restored failed event with the
         /// list of project names.
         /// </returns>
+        [Obsolete("This method is deprecated to reduce complexity, please use one of the other RestoreMissingPackagesAsync methods.")]
         Task<PackageRestoreResult> RestoreMissingPackagesAsync(string solutionDirectory,
             IEnumerable<PackageRestoreData> packages,
             INuGetProjectContext nuGetProjectContext,
             PackageDownloadContext downloadContext,
             CancellationToken token);
     }
+
+    public delegate void AssetsFileMissingStatusChanged(object sender, bool isAssetsFileMissing);
 
     /// <summary>
     /// If 'Restored' is false, it means that the package was already restored
@@ -153,7 +154,7 @@ namespace NuGet.PackageManagement
         {
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             Package = packageIdentity;

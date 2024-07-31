@@ -52,7 +52,7 @@ namespace NuGet.Build.Tasks.Test
 
             if (messageImportance.HasValue)
             {
-                expected.Importance = messageImportance.Value;
+                expected.Importance = (ConsoleOutLogMessage.MessageImportance)messageImportance.Value;
             }
 
             var buildEngine = new TestBuildEngine();
@@ -66,6 +66,22 @@ namespace NuGet.Build.Tasks.Test
 
             actual.Message.Should().Be(expected.Message);
             actual.Level.Should().Be(expectedLogLevel);
+        }
+
+        [Fact]
+        public void TaskLoggingQueue_Process_LogsFilesToEmbedInBinlog()
+        {
+            var message = new ConsoleOutLogEmbedInBinlog(@"/path/to/file");
+
+            var buildEngine = new TestBuildEngine();
+
+            var loggingQueue = new TaskLoggingQueue(new TaskLoggingHelper(buildEngine, nameof(TaskLoggingQueueTests)));
+
+            loggingQueue.Enqueue(message.ToJson());
+
+            loggingQueue.Dispose();
+
+            loggingQueue.FilesToEmbedInBinlog.Should().BeEquivalentTo(new string[] { "/path/to/file" });
         }
 
         [Fact]
@@ -83,7 +99,7 @@ namespace NuGet.Build.Tasks.Test
                 }
             };
 
-            act.ShouldThrow<ArgumentOutOfRangeException>();
+            act.Should().Throw<ArgumentOutOfRangeException>();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,18 +20,18 @@ namespace NuGetVSExtension
         {
             if (searchText == null)
             {
-                throw new ArgumentNullException("searchText");
+                throw new ArgumentNullException(nameof(searchText));
             }
             if (provider == null)
             {
-                throw new ArgumentNullException("provider");
+                throw new ArgumentNullException(nameof(provider));
             }
             if (supportedManagePackageCommand == null)
             {
-                throw new ArgumentNullException("supportedManagePackageCommand");
+                throw new ArgumentNullException(nameof(supportedManagePackageCommand));
             }
 
-            if (searchText.StartsWith(provider.Shortcut + " "))
+            if (searchText.StartsWith(provider.Shortcut + " ", StringComparison.Ordinal))
             {
                 searchText = searchText.Substring(provider.Shortcut.Length);
             }

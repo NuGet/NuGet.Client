@@ -6,8 +6,6 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
-using NuGet.ProjectManagement;
-using NuGet.RuntimeModel;
 
 namespace NuGet.VisualStudio
 {
@@ -17,16 +15,11 @@ namespace NuGet.VisualStudio
     public interface IVsProjectAdapter
     {
         /// <summary>
-        /// AssetTargetFallback project property
-        /// </summary>
-        string AssetTargetFallback { get; }
-
-        /// <summary>
         /// MSBuildProjectExtensionsPath project property (e.g. c:\projFoo\obj)
         /// </summary>
-        string MSBuildProjectExtensionsPath { get; }
+        string GetMSBuildProjectExtensionsPath();
 
-        IProjectBuildProperties BuildProperties { get; }
+        IVsProjectBuildProperties BuildProperties { get; }
 
         string CustomUniqueName { get; }
 
@@ -34,19 +27,7 @@ namespace NuGet.VisualStudio
 
         string FullProjectPath { get; }
 
-        bool IsDeferred { get; }
-
-        bool IsSupported { get; }
-
-        /// <summary>
-        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
-        /// </summary>
-        string NoWarn { get; }
-
-        /// <summary>
-        /// PackageTargetFallback project property
-        /// </summary>
-        string PackageTargetFallback { get; }
+        Task<bool> IsSupportedAsync();
 
         /// <summary>
         /// In unavoidable circumstances where we need to DTE object, it's exposed here
@@ -64,36 +45,6 @@ namespace NuGet.VisualStudio
 
         ProjectNames ProjectNames { get; }
 
-        /// <summary>
-        /// Additional fallback folders DTE property
-        /// </summary>
-        string RestoreAdditionalProjectFallbackFolders { get; }
-
-        /// <summary>
-        /// Additional Sources DTE property
-        /// </summary>
-        string RestoreAdditionalProjectSources { get; }
-
-        /// <summary>
-        /// RestoreFallbackFolders DTE property
-        /// </summary>
-        string RestoreFallbackFolders { get; }
-
-        /// <summary>
-        /// Restore Packages Path DTE property
-        /// </summary>
-        string RestorePackagesPath { get; }
-
-        /// <summary>
-        /// Restore Sources DTE property
-        /// </summary>
-        string RestoreSources { get; }
-
-        /// <summary>
-        /// TreatWarningsAsErrors true/false
-        /// </summary>
-        string TreatWarningsAsErrors { get; }
-
         string UniqueName { get; }
 
         /// <summary>
@@ -103,48 +54,28 @@ namespace NuGet.VisualStudio
 
         IVsHierarchy VsHierarchy { get; }
 
-        /// <summary>
-        /// Comma or Semicolon separated list of NU* diagnostic codes e.g. NU1000,NU1001
-        /// </summary>
-        string WarningsAsErrors { get; }
-
-        Task<string[]> GetProjectTypeGuidsAsync();
+        string[] GetProjectTypeGuids();
 
         Task<FrameworkName> GetDotNetFrameworkNameAsync();
 
         Task<IEnumerable<string>> GetReferencedProjectsAsync();
 
         /// <summary>
-        /// Project's runtime identifiers. Should never be null but can be an empty sequence.
-        /// </summary>
-        Task<IEnumerable<RuntimeDescription>> GetRuntimeIdentifiersAsync();
-
-        /// <summary>
-        /// Project's supports (a.k.a guardrails). Should never be null but can be an empty sequence.
-        /// </summary>
-        Task<IEnumerable<CompatibilityProfile>> GetRuntimeSupportsAsync();
-
-        /// <summary>
         /// Project's target framework
         /// </summary>
-        Task<NuGetFramework> GetTargetFrameworkAsync();
+        NuGetFramework GetTargetFramework();
 
         /// <summary>
-        /// RestorePackagesWithLockFile project property.
+        /// Reads a project build items and the requested metadata.
         /// </summary>
-        /// <returns></returns>
-        Task<string> GetRestorePackagesWithLockFileAsync();
+        /// <param name="itemName">The item name.</param>
+        /// <param name="metadataNames">The metadata names to read.</param>
+        /// <returns>An <see cref="IEnumerable{(string ItemId, string[] ItemMetadata)}"/> containing the itemId and the metadata values.</returns>
+        IEnumerable<(string ItemId, string[] ItemMetadata)> GetBuildItemInformation(string itemName, params string[] metadataNames);
 
         /// <summary>
-        /// NuGetLockFilePath project property.
+        /// See <see cref="Microsoft.VisualStudio.Shell.PackageUtilities.IsCapabilityMatch(IVsHierarchy, string)"/>
         /// </summary>
-        /// <returns></returns>
-        Task<string> GetNuGetLockFilePathAsync();
-
-        /// <summary>
-        /// RestoreLockedMode project property.
-        /// </summary>
-        /// <returns></returns>
-        Task<bool> IsRestoreLockedAsync();
+        bool IsCapabilityMatch(string capabilityExpression);
     }
 }

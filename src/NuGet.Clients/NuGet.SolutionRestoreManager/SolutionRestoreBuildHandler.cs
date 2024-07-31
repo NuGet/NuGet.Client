@@ -3,17 +3,16 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using SystemTask = System.Threading.Tasks.Task;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
@@ -29,7 +28,7 @@ namespace NuGet.SolutionRestoreManager
     /// UpdateSolution_Cancel
     /// UpdateSolution_Done
     /// </remarks>
-    public sealed class SolutionRestoreBuildHandler 
+    public sealed class SolutionRestoreBuildHandler
         : IVsUpdateSolutionEvents5, IDisposable
     {
         private const uint VSCOOKIE_NIL = 0;
@@ -39,6 +38,9 @@ namespace NuGet.SolutionRestoreManager
 
         [Import]
         private Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
+
+        [Import]
+        private Lazy<ISolutionRestoreChecker> SolutionRestoreChecker { get; set; }
 
         /// <summary>
         /// The <see cref="IVsSolutionBuildManager3"/> object controlling the update solution events.
@@ -62,15 +64,17 @@ namespace NuGet.SolutionRestoreManager
         public SolutionRestoreBuildHandler(
             ISettings settings,
             ISolutionRestoreWorker restoreWorker,
-            IVsSolutionBuildManager3 buildManager)
+            IVsSolutionBuildManager3 buildManager,
+            ISolutionRestoreChecker solutionRestoreChecker)
         {
             Assumes.Present(settings);
             Assumes.Present(restoreWorker);
             Assumes.Present(buildManager);
+            Assumes.Present(solutionRestoreChecker);
 
             Settings = new Lazy<ISettings>(() => settings);
             SolutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(() => restoreWorker);
-
+            SolutionRestoreChecker = new Lazy<ISolutionRestoreChecker>(() => solutionRestoreChecker);
             _solutionBuildManager = buildManager;
 
             _isMEFInitialized = true;
@@ -78,13 +82,16 @@ namespace NuGet.SolutionRestoreManager
 
         public void Dispose()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            if (_updateSolutionEventsCookieEx != VSCOOKIE_NIL)
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                ((IVsSolutionBuildManager)_solutionBuildManager).UnadviseUpdateSolutionEvents(_updateSolutionEventsCookieEx);
-                _updateSolutionEventsCookieEx = VSCOOKIE_NIL;
-            }
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                if (_updateSolutionEventsCookieEx != VSCOOKIE_NIL)
+                {
+                    ((IVsSolutionBuildManager)_solutionBuildManager).UnadviseUpdateSolutionEvents(_updateSolutionEventsCookieEx);
+                    _updateSolutionEventsCookieEx = VSCOOKIE_NIL;
+                }
+            }).PostOnFailure(nameof(SolutionRestoreBuildHandler));
         }
 
         // A factory method invoked internally only
@@ -141,8 +148,9 @@ namespace NuGet.SolutionRestoreManager
             if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN) != 0 &&
                 (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0)
             {
-                // Clear the project.json restore cache on clean to ensure that the next build restores again
+                // Clear the transitive restore cache on clean to ensure that the next build restores again
                 await SolutionRestoreWorker.Value.CleanCacheAsync();
+                SolutionRestoreChecker.Value.CleanCache();
             }
             else if ((buildAction & (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD) != 0 &&
                     (buildAction & (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK) == 0 &&

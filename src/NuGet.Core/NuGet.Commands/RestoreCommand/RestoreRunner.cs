@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -45,12 +46,12 @@ namespace NuGet.Commands
         /// </summary>
         private static async Task<IReadOnlyList<RestoreSummary>> RunAsync(
             IEnumerable<RestoreSummaryRequest> restoreRequests,
-            RestoreArgs restoreContext,
+            RestoreArgs restoreArgs,
             CancellationToken token)
         {
-            var maxTasks = GetMaxTaskCount(restoreContext);
+            var maxTasks = GetMaxTaskCount(restoreArgs);
 
-            var log = restoreContext.Log;
+            var log = restoreArgs.Log;
 
             if (maxTasks > 1)
             {
@@ -81,7 +82,7 @@ namespace NuGet.Commands
 
                 var request = requests.Dequeue();
 
-                var task = Task.Run(() => ExecuteAndCommitAsync(request, token), token);
+                var task = Task.Run(() => ExecuteAndCommitAsync(request, restoreArgs.ProgressReporter, token), token);
                 restoreTasks.Add(task);
             }
 
@@ -226,11 +227,11 @@ namespace NuGet.Commands
             return maxTasks;
         }
 
-        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
+        private static async Task<RestoreSummary> ExecuteAndCommitAsync(RestoreSummaryRequest summaryRequest, IRestoreProgressReporter progressReporter, CancellationToken token)
         {
-            var result = await ExecuteAsync(summaryRequest, token);
+            RestoreResultPair result = await ExecuteAsync(summaryRequest, token);
 
-            return await CommitAsync(result, token);
+            return await CommitAsync(result, progressReporter, token);
         }
 
         private static async Task<RestoreResultPair> ExecuteAsync(RestoreSummaryRequest summaryRequest, CancellationToken token)
@@ -246,21 +247,50 @@ namespace NuGet.Commands
             var request = summaryRequest.Request;
 
             var command = new RestoreCommand(request);
+            if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
+            if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStop(request.Project.FilePath);
 
             return new RestoreResultPair(summaryRequest, result);
         }
 
-        public static async Task<RestoreSummary> CommitAsync(RestoreResultPair restoreResult, CancellationToken token)
+        public static Task<RestoreSummary> CommitAsync(RestoreResultPair restoreResult, CancellationToken token) => CommitAsync(restoreResult, progressReporter: null, token);
+
+        private static async Task<RestoreSummary> CommitAsync(RestoreResultPair restoreResult, IRestoreProgressReporter progressReporter, CancellationToken token)
         {
+            if (restoreResult == null)
+            {
+                throw new ArgumentNullException(nameof(restoreResult));
+            }
+
             var summaryRequest = restoreResult.SummaryRequest;
             var result = restoreResult.Result;
 
             var log = summaryRequest.Request.Log;
 
-            // Commit the result
-            log.LogInformation(Strings.Log_Committing);
-            await result.CommitAsync(log, token);
+            bool isNoOp = result is NoOpRestoreResult;
+
+            IReadOnlyList<string> filesToBeUpdated = result.GetDirtyFiles();
+            try
+            {
+                if (!isNoOp && filesToBeUpdated?.Count > 0)
+                {
+                    progressReporter?.StartProjectUpdate(summaryRequest.InputPath, filesToBeUpdated);
+                }
+
+                // Commit the result
+                log.LogVerbose(Strings.Log_Committing);
+                if (NuGetEventSource.IsEnabled) TraceEvents.CommitAsyncStart(summaryRequest.InputPath);
+                await result.CommitAsync(log, token);
+                if (NuGetEventSource.IsEnabled) TraceEvents.CommitAsyncStop(summaryRequest.InputPath);
+            }
+            finally
+            {
+                if (!isNoOp && filesToBeUpdated?.Count > 0)
+                {
+                    progressReporter?.EndProjectUpdate(summaryRequest.InputPath, filesToBeUpdated);
+                }
+            }
 
             if (result.Success)
             {
@@ -286,9 +316,8 @@ namespace NuGet.Commands
                     summaryRequest.InputPath,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
-
-            // Remote the summary messages from the assets file. This will be removed later.
-            var messages = restoreResult.Result.LockFile?.LogMessages
+            // Remote the summary messages from the assets file.
+            var messages = restoreResult.Result.LogMessages
                 .Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message)) ?? Enumerable.Empty<RestoreLogMessage>();
 
             // Build the summary
@@ -370,6 +399,60 @@ namespace NuGet.Commands
             }
 
             return Strings.Error_InvalidCommandLineInput;
+        }
+
+        private static class TraceEvents
+        {
+            private const string EventNameRestoreProject = "RestoreRunner/RestoreProject";
+            private const string EventNameCommitAsync = "RestoreRunner/CommitAsync";
+
+            public static void RestoreProjectStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameRestoreProject, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void RestoreProjectStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameRestoreProject, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void CommitAsyncStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameCommitAsync, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void CommitAsyncStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameCommitAsync, eventOptions, new { FilePath = filePath });
+            }
         }
     }
 }

@@ -52,7 +52,7 @@ namespace NuGet.RuntimeModel.Test
 
             var expected = new[] { "c", "b", "f", "a", "e", "d" };
             var actual = graph.ExpandRuntime("c").ToArray();
-            for (var i=0; i < expected.Length; i++)
+            for (var i = 0; i < expected.Length; i++)
             {
                 Assert.Equal(expected[i], actual[i]);
             }
@@ -286,7 +286,7 @@ namespace NuGet.RuntimeModel.Test
         [Fact]
         public void ExpandRuntimes_UnknownRuntimeVerifySelf()
         {
-            var graph = new RuntimeGraph();
+            var graph = RuntimeGraph.Empty;
 
             graph.ExpandRuntime("x").Should().BeEquivalentTo(new[] { "x" });
         }
@@ -294,7 +294,7 @@ namespace NuGet.RuntimeModel.Test
         [Fact]
         public void ExpandRuntimes_UnknownRuntimeVerifyCompat()
         {
-            var graph = new RuntimeGraph();
+            var graph = RuntimeGraph.Empty;
 
             graph.AreCompatible("x", "x").Should().BeTrue();
         }

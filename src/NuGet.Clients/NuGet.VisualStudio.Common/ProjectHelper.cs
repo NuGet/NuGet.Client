@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,19 +26,20 @@ namespace NuGet.VisualStudio
                 var service = unconfiguredProject.ProjectService.Services.ProjectLockService;
                 if (service != null)
                 {
-                    using (ProjectWriteLockReleaser x = await service.WriteLockAsync())
-                    {
-                        await x.CheckoutAsync(unconfiguredProject.FullPath);
-                        ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
-                        MsBuildProject buildProject = await x.GetProjectAsync(configuredProject);
-
-                        if (buildProject != null)
+                    await service.WriteLockAsync(
+                        async (x) =>
                         {
-                            action(buildProject);
-                        }
+                            await x.CheckoutAsync(unconfiguredProject.FullPath);
+                            ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                            MsBuildProject buildProject = await x.GetProjectAsync(configuredProject);
 
-                        await x.ReleaseAsync();
-                    }
+                            if (buildProject != null)
+                            {
+                                action(buildProject);
+                            }
+
+                            await x.ReleaseAsync();
+                        });
 
                     await unconfiguredProject.ProjectService.Services.ThreadingPolicy.SwitchToUIThread();
                     project.Save();

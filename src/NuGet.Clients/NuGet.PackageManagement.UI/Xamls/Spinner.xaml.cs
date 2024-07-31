@@ -3,21 +3,34 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class EllipseDetails
+    internal class EllipseDetails : INotifyPropertyChanged
     {
         public double Width { get; set; }
         public double Height { get; set; }
         public double Left { get; set; }
         public double Top { get; set; }
         public Brush Fill { get; set; }
+
+        // Added INotifyPropertyChange to avoid memory leak in Spinner control. 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
     }
 
     internal class EllipseData : ObservableCollection<EllipseDetails>

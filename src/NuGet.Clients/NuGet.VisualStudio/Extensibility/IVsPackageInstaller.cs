@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,8 +18,10 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="source">
-        /// The package source to install the package from. This value can be <c>null</c>
+        /// The package source to install the package from. This value can be <see langword="null" />
         /// to indicate that the user's configured sources should be used. Otherwise,
         /// this should be the source path as a string. If the user has credentials
         /// configured for a source, this value must exactly match the configured source
@@ -28,20 +30,23 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package ID of the package to install.</param>
         /// <param name="version">
-        /// The version of the package to install. <c>null</c> can be provided to
+        /// The version of the package to install. <see langword="null" /> can be provided to
         /// install the latest version of the package.
         /// </param>
         /// <param name="ignoreDependencies">
         /// A boolean indicating whether or not to ignore the package's dependencies
         /// during installation.
         /// </param>
+        [Obsolete("System.Version does not support SemVer pre-release versions. Use the overload with string version instead.")]
         void InstallPackage(string source, Project project, string packageId, Version version, bool ignoreDependencies);
 
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
+        /// <remarks>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></remarks>
         /// <param name="source">
-        /// The package source to install the package from. This value can be <c>null</c>
+        /// The package source to install the package from. This value can be <see langword="null" />
         /// to indicate that the user's configured sources should be used. Otherwise,
         /// this should be the source path as a string. If the user has credentials
         /// configured for a source, this value must exactly match the configured source
@@ -50,7 +55,7 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package ID of the package to install.</param>
         /// <param name="version">
-        /// The version of the package to install. <c>null</c> can be provided to
+        /// The version of the package to install. <see langword="null" /> can be provided to
         /// install the latest version of the package.
         /// </param>
         /// <param name="ignoreDependencies">
@@ -66,7 +71,7 @@ namespace NuGet.VisualStudio
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package id of the package to install.</param>
         /// <param name="version">
-        /// The version of the package to install. <c>null</c> can be provided to
+        /// The version of the package to install. <see langword="null" /> can be provided to
         /// install the latest version of the package.
         /// </param>
         /// <param name="ignoreDependencies">
@@ -77,6 +82,7 @@ namespace NuGet.VisualStudio
         /// A boolean indicating if assembly references from the package should be
         /// skipped.
         /// </param>
+        [Obsolete]
         void InstallPackage(IPackageRepository repository, Project project, string packageId, string version, bool ignoreDependencies, bool skipAssemblyReferences);
 
         /// <summary>
@@ -104,6 +110,8 @@ namespace NuGet.VisualStudio
         /// <para>
         /// Dependencies are always ignored.
         /// </para>
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions);
 
@@ -130,6 +138,8 @@ namespace NuGet.VisualStudio
         /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromRegistryRepository(string keyName, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions);
 
@@ -155,6 +165,8 @@ namespace NuGet.VisualStudio
         /// <para>
         /// Dependencies are always ignored.
         /// </para>
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, Project project, IDictionary<string, string> packageVersions);
 
@@ -178,6 +190,8 @@ namespace NuGet.VisualStudio
         /// </param>
         /// <remarks>
         /// If any version of the package is already installed, no action will be taken.
+        /// <para>Can be called from a background thread, if the UI thread is not blocked waiting for this to finish.
+        /// See <a href="https://github.com/nuget/home/issues/11476">https://github.com/nuget/home/issues/11476</a></para>
         /// </remarks>
         void InstallPackagesFromVSExtensionRepository(string extensionId, bool isPreUnzipped, bool skipAssemblyReferences, bool ignoreDependencies, Project project, IDictionary<string, string> packageVersions);
     }

@@ -24,6 +24,12 @@ namespace NuGet.SolutionRestoreManager.Test
             Assumes.Present(fixture);
 
             _jtf = fixture.JoinableTaskFactory;
+
+#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
+            var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
+#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
+
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
         }
 
         [Fact]
@@ -32,9 +38,10 @@ namespace NuGet.SolutionRestoreManager.Test
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
+            var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_CLEAN;
 
-            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager, restoreChecker))
             {
                 await _jtf.SwitchToMainThreadAsync();
 
@@ -45,7 +52,9 @@ namespace NuGet.SolutionRestoreManager.Test
 
             Mock.Get(restoreWorker)
                 .Verify(x => x.CleanCacheAsync(), Times.Once);
- 
+            Mock.Get(restoreChecker)
+               .Verify(x => x.CleanCache(), Times.Once);
+
             Mock.Get(restoreWorker)
                 .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }
@@ -56,6 +65,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
+            var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
 
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
 
@@ -64,7 +74,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Returns(() => new VirtualSettingSection("packageRestore",
                     new AddItem("automatic", bool.FalseString)));
 
-            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager, restoreChecker))
             {
                 await _jtf.SwitchToMainThreadAsync();
 
@@ -83,6 +93,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
+            var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
 
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD + (uint)VSSOLNBUILDUPDATEFLAGS3.SBF_FLAGS_UPTODATE_CHECK;
 
@@ -91,7 +102,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Returns(() => new VirtualSettingSection("packageRestore",
                     new AddItem("automatic", bool.TrueString)));
 
-            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager, restoreChecker))
             {
                 await _jtf.SwitchToMainThreadAsync();
 
@@ -110,6 +121,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var settings = Mock.Of<ISettings>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
+            var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
 
             var buildAction = (uint)VSSOLNBUILDUPDATEFLAGS.SBF_OPERATION_BUILD;
 
@@ -124,7 +136,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Setup(x => x.RestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
-            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager))
+            using (var handler = new SolutionRestoreBuildHandler(settings, restoreWorker, buildManager, restoreChecker))
             {
                 await _jtf.SwitchToMainThreadAsync();
 

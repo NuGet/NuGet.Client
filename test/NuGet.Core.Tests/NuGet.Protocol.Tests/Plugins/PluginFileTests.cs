@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("")]
         public void Constructor_ThrowsForNullOrEmptyFilePath(string filePath)
         {
-            var exception = Assert.Throws<ArgumentException>(() => new PluginFile(filePath, state: new Lazy<PluginFileState>(()=>PluginFileState.NotFound)));
+            var exception = Assert.Throws<ArgumentException>(() => new PluginFile(filePath, state: new Lazy<PluginFileState>(() => PluginFileState.NotFound)));
 
             Assert.Equal("filePath", exception.ParamName);
         }

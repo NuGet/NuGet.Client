@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using FluentAssertions;
+using NuGet.ContentModel;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 using Xunit;
@@ -177,6 +178,74 @@ namespace NuGet.DependencyResolver.Core.Tests
             node.OuterNode = parent;
 
             node.GetPathWithLastRange().Should().Be("a -> b");
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+
+        public void GraphOperations_GraphItem_EqualObjects(bool nullIdentity, bool isCentralTransitive)
+        {
+            var libraryIdentity = nullIdentity ? null : new LibraryIdentity("a", new NuGetVersion("2.0.0"), LibraryType.Package);
+
+            var graphItem = new GraphItem<RemoteResolveResult>(libraryIdentity);
+            graphItem.IsCentralTransitive = isCentralTransitive;
+
+            var graphItem2 = new GraphItem<RemoteResolveResult>(libraryIdentity);
+            graphItem2.IsCentralTransitive = isCentralTransitive;
+
+            Assert.True(graphItem.Equals(graphItem));
+            Assert.True(graphItem.Equals(graphItem2));
+            Assert.Equal(graphItem.GetHashCode(), graphItem2.GetHashCode());
+        }
+
+        [Fact]
+
+        public void GraphOperations_GraphItem_NotEqualObjects()
+        {
+            var libraryIdentity1 = new LibraryIdentity("a", new NuGetVersion("2.0.0"), LibraryType.Package);
+            var libraryIdentity2 = new LibraryIdentity("b", new NuGetVersion("2.0.0"), LibraryType.Package);
+
+            var graphItem_1_1 = new GraphItem<RemoteResolveResult>(libraryIdentity1);
+            graphItem_1_1.IsCentralTransitive = true;
+
+            var graphItem_1_2 = new GraphItem<RemoteResolveResult>(libraryIdentity1);
+            graphItem_1_2.IsCentralTransitive = false;
+
+            var graphItem_2_1 = new GraphItem<RemoteResolveResult>(libraryIdentity2);
+            graphItem_2_1.IsCentralTransitive = true;
+
+            var graphItem_2_2 = new GraphItem<RemoteResolveResult>(libraryIdentity2);
+            graphItem_2_2.IsCentralTransitive = false;
+
+
+            var graphItem_null_1 = new GraphItem<RemoteResolveResult>(null);
+            graphItem_null_1.IsCentralTransitive = true;
+
+            var graphItem_null_2 = new GraphItem<RemoteResolveResult>(null);
+            graphItem_null_2.IsCentralTransitive = false;
+
+            Assert.False(graphItem_1_1.Equals(graphItem_1_2));
+            Assert.False(graphItem_1_1.Equals(graphItem_2_1));
+            Assert.False(graphItem_1_1.Equals(graphItem_2_2));
+            Assert.False(graphItem_1_1.Equals(graphItem_null_1));
+            Assert.False(graphItem_1_1.Equals(graphItem_null_2));
+
+            Assert.False(graphItem_1_2.Equals(graphItem_2_1));
+            Assert.False(graphItem_1_2.Equals(graphItem_2_2));
+            Assert.False(graphItem_1_2.Equals(graphItem_null_1));
+            Assert.False(graphItem_1_2.Equals(graphItem_null_2));
+
+            Assert.False(graphItem_2_1.Equals(graphItem_2_2));
+            Assert.False(graphItem_2_1.Equals(graphItem_null_1));
+            Assert.False(graphItem_2_1.Equals(graphItem_null_2));
+
+            Assert.False(graphItem_2_2.Equals(graphItem_null_1));
+            Assert.False(graphItem_2_2.Equals(graphItem_null_2));
+
+            Assert.False(graphItem_null_1.Equals(graphItem_null_2));
         }
 
         public GraphNode<RemoteResolveResult> GetNode(string id, string range, LibraryDependencyTarget target, string version, LibraryType type)

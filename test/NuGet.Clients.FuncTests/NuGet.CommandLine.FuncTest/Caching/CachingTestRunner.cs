@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
+using Test.Utility;
 
 namespace NuGet.CommandLine.Test.Caching
 {
@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.Test.Caching
                 tc.NoCache = caching.HasFlag(CachingType.NoCache);
                 tc.DirectDownload = caching.HasFlag(CachingType.DirectDownload);
                 tc.CurrentSource = server == ServerType.V2 ? tc.V2Source : tc.V3Source;
-
+                tc.CreateNuGetConfig(tc.WorkingPath, tc.CurrentSource);
                 tc.ClearHttpCache();
                 var validations = new List<CachingValidations>();
                 for (var i = 0; i < test.IterationCount; i++)
@@ -43,8 +43,8 @@ namespace NuGet.CommandLine.Test.Caching
 
         public static async Task<IEnumerable<CachingValidations>> ExecuteAsync(Type testType, Type commandType, INuGetExe nuGetExe, CachingType caching, ServerType server)
         {
-            var test = (ICachingTest) Activator.CreateInstance(testType);
-            var command = (ICachingCommand) Activator.CreateInstance(commandType);
+            var test = (ICachingTest)Activator.CreateInstance(testType);
+            var command = (ICachingCommand)Activator.CreateInstance(commandType);
 
             return await ExecuteAsync(
                 test,

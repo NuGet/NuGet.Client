@@ -17,6 +17,7 @@ using NuGet.Configuration.Test;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
+using Xunit.Abstractions;
 using static NuGet.Commands.TrustedSignersArgs;
 
 namespace NuGet.CommandLine.FuncTest.Commands
@@ -28,13 +29,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
     public class TrustedSignersCommandTests
     {
         private readonly string _nugetExePath;
+        private readonly ITestOutputHelper _testOutputHelper;
         private const string _trustedSignersHelpStringFragment = "usage: NuGet trusted-signers <List|Add|Remove|Sync> [options]";
         private const string _successfulActionTrustedSigner = "Successfully {0} the trusted {1} '{2}'.";
         private const string _successfulAddTrustedSigner = "Successfully added a trusted {0} '{1}'.";
 
-        public TrustedSignersCommandTests()
+        public TrustedSignersCommandTests(ITestOutputHelper testOutputHelper)
         {
             _nugetExePath = Util.GetNuGetExePath();
+            _testOutputHelper = testOutputHelper;
         }
 
         [Fact]
@@ -138,7 +141,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 _nugetExePath,
                 Directory.GetCurrentDirectory(),
                 $"trusted-signers {args}",
-                waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
             // Assert
 
@@ -146,12 +149,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
             //  Util.VerifyResultFailure(result, TrustedSignersHelpStringFragment, checkErrorMsgOnStdErr: false);
 
             Assert.True(
-                result.Item1 != 0,
-                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                result.ExitCode != 0,
+                "nuget.exe DID NOT FAIL: Ouput is " + result.Output + ". Error is " + result.Errors);
 
             Assert.True(
-                result.Item2.Contains(_trustedSignersHelpStringFragment),
-                "Expected error is " + _trustedSignersHelpStringFragment + ". Actual error is " + result.Item3);
+                result.Output.Contains(_trustedSignersHelpStringFragment),
+                "Expected error is " + _trustedSignersHelpStringFragment + ". Actual error is " + result.Errors);
         }
 
         [Theory]
@@ -177,7 +180,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add -Name signer -CertificateFingerprint abcdefg -FingerprintAlgorithm SHA256 {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -224,7 +227,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add -Name signer -CertificateFingerprint hijklmn -FingerprintAlgorithm SHA256 {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -273,7 +276,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {signedPackagePath} -Name signer -Author {allowUntrustedRootArg} -Config {nugetConfigPath}",
-                    waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -289,6 +292,48 @@ namespace NuGet.CommandLine.FuncTest.Commands
 </configuration>");
 
                 SettingsTestUtils.RemoveWhitespace(File.ReadAllText(nugetConfigPath)).Should().Be(expectedResult);
+            }
+        }
+
+        [CIOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task TrustedSignersCommand_AddTrustedSigner_WithAuthorSignedPackage_AddsMultipleFilesThrows(bool allowUntrustedRoot)
+        {
+            // Arrange
+            var nugetConfigFileName = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+            // Arrange
+            var nupkgA = new SimpleTestPackageContext("A", "1.0.0");
+            var nupkgB = new SimpleTestPackageContext("B", "1.0.0");
+            using (var dir = TestDirectory.Create())
+            using (var zipStream = await nupkgA.CreateAsStreamAsync())
+            using (var trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate())
+            {
+                var certFingerprint = SignatureTestUtility.GetFingerprint(trustedTestCert.Source.Cert, HashAlgorithmName.SHA256);
+                var signedPackagePathA = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, nupkgA, dir);
+                var signedPackagePathB = await SignedArchiveTestUtility.AuthorSignPackageAsync(trustedTestCert.Source.Cert, nupkgB, dir);
+
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFileName, dir, config);
+                var nugetConfigPath = Path.Combine(dir, nugetConfigFileName);
+                var allowUntrustedRootArg = allowUntrustedRoot ? "-AllowUntrustedRoot" : string.Empty;
+                var multiplePackagesPath = $"{dir}{Path.DirectorySeparatorChar}*.nupkg";
+
+                // Act
+                var commandResult = CommandRunner.Run(
+                    _nugetExePath,
+                    dir,
+                    $"trusted-signers add {multiplePackagesPath} -Name signer -Author {allowUntrustedRootArg} -Config {nugetConfigPath}",
+                    testOutputHelper: _testOutputHelper);
+
+                // Assert
+                commandResult.Success.Should().BeFalse();
+                commandResult.AllOutput.Should().Contain(string.Format(CultureInfo.CurrentCulture,
+                    "Multiple nupkg files detected on '{0}' path to trust, only 1 is allowed.",
+                    multiplePackagesPath));
             }
         }
 
@@ -332,7 +377,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {signedPackagePath} -Name signer -Repository {allowUntrustedRootArg} {ownersArgs} -Config {nugetConfigPath}",
-                    waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -394,7 +439,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers add {signedPackagePath} -Name signer -Repository {allowUntrustedRootArg} {ownersArgs} -Config {nugetConfigPath}",
-                    waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();
@@ -439,7 +484,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     _nugetExePath,
                     dir,
                     $"trusted-signers remove -Name signer -Config {nugetConfigPath}",
-                    waitForExit: true);
+                    testOutputHelper: _testOutputHelper);
 
                 // Assert
                 commandResult.Success.Should().BeTrue();

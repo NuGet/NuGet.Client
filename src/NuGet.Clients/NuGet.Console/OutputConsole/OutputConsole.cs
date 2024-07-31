@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole
 {
@@ -14,11 +15,12 @@ namespace NuGetConsole
     /// This class implements the IConsole interface in order to integrate with the PowerShellHost.
     /// It sends PowerShell host outputs to the VS Output tool window.
     /// </summary>
-    internal sealed class OutputConsole : SharedOutputConsole, IConsole, IConsoleDispatcher
+    internal sealed class OutputConsole : BaseOutputConsole, IConsole
     {
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
         private readonly AsyncLazy<IVsOutputWindowPane> _outputWindowPane;
+        private readonly AsyncLazy<OutputWindowTextWriter> _outputWindowTextWriter;
 
         private IVsOutputWindowPane VsOutputWindowPane => NuGetUIThreadHelper.JoinableTaskFactory.Run(_outputWindowPane.GetValueAsync);
 
@@ -44,8 +46,10 @@ namespace NuGetConsole
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // create the Package Manager pane within the Output window
+                Guid outputWindowPaneId = GuidList.NuGetOutputWindowPaneGuid;
+
                 var hr = _vsOutputWindow.CreatePane(
-                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    ref outputWindowPaneId,
                     Resources.OutputConsolePaneName,
                     fInitVisible: 1,
                     fClearWithSolution: 0);
@@ -53,22 +57,24 @@ namespace NuGetConsole
 
                 IVsOutputWindowPane pane;
                 hr = _vsOutputWindow.GetPane(
-                    ref GuidList.guidNuGetOutputWindowPaneGuid,
+                    ref outputWindowPaneId,
                     out pane);
                 ErrorHandler.ThrowOnFailure(hr);
+
+                GuidList.NuGetOutputWindowPaneGuid = outputWindowPaneId;
 
                 return pane;
 
             }, NuGetUIThreadHelper.JoinableTaskFactory);
+
+            _outputWindowTextWriter = new AsyncLazy<OutputWindowTextWriter>(async () =>
+            {
+                var outputWindowPane = await _outputWindowPane.GetValueAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                return new OutputWindowTextWriter(outputWindowPane);
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
         }
-
-        #region IConsole
-
-        public IHost Host { get; set; }
-
-        public bool ShowDisclaimerHeader => false;
-
-        public IConsoleDispatcher Dispatcher => this;
 
         public override async Task WriteAsync(string text)
         {
@@ -77,14 +83,17 @@ namespace NuGetConsole
                 return;
             }
 
-            Start();
+            await StartAsync();
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            VsOutputWindowPane.OutputStringThreadSafe(text);
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.WriteAsync(text);
         }
 
         public override async Task ActivateAsync()
         {
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.FlushAsync();
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             _vsUiShell.FindToolWindow(0,
@@ -97,7 +106,10 @@ namespace NuGetConsole
 
         public override async Task ClearAsync()
         {
-            Start();
+            await StartAsync();
+
+            var outputWindowTextWriter = await _outputWindowTextWriter.GetValueAsync();
+            await outputWindowTextWriter.FlushAsync();
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -105,60 +117,14 @@ namespace NuGetConsole
             VsOutputWindowPane.Clear();
         }
 
-        #endregion IConsole
-
-        #region IConsoleDispatcher
-
-        public void Start()
+        public override void StartConsoleDispatcher()
         {
-            if (!IsStartCompleted)
-            {
-                var ignore = VsOutputWindowPane;
-                StartCompleted?.Invoke(this, EventArgs.Empty);
-            }
-
-            IsStartCompleted = true;
+            _ = VsOutputWindowPane;
         }
 
-        public event EventHandler StartCompleted;
-
-        event EventHandler IConsoleDispatcher.StartWaitingKey
+        public override async Task StartConsoleDispatcherAsync()
         {
-            add { }
-            remove { }
+            await _outputWindowPane.GetValueAsync();
         }
-
-        public bool IsStartCompleted { get; private set; }
-
-        public bool IsExecutingCommand
-        {
-            get { return false; }
-        }
-
-        public bool IsExecutingReadKey
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public bool IsKeyAvailable
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public void AcceptKeyInput()
-        {
-        }
-
-        public VsKeyInfo WaitKey()
-        {
-            throw new NotSupportedException();
-        }
-
-        public void ClearConsole()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ClearAsync());
-        }
-
-        #endregion IConsoleDispatcher
     }
 }

@@ -27,8 +27,8 @@ namespace NuGet.Packaging.Test
             var frameworkReference1 = new FrameworkReference("ASPNET");
             var frameworkReference2 = new FrameworkReference("WPF");
 
-            var frameworkReferenceGroup1 = new FrameworkReferenceGroup(CommonFrameworks.NetCoreApp30, new FrameworkReference[] { frameworkReference1, frameworkReference2});
-            var frameworkReferenceGroup2 = new FrameworkReferenceGroup(CommonFrameworks.NetCoreApp30, new FrameworkReference[] { frameworkReference2, frameworkReference1});
+            var frameworkReferenceGroup1 = new FrameworkReferenceGroup(CommonFrameworks.NetCoreApp30, new FrameworkReference[] { frameworkReference1, frameworkReference2 });
+            var frameworkReferenceGroup2 = new FrameworkReferenceGroup(CommonFrameworks.NetCoreApp30, new FrameworkReference[] { frameworkReference2, frameworkReference1 });
 
             Assert.Equal(frameworkReferenceGroup1, frameworkReferenceGroup2);
             Assert.Equal(frameworkReferenceGroup1.GetHashCode(), frameworkReferenceGroup2.GetHashCode());

@@ -1,33 +1,33 @@
 function Test-UpdatingPackageInProjectDoesntRemoveFromSolutionIfInUse {
     # Arrange
     $p1 = New-WebApplication
-    $p2 = New-ClassLibrary 
+    $p2 = New-ClassLibrary
 
-    $oldReferences = @("Castle.Core", 
-                       "Castle.Services.Logging.log4netIntegration", 
-                       "Castle.Services.Logging.NLogIntegration", 
+    $oldReferences = @("Castle.Core",
+                       "Castle.Services.Logging.log4netIntegration",
+                       "Castle.Services.Logging.NLogIntegration",
                        "log4net",
                        "NLog")
-                       
+
     Install-Package Castle.Core -Version 1.2.0 -Project $p1.Name
     $oldReferences | %{ Assert-Reference $p1 $_ }
-    
+
     Install-Package Castle.Core -Version 1.2.0 -Project $p2.Name
     $oldReferences | %{ Assert-Reference $p2 $_ }
-    
+
     # Check that it's installed at solution level
     Assert-SolutionPackage Castle.Core 1.2.0
-    
+
     # Update the package in the first project
     Update-Package Castle.Core -Project $p1.Name -Version 2.5.1
     Assert-Reference $p1 Castle.Core 2.5.1.0
     Assert-SolutionPackage Castle.Core 2.5.1
     Assert-SolutionPackage Castle.Core 1.2.0
-    
+
     # Update the package in the second project
     Update-Package Castle.Core -Project $p2.Name -Version 2.5.1
     Assert-Reference $p2 Castle.Core 2.5.1.0
-    
+
     # Make sure that the old one is removed since no one is using it
     Assert-Null (Get-SolutionPackage Castle.Core 1.2.0)
 }
@@ -39,14 +39,14 @@ function Test-UpdatingPackageWithPackageSaveModeNuspec {
     $componentModel = Get-VSComponentModel
 	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
 
-    try {        
+    try {
         $p = New-ClassLibrary
 
         $setting.AddOrUpdate('config', [NuGet.Configuration.AddItem]::new('PackageSaveMode', 'nuspec'))
 
         Install-Package Castle.Core -Version 1.2.0 -Project $p.Name
         Assert-Package $p Castle.Core 1.2.0
-    
+
         # Act
         Update-Package Castle.Core
 
@@ -62,7 +62,7 @@ function Test-UpdatingPackageWithSharedDependency {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -77,7 +77,7 @@ function Test-UpdatingPackageWithSharedDependency {
     Assert-SolutionPackage C 1.0
     Assert-SolutionPackage A 2.0
     Assert-Null (Get-SolutionPackage A 1.0)
-    
+
     Update-Package D -Source $context.RepositoryPath
     # Make sure the new package is installed
     Assert-Package $p D 2.0
@@ -88,7 +88,7 @@ function Test-UpdatingPackageWithSharedDependency {
     Assert-SolutionPackage B 2.0
     Assert-SolutionPackage C 2.0
     Assert-SolutionPackage A 3.0
-    
+
     # Make sure the old package is removed
     Assert-Null (Get-ProjectPackage $p D 1.0)
     Assert-Null (Get-ProjectPackage $p B 1.0)
@@ -107,13 +107,13 @@ function Test-UpdatingPackageDependentPackageVersion {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
     Install-Package jquery.validation -Version 1.8
     Assert-Package $p jquery.validation 1.8
     Assert-Package $p jquery 1.4.1
-    
+
     # Act
     Update-Package jquery -version 2.0.3
 
@@ -127,7 +127,7 @@ function Test-UpdatingPackageWhatIf {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
     Install-Package D -Version 1.0 -Source $context.RepositoryPath
@@ -150,7 +150,7 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -160,7 +160,7 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     Assert-Package $p B 1.0
     Assert-SolutionPackage D 1.0
     Assert-SolutionPackage B 1.0
-    
+
     Update-Package D -Source $context.RepositoryPath
     # Make sure the new package is installed
     Assert-Package $p D 2.0
@@ -169,7 +169,7 @@ function Test-UpdatingPackageWithSharedDependencySimple {
     Assert-SolutionPackage D 2.0
     Assert-SolutionPackage B 2.0
     Assert-SolutionPackage C 2.0
-    
+
     # Make sure the old package is removed
     Assert-Null (Get-ProjectPackage $p D 1.0)
     Assert-Null (Get-ProjectPackage $p B 1.0)
@@ -186,7 +186,7 @@ function Test-UpdateWithoutPackageInstalledThrows {
 }
 
 #function Test-UpdateSolutionOnlyPackage {
-function UpdateSolutionOnlyPackage {    
+function UpdateSolutionOnlyPackage {
     param(
         $context
     )
@@ -198,7 +198,7 @@ function UpdateSolutionOnlyPackage {
     # Act
     $p | Install-Package SolutionOnlyPackage -Source $context.RepositoryRoot -Version 1.0
     Assert-SolutionPackage SolutionOnlyPackage 1.0
-    Assert-PathExists (Join-Path $solutionDir packages\SolutionOnlyPackage.1.0\file1.txt)    
+    Assert-PathExists (Join-Path $solutionDir packages\SolutionOnlyPackage.1.0\file1.txt)
 
     $p | Update-Package SolutionOnlyPackage -Source $context.RepositoryRoot
     Assert-Null (Get-SolutionPackage SolutionOnlyPackage 1.0)
@@ -219,7 +219,7 @@ function UpdateSolutionOnlyPackageWhenAmbiguous {
 
     Assert-SolutionPackage SolutionOnlyPackage 1.0
     Assert-SolutionPackage SolutionOnlyPackage 2.0
-        
+
     Assert-Throws { Update-Package SolutionOnlyPackage } "Unable to update 'SolutionOnlyPackage'. Found multiple versions installed."
 }
 
@@ -227,7 +227,7 @@ function Test-UpdatePackageResolvesDependenciesAcrossSources {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ConsoleApplication
 
@@ -266,10 +266,10 @@ function Test-SubTreeUpdateWithDependencyInUse {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
     Assert-Package $p A 1.0
@@ -293,10 +293,10 @@ function Test-ComplexUpdateSubTree {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
     Assert-Package $p A 1.0
@@ -321,10 +321,10 @@ function Test-SubTreeUpdateWithConflict {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
     $p | Install-Package H -Source $context.RepositoryPath
@@ -345,13 +345,14 @@ function Test-SubTreeUpdateWithConflict {
 }
 
 function Test-AddingBindingRedirectAfterUpdate {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-WebApplication
-    
+
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
     Assert-Package $p A 1.0
@@ -373,7 +374,7 @@ function Test-UpdatePackageWithOlderVersionOfSharedDependencyInUse {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -449,14 +450,14 @@ function Test-UpdatePackageAcceptsRelativePathSource {
     param(
         $context
     )
-    
+
     pushd
 
     # Arrange
     $p = New-ConsoleApplication
     Install-Package SkypePackage -Version 1.0 -Project $p.Name -Source $context.RepositoryRoot
     Assert-Package $p SkypePackage 1.0
-	
+
     $testPathName = Split-Path $context.TestRoot -Leaf
 
     cd $context.RepositoryRoot
@@ -475,7 +476,7 @@ function Test-UpdatePackageAcceptsRelativePathSource2 {
     param(
         $context
     )
-    
+
     pushd
 
     # Arrange
@@ -501,7 +502,7 @@ function Test-UpdateProjectLevelPackageNotInstalledInAnyProject {
 
     # Act
     $p1 | Install-Package Ninject -Version 2.0.1.0
-    Remove-ProjectItem $p1 packages.config    
+    Remove-ProjectItem $p1 packages.config
 
     # Assert
     Assert-Throws { Update-Package Ninject } "'Ninject' was not installed in any project. Update failed."
@@ -522,7 +523,7 @@ function Test-UpdateProjectLevelPackageNotInstalledInAnyProject {
 #
 #    # Act
 #	Update-Package Castle.Core -Version 2.5.1
-#	
+#
 #    # Assert
 #	Assert-Package $proj Castle.Core 2.5.1
 #}
@@ -555,7 +556,7 @@ function Test-UpdatePackageMissingPackageNoConsent {
 
 function Test-UpdatePackageInAllProjects {
     # Arrange
-    $p1 = New-FSharpLibrary
+    $p1 = New-ConsoleApplication
     $p2 = New-WebApplication
     $p3 = New-ClassLibrary
     $p4 = New-WebSite
@@ -597,11 +598,11 @@ function Test-UpdateAllPackagesInSolution {
     # Arrange
     $p1 = New-WebApplication
     $p2 = New-ClassLibrary
-    
+
     # Act
     $p1 | Install-Package A -Version 1.0 -Source $context.RepositoryPath
     $p2 | Install-Package C -Version 1.0 -Source $context.RepositoryPath
-    
+
     Assert-SolutionPackage A 1.0
     Assert-SolutionPackage B 1.0
     Assert-SolutionPackage C 1.0
@@ -632,12 +633,12 @@ function Test-UpdateAllPackagesInSolution {
 }
 
 function Test-UpdatePackageOnAnFSharpProjectWithMultiplePackages {
-    param(
-        $context
-    )
+    [SkipTest('https://github.com/NuGet/Home/issues/11982')]
+    param($context)
 
     # Arrange
     $p = New-FSharpLibrary
+    Build-Solution # wait for project nomination
 
     # Act
     $p | Install-Package SkypePackage -version 1.0 -source $context.RepositoryRoot
@@ -646,7 +647,7 @@ function Test-UpdatePackageOnAnFSharpProjectWithMultiplePackages {
     Update-Package -Source $context.RepositoryRoot -ProjectName $p.Name
 
     # Assert
-    Assert-Package $p SkypePackage 3.0
+    Assert-NetCorePackageInLockFile $p SkypePackage 3.0
 }
 
 function Test-UpdateScenariosWithConstraints {
@@ -666,7 +667,7 @@ function Test-UpdateScenariosWithConstraints {
     Add-PackageConstraint $p1 A "[1.0, 2.0)"
     Add-PackageConstraint $p2 D "[1.0]"
     Add-PackageConstraint $p3 E "[1.0]"
-     
+
     # Act
     Assert-Throws { Update-Package -Version 2.0 A -Source $context.RepositoryPath } "Unable to resolve 'A'. An additional constraint '(>= 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation."
     Assert-Throws { Update-Package C -Source $context.RepositoryPath } "Unable to find a version of 'D' that is compatible with 'C 2.0.0 constraint: D (>= 2.0.0)'. 'D' has an additional constraint (= 1.0.0) defined in packages.config."
@@ -700,7 +701,7 @@ function Test-UpdateAllPackagesInSolutionWithSafeFlag {
     $p1 | Install-Package B -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
     $p1 | Install-Package C -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
 
-    # Act    
+    # Act
     Update-Package -Source $context.RepositoryPath -Safe
 
     # Assert
@@ -723,7 +724,7 @@ function Test-UpdatePackageWithSafeFlag {
     $p1 | Install-Package B -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
     $p1 | Install-Package C -Version 1.0 -Source $context.RepositoryPath -IgnoreDependencies
 
-    # Act    
+    # Act
     Update-Package A -Source $context.RepositoryPath -Safe
 
     # Assert
@@ -847,7 +848,7 @@ function Test-UpdatePackageWithDependentsThatHaveNoAvailableUpdatesThrows {
 
 function Test-UpdatePackageThrowsWhenSourceIsInvalid {
     # Arrange
-    $p = New-WebApplication 
+    $p = New-WebApplication
     $p | Install-Package jQuery -Version 1.5.1 -Source $context.RepositoryPath
 
     # Act & Assert
@@ -976,13 +977,13 @@ function Test-UpdateAllPackagesInAllProjectsExecutesInstallPs1OnAllProjects {
     # The install.ps1 in the TestUpdatePackage package will add the project name to $global:InstallPackageMessages collection
     # The install.ps1 in the TestUpdateSecondPackage package will add the (project name + ' second') to $global:InstallPackageMessages collection
 
-	$global:InstallPackageMessages = $global:InstallPackageMessages | Sort-Object 
+	$global:InstallPackageMessages = $global:InstallPackageMessages | Sort-Object
     Assert-AreEqual 4 $global:InstallPackageMessages.Count
     Assert-AreEqual 'Project1' $global:InstallPackageMessages[0]
-	Assert-AreEqual 'Project1second' $global:InstallPackageMessages[1]    
+	Assert-AreEqual 'Project1second' $global:InstallPackageMessages[1]
     Assert-AreEqual 'Project2' $global:InstallPackageMessages[2]
 	Assert-AreEqual 'Project2second' $global:InstallPackageMessages[3]
-    
+
 
 	$global:UninstallPackageMessages = $global:UninstallPackageMessages | Sort-Object
     Assert-AreEqual 4 $global:UninstallPackageMessages.Count
@@ -1007,7 +1008,7 @@ function Test-UpdatePackageDoesNotConsiderPrereleasePackagesForUpdateIfFlagIsNot
     # Act
     $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.0-a -Prerelease
     Assert-Package $p 'PreReleaseTestPackage'
-    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage 
+    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage
 
     # Assert
     Assert-Package $p PreReleaseTestPackage 1.0.0
@@ -1105,7 +1106,7 @@ function UpdatePackageDontMakeExcessiveNetworkRequests
     $a = New-ClassLibrary
 
     $nugetsource = "https://www.nuget.org/api/v2/"
-    
+
     $repository = Get-PackageRepository $nugetsource
     Assert-NotNull $repository
 
@@ -1118,7 +1119,7 @@ function UpdatePackageDontMakeExcessiveNetworkRequests
     $a | Install-Package "nugetpackageexplorer.types" -version 1.0 -source $nugetsource
     Assert-Package $a 'nugetpackageexplorer.types' '1.0'
 
-    try 
+    try
     {
         Register-ObjectEvent $packageDownloader "SendingRequest" $eventId { $global:numberOfRequests++; }
 
@@ -1129,7 +1130,7 @@ function UpdatePackageDontMakeExcessiveNetworkRequests
         Assert-Package $a 'nugetpackageexplorer.types' '2.0'
         Assert-AreEqual 1 $global:numberOfRequests
     }
-    finally 
+    finally
     {
         Unregister-Event $eventId -ea SilentlyContinue
         Remove-Variable 'numberOfRequests' -Scope 'Global' -ea SilentlyContinue
@@ -1179,7 +1180,7 @@ function Test-UpdatingSatellitePackageUpdatesReferences
     $solutionDir = Get-SolutionDir
     $packageDir = (Join-Path $solutionDir packages\Localized.1.0)
     Assert-PathExists (Join-Path $packageDir 'lib\net40\fr-FR\Main.1.0.resources.dll')
-    
+
 
     # Act
     $p | Update-Package Localized.fr-FR -Source $context.RepositoryPath
@@ -1215,7 +1216,7 @@ function Test-UpdatingSatellitePackageWhenMultipleVersionsInstalled
     $solutionDir = Get-SolutionDir
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.1.0\lib\net40\fr-FR\Main.1.0.resources.dll')
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.2.0\lib\net40\fr-FR\Main.2.0.resources.dll')
-    
+
     # Act - 2
     $p2 | Update-Package DependsOnLocalized -Source $context.RepositoryPath
 
@@ -1226,7 +1227,7 @@ function Test-UpdatingSatellitePackageWhenMultipleVersionsInstalled
 
     Assert-PathNotExists (Join-Path $solutionDir 'packages\Localized.2.0\')
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.3.0\lib\net40\fr-FR\Main.3.0.resources.dll')
-    
+
 }
 
 function Test-UpdatingPackagesWithDependenciesOnSatellitePackages
@@ -1235,7 +1236,7 @@ function Test-UpdatingPackagesWithDependenciesOnSatellitePackages
 
     # Arrange
     $p = New-ClassLibrary
-    
+
     # Act - 1
     $p | Install-Package Localized.LangPack -Version 1.0 -Source $context.RepositoryPath
 
@@ -1248,7 +1249,7 @@ function Test-UpdatingPackagesWithDependenciesOnSatellitePackages
     $solutionDir = Get-SolutionDir
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.1.0\lib\net40\ja-JP\Main.1.0.resources.dll')
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.1.0\lib\net40\fr-FR\Main.1.0.resources.dll')
-    
+
     # Act - 2
     $p | Update-Package Localized.LangPack -Source $context.RepositoryPath
 
@@ -1260,10 +1261,10 @@ function Test-UpdatingPackagesWithDependenciesOnSatellitePackages
 
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.2.0\lib\net40\ja-JP\Main.2.0.resources.dll')
     Assert-PathExists (Join-Path $solutionDir 'packages\Localized.2.0\lib\net40\fr-FR\Main.2.0.resources.dll')
-    
+
 }
 
-function Test-UpdatingMetaPackageRemovesSatelliteReferences 
+function Test-UpdatingMetaPackageRemovesSatelliteReferences
 {
     # Verification for work item 2313
     param ($context)
@@ -1273,7 +1274,7 @@ function Test-UpdatingMetaPackageRemovesSatelliteReferences
 
     # Act - 1
     $p | Install-Package A.Localized -Version 1.0.0 -Source $context.RepositoryPath
-    
+
     # Assert - 1
     Assert-Package $p A 1.0.0
     Assert-Package $p A.localized 1.0.0
@@ -1282,7 +1283,7 @@ function Test-UpdatingMetaPackageRemovesSatelliteReferences
 
     # Act - 2
     $p | Update-Package A.Localized -Source $context.RepositoryPath
-    
+
     # Assert - 1
     Assert-Package $p A 2.0.0
     Assert-Package $p A.localized 2.0.0
@@ -1296,10 +1297,10 @@ function Test-UpdatingMetaPackageRemovesSatelliteReferences
     Assert-PathNotExists (Join-Path $solutionDir 'packages\A.es.1.0.0\')
 }
 
-function Test-ReinstallPackageInvokeUninstallAndInstallScripts 
+function Test-ReinstallPackageInvokeUninstallAndInstallScripts
 {
-    param($context) 
-    
+    param($context)
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -1316,14 +1317,14 @@ function Test-ReinstallPackageInvokeUninstallAndInstallScripts
     Assert-AreEqual 5 $global:UninstallScriptCount
 
     # clean up
-    Remove-Variable InstallScriptCount -Scope Global 
-    Remove-Variable UninstallScriptCount -Scope Global 
+    Remove-Variable InstallScriptCount -Scope Global
+    Remove-Variable UninstallScriptCount -Scope Global
 }
 
-function Test-ReinstallAllPackagesInAProjectInvokeUninstallAndInstallScripts 
+function Test-ReinstallAllPackagesInAProjectInvokeUninstallAndInstallScripts
 {
-    param($context) 
-    
+    param($context)
+
     # Arrange
     $p = New-ClassLibrary
 
@@ -1347,16 +1348,16 @@ function Test-ReinstallAllPackagesInAProjectInvokeUninstallAndInstallScripts
     Assert-AreEqual 7 $global:UninstallMagicScript
 
     # clean up
-    Remove-Variable InstallScriptCount -Scope Global 
-    Remove-Variable UninstallScriptCount -Scope Global 
-    Remove-Variable InstallMagicScript -Scope Global 
-    Remove-Variable UninstallMagicScript -Scope Global 
+    Remove-Variable InstallScriptCount -Scope Global
+    Remove-Variable UninstallScriptCount -Scope Global
+    Remove-Variable InstallMagicScript -Scope Global
+    Remove-Variable UninstallMagicScript -Scope Global
 }
 
-function Test-ReinstallPackageInAllProjectsInvokeUninstallAndInstallScripts 
+function Test-ReinstallPackageInAllProjectsInvokeUninstallAndInstallScripts
 {
-    param($context) 
-    
+    param($context)
+
     # Arrange
     $p = New-ClassLibrary
     $q = New-ConsoleApplication
@@ -1375,14 +1376,14 @@ function Test-ReinstallPackageInAllProjectsInvokeUninstallAndInstallScripts
     Assert-AreEqual 11 $global:UninstallScriptCount
 
     # clean up
-    Remove-Variable InstallScriptCount -Scope Global 
-    Remove-Variable UninstallScriptCount -Scope Global 
+    Remove-Variable InstallScriptCount -Scope Global
+    Remove-Variable UninstallScriptCount -Scope Global
 }
 
-function Test-ReinstallAllPackagesInAllProjectsInvokeUninstallAndInstallScripts 
+function Test-ReinstallAllPackagesInAllProjectsInvokeUninstallAndInstallScripts
 {
-    param($context) 
-    
+    param($context)
+
     # Arrange
     $p = New-ClassLibrary
     $q = New-ConsoleApplication
@@ -1407,17 +1408,17 @@ function Test-ReinstallAllPackagesInAllProjectsInvokeUninstallAndInstallScripts
     Assert-AreEqual 8 $global:UninstallMagicScript
 
     # clean up
-    Remove-Variable InstallScriptCount -Scope Global 
-    Remove-Variable UninstallScriptCount -Scope Global 
-    Remove-Variable InstallMagicScript -Scope Global 
-    Remove-Variable UninstallMagicScript -Scope Global 
+    Remove-Variable InstallScriptCount -Scope Global
+    Remove-Variable UninstallScriptCount -Scope Global
+    Remove-Variable InstallMagicScript -Scope Global
+    Remove-Variable UninstallMagicScript -Scope Global
 }
 
 #function Test-ReinstallPackageReinstallPrereleaseDependencyPackages
 function ReinstallPackageReinstallPrereleaseDependencyPackages
 {
-    param($context) 
-    
+    param($context)
+
     # Arrange
     $sol = New-Solution
 
@@ -1431,7 +1432,7 @@ function ReinstallPackageReinstallPrereleaseDependencyPackages
 
     Assert-Package $p2 "A" "1.0.0-alpha"
     Assert-Package $p2 "B" "2.0.0-beta"
-    
+
     # Act
     Update-Package A -Reinstall -Source $context.RepositoryPath
 
@@ -1573,8 +1574,8 @@ function Test-UpdatePackageWithContentInLicenseBlocks
 
     $name = 'PackageWithTextFile'
 
-    Install-Package $name -Version 1.0 -Source $context.RepositoryRoot 
-    
+    Install-Package $name -Version 1.0 -Source $context.RepositoryRoot
+
     $packages = Get-PackagesDir
     $fooFilePath = Join-Path $packages "$name.1.0\content\text"
 
@@ -1591,7 +1592,7 @@ This is a text file 1.0' > $fooFilePath
 
     # Assert
     Assert-Package $p $name '2.0'
-    
+
     $textFilePathInProject = Join-Path (Get-ProjectDir $p) 'text'
     Assert-True (Test-Path $textFilePathInProject)
 
@@ -1626,9 +1627,9 @@ function Test-UpdatePackagePreservesProjectConfigFile
 # Test update-package -WhatIf to downgrade an installed package.
 function Test-UpdatePackageDowngradeWhatIf {
     # Arrange
-    $project = New-ConsoleApplication    
-    
-    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $context.RepositoryRoot    
+    $project = New-ConsoleApplication
+
+    Install-Package TestUpdatePackage -Version 2.0.0.0 -Source $context.RepositoryRoot
     Assert-Package $project TestUpdatePackage '2.0.0.0'
 
     # Act
@@ -1644,7 +1645,7 @@ function Test-UpdatePackageWhatIfMultipleProjects {
     # Arrange
     $p1 = New-ConsoleApplication
     $p2 = New-ConsoleApplication
-    
+
     $p1 | Install-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot
     $p2 | Install-Package TestUpdatePackage -Version 1.0.0.0 -Source $context.RepositoryRoot
     Assert-Package $p1 TestUpdatePackage '1.0.0.0'
@@ -1664,7 +1665,7 @@ function Test-UpdatingPackageInstallOrdering {
     param(
         $context
     )
-    
+
     # Arrange
     $p = New-ConsoleApplication
 
@@ -1675,13 +1676,13 @@ function Test-UpdatingPackageInstallOrdering {
     Assert-Package $p A 1.0
     Assert-Package $p B 1.0
     Assert-Package $p C 1.0
-    
+
     Update-Package A -Source $context.RepositoryPath
     # Make sure the new package is installed
     Assert-Package $p A 2.0
     Assert-Package $p B 2.0
     Assert-Package $p C 2.0
-    
+
     # Make sure the old package is removed
     Assert-Null (Get-ProjectPackage $p A 1.0)
     Assert-Null (Get-ProjectPackage $p B 1.0)
@@ -1700,7 +1701,7 @@ function Test-UpdatePackageWithToHighestPatchFlag {
     $p1 | Install-Package B -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
     $p1 | Install-Package C -Version 1.0.0 -Source $context.RepositoryPath -IgnoreDependencies
 
-    # Act    
+    # Act
     Update-Package A -Source $context.RepositoryPath -Safe
 
     # Assert
@@ -1720,14 +1721,14 @@ function Test-UpdatePackageWithToHighestMinorFlag {
 
     # Arrange
     $p = New-ConsoleApplication
-    
+
 	$p | Install-Package A -Version 1.0.0 -Source $context.RepositoryPath
 
     Assert-Package $p A 1.0.0
     Assert-Package $p B 1.0.0
     Assert-Package $p C 1.0.0
 
-    # Act    
+    # Act
     Update-Package A -Source $context.RepositoryPath -ToHighestMinor
 
     # Assert
@@ -1742,6 +1743,7 @@ function Test-UpdatePackageWithToHighestMinorFlag {
 }
 
 function Test-UpdatingBindingRedirectAfterUpdate {
+    [SkipTest('https://github.com/NuGet/Home/issues/12292')]
     param(
         $context
     )
@@ -1771,11 +1773,31 @@ function Test-CanReinstallDelistedPackage
     $nugetsource = "https://www.nuget.org/api/v2/"
     $p = New-ClassLibrary
     $p | Install-Package Rx-Core -Version 2.2.5 -Source $nugetsource
-    
+
     # Act
     Update-Package Rx-Core -Reinstall -ProjectName $p.Name -Source $nugetsource
 
     # Assert
     # we get here as act errored prior to fix
     Assert-Package $p Rx-Core 2.2.5
+}
+
+function RemoveDirectory {
+    param($dir)
+
+    $iteration = 0
+    while ($iteration++ -lt 10)
+    {
+        if (Test-Path $dir)
+        {
+            # because -Recurse parameter in Remove-Item has a known issue so using Get-ChildItem to
+            # first delete all the children and then delete the folder.
+            Get-ChildItem $dir -Recurse | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+            Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            break;
+        }
+    }
 }

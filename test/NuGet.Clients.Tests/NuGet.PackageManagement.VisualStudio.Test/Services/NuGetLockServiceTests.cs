@@ -4,31 +4,27 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
-using Test.Utility.Threading;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public class NuGetLockServiceTests : IDisposable
+    [Collection(MockedVS.Collection)]
+    public class NuGetLockServiceTests : MockedVSCollectionTests, IDisposable
     {
         private readonly NuGetLockService _lockService;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
-        private readonly JoinableTaskFactory _jtf;
 
-        public NuGetLockServiceTests(DispatcherThreadFixture fixture)
+        public NuGetLockServiceTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
         {
-            Assumes.Present(fixture);
+            globalServiceProvider.Reset();
 
-            _jtf = fixture.JoinableTaskFactory;
-
-            _lockService = new NuGetLockService(fixture.JoinableTaskFactory.Context);
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_jtf);
+            _lockService = new NuGetLockService(NuGetUIThreadHelper.JoinableTaskFactory.Context);
             Assert.False(_lockService.IsLockHeld);
         }
 
@@ -105,16 +101,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var tcs2 = new TaskCompletionSource<bool>();
             var secondTaskAcquiredTheLock = false;
 
-            var jt1 = _jtf.RunAsync(async () =>
+            var jt1 = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await _jtf.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // awaits global lock acquisition on the main thread (JTF)
                 await _lockService.ExecuteNuGetOperationAsync(async () =>
                 {
                     using (var resource = new ProtectedResource())
                     {
-                        await _jtf.RunAsync(async () =>
+                        await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                         {
                             // once lock is acquired proceeds with long running task on a pool thread.
                             await TaskScheduler.Default;
@@ -130,12 +126,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 }, _cts.Token);
             });
 
-            var jt2 = _jtf.RunAsync(async () =>
+            var jt2 = NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 // ensure first task acquired the lock
                 await tcs1.Task;
 
-                await _jtf.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var awaiter = _lockService.ExecuteNuGetOperationAsync(() =>
                 {

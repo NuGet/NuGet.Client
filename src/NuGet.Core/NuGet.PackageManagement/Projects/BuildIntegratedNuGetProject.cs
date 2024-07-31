@@ -22,7 +22,7 @@ namespace NuGet.ProjectManagement.Projects
     /// These projects contain a project.json or package references in CSProj
     /// </summary>
     [DebuggerDisplay("{ProjectName} [{ProjectStyle}]")]
-    public abstract class BuildIntegratedNuGetProject 
+    public abstract class BuildIntegratedNuGetProject
         : NuGetProject
         , INuGetIntegratedProject
         , IDependencyGraphProject
@@ -61,6 +61,8 @@ namespace NuGet.ProjectManagement.Projects
 
         public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
+        public abstract Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context);
+
         public abstract Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,
@@ -76,5 +78,10 @@ namespace NuGet.ProjectManagement.Projects
         {
             throw new NotImplementedException("This API should not be called for BuildIntegratedNuGetProject.");
         }
+
+        public abstract Task<bool> UninstallPackageAsync(
+            string packageId,
+            BuildIntegratedInstallationContext installationContext,
+            CancellationToken token);
     }
 }

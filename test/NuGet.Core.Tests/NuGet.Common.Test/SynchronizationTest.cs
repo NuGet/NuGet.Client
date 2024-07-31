@@ -41,7 +41,7 @@ namespace NuGet.Common.Test
                             fileId,
                             tB => Task.FromResult(0),
                             ctsB.Token);
-                        Assert.False(true, "Waiting with a timeout for a lock that has not been released should fail.");
+                        Assert.Fail("Waiting with a timeout for a lock that has not been released should fail.");
                     }
                     catch (OperationCanceledException)
                     {
@@ -94,9 +94,11 @@ namespace NuGet.Common.Test
 
             // Assert
             Assert.Equal(TaskStatus.Canceled, tasks[0].Status);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
             Assert.Equal(1, tasks[1].Result);
             Assert.Equal(1, tasks[2].Result);
             Assert.Equal(2, tasks[3].Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
             Assert.False(timeout.IsCancellationRequested);
         }
@@ -142,28 +144,13 @@ namespace NuGet.Common.Test
             await Task.WhenAll(tasks);
 
             // Assert
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
             Assert.Equal(0, tasks[1].Result);
             Assert.Equal(1, tasks[2].Result);
             Assert.Equal(2, tasks[3].Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
             Assert.False(timeout.IsCancellationRequested);
-        }
-
-        private async Task WaitForLockToEngage(SyncdRunResult result)
-        {
-            var data = await result.Reader.ReadLineAsync();
-
-            // data will be null on Mac, skip the check on Mac
-            if (!RuntimeEnvironmentHelper.IsMacOSX && data.Trim() != "Locked")
-            {
-                throw new InvalidOperationException($"Unexpected output from process: {data}");
-            }
-        }
-
-        private async Task ReleaseLock(SyncdRunResult result)
-        {
-            await result.Writer.WriteLineAsync("Go");
-            await result.Writer.FlushAsync();
         }
 
         private async Task<int> WaitForever1(CancellationToken token)
@@ -213,58 +200,6 @@ namespace NuGet.Common.Test
             {
                 return Task.FromResult(i);
             });
-        }
-
-        private class SyncdRunResult : IDisposable
-        {
-            public CommandRunnerResult Result { get; set; }
-
-            private TcpListener Listener { get; set; }
-            private TcpClient Client { get; set; }
-            public StreamReader Reader { get; private set; }
-            public StreamWriter Writer { get; private set; }
-
-            public int Port { get; private set; }
-
-            public void Start()
-            {
-                Port = 2224;
-                var done = false;
-                while (!done)
-                {
-                    try
-                    {
-                        Listener = new TcpListener(IPAddress.Loopback, Port);
-                        Listener.Start();
-                        done = true;
-                    }
-                    catch
-                    {
-                        Port++;
-                    }
-                }
-            }
-
-            public async Task Connect(CancellationToken ct)
-            {
-                ct.Register(() => Listener.Stop());
-
-                Client = await Listener.AcceptTcpClientAsync();
-
-                var stream = Client.GetStream();
-                Reader = new StreamReader(stream);
-                Writer = new StreamWriter(stream);
-            }
-
-            public void Dispose()
-            {
-                using (Client) { }
-
-                Listener.Stop();
-
-                Reader.Dispose();
-                Writer.Dispose();
-            }
         }
     }
 }

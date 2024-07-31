@@ -9,7 +9,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class AuthorSignPackageRequestTests : IClassFixture<CertificatesFixture>
+    [Collection(SigningTestsCollection.Name)]
+    public class AuthorSignPackageRequestTests
     {
         private readonly CertificatesFixture _fixture;
 

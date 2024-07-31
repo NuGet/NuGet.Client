@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet.ProjectModel
 {
-    public class LockFileRuntimeTarget: LockFileItem
+    public class LockFileRuntimeTarget : LockFileItem
     {
         public static readonly string RidProperty = "rid";
         public static readonly string AssetTypeProperty = "assetType";

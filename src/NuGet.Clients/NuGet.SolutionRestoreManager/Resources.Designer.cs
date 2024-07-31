@@ -19,7 +19,7 @@ namespace NuGet.SolutionRestoreManager {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -70,16 +70,16 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Package Manager.
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; does not have an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
-        internal static string DialogTitle {
+        internal static string Error_PackageDownload_NoVersion {
             get {
-                return ResourceManager.GetString("DialogTitle", resourceCulture);
+                return ResourceManager.GetString("Error_PackageDownload_NoVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
+        ///   Looks up a localized string similar to Package &apos;{0} {1}&apos; does not have an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
         internal static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
             get {
@@ -97,11 +97,47 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Manage NuGet Packages.
+        /// </summary>
+        internal static string InfoBar_HyperlinkMessage {
+            get {
+                return ResourceManager.GetString("InfoBar_HyperlinkMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This solution contains packages with vulnerabilities..
+        /// </summary>
+        internal static string InfoBar_TextMessage {
+            get {
+                return ResourceManager.GetString("InfoBar_TextMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; items do not have the same value(s) across all target frameworks. Remove any condition from MSBuild files for &apos;{0}&apos; items..
+        /// </summary>
+        internal static string ItemValuesAreDifferentAcrossTargetFrameworks {
+            get {
+                return ResourceManager.GetString("ItemValuesAreDifferentAcrossTargetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All packages are already installed and there is nothing to restore..
         /// </summary>
         internal static string NothingToRestore {
             get {
                 return ResourceManager.GetString("NothingToRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to read project information for &apos;{0}&apos;: {1}.
+        /// </summary>
+        internal static string NU1105 {
+            get {
+                return ResourceManager.GetString("NU1105", resourceCulture);
             }
         }
         
@@ -199,6 +235,15 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The property {0} was expected to have a single value across all target frameworks, but instead had the following values: {1}.
+        /// </summary>
+        internal static string PropertyDoesNotHaveSingleValue {
+            get {
+                return ResourceManager.GetString("PropertyDoesNotHaveSingleValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Please save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
         /// </summary>
         internal static string RelativeGlobalPackagesFolder {
@@ -231,15 +276,6 @@ namespace NuGet.SolutionRestoreManager {
         internal static string SolutionIsNotSaved {
             get {
                 return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Solution Restore cannot be started while an automatic restore is in progress..
-        /// </summary>
-        internal static string SolutionRestoreFailed_RestoreWorkerIsBusy {
-            get {
-                return ResourceManager.GetString("SolutionRestoreFailed_RestoreWorkerIsBusy", resourceCulture);
             }
         }
     }

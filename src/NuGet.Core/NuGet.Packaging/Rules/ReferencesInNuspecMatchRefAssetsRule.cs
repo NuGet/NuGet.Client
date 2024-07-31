@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var refFiles = builder.GetFiles().Where(t => t.StartsWith(PackagingConstants.Folders.Ref));
+            var refFiles = builder.GetFiles().Where(t => t.StartsWith(PackagingConstants.Folders.Ref, StringComparison.OrdinalIgnoreCase));
             var nuspecReferences = GetReferencesFromNuspec(builder.GetNuspec());
             var missingItems = Compare(nuspecReferences, refFiles);
             return GenerateWarnings(missingItems);
@@ -48,17 +49,17 @@ namespace NuGet.Packaging.Rules
         internal IEnumerable<MissingReference> Compare(IDictionary<string, IEnumerable<string>> nuspecReferences, IEnumerable<string> refFiles)
         {
             var missingReferences = new List<MissingReference>();
-            if (nuspecReferences.Count() != 0)
+            if (nuspecReferences.Any())
             {
-                if (refFiles.Count() != 0)
+                if (refFiles.Any())
                 {
                     var filesByTFM = refFiles.Where(t => t.Count(m => m == '/') > 1)
                         .GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => Path.GetFileName(t));
                     var keys = GetAllKeys(filesByTFM);
                     var missingSubfolderInFiles = nuspecReferences.Keys.Where(t => !keys.Contains(t) &&
-                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported") &&
-                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any"));
-                    if (missingSubfolderInFiles.Count() != 0)
+                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported", StringComparison.Ordinal) &&
+                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any", StringComparison.Ordinal));
+                    if (missingSubfolderInFiles.Any())
                     {
                         var subfolder = nuspecReferences.Where(t => missingSubfolderInFiles.Contains(t.Key));
                         foreach (var item in subfolder)
@@ -120,14 +121,14 @@ namespace NuGet.Packaging.Rules
                     }
                 }
             }
-            
+
             return missingReferences;
         }
 
         internal IEnumerable<PackagingLogMessage> GenerateWarnings(IEnumerable<MissingReference> missingReferences)
         {
             var issues = new List<PackagingLogMessage>();
-            if (missingReferences.Count() != 0)
+            if (missingReferences.Any())
             {
                 var message = new StringBuilder();
                 message.AppendLine(MessageFormat);
@@ -135,9 +136,9 @@ namespace NuGet.Packaging.Rules
                 var refFilesMissing = missingReferences.Where(t => t.MissingFrom == "ref");
                 foreach (var file in refFilesMissing)
                 {
-                    foreach(var item in file.MissingItems)
+                    foreach (var item in file.MissingItems)
                     {
-                        message.AppendLine(string.Format(_addToRefFormat, item, file.Tfm));
+                        message.AppendLine(string.Format(CultureInfo.CurrentCulture, _addToRefFormat, item, file.Tfm));
                     }
                 }
 
@@ -145,13 +146,13 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (var item in reference.MissingItems)
                     {
-                        if(reference.Tfm.Equals("any"))
+                        if (reference.Tfm.Equals("any", StringComparison.Ordinal))
                         {
-                            message.AppendLine(string.Format(_addToNuspecNoTfmFormat, item));
+                            message.AppendLine(string.Format(CultureInfo.CurrentCulture, _addToNuspecNoTfmFormat, item));
                         }
                         else
                         {
-                            message.AppendLine(string.Format(_addToNuspecFormat, item, reference.Tfm));
+                            message.AppendLine(string.Format(CultureInfo.CurrentCulture, _addToNuspecFormat, item, reference.Tfm));
                         }
                     }
                 }

@@ -73,6 +73,6 @@ namespace NuGet.SolutionRestoreManager.Test
             FrameworkReferences = new VsReferenceItems(frameworkReferences);
             Properties = new VsProjectProperties(projectProperties);
             CentralPackageVersions = new VsReferenceItems(centralPackageVersions);
-        }      
+        }
     }
 }

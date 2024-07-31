@@ -18,6 +18,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreRunnerTests
     {
         [Fact]
@@ -46,7 +47,7 @@ namespace NuGet.Commands.Test
                 var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
                 var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", projectName));
-                
+
                 packagesDir.Create();
                 packageSource.Create();
                 project1.Create();
@@ -57,17 +58,16 @@ namespace NuGet.Commands.Test
 
                 File.WriteAllText(specPath1, project1Json);
 
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName , specPath1);
+                var spec1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(projectName, Path.Combine(workingDir, "projects"), project1Json);
 
-                spec1 = spec1.EnsureRestoreMetadata();
                 spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
                 var dgSpec = new DependencyGraphSpec();
                 dgSpec.AddProject(spec1);
-                dgSpec.AddRestore(projectName);
+                dgSpec.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
-                var lockPath = Path.Combine(project1.FullName, "project.assets.json");
+                var lockPath = Path.Combine(spec1.RestoreMetadata.OutputPath, "project.assets.json");
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
@@ -138,16 +138,15 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                spec1 = spec1.EnsureRestoreMetadata();
+                var spec1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), project1Json);
                 spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(spec1);
-                dgFile.AddRestore("project1");
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
-                var lockPath = Path.Combine(project1.FullName, "project.assets.json");
+                var lockPath = Path.Combine(spec1.RestoreMetadata.OutputPath, "project.assets.json");
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
@@ -186,8 +185,8 @@ namespace NuGet.Commands.Test
                         }
                     };
 
-                    var targetsPath = Path.Combine(project1.FullName, "project1.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1.FullName, "project1.nuget.props");
+                    var targetsPath = Path.Combine(spec1.RestoreMetadata.OutputPath, "project1.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(spec1.RestoreMetadata.OutputPath, "project1.nuget.props");
 
                     // Act
                     var summaries = await RestoreRunner.RunAsync(restoreContext);
@@ -242,6 +241,7 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                spec1.TargetFrameworks.Single().TargetAlias = "net45";
                 spec1.RestoreMetadata = new ProjectRestoreMetadata
                 {
                     OutputPath = Path.Combine(project1.FullName, "obj"),
@@ -250,7 +250,7 @@ namespace NuGet.Commands.Test
                     ProjectPath = Path.Combine(project1.FullName, "project1.csproj")
                 };
                 spec1.RestoreMetadata.ProjectUniqueName = spec1.RestoreMetadata.ProjectPath;
-                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
+                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")) { TargetAlias = "net45" });
                 spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
                 spec1.FilePath = spec1.RestoreMetadata.ProjectPath;
 
@@ -335,20 +335,19 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(workingDir, "NuGet.Config"), string.Format(configFile, packageSource.FullName));
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), project1Json);
                 var configPath = Path.Combine(workingDir, "NuGet.Config");
 
                 var dgFile = new DependencyGraphSpec();
-                spec1 = spec1.EnsureRestoreMetadata();
                 spec1.RestoreMetadata.ConfigFilePaths = new List<string> { configPath };
                 spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
 
                 dgFile.AddProject(spec1);
-                dgFile.AddRestore("project1");
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
-                var lockPath = Path.Combine(project1.FullName, "project.assets.json");
+                var lockPath = Path.Combine(spec1.RestoreMetadata.OutputPath, "project.assets.json");
 
                 var providerCache = new RestoreCommandProvidersCache();
 
@@ -388,162 +387,15 @@ namespace NuGet.Commands.Test
 
             var targetFrameworkInfo1 = new TargetFrameworkInformation
             {
-                FrameworkName = NuGetFramework.Parse("net45")
+                FrameworkName = NuGetFramework.Parse("net45"),
+                TargetAlias = "net45",
             };
             var frameworks1 = new[] { targetFrameworkInfo1 };
 
             var targetFrameworkInfo2 = new TargetFrameworkInformation
             {
-                FrameworkName = NuGetFramework.Parse("net45")
-            };
-            var frameworks2 = new[] { targetFrameworkInfo2 };
-
-            // Create two net45 projects
-            var spec1 = new PackageSpec(frameworks1)
-            {
-                RestoreMetadata = new ProjectRestoreMetadata
-                {
-                    ProjectUniqueName = "project1",
-                    ProjectName = "project1",
-                    ProjectStyle = ProjectStyle.PackageReference
-                }
-            };
-            spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
-
-            var spec2 = new PackageSpec(frameworks2)
-            {
-                RestoreMetadata = new ProjectRestoreMetadata
-                {
-                    ProjectUniqueName = "project2",
-                    ProjectName = "project2",
-                    ProjectStyle = ProjectStyle.PackageReference
-                }
-            };
-            spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
-
-            var specs = new[] { spec1, spec2 };
-
-            using (var workingDir = TestDirectory.Create())
-            {
-                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
-                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
-                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
-                var project2 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project2"));
-                packagesDir.Create();
-                packageSource.Create();
-                project1.Create();
-                project2.Create();
-                sources.Add(new PackageSource(packageSource.FullName));
-
-                var projPath1 = Path.Combine(project1.FullName, "project1.csproj");
-                var projPath2 = Path.Combine(project2.FullName, "project2.csproj");
-                File.WriteAllText(projPath1, string.Empty);
-                File.WriteAllText(projPath2, string.Empty);
-
-                spec1.RestoreMetadata.ProjectPath = projPath1;
-                spec1.FilePath = projPath1;
-                spec1.Name = "project1";
-                spec2.RestoreMetadata.ProjectPath = projPath2;
-                spec2.FilePath = projPath1;
-                spec2.Name = "project2";
-
-                var logger = new TestLogger();
-                var objPath1 = Path.Combine(project1.FullName, "obj");
-                var objPath2 = Path.Combine(project2.FullName, "obj");
-
-                spec1.RestoreMetadata.OutputPath = objPath1;
-                spec2.RestoreMetadata.OutputPath = objPath2;
-
-                spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
-                spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
-
-                var lockPath1 = Path.Combine(objPath1, "project.assets.json");
-                var lockPath2 = Path.Combine(objPath2, "project.assets.json");
-
-                // Link projects
-                spec1.TargetFrameworks.Single().Dependencies.Add(new LibraryDependency()
-                {
-                    LibraryRange = new LibraryRange()
-                    {
-                        Name = "project2",
-                        TypeConstraint = LibraryDependencyTarget.ExternalProject
-                    }
-                });
-
-                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")));
-                spec1.RestoreMetadata.TargetFrameworks
-                    .Single()
-                    .ProjectReferences
-                    .Add(new ProjectRestoreReference()
-                {
-                    ProjectPath = projPath2,
-                    ProjectUniqueName = "project2"
-                });
-
-                // Create dg file
-                var dgFile = new DependencyGraphSpec();
-
-                foreach (var spec in specs)
-                {
-                    dgFile.AddRestore(spec.RestoreMetadata.ProjectName);
-                    dgFile.AddProject(spec);
-                }
-
-                var dgPath = Path.Combine(workingDir, "input.dg");
-                dgFile.Save(dgPath);
-
-                var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
-
-                var providerCache = new RestoreCommandProvidersCache();
-
-                var restoreContext = new RestoreArgs()
-                {
-                    CacheContext = new SourceCacheContext(),
-                    DisableParallel = true,
-                    GlobalPackagesFolder = packagesDir.FullName,
-                    Sources = new List<string>() { packageSource.FullName },
-                    Log = logger,
-                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
-                    RequestProviders = new List<IRestoreRequestProvider>()
-                    {
-                        new DependencyGraphFileRequestProvider(providerCache)
-                    }
-                };
-
-                // add file path as input
-                restoreContext.Inputs.Add(dgPath);
-
-                // Act
-                var summaries = await RestoreRunner.RunAsync(restoreContext);
-                var success = summaries.All(s => s.Success);
-
-                var lockFormat = new LockFileFormat();
-                var lockFile1 = lockFormat.Read(lockPath1);
-                var project2Lib = lockFile1.Libraries.First();
-
-                // Assert
-                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                Assert.True(File.Exists(lockPath1), lockPath1);
-                Assert.True(File.Exists(lockPath2), lockPath2);
-                Assert.Equal("project2", project2Lib.Name);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreRunner_RestoreWithExternalFile_NetCoreOutputAsync()
-        {
-            // Arrange
-            var sources = new List<PackageSource>();
-
-            var targetFrameworkInfo1 = new TargetFrameworkInformation
-            {
-                FrameworkName = NuGetFramework.Parse("net45")
-            };
-            var frameworks1 = new[] { targetFrameworkInfo1 };
-
-            var targetFrameworkInfo2 = new TargetFrameworkInformation
-            {
-                FrameworkName = NuGetFramework.Parse("net45")
+                FrameworkName = NuGetFramework.Parse("net45"),
+                TargetAlias = "net45",
             };
             var frameworks2 = new[] { targetFrameworkInfo2 };
 
@@ -634,7 +486,158 @@ namespace NuGet.Commands.Test
 
                 foreach (var spec in specs)
                 {
-                    dgFile.AddRestore(spec.RestoreMetadata.ProjectName);
+                    dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+                    dgFile.AddProject(spec);
+                }
+
+                var dgPath = Path.Combine(workingDir, "input.dg");
+                dgFile.Save(dgPath);
+
+                var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
+
+                var providerCache = new RestoreCommandProvidersCache();
+
+                var restoreContext = new RestoreArgs()
+                {
+                    CacheContext = new SourceCacheContext(),
+                    DisableParallel = true,
+                    GlobalPackagesFolder = packagesDir.FullName,
+                    Sources = new List<string>() { packageSource.FullName },
+                    Log = logger,
+                    CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                    RequestProviders = new List<IRestoreRequestProvider>()
+                    {
+                        new DependencyGraphFileRequestProvider(providerCache)
+                    }
+                };
+
+                // add file path as input
+                restoreContext.Inputs.Add(dgPath);
+
+                // Act
+                var summaries = await RestoreRunner.RunAsync(restoreContext);
+                var success = summaries.All(s => s.Success);
+
+                var lockFormat = new LockFileFormat();
+                var lockFile1 = lockFormat.Read(lockPath1);
+                var project2Lib = lockFile1.Libraries.First();
+
+                // Assert
+                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+                Assert.True(File.Exists(lockPath1), lockPath1);
+                Assert.True(File.Exists(lockPath2), lockPath2);
+                Assert.Equal("project2", project2Lib.Name);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_RestoreWithExternalFile_NetCoreOutputAsync()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var targetFrameworkInfo1 = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net45"),
+                TargetAlias = "net45",
+            };
+            var frameworks1 = new[] { targetFrameworkInfo1 };
+
+            var targetFrameworkInfo2 = new TargetFrameworkInformation
+            {
+                FrameworkName = NuGetFramework.Parse("net45"),
+                TargetAlias = "net45",
+            };
+            var frameworks2 = new[] { targetFrameworkInfo2 };
+
+            // Create two net45 projects
+            var spec1 = new PackageSpec(frameworks1)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "project1",
+                    ProjectName = "project1",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
+            spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
+
+            var spec2 = new PackageSpec(frameworks2)
+            {
+                RestoreMetadata = new ProjectRestoreMetadata
+                {
+                    ProjectUniqueName = "project2",
+                    ProjectName = "project2",
+                    ProjectStyle = ProjectStyle.PackageReference
+                }
+            };
+            spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
+
+            var specs = new[] { spec1, spec2 };
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                var project2 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project2"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                project2.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var projPath1 = Path.Combine(project1.FullName, "project1.csproj");
+                var projPath2 = Path.Combine(project2.FullName, "project2.csproj");
+                File.WriteAllText(projPath1, string.Empty);
+                File.WriteAllText(projPath2, string.Empty);
+
+                spec1.RestoreMetadata.ProjectPath = projPath1;
+                spec1.FilePath = projPath1;
+                spec1.Name = "project1";
+                spec2.RestoreMetadata.ProjectPath = projPath2;
+                spec2.FilePath = projPath1;
+                spec2.Name = "project2";
+
+                var logger = new TestLogger();
+                var objPath1 = Path.Combine(project1.FullName, "obj");
+                var objPath2 = Path.Combine(project2.FullName, "obj");
+
+                spec1.RestoreMetadata.OutputPath = objPath1;
+                spec2.RestoreMetadata.OutputPath = objPath2;
+
+                spec1.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
+                spec2.RestoreMetadata.OriginalTargetFrameworks.Add("net45");
+
+                var lockPath1 = Path.Combine(objPath1, "project.assets.json");
+                var lockPath2 = Path.Combine(objPath2, "project.assets.json");
+
+                // Link projects
+                spec1.TargetFrameworks.Single().Dependencies.Add(new LibraryDependency()
+                {
+                    LibraryRange = new LibraryRange()
+                    {
+                        Name = "project2",
+                        TypeConstraint = LibraryDependencyTarget.ExternalProject
+                    }
+                });
+
+                spec1.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45")) { TargetAlias = "net45" });
+                spec1.RestoreMetadata.TargetFrameworks
+                    .Single()
+                    .ProjectReferences
+                    .Add(new ProjectRestoreReference()
+                    {
+                        ProjectPath = projPath2,
+                        ProjectUniqueName = "project2"
+                    });
+
+                // Create dg file
+                var dgFile = new DependencyGraphSpec();
+
+                foreach (var spec in specs)
+                {
+                    dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
                     dgFile.AddProject(spec);
                 }
 
@@ -712,17 +715,16 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), project1Json);
 
-                spec1 = spec1.EnsureRestoreMetadata();
                 spec1.RestoreMetadata.Sources = new List<PackageSource> { new PackageSource(packageSource.FullName) };
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
                 var dgSpec = new DependencyGraphSpec();
                 dgSpec.AddProject(spec1);
-                dgSpec.AddRestore("project1");
+                dgSpec.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
-                var lockPath1 = Path.Combine(project1.FullName, "project.assets.json");
+                var lockPath1 = Path.Combine(spec1.RestoreMetadata.OutputPath, "project.assets.json");
 
                 var sourceRepos = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
 
@@ -755,7 +757,7 @@ namespace NuGet.Commands.Test
 
                     // Assert
                     Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
-                    Assert.True(lockFile.Targets.Any(graph => graph.RuntimeIdentifier == "linux-x86"));
+                    Assert.Contains(lockFile.Targets, graph => graph.RuntimeIdentifier == "linux-x86");
                 }
             }
         }
@@ -787,15 +789,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -831,9 +832,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -876,15 +877,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -926,9 +926,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -975,15 +975,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1019,9 +1018,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.False(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1040,7 +1039,7 @@ namespace NuGet.Commands.Test
                 }
             }
         }
-             [Fact]
+        [Fact]
         public async Task RestoreRunner_PackageReferenceAndPackageDownloadBothLogErrors()
         {
             // Arrange
@@ -1067,15 +1066,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1111,9 +1109,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.False(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1173,15 +1171,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -1222,9 +1219,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1278,15 +1275,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -1321,9 +1317,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.False(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1386,15 +1382,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -1435,9 +1430,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.False(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1496,15 +1491,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
                 {
@@ -1531,9 +1525,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1587,15 +1581,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1623,9 +1616,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1665,15 +1658,14 @@ namespace NuGet.Commands.Test
                 var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource")); packageSource.Create();
                 var project1Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project1)); project1Folder.Create();
                 // set up project1
-                var projectSpec = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec = projectSpec.EnsureRestoreMetadata();
+                var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec.RestoreMetadata.Sources = sources;
                 projectSpec.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1719,9 +1711,9 @@ namespace NuGet.Commands.Test
                     var summary = summaries.Single();
 
                     // Assert
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(summary.Success);
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
@@ -1754,7 +1746,7 @@ namespace NuGet.Commands.Test
               ""version"": ""1.0.0"",
               ""frameworks"": {
                 ""netcoreapp3.0"": {
-                    
+
                 }
               }
             }";
@@ -1786,15 +1778,13 @@ namespace NuGet.Commands.Test
                 var project2Folder = new DirectoryInfo(Path.Combine(workingDir, "projects", project2)); project2Folder.Create();
 
                 // set up project1
-                var projectSpec1 = JsonPackageSpecReader.GetPackageSpec(packageSpec, project1, Path.Combine(project1Folder.FullName, "packageSpec.json"));
-                projectSpec1 = projectSpec1.EnsureRestoreMetadata();
+                var projectSpec1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project1", Path.Combine(workingDir, "projects"), packageSpec);
                 var sources = new List<PackageSource>() { new PackageSource(packageSource.FullName) };
                 projectSpec1.RestoreMetadata.Sources = sources;
                 projectSpec1.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
 
                 // set up project2
-                var projectSpec2 = JsonPackageSpecReader.GetPackageSpec(packageSpec2, project2, Path.Combine(project2Folder.FullName, "packageSpec.json"));
-                projectSpec2 = projectSpec2.EnsureRestoreMetadata();
+                var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("project2", Path.Combine(workingDir, "projects"), packageSpec2);
                 projectSpec2.RestoreMetadata.Sources = sources;
                 projectSpec2.RestoreMetadata.PackagesPath = globalPackagesFolder.FullName;
 
@@ -1806,7 +1796,7 @@ namespace NuGet.Commands.Test
                     .Add(new ProjectRestoreReference()
                     {
                         ProjectPath = projectSpec2.FilePath,
-                        ProjectUniqueName = projectSpec2.Name
+                        ProjectUniqueName = projectSpec2.RestoreMetadata.ProjectUniqueName
                     }
                     );
 
@@ -1814,8 +1804,8 @@ namespace NuGet.Commands.Test
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec1);
                 dgFile.AddProject(projectSpec2);
-                dgFile.AddRestore(projectSpec1.Name);
-                dgFile.AddRestore(projectSpec2.Name);
+                dgFile.AddRestore(projectSpec1.RestoreMetadata.ProjectUniqueName);
+                dgFile.AddRestore(projectSpec2.RestoreMetadata.ProjectUniqueName);
 
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
@@ -1849,9 +1839,9 @@ namespace NuGet.Commands.Test
                     Assert.True(summaries.All(e => e.Success), string.Join(Environment.NewLine, logger.Messages));
 
                     // Assert project 2
-                    var assetsFilePath2 = Path.Combine(project2Folder.FullName, "project.assets.json");
-                    var targetsPath2 = Path.Combine(project2Folder.FullName, $"{project2}.csproj.nuget.g.targets");
-                    var propsPath2 = Path.Combine(project2Folder.FullName, $"{project2}.csproj.nuget.g.targets");
+                    var assetsFilePath2 = Path.Combine(projectSpec2.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath2 = Path.Combine(projectSpec2.RestoreMetadata.OutputPath, $"{project2}.csproj.nuget.g.targets");
+                    var propsPath2 = Path.Combine(projectSpec2.RestoreMetadata.OutputPath, $"{project2}.csproj.nuget.g.targets");
 
                     Assert.True(File.Exists(assetsFilePath2), assetsFilePath2);
                     var lockFile = LockFileUtilities.GetLockFile(assetsFilePath2, NullLogger.Instance);
@@ -1868,9 +1858,9 @@ namespace NuGet.Commands.Test
 
 
                     // Assert project 1
-                    var assetsFilePath = Path.Combine(project1Folder.FullName, "project.assets.json");
-                    var targetsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
-                    var propsPath = Path.Combine(project1Folder.FullName, $"{project1}.csproj.nuget.g.targets");
+                    var assetsFilePath = Path.Combine(projectSpec1.RestoreMetadata.OutputPath, "project.assets.json");
+                    var targetsPath = Path.Combine(projectSpec1.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
+                    var propsPath = Path.Combine(projectSpec1.RestoreMetadata.OutputPath, $"{project1}.csproj.nuget.g.targets");
 
                     Assert.True(File.Exists(assetsFilePath), assetsFilePath);
                     lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
@@ -1886,6 +1876,118 @@ namespace NuGet.Commands.Test
                     Assert.Equal(0, lockFile.LogMessages.Count);
                     Assert.True(File.Exists(targetsPath));
                     Assert.True(File.Exists(propsPath));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreRunner_ExecuteAndCommit_ProjectAssetsIsNotCommittedIfNotChanged()
+        {
+            var assetsFileName = "project.assets.json";
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                var project1Json = @"
+                {
+                  ""version"": ""1.0.0"",
+                    ""restore"": {
+                                    ""projectUniqueName"": ""TestProject"",
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""[2.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""packageA"": ""[2.0.0,)"",
+                            ""packageB"": ""[2.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+                var packageA_Version200 = new SimpleTestPackageContext("packageA", "2.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                packageA_Version200.Dependencies.Add(packageB_Version200);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    NuGet.Packaging.PackageSaveMode.Defaultv3,
+                    packageA_Version200,
+                    packageB_Version200
+                    );
+
+                // set up the project
+                var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+
+                spec.RestoreMetadata.Sources = sources;
+                spec.RestoreMetadata.PackagesPath = pathContext.UserPackagesFolder;
+
+                // set up the dg spec.
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(spec);
+                dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+
+                using (var cacheContext = new SourceCacheContext())
+                {
+                    var restoreContext = new RestoreArgs()
+                    {
+                        CacheContext = cacheContext,
+                        DisableParallel = true,
+                        Log = new TestLogger(),
+                        CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),
+                        PreLoadedRequestProviders = new List<IPreLoadedRestoreRequestProvider>()
+                        {
+                            new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dgFile)
+                        },
+                        AllowNoOp = false,
+                    };
+
+                    // Act + Assert
+                    var summaries = await RestoreRunner.RunAsync(restoreContext);
+                    var summary = summaries.Single();
+
+                    var assetsFilePath = Path.Combine(spec.BaseDirectory, assetsFileName);
+
+                    Assert.True(summary.Success);
+                    Assert.True(File.Exists(assetsFilePath), assetsFilePath);
+                    var assetsFileTimeStamp = File.GetCreationTime(assetsFilePath);
+
+                    // restore again, the assets file should not be changed
+                    // the result should not be noop as requested by "AllowNoOp"
+                    summaries = await RestoreRunner.RunAsync(restoreContext);
+                    summary = summaries.Single();
+
+                    var assetsFileTimeStampSecondRestore = File.GetCreationTime(assetsFilePath);
+                    Assert.Equal(assetsFileTimeStamp.ToString(), assetsFileTimeStampSecondRestore.ToString());
+                    Assert.False(summary.NoOpRestore);
+
+                    // Other verifications
+                    var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, NullLogger.Instance);
+
+                    Assert.Equal(2, lockFile.Libraries.Count);
+                    Assert.Equal(1, lockFile.Targets.Count);
+                    Assert.Equal(2, lockFile.Targets.First().Libraries.Count);
+                    Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.Count);
+
+                    var centralTransitiveDep = lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.FirstOrDefault();
+                    Assert.Equal(1, lockFile.CentralTransitiveDependencyGroups.First().TransitiveDependencies.Count());
+                    Assert.True(centralTransitiveDep.VersionCentrallyManaged);
+                    Assert.Equal("packageB", centralTransitiveDep.Name);
+                    Assert.Equal("[2.0.0, )", centralTransitiveDep.LibraryRange.VersionRange.ToNormalizedString());
+                    Assert.Equal(LibraryDependencyReferenceType.Transitive, centralTransitiveDep.ReferenceType);
+                    Assert.Equal(0, lockFile.LogMessages.Count);
                 }
             }
         }

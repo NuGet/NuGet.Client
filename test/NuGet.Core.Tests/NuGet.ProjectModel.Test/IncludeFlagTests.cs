@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -57,29 +57,6 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, dependency.SuppressParent);
         }
 
-        [Fact]
-        public void IncludeFlag_ConvertFromTypeBuild()
-        {
-            // Arrange
-            var json = @"{
-                          ""dependencies"": {
-                                ""packageA"": {
-                                    ""version"": ""1.0.0"",
-                                    ""type"": ""build""
-                                }
-                            },
-                            ""frameworks"": {
-                                ""net46"": {}
-                            }
-                        }";
-
-            // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
-            var dependency = spec.Dependencies.Single();
-
-            // Assert
-            Assert.Equal(LibraryIncludeFlags.All, dependency.SuppressParent);
-        }
 
         [Fact]
         public void IncludeFlag_UnknownFlagsParse()
@@ -133,7 +110,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             var expected = LibraryIncludeFlagUtils.GetFlags(
-                new string[] 
+                new string[]
                     { "build", "runtime", "contentFiles", "native" });
 
             Assert.Equal(expected, dependency.SuppressParent);

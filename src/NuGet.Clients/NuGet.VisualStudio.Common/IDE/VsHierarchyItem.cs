@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -17,7 +19,7 @@ namespace NuGet.VisualStudio
         private readonly uint _vsitemid;
         private readonly IVsHierarchy _hierarchy;
 
-        internal delegate int ProcessItemDelegate(VsHierarchyItem item, object callerObject, out object newCallerObject);
+        internal delegate Task<(int processReturn, object newCallerObject)> ProcessItemDelegateAsync(VsHierarchyItem item, object callerObject);
 
         public IVsHierarchy VsHierarchy => _hierarchy;
 
@@ -32,11 +34,10 @@ namespace NuGet.VisualStudio
         {
         }
 
-        public static VsHierarchyItem FromDteProject(EnvDTE.Project project)
+        public static async Task<VsHierarchyItem> FromDteProjectAsync(EnvDTE.Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.Present(project);
-            return new VsHierarchyItem(VsHierarchyUtility.ToVsHierarchy(project));
+            return new VsHierarchyItem(await project.ToVsHierarchyAsync());
         }
 
         public static VsHierarchyItem FromVsHierarchy(IVsHierarchy project)
@@ -59,52 +60,49 @@ namespace NuGet.VisualStudio
 
         internal uint VsItemID => _vsitemid;
 
-        internal bool IsExpandable()
+        internal async Task<bool> IsExpandableAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
+            var o = await GetPropertyAsync(__VSHPROPID.VSHPROPID_Expandable);
             if (o is bool)
             {
                 return (bool)o;
             }
+
             return (o is int) && (int)o != 0;
         }
 
-        private object GetProperty(__VSHPROPID propid)
+        private async Task<object> GetPropertyAsync(__VSHPROPID propid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            object value = null;
-            if (TryGetProperty((int)propid, out value))
-            {
-                return value;
-            }
-
-            return null;
+            (bool _, object value) = await TryGetPropertyAsync((int)propid);
+            return value;
         }
 
-        private bool TryGetProperty(int propid, out object value)
+        private async Task<(bool found, object value)> TryGetPropertyAsync(int propid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            value = null;
             try
             {
                 if (_hierarchy != null)
                 {
-                    _hierarchy.GetProperty(_vsitemid, propid, out value);
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    _hierarchy.GetProperty(_vsitemid, propid, out object value);
+                    return (true, value);
+                }
+            }
+            catch (Exception e)
+            {
+                if (e.IsCritical())
+                {
+                    throw;
                 }
 
-                return true;
+                // Ignore.
             }
-            catch
-            {
-                return false;
-            }
+
+            return (false, null);
         }
 
-        internal int WalkDepthFirst(bool fVisible, ProcessItemDelegate processCallback, object callerObject)
+        internal async Task<int> WalkDepthFirstAsync(bool fVisible, ProcessItemDelegateAsync processCallbackAsync, object callerObject)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             //
             // TODO Need to see what to do if this is a sub project
             //
@@ -112,13 +110,12 @@ namespace NuGet.VisualStudio
             // Guid nodeGuid;
             // if (hier.GetGuidProperty(_vsitemid, (int)__VSHPROPID.VSHPROPID_TypeGuid, out nodeGuid) != 0)
 
-            if (processCallback == null)
+            if (processCallbackAsync == null)
             {
                 return 0;
             }
 
-            object newCallerObject;
-            int processReturn = processCallback(this, callerObject, out newCallerObject);
+            (int processReturn, object newCallerObject) = await processCallbackAsync(this, callerObject);
             if (processReturn != 0)
             {
                 // Callback says to skip (1) or stop (-1)
@@ -133,44 +130,43 @@ namespace NuGet.VisualStudio
             }
 
             // Walk children if there are any
-            if (IsExpandable())
+            if (await IsExpandableAsync())
             {
-                VsHierarchyItem child = GetFirstChild(fVisible);
+                VsHierarchyItem child = await GetFirstChildAsync(fVisible);
                 while (child != null)
                 {
-                    object isNonMemberItemValue = child.GetProperty(__VSHPROPID.VSHPROPID_IsNonMemberItem);
+                    object isNonMemberItemValue = await child.GetPropertyAsync(__VSHPROPID.VSHPROPID_IsNonMemberItem);
                     // Some project systems (e.g. F#) don't support querying for the VSHPROPID_IsNonMemberItem property.
                     // In that case, we treat this child as belonging to the project
                     bool isMemberOfProject = isNonMemberItemValue == null || (bool)isNonMemberItemValue == false;
                     if (isMemberOfProject)
                     {
-                        int returnVal = child.WalkDepthFirst(fVisible, processCallback, newCallerObject);
+                        int returnVal = await child.WalkDepthFirstAsync(fVisible, processCallbackAsync, newCallerObject);
                         if (returnVal == -1)
                         {
                             return returnVal;
                         }
                     }
-                    child = child.GetNextSibling(fVisible);
+                    child = await child.GetNextSiblingAsync(fVisible);
                 }
             }
             return 0;
         }
 
-        internal VsHierarchyItem GetNextSibling(bool fVisible)
+        internal async Task<VsHierarchyItem> GetNextSiblingAsync(bool fVisible)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            uint childId = GetNextSiblingId(fVisible);
+            uint childId = await GetNextSiblingIdAsync(fVisible);
             if (childId != VSConstants.VSITEMID_NIL)
             {
                 return new VsHierarchyItem(_hierarchy, childId);
             }
+
             return null;
         }
 
-        internal uint GetNextSiblingId(bool fVisible)
+        internal async Task<uint> GetNextSiblingIdAsync(bool fVisible)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            object o = GetProperty(fVisible ? __VSHPROPID.VSHPROPID_NextVisibleSibling : __VSHPROPID.VSHPROPID_NextSibling);
+            object o = await GetPropertyAsync(fVisible ? __VSHPROPID.VSHPROPID_NextVisibleSibling : __VSHPROPID.VSHPROPID_NextSibling);
 
             if (o is int)
             {
@@ -180,33 +176,35 @@ namespace NuGet.VisualStudio
             {
                 return (uint)o;
             }
+
             return VSConstants.VSITEMID_NIL;
         }
 
-        internal VsHierarchyItem GetFirstChild(bool fVisible)
+        internal async Task<VsHierarchyItem> GetFirstChildAsync(bool fVisible)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            uint childId = GetFirstChildId(fVisible);
+            uint childId = await GetFirstChildIdAsync(fVisible);
             if (childId != VSConstants.VSITEMID_NIL)
             {
                 return new VsHierarchyItem(_hierarchy, childId);
             }
+
             return null;
         }
 
-        internal uint GetFirstChildId(bool fVisible)
+        internal async Task<uint> GetFirstChildIdAsync(bool fVisible)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            object o = GetProperty(fVisible ? __VSHPROPID.VSHPROPID_FirstVisibleChild : __VSHPROPID.VSHPROPID_FirstChild);
+            object o = await GetPropertyAsync(fVisible ? __VSHPROPID.VSHPROPID_FirstVisibleChild : __VSHPROPID.VSHPROPID_FirstChild);
 
             if (o is int)
             {
                 return unchecked((uint)((int)o));
             }
+
             if (o is uint)
             {
                 return (uint)o;
             }
+
             return VSConstants.VSITEMID_NIL;
         }
 

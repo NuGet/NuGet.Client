@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.Test
 {
@@ -18,12 +20,17 @@ namespace NuGet.CommandLine.Test
 
         public DefaultConfigurationFilePreserver()
         {
-            _mutex = new Mutex(initiallyOwned: false, MutexName);
-            var owner = _mutex.WaitOne(TimeSpan.FromMinutes(2));
-            if (!owner)
+            bool mutexWasCreated;
+            // Request initial ownership of the named mutex by passing true for the first parameter.
+            //Only one system object named "DefaultConfigurationFilePreserver" can exist
+            _mutex = new Mutex(initiallyOwned: true, MutexName, out mutexWasCreated);
+            if (!mutexWasCreated)
             {
-                throw new TimeoutException(string.Format("Timedout while waiting for mutex {0}", MutexName));
+                bool owner = _mutex.WaitOne(TimeSpan.FromMinutes(2));
+                if (!owner)
+                    throw new TimeoutException(string.Format(CultureInfo.CurrentCulture, "Timedout while waiting for mutex {0}", MutexName));
             }
+
             BackupAndDeleteDefaultConfigurationFile();
         }
 
@@ -55,8 +62,7 @@ namespace NuGet.CommandLine.Test
 
         private static void BackupAndDeleteDefaultConfigurationFile()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string defaultConfigurationFile = Path.Combine(appDataPath, "NuGet", "NuGet.Config");
+            string defaultConfigurationFile = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
             string backupFileName = defaultConfigurationFile + ".backup";
 
             if (File.Exists(defaultConfigurationFile))
@@ -68,8 +74,7 @@ namespace NuGet.CommandLine.Test
 
         private static void RestoreDefaultConfigurationFile()
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string defaultConfigurationFile = Path.Combine(appDataPath, "NuGet", "NuGet.Config");
+            string defaultConfigurationFile = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
             string backupFileName = defaultConfigurationFile + ".backup";
 
             if (File.Exists(backupFileName))

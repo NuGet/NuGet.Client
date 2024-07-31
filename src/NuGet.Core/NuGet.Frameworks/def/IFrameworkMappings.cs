@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -11,12 +11,7 @@ namespace NuGet.Frameworks
     /// mirrored so that the IFrameworkMappings implementation only needs to provide the minimum amount of
     /// mappings.
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    interface IFrameworkMappings
+    public interface IFrameworkMappings
     {
         /// <summary>
         /// Synonym &#8210;&gt; Identifier

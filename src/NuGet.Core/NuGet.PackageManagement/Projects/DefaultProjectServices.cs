@@ -1,9 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
@@ -18,7 +17,9 @@ namespace NuGet.ProjectManagement
     /// </summary>
     internal sealed class DefaultProjectServices
         : INuGetProjectServices
+#pragma warning disable CS0618 // Type or member is obsolete
         , IProjectBuildProperties
+#pragma warning restore CS0618 // Type or member is obsolete
         , IProjectScriptHostService
         , IProjectSystemCapabilities
         , IProjectSystemReferencesReader
@@ -27,6 +28,7 @@ namespace NuGet.ProjectManagement
     {
         public static INuGetProjectServices Instance { get; } = new DefaultProjectServices();
 
+        [Obsolete]
         public IProjectBuildProperties BuildProperties => this;
         public IProjectSystemCapabilities Capabilities => this;
         public IProjectSystemReferencesReader ReferencesReader => this;
@@ -35,6 +37,8 @@ namespace NuGet.ProjectManagement
         public IProjectScriptHostService ScriptService => this;
 
         public bool SupportsPackageReferences => false;
+
+        public bool NominatesOnSolutionLoad => false;
 
         public Task AddOrUpdatePackageReferenceAsync(
             LibraryDependency packageReference,
@@ -54,7 +58,13 @@ namespace NuGet.ProjectManagement
             Common.ILogger _,
             CancellationToken __)
         {
-            return Task.FromResult(Enumerable.Empty<ProjectRestoreReference>());
+            return TaskResult.EmptyEnumerable<ProjectRestoreReference>();
+        }
+
+        public Task<IReadOnlyList<(string id, string[] metadata)>> GetItemsAsync(string itemTypeName, params string[] metadataNames)
+        {
+            IReadOnlyList<(string, string[])> items = Array.Empty<(string, string[])>();
+            return Task.FromResult(items);
         }
 
         public string GetPropertyValue(string propertyName)
@@ -64,7 +74,7 @@ namespace NuGet.ProjectManagement
 
         public Task<string> GetPropertyValueAsync(string propertyName)
         {
-            return Task.FromResult<string>(null);
+            return TaskResult.Null<string>();
         }
 
         public T GetGlobalService<T>() where T : class
@@ -80,7 +90,7 @@ namespace NuGet.ProjectManagement
         public Task SaveProjectAsync(CancellationToken _)
         {
             // do nothing
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task ExecutePackageScriptAsync(
@@ -92,7 +102,7 @@ namespace NuGet.ProjectManagement
             CancellationToken _)
         {
             // No-op
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task<bool> ExecutePackageInitScriptAsync(
@@ -103,7 +113,7 @@ namespace NuGet.ProjectManagement
             CancellationToken _)
         {
             // No-op
-            return Task.FromResult(false);
+            return TaskResult.False;
         }
     }
 }

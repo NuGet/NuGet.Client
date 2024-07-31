@@ -11,17 +11,20 @@ using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Test.Utility.Signing;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
+    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+
     /// <summary>
     /// Used to bootstrap functional tests for signing.
     /// </summary>
     public class SignCommandTestFixture : IDisposable
     {
-        private const int _validCertChainLength = 3;
-        private const int _invalidCertChainLength = 2;
+        private const int ValidCertChainLength = 3;
+        private const int InvalidCertChainLength = 2;
 
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedTestCertWithInvalidEku;
@@ -55,7 +58,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCert = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCert = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator)
+                        .WithPrivateKeyAndTrust(StoreName.Root);
                 }
 
                 return _trustedTestCert;
@@ -72,7 +76,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithInvalidEku = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator)
+                        .WithPrivateKeyAndTrust(StoreName.Root);
                 }
 
                 return _trustedTestCertWithInvalidEku;
@@ -90,7 +95,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertExpired = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertExpired = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator)
+                        .WithPrivateKeyAndTrust(StoreName.Root);
                 }
 
                 return _trustedTestCertExpired;
@@ -108,7 +114,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertNotYetValid = TestCertificate.Generate(actionGenerator).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertNotYetValid = TestCertificate.Generate(X509StorePurpose.CodeSigning, actionGenerator)
+                        .WithPrivateKeyAndTrust(StoreName.Root);
                 }
 
                 return _trustedTestCertNotYetValid;
@@ -121,7 +128,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_trustedTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_validCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(ValidCertChainLength, CrlServer.Uri, TestDirectory.Path);
 
                     _trustedTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -141,7 +148,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_revokedTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(InvalidCertChainLength, CrlServer.Uri, TestDirectory.Path);
 
                     _revokedTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -164,7 +171,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             {
                 if (_revocationUnknownTestCertChain == null)
                 {
-                    var certChain = SigningTestUtility.GenerateCertificateChain(_invalidCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
+                    var certChain = SigningTestUtility.GenerateCertificateChain(InvalidCertChainLength, CrlServer.Uri, TestDirectory.Path, configureLeafCrl: false);
 
                     _revocationUnknownTestCertChain = new TrustedTestCertificateChain()
                     {
@@ -188,6 +195,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                     _untrustedSelfIssuedCertificateInCertificateStore = TrustedTestCert.Create(
                         certificate,
+                        X509StorePurpose.CodeSigning,
                         StoreName.My,
                         StoreLocation.CurrentUser);
                 }
@@ -363,10 +371,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var testServer = await _testServer.Value;
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
-            var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
+            var rootCertificate = new X509Certificate2(rootCa.Certificate);
 
             _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
+                X509StorePurpose.CodeSigning,
                 StoreName.Root,
                 StoreLocation.LocalMachine);
 

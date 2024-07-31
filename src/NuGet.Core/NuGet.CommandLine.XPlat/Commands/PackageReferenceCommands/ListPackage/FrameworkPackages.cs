@@ -24,15 +24,15 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="framework">Framework name</param>
         public FrameworkPackages(string framework) : this(framework, new List<InstalledPackageReference>(), new List<InstalledPackageReference>())
         {
-            
+
         }
 
         /// <summary>
         /// A constructor that takes a framework name, a list
-        /// of top-level pacakges, and a list of transitive
+        /// of top-level packages, and a list of transitive
         /// packages
         /// </summary>
-        /// <param name="framework">Framework name that we have pacakges for</param>
+        /// <param name="framework">Framework name that we have packages for</param>
         /// <param name="topLevelPackages">Top-level packages. Shouldn't be null</param>
         /// <param name="transitivePackages">Transitive packages. Shouldn't be null</param>
         public FrameworkPackages(string framework,

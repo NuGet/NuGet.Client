@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Licenses
         /// <returns>Whether the value has valid characters.</returns>
         internal bool HasValidCharacters()
         {
-            var regex = new Regex("^[a-zA-Z0-9\\.\\-\\s\\+\\(\\)]+$");
+            var regex = new Regex("^[a-zA-Z0-9\\.\\-\\s\\+\\(\\)]+$", RegexOptions.CultureInvariant);
             return regex.IsMatch(_value);
         }
 
@@ -89,11 +89,11 @@ namespace NuGet.Packaging.Licenses
         {
             if (bracket == '(')
             {
-                return new LicenseExpressionToken(bracket.ToString(), LicenseTokenType.OPENING_BRACKET);
+                return new LicenseExpressionToken(bracket.ToString(CultureInfo.CurrentCulture), LicenseTokenType.OPENING_BRACKET);
             }
             if (bracket == ')')
             {
-                return new LicenseExpressionToken(bracket.ToString(), LicenseTokenType.CLOSING_BRACKET);
+                return new LicenseExpressionToken(bracket.ToString(CultureInfo.CurrentCulture), LicenseTokenType.CLOSING_BRACKET);
             }
             return null;
         }

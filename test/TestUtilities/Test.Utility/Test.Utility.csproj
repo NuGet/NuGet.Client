@@ -1,24 +1,39 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksUnitTestForSigning)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <NoWarn Condition="'$(TargetFramework)' == '$(NETCoreTargetFramework)'">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IsPackable>true</IsPackable>
     <SkipShared>true</SkipShared>
+    <TestProject>false</TestProject>
     <NoWarn>$(NoWarn);VSTHRD001;VSTHRD002;VSTHRD110</NoWarn>
+    <Description>A collection of test utilities, such as generating packages, mocking servers, stub implementations of interfaces, etc.</Description>
+    <SkipAnalyzers>true</SkipAnalyzers>
+    <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
+    <SignWithNuGetKey>true</SignWithNuGetKey>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
+    <InternalsVisibleTo Include="NuGet.CommandLine.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Commands.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.MSSigning.Extensions.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Packaging.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Packaging.Test" />
+    <InternalsVisibleTo Include="NuGet.Signing.CrossFramework.Test" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
-    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.CommandLine\NuGet.CommandLine.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,22 +50,30 @@
     <None Remove="compiler\resources\SignatureFileWithFakeContent.zip" />
     <None Remove="compiler\resources\SignatureFileWithUppercaseFileName.zip" />
     <None Remove="compiler\resources\SignedPackage.1.0.0.nupkg" />
+    <None Remove="compiler\resources\Test.RepoCountersigned.1.0.0.nupkg" />
+    <None Remove="compiler\resources\Test.Reposigned.1.0.0.nupkg" />
+    <None Remove="compiler\resources\TestPackage.AuthorSigned.1.0.0.nupkg" />
+  </ItemGroup>
+
+ <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
+    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" />
-    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <PackageReference Include="System.Formats.Asn1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
@@ -62,19 +85,32 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="System.Diagnostics.Process" />
-    <PackageReference Include="System.IO.Compression.ZipFile" />
+  <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <!-- Remove files that do not support netcore -->
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <Compile Remove="PackageManagement\*.cs" />
-    <Compile Remove="ProjectManagement\*.cs" />
+  <ItemGroup Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' ">
+    <Compile Remove="ProjectManagement\TestCpsPackageReferenceProject.cs" />
+    <Compile Remove="ProjectManagement\TestExternalProjectReference.cs" />
+    <Compile Remove="ProjectManagement\TestProjectKProject.cs" />
+    <Compile Remove="ProjectManagement\TestProjectSystemServices.cs" />
+    <Compile Remove="ProjectManagement\TestProjectThreadingService.cs" />
     <Compile Remove="Threading\*.cs" />
+    <Compile Remove="VisualStudio\*.cs" />
   </ItemGroup>
-
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <Compile Update="Signing\Asn.1\SR.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SR.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Signing\Asn.1\SR.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>Test.Utility.Signing</CustomToolNamespace>
+      <LastGenOutput>SR.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

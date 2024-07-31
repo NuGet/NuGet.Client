@@ -96,7 +96,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     randomMessageLoggedAt = DateTimeOffset.UtcNow;
                     logger.Write(logMessage);
                 }
-               
+
                 var logFile = GetLogFile(testDirectory);
 
                 Assert.NotNull(logFile);

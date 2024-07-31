@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -11,20 +11,20 @@ namespace NuGet.ProjectModel
     {
         private static ConcurrentDictionary<string, BuildAction> _knownBuildActions = new ConcurrentDictionary<string, BuildAction>(StringComparer.OrdinalIgnoreCase);
 
-        public static BuildAction None = Define(nameof(None));
-        public static BuildAction Compile = Define(nameof(Compile));
-        public static BuildAction Content = Define(nameof(Content));
-        public static BuildAction EmbeddedResource = Define(nameof(EmbeddedResource));
-        public static BuildAction ApplicationDefinition = Define(nameof(ApplicationDefinition));
-        public static BuildAction Page = Define(nameof(Page));
-        public static BuildAction Resource = Define(nameof(Resource));
-        public static BuildAction SplashScreen = Define(nameof(SplashScreen));
-        public static BuildAction DesignData = Define(nameof(DesignData));
-        public static BuildAction DesignDataWithDesignTimeCreatableTypes = Define(nameof(DesignDataWithDesignTimeCreatableTypes));
-        public static BuildAction CodeAnalysisDictionary = Define(nameof(CodeAnalysisDictionary));
-        public static BuildAction AndroidAsset = Define(nameof(AndroidAsset));
-        public static BuildAction AndroidResource = Define(nameof(AndroidResource));
-        public static BuildAction BundleResource = Define(nameof(BundleResource));
+        public static readonly BuildAction None = Define(nameof(None));
+        public static readonly BuildAction Compile = Define(nameof(Compile));
+        public static readonly BuildAction Content = Define(nameof(Content));
+        public static readonly BuildAction EmbeddedResource = Define(nameof(EmbeddedResource));
+        public static readonly BuildAction ApplicationDefinition = Define(nameof(ApplicationDefinition));
+        public static readonly BuildAction Page = Define(nameof(Page));
+        public static readonly BuildAction Resource = Define(nameof(Resource));
+        public static readonly BuildAction SplashScreen = Define(nameof(SplashScreen));
+        public static readonly BuildAction DesignData = Define(nameof(DesignData));
+        public static readonly BuildAction DesignDataWithDesignTimeCreatableTypes = Define(nameof(DesignDataWithDesignTimeCreatableTypes));
+        public static readonly BuildAction CodeAnalysisDictionary = Define(nameof(CodeAnalysisDictionary));
+        public static readonly BuildAction AndroidAsset = Define(nameof(AndroidAsset));
+        public static readonly BuildAction AndroidResource = Define(nameof(AndroidResource));
+        public static readonly BuildAction BundleResource = Define(nameof(BundleResource));
 
         public string Value { get; }
 

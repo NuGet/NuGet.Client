@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
@@ -61,38 +61,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not get the account manager, unable to check the keychain..
+        ///   Looks up a localized string similar to All.
         /// </summary>
-        public static string AccountProvider_FailedToLoadAccountManager {
+        public static string AggregateSourceName {
             get {
-                return ResourceManager.GetString("AccountProvider_FailedToLoadAccountManager", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not get the account provider, unable to check the keychain..
-        /// </summary>
-        public static string AccountProvider_FailedToLoadVSOAccountProvider {
-            get {
-                return ResourceManager.GetString("AccountProvider_FailedToLoadVSOAccountProvider", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No valid credentials found for VSO account..
-        /// </summary>
-        public static string AccountProvider_NoValidCrededentialsFound {
-            get {
-                return ResourceManager.GetString("AccountProvider_NoValidCrededentialsFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to authenticate without prompting user..
-        /// </summary>
-        public static string AccountProvider_TriedToShowUIOnNonInteractive {
-            get {
-                return ResourceManager.GetString("AccountProvider_TriedToShowUIOnNonInteractive", resourceCulture);
+                return ResourceManager.GetString("AggregateSourceName", resourceCulture);
             }
         }
         
@@ -277,11 +250,29 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error occurred while getting package vulnerability data: {0}.
+        /// </summary>
+        public static string Error_VulnerabilityDataFetch {
+            get {
+                return ResourceManager.GetString("Error_VulnerabilityDataFetch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to load &apos;{0}&apos;, while updating binding redirects. {1}.
         /// </summary>
         public static string Error_WhileLoadingConfigForBindingRedirects {
             get {
                 return ResourceManager.GetString("Error_WhileLoadingConfigForBindingRedirects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid token.
+        /// </summary>
+        public static string Exception_InvalidContinuationToken {
+            get {
+                return ResourceManager.GetString("Exception_InvalidContinuationToken", resourceCulture);
             }
         }
         
@@ -349,29 +340,11 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package stream should be seekable.
-        /// </summary>
-        public static string PackageStreamShouldBeSeekable {
-            get {
-                return ResourceManager.GetString("PackageStreamShouldBeSeekable", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Path &apos;{0}&apos; to existing file is not found on disk. Cannot add to project &apos;{1}&apos;.
         /// </summary>
         public static string PathToExistingFileNotPresent {
             get {
                 return ResourceManager.GetString("PathToExistingFileNotPresent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The project &apos;{0}&apos; could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio..
-        /// </summary>
-        public static string ProjectCouldNotBeCastedToBuildPropertyStorage {
-            get {
-                return ResourceManager.GetString("ProjectCouldNotBeCastedToBuildPropertyStorage", resourceCulture);
             }
         }
         
@@ -390,6 +363,24 @@ namespace NuGet.PackageManagement.VisualStudio {
         public static string ProjectUpgradeAndRetargetErrorMessage {
             get {
                 return ResourceManager.GetString("ProjectUpgradeAndRetargetErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A project with ID &apos;{0}&apos; was not found..
+        /// </summary>
+        public static string ProjectWithIdNotFound {
+            get {
+                return ResourceManager.GetString("ProjectWithIdNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; cannot be null..
+        /// </summary>
+        public static string PropertyCannotBeNull {
+            get {
+                return ResourceManager.GetString("PropertyCannotBeNull", resourceCulture);
             }
         }
         
@@ -448,20 +439,20 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstalling NuGet package {0}..
-        /// </summary>
-        public static string UninstallingPackage {
-            get {
-                return ResourceManager.GetString("UninstallingPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to resolve all items referenced by &apos;{0}&apos;. This message can typically be ignored. The issue may be resolved by fully restoring and building the solution. If the unresolved item is a project reference this can lead to an incomplete NuGet restore result and missing package references. To ensure that restore is able to find all projects verify that all projects are referenced correctly and exist on disk..
         /// </summary>
         public static string UnresolvedItemDuringProjectClosureWalk {
             get {
                 return ResourceManager.GetString("UnresolvedItemDuringProjectClosureWalk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The feed type &apos;{0}&apos; is unsupported..
+        /// </summary>
+        public static string UnsupportedFeedType {
+            get {
+                return ResourceManager.GetString("UnsupportedFeedType", resourceCulture);
             }
         }
         

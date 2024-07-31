@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using EnvDTE;
-using Microsoft.VisualStudio.ComponentModelHost;
+using System.Globalization;
+using System.Threading.Tasks;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
 
@@ -19,7 +18,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsCredentialProviderImporter
     {
         private readonly Action<Exception, string> _errorDelegate;
-        private readonly Action _initializer;
 
         /// <summary>
         /// Constructor
@@ -28,23 +26,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="errorDelegate">Used to write error messages to the user.</param>
         public VsCredentialProviderImporter(
             Action<Exception, string> errorDelegate)
-            : this(errorDelegate, initializer: null)
-        {
-        }
-
-        /// <summary>
-        /// Constructor, allows changing initializer Action for testing purposes
-        /// </summary>
-        /// <param name="dte">DTE instance, used to determine the Visual Studio version.</param>
-        /// <param name="errorDelegate">Used to write error messages to the user.</param>
-        /// <param name="initializer">Init method used to supply MEF imports. Should only
-        /// be supplied by tests.</param>
-        public VsCredentialProviderImporter(
-            Action<Exception, string> errorDelegate,
-            Action initializer)
         {
             _errorDelegate = errorDelegate ?? throw new ArgumentNullException(nameof(errorDelegate));
-            _initializer = initializer ?? Initialize;
         }
 
         // The export from TeamExplorer uses a named contract, so we need to import this one separately.
@@ -57,28 +40,31 @@ namespace NuGet.PackageManagement.VisualStudio
         [ImportMany(typeof(IVsCredentialProvider))]
         public IEnumerable<Lazy<IVsCredentialProvider>> ImportedProviders { get; set; }
 
+        [Import]
+        public IVsSolutionManager SolutionManager { get; set; }
+
         /// <summary>
         /// Plugin providers are entered loaded the same way as other nuget extensions,
         /// matching any extension named CredentialProvider.*.exe.
         /// </summary>
         /// <returns>An enumeration of plugin providers</returns>
-        public IReadOnlyCollection<ICredentialProvider> GetProviders()
+        public async Task<IReadOnlyCollection<ICredentialProvider>> GetProvidersAsync()
         {
             var results = new List<ICredentialProvider>();
 
-            _initializer();
+            await InitializeAsync();
 
             TryImportCredentialProviders(results, VisualStudioAccountProviders);
             TryImportCredentialProviders(results, ImportedProviders);
 
             // Ensure imported providers ordering is deterministic
-            results.Sort((a, b) => a.GetType().FullName.CompareTo(b.GetType().FullName));
+            results.Sort((a, b) => string.Compare(a.GetType().FullName, b.GetType().FullName, StringComparison.Ordinal));
 
             return results;
         }
 
         private void TryImportCredentialProviders(
-            List<ICredentialProvider> importedProviders, 
+            List<ICredentialProvider> importedProviders,
             IEnumerable<Lazy<IVsCredentialProvider>> credentialProviders)
         {
             if (credentialProviders != null)
@@ -88,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     try
                     {
                         var credentialProvider = credentialProviderFactory.Value;
-                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider));
+                        importedProviders.Add(new VsCredentialProviderAdapter(credentialProvider, SolutionManager));
                     }
                     catch (Exception exception)
                     {
@@ -96,24 +82,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         _errorDelegate(
                             exception,
-                            string.Format(Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
+                            string.Format(CultureInfo.CurrentCulture, Strings.CredentialProviderFailed_ImportedProvider, targetAssemblyPath)
                             );
                     }
                 }
             }
         }
 
-        private static bool HasImportedVstsProvider(IEnumerable<ICredentialProvider> results)
+        private async Task InitializeAsync()
         {
-            return results.FirstOrDefault(p => p.Id.EndsWith(
-                ".NuGetCredentialProvider.VisualStudioAccountProvider",
-                StringComparison.OrdinalIgnoreCase)) != null;
-        }
-
-        private void Initialize()
-        {
-            var componentModel = ServiceLocator.GetGlobalService<SComponentModel, IComponentModel>();
-            
+            var componentModel = await ServiceLocator.GetComponentModelAsync();
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
         }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,9 +11,9 @@ namespace NuGet.Packaging
     {
         public FrameworkAssemblyReference(string assemblyName, IEnumerable<NuGetFramework> supportedFrameworks)
         {
-            if (String.IsNullOrEmpty(assemblyName))
+            if (string.IsNullOrEmpty(assemblyName))
             {
-                throw new ArgumentException(nameof(assemblyName));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(assemblyName));
             }
 
             if (supportedFrameworks == null)

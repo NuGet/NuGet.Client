@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -26,11 +26,12 @@ namespace NuGet.Packaging.Signing
     {
         // Url to an RFC 3161 timestamp server
         private readonly Uri _timestamperUrl;
-        private const int _rfc3161RequestTimeoutSeconds = 10;
-
+#if IS_SIGNING_SUPPORTED
+        private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(10);
+#endif
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             // Uri.UriSchemeHttp and Uri.UriSchemeHttps are not available in netstandard 1.3
             if (!string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
                 !string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
@@ -46,32 +47,32 @@ namespace NuGet.Packaging.Signing
             _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
+        public async Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
         {
-            var timestampCms = GetTimestamp(request, logger, token);
-            using (var signatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
+            SignedCms timestampCms = await GetTimestampAsync(request, logger, token);
+            using (ICms signatureCms = CmsFactory.Create(primarySignature.GetBytes()))
             {
                 if (request.Target == SignaturePlacement.Countersignature)
                 {
-                    signatureNativeCms.AddTimestampToRepositoryCountersignature(timestampCms);
+                    signatureCms.AddTimestampToRepositoryCountersignature(timestampCms);
                 }
                 else
                 {
-                    signatureNativeCms.AddTimestamp(timestampCms);
+                    signatureCms.AddTimestamp(timestampCms);
                 }
-                return Task.FromResult(PrimarySignature.Load(signatureNativeCms.Encode()));
+                return PrimarySignature.Load(signatureCms.Encode());
             }
         }
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public SignedCms GetTimestamp(TimestampRequest request, ILogger logger, CancellationToken token)
+        internal async Task<SignedCms> GetTimestampAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -87,20 +88,23 @@ namespace NuGet.Packaging.Signing
 
             // Allows us to track the request.
             var nonce = GenerateNonce();
-            var rfc3161TimestampRequest = new Rfc3161TimestampRequest(
+            var rfc3161TimestampRequest = Rfc3161TimestampRequestFactory.Create(
                 request.HashedMessage,
                 request.HashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
+                requestedPolicyId: null,
                 nonce: nonce,
-                requestSignerCertificates: true);
+                requestSignerCertificates: true,
+                extensions: null);
 
             // Request a timestamp
             // The response status need not be checked here as lower level api will throw if the response is invalid
-            var timestampToken = rfc3161TimestampRequest.SubmitRequest(
+            IRfc3161TimestampToken timestampToken = await rfc3161TimestampRequest.SubmitRequestAsync(
                 _timestamperUrl,
-                TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
+                RequestTimeout);
 
             // quick check for response validity
-            ValidateTimestampResponse(nonce, request.HashedMessage, timestampToken);
+            var normalizedNonce = rfc3161TimestampRequest.GetNonce();
+            ValidateTimestampResponse(normalizedNonce, request.HashedMessage, timestampToken);
 
             var timestampCms = timestampToken.AsSignedCms();
             ValidateTimestampCms(request.SigningSpecifications, timestampCms, timestampToken);
@@ -124,16 +128,15 @@ namespace NuGet.Packaging.Signing
         }
 
         private static SignedCms EnsureCertificatesInCertificatesCollection(
-            SignedCms timestampCms,
+            SignedCms timestamp,
             IReadOnlyList<X509Certificate2> chain)
         {
-            using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode()))
+            using (ICms timestampCms = CmsFactory.Create(timestamp.Encode()))
             {
-                timestampNativeCms.AddCertificates(
-                    chain.Where(certificate => !timestampCms.Certificates.Contains(certificate))
-                         .Select(certificate => certificate.RawData));
+                timestampCms.AddCertificates(
+                    chain.Where(certificate => !timestamp.Certificates.Contains(certificate)));
 
-                var bytes = timestampNativeCms.Encode();
+                var bytes = timestampCms.Encode();
                 var updatedCms = new SignedCms();
 
                 updatedCms.Decode(bytes);
@@ -142,7 +145,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, Rfc3161TimestampToken timestampToken)
+        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, IRfc3161TimestampToken timestampToken)
         {
             var signerInfo = timestampCms.SignerInfos[0];
             try
@@ -203,9 +206,10 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static void ValidateTimestampResponse(byte[] nonce, byte[] messageHash, Rfc3161TimestampToken timestampToken)
+        private static void ValidateTimestampResponse(byte[] nonce, byte[] messageHash, IRfc3161TimestampToken timestampToken)
         {
-            if (!nonce.SequenceEqual(timestampToken.TokenInfo.GetNonce()))
+            var tokenNonce = timestampToken.TokenInfo.GetNonce();
+            if (tokenNonce == null || !nonce.SequenceEqual(tokenNonce))
             {
                 throw new TimestampException(NuGetLogCode.NU3026, Strings.TimestampFailureNonceMismatch);
             }
@@ -221,7 +225,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         private static string GetNameOrOidString(Oid oid)
         {
-            return oid.FriendlyName?.ToUpper() ?? oid.Value;
+            return oid.FriendlyName?.ToUpper(CultureInfo.InvariantCulture) ?? oid.Value;
         }
 
         private static byte[] GenerateNonce()
@@ -233,6 +237,17 @@ namespace NuGet.Packaging.Signing
                 rng.GetBytes(nonce);
             }
 
+            EnsureValidNonce(nonce);
+
+            return nonce;
+        }
+
+        /// <summary>
+        /// Non-private for testing purposes only.
+        /// </summary>
+        internal static void EnsureValidNonce(byte[] nonce)
+        {
+#if IS_DESKTOP
             // Eventually, CryptEncodeObjectEx(...) is called on a CRYPT_TIMESTAMP_REQUEST with this nonce,
             // and CryptEncodeObjectEx(...) interprets the nonce as a little endian, DER-encoded integer value
             // (without tag and length), and may even strip leading bytes from the big endian representation
@@ -247,8 +262,12 @@ namespace NuGet.Packaging.Signing
 
             nonce[nonce.Length - 1] &= 0x7f;
             nonce[nonce.Length - 1] |= 0x01;
-
-            return nonce;
+#else
+            // Per documentation on Rfc3161TimestampRequest.CreateFromHash(...) the nonce "value is interpreted
+            // as an unsigned big-endian integer and may be normalized to the encoding format."  Clear the sign bit on
+            // the most significant byte to ensure the nonce represents an unsigned big endian integer.
+            nonce[0] &= 0x7f;
+#endif
         }
 
 #else

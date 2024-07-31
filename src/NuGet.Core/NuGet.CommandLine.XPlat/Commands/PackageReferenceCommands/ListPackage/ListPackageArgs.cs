@@ -3,20 +3,24 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using NuGet.CommandLine.XPlat.ListPackage;
 using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class ListPackageArgs
+    internal class ListPackageArgs
     {
         public ILogger Logger { get; }
         public string Path { get; }
-        public IEnumerable<PackageSource> PackageSources { get; }
-        public IEnumerable<string> Frameworks { get; }
-        public bool IncludeOutdated { get; }
-        public bool IncludeDeprecated { get; }
+        public List<PackageSource> PackageSources { get; }
+        public List<string> Frameworks { get; }
+        public ReportType ReportType { get; }
+        public IReportRenderer Renderer { get; }
+        public string ArgumentText { get; }
         public bool IncludeTransitive { get; }
         public bool Prerelease { get; }
         public bool HighestPatch { get; }
@@ -31,8 +35,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="path"> The path to the solution or project file </param>
         /// <param name="packageSources"> The sources for the packages to check in the case of --outdated </param>
         /// <param name="frameworks"> The user inputed frameworks to look up for their packages </param>
-        /// <param name="includeOutdated"> Bool for --outdated present </param>
-        /// <param name="includeDeprecated"> Bool for --deprecated present </param>
+        /// <param name="reportType"> Which report we're producing (e.g. --outdated) </param>
+        /// <param name="renderer">The report output renderer (e.g. console, json)</param>
         /// <param name="includeTransitive"> Bool for --include-transitive present </param>
         /// <param name="prerelease"> Bool for --include-prerelease present </param>
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
@@ -41,10 +45,10 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="cancellationToken"></param>
         public ListPackageArgs(
             string path,
-            IEnumerable<PackageSource> packageSources,
-            IEnumerable<string> frameworks,
-            bool includeOutdated,
-            bool includeDeprecated,
+            List<PackageSource> packageSources,
+            List<string> frameworks,
+            ReportType reportType,
+            IReportRenderer renderer,
             bool includeTransitive,
             bool prerelease,
             bool highestPatch,
@@ -55,14 +59,64 @@ namespace NuGet.CommandLine.XPlat
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
-            IncludeOutdated = includeOutdated;
-            IncludeDeprecated = includeDeprecated;
+            ReportType = reportType;
+            Renderer = renderer;
             IncludeTransitive = includeTransitive;
             Prerelease = prerelease;
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
             CancellationToken = cancellationToken;
+            ArgumentText = GetReportParameters();
+        }
+
+        private string GetReportParameters()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            switch (ReportType)
+            {
+                case ReportType.Default:
+                    break;
+                case ReportType.Deprecated:
+                    sb.Append(" --deprecated");
+                    break;
+                case ReportType.Outdated:
+                    sb.Append(" --outdated");
+                    break;
+                case ReportType.Vulnerable:
+                    sb.Append(" --vulnerable");
+                    break;
+                default:
+                    break;
+            }
+
+            if (IncludeTransitive)
+            {
+                sb.Append(" --include-transitive");
+            }
+
+            if (Frameworks != null && Frameworks.Any())
+            {
+                sb.Append(" --framework " + string.Join(" ", Frameworks));
+            }
+
+            if (Prerelease)
+            {
+                sb.Append(" --include-prerelease");
+            }
+
+            if (HighestMinor)
+            {
+                sb.Append(" --highest-minor");
+            }
+
+            if (HighestPatch)
+            {
+                sb.Append("--highest-patch");
+            }
+
+            return sb.ToString().Trim();
         }
     }
 }

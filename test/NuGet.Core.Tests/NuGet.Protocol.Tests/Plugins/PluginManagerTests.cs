@@ -361,6 +361,6 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
-        
+
     }
 }

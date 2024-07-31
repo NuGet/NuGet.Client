@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,7 @@ namespace NuGet.Commands
     /// 
     /// (Parent Node) --(Range Constraint)--> (Resolved Child Node)
     /// </summary>
-    public class ResolvedDependencyKey : IEquatable<ResolvedDependencyKey>
+    public readonly struct ResolvedDependencyKey : IEquatable<ResolvedDependencyKey>
     {
         /// <summary>
         /// Parent node.
@@ -41,16 +41,6 @@ namespace NuGet.Commands
 
         public bool Equals(ResolvedDependencyKey other)
         {
-            if (other == null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-
             return Parent.Equals(other.Parent)
                 && Child.Equals(other.Child)
                 && Range.Equals(other.Range);
@@ -58,12 +48,22 @@ namespace NuGet.Commands
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as ResolvedDependencyKey);
+            return obj is ResolvedDependencyKey dependencyKey && Equals(dependencyKey);
         }
 
         public override int GetHashCode()
         {
             return HashCodeCombiner.GetHashCode(Parent, Range, Child);
+        }
+
+        public static bool operator ==(ResolvedDependencyKey left, ResolvedDependencyKey right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ResolvedDependencyKey left, ResolvedDependencyKey right)
+        {
+            return !(left == right);
         }
     }
 }

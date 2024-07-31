@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="NuGet Code Analysis Rules" ToolsVersion="15.0">
-  <Include Path="managedminimumrules.ruleset" Action="Default" />
-  <Rules AnalyzerId="Microsoft.VisualStudio.Threading.Analyzers" RuleNamespace="Microsoft.VisualStudio.Threading.Analyzers">
-    <Rule Id="VSTHRD103" Action="Hidden" />
-    <Rule Id="VSTHRD105" Action="Hidden" />
-    <Rule Id="VSTHRD200" Action="Hidden" />
-  </Rules>
-</RuleSet>

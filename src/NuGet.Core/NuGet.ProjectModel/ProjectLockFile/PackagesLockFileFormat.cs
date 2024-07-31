@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,9 +14,12 @@ using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
-    public class PackagesLockFileFormat
+    public static class PackagesLockFileFormat
     {
         public static readonly int Version = 1;
+
+        // Diverge the lockfile version to allow evolving the lock file schema
+        public static readonly int PackagesLockFileVersion = 2;
 
         public static readonly string LockFileName = "packages.lock.json";
 
@@ -118,7 +122,11 @@ namespace NuGet.ProjectModel
 
         public static void Write(Stream stream, PackagesLockFile lockFile)
         {
+#if NET5_0_OR_GREATER
             using (var textWriter = new StreamWriter(stream))
+#else
+            using (var textWriter = new NoAllocNewLineStreamWriter(stream))
+#endif
             {
                 Write(textWriter, lockFile);
             }
@@ -236,7 +244,8 @@ namespace NuGet.ProjectModel
             {
                 var ordered = dependency.Dependencies.OrderBy(dep => dep.Id, StringComparer.Ordinal);
 
-                json[DependenciesProperty] = JsonUtility.WriteObject(ordered, JsonUtility.WritePackageDependency);
+                json[DependenciesProperty] = JsonUtility.WriteObject(ordered, dependency.Type == PackageDependencyType.Project ?
+                    JsonUtility.WritePackageDependency : JsonUtility.WritePackageDependencyWithLegacyString);
             }
 
             return new JProperty(dependency.Id, json);

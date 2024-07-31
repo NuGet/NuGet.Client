@@ -23,11 +23,19 @@ namespace NuGet.PackageManagement.UI
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values[0] == DependencyProperty.UnsetValue || values[1] == DependencyProperty.UnsetValue || values[2] == DependencyProperty.UnsetValue)
+            if (values != null
+                && values.Length == 3
+                && (values[0] == DependencyProperty.UnsetValue || values[1] == DependencyProperty.UnsetValue || values[2] == DependencyProperty.UnsetValue))
             {
                 return 0;
             }
-            return System.Convert.ToDouble(values[0]) - System.Convert.ToDouble(values[1]) - System.Convert.ToDouble(values[2]);
+
+            if (values[0] is double v0 && values[1] is double v1 && values[2] is double v2)
+            {
+                return v0 - v1 - v2;
+            }
+
+            return 0;
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

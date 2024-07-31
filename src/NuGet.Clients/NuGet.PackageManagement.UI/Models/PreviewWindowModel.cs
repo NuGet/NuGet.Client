@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
@@ -53,13 +53,22 @@ namespace NuGet.PackageManagement.UI
                     }
                     sb.AppendLine("");
                 }
+                if (r.NewSourceMappings?.Count > 0)
+                {
+                    foreach (var newSourceMapping in r.NewSourceMappings)
+                    {
+                        sb.AppendLine(string.Format(Resources.Label_CreatingSourceMappings, newSourceMapping.Key));
+                        sb.AppendLine("");
+                        foreach (string newSourceMappingPackageId in newSourceMapping.Value)
+                        {
+                            sb.AppendLine(newSourceMappingPackageId);
+                        }
+                        sb.AppendLine("");
+                    }
+                }
             }
             return sb.ToString();
         }
-
-        public int ButtonMinWidth => 86;
-        public int DoNotShowAgainMinWidth => 180;
-        public int WindowMinwidth => 2 * ButtonMinWidth + DoNotShowAgainMinWidth;
 
         public PreviewWindowModel(IEnumerable<PreviewResult> results)
         {

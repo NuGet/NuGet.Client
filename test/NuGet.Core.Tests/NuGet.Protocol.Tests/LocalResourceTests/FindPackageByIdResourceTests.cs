@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Tests
 
                 var resourceV2 = new LocalV2FindPackageByIdResource(new PackageSource(rootV2));
                 var resourceV3 = new LocalV3FindPackageByIdResource(new PackageSource(rootV3));
-                
+
                 using (var cacheContext = new SourceCacheContext())
                 {
                     var bNonNorm = new PackageIdentity("B", NuGetVersion.Parse("1.0"));

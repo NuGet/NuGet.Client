@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetCentralPackageVersionsTask : Task
+    public class GetCentralPackageVersionsTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.
@@ -37,14 +37,9 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectUniqueName '{ProjectUniqueName}'");
-            log.LogDebug($"(in) TargetFrameworks '{TargetFrameworks}'");
-            log.LogDebug($"(in) CentralPackageVersions '{string.Join(";", CentralPackageVersions.Select(p => p.ItemSpec))}'");
-
             var entries = new List<ITaskItem>();
             var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-           
+
             foreach (var msbuildItem in CentralPackageVersions)
             {
                 string packageId = msbuildItem.ItemSpec;

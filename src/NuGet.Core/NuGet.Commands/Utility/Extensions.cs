@@ -38,6 +38,17 @@ namespace NuGet.Commands
         /// <summary>
         /// Log all messages.
         /// </summary>
+        public static void LogMessages(this ILogger logger, IEnumerable<ILogMessage> messages)
+        {
+            foreach (var message in messages)
+            {
+                logger.Log(message);
+            }
+        }
+
+        /// <summary>
+        /// Log all messages.
+        /// </summary>
         public static Task LogMessagesAsync(this ILogger logger, params ILogMessage[] messages)
         {
             return logger.LogMessagesAsync(messages);

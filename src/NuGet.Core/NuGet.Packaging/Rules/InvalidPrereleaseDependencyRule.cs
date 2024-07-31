@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging.Rules
@@ -31,10 +32,12 @@ namespace NuGet.Packaging.Rules
             if (!nuspecReader.GetVersion().IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
-                var prereleaseDependency = nuspecReader.GetDependencyGroups().SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
-                if (prereleaseDependency != null)
+                foreach (PackageDependencyGroup dependencyGroup in nuspecReader.GetDependencyGroups())
                 {
-                    yield return CreatePackageIssueForPrereleaseDependency(prereleaseDependency.ToString());
+                    foreach (PackageDependency prereleaseDependency in dependencyGroup.Packages.Where(IsPrereleaseDependency))
+                    {
+                        yield return CreatePackageIssueForPrereleaseDependency(prereleaseDependency, dependencyGroup.TargetFramework);
+                    }
                 }
             }
         }
@@ -45,11 +48,13 @@ namespace NuGet.Packaging.Rules
                    dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
-        private PackagingLogMessage CreatePackageIssueForPrereleaseDependency(string dependency)
+        private PackagingLogMessage CreatePackageIssueForPrereleaseDependency(PackageDependency dependency, NuGetFramework framework)
         {
             return PackagingLogMessage.CreateWarning(
-                String.Format(CultureInfo.CurrentCulture, MessageFormat, dependency),
-                NuGetLogCode.NU5104);
+                string.Format(CultureInfo.CurrentCulture, MessageFormat, dependency),
+                NuGetLogCode.NU5104,
+                dependency.Id,
+                framework);
         }
     }
 }

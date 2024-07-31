@@ -19,14 +19,14 @@ namespace NuGet.Configuration.Test
 #if !IS_CORECLR
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
-            string userProfile = null;
+            string userProfile;
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                userProfile = Environment.GetEnvironmentVariable("UserProfile");
+                userProfile = Environment.GetEnvironmentVariable("UserProfile")!;
             }
             else
             {
-                userProfile = Environment.GetEnvironmentVariable("HOME");
+                userProfile = Environment.GetEnvironmentVariable("HOME")!;
             }
 #endif
             var expectedPath = Path.Combine(userProfile, ".nuget", SettingsUtility.DefaultGlobalPackagesFolderPath);
@@ -60,6 +60,31 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 globalPackagesFolderPath.Should().Be(Path.Combine(mockBaseDirectory, "a"));
+            }
+        }
+
+        [Fact]
+        public void GetUpdatePackageLastAccessTimeEnabledStatus_FromNuGetConfig()
+        {
+            // Arrange
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <config>
+        <add key='updatePackageLastAccessTime' value='true' />
+    </config>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var updatePackageLastAccessTimeEnabled = SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings);
+
+                // Assert
+                updatePackageLastAccessTimeEnabled.Should().Be(true);
             }
         }
 
@@ -167,7 +192,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetValueForAddItem_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetValueForAddItem(settings: null, section: "randomSection", key: "randomKey"));
+            var ex = Record.Exception(() => SettingsUtility.GetValueForAddItem(settings: null!, section: "randomSection", key: "randomKey"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -176,7 +201,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DeleteValue_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.DeleteValue(settings: null, section: "randomSection", attributeKey: "randomKey", attributeValue: "randomValue"));
+            var ex = Record.Exception(() => SettingsUtility.DeleteValue(settings: null!, section: "randomSection", attributeKey: "randomKey", attributeValue: "randomValue"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -185,7 +210,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetRepositoryPath_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetRepositoryPath(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetRepositoryPath(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -194,7 +219,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetMaxHttpRequest_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetMaxHttpRequest(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetMaxHttpRequest(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -203,7 +228,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetSignatureValidationMode_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetSignatureValidationMode(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetSignatureValidationMode(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -212,7 +237,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetDecryptedValueForAddItem_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetDecryptedValueForAddItem(settings: null, section: "randomSection", key: "randomKey"));
+            var ex = Record.Exception(() => SettingsUtility.GetDecryptedValueForAddItem(settings: null!, section: "randomSection", key: "randomKey"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -221,7 +246,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SetEncryptedValueForAddItem_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.SetEncryptedValueForAddItem(settings: null, section: "randomSection", key: "randomKey", value: "value"));
+            var ex = Record.Exception(() => SettingsUtility.SetEncryptedValueForAddItem(settings: null!, section: "randomSection", key: "randomKey", value: "value"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -230,7 +255,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetConfigValue_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetConfigValue(settings: null, key: "randomKey"));
+            var ex = Record.Exception(() => SettingsUtility.GetConfigValue(settings: null!, key: "randomKey"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -239,7 +264,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SetConfigValue_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.SetConfigValue(settings: null, key: "randomKey", value: "value"));
+            var ex = Record.Exception(() => SettingsUtility.SetConfigValue(settings: null!, key: "randomKey", value: "value"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -248,16 +273,43 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DeleteConfigValue_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.DeleteConfigValue(settings: null, key: "randomKey"));
+            var ex = Record.Exception(() => SettingsUtility.DeleteConfigValue(settings: null!, key: "randomKey"));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
         }
 
         [Fact]
+        public void DeleteConfigValue_WithValidSettings_DeletesKey()
+        {
+            // Arrange
+            var keyName = "dependencyVersion";
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""" + keyName + @""" value=""Highest"" />
+  </config>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
+
+                // Act
+                SettingsUtility.DeleteConfigValue(settings, keyName);
+
+                // Assert
+                var content = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                content.Should().NotContain(keyName);
+            }
+        }
+
+        [Fact]
         public void GetGlobalPackagesFolder_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetGlobalPackagesFolder(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetGlobalPackagesFolder(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -266,7 +318,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetFallbackPackageFolders_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetFallbackPackageFolders(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetFallbackPackageFolders(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -275,7 +327,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetEnabledSources_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetEnabledSources(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetEnabledSources(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();
@@ -284,7 +336,16 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetDefaultPushSource_WithNullSettings_Throws()
         {
-            var ex = Record.Exception(() => SettingsUtility.GetDefaultPushSource(settings: null));
+            var ex = Record.Exception(() => SettingsUtility.GetDefaultPushSource(settings: null!));
+
+            ex.Should().NotBeNull();
+            ex.Should().BeOfType<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void GetUpdatePackageLastAccessTimeEnabledStatus_WithNullSettings_Throws()
+        {
+            var ex = Record.Exception(() => SettingsUtility.GetUpdatePackageLastAccessTimeEnabledStatus(settings: null!));
 
             ex.Should().NotBeNull();
             ex.Should().BeOfType<ArgumentNullException>();

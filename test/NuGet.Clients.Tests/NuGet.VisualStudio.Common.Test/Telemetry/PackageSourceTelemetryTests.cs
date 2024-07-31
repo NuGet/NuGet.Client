@@ -12,6 +12,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
 using NuGet.VisualStudio.Telemetry;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.VisualStudio.Common.Test.Telemetry
@@ -150,7 +151,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             {
                 var tasks = new List<Task>();
 
-                for (int i =0; i < eventsToRaise; i++)
+                for (int i = 0; i < eventsToRaise; i++)
                 {
                     tasks.Add(Task.Run(() => action()));
                 }
@@ -235,26 +236,33 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(2, httpData.Failed);
         }
 
-        [Fact]
-        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject()
+        [Theory]
+        [InlineData("")]
+        [InlineData("nuget.org,nuget")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ")]
+        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject(string packageSourceMapping)
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
             data.NupkgCount = 0;
             data.Resources.Clear();
             data.Http.Requests = 0;
+            var configuration = string.IsNullOrEmpty(packageSourceMapping) ? null : PackageSourceMappingUtility.GetPackageSourceMapping(packageSourceMapping);
 
             var sourceRepository = new SourceRepository(new PackageSource("source"), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName");
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName", packageSourceMappingConfiguration: configuration);
 
             // Assert
             Assert.Null(result);
         }
 
-        [Fact]
-        public async Task ToTelemetry_WithData_CreatesTelemetryProperties()
+        [Theory]
+        [InlineData("")]
+        [InlineData("nuget.org,nuget")]
+        [InlineData(" nuget.org , nuget | privateRepository , private* ")]
+        public async Task ToTelemetry_WithData_CreatesTelemetryProperties(string packageSourceMapping)
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
@@ -277,11 +285,12 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             httpData.Failed = 1;
             httpData.StatusCodes.Add(200, 7);
             httpData.StatusCodes.Add(404, 3);
+            var configuration = string.IsNullOrEmpty(packageSourceMapping) ? null : PackageSourceMappingUtility.GetPackageSourceMapping(packageSourceMapping);
 
             var source = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName");
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName", packageSourceMappingConfiguration: configuration);
 
             // Assert
             Assert.NotNull(result);
@@ -317,6 +326,15 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(httpData.TotalBytes, result[PackageSourceTelemetry.PropertyNames.Http.Bytes]);
             Assert.Equal(httpData.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Total]);
             Assert.Equal(httpData.HeaderDuration.Value.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Header]);
+
+            if (string.IsNullOrEmpty(packageSourceMapping))
+            {
+                Assert.False((bool)result["PackageSourceMapping.IsMappingEnabled"]);
+            }
+            else
+            {
+                Assert.True((bool)result["PackageSourceMapping.IsMappingEnabled"]);
+            }
 
             var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Http.StatusCodes, result.ComplexData);
             var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue);
@@ -358,6 +376,24 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(expectedRequests, totals.Requests);
             Assert.Equal(expectedBytes, totals.Bytes);
             Assert.Equal(expectedDuration, totals.Duration);
+        }
+
+        [Theory]
+        [InlineData("https://api.nuget.org/v3/index.json", "nuget.org")]
+        [InlineData("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json", "Azure DevOps")]
+        [InlineData("https://nuget.pkg.github.com/contoso/index.json", "GitHub")]
+        [InlineData("https://api.contoso.org/v2/index.json", null)]
+        [InlineData(".\\my\\PublicRepository\\", null)]
+        public void GetMSFeed_CorrectlyIdentifies_SourceType(string source, string expectedSourceType)
+        {
+            // Arrange
+            PackageSource packageSource = new(source);
+
+            // Act
+            string actualSourceType = PackageSourceTelemetry.GetMsFeed(packageSource);
+
+            // Assert
+            Assert.Equal(expectedSourceType, actualSourceType);
         }
 
         private static IReadOnlyDictionary<string, PackageSourceTelemetry.Data> CreateDataDictionary(params string[] sources)

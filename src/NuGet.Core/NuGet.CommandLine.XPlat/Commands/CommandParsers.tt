@@ -3,19 +3,32 @@
 <#@ assembly name="System.Xml.Linq" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Core" #>
+<#@ import namespace="System.Globalization" #>
 <#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".cs" #>
 <#
     string InitCaps(string input)
     {
-        string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
+        if (input == null) 
+        {
+            return null;
+        }
+
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+        var output = textInfo.ToTitleCase(input);
+        
         return output;
     }
 
     bool IsArgument(string type)
     {
         return type == "Argument";
+    }
+
+    bool IsOption(string type)
+    {
+        return type == "Option";
     }
 
     string GetProperty(XElement element)
@@ -26,8 +39,14 @@
                 return "Option";
             case "SwitchOption":
                 return "Option";
+            case "Value":
+                return "Option";
             case "Argument":
                 return "Argument";
+            case "Example":
+                return "Example";
+            case "SeeAlso":
+                return "SeeAlso";
             default:
                 return "Unknown Element Type " + element.Name.LocalName;
         }

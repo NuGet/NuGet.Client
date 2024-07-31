@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ namespace NuGet.Credentials
     /// </summary>
     public static class PreviewFeatureSettings
     {
-        public const string DefaultCredentialsAfterCredentialProvidersEnvironmentVariableName 
+        public const string DefaultCredentialsAfterCredentialProvidersEnvironmentVariableName
             = "NUGET_CREDENTIAL_PROVIDER_OVERRIDE_DEFAULT";
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Plugins
         /// Instantiates a new <see cref="StandardOutputReceiver" /> class.
         /// </summary>
         /// <param name="process">A plugin process.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process" /> is <see langword="null" />.</exception>
         public StandardOutputReceiver(IPluginProcess process)
         {
             if (process == null)
@@ -37,18 +37,18 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Disposes of this instance.
         /// </summary>
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (IsDisposed)
             {
                 return;
             }
 
-            Close();
-
             // The process instance is shared with other classes and will be disposed elsewhere.
-
-            GC.SuppressFinalize(this);
+            if (disposing)
+            {
+                Close();
+            }
 
             IsDisposed = true;
         }

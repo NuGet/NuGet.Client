@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -84,6 +86,23 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(expectedPath, directory);
         }
 
+        // Test the GetMsBuildDirectoryInternal returns the highest version, ignoring the path, if "latest" is specified.
+        [Theory]
+        [MemberData("HighestPathWithLowVersionMatchData", MemberType = typeof(ToolsetDataSource))]
+        public void HighestVersionSelectedIfLatestSpecified(List<MsBuildToolset> toolsets, string lowVersionPath, string expectedPath)
+        {
+            // Arrange
+            // Act
+            var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
+                userVersion: "latest",
+                console: null,
+                installedToolsets: toolsets.OrderByDescending(t => t),
+                getMsBuildPathInPathVar: (reader) => lowVersionPath).Path;
+
+            // Assert
+            Assert.Equal(expectedPath, directory);
+        }
+
         // Tests that GetMsBuildDirectoryInternal returns path of the toolset whose toolset version matches
         // the userVersion. Also tests that, when userVersion is just a number, it can be matched with version 
         // userVersion + ".0". And non-numeric/case insensitive tests.
@@ -156,7 +175,7 @@ namespace NuGet.CommandLine.Test
                 }
                 else if (version == null)
                 {
-                    Assert.True(new List<string> { msbuild14, msbuild15 }.Contains(toolset.Path));
+                    Assert.Contains(toolset.Path, new List<string> { msbuild14, msbuild15 });
                 }
             }
         }
@@ -200,6 +219,50 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(msBuildExePath, msBuild151BinPath, ignoreCase: true);
             }
+        }
+
+        [Fact]
+        public void TestMsBuildPathFromVsPathWithNonEnglishCulture()
+        {
+            CultureInfo startingCulture = Thread.CurrentThread.CurrentCulture;
+
+            // Change culture to Ukrainian (any culture with comma and period swapped compared to english in floating point)
+            Thread.CurrentThread.CurrentCulture
+                = CultureInfo.GetCultureInfo("uk-UA");
+
+            using (var vsPath = TestDirectory.Create())
+            {
+                // Arrange
+                // Create this tree:
+                // VS
+                // |- MSBuild
+                //    |- 15.0
+                //    |  |- bin
+                //    |     |- msbuild.exe
+                //    |- 15.1
+                //       |- bin
+                //          |- msbuild.exe
+                // We want the highest version within the VS tree chosen (typically there's only one, but that's the logic 
+                // we'll go with in case there are more).
+                var msBuild15BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.0", "Bin")).FullName;
+                var msBuild151BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.1", "Bin")).FullName;
+
+                // Create dummy msbuild.exe files
+                var msBuild15ExePath = Path.Combine(msBuild15BinPath, "msbuild.exe").ToString();
+                File.WriteAllText(msBuild15ExePath, "foo 15");
+
+                var msBuild151ExePath = Path.Combine(msBuild151BinPath, "msbuild.exe").ToString();
+                File.WriteAllText(msBuild151ExePath, "foo 15.1");
+
+                // Act
+                var msBuildExePath = MsBuildToolset.GetMsBuildDirFromVsDir(vsPath);
+
+                // Assert
+                Assert.Equal(msBuildExePath, msBuild151BinPath, ignoreCase: true);
+            }
+
+            // reset culture
+            Thread.CurrentThread.CurrentCulture = startingCulture;
         }
 
         [Fact]
@@ -251,7 +314,7 @@ namespace NuGet.CommandLine.Test
                 var msBuild160ExePath = Path.Combine(msBuild160BinPath, "msbuild.exe").ToString();
 
                 File.WriteAllText(msBuild160ExePath, "foo 16.0");
-                
+
                 var newPathValue = new StringBuilder();
                 newPathValue.Append('\"');
                 newPathValue.Append(msBuild160BinPath);
@@ -268,6 +331,74 @@ namespace NuGet.CommandLine.Test
                 Assert.NotNull(msBuildPath);
                 Assert.Equal(msBuild160ExePath, msBuildPath);
             }
+        }
+
+        [SkipMonoTheory] // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+        [InlineData("arm64", true)]
+        [InlineData("amd64", true)]
+        [InlineData("ARM64", true)]
+        [InlineData("random", false)]
+        public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Succeeds(string architecutre, bool isArchitectureSpecificPath)
+        {
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
+                var msBuildExeNonArchitecturePath = Path.Combine(msBuildNonArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeNonArchitecturePath, "foo");
+
+                var msBuildArchitectureDir = Directory.CreateDirectory(Path.Combine(msBuildNonArchitectureDir.FullName, architecutre));
+                var msBuildExeArchitecturePath = Path.Combine(msBuildArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeArchitecturePath, "foo");
+
+                // Act;
+                var msBuildPath = MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath);
+
+                // Assert
+                if (isArchitectureSpecificPath)
+                {
+                    Assert.Equal(msBuildNonArchitectureDir.FullName, msBuildPath);
+                }
+                else
+                {
+                    Assert.Equal(msBuildArchitectureDir.FullName, msBuildPath);
+                }
+            }
+        }
+
+        [SkipMono] // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+        public void GetNonArchitectureDirectory_PATHENVWithArchitecture_Throws()
+        {
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuildNonArchitectureDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "Current", "Bin"));
+                var msBuildArchitectureDir = Directory.CreateDirectory(Path.Combine(msBuildNonArchitectureDir.FullName, "arm64"));
+                var msBuildExeArchitecturePath = Path.Combine(msBuildArchitectureDir.FullName, "msbuild.exe");
+                File.WriteAllText(msBuildExeArchitecturePath, "foo");
+
+                // Act & Assert
+                CommandException exception = Assert.Throws<CommandException>(
+                    () => MsBuildUtility.GetNonArchitectureDirectory(msBuildExeArchitecturePath));
+
+                Assert.Equal(string.Format(CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotFindNonArchitectureSpecificMsbuild)),
+                    msBuildArchitectureDir.FullName),
+                    exception.Message);
+            }
+        }
+
+        [Fact]
+        public void CombinePathWithVerboseError_CombinesPaths()
+        {
+            var paths = new[] { "C:\\", "directory/", "\\folder", "file.txt" };
+            Assert.Equal(Path.Combine(paths), MsBuildUtility.CombinePathWithVerboseError(paths));
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void CombinePathWithVerboseError_IllegalCharacters_MessageContainsBadPath()
+        {
+            const string badPath = @"C:\bad:>dir";
+            var exception = Assert.Throws<ArgumentException>(() => MsBuildUtility.CombinePathWithVerboseError(badPath, "file.txt"));
+            Assert.Contains(badPath, exception.Message);
         }
 
         public static class ToolsetDataSource
@@ -448,6 +579,16 @@ namespace NuGet.CommandLine.Test
                     new object[] { CombinedToolsets_MsBuild15AndVSTestToolsets, Toolset15_Wed_LongVersion.Path}
                 };
 
+            private static readonly List<object[]> _highestPathWithLowVersionMatchData
+                = new List<object[]>
+                {
+                    new object[] { LegacyToolsets, Toolset12.Path, Toolset14.Path },
+                    new object[] { CombinedToolsets_AscDate_ShortVersion, Toolset15_Mon_ShortVersion.Path, Toolset15_Wed_ShortVersion.Path },
+                    new object[] { CombinedToolsets_DescDate_ShortVersion, Toolset15_Mon_ShortVersion.Path, Toolset15_Wed_ShortVersion.Path },
+                    new object[] { CombinedToolsets_AscDate_LongVersion, Toolset15_Mon_LongVersion.Path, Toolset15_Wed_LongVersion.Path },
+                    new object[] { CombinedToolsets_DescDate_LongVersion, Toolset15_Mon_LongVersion.Path,Toolset15_Wed_LongVersion.Path }
+                };
+
             public static IEnumerable<object[]> HighestPathData => _highestPathData;
             public static IEnumerable<object[]> PathMatchData => _pathMatchData;
             public static IEnumerable<object[]> VersionMatchData => _versionMatchData;
@@ -455,6 +596,7 @@ namespace NuGet.CommandLine.Test
             public static IEnumerable<object[]> NonNumericVersionMatchData => _nonNumericVersionMatchData;
             public static IEnumerable<object[]> NonNumericVersionMatchFailureData => _nonNumericVersionMatchFailureData;
             public static IEnumerable<object[]> InvalidToolsetData => _invalidToolsetData;
+            public static IEnumerable<object[]> HighestPathWithLowVersionMatchData => _highestPathWithLowVersionMatchData;
 
         }
     }

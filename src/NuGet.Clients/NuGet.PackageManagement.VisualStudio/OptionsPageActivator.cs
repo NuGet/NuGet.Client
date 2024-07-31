@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,10 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,21 +22,23 @@ namespace NuGet.PackageManagement.VisualStudio
         // GUID of the General page, defined in GeneralOptionsPage.cs
         private const string _generalGUID = "0F052CF7-BF62-4743-B190-87FA4D49421E";
 
+        // GUID of the Package Source Mapping page, defined in PackageSourceMappingOptionsPage.cs
+        private const string _packageSourceMappingGUID = "F175964E-89F5-4521-8FE2-C10C07BB968C";
+
+        // GUID of the Configuration Files page, defined in ConfigurationFilesOptionsPage.cs
+        private const string _configurationFilesGUID = "C17B308A-00BB-446E-9212-2D14E1005985";
+
         private Action _closeCallback;
-        private readonly Lazy<IVsUIShell> _vsUIShell;
+        private readonly AsyncLazy<IVsUIShell> _vsUIShell;
 
         [ImportingConstructor]
-        public OptionsPageActivator(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider)
+        public OptionsPageActivator()
         {
-            if (serviceProvider == null)
+            _vsUIShell = new AsyncLazy<IVsUIShell>(async () =>
             {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _vsUIShell = new Lazy<IVsUIShell>(
-                () => serviceProvider.GetService<SVsUIShell, IVsUIShell>());
+                return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
+            },
+            NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public void NotifyOptionsDialogClosed()
@@ -54,11 +59,31 @@ namespace NuGet.PackageManagement.VisualStudio
             _closeCallback = closeCallback;
             if (page == OptionsPage.General)
             {
-                ShowOptionsPage(_generalGUID);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_generalGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else if (page == OptionsPage.PackageSources)
             {
-                ShowOptionsPage(_packageSourcesGUID);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_packageSourcesGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
+            }
+            else if (page == OptionsPage.PackageSourceMapping)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_packageSourceMappingGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
+            }
+            else if (page == OptionsPage.ConfigurationFiles)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+                {
+                    await ShowOptionsPageAsync(_configurationFilesGUID);
+                }).PostOnFailure(nameof(OptionsPageActivator), nameof(ActivatePage));
             }
             else
             {
@@ -66,13 +91,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void ShowOptionsPage(string optionsPageGuid)
+        private async Task ShowOptionsPageAsync(string optionsPageGuid)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             object targetGuid = optionsPageGuid;
             var toolsGroupGuid = VSConstants.GUID_VSStandardCommandSet97;
-            _vsUIShell.Value.PostExecCommand(
+            IVsUIShell vsUIShell = await _vsUIShell.GetValueAsync();
+            vsUIShell.PostExecCommand(
                 ref toolsGroupGuid,
                 (uint)VSConstants.cmdidToolsOptions,
                 (uint)0,

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -119,11 +119,32 @@
   </resheader>
   <data name="CouldNotFindInstalledPackage" xml:space="preserve">
     <value>Failed to resolve SDK '{0}'. A package was successfully restored but the package could not be located.</value>
+    <comment>{0} is the name of an MSBuild project SDK.</comment>
+  </data>
+  <data name="FailedToFindPathToGlobalJson" xml:space="preserve">
+    <value>Failed to determine path to global.json from path "{0}". {1}</value>
+    <comment>{0} is the path to the file used to start looking for global.json and {1} is the exception message that occurred.</comment>
   </data>
   <data name="FailedToParseGlobalJson" xml:space="preserve">
     <value>Failed to parse "{0}". {1}</value>
+    <comment>{0} is the path to the global.json file that was attempted to be parsed and {1} is the exception message that occurred.</comment>
+  </data>
+  <data name="FailedToReadGlobalJson" xml:space="preserve">
+    <value>Failed to read file "{0}". {1}</value>
+    <comment>{0} is the path to the global.json file that was attempted to be read and {1} is the exception message that occurred.</comment>
   </data>
   <data name="PackageWasNotInstalled" xml:space="preserve">
     <value>Failed to resolve SDK '{0}'. Package restore was successful but a package with the ID of "{1}" was not installed.</value>
+    <comment>{0} is name of an MSBuild project SDK and {1} is package ID that was installed.</comment>
+  </data>
+  <data name="Error_DisabledSdkResolver" xml:space="preserve">
+    <value>The NuGetSdkResolver did not resolve this SDK because it was disabled by the MSBUILDDISABLENUGETSDKRESOLVER environment variable.</value>
+  </data>
+  <data name="Error_NoSdkVersion" xml:space="preserve">
+    <value>The NuGetSdkResolver did not resolve this SDK because there was no version specified in the project or global.json.</value>
+  </data>
+  <data name="Error_FailedToReadSettings" xml:space="preserve">
+    <value>Failed to load NuGet settings. {0}</value>
+    <comment>{0} is exception message.</comment>
   </data>
 </root>

@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
+using System.Linq;
 using NuGet.Test.Utility;
 using Xunit;
-using System.Linq;
-using System;
 
 namespace NuGet.Protocol.Plugins.Tests
 {
@@ -75,6 +75,10 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\MSBuild\Current\bin",
             @"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
         [InlineData(null, null)]
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\MSBuild\Current\bin\amd64",
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\MSBuild\Current\bin\arm64",
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
         public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenMSBuildDirectory(string given, string expected)
         {
             var result = PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildDirectory(given);

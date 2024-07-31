@@ -20,7 +20,7 @@
       <d:Version>1.0.0.99</d:Version>
       <d:Copyright>Copyright 2016</d:Copyright>
       <d:Created m:type="Edm.DateTime">2016-04-06T12:46:30.942Z</d:Created>
-      <d:Dependencies>PackageB:null|EntityFramework:6.1.3|PackageC:3.7.0.15</d:Dependencies>
+      <d:Dependencies>PackageB:null|EntityFramework:6.1.3|PackageC:3.7.0.15|PackageD:3.14.15:null</d:Dependencies>
       <d:Description>Some description</d:Description>
       <d:DownloadCount m:type="Edm.Int32">0</d:DownloadCount>
       <d:GalleryDetailsUrl m:null="true"></d:GalleryDetailsUrl>

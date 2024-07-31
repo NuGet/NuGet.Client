@@ -3,11 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using NuGet.Configuration;
 using NuGet.Common;
-using NuGet.ProjectModel;
+using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
@@ -87,7 +88,7 @@ namespace NuGet.Commands
             }
             else
             {
-                throw new ArgumentException(string.Format(Strings.Error_InvalidSymbolPackageFormat, symbolPackageFormat));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidSymbolPackageFormat, symbolPackageFormat));
             }
         }
     }

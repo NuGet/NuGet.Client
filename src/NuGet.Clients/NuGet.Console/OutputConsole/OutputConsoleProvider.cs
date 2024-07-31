@@ -5,10 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGetConsole
 {
@@ -16,13 +20,11 @@ namespace NuGetConsole
     public class OutputConsoleProvider : IOutputConsoleProvider
     {
         private readonly IEnumerable<Lazy<IHostProvider, IHostMetadata>> _hostProviders;
+        private readonly AsyncLazy<IConsole> _cachedOutputConsole;
+        private readonly AsyncLazy<bool> _isServerMode;
+        private IAsyncServiceProvider _asyncServiceProvider;
+
         private readonly AsyncLazy<IVsOutputWindow> _vsOutputWindow;
-        private readonly AsyncLazy<IVsUIShell> _vsUIShell;
-        private readonly Lazy<IConsole> _cachedOutputConsole;
-
-        private IVsOutputWindow VsOutputWindow => NuGetUIThreadHelper.JoinableTaskFactory.Run(_vsOutputWindow.GetValueAsync);
-
-        private IVsUIShell VsUIShell => NuGetUIThreadHelper.JoinableTaskFactory.Run(_vsUIShell.GetValueAsync);
 
         [ImportingConstructor]
         OutputConsoleProvider(
@@ -32,20 +34,11 @@ namespace NuGetConsole
         { }
 
         OutputConsoleProvider(
-            Microsoft.VisualStudio.Shell.IAsyncServiceProvider asyncServiceProvider, // ambigiuous reference
+            IAsyncServiceProvider asyncServiceProvider,
             IEnumerable<Lazy<IHostProvider, IHostMetadata>> hostProviders)
         {
-            if (asyncServiceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(asyncServiceProvider));
-            }
-
-            if (hostProviders == null)
-            {
-                throw new ArgumentNullException(nameof(hostProviders));
-            }
-
-            _hostProviders = hostProviders;
+            _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
+            _hostProviders = hostProviders ?? throw new ArgumentNullException(nameof(hostProviders));
 
             _vsOutputWindow = new AsyncLazy<IVsOutputWindow>(
                 async () =>
@@ -54,38 +47,56 @@ namespace NuGetConsole
                 },
                 NuGetUIThreadHelper.JoinableTaskFactory);
 
-            _vsUIShell = new AsyncLazy<IVsUIShell>(
+            _cachedOutputConsole = new AsyncLazy<IConsole>(
                 async () =>
                 {
-                    return await asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
-                },
-                NuGetUIThreadHelper.JoinableTaskFactory);
+                    if (await _isServerMode.GetValueAsync())
+                    {
+                        // This is disposable, but it lives for the duration of the process.
+                        return new ChannelOutputConsole(
+                                _asyncServiceProvider,
+                                GuidList.NuGetOutputWindowPaneGuid,
+                                Resources.OutputConsolePaneName,
+                                NuGetUIThreadHelper.JoinableTaskFactory);
+                    }
+                    else
+                    {
+                        var vsUIShell = await asyncServiceProvider.GetServiceAsync<SVsUIShell, IVsUIShell>();
+                        var vsOutputWindow = await _vsOutputWindow.GetValueAsync();
+                        return new OutputConsole(vsOutputWindow, vsUIShell);
+                    }
+                }, NuGetUIThreadHelper.JoinableTaskFactory);
 
-            _cachedOutputConsole = new Lazy<IConsole>(
-                () => new OutputConsole(VsOutputWindow, VsUIShell));
+            _isServerMode = new AsyncLazy<bool>(
+                () =>
+                {
+                    return VisualStudioContextHelper.IsInServerModeAsync(CancellationToken.None);
+                }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
-        public IOutputConsole CreateBuildOutputConsole()
+        public async Task<IOutputConsole> CreateBuildOutputConsoleAsync()
         {
-            return new BuildOutputConsole(VsOutputWindow);
+            if (await _isServerMode.GetValueAsync())
+            {
+                return await _cachedOutputConsole.GetValueAsync();
+            }
+            else
+            {
+                var vsOutputWindow = await _vsOutputWindow.GetValueAsync();
+                return new BuildOutputConsole(vsOutputWindow);
+            }
         }
 
-        public IOutputConsole CreatePackageManagerConsole()
+        public async Task<IOutputConsole> CreatePackageManagerConsoleAsync()
         {
-            return _cachedOutputConsole.Value;
+            return await _cachedOutputConsole.GetValueAsync();
         }
 
-        public IConsole CreatePowerShellConsole()
+        public async Task<IConsole> CreatePowerShellConsoleAsync()
         {
-            return CreateOutputConsole(requirePowerShellHost: true);
-        }
+            var console = await _cachedOutputConsole.GetValueAsync();
 
-        public IConsole CreateOutputConsole(bool requirePowerShellHost)
-        {
-            var console = _cachedOutputConsole.Value;
-
-            // only instantiate the PS host if necessary (e.g. when package contains PS script files)
-            if (requirePowerShellHost && console.Host == null)
+            if (console.Host == null)
             {
                 var hostProvider = GetPowerShellHostProvider();
                 console.Host = hostProvider.CreateHost(@async: false);
@@ -97,7 +108,7 @@ namespace NuGetConsole
         private IHostProvider GetPowerShellHostProvider()
         {
             // The PowerConsole design enables multiple hosts (PowerShell, Python, Ruby)
-            // For the Output window console, we're only interested in the PowerShell host. 
+            // For the Output window console, we're only interested in the PowerShell host.
             // Here we filter out the PowerShell host provider based on its name.
 
             // The PowerShell host provider name is defined in PowerShellHostProvider.cs

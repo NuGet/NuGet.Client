@@ -23,7 +23,6 @@ namespace NuGet.Commands
     public class TrustedSignersCommandRunner : ITrustedSignersCommandRunner
     {
         private const int SuccessCode = 0;
-        private const int FailureCode = 1;
 
         private readonly ITrustedSignersProvider _trustedSignersProvider;
         private readonly IPackageSourceProvider _packageSourceProvider;
@@ -58,7 +57,7 @@ namespace NuGet.Commands
 
                     if (isPackagePathProvided)
                     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
                         if (isServiceIndexProvided || isFingerprintProvided || isAlgorithmProvided)
                         {
                             throw new CommandLineArgumentCombinationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_CouldNotAdd, Strings.Error_InvalidCombinationOfArguments));
@@ -92,6 +91,13 @@ namespace NuGet.Commands
 
                         var packagesToTrust = LocalFolderUtility.ResolvePackageFromPath(trustedSignersArgs.PackagePath);
                         LocalFolderUtility.EnsurePackageFileExists(trustedSignersArgs.PackagePath, packagesToTrust);
+
+                        if (packagesToTrust.Count() > 1)
+                        {
+                            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                                Strings.Multiple_Nupkgs_Detected,
+                                trustedSignersArgs.PackagePath));
+                        }
 
                         foreach (var package in packagesToTrust)
                         {
@@ -201,14 +207,14 @@ namespace NuGet.Commands
             var trustedSigners = _trustedSignersProvider.GetTrustedSigners();
             if (!trustedSigners.Any())
             {
-                await logger.LogAsync(LogLevel.Information, Strings.NoTrustedSigners);
+                await logger.LogAsync(LogLevel.Minimal, Strings.NoTrustedSigners);
                 return;
             }
 
             var trustedSignersLogs = new List<LogMessage>();
 
-            await logger.LogAsync(LogLevel.Information, Strings.RegsiteredTrustedSigners);
-            await logger.LogAsync(LogLevel.Information, Environment.NewLine);
+            await logger.LogAsync(LogLevel.Minimal, Strings.RegsiteredTrustedSigners);
+            await logger.LogAsync(LogLevel.Minimal, Environment.NewLine);
 
             for (var i = 0; i < trustedSigners.Count; i++)
             {
@@ -216,7 +222,7 @@ namespace NuGet.Commands
 
                 var trustedSignerBuilder = new StringBuilder();
 
-                var index = $" {i+1}.".PadRight(6);
+                var index = $" {i + 1}.".PadRight(6);
                 var defaultIndentation = string.Empty.PadRight(6);
 
                 trustedSignerBuilder.AppendLine($"{index}{string.Format(CultureInfo.CurrentCulture, Strings.TrustedSignerLogTitle, item.Name, item.ElementName)}");
@@ -241,7 +247,7 @@ namespace NuGet.Commands
                     trustedSignerBuilder.AppendLine($"{defaultIndentation}{extraIndentation}{string.Format(CultureInfo.CurrentCulture, summaryAllowUntrustedRoot, cert.HashAlgorithm.ToString(), cert.Fingerprint)}");
                 }
 
-                trustedSignersLogs.Add(new LogMessage(LogLevel.Information, trustedSignerBuilder.ToString()));
+                trustedSignersLogs.Add(new LogMessage(LogLevel.Minimal, trustedSignerBuilder.ToString()));
             }
 
             await logger.LogMessagesAsync(trustedSignersLogs);
@@ -252,13 +258,13 @@ namespace NuGet.Commands
             var trustedSigners = _trustedSignersProvider.GetTrustedSigners().Where(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
             if (!trustedSigners.Any())
             {
-                await logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.NoTrustedSignersMatching, name));
+                await logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.NoTrustedSignersMatching, name));
                 return;
             }
 
             _trustedSignersProvider.Remove(trustedSigners.ToList());
 
-            await logger.LogAsync(LogLevel.Information, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyRemovedTrustedSigner, name));
+            await logger.LogAsync(LogLevel.Minimal, string.Format(CultureInfo.CurrentCulture, Strings.SuccessfullyRemovedTrustedSigner, name));
         }
 
         private void ValidateListArguments(TrustedSignersArgs args)

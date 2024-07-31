@@ -3,150 +3,187 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
+using ContractItemFilter = NuGet.VisualStudio.Internal.Contracts.ItemFilter;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class PackageItemLoader : IPackageItemLoader
+    internal class PackageItemLoader : IPackageItemLoader, IDisposable
     {
         private readonly PackageLoadContext _context;
         private readonly string _searchText;
         private readonly bool _includePrerelease;
-
-        private readonly IPackageFeed _packageFeed;
+        private readonly IReadOnlyCollection<PackageSourceContextInfo> _packageSources;
+        private readonly ContractItemFilter _itemFilter;
+        private readonly bool _useRecommender;
+        private readonly IPackageVulnerabilityService _packageVulnerabilityService;
         private PackageCollection _installedPackages;
-        private IEnumerable<Packaging.PackageReference> _packageReferences;
-
-        private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
-        {
-            SupportedFrameworks = _context.GetSupportedFrameworks()
-        };
-
-        // Never null
+        private IEnumerable<IPackageReferenceContextInfo> _packageReferences;
         private PackageFeedSearchState _state = new PackageFeedSearchState();
-
+        private SearchFilter _searchFilter;
+        private INuGetSearchService _searchService;
         public IItemLoaderState State => _state;
+        private IServiceBroker _serviceBroker;
+        private INuGetPackageFileService _packageFileService;
 
-        public bool IsMultiSource => _packageFeed.IsMultiSource;
+        public bool IsMultiSource => _packageSources.Count > 1;
 
-        private class PackageFeedSearchState : IItemLoaderState
-        {
-            private readonly SearchResult<IPackageSearchMetadata> _results;
-
-            public PackageFeedSearchState()
-            {
-            }
-
-            public PackageFeedSearchState(SearchResult<IPackageSearchMetadata> results)
-            {
-                if (results == null)
-                {
-                    throw new ArgumentNullException(nameof(results));
-                }
-                _results = results;
-            }
-
-            public SearchResult<IPackageSearchMetadata> Results => _results;
-
-            public Guid? OperationId => _results?.OperationId;
-
-            public LoadingStatus LoadingStatus
-            {
-                get
-                {
-                    if (_results == null)
-                    {
-                        // initial status when no load called before
-                        return LoadingStatus.Unknown;
-                    }
-
-                    return (SourceLoadingStatus?.Values).Aggregate();
-                }
-            }
-
-            // returns the "raw" counter which is not the same as _results.Items.Count
-            // simply because it correlates to un-merged items
-            public int ItemsCount => _results?.RawItemsCount ?? 0;
-
-            public IDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceSearchStatus;
-        }
-
-        public PackageItemLoader(
+        private PackageItemLoader(
+            IServiceBroker serviceBroker,
+            INuGetSearchService searchService,
             PackageLoadContext context,
-            IPackageFeed packageFeed,
-            string searchText = null,
-            bool includePrerelease = true)
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            ContractItemFilter itemFilter,
+            string searchText,
+            bool includePrerelease,
+            bool useRecommender,
+            IPackageVulnerabilityService vulnerabilityService = default)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            Assumes.NotNull(serviceBroker);
+            Assumes.NotNull(context);
+            Assumes.NotNullOrEmpty(packageSources);
+
+            _serviceBroker = serviceBroker;
+            _searchService = searchService;
             _context = context;
-
-            if (packageFeed == null)
-            {
-                throw new ArgumentNullException(nameof(packageFeed));
-            }
-            _packageFeed = packageFeed;
-
             _searchText = searchText ?? string.Empty;
             _includePrerelease = includePrerelease;
+            _packageSources = packageSources;
+            _itemFilter = itemFilter;
+            _useRecommender = useRecommender;
+            _packageVulnerabilityService = vulnerabilityService;
+        }
+
+        public static async ValueTask<PackageItemLoader> CreateAsync(
+            IServiceBroker serviceBroker,
+            INuGetSearchService searchService,
+            PackageLoadContext context,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            ContractItemFilter itemFilter,
+            string searchText = null,
+            bool includePrerelease = true,
+            bool useRecommender = false,
+            IPackageVulnerabilityService vulnerabilityService = default)
+        {
+            var itemLoader = new PackageItemLoader(
+                serviceBroker,
+                searchService,
+                context,
+                packageSources,
+                itemFilter,
+                searchText,
+                includePrerelease,
+                useRecommender,
+                vulnerabilityService);
+
+            await itemLoader.InitializeAsync();
+
+            return itemLoader;
+        }
+
+        // For unit testing purposes
+        internal static async ValueTask<PackageItemLoader> CreateAsync(
+            IServiceBroker serviceBroker,
+            PackageLoadContext context,
+            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
+            ContractItemFilter itemFilter,
+            INuGetSearchService searchService,
+            INuGetPackageFileService packageFileService,
+            string searchText = null,
+            bool includePrerelease = true,
+            bool useRecommender = false,
+            IPackageVulnerabilityService vulnerabilityService = default)
+        {
+            var itemLoader = new PackageItemLoader(
+                serviceBroker,
+                searchService,
+                context,
+                packageSources,
+                itemFilter,
+                searchText,
+                includePrerelease,
+                useRecommender,
+                vulnerabilityService);
+
+            await itemLoader.InitializeAsync(packageFileService);
+
+            return itemLoader;
+        }
+
+        private async ValueTask InitializeAsync(INuGetPackageFileService packageFileService = null)
+        {
+            _searchFilter = new SearchFilter(includePrerelease: _includePrerelease)
+            {
+                SupportedFrameworks = await _context.GetSupportedFrameworksAsync()
+            };
+
+            _packageFileService = packageFileService ?? await GetPackageFileServiceAsync(CancellationToken.None);
+            _serviceBroker.AvailabilityChanged += OnAvailabilityChanged;
+        }
+
+        private void OnAvailabilityChanged(object sender, BrokeredServicesChangedEventArgs e)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                _packageFileService?.Dispose();
+                _packageFileService = await GetPackageFileServiceAsync(CancellationToken.None);
+            }).PostOnFailure(nameof(PackageItemLoader), nameof(OnAvailabilityChanged));
+        }
+
+        private async ValueTask<INuGetSearchService> GetSearchServiceAsync(CancellationToken cancellationToken)
+        {
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetSearchService searchService = await _serviceBroker.GetProxyAsync<INuGetSearchService>(NuGetServices.SearchService, cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+            Assumes.NotNull(searchService);
+            return searchService;
+        }
+
+        private async ValueTask<INuGetPackageFileService> GetPackageFileServiceAsync(CancellationToken cancellationToken)
+        {
+#pragma warning disable ISB001 // Dispose of proxies
+            INuGetPackageFileService packageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+            Assumes.NotNull(packageFileService);
+            return packageFileService;
         }
 
         public async Task<int> GetTotalCountAsync(int maxCount, CancellationToken cancellationToken)
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
+            IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            ActivityCorrelationId.StartNew();
-
-            int totalCount = 0;
-            ContinuationToken nextToken = null;
-            do
-            {
-                var searchResult = await SearchAsync(nextToken, cancellationToken);
-                while (searchResult.RefreshToken != null)
-                {
-                    searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
-                }
-                totalCount += searchResult.Items?.Count() ?? 0;
-                nextToken = searchResult.NextToken;
-            } while (nextToken != null && totalCount <= maxCount);
-
-            return totalCount;
+            return await _searchService.GetTotalCountAsync(maxCount, _context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, _context.IsSolution, cancellationToken);
         }
 
-        public async Task<IReadOnlyList<IPackageSearchMetadata>> GetAllPackagesAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetInstalledAndTransitivePackagesAsync(CancellationToken cancellationToken)
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
 
             ActivityCorrelationId.StartNew();
+            IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            var packages = new List<IPackageSearchMetadata>();
-            ContinuationToken nextToken = null;
-            do
-            {
-                var searchResult = await SearchAsync(nextToken, cancellationToken);
-                while (searchResult.RefreshToken != null)
-                {
-                    searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
-                }
-
-                nextToken = searchResult.NextToken;
-
-                packages.AddRange(searchResult.Items);
-
-            } while (nextToken != null);
-
-            return packages;
+            return await _searchService.GetAllPackagesAsync(_context.Projects, _packageSources, targetFrameworks, _searchFilter, _itemFilter, _context.IsSolution, cancellationToken);
         }
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -155,63 +192,44 @@ namespace NuGet.PackageManagement.UI
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
+            await UpdateStateAndReportAsync(
+                new SearchResultContextInfo(Array.Empty<PackageSearchMetadataContextInfo>(),
+                    ImmutableDictionary<string, LoadingStatus>.Empty,
+                    hasMoreItems: _state.Results?.HasMoreItems ?? false),
+                progress,
+                cancellationToken);
 
-            var nextToken = _state.Results?.NextToken;
-            var cleanState = SearchResult.Empty<IPackageSearchMetadata>();
-            cleanState.NextToken = nextToken;
-            await UpdateStateAndReportAsync(cleanState, progress, cancellationToken);
-
-            var searchResult = await SearchAsync(nextToken, cancellationToken);
+            SearchResultContextInfo searchResult = await SearchAsync(cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
             await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
         public async Task UpdateStateAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
-
-            progress?.Report(_state);
-
-            var refreshToken = _state.Results?.RefreshToken;
-            if (refreshToken != null)
-            {
-                var searchResult = await _packageFeed.RefreshSearchAsync(refreshToken, cancellationToken);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
-            }
-
-            NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
+            SearchResultContextInfo searchResult = await _searchService.RefreshSearchAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            await UpdateStateAndReportAsync(searchResult, progress, cancellationToken);
         }
 
-        public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
+        public async Task<SearchResultContextInfo> SearchAsync(CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
-            // check if there is already a running initialization task for SolutionManager. If yes,
-            // search should wait until this is completed. This would usually happen when opening manager
-            //ui is the first nuget operation under LSL mode where it might take some time to initialize.
-            if (_context.SolutionManager.InitializationTask != null && !_context.SolutionManager.InitializationTask.IsCompleted)
-            {
-                await _context.SolutionManager.InitializationTask;
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-            if (continuationToken != null)
+            if (_state.Results != null && _state.Results.HasMoreItems)
             {
-                return await _packageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
+                // only continue search for the search package feed, not the recommender.
+                return await _searchService.ContinueSearchAsync(cancellationToken);
             }
+            IReadOnlyCollection<string> targetFrameworks = await _context.GetSupportedFrameworksAsync();
 
-            return await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+            return await _searchService.SearchAsync(_context.Projects, _packageSources, targetFrameworks, _searchText, _searchFilter, _itemFilter, _context.IsSolution, _useRecommender, cancellationToken);
         }
 
-        public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
+        public async Task UpdateStateAndReportAsync(SearchResultContextInfo searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             // cache installed packages here for future use
             _installedPackages = await _context.GetInstalledPackagesAsync();
@@ -221,8 +239,10 @@ namespace NuGet.PackageManagement.UI
             // but for project view, get the allowed version range and pass it to package item view model to choose the latest version based on that
             if (_packageReferences == null && !_context.IsSolution)
             {
-                var tasks = _context.Projects
-                    .Select(project => project.GetInstalledPackagesAsync(cancellationToken));
+                IEnumerable<Task<IReadOnlyCollection<IPackageReferenceContextInfo>>> tasks = _context.Projects
+                    .Select(project => project.GetInstalledPackagesAsync(
+                        _context.ServiceBroker,
+                        cancellationToken).AsTask());
                 _packageReferences = (await Task.WhenAll(tasks)).SelectMany(p => p).Where(p => p != null);
             }
 
@@ -236,60 +256,151 @@ namespace NuGet.PackageManagement.UI
             _state = new PackageFeedSearchState();
         }
 
-        public IEnumerable<PackageItemListViewModel> GetCurrent()
+        public IEnumerable<PackageItemViewModel> GetCurrent()
         {
             if (_state.ItemsCount == 0)
             {
-                return Enumerable.Empty<PackageItemListViewModel>();
+                return Enumerable.Empty<PackageItemViewModel>();
             }
 
-            var listItems = _state.Results
-                .Select(metadata =>
+            var listItemViewModels = new List<PackageItemViewModel>(capacity: _state.ItemsCount);
+
+            foreach (PackageSearchMetadataContextInfo metadataContextInfo in _state.Results.PackageSearchItems)
+            {
+                VersionRange allowedVersions = VersionRange.All;
+                VersionRange versionOverride = null;
+
+                // get the allowed version range and pass it to package item view model to choose the latest version based on that
+                if (_packageReferences != null)
                 {
-                    VersionRange allowedVersions = VersionRange.All;
+                    IEnumerable<IPackageReferenceContextInfo> matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, metadataContextInfo.Identity.Id));
+                    VersionRange[] allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
+                    VersionRange[] versionOverrides = matchedPackageReferences.Select(r => r.VersionOverride).Where(v => v != null).ToArray();
 
-                    // get the allowed version range and pass it to package item view model to choose the latest version based on that
-                    if (_packageReferences != null)
+                    if (allowedVersionsRange.Length > 0)
                     {
-                        var matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, metadata.Identity.Id));
-                        var allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
-
-                        if (allowedVersionsRange.Length > 0)
-                        {
-                            allowedVersions = allowedVersionsRange[0];
-                        }
+                        allowedVersions = allowedVersionsRange[0];
                     }
 
-                    var listItem = new PackageItemListViewModel
+                    if (versionOverrides.Length > 0)
                     {
-                        Id = metadata.Identity.Id,
-                        Version = metadata.Identity.Version,
-                        IconUrl = metadata.IconUrl,
-                        Author = metadata.Authors,
-                        DownloadCount = metadata.DownloadCount,
-                        Summary = metadata.Summary,
-                        Versions = AsyncLazy.New(metadata.GetVersionsAsync),
-                        AllowedVersions = allowedVersions,
-                        PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
-                        DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
-                        PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) ?.PackageReader,
-                    };
+                        versionOverride = versionOverrides[0];
+                    }
+                }
 
+                var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
+
+                var transitiveToolTipMessage = string.Empty;
+                if (packageLevel == PackageLevel.Transitive)
+                {
+                    transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
+                }
+
+                ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
+
+                // Only load KnownOwners for the Browse tab and not for any Recommended packages.
+                // Recommended packages won't have KnownOwners metadata as they are not part of the search results.
+                if (_itemFilter == ContractItemFilter.All && !metadataContextInfo.IsRecommended)
+                {
+                    knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
+                }
+
+                var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
+                {
+                    Id = metadataContextInfo.Identity.Id,
+                    Version = metadataContextInfo.Identity.Version,
+                    IconUrl = metadataContextInfo.IconUrl,
+                    Owner = metadataContextInfo.Owners,
+                    KnownOwnerViewModels = knownOwnerViewModels,
+                    Author = metadataContextInfo.Authors,
+                    DownloadCount = metadataContextInfo.DownloadCount,
+                    Summary = metadataContextInfo.Summary,
+                    AllowedVersions = allowedVersions,
+                    VersionOverride = versionOverride,
+                    PrefixReserved = metadataContextInfo.PrefixReserved && !IsMultiSource,
+                    Recommended = metadataContextInfo.IsRecommended,
+                    RecommenderVersion = metadataContextInfo.RecommenderVersion,
+                    Vulnerabilities = metadataContextInfo.Vulnerabilities,
+                    Sources = _packageSources,
+                    PackagePath = metadataContextInfo.PackagePath,
+                    PackageFileService = _packageFileService,
+                    IncludePrerelease = _includePrerelease,
+                    PackageLevel = packageLevel,
+                    TransitiveToolTipMessage = transitiveToolTipMessage,
+                };
+
+                if (packageLevel == PackageLevel.TopLevel)
+                {
                     listItem.UpdatePackageStatus(_installedPackages);
+                }
+                else
+                {
+                    listItem.UpdateTransitivePackageStatus(metadataContextInfo.Identity.Version);
+                }
 
-                    if (!_context.IsSolution && _context.PackageManagerProviders.Any())
+                listItemViewModels.Add(listItem);
+            }
+
+            return listItemViewModels.ToArray();
+        }
+
+        private static ImmutableList<KnownOwnerViewModel> LoadKnownOwnerViewModels(PackageSearchMetadataContextInfo metadataContextInfo)
+        {
+            ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
+            if (metadataContextInfo.KnownOwners != null)
+            {
+                knownOwnerViewModels = metadataContextInfo.KnownOwners.Select(knownOwner => new KnownOwnerViewModel(knownOwner)).ToImmutableList();
+            }
+
+            return knownOwnerViewModels;
+        }
+
+        public void Dispose()
+        {
+            _searchService?.Dispose();
+
+            if (_serviceBroker != null)
+            {
+                _serviceBroker.AvailabilityChanged -= OnAvailabilityChanged;
+            }
+        }
+
+        private class PackageFeedSearchState : IItemLoaderState
+        {
+            private readonly SearchResultContextInfo _results;
+
+            public PackageFeedSearchState()
+            {
+            }
+
+            public PackageFeedSearchState(SearchResultContextInfo results)
+            {
+                _results = results ?? throw new ArgumentNullException(nameof(results));
+            }
+
+            public SearchResultContextInfo Results => _results;
+
+            public Guid? OperationId => _results?.OperationId;
+
+            public LoadingStatus LoadingStatus
+            {
+                get
+                {
+                    if (_results == null || SourceLoadingStatus == null || SourceLoadingStatus.Values == null)
                     {
-                        listItem.ProvidersLoader = AsyncLazy.New(
-                            () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                                _context.PackageManagerProviders,
-                                listItem.Id,
-                                _context.Projects[0]));
+                        // initial status when no load called before
+                        return LoadingStatus.Unknown;
                     }
 
-                    return listItem;
-                });
+                    return SourceLoadingStatus.Values.Aggregate();
+                }
+            }
 
-            return listItems.ToArray();
+            // returns the "raw" counter which is not the same as _results.Items.Count
+            // simply because it correlates to un-merged items
+            public int ItemsCount => _results?.PackageSearchItems.Count ?? 0;
+
+            public IReadOnlyDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceLoadingStatus;
         }
     }
 }

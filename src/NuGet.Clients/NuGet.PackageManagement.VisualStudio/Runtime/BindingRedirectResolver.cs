@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,12 +29,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (domain == null)
             {
-                throw new ArgumentNullException("domain");
+                throw new ArgumentNullException(nameof(domain));
             }
 
             return GetBindingRedirects(GetAssemblies(path, domain));
@@ -44,12 +44,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (assemblyPaths == null)
             {
-                throw new ArgumentNullException("assemblyPaths");
+                throw new ArgumentNullException(nameof(assemblyPaths));
             }
 
             if (domain == null)
             {
-                throw new ArgumentNullException("domain");
+                throw new ArgumentNullException(nameof(domain));
             }
 
             return GetBindingRedirects(GetAssemblies(assemblyPaths, domain));
@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (assemblies == null)
             {
-                throw new ArgumentNullException("assemblies");
+                throw new ArgumentNullException(nameof(assemblies));
             }
 
             // Evaluate the list eagerly

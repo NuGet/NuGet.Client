@@ -29,6 +29,7 @@ namespace NuGet.Test.Utility
         public ConcurrentQueue<string> DebugMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> VerboseMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> MinimalMessages { get; } = new ConcurrentQueue<string>();
+        public ConcurrentQueue<string> InformationMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> ErrorMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> WarningMessages { get; } = new ConcurrentQueue<string>();
 
@@ -56,6 +57,7 @@ namespace NuGet.Test.Utility
         public void LogInformation(string data)
         {
             Messages.Enqueue(data);
+            InformationMessages.Enqueue(data);
             DumpMessage("INFO ", data);
         }
 
@@ -164,7 +166,7 @@ namespace NuGet.Test.Utility
         {
             Log(level, data);
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void Log(ILogMessage message)
@@ -177,8 +179,7 @@ namespace NuGet.Test.Utility
         public async Task LogAsync(ILogMessage message)
         {
             LogMessages.Enqueue(message);
-
-            await LogAsync(message.Level, message.Message);
+            await LogAsync(message.Level, message.FormatWithCode());
         }
     }
 }

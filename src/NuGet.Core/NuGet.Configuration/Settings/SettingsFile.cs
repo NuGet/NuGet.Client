@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.IO;
 using System.Xml;
@@ -36,8 +38,15 @@ namespace NuGet.Configuration
         /// <summary>
         /// Defines if the settings file is considered a machine wide settings file
         /// </summary>
-        /// <remarks>Machine wide settings files cannot be eddited.</remarks>
+        /// <remarks>Machine wide settings files cannot be edited.</remarks>
         internal bool IsMachineWide { get; }
+
+        /// <summary>
+        /// Determines if the settings file is considered read-only from NuGet perspective.
+        /// </summary>
+        /// <remarks>User-wide configuration files imported from non-default locations are not considered editable.
+        /// Note that this is different from <see cref="IsMachineWide"/>. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config. </remarks>
+        internal bool IsReadOnly { get; }
 
         /// <summary>
         /// XML element for settings file
@@ -55,7 +64,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="directoryPath">path to the directory where the file is</param>
         public SettingsFile(string directoryPath)
-            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false)
+            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false, isReadOnly: false)
         {
         }
 
@@ -65,7 +74,7 @@ namespace NuGet.Configuration
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
         public SettingsFile(string directoryPath, string fileName)
-            : this(directoryPath, fileName, isMachineWide: false)
+            : this(directoryPath, fileName, isMachineWide: false, isReadOnly: false)
         {
         }
 
@@ -76,8 +85,9 @@ namespace NuGet.Configuration
         /// if it doesn't exist it will create one with the default configuration.</remarks>
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
-        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide</param>
-        public SettingsFile(string directoryPath, string fileName, bool isMachineWide)
+        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide.</param>
+        /// <param name="isReadOnly">specifies if the SettingsFile is read only. If the config is machine wide, the value passed here is irrelevant. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config.</param>
+        public SettingsFile(string directoryPath, string fileName, bool isMachineWide, bool isReadOnly)
         {
             if (string.IsNullOrEmpty(directoryPath))
             {
@@ -98,16 +108,30 @@ namespace NuGet.Configuration
             FileName = fileName;
             ConfigFilePath = Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
             IsMachineWide = isMachineWide;
+            IsReadOnly = IsMachineWide || isReadOnly;
 
-            XDocument config = null;
-            ExecuteSynchronized(() =>
+            if (NuGetEventSource.IsEnabled) TraceEvents.FileReadStart(ConfigFilePath, isMachineWide, isReadOnly);
+
+            try
             {
-                config = XmlUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath);
-            });
+                XDocument config = ExecuteSynchronized(() =>
+                {
+                    return FileSystemUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath);
+                });
 
-            _xDocument = config;
+                if (config.Root is null)
+                {
+                    throw new InvalidOperationException("The root element of the configuration file is null.");
+                }
 
-            _rootElement = new NuGetConfiguration(_xDocument.Root, origin: this);
+                _xDocument = config;
+
+                _rootElement = new NuGetConfiguration(_xDocument.Root, origin: this);
+            }
+            finally
+            {
+                if (NuGetEventSource.IsEnabled) TraceEvents.FileReadStop(ConfigFilePath, isMachineWide, isReadOnly);
+            }
         }
 
         /// <summary>
@@ -115,7 +139,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="sectionName">name to match sections</param>
         /// <returns>null if no section with the given name was found</returns>
-        public SettingSection GetSection(string sectionName)
+        public SettingSection? GetSection(string sectionName)
         {
             return _rootElement.GetSection(sectionName);
         }
@@ -150,9 +174,10 @@ namespace NuGet.Configuration
         {
             if (IsDirty)
             {
-                ExecuteSynchronized(() =>
+                _ = ExecuteSynchronized(() =>
                 {
                     FileSystemUtility.AddFile(ConfigFilePath, _xDocument.Save);
+                    return 0;
                 });
 
                 IsDirty = false;
@@ -166,9 +191,9 @@ namespace NuGet.Configuration
         /// It should be used only when intended. For most purposes you should be able to use
         /// GetSection(...) instead.
         /// </remarks>
-        internal bool TryGetSection(string sectionName, out SettingSection section)
+        internal bool TryGetSection(string sectionName, [NotNullWhen(true)] out SettingSection? section)
         {
-           return _rootElement.Sections.TryGetValue(sectionName, out section);
+            return _rootElement.Sections.TryGetValue(sectionName, out section);
         }
 
         internal void MergeSectionsInto(Dictionary<string, VirtualSettingSection> sectionsContainer)
@@ -182,13 +207,14 @@ namespace NuGet.Configuration
             return new XDocument(configurationElement.AsXNode());
         }
 
-        private void ExecuteSynchronized(Action ioOperation)
+        private T ExecuteSynchronized<T>(Func<T> ioOperation)
         {
+            T? result = default;
             ConcurrencyUtilities.ExecuteWithFileLocked(filePath: ConfigFilePath, action: () =>
             {
                 try
                 {
-                    ioOperation();
+                    result = ioOperation();
                 }
                 catch (InvalidOperationException e)
                 {
@@ -214,6 +240,42 @@ namespace NuGet.Configuration
                         string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
                 }
             });
+#pragma warning disable CS8603 // Possible null reference return.
+            // Code isn't designed to work will nullable checks enabled.
+            return result;
+#pragma warning restore CS8603 // Possible null reference return.
+        }
+
+        private static class TraceEvents
+        {
+            private const string EventNameFileRead = "SettingsFile/FileRead";
+
+            public static void FileReadStart(string configFilePath, bool isMachineWide, bool isReadOnly)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Configuration,
+                    Opcode = EventOpcode.Start,
+                };
+
+                NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
+            }
+
+            public static void FileReadStop(string configFilePath, bool isMachineWide, bool isReadOnly)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    ActivityOptions = EventActivityOptions.Detachable,
+                    Keywords = NuGetEventSource.Keywords.Configuration,
+                    Opcode = EventOpcode.Stop,
+                };
+
+                NuGetEventSource.Instance.Write(EventNameFileRead, eventOptions, new FileReadEventData(configFilePath, isMachineWide, isReadOnly));
+            }
+
+            [EventData]
+            private record struct FileReadEventData(string ConfigFilePath, bool IsMachineWide, bool IsReadOnly);
         }
     }
 }

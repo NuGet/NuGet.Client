@@ -36,8 +36,10 @@ namespace API.Test.Cmdlets
 
             if (string.IsNullOrEmpty(ProjectName))
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var services = ServiceLocator.GetComponent<IVsPackageInstallerServices>();
                 packages = services.GetInstalledPackages();
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             else
             {
@@ -59,8 +61,10 @@ namespace API.Test.Cmdlets
                 throw new ItemNotFoundException($"Project '{ProjectName}' is not found.");
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var services = ServiceLocator.GetComponent<IVsPackageInstallerServices>();
             return services.GetInstalledPackages(project);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

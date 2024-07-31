@@ -16,7 +16,7 @@ namespace NuGet.VisualStudio
         /// Initially it will be null and will be initialized to CPS JTF when there is CPS
         /// based project is being created.
         /// </summary>
-        private static Lazy<JoinableTaskFactory> _joinableTaskFactory;
+        private static Lazy<JoinableTaskFactory> LazyJoinableTaskFactory;
 
         /// <summary>
         /// Returns the static instance of JoinableTaskFactory set by SetJoinableTaskFactoryFromService.
@@ -29,35 +29,7 @@ namespace NuGet.VisualStudio
         {
             get
             {
-                return _joinableTaskFactory?.Value ?? GetThreadHelperJoinableTaskFactorySafe();
-            }
-        }
-
-        /// <summary>
-        /// Retrieve the CPS enabled JoinableTaskFactory for the current version of Visual Studio.
-        /// This overrides the default VsTaskLibraryHelper.ServiceInstance JTF.
-        /// </summary>
-        public static void SetJoinableTaskFactoryFromService(IProjectServiceAccessor projectServiceAccessor)
-        {
-            if (projectServiceAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(projectServiceAccessor));
-            }
-
-            if (_joinableTaskFactory == null)
-            {
-                _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
-                {
-                    // Use IProjectService for Visual Studio 2017
-                    var projectService = projectServiceAccessor.GetProjectService();
-                    return projectService.Services.ThreadingPolicy.JoinableTaskFactory;
-                },
-                // This option helps avoiding deadlocks caused by CPS trying to create ProjectServiceHost
-                // PublicationOnly mode lets parallel threads execute value factory method without
-                // being blocked on each other.
-                // It is correct behavior in this case as the value factory provides the same value
-                // each time it is called and Lazy is used just for caching the value for perf reasons.
-                LazyThreadSafetyMode.PublicationOnly);
+                return LazyJoinableTaskFactory?.Value ?? GetThreadHelperJoinableTaskFactorySafe();
             }
         }
 
@@ -66,7 +38,7 @@ namespace NuGet.VisualStudio
             Assumes.Present(joinableTaskFactory);
 
             // This is really just a test-hook
-            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() => joinableTaskFactory);
+            LazyJoinableTaskFactory = new Lazy<JoinableTaskFactory>(() => joinableTaskFactory);
         }
 
         private static JoinableTaskFactory GetThreadHelperJoinableTaskFactorySafe()

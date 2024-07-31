@@ -3,7 +3,7 @@ function CleanTempFolder()
     if (Test-Path $env:temp)
     {
         Write-Host 'Deleting temp folder'
-        rmdir $env:temp -Recurse -ErrorAction SilentlyContinue
+        Get-ChildItem $env:temp | Remove-Item -Recurse -ErrorAction SilentlyContinue
         Write-Host 'Done.'
     }
 }
@@ -57,15 +57,20 @@ function SetRegistryKey
     [string]$RegName,
     [Parameter(Mandatory=$true)]
     $ExpectedValue,
-    $FriendlyKeyName = "the provided registry key",
     [switch]$NeedAdmin)
 
     $currentValue = GetRegistryKey $RegKey $RegName
 
-    Write-Host "Current value is $currentValue"
+    $fullPath = Join-Path $RegKey $RegName
+
+    if (-not $currentValue) {
+        Write-Host "$fullPath is not already set"
+    } else {
+        Write-Host "Current value of $fullPath is '$currentValue'"
+    }
     if ($currentValue -eq $ExpectedValue)
     {
-        Write-Host -ForegroundColor Cyan "Registry settings for $FriendlyKeyName is already as desired."
+        Write-Host -ForegroundColor Cyan "Registry settings for $fullPath is already '$ExpectedValue'."
         return $true
     }
     else
@@ -81,6 +86,7 @@ function SetRegistryKey
         }
 
         New-ItemProperty -Path $RegKey -Name $RegName -Value $ExpectedValue -Force | Out-Null
+        Write-Host "$fullPath set to '$ExpectedValue'"
     }
 
     return $true

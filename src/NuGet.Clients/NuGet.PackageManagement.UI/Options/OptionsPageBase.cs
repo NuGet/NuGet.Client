@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,10 +9,10 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     [ComVisible(true)]
-    public abstract class OptionsPageBase : DialogPage, IServiceProvider
+    public abstract class OptionsPageBase : DialogPage
     {
         protected OptionsPageBase()
         {
@@ -32,9 +32,9 @@ namespace NuGet.Options
 
             // delay 5 milliseconds to give the Options dialog a chance to close itself
             var timer = new Timer
-                {
-                    Interval = 5
-                };
+            {
+                Interval = 5
+            };
             timer.Tick += OnTimerTick;
             timer.Start();
         }
@@ -45,7 +45,7 @@ namespace NuGet.Options
             timer.Stop();
             timer.Dispose();
 
-            var optionsPageActivator = ServiceLocator.GetInstance<IOptionsPageActivator>();
+            var optionsPageActivator = ServiceLocator.GetComponentModelService<IOptionsPageActivator>();
             if (optionsPageActivator != null)
             {
                 optionsPageActivator.NotifyOptionsDialogClosed();
@@ -62,11 +62,6 @@ namespace NuGet.Options
 
         public override void SaveSettingsToStorage()
         {
-        }
-
-        object IServiceProvider.GetService(Type serviceType)
-        {
-            return this.GetService(serviceType);
         }
     }
 }

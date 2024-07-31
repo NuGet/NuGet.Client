@@ -1,25 +1,18 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>NuGet's client configuration settings implementation.</Description>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
-    <TargetFramework />
+    <Description>NuGet's configuration settings implementation.</Description>
+    <NoWarn>$(NoWarn);CS1591;RS0041</NoWarn>
+    <TargetFrameworks Condition="'$(IsVsixBuild)' != 'true'">$(TargetFrameworksLibrary)</TargetFrameworks>
+    <TargetFramework Condition="'$(IsVsixBuild)' == 'true'">$(NETFXTargetFramework)</TargetFramework>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  
-  <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
-    <TargetFrameworks />
-    <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
-  </PropertyGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj" />
+    <ProjectReference Include="..\NuGet.Common\NuGet.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
@@ -28,10 +21,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' " />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -39,7 +32,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -47,6 +40,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.Commands.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.Configuration.Test" />
+    <InternalsVisibleTo Include="NuGet.Credentials.Test" />
+    <InternalsVisibleTo Include="NuGet.DependencyResolver.Core.Tests" />
+    <InternalsVisibleTo Include="NuGet.SolutionRestoreManager.Test" />
+    <InternalsVisibleTo Include="NuGet.VisualStudio.Implementation.Test" />
+    <InternalsVisibleTo Include="Test.Utility" />
+  </ItemGroup>
 </Project>

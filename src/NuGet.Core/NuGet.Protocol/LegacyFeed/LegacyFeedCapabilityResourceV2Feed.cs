@@ -22,12 +22,7 @@ namespace NuGet.Protocol
         private static readonly ConcurrentDictionary<string, Task<Capabilities>> CachedCapabilities
             = new ConcurrentDictionary<string, Task<Capabilities>>();
 
-        private const string EdmNS = "http://schemas.microsoft.com/ado/2006/04/edm";
         private const string MetadataUriFormat = "{0}/$metadata";
-
-        private static readonly XName _xnameEntityType = XName.Get("EntityType", EdmNS);
-        private static readonly XName _xnameProperty = XName.Get("Property", EdmNS);
-
 
         private readonly string _metadataUri;
         private readonly V2FeedParser _feedParser;

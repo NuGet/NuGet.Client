@@ -1,18 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using System.Text;
 using System.Windows;
-using System.Linq;
-using NuGet.PackageManagement.VisualStudio;
 using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for PreviewWindow.xaml
     /// </summary>
-    public partial class PreviewWindow : VsDialogWindow
+    public partial class PreviewWindow : DialogWindow
     {
         private bool _initialized;
         private INuGetUIContext _uiContext;
@@ -41,7 +42,7 @@ namespace NuGet.PackageManagement.UI
             DialogResult = false;
         }
 
-        private void OkButtonClicked(object sender, RoutedEventArgs e)
+        private void ApplyButtonClicked(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
         }

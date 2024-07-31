@@ -1,6 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using FluentAssertions;
+using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,7 +28,7 @@ namespace NuGet.Protocol.Tests
                 testModeEnabled: true);
 
             _output.WriteLine(userAgentString);
-            Assert.True(userAgentString.StartsWith(NuGetTestMode.NuGetTestClientName));
+            Assert.StartsWith(NuGetTestMode.NuGetTestClientName, userAgentString);
         }
 
         [Fact]
@@ -39,7 +41,7 @@ namespace NuGet.Protocol.Tests
                 testModeEnabled: false);
 
             _output.WriteLine(userAgentString);
-            Assert.True(userAgentString.StartsWith(UserAgentStringBuilder.DefaultNuGetClientName));
+            Assert.StartsWith(UserAgentStringBuilder.DefaultNuGetClientName, userAgentString);
         }
 
         [Fact]
@@ -52,19 +54,23 @@ namespace NuGet.Protocol.Tests
                 testModeEnabled: false);
 
             _output.WriteLine(userAgentString);
-            Assert.True(userAgentString.StartsWith("Dummy Test Client Name"));
+            Assert.StartsWith("Dummy Test Client Name", userAgentString);
         }
 
         [Fact]
-        public void UsesProvidedOSDescription()
+        public void AddsOSInfo()
         {
-            var osDescription = "OSName/OSVersion";
-            var builder = new UserAgentStringBuilder();
-            var userAgentString = builder.WithOSDescription(osDescription).Build();
-            var userAgentString2 = builder.WithOSDescription(osDescription).WithVisualStudioSKU("VS SKU/Version").Build();
+            var clientName = "clientName";
+            var clientVersion = MinClientVersionUtility.GetNuGetClientVersion().ToNormalizedString();
+            var os = UserAgentStringBuilder.GetOS();
+            var vs = "VS SKU/Version";
 
-            Assert.True(userAgentString.Contains($"({osDescription})"));
-            Assert.True(userAgentString2.Contains($"({osDescription}, VS SKU/Version)"));
+            var builder = new UserAgentStringBuilder(clientName);
+            var userAgentString = builder.Build();
+            var userAgentString2 = builder.WithVisualStudioSKU(vs).Build();
+
+            userAgentString.Should().Be($"{clientName}/{clientVersion} ({os})");
+            userAgentString2.Should().Be($"{clientName}/{clientVersion} ({os}, {vs})");
         }
 
         [Fact]
@@ -72,10 +78,10 @@ namespace NuGet.Protocol.Tests
         {
             var vsInfo = "VS SKU/Version";
             var builder = new UserAgentStringBuilder();
-            var userAgentString = builder.WithOSDescription("OSName/OSVersion").WithVisualStudioSKU(vsInfo).Build();
+            var userAgentString = builder.WithVisualStudioSKU(vsInfo).Build();
 
             _output.WriteLine(userAgentString);
-            Assert.True(userAgentString.Contains($"(OSName/OSVersion, {vsInfo})"));
+            Assert.Contains($", {vsInfo})", userAgentString);
         }
 
         [Fact]
@@ -83,18 +89,14 @@ namespace NuGet.Protocol.Tests
         {
             var builder = new UserAgentStringBuilder();
 
-            var userAgentString = builder.WithOSDescription("OSName/OSVersion").WithVisualStudioSKU("VS SKU/Version").Build();
-            var userAgentString2 = builder.WithOSDescription("OSName/OSVersion").Build();
-            var userAgentString3 = builder.WithVisualStudioSKU("VS SKU/Version").Build();
-            var userAgentString4 = builder.Build();
+            var userAgentString = builder.WithVisualStudioSKU("VS SKU/Version").Build();
+            var userAgentString2 = builder.Build();
 
             _output.WriteLine("NuGet client version: " + builder.NuGetClientVersion);
             Assert.NotNull(builder.NuGetClientVersion);
             Assert.NotEmpty(builder.NuGetClientVersion);
-            Assert.True(userAgentString.Contains(builder.NuGetClientVersion));
-            Assert.True(userAgentString2.Contains(builder.NuGetClientVersion));
-            Assert.True(userAgentString3.Contains(builder.NuGetClientVersion));
-            Assert.True(userAgentString4.Contains(builder.NuGetClientVersion));
+            Assert.Contains(builder.NuGetClientVersion, userAgentString);
+            Assert.Contains(builder.NuGetClientVersion, userAgentString2);
         }
     }
 }

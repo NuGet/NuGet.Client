@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -34,7 +34,7 @@ namespace NuGet.CommandLine.Test.Caching
             {
                 var result = Execute(context, "locals http-cache -list", debug: false);
 
-                var stdout = result.Item2.Trim();
+                var stdout = result.Output.Trim();
 
                 // Example:
                 //   stdout = http-cache: C:\Users\jver\AppData\Local\NuGet\v3-cache
@@ -95,7 +95,6 @@ namespace NuGet.CommandLine.Test.Caching
                 context.WorkingPath,
                 args,
                 timeOutInMilliseconds: timeout,
-                waitForExit: true,
                 environmentVariables: environmentVariables);
         }
 
@@ -180,10 +179,9 @@ namespace NuGet.CommandLine.Test.Caching
                             var helpResult = CommandRunner.Run(
                                 thisPath,
                                 ".",
-                                "help",
-                                waitForExit: true);
+                                "help");
 
-                            if (helpResult.Item1 == 0)
+                            if (helpResult.ExitCode == 0)
                             {
                                 return thisPath;
                             }

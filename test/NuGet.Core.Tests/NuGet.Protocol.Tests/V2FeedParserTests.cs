@@ -19,6 +19,7 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class V2FeedParserTests
     {
         [Fact]
@@ -274,7 +275,7 @@ namespace NuGet.Protocol.Tests
 
             var responses = new Dictionary<string, string>();
             responses.Add(
-                serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure%20%2B''%20b%20'" + 
+                serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure%20%2B''%20b%20'" +
                 "&targetFramework='portable-net45%2Bwin8'&includePrerelease=false&$skip=0&$top=1&semVerLevel=2.0.0",
                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.AzureSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
@@ -624,7 +625,7 @@ namespace NuGet.Protocol.Tests
 
             Assert.Equal(
                 "Failed to fetch results from V2 feed at '" + serviceAddress + "FindPackagesById()?id='xunit'&semVerLevel=2.0.0' " +
-                "with following message : " + exception.InnerException?.Message ,
+                "with following message : " + exception.InnerException?.Message,
                 exception.Message);
         }
 
@@ -659,7 +660,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(DateTimeOffset.Parse("2016-04-06T12:46:30.942Z"), latest.Published.Value);
             Assert.Equal(DateTimeOffset.Parse("2016-04-06T12:46:30.942Z"), latest.Created.Value);
             Assert.Equal(DateTimeOffset.Parse("2017-04-06T12:46:30.942Z"), latest.LastEdited.Value);
-            Assert.Equal("PackageB:null|EntityFramework:6.1.3|PackageC:3.7.0.15", latest.Dependencies);
+            Assert.Equal("PackageB:null|EntityFramework:6.1.3|PackageC:3.7.0.15|PackageD:3.14.15:null", latest.Dependencies);
             Assert.Equal(1, latest.DependencySets.Count());
             Assert.Equal(VersionRange.All, latest.DependencySets.Single().Packages.Where(p => p.Id == "PackageB").Single().VersionRange);
             Assert.Equal("any", latest.DependencySets.First().TargetFramework.GetShortFolderName());
@@ -767,10 +768,10 @@ namespace NuGet.Protocol.Tests
             int skip = 0;
             int take = 30;
 
-            var v2FeedPage = await parser.GetSearchPageAsync("WindowsAzure.Storage",filter, skip, take, NullLogger.Instance, CancellationToken.None);
+            var v2FeedPage = await parser.GetSearchPageAsync("WindowsAzure.Storage", filter, skip, take, NullLogger.Instance, CancellationToken.None);
             Assert.Equal(take, v2FeedPage.Items.Count);
-            
-            var SecondV2FeedPage = await parser.GetSearchPageAsync("WindowsAzure.Storage", filter, skip+take, take, NullLogger.Instance, CancellationToken.None);
+
+            var SecondV2FeedPage = await parser.GetSearchPageAsync("WindowsAzure.Storage", filter, skip + take, take, NullLogger.Instance, CancellationToken.None);
             Assert.Equal(17, SecondV2FeedPage.Items.Count);
         }
 
@@ -781,12 +782,12 @@ namespace NuGet.Protocol.Tests
             var serviceAddress = ProtocolUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))"+
-                "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)"+
+            responses.Add(serviceAddress + "Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))" +
+                "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)" +
                 "%20and%20substringof('%20WindowsAzure.Storage%20',tolower(Tags))))%20and%20IsLatestVersion&$skip=0&$top=30&semVerLevel=2.0.0",
                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage30Entries.xml", GetType()));
 
-            responses.Add(serviceAddress +"Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))" +
+            responses.Add(serviceAddress + "Packages()?$filter=((((Id%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Id)))" +
                 "%20or%20((Description%20ne%20null)%20and%20substringof('WindowsAzure.Storage',tolower(Description))))%20or%20((Tags%20ne%20null)" +
                 "%20and%20substringof('%20WindowsAzure.Storage%20',tolower(Tags))))%20and%20IsLatestVersion&$skip=30&$top=30&semVerLevel=2.0.0",
                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.WindowsAzureStorageSearchPackage17Entries.xml", GetType()));

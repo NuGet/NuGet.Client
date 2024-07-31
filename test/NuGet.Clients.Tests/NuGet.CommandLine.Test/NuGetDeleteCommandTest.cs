@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -34,11 +35,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    String.Join(" ", args),
-                    waitForExit: true);
+                    String.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(File.Exists(packageFileName));
             }
         }
@@ -62,11 +62,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    String.Join(" ", args),
-                    waitForExit: true);
+                    String.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(File.Exists(packageFileName));
             }
         }
@@ -92,11 +91,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    String.Join(" ", args),
-                    waitForExit: true);
+                    String.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 //The specific version folder should be gone.
                 Assert.False(Directory.Exists(packageVersionFolder.FullName));
             }
@@ -124,11 +122,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    String.Join(" ", args),
-                    waitForExit: true);
+                    String.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(Directory.Exists(packageVersionFolder.FullName));
             }
         }
@@ -160,11 +157,10 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    $"delete testPackage1 1.1.0 -Source {source} -NonInteractive",
-                    waitForExit: true);
+                    $"delete testPackage1 1.1.0 -Source {source} -NonInteractive");
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.False(File.Exists(packageFileName));
             }
         }
@@ -185,20 +181,23 @@ namespace NuGet.CommandLine.Test
                     deleteRequestIsCalled = true;
                     return HttpStatusCode.OK;
                 });
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                    "-Source", server.Uri + "nuget", "-NonInteractive", "-ConfigFile " + configFilePath };
 
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.Equal(0, r.ExitCode);
                 Assert.True(deleteRequestIsCalled);
             }
         }
@@ -223,6 +222,10 @@ namespace NuGet.CommandLine.Test
                 });
 
                 server.Start();
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 var args = new[] {
@@ -232,20 +235,20 @@ namespace NuGet.CommandLine.Test
                     testApiKey,
                     "-Source",
                     server.Uri + "nuget",
-                    "-NonInteractive"
+                    "-NonInteractive",
+                    "-ConfigFile " + configFilePath
                 };
 
                 var result = CommandRunner.Run(
                     NuGetExePath,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Output);
             }
         }
 
@@ -269,6 +272,10 @@ namespace NuGet.CommandLine.Test
                 });
 
                 server.Start();
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
 
                 // Act
                 var args = new[]
@@ -281,20 +288,20 @@ namespace NuGet.CommandLine.Test
                     testApiKey,
                     "-Source",
                     server.Uri + "nuget",
-                    "-NonInteractive"
+                    "-NonInteractive",
+                    "-ConfigFIle " + configFilePath
                 };
 
                 var result = CommandRunner.Run(
                     NuGetExePath,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 server.Stop();
 
                 // Assert
-                Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Output);
             }
         }
 
@@ -304,59 +311,55 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_WithApiKeyFromConfig(string configKeyFormatString)
         {
             // Arrange
-            Util.ClearWebCache();
             var testApiKey = Guid.NewGuid().ToString();
 
-            using (var testFolder = TestDirectory.Create())
+            using (var pathContext = new SimpleTestPathContext())
+            using (var server = new MockServer())
             {
-                using (var server = new MockServer())
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                Util.AddFlatContainerResource(indexJson, server);
+                Util.AddPublishResource(indexJson, server);
+
+                server.Get.Add("/index.json", r =>
                 {
-                    // Server setup
-                    var indexJson = Util.CreateIndexJson();
-
-                    Util.AddFlatContainerResource(indexJson, server);
-                    Util.AddPublishResource(indexJson, server);
-
-                    server.Get.Add("/index.json", r =>
+                    return new Action<HttpListenerResponse>(response =>
                     {
-                        return new Action<HttpListenerResponse>(response =>
-                        {
-                            response.StatusCode = 200;
-                            response.ContentType = "text/javascript";
-                            MockServer.SetResponseContent(response, indexJson.ToString());
-                        });
+                        response.StatusCode = 200;
+                        response.ContentType = "text/javascript";
+                        MockServer.SetResponseContent(response, indexJson.ToString());
                     });
+                });
 
-                    server.Delete.Add("/push/testPackage1/1.1", r =>
+                server.Delete.Add("/push/testPackage1/1.1", r =>
+                {
+                    var h = r.Headers[ApiKeyHeader];
+                    if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
                     {
-                        var h = r.Headers[ApiKeyHeader];
-                        if (!string.Equals(h, testApiKey, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return HttpStatusCode.Unauthorized;
-                        }
+                        return HttpStatusCode.Unauthorized;
+                    }
+                    return HttpStatusCode.OK;
+                });
 
-                        return HttpStatusCode.OK;
-                    });
+                server.Start();
 
-                    server.Start();
+                // Add the source and apikeys into NuGet.Config file
+                var settings = pathContext.Settings;
+                SimpleTestSettingsContext.RemoveSource(settings.XML, "source");
 
-                    var configKey = string.Format(configKeyFormatString, server.Uri);
+                var source = server.Uri + "index.json";
+                var packageSourcesSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "packageSources");
+                SimpleTestSettingsContext.AddEntry(packageSourcesSection, $"MockServer", source, "AllowInsecureConnections", "true");
 
-                    var config = $@"<?xml version='1.0' encoding='utf-8'?>
-<configuration>
-    <packageSources>
-        <add key='MockServer' value='{server.Uri}index.json' protocolVersion='3' />
-    </packageSources>
-    <apikeys>
-        <add key='{configKey}' value='{Configuration.EncryptionUtility.EncryptString(testApiKey)}' />
-    </apikeys>
-</configuration>";
+                var configKey = string.Format(configKeyFormatString, server.Uri);
+                var configValue = Configuration.EncryptionUtility.EncryptString(testApiKey);
+                var apikeysSection = SimpleTestSettingsContext.GetOrAddSection(settings.XML, "apikeys");
+                SimpleTestSettingsContext.AddEntry(apikeysSection, configKey, configValue);
+                settings.Save();
 
-                    var configFileName = Path.Combine(testFolder, "nuget.config");
-                    File.WriteAllText(configFileName, config);
-
-                    // Act
-                    var args = new[]
+                // Act
+                var args = new[]
                     {
                         "delete",
                         "testPackage1",
@@ -364,22 +367,20 @@ namespace NuGet.CommandLine.Test
                         "-Source",
                         "MockServer",
                         "-ConfigFile",
-                        configFileName,
+                        pathContext.NuGetConfig,
                         "-NonInteractive"
                     };
 
-                    var result = CommandRunner.Run(
-                        NuGetExePath,
-                        Directory.GetCurrentDirectory(),
-                        string.Join(" ", args),
-                        waitForExit: true);
+                var result = CommandRunner.Run(
+                    NuGetExePath,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
 
-                    server.Stop();
+                server.Stop();
 
-                    // Assert
-                    Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Item2);
-                }
+                // Assert
+                Assert.True(0 == result.ExitCode, $"{result.Output} {result.Errors}");
+                Assert.Contains("testPackage1 1.1.0 was deleted successfully.", result.Output);
             }
         }
 
@@ -393,7 +394,10 @@ namespace NuGet.CommandLine.Test
             using (var server = new MockServer())
             {
                 server.Start();
-
+                using SimpleTestPathContext pathContext = new SimpleTestPathContext();
+                pathContext.Settings.AddSource("http-feed", $"{server.Uri}nuget", allowInsecureConnectionsValue: "true");
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(pathContext.WorkingDirectory, configFileName);
                 server.Delete.Add("/nuget/testPackage1/1.1", request => HttpStatusCode.OK);
 
                 server.AddServerWarnings(serverWarnings);
@@ -401,20 +405,19 @@ namespace NuGet.CommandLine.Test
                 // Act
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                    "-Source", server.Uri + "nuget", "-NonInteractive", "-ConfigFile " + configFilePath };
 
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Assert
                 foreach (var serverWarning in serverWarnings)
                 {
                     if (!string.IsNullOrEmpty(serverWarning))
                     {
-                        Assert.Contains(serverWarning, r.Item2);
+                        Assert.Contains(serverWarning, r.Output);
                     }
                 }
             }
@@ -426,6 +429,97 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_Failure_InvalidArguments(string args)
         {
             Util.TestCommandInvalidArguments(args);
+        }
+
+        [Fact]
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsFalse_Errors()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using (var server = new MockServer())
+            {
+                server.Start();
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    return HttpStatusCode.OK;
+                });
+
+                using SimpleTestPathContext config = new SimpleTestPathContext();
+
+                // Arrange the NuGet.Config file
+                string nugetConfigContent =
+    $@"<configuration>
+    <packageSources>
+        <clear />
+        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""False"" />
+    </packageSources>
+</configuration>";
+                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+                    "-Source", server.Uri + "nuget",
+                    "-ConfigFile", config.NuGetConfig, "-NonInteractive" };
+
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains($"{server.Uri}nuget", result.Errors);
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_WhenDeleteWithHttpSourceAndAllowInsecureConnectionsTrue_Succeeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Arrange
+            using (var server = new MockServer())
+            {
+                server.Start();
+                bool deleteRequestIsCalled = false;
+
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    deleteRequestIsCalled = true;
+                    return HttpStatusCode.OK;
+                });
+
+                using SimpleTestPathContext config = new SimpleTestPathContext();
+
+                // Arrange the NuGet.Config file
+                string nugetConfigContent =
+    $@"<configuration>
+    <packageSources>
+        <clear />
+        <add key='http-feed' value='{server.Uri}nuget' protocalVersion=""3"" allowInsecureConnections=""True"" />
+    </packageSources>
+</configuration>";
+                File.WriteAllText(config.NuGetConfig, nugetConfigContent);
+
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+                    "-Source", server.Uri + "nuget",
+                    "-ConfigFile", config.NuGetConfig, "-NonInteractive" };
+
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args));
+
+                // Assert
+                Assert.Equal(0, result.ExitCode);
+                Assert.True(deleteRequestIsCalled);
+                Assert.DoesNotContain($"{server.Uri}nuget", result.Errors);
+            }
         }
 
         public static IEnumerable<object[]> ServerWarningData

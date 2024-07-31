@@ -14,7 +14,7 @@ namespace NuGet.VisualStudio.Common.Test
         private const string _testMessage = "test log message";
         private const NuGetLogCode _testCode = NuGetLogCode.NU1000;
         private const string _testCodeString = "NU1000";
-        private const string _testHelpLink = "https://msdn.microsoft.com/query/dev15.query?appId=Dev15IDEF1&l=en-US&k=k(NU1000)&rd=true";        
+        private const string _testHelpLink = "https://docs.microsoft.com/nuget/reference/errors-and-warnings/NU1000";
         private const string _testProjectPath = @"unit\test\project.csproj";
         private const string _testProjectName = "project";
         private const int _testLineNumber = 100;

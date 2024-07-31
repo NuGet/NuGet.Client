@@ -1,11 +1,11 @@
 using System;
 using System.Net;
 using System.Security;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Credentials;
-using System.Threading;
 using NuGet.Configuration;
+using NuGet.Credentials;
 
 namespace NuGet.CommandLine
 {
@@ -14,7 +14,7 @@ namespace NuGet.CommandLine
         public ConsoleCredentialProvider(IConsole console)
         {
             Console = console;
-            Id = $"{typeof (ConsoleCredentialProvider).Name}_{Guid.NewGuid()}";
+            Id = $"{typeof(ConsoleCredentialProvider).Name}_{Guid.NewGuid()}";
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace NuGet.CommandLine
                 return Task.FromResult(
                     new CredentialResponse(CredentialStatus.ProviderNotApplicable));
             }
-            
+
             switch (type)
             {
                 case CredentialRequestType.Proxy:

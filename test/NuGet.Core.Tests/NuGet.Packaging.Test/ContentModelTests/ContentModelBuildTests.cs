@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 using Xunit;
 
-namespace NuGet.Client.Test
+namespace NuGet.Packaging.Test.ContentModelTests
 {
     public class ContentModelBuildTests
     {
@@ -119,7 +119,8 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.MSBuildFiles);
+            List<ContentItemGroup> groups = new();
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, groups);
 
             // Assert
             Assert.Equal(1, groups.Count());
@@ -145,7 +146,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.MSBuildFiles)
+            List<ContentItemGroup> itemGroups = new();
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
+            var groups = itemGroups
                 .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName())
                 .ToList();
 
@@ -183,7 +186,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var groups = collection.FindItemGroups(conventions.Patterns.MSBuildFiles)
+            List<ContentItemGroup> itemGroups = new();
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, itemGroups);
+            var groups = itemGroups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .ToList();
 
@@ -206,7 +211,9 @@ namespace NuGet.Client.Test
             });
 
             // Act
-            var framework = collection.FindItemGroups(conventions.Patterns.MSBuildFiles)
+            List<ContentItemGroup> groups = new();
+            collection.PopulateItemGroups(conventions.Patterns.MSBuildFiles, groups);
+            var framework = groups
                 .Select(group => ((NuGetFramework)group.Properties["tfm"]))
                 .Single();
 

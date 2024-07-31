@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace NuGet.Frameworks
@@ -9,12 +11,7 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Creates a table of compatible frameworks.
     /// </summary>
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    class CompatibilityTable
+    public class CompatibilityTable
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly IFrameworkCompatibilityProvider _compat;
@@ -30,9 +27,13 @@ namespace NuGet.Frameworks
 
         public CompatibilityTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
         {
+            if (frameworks is null) throw new ArgumentNullException(nameof(frameworks));
+            if (mappings is null) throw new ArgumentNullException(nameof(mappings));
+            if (compat is null) throw new ArgumentNullException(nameof(compat));
+
             _compat = compat;
             _mappings = mappings;
-            _table = GetTable(frameworks, _mappings, _compat);
+            _table = GetTable(frameworks, _compat);
             _reducer = new FrameworkReducer(_mappings, _compat);
         }
 
@@ -49,6 +50,8 @@ namespace NuGet.Frameworks
         /// </summary>
         public IEnumerable<NuGetFramework> GetNearest(NuGetFramework framework)
         {
+            if (framework is null) throw new ArgumentNullException(nameof(framework));
+
             // start with everything compatible with the framework
             var allCompatible = _table.Keys.Where(f => _compat.IsCompatible(framework, f));
 
@@ -58,10 +61,9 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Returns the list of all frameworks compatible with the given framework
         /// </summary>
-        public bool TryGetCompatible(NuGetFramework framework, out IEnumerable<NuGetFramework> compatible)
+        public bool TryGetCompatible(NuGetFramework framework, [NotNullWhen(true)] out IEnumerable<NuGetFramework>? compatible)
         {
-            HashSet<NuGetFramework> frameworks = null;
-            if (_table.TryGetValue(framework, out frameworks))
+            if (_table.TryGetValue(framework, out HashSet<NuGetFramework>? frameworks))
             {
                 compatible = new HashSet<NuGetFramework>(frameworks);
                 return true;
@@ -71,7 +73,7 @@ namespace NuGet.Frameworks
             return false;
         }
 
-        private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> GetTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
+        private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> GetTable(IEnumerable<NuGetFramework> frameworks, IFrameworkCompatibilityProvider compat)
         {
             // get the distinct set of frameworks, ignoring all special frameworks like Any, and Unsupported
             var input = new HashSet<NuGetFramework>(frameworks.Where(f => f.IsSpecificFramework));

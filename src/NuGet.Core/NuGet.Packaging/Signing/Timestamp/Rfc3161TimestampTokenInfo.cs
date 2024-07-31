@@ -112,8 +112,11 @@ namespace NuGet.Packaging.Signing
         {
             var nonce = (byte[])Decoded.Nonce?.Clone();
 
-            // Convert from big endian to little endian.
-            Array.Reverse(nonce);
+            if (nonce != null)
+            {
+                // Convert from big endian to little endian.
+                Array.Reverse(nonce);
+            }
 
             return nonce;
         }

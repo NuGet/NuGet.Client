@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
@@ -41,11 +42,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
         protected override async Task<string> GetMSBuildProjectExtensionsPathAsync()
         {
-            var msbuildProjectExtensionsPath = await ProjectServices.BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+#pragma warning disable CS0618 // Type or member is obsolete
+            // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
+            var msbuildProjectExtensionsPath = _vsProjectAdapter.BuildProperties.GetPropertyValueWithDteFallback(ProjectBuildProperties.MSBuildProjectExtensionsPath);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (string.IsNullOrEmpty(msbuildProjectExtensionsPath))
             {
                 throw new InvalidDataException(string.Format(
+                    CultureInfo.CurrentCulture,
                     Strings.MSBuildPropertyNotFound,
                     ProjectBuildProperties.MSBuildProjectExtensionsPath,
                     MSBuildProjectPath));
@@ -69,17 +75,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 var jsonTargetFramework = targetFramework as NuGetFramework;
                 if (IsUAPFramework(jsonTargetFramework))
                 {
-                    var platformMinVersionString = await _vsProjectAdapter
+#pragma warning disable CS0618 // Type or member is obsolete
+                    // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
+                    var platformMinVersionString = _vsProjectAdapter
                         .BuildProperties
-                        .GetPropertyValueAsync(ProjectBuildProperties.TargetPlatformMinVersion);
+                        .GetPropertyValueWithDteFallback(ProjectBuildProperties.TargetPlatformMinVersion);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     var platformMinVersion = !string.IsNullOrEmpty(platformMinVersionString)
                         ? new Version(platformMinVersionString)
                         : null;
 
-                    var targetFrameworkMonikerString = await _vsProjectAdapter
+#pragma warning disable CS0618 // Type or member is obsolete
+                    // Need to validate no project systems get this property via DTE, and if so, switch to GetPropertyValue
+                    var targetFrameworkMonikerString = _vsProjectAdapter
                         .BuildProperties
-                        .GetPropertyValueAsync(ProjectBuildProperties.TargetFrameworkMoniker);
+                        .GetPropertyValueWithDteFallback(ProjectBuildProperties.TargetFrameworkMoniker);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     var targetFrameworkMoniker = !string.IsNullOrWhiteSpace(targetFrameworkMonikerString)
                         ? NuGetFramework.Parse(targetFrameworkMonikerString)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace NuGet.Commands.Test
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
-                spec.RestoreMetadata.OutputPath = project.OutputPath;
+                spec.RestoreMetadata.OutputPath = project.ProjectExtensionsPath;
                 spec.RestoreMetadata.ProjectPath = project.ProjectPath;
 
                 projects.Add(project);
@@ -74,7 +74,7 @@ namespace NuGet.Commands.Test
             spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             spec.RestoreMetadata.OriginalTargetFrameworks.Add(framework);
             spec.Name = projectName;
-            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName));
+            spec.RestoreMetadata.TargetFrameworks.Add(new ProjectRestoreMetadataFrameworkInfo(targetFrameworkInfo.FrameworkName) { TargetAlias = framework });
 
             return spec;
         }

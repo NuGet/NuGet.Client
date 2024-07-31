@@ -29,12 +29,13 @@ namespace NuGet.Packaging
         bool Serviceable { get; }
         string Copyright { get; }
         string Icon { get; }
+        string Readme { get; }
 
         /// <summary>
         /// Specifies assemblies from GAC that the package depends on.
         /// </summary>
         IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; }
-        
+
         /// <summary>
         /// Returns sets of References specified in the manifest.
         /// </summary>

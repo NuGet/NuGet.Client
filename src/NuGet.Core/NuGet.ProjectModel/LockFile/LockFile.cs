@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -27,6 +26,7 @@ namespace NuGet.ProjectModel
         public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
         public IList<IAssetsLogMessage> LogMessages { get; set; } = new List<IAssetsLogMessage>();
         public PackageSpec PackageSpec { get; set; }
+        public IList<CentralTransitiveDependencyGroup> CentralTransitiveDependencyGroups { get; set; } = new List<CentralTransitiveDependencyGroup>();
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -104,6 +104,17 @@ namespace NuGet.ProjectModel
                  string.Equals(runtimeIdentifier, t.RuntimeIdentifier, StringComparison.OrdinalIgnoreCase))));
         }
 
+        public LockFileTarget GetTarget(string frameworkAlias, string runtimeIdentifier)
+        {
+            var framework = PackageSpec.TargetFrameworks.FirstOrDefault(tfi => tfi.TargetAlias.Equals(frameworkAlias, StringComparison.OrdinalIgnoreCase))?.FrameworkName;
+
+            if (framework != null)
+            {
+                return GetTarget(framework, runtimeIdentifier);
+            }
+            return null;
+        }
+
         public LockFileLibrary GetLibrary(string name, NuGetVersion version)
         {
             return Libraries.FirstOrDefault(l =>
@@ -129,7 +140,8 @@ namespace NuGet.ProjectModel
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && PackageFolders.SequenceEqual(other.PackageFolders)
                 && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
-                && LogsEqual(other.LogMessages);
+                && LogsEqual(other.LogMessages)
+                && CentralTransitiveDependencyGroups.OrderedEquals(other.CentralTransitiveDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase);
         }
 
         private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)
@@ -156,7 +168,7 @@ namespace NuGet.ProjectModel
 
             var length = orderedLogMessages.Length;
 
-            for (var i=0; i<length; i++)
+            for (var i = 0; i < length; i++)
             {
                 equals &= orderedLogMessages[i].Equals(orderedOtherLogMessages[i]);
 
@@ -166,7 +178,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return equals;               
+            return equals;
         }
 
         public override bool Equals(object obj)
@@ -179,52 +191,15 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
 
             combiner.AddObject(Version);
-
-            HashProjectFileDependencyGroups(combiner, ProjectFileDependencyGroups);
-
-            foreach (var item in Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(item);
-            }
-
-            HashLockFileTargets(combiner, Targets);
-
-            foreach (var item in PackageFolders)
-            {
-                combiner.AddObject(item);
-            }
-
+            combiner.AddUnorderedSequence(ProjectFileDependencyGroups);
+            combiner.AddUnorderedSequence(Libraries);
+            combiner.AddUnorderedSequence(Targets);
+            combiner.AddSequence(PackageFolders); // ordered
             combiner.AddObject(PackageSpec);
-
-            HashLogMessages(combiner, LogMessages);
+            combiner.AddUnorderedSequence(LogMessages);
+            combiner.AddUnorderedSequence(CentralTransitiveDependencyGroups);
 
             return combiner.CombinedHash;
-        }
-
-        private static void HashLockFileTargets(HashCodeCombiner combiner, IList<LockFileTarget> targets)
-        {
-            foreach (var item in targets.OrderBy(target => target.Name, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(item);
-            }
-        }
-
-        private static void HashProjectFileDependencyGroups(HashCodeCombiner combiner, IList<ProjectFileDependencyGroup> groups)
-        {
-            foreach (var item in groups.OrderBy(
-                group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(item);
-            }
-        }
-
-        private static void HashLogMessages(HashCodeCombiner combiner, IList<IAssetsLogMessage> logMessages)
-        {
-            foreach (var item in logMessages.OrderBy(
-                logMessage => @logMessage.Message, StringComparer.Ordinal))
-            {
-                combiner.AddObject(item);
-            }
         }
     }
 }

@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Common;
-using NuGet.Protocol.Core.Types;
+using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
@@ -27,15 +28,21 @@ namespace NuGet.Commands
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
-
-            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
+            PackageSource packageSource = CommandRunnerUtility.GetOrCreatePackageSource(sourceProvider, source);
+            // Throw an error if an http source is used without setting AllowInsecureConnections
+            if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_HttpSource_Single, "delete", packageSource.Source));
+            }
+            var packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, packageSource, CancellationToken.None);
 
             await packageUpdateResource.Delete(
                 packageId,
                 packageVersion,
-                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source, defaultApiKey: null, isSymbolApiKey: false),
+                endpoint => apiKey ?? CommandRunnerUtility.GetApiKey(settings, endpoint, source),
                 desc => nonInteractive || confirmFunc(desc),
                 noServiceEndpoint,
+                packageSource.AllowInsecureConnections,
                 logger);
         }
     }

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -25,9 +24,9 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="context">Context used to create a new project instance.</param>
         /// <param name="forceProjectType">Flag to control project type preference. <code>true</code> indicates provider is to create a project regardless of providers order limitations.</param>
         /// <returns>New instance if instantiation succeeds, null otherwise.</returns>
-        Task<NuGetProject> TryCreateNuGetProjectAsync(
-            IVsProjectAdapter project, 
-            ProjectProviderContext context, 
+        NuGetProject TryCreateNuGetProject(
+            IVsProjectAdapter project,
+            ProjectProviderContext context,
             bool forceProjectType);
     }
 }

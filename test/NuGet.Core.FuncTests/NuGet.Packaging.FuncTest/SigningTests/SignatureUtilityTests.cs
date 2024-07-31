@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -21,12 +21,14 @@ namespace NuGet.Packaging.FuncTest.SigningTests
     public class SignatureUtilityTests
     {
         private readonly SigningTestFixture _fixture;
+        private const int SHA1HashLength = 20;
 
         public SignatureUtilityTests(SigningTestFixture fixture)
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
+#if IS_DESKTOP
         [Fact]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
         {
@@ -69,6 +71,105 @@ namespace NuGet.Packaging.FuncTest.SigningTests
 
         [Theory]
         [InlineData(SigningCertificateUsage.V1)]
+        public async Task GetTimestampCertificateChain_WithShortEssCertIdCertificateHash_Throws(
+            SigningCertificateUsage signingCertificateUsage)
+        {
+            ISigningTestServer testServer = await _fixture.GetSigningTestServerAsync();
+            CertificateAuthority rootCa = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions()
+            {
+                SigningCertificateUsage = signingCertificateUsage,
+                SigningCertificateV1Hash = new byte[SHA1HashLength - 1]
+            };
+            TimestampService timestampService = TimestampService.Create(rootCa, options);
+
+            using (testServer.RegisterResponder(timestampService))
+            {
+                var nupkg = new SimpleTestPackageContext();
+
+                using (var certificate = new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert))
+                using (var directory = TestDirectory.Create())
+                {
+                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                        certificate,
+                        nupkg,
+                        directory,
+                        timestampService.Url);
+
+                    using (FileStream stream = File.OpenRead(signedPackagePath))
+                    using (var reader = new PackageArchiveReader(stream))
+                    {
+                        PrimarySignature signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
+
+                        var exception = Assert.Throws<SignatureException>(
+                            () => SignatureUtility.GetTimestampCertificateChain(signature));
+
+                        Assert.Equal(
+                            "A certificate referenced by the signing-certificate attribute could not be found.",
+                            exception.Message);
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(SigningCertificateUsage.V1)]
+        public async Task GetTimestampCertificateChain_WithMismatchedEssCertIdCertificateHash_ReturnsChain(
+            SigningCertificateUsage signingCertificateUsage)
+        {
+            ISigningTestServer testServer = await _fixture.GetSigningTestServerAsync();
+            CertificateAuthority rootCa = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions()
+            {
+                SigningCertificateUsage = signingCertificateUsage,
+                SigningCertificateV1Hash = new byte[SHA1HashLength]
+            };
+            TimestampService timestampService = TimestampService.Create(rootCa, options);
+
+            using (testServer.RegisterResponder(timestampService))
+            {
+                var nupkg = new SimpleTestPackageContext();
+
+                using (var certificate = new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert))
+                using (var directory = TestDirectory.Create())
+                {
+                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                        certificate,
+                        nupkg,
+                        directory,
+                        timestampService.Url);
+
+                    using (FileStream stream = File.OpenRead(signedPackagePath))
+                    using (var reader = new PackageArchiveReader(stream))
+                    {
+                        PrimarySignature signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
+
+                        using (IX509CertificateChain actualChain = SignatureUtility.GetTimestampCertificateChain(signature))
+                        {
+                            Assert.NotEmpty(actualChain);
+
+                            IReadOnlyList<X509Certificate2> expectedChain = GetExpectedCertificateChain(timestampService);
+
+                            Assert.Equal(expectedChain.Count, actualChain.Count);
+
+                            for (var i = 0; i < expectedChain.Count; ++i)
+                            {
+                                X509Certificate2 expectedCertificate = expectedChain[i];
+                                X509Certificate2 actualCertificate = actualChain[i];
+
+                                Assert.True(
+                                    expectedCertificate.RawData.SequenceEqual(actualCertificate.RawData),
+                                    $"The certificate at index {i} in the chain is unexpected.");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+#endif
+
+        [Theory]
+        [InlineData(SigningCertificateUsage.V1)]
         [InlineData(SigningCertificateUsage.V2)]
         [InlineData(SigningCertificateUsage.V1 | SigningCertificateUsage.V2)]
         public async Task GetTimestampCertificateChain_WithValidSigningCertificateUsage_ReturnsChain(
@@ -104,17 +205,17 @@ namespace NuGet.Packaging.FuncTest.SigningTests
                         {
                             Assert.NotEmpty(actualChain);
 
-                            IReadOnlyList<Org.BouncyCastle.X509.X509Certificate> expectedChain = GetExpectedCertificateChain(timestampService);
+                            IReadOnlyList<X509Certificate2> expectedChain = GetExpectedCertificateChain(timestampService);
 
                             Assert.Equal(expectedChain.Count, actualChain.Count);
 
                             for (var i = 0; i < expectedChain.Count; ++i)
                             {
-                                Org.BouncyCastle.X509.X509Certificate expectedCertificate = expectedChain[i];
+                                X509Certificate2 expectedCertificate = expectedChain[i];
                                 X509Certificate2 actualCertificate = actualChain[i];
 
                                 Assert.True(
-                                    expectedCertificate.GetEncoded().SequenceEqual(actualCertificate.RawData),
+                                    expectedCertificate.RawData.SequenceEqual(actualCertificate.RawData),
                                     $"The certificate at index {i} in the chain is unexpected.");
                             }
                         }
@@ -123,9 +224,9 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             }
         }
 
-        private static IReadOnlyList<Org.BouncyCastle.X509.X509Certificate> GetExpectedCertificateChain(TimestampService timestampService)
+        private static IReadOnlyList<X509Certificate2> GetExpectedCertificateChain(TimestampService timestampService)
         {
-            var expectedChain = new List<Org.BouncyCastle.X509.X509Certificate>();
+            var expectedChain = new List<X509Certificate2>();
 
             expectedChain.Add(timestampService.Certificate);
 

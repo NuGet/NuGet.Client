@@ -12,6 +12,7 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class ConfigCommandTest
     {
         [Fact]
@@ -158,8 +159,7 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
                 // Act
                 args = new string[] {
@@ -173,13 +173,12 @@ namespace NuGet.CommandLine.Test
                 result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
-                var output = result.Item2;
+                var output = result.Output;
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
 
                 var expectedValue = Path.Combine(Path.GetDirectoryName(configFile), "Value1")
                     + Environment.NewLine;
@@ -204,11 +203,10 @@ namespace NuGet.CommandLine.Test
             var result = CommandRunner.Run(
                 nugetexe,
                 Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
-                waitForExit: true);
+                string.Join(" ", args));
 
             // Assert
-            Assert.True(result.Item3.Contains("Key 'nonExistentKey' not found."));
+            Assert.True(result.Errors.Contains("Key 'nonExistentKey' not found."));
         }
 
         [Fact]
@@ -242,15 +240,14 @@ namespace NuGet.CommandLine.Test
                 var result = CommandRunner.Run(
                     nugetexe,
                     testFolder,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    string.Join(" ", args));
 
-                var output = result.Item2;
+                var output = result.Output;
                 Environment.SetEnvironmentVariable("RP_ENV_VAR", string.Empty);
 
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.Equal(0, result.ExitCode);
                 Assert.Equal(expectedValue, output);
             }
         }

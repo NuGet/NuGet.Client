@@ -136,7 +136,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            if(!string.IsNullOrEmpty(SymbolPackageFormat))
+            if (!string.IsNullOrEmpty(SymbolPackageFormat))
             {
                 packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
             }
@@ -147,20 +147,20 @@ namespace NuGet.CommandLine
             switch (Verbosity)
             {
                 case Verbosity.Detailed:
-                {
-                    packArgs.LogLevel = LogLevel.Verbose;
-                    break;
-                }
+                    {
+                        packArgs.LogLevel = LogLevel.Verbose;
+                        break;
+                    }
                 case Verbosity.Normal:
-                {
-                    packArgs.LogLevel = LogLevel.Information;
-                    break;
-                }
+                    {
+                        packArgs.LogLevel = LogLevel.Information;
+                        break;
+                    }
                 case Verbosity.Quiet:
-                {
-                    packArgs.LogLevel = LogLevel.Minimal;
-                    break;
-                }
+                    {
+                        packArgs.LogLevel = LogLevel.Minimal;
+                        break;
+                    }
             }
             packArgs.MinClientVersion = _minClientVersionValue;
             packArgs.NoDefaultExcludes = NoDefaultExcludes;
@@ -186,7 +186,10 @@ namespace NuGet.CommandLine
             }
 
             var packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
-            packCommandRunner.BuildPackage();
+            if (!packCommandRunner.RunPackageBuild())
+            {
+                throw new ExitCodeException(1);
+            }
         }
-   }
+    }
 }

@@ -14,17 +14,5 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
         }
-
-        private void PackageIconImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
-        {
-            var image = sender as Image;
-
-            e.Handled = true; // don't repropagate the event
-            MultiBindingExpression binding = BindingOperations.GetMultiBindingExpression(image, Image.SourceProperty);
-            if (binding != null && binding.BindingExpressions.All((x) => x.Status != BindingStatus.Detached))
-            {
-                binding.UpdateTarget();
-            }
-        }
     }
 }

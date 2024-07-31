@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -14,14 +15,15 @@ namespace NuGet.PackageManagement.VisualStudio
     public class VsMachineWideSettings : Configuration.IMachineWideSettings
     {
         private readonly AsyncLazy<Configuration.ISettings> _settings;
-        private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
 
         public VsMachineWideSettings()
+            : this(AsyncServiceProvider.GlobalProvider)
+        { }
+
+        private VsMachineWideSettings(IAsyncServiceProvider asyncServiceProvider)
         {
-            if (_asyncServiceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(_asyncServiceProvider));
-            }
+            _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
 
             _settings = new AsyncLazy<Configuration.ISettings>(async () =>
                 {
@@ -34,13 +36,19 @@ namespace NuGet.PackageManagement.VisualStudio
                     var version = dte.Version;
                     var sku = dte.GetSKU();
 
-                    await TaskScheduler.Default;
+                    // If UI thread is currently blocked on us, just inline on the
+                    // same thread to avoid waiting for a free thread pool thread.
+                    if (!NuGetUIThreadHelper.JoinableTaskFactory.Context.IsMainThreadBlocked())
+                    {
+                        await TaskScheduler.Default;
+                    }
+
                     return Configuration.Settings.LoadMachineWideSettings(
                         baseDirectory,
                         "VisualStudio",
                         version,
                         sku);
-                }, 
+                },
                 ThreadHelper.JoinableTaskFactory);
         }
 

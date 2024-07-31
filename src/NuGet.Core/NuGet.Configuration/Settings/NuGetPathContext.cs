@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,17 +12,17 @@ namespace NuGet.Configuration
         /// <summary>
         /// Fallback package folders. There many be zero or more of these.
         /// </summary>
-        public IReadOnlyList<string> FallbackPackageFolders { get; internal set; }
+        public required IReadOnlyList<string> FallbackPackageFolders { get; init; }
 
         /// <summary>
         /// User global packages folder.
         /// </summary>
-        public string UserPackageFolder { get; internal set; }
+        public required string UserPackageFolder { get; init; }
 
         /// <summary>
         /// User level http cache.
         /// </summary>
-        public string HttpCacheFolder { get; internal set; }
+        public required string HttpCacheFolder { get; init; }
 
         /// <summary>
         /// Load paths from already loaded settings.

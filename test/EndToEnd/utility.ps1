@@ -6,17 +6,6 @@ function Get-HostSemanticVersion {
     return [NuGet.Packaging.MinClientVersionUtility]::GetNuGetClientVersion()
 }
 
-function Verify-BuildIntegratedMsBuildTask {
-    $msBuildTaskPath = [IO.Path]::Combine(${env:ProgramFiles(x86)}, "MsBuild", "Microsoft", "NuGet", "Microsoft.NuGet.targets")
-
-    if (!(Test-Path $msBuildTaskPath)) {
-        Write-Warning "Build integrated NuGet target not found at $msBuildTaskPath"
-        return $false
-    }
-
-    return $true
-}
-
 class SkipTest : Attribute {
     SkipTest([string]$Reason) { }
     [bool] ShouldRun() { return $False }

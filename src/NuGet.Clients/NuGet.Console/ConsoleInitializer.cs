@@ -3,13 +3,11 @@
 
 using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using System.Security;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
-using VsPackage = Microsoft.VisualStudio.Shell.Package;
 
 namespace NuGetConsole
 {
@@ -17,17 +15,17 @@ namespace NuGetConsole
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class ConsoleInitializer : IConsoleInitializer
     {
-        private readonly AsyncLazy<Action> _initializeTask = new AsyncLazy<Action>(GetInitializeTask, NuGetUIThreadHelper.JoinableTaskFactory);
+        private readonly AsyncLazy<Action> _initializeTask = new AsyncLazy<Action>(GetInitializeTaskAsync, NuGetUIThreadHelper.JoinableTaskFactory);
 
         public Task<Action> Initialize()
         {
             return _initializeTask.GetValueAsync();
         }
 
-        private static Task<Action> GetInitializeTask()
+        private static async Task<Action> GetInitializeTaskAsync()
         {
-            var componentModel = (IComponentModel)VsPackage.GetGlobalService(typeof(SComponentModel));
-            if (componentModel == null)
+            var comSvc = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
+            if (comSvc == null)
             {
                 throw new InvalidOperationException();
             }
@@ -45,18 +43,16 @@ namespace NuGetConsole
                 // which is very rare.
             }
 
-            var initializer = componentModel.GetService<IHostInitializer>();
-            return Task.Factory.StartNew(state =>
-                {
-                    var hostInitializer = (IHostInitializer)state;
-                    if (hostInitializer != null)
-                    {
-                        hostInitializer.Start();
-                        return (Action)hostInitializer.SetDefaultRunspace;
-                    }
-                    return delegate { };
-                },
-                initializer);
+            var initializer = comSvc.GetService<IHostInitializer>();
+
+            if (initializer != null)
+            {
+                await TaskScheduler.Default;
+                await initializer.StartAsync();
+                return initializer.SetDefaultRunspace;
+            }
+
+            return delegate { };
         }
     }
 }

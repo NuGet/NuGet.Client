@@ -19,9 +19,14 @@ namespace NuGet.VisualStudio
             _telemetrySession = telemetrySession ?? throw new ArgumentNullException(nameof(telemetrySession));
         }
 
-        public NuGetVSTelemetryService():
+        public NuGetVSTelemetryService() :
             this(VSTelemetrySession.Instance)
         {
+        }
+
+        public static void Initialize()
+        {
+            TelemetryActivity.NuGetTelemetryService ??= new NuGetVSTelemetryService();
         }
 
         public virtual void EmitTelemetryEvent(TelemetryEvent telemetryData)
@@ -32,6 +37,16 @@ namespace NuGet.VisualStudio
             }
 
             _telemetrySession.PostEvent(telemetryData);
+        }
+
+        public virtual IDisposable StartActivity(string activityName)
+        {
+            if (activityName == null)
+            {
+                throw new ArgumentNullException(nameof(activityName));
+            }
+
+            return new EtwLogActivity(activityName);
         }
     }
 }

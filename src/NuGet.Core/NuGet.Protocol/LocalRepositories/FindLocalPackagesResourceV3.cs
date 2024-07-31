@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
-            return LocalFolderUtility.GetPackagesV3(Root, id, logger);
+            return LocalFolderUtility.GetPackagesV3(Root, id, logger, token);
         }
 
         public override LocalPackageInfo GetPackage(Uri path, ILogger logger, CancellationToken token)
@@ -44,7 +44,7 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
-            return LocalFolderUtility.GetPackagesV3(Root, logger);
+            return LocalFolderUtility.GetPackagesV3(Root, logger, token);
         }
     }
 }

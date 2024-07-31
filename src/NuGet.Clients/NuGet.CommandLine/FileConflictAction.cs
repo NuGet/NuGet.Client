@@ -1,4 +1,4 @@
-﻿
+
 namespace NuGet.CommandLine
 {
     public enum FileConflictAction

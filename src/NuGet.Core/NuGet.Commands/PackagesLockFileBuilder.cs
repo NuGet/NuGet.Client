@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -16,7 +17,7 @@ namespace NuGet.Commands
     {
         public PackagesLockFile CreateNuGetLockFile(LockFile assetsFile)
         {
-            var lockFile = new PackagesLockFile();
+            var lockFile = new PackagesLockFile(GetPackagesLockFileVersion(assetsFile));
 
             var libraryLookup = assetsFile.Libraries.Where(e => e.Type == LibraryType.Package)
                 .ToDictionary(e => new PackageIdentity(e.Name, e.Version));
@@ -32,14 +33,14 @@ namespace NuGet.Commands
                 var framework = assetsFile.PackageSpec.TargetFrameworks.FirstOrDefault(
                     f => EqualityUtility.EqualsWithNullCheck(f.FrameworkName, target.TargetFramework));
 
-                var libraries = target.Libraries;
+                IEnumerable<LockFileTargetLibrary> libraries = target.Libraries;
 
                 // check if this is RID-based graph then only add those libraries which differ from original TFM.
                 if (!string.IsNullOrEmpty(target.RuntimeIdentifier))
                 {
                     var onlyTFM = assetsFile.Targets.First(t => EqualityUtility.EqualsWithNullCheck(t.TargetFramework, target.TargetFramework));
 
-                    libraries = target.Libraries.Where(lib => !onlyTFM.Libraries.Any(tfmLib => tfmLib.Equals(lib))).ToList();
+                    libraries = target.Libraries.Where(lib => !onlyTFM.Libraries.Any(tfmLib => tfmLib.Equals(lib)));
                 }
 
                 foreach (var library in libraries.Where(e => e.Type == LibraryType.Package))
@@ -57,10 +58,25 @@ namespace NuGet.Commands
                     var framework_dep = framework?.Dependencies.FirstOrDefault(
                         dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Name, library.Name));
 
+                    CentralPackageVersion centralPackageVersion = null;
+                    framework?.CentralPackageVersions.TryGetValue(library.Name, out centralPackageVersion);
+
                     if (framework_dep != null)
                     {
                         dependency.Type = PackageDependencyType.Direct;
                         dependency.RequestedVersion = framework_dep.LibraryRange.VersionRange;
+                    }
+
+                    // The dgspec has a list of the direct dependencies and changes in the direct dependencies will invalidate the lock file
+                    // A dgspec does not have information about transitive dependencies
+                    // At the restore time the transitive dependencies could be pinned from central package version management file
+                    // By marking them will allow to evaluate when to invalidate the packages.lock.json
+                    // in cases that a central transitive version is updated, removed or added the lock file will be invalidated
+                    else if (centralPackageVersion != null)
+                    {
+                        // This is a transitive dependency that is in the list of central dependencies.
+                        dependency.Type = PackageDependencyType.CentralTransitive;
+                        dependency.RequestedVersion = centralPackageVersion.VersionRange;
                     }
                     else
                     {
@@ -76,7 +92,7 @@ namespace NuGet.Commands
 
                 foreach (var projectReference in libraries.Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject))
                 {
-                    var projectIdentity= new PackageIdentity(projectReference.Name, projectReference.Version);
+                    var projectIdentity = new PackageIdentity(projectReference.Name, projectReference.Version);
                     var projectFullPath = projectFullPaths[projectIdentity];
                     var id = PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFileNameWithoutExtension(projectFullPath), projectReference.Name)
                         ? projectReference.Name.ToLowerInvariant()
@@ -100,5 +116,15 @@ namespace NuGet.Commands
             return lockFile;
         }
 
+        private int GetPackagesLockFileVersion(LockFile assetsFile)
+        {
+            // Increase the version only for the projects opted-in central version management
+            if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                return PackagesLockFileFormat.PackagesLockFileVersion;
+            }
+
+            return PackagesLockFileFormat.Version;
+        }
     }
 }

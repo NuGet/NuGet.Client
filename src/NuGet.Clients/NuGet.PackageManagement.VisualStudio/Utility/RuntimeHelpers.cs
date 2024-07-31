@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Keep track of visited projects
-                if (SupportsBindingRedirects(vsProjectAdapter.Project))
+                if (await SupportsBindingRedirectsAsync(vsProjectAdapter.Project))
                 {
                     // Get the dependentEnvDTEProjectsDictionary once here, so that, it is not called for every single project
                     var dependentProjectsDictionary = await vsSolutionManager.GetDependentProjectsDictionaryAsync();
@@ -45,10 +45,11 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private static bool SupportsBindingRedirects(EnvDTE.Project Project)
+        private static async Task<bool> SupportsBindingRedirectsAsync(EnvDTE.Project Project)
         {
-            return (Project.Kind != null && SupportedProjectTypes.IsSupportedForBindingRedirects(Project.Kind))
-                && !EnvDTEProjectInfoUtility.IsWindowsStoreApp(Project);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            return (Project.Kind != null && ProjectType.IsSupportedForBindingRedirects(Project.Kind))
+                && !await Project.IsWindowsStoreAppAsync();
         }
 
         private static Task AddBindingRedirectsAsync(
@@ -79,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.Present(vsProjectAdapter);
 
             // Need to be on the UI thread
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var envDTEProjectUniqueName = vsProjectAdapter.UniqueName;
             if (visitedProjects.Contains(envDTEProjectUniqueName))
@@ -87,7 +88,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return;
             }
 
-            if (SupportsBindingRedirects(vsProjectAdapter.Project))
+            if (await SupportsBindingRedirectsAsync(vsProjectAdapter.Project))
             {
                 await AddBindingRedirectsAsync(vsSolutionManager, vsProjectAdapter, domain, projectAssembliesCache, frameworkMultiTargeting, nuGetProjectContext);
             }
@@ -142,7 +143,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return redirects;
             }
 
-            IEnumerable<string> assemblies = EnvDTEProjectUtility.GetAssemblyClosure(vsProjectAdapter.Project, projectAssembliesCache);
+            IEnumerable<string> assemblies = await EnvDTEProjectUtility.GetAssemblyClosureAsync(vsProjectAdapter.Project, projectAssembliesCache);
             redirects = BindingRedirectResolver.GetBindingRedirects(assemblies, domain);
 
             if (frameworkMultiTargeting != null)
@@ -152,7 +153,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Create a binding redirect manager over the configuration
-            var manager = new BindingRedirectManager(EnvDTEProjectInfoUtility.GetConfigurationFile(vsProjectAdapter.Project), msBuildNuGetProjectSystem);
+            var manager = new BindingRedirectManager(await vsProjectAdapter.Project.GetConfigurationFileAsync(), msBuildNuGetProjectSystem);
 
             // Add the redirects
             manager.AddBindingRedirects(redirects);

@@ -11,7 +11,7 @@ namespace NuGet.Common
 {
     public static class RuntimeEnvironmentHelper
     {
-        private static readonly string[] VisualStudioProcesses = { "DEVENV", "BLEND"};
+        private static readonly string[] VisualStudioProcesses = { "DEVENV", "BLEND" };
 
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
@@ -23,6 +23,11 @@ namespace NuGet.Common
 
         private static Lazy<bool> _isRunningInVisualStudio = new Lazy<bool>(() =>
         {
+            if (!IsWindows)
+            {
+                return false;
+            }
+
             var currentProcessName = Path.GetFileNameWithoutExtension(GetCurrentProcessFilePath());
 
             return VisualStudioProcesses.Any(
@@ -31,8 +36,6 @@ namespace NuGet.Common
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
-
-        public static bool IsDev14 { get; set; }
 
         public static bool IsWindows
         {
@@ -81,7 +84,7 @@ namespace NuGet.Common
         {
             using (var process = Process.GetCurrentProcess())
             {
-                return process.MainModule.FileName;
+                return process.MainModule!.FileName;
             }
         }
 
@@ -143,6 +146,13 @@ namespace NuGet.Common
 #if IS_CORECLR
             // This API does work on full framework but it requires a newer nuget client (RID aware)
             if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+            {
+                return true;
+            }
+
+            // The OSPlatform.FreeBSD property only exists in .NET Core 3.1 and higher, whereas this project is also
+            // compiled for .NET Standard and .NET Framework, where an OSPlatform for FreeBSD must be created manually
+            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Create("FREEBSD")))
             {
                 return true;
             }

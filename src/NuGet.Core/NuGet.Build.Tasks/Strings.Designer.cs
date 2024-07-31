@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Strings {
@@ -88,7 +88,43 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
+        ///   Looks up a localized string similar to Cannot write the dependency graph spec because the generation failed..
+        /// </summary>
+        public static string Error_DgSpecGenerationFailed {
+            get {
+                return ResourceManager.GetString("Error_DgSpecGenerationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Duplicate &apos;{0}&apos; items found. Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior. The duplicate &apos;{0}&apos; items are: {1}..
+        /// </summary>
+        public static string Error_DuplicateItems {
+            get {
+                return ResourceManager.GetString("Error_DuplicateItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot write the dependency graph spec because the `RestoreGraphOutputPath` is missing..
+        /// </summary>
+        public static string Error_MissingRestoreGraphOutputPath {
+            get {
+                return ResourceManager.GetString("Error_MissingRestoreGraphOutputPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; does not have an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
+        /// </summary>
+        public static string Error_PackageDownload_NoVersion {
+            get {
+                return ResourceManager.GetString("Error_PackageDownload_NoVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0} {1}&apos; does not have an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
         public static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
             get {
@@ -102,6 +138,71 @@ namespace NuGet.Build.Tasks {
         public static string Error_PackagesConfigParseError {
             get {
                 return ResourceManager.GetString("Error_PackagesConfigParseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Static graph-based restore failed with exit code &apos;{0}&apos; but did not log an error. Please file an issue at https://github.com/NuGet/Home..
+        /// </summary>
+        public static string Error_StaticGraphNonZeroExitCode {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphNonZeroExitCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred parsing command-line arguments in static graph-based restore as there was an unexpected number of arguments, {0}. Please file an issue at https://github.com/NuGet/Home.
+        /// </summary>
+        public static string Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphRestoreArgumentParsingFailedInvalidNumberOfArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred parsing command-line arguments in static graph-based restore as end of the standard input stream was unexpectedly encountered. Please file an issue at https://github.com/NuGet/Home.
+        /// </summary>
+        public static string Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphRestoreArgumentsParsingFailedEndOfStream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred parsing command-line arguments in static graph-based restore as an exception occurred reading the standard input stream, {0} Please file an issue at https://github.com/NuGet/Home
+        ///{1}.
+        /// </summary>
+        public static string Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphRestoreArgumentsParsingFailedExceptionReadingStream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred parsing command-line arguments in static graph-based restore as the first integer read, {0}, is not an allowable value. Please file an issue at https://github.com/NuGet/Home.
+        /// </summary>
+        public static string Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphRestoreArgumentsParsingFailedUnexpectedIntegerValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred starting static graph-based restore. {0}. Please file an issue at https://github.com/NuGet/Home.
+        /// </summary>
+        public static string Error_StaticGraphRestoreFailedToStart {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphRestoreFailedToStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Static graph-based restore encountered an unhandled exception. Please file an issue at https://github.com/NuGet/Home.  The exception was:
+        ///{0}.
+        /// </summary>
+        public static string Error_StaticGraphUnhandledException {
+            get {
+                return ResourceManager.GetString("Error_StaticGraphUnhandledException", resourceCulture);
             }
         }
         
@@ -120,6 +221,42 @@ namespace NuGet.Build.Tasks {
         public static string InstallCommandNothingToInstall {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The solution did not have any projects to restore, ensure that all projects are known to be MSBuild and that the projects exist..
+        /// </summary>
+        public static string Log_NoProjectsForRestore {
+            get {
+                return ResourceManager.GetString("Log_NoProjectsForRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The solution contains &apos;{0}&apos; project(s) &apos;{1}&apos; that are not known to MSBuild. Ensure that all projects are known to be MSBuild before running restore on the solution..
+        /// </summary>
+        public static string Log_ProjectsInSolutionNotKnowntoMSBuild {
+            get {
+                return ResourceManager.GetString("Log_ProjectsInSolutionNotKnowntoMSBuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RestoreNoCache is deprecated and has been renamed to RestoreNoHttpCache. Please use RestoreNoHttpCache instead..
+        /// </summary>
+        public static string Log_RestoreNoCacheInformation {
+            get {
+                return ResourceManager.GetString("Log_RestoreNoCacheInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running command: &apos;{0}&apos; {1}.
+        /// </summary>
+        public static string Log_RunningStaticGraphRestoreCommand {
+            get {
+                return ResourceManager.GetString("Log_RunningStaticGraphRestoreCommand", resourceCulture);
             }
         }
         

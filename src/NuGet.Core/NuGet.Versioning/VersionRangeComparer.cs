@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace NuGet.Versioning
         /// Default version range comparer.
         /// </summary>
         public VersionRangeComparer()
-            : this(new VersionComparer(VersionComparison.Default))
+            : this(VersionComparer.Default)
         {
         }
 
@@ -25,7 +25,7 @@ namespace NuGet.Versioning
         /// Compare versions with a specific VersionComparison
         /// </summary>
         public VersionRangeComparer(VersionComparison versionComparison)
-            : this(new VersionComparer(versionComparison))
+            : this(VersionComparer.Get(versionComparison))
         {
         }
 
@@ -45,32 +45,40 @@ namespace NuGet.Versioning
         /// <summary>
         /// Default Version comparer
         /// </summary>
-        public static IVersionRangeComparer Default
-        {
-            get { return new VersionRangeComparer(VersionComparison.Default); }
-        }
+        public static IVersionRangeComparer Default { get; } = new VersionRangeComparer(VersionComparer.Default);
+
+        internal static IVersionRangeComparer Version { get; } = new VersionRangeComparer(VersionComparer.Version);
 
         /// <summary>
         /// Compare versions using the Version and Release
         /// </summary>
-        public static IVersionRangeComparer VersionRelease
+        public static IVersionRangeComparer VersionRelease { get; } = new VersionRangeComparer(VersionComparer.VersionRelease);
+
+        internal static IVersionRangeComparer VersionReleaseMetadata { get; } = new VersionRangeComparer(VersionComparer.VersionReleaseMetadata);
+
+        public static IVersionRangeComparer Get(VersionComparison versionComparison)
         {
-            get { return new VersionRangeComparer(VersionComparison.VersionRelease); }
+            return versionComparison switch
+            {
+                VersionComparison.Default => Default,
+                VersionComparison.Version => Version,
+                VersionComparison.VersionRelease => VersionRelease,
+                VersionComparison.VersionReleaseMetadata => VersionReleaseMetadata,
+                _ => new VersionRangeComparer(versionComparison)
+            };
         }
 
         /// <summary>
         /// Checks if two version ranges are equivalent. This follows the rules of the version comparer
         /// when checking the bounds.
         /// </summary>
-        public bool Equals(VersionRangeBase x, VersionRangeBase y)
+        public bool Equals(VersionRangeBase? x, VersionRangeBase? y)
         {
-            // same object
             if (ReferenceEquals(x, y))
             {
                 return true;
             }
 
-            // null checks
             if (ReferenceEquals(y, null)
                 || ReferenceEquals(x, null))
             {
@@ -78,9 +86,12 @@ namespace NuGet.Versioning
             }
 
             return x.IsMinInclusive == y.IsMinInclusive
-                    && y.IsMaxInclusive == x.IsMaxInclusive
-                    && _versionComparer.Equals(y.MinVersion, x.MinVersion)
-                    && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
+                && y.IsMaxInclusive == x.IsMaxInclusive
+#pragma warning disable CS8604 // Possible null reference argument.
+                // BCL missing nullable annotations on IEqualityComparer<T> before .NET 5
+                && _versionComparer.Equals(y.MinVersion, x.MinVersion)
+                && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
+#pragma warning restore CS8604 // Possible null reference argument.
         }
 
         /// <summary>
@@ -98,8 +109,14 @@ namespace NuGet.Versioning
 
             combiner.AddObject(obj.IsMinInclusive);
             combiner.AddObject(obj.IsMaxInclusive);
-            combiner.AddObject(_versionComparer.GetHashCode(obj.MinVersion));
-            combiner.AddObject(_versionComparer.GetHashCode(obj.MaxVersion));
+            if (obj.HasLowerBound)
+            {
+                combiner.AddObject(_versionComparer.GetHashCode(obj.MinVersion));
+            }
+            if (obj.HasUpperBound)
+            {
+                combiner.AddObject(_versionComparer.GetHashCode(obj.MaxVersion));
+            }
 
             return combiner.CombinedHash;
         }

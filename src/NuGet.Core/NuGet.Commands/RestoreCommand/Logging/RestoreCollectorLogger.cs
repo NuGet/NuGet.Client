@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,9 +133,14 @@ namespace NuGet.Commands
                 // if the message is not suppressed then check if it needs to be upgraded to an error
                 UpgradeWarningToErrorIfNeeded(message);
 
+                if (string.IsNullOrEmpty(message.ProjectPath))
+                {
+                    message.ProjectPath = ProjectPath;
+                }
+
                 if (string.IsNullOrEmpty(message.FilePath))
                 {
-                    message.FilePath = message.ProjectPath ?? ProjectPath;
+                    message.FilePath = message.ProjectPath;
                 }
 
                 if (CollectMessage(message.Level))
@@ -164,6 +168,11 @@ namespace NuGet.Commands
                     message.FilePath = message.ProjectPath ?? ProjectPath;
                 }
 
+                if (string.IsNullOrEmpty(message.ProjectPath))
+                {
+                    message.ProjectPath = ProjectPath;
+                }
+
                 if (CollectMessage(message.Level))
                 {
                     _errors.Enqueue(message);
@@ -175,7 +184,7 @@ namespace NuGet.Commands
                 }
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public override void Log(ILogMessage message)
@@ -244,23 +253,22 @@ namespace NuGet.Commands
 
         private static IRestoreLogMessage ToRestoreLogMessage(ILogMessage message)
         {
-            if (message is IRestoreLogMessage)
+            if (message is IRestoreLogMessage restoreLogMessage)
             {
-                return message as IRestoreLogMessage;
+                return restoreLogMessage;
             }
-            else if (message is SignatureLog)
+
+            if (message is SignatureLog signatureLog)
             {
-                return (message as SignatureLog).AsRestoreLogMessage();
+                return signatureLog.AsRestoreLogMessage();
             }
-            else
+
+            return new RestoreLogMessage(message.Level, message.Code, message.Message)
             {
-                return new RestoreLogMessage(message.Level, message.Code, message.Message)
-                {
-                    Time = message.Time,
-                    WarningLevel = message.WarningLevel,
-                    ProjectPath = message.ProjectPath
-                };
-            }
+                Time = message.Time,
+                WarningLevel = message.WarningLevel,
+                ProjectPath = message.ProjectPath
+            };
         }
     }
 }

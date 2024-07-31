@@ -1,12 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.SolutionRestoreManager
 {
-    internal abstract class RestoreOperationProgressUI : IDisposable
+    internal abstract class RestoreOperationProgressUI : IAsyncDisposable
     {
         protected static readonly AsyncLocal<RestoreOperationProgressUI> _instance = new AsyncLocal<RestoreOperationProgressUI>();
 
@@ -24,7 +25,7 @@ namespace NuGet.SolutionRestoreManager
 
         public CancellationToken UserCancellationToken { get; protected set; } = CancellationToken.None;
 
-        public abstract void ReportProgress(
+        public abstract Task ReportProgressAsync(
             string progressMessage,
             uint currentStep = 0,
             uint totalSteps = 0);
@@ -34,6 +35,6 @@ namespace NuGet.SolutionRestoreManager
             return UserCancellationToken.Register(callback);
         }
 
-        public abstract void Dispose();
+        public abstract ValueTask DisposeAsync();
     }
 }

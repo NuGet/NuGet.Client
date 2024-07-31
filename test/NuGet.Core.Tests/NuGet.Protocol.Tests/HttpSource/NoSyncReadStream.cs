@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Tests
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            Assert.True(false, "READ should not be called");
+            Assert.Fail("READ should not be called");
             throw new InvalidOperationException("test failed!! Read should not be called!");
         }
     }

@@ -12,6 +12,7 @@ namespace Test.Utility
     {
         private readonly Stream _innerStream;
         private readonly CancellationToken _cancellationToken;
+        internal new bool _isDisposed = false; // internal for testing purposes
 
         public ReadTimeoutHonoringSlowStream(Stream innerStream)
             : this(innerStream, CancellationToken.None)
@@ -23,7 +24,7 @@ namespace Test.Utility
         {
             _innerStream = innerStream;
             _cancellationToken = cancellationToken;
-        } 
+        }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
@@ -52,5 +53,23 @@ namespace Test.Utility
 
         public override int ReadTimeout { get; set; } = Timeout.Infinite;
         public override bool CanTimeout => true;
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // free managed resources
+                _innerStream.Dispose();
+            }
+
+            _isDisposed = true;
+        }
     }
 }

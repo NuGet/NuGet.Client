@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 extern alias CoreV2;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,13 +13,15 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
-using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using NuGet.Packaging.Signing;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
+using NuGet.ProjectManagement;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Resolver;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
@@ -36,6 +37,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "UpdateCommandVersionDescription")]
         public string Version { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandDependencyVersion")]
+        public string DependencyVersion { get; set; }
 
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
         public string RepositoryPath { get; set; }
@@ -69,8 +73,7 @@ namespace NuGet.CommandLine
             // update with self as parameter
             if (Self)
             {
-                var selfUpdater = new SelfUpdater(Console);
-                await selfUpdater.UpdateSelfAsync(Prerelease, NuGetConstants.V3FeedUrl);
+                await UpdateSelfAsync();
                 return;
             }
 
@@ -125,6 +128,26 @@ namespace NuGet.CommandLine
             // update with solution as parameter
             string solutionDir = Path.GetDirectoryName(inputFile);
             await UpdateAllPackages(solutionDir, context);
+        }
+
+        private async Task UpdateSelfAsync()
+        {
+            PackageSource targetSource;
+            switch (Source.Count)
+            {
+                case 0:
+                    targetSource = new PackageSource(NuGetConstants.V3FeedUrl);
+                    break;
+                case 1:
+                    // Use the package source from the load config to preload any creds that might be needed for authentication.
+                    var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+                    targetSource = Common.PackageSourceProviderExtensions.ResolveSource(availableSources, Source.Single());
+                    break;
+                default:
+                    throw new CommandException(NuGetResources.Error_UpdateSelf_Source);
+            }
+            var selfUpdater = new SelfUpdater(Console);
+            await selfUpdater.UpdateSelfAsync(Prerelease, targetSource);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -240,10 +263,10 @@ namespace NuGet.CommandLine
             return null;
         }
 
-        private IReadOnlyCollection<Configuration.PackageSource> GetPackageSources()
+        private IReadOnlyCollection<PackageSource> GetPackageSources()
         {
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
-            var packageSources = new List<Configuration.PackageSource>();
+            var packageSources = new List<PackageSource>();
             foreach (var source in Source)
             {
                 packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(availableSources, source));
@@ -282,8 +305,9 @@ namespace NuGet.CommandLine
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                var dependencyBehavior = DependencyBehaviorHelper.GetDependencyBehavior(DependencyBehavior.Highest, DependencyVersion, Settings);
                 var resolutionContext = new ResolutionContext(
-                               Resolver.DependencyBehavior.Highest,
+                               dependencyBehavior,
                                Prerelease,
                                includeUnlisted: false,
                                versionConstraints: versionConstraints,

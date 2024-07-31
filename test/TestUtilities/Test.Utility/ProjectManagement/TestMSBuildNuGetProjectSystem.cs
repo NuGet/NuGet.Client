@@ -135,7 +135,7 @@ namespace Test.Utility
 
         public bool FileExistsInProject(string path)
         {
-            return Files.Where(c => path.Equals(c, StringComparison.OrdinalIgnoreCase)).Any();
+            return Files.Any(c => path.Equals(c, StringComparison.OrdinalIgnoreCase));
         }
 
         public void SetPropertyValue(string propertyName, dynamic value)
@@ -178,7 +178,7 @@ namespace Test.Utility
 
         public Task BeginProcessingAsync()
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void RegisterProcessedFiles(IEnumerable<string> files)
@@ -200,7 +200,7 @@ namespace Test.Utility
             ProcessedFiles = FilesInProcessing;
             FilesInProcessing = null;
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void DeleteDirectory(string path, bool recursive)

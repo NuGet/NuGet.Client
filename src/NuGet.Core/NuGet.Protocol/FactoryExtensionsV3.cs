@@ -20,6 +20,11 @@ namespace NuGet.Protocol
             return Repository.CreateSource(Repository.Provider.GetCoreV3(), source);
         }
 
+        public static SourceRepository GetCoreV3(this Repository.RepositoryFactory factory, PackageSource source)
+        {
+            return Repository.CreateSource(Repository.Provider.GetCoreV3(), source);
+        }
+
         public static SourceRepository GetCoreV2(this Repository.RepositoryFactory factory, PackageSource source)
         {
             return Repository.CreateSource(Repository.Provider.GetCoreV3(), source);

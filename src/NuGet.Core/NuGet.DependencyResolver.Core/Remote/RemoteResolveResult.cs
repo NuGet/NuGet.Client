@@ -8,7 +8,9 @@ namespace NuGet.DependencyResolver
 {
     public class RemoteResolveResult
     {
+        internal static readonly List<LibraryDependency> EmptyDependencies = new List<LibraryDependency>(0);
+
         public RemoteMatch Match { get; set; }
-        public IEnumerable<LibraryDependency> Dependencies { get; set; }
+        public List<LibraryDependency> Dependencies { get; set; }
     }
 }

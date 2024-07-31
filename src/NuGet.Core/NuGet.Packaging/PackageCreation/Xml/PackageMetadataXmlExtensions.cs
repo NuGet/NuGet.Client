@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Xml
             if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
                 AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
-                AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+                AddElementIfNotEmpty(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
             }
             if (metadata.DevelopmentDependency)
             {
@@ -51,7 +51,10 @@ namespace NuGet.Packaging.Xml
             }
             if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
-                elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                if (metadata.EmitRequireLicenseAcceptance)
+                {
+                    elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+                }
                 var licenseUrlToWrite = metadata.LicenseUrl?.ToString();
                 if (metadata.LicenseMetadata != null)
                 {
@@ -66,8 +69,8 @@ namespace NuGet.Packaging.Xml
                     }
                 }
                 AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
-
                 AddElementIfNotNull(elem, ns, "icon", metadata.Icon);
+                AddElementIfNotNull(elem, ns, "readme", metadata.Readme);
             }
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);
@@ -366,6 +369,18 @@ namespace NuGet.Packaging.Xml
             where T : class
         {
             if (value != null)
+            {
+                var processed = process(value);
+                if (processed != null)
+                {
+                    parent.Add(new XElement(ns + name, processed));
+                }
+            }
+        }
+
+        private static void AddElementIfNotEmpty<T>(XElement parent, XNamespace ns, string name, IEnumerable<T> value, Func<IEnumerable<T>, object> process)
+        {
+            if (value.Any())
             {
                 var processed = process(value);
                 if (processed != null)

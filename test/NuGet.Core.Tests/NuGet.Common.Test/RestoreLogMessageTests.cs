@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -112,7 +112,7 @@ namespace NuGet.Common.Test
 
 
         [Theory]
-        [InlineData(NuGetLogCode.NU1500, "Warning string", "packageId",  new string[] {"net46"})]
+        [InlineData(NuGetLogCode.NU1500, "Warning string", "packageId", new string[] { "net46" })]
         [InlineData(NuGetLogCode.NU1500, "Warning string", "packageId", new string[] { "net46", "netcoreapp1.0" })]
         public void RestoreLogMessage_TestCreateWarning(NuGetLogCode code, string message, string libraryId, string[] targetGraphs)
         {

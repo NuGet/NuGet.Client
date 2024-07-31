@@ -19,11 +19,11 @@ namespace NuGet.Packaging.Rules
 
         internal static bool IsValidFrameworkName(string path)
         {
-            FrameworkName fx;
+            NuGetFramework fx;
             try
             {
                 string effectivePath;
-                fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
+                fx = FrameworkNameUtility.ParseNuGetFrameworkFromFilePath(path, out effectivePath);
             }
             catch (ArgumentException)
             {
@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Rules
             }
 
             // return false if the framework is Null or Unsupported
-            return fx != null && fx.Identifier != NuGetFramework.UnsupportedFramework.Framework;
+            return fx != null && fx.Framework != NuGetFramework.UnsupportedFramework.Framework;
         }
 
         internal static bool IsValidCultureName(PackageArchiveReader builder, string name)

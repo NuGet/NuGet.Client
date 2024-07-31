@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -37,6 +37,11 @@ namespace NuGet.CommandLine
         {
             get
             {
+                if (MockCursorLeft != null)
+                {
+                    return (int)MockCursorLeft;
+                }
+
                 try
                 {
                     return System.Console.CursorLeft;
@@ -56,6 +61,11 @@ namespace NuGet.CommandLine
         {
             get
             {
+                if (MockWindowWidth != null)
+                {
+                    return (int)MockWindowWidth;
+                }
+
                 try
                 {
                     var width = System.Console.WindowWidth;
@@ -67,7 +77,7 @@ namespace NuGet.CommandLine
                     {
                         // This happens when redirecting output to a file, on
                         // Linux and OS X (running with Mono).
-                        return 80;
+                        return int.MaxValue;
                     }
                 }
                 catch (IOException)
@@ -81,6 +91,11 @@ namespace NuGet.CommandLine
                 System.Console.WindowWidth = value;
             }
         }
+
+
+        internal int? MockWindowWidth { get; set; }
+
+        internal int? MockCursorLeft { get; set; }
 
         private Verbosity _verbosity;
 
@@ -180,7 +195,7 @@ namespace NuGet.CommandLine
 
         public void WriteError(string value)
         {
-            WriteError(value, new object[0]);
+            WriteError(value, Array.Empty<object>());
         }
 
         public void WriteError(string format, params object[] args)
@@ -190,12 +205,12 @@ namespace NuGet.CommandLine
 
         public void WriteWarning(string value)
         {
-            WriteWarning(prependWarningText: true, value: value, args: new object[0]);
+            WriteWarning(prependWarningText: true, value: value, args: Array.Empty<object>());
         }
 
         public void WriteWarning(bool prependWarningText, string value)
         {
-            WriteWarning(prependWarningText, value, new object[0]);
+            WriteWarning(prependWarningText, value, Array.Empty<object>());
         }
 
         public void WriteWarning(string value, params object[] args)
@@ -252,38 +267,46 @@ namespace NuGet.CommandLine
         {
             if (maxWidth > startIndex)
             {
-                maxWidth = maxWidth - startIndex - 1;
+                maxWidth = maxWidth - startIndex;
             }
 
             lock (_writerLock)
             {
-                while (text.Length > 0)
+                using (StringReader stringReader = new StringReader(text))
                 {
-                    // Trim whitespace at the beginning
-                    text = text.TrimStart();
-                    // Calculate the number of chars to print based on the width of the System.Console
-                    int length = Math.Min(text.Length, maxWidth);
-
-                    string content;
-
-                    // Text we can print without overflowing the System.Console, excluding new line characters.
-                    int newLineIndex = text.IndexOf(Environment.NewLine, 0, length, StringComparison.OrdinalIgnoreCase);
-                    if (newLineIndex > -1)
+                    string line;
+                    while ((line = stringReader.ReadLine()) != null)
                     {
-                        content = text.Substring(0, newLineIndex);
+                        // Trim extra whitespace at the beginning and end of the line
+                        line = line.Trim();
+
+                        if (line == string.Empty)
+                        {
+                            Out.WriteLine();
+                            continue;
+                        }
+
+                        while (true)
+                        {
+                            // Calculate the number of chars to print based on the width of the System.Console
+                            int length = Math.Min(line.Length, maxWidth);
+
+                            string content = line.Substring(0, length);
+                            content = content.TrimEnd();
+
+                            int leftPadding = startIndex + content.Length - CursorLeft;
+
+                            // Print it with the correct padding
+                            Out.WriteLine((leftPadding > 0) ? content.PadLeft(leftPadding) : content);
+
+                            line = line.Substring(content.Length).Trim();
+
+                            if (line.Trim() == string.Empty)
+                            {
+                                break;
+                            }
+                        }
                     }
-                    else
-                    {
-                        content = text.Substring(0, length);
-                    }
-
-                    int leftPadding = startIndex + content.Length - CursorLeft;
-
-                    // Print it with the correct padding
-                    Out.WriteLine((leftPadding > 0) ? content.PadLeft(leftPadding) : content);
-
-                    // Get the next substring to be printed
-                    text = text.Substring(content.Length);
                 }
             }
         }
@@ -417,7 +440,7 @@ namespace NuGet.CommandLine
         {
             Log(message);
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         private static LogLevel GetVerbosityLevel(Verbosity level)

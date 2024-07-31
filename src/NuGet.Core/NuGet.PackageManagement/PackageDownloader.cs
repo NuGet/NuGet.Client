@@ -35,13 +35,13 @@ namespace NuGet.PackageManagement
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="DownloadResourceResult" />
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="sources" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="downloadContext" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" />
         /// is cancelled.</exception>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
@@ -98,6 +98,24 @@ namespace NuGet.PackageManagement
                 groups.Enqueue(localGroup);
                 groups.Enqueue(otherGroup);
 
+                bool isPackageSourceMappingEnabled = downloadContext.PackageSourceMapping?.IsEnabled == true;
+                IReadOnlyList<string> configuredPackageSources = null;
+
+                if (isPackageSourceMappingEnabled)
+                {
+                    configuredPackageSources = downloadContext.PackageSourceMapping.GetConfiguredPackageSources(packageIdentity.Id);
+
+                    if (configuredPackageSources.Count > 0)
+                    {
+                        var packageSourcesAtPrefix = string.Join(", ", configuredPackageSources);
+                        logger.LogDebug(StringFormatter.Log_PackageSourceMappingMatchFound(packageIdentity.Id, packageSourcesAtPrefix));
+                    }
+                    else
+                    {
+                        logger.LogDebug(StringFormatter.Log_PackageSourceMappingNoMatchFound(packageIdentity.Id));
+                    }
+                }
+
                 while (groups.Count > 0)
                 {
                     token.ThrowIfCancellationRequested();
@@ -105,8 +123,19 @@ namespace NuGet.PackageManagement
                     var sourceGroup = groups.Dequeue();
                     var tasks = new List<Task<DownloadResourceResult>>();
 
-                    foreach (var source in sourceGroup)
+                    foreach (SourceRepository source in sourceGroup)
                     {
+                        if (isPackageSourceMappingEnabled)
+                        {
+                            if (configuredPackageSources == null ||
+                                configuredPackageSources.Count == 0 ||
+                                !configuredPackageSources.Contains(source.PackageSource.Name, StringComparer.OrdinalIgnoreCase))
+                            {
+                                // This package's id prefix is not defined in current package source, let's skip.
+                                continue;
+                            }
+                        }
+
                         var task = GetDownloadResourceResultAsync(
                             source,
                             packageIdentity,
@@ -154,7 +183,7 @@ namespace NuGet.PackageManagement
                                     {
                                         linkedTokenSource.Dispose();
                                     }
-                                });
+                                }, token);
                             }
 
                             return completedTask.Result;
@@ -217,13 +246,13 @@ namespace NuGet.PackageManagement
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="DownloadResourceResult" />
         /// instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="sourceRepository" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="downloadContext" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or empty.</exception>
+        /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="token" />
         /// is cancelled.</exception>
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(

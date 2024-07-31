@@ -1,12 +1,8 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>NuGet wrapper for dotnet.exe.</Description>
-    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
-    <RuntimeIdentifier Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">win7-x86</RuntimeIdentifier>
-    <NoWarn>$(NoWarn);CS1591;CS1701</NoWarn>
+    <Description>NuGet executable wrapper for the dotnet CLI nuget functionality.</Description>
+    <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591;CS1701;NU5104;CA1307;CA2000</NoWarn>
     <OutputType>Exe</OutputType>
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
@@ -18,27 +14,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
-  <!-- Microsoft.Build.Locator is needed when debugging, but should not be used in the assemblies we insert.
-       It also generates a build error if the output directory contains MSBuild dlls, so exclude msbuild assets when using the locator. -->
-  <Choose>
-    <When Condition=" '$(Configuration)' == 'Debug' ">
-      <ItemGroup>
-        <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
-        <PackageReference Include="Microsoft.Build.Locator" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="Microsoft.Build" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
+<!-- Microsoft.Build.Locator is only used when debugging, and the compiler will skip copying this dependency from Release assemblies we insert because we only refer to it conditionally with the DEBUG configuration.
+  Uncomment the following when debugging. Also uncomment the MSBuildLocator code from Program.cs -->
+  <!-- <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Locator" PrivateAssets="All" />
+  </ItemGroup> -->
 
   <ItemGroup>
+    <Compile Remove="external\*" />
     <Compile Update="Commands\Verbs.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -55,34 +43,12 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup Condition="$(DefineConstants.Contains(SIGNED_BUILD))">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Dotnet.Integration.Test, PublicKey=0024000004800000940000000602000000240000525341310004000001000100b5fc90e7027f67871e773a8fde8938c81dd402ba65b9201d60593e96c492651e889cc13f1415ebb53fac1131ae0bd333c5ee6021672d9718ea31a8aebd0da0072f25d87dba6fc90ffd598ed4da35e44c398c454307e8e33b8426143daec9f596836f97c8f74750e5975c64e2189f45def46b2a2b1247adc3652bf5c308055da9</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.Xplat.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100b5fc90e7027f67871e773a8fde8938c81dd402ba65b9201d60593e96c492651e889cc13f1415ebb53fac1131ae0bd333c5ee6021672d9718ea31a8aebd0da0072f25d87dba6fc90ffd598ed4da35e44c398c454307e8e33b8426143daec9f596836f97c8f74750e5975c64e2189f45def46b2a2b1247adc3652bf5c308055da9</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup Condition="!$(DefineConstants.Contains(SIGNED_BUILD))">
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>Dotnet.Integration.Test</_Parameter1>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>NuGet.CommandLine.Xplat.Tests</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
   <ItemGroup>
@@ -95,7 +61,11 @@
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
-  
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.CommandLine.Xplat.Tests" />
+    <InternalsVisibleTo Include="NuGet.XPlat.FuncTest" />
+  </ItemGroup>
 </Project>

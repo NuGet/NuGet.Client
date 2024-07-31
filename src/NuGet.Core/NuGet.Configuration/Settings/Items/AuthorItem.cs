@@ -12,7 +12,8 @@ namespace NuGet.Configuration
     {
         public override string ElementName => ConfigurationConstants.Author;
 
-        protected override IReadOnlyCollection<string> RequiredAttributes { get; } = new HashSet<string>() { ConfigurationConstants.NameAttribute };
+        protected override IReadOnlyCollection<string> RequiredAttributes { get; }
+            = new HashSet<string>(new[] { ConfigurationConstants.NameAttribute });
 
         public AuthorItem(string name, params CertificateItem[] certificates)
             : base(name, certificates)
@@ -26,7 +27,7 @@ namespace NuGet.Configuration
 
         public override SettingBase Clone()
         {
-            var newItem = new AuthorItem(Name, Certificates.Select(c => c.Clone() as CertificateItem).ToArray());
+            var newItem = new AuthorItem(Name, Certificates.Select(c => (CertificateItem)c.Clone()).ToArray());
 
             if (Origin != null)
             {
@@ -58,7 +59,7 @@ namespace NuGet.Configuration
             return element;
         }
 
-        public override bool Equals(object other)
+        public override bool Equals(object? other)
         {
             if (other is AuthorItem author)
             {

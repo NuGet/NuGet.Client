@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
@@ -82,7 +83,7 @@ namespace NuGet.PackageManagement.VisualStudio
         Task<bool> IsAllProjectsNominatedAsync();
 
         /// <summary>
-        /// Retruns Solution FullName
+        /// Returns Solution FullName
         /// </summary>
         /// <returns></returns>
         Task<string> GetSolutionFilePathAsync();
@@ -91,5 +92,18 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns whether the solution is open.
         /// </summary>
         Task<bool> IsSolutionOpenAsync();
+
+        /// <summary>
+        /// Returns the list of project restore info sources. Empty if none are available.
+        /// </summary>
+        IReadOnlyList<object> GetAllProjectRestoreInfoSources();
+
+        /// <summary>
+        /// Gets the current open solution directory. <see cref="null"/> if the there's no open solution.
+        /// </summary>
+        Task<string> GetSolutionDirectoryAsync();
+
+        /// <summary>Mockable indirection for <see cref="Microsoft.VisualStudio.Shell.VsShellUtilities.ShutdownToken"/></summary>
+        CancellationToken VsShutdownToken { get; }
     }
 }

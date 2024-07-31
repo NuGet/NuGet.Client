@@ -33,14 +33,13 @@ namespace NuGet.Common
                     .Where(entry => entry.Length != 0)
                     .ToArray();
             }
-
             return Array.Empty<string>();
         }
 
         /// <summary>
         /// Trims the provided string and converts empty strings to null.
         /// </summary>
-        public static string TrimAndGetNullForEmpty(string s)
+        public static string? TrimAndGetNullForEmpty(string? s)
         {
             if (s == null)
             {
@@ -55,7 +54,7 @@ namespace NuGet.Common
         /// <summary>
         /// Trims the provided strings and excludes empty or null strings.
         /// </summary>
-        public static string[] TrimAndExcludeNullOrEmpty(string[] strings)
+        public static string[] TrimAndExcludeNullOrEmpty(string?[]? strings)
         {
             if (strings == null)
             {
@@ -65,13 +64,14 @@ namespace NuGet.Common
             return strings
                 .Select(s => TrimAndGetNullForEmpty(s))
                 .Where(s => s != null)
+                .Cast<string>()
                 .ToArray();
         }
 
         /// <summary>
         /// True if the property is set to true
         /// </summary>
-        public static bool IsTrue(string value)
+        public static bool IsTrue(string? value)
         {
             return bool.TrueString.Equals(TrimAndGetNullForEmpty(value), StringComparison.OrdinalIgnoreCase);
         }
@@ -79,31 +79,44 @@ namespace NuGet.Common
         /// <summary>
         /// True if the property is set to true or empty.
         /// </summary>
-        public static bool IsTrueOrEmpty(string value)
+        public static bool IsTrueOrEmpty(string? value)
         {
             return TrimAndGetNullForEmpty(value) == null || IsTrue(value);
         }
 
         /// <summary>
-        /// Splits and parses a ; or , delimited list of log codes.
-        /// Ignores codes that are unknown.
+        /// Parses the specified string as a comma or semicolon delimited list of NuGet log codes and ignores unknown codes.
         /// </summary>
-        public static IEnumerable<NuGetLogCode> GetNuGetLogCodes(string s)
+        /// <param name="s">A comma or semicolon delimited list of NuGet log codes.</param>
+        /// <returns>An <see cref="IList{T}" /> containing the <see cref="NuGetLogCode" /> values that were successfully parsed from the specified string.</returns>
+        public static IList<NuGetLogCode> GetNuGetLogCodes(string s)
         {
-            foreach (var item in MSBuildStringUtility.Split(s, ';', ','))
+            // The Split() method already checks for an empty string and returns Array.Empty<string>().
+            string[] split = MSBuildStringUtility.Split(s, ';', ',');
+
+            if (split.Length == 0)
             {
-                if (item.StartsWith("NU", StringComparison.OrdinalIgnoreCase) &&
-                    Enum.TryParse<NuGetLogCode>(value: item, ignoreCase: true, result: out var result))
+                return Array.Empty<NuGetLogCode>();
+            }
+
+            List<NuGetLogCode> logCodes = new List<NuGetLogCode>(capacity: split.Length);
+
+            for (int i = 0; i < split.Length; i++)
+            {
+                if (split[i].StartsWith("NU", StringComparison.OrdinalIgnoreCase) &&
+                    Enum.TryParse(value: split[i], ignoreCase: true, out NuGetLogCode logCode))
                 {
-                    yield return result;
+                    logCodes.Add(logCode);
                 }
             }
+
+            return logCodes;
         }
 
         /// <summary>
         /// Convert the provided string to a boolean, or return null if the value can't be parsed as a boolean.
         /// </summary>
-        public static bool? GetBooleanOrNull(string value)
+        public static bool? GetBooleanOrNull(string? value)
         {
             if (bool.TryParse(value, out var result))
             {
@@ -116,7 +129,7 @@ namespace NuGet.Common
         /// <summary>
         /// Convert the provided string to MSBuild style.
         /// </summary>
-        public static string Convert(string value)
+        public static string? Convert(string? value)
         {
             if (value == null)
             {
@@ -127,16 +140,16 @@ namespace NuGet.Common
         }
 
         /// <summary>
-        /// Return empty list of NuGetLogCode if all lists of NuGetLogCode are not the same. 
+        /// Return empty list of NuGetLogCode if all lists of NuGetLogCode are not the same.
         /// </summary>
-        public static IEnumerable<NuGetLogCode> GetDistinctNuGetLogCodesOrDefault(IEnumerable<IEnumerable<NuGetLogCode>> nugetLogCodeLists)
+        public static IEnumerable<NuGetLogCode> GetDistinctNuGetLogCodesOrDefault(IEnumerable<IEnumerable<NuGetLogCode>?> nugetLogCodeLists)
         {
-            if (nugetLogCodeLists.Count() > 0)
+            if (nugetLogCodeLists.Any())
             {
                 var result = Enumerable.Empty<NuGetLogCode>();
                 var first = true;
 
-                foreach (var logCodeList in nugetLogCodeLists)
+                foreach (IEnumerable<NuGetLogCode>? logCodeList in nugetLogCodeLists)
                 {
                     // If this is first item, assign it to result
                     if (first)

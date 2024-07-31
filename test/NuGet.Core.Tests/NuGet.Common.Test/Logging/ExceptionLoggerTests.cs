@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -114,7 +114,7 @@ namespace NuGet.Common.Test.Logging
 
             public Mock<IEnvironmentVariableReader> EnvironmentVariableReader { get; }
             public Exception Exception { get; }
-            public ExceptionLogger Target { get; set; }
+            public ExceptionLogger? Target { get; set; }
 
             public void VerifyShouldShowStack(bool expected)
             {

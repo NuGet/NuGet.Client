@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
             Old = oldPackage;
             New = newPackage;
             AutomationName = string.Format(
-                CultureInfo.CurrentUICulture,
+                CultureInfo.CurrentCulture,
                 Resources.Preview_PackageUpdate,
                 Old.Id, Old.Version.ToNormalizedString(),
                 New.Id, New.Version.ToNormalizedString());

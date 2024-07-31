@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGetVSExtension
@@ -16,7 +17,7 @@ namespace NuGetVSExtension
         {
             if (providerType == null)
             {
-                throw new ArgumentNullException("providerType");
+                throw new ArgumentNullException(nameof(providerType));
             }
 
             if (String.IsNullOrEmpty(providerName))
@@ -24,7 +25,7 @@ namespace NuGetVSExtension
                 throw new ArgumentException("'providerName' cannot be null or empty.");
             }
 
-            _providerTypeGuid = providerType.GUID.ToString("B");
+            _providerTypeGuid = providerType.GUID.ToString("B", provider: null);
             _providerName = providerName;
         }
 
@@ -35,14 +36,14 @@ namespace NuGetVSExtension
                 using (Key subKey = key.CreateSubkey(_providerTypeGuid))
                 {
                     subKey.SetValue(String.Empty, _providerName);
-                    subKey.SetValue("Package", context.ComponentType.GUID.ToString("B"));
+                    subKey.SetValue("Package", context.ComponentType.GUID.ToString("B", null));
                 }
             }
         }
 
         public override void Unregister(RegistrationContext context)
         {
-            context.RemoveKey(String.Format(@"{0}\{1}", ExtensionProvidersKey, _providerTypeGuid));
+            context.RemoveKey(String.Format(CultureInfo.CurrentCulture, @"{0}\{1}", ExtensionProvidersKey, _providerTypeGuid));
         }
     }
 }

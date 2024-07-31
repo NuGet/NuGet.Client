@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {
-    public class GetRestoreProjectJsonPathTask : Task
+    public class GetRestoreProjectJsonPathTask : Microsoft.Build.Utilities.Task
     {
         /// <summary>
         /// Full path to the msbuild project.
@@ -25,9 +25,6 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var log = new MSBuildLogger(Log);
-            log.LogDebug($"(in) ProjectPath '{ProjectPath}'");
-
             var directory = Path.GetDirectoryName(ProjectPath);
             var projectName = Path.GetFileNameWithoutExtension(ProjectPath);
 
@@ -38,8 +35,6 @@ namespace NuGet.Build.Tasks
             {
                 ProjectJsonPath = path;
             }
-
-            log.LogDebug($"(out) ProjectJsonPath '{ProjectJsonPath}'");
 
             return true;
         }

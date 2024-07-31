@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -31,9 +31,9 @@ namespace NuGet.Protocol.Plugins
         /// <param name="protocolVersion">The requestor's plugin protocol version.</param>
         /// <param name="minimumProtocolVersion">The requestor's minimum plugin protocol version.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="protocolVersion" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="minimumProtocolVersion" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="protocolVersion" />
         /// is less than <paramref name="minimumProtocolVersion" />.</exception>
         [JsonConstructor]

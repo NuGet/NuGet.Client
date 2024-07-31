@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -26,6 +27,27 @@ namespace NuGet.ProjectManagement
         /// <param name="dependency">Full PackageReference metadata.</param>
         public BuildIntegratedPackageReference(LibraryDependency dependency, NuGetFramework projectFramework)
             : base(GetIdentity(dependency),
+                  targetFramework: projectFramework,
+                  userInstalled: true,
+                  developmentDependency: dependency?.SuppressParent == LibraryIncludeFlags.All,
+                  requireReinstallation: false,
+                  allowedVersions: GetAllowedVersions(dependency))
+        {
+            if (dependency == null)
+            {
+                throw new ArgumentNullException(nameof(dependency));
+            }
+
+            Dependency = dependency;
+        }
+
+        /// <summary>
+        /// Create a PackageReference based on a LibraryDependency.
+        /// </summary>
+        /// <param name="dependency">Full PackageReference metadata.</param>
+        /// <param name="installedVersion">Package installed.</param>
+        public BuildIntegratedPackageReference(LibraryDependency dependency, NuGetFramework projectFramework, PackageIdentity installedVersion)
+            : base(installedVersion,
                   targetFramework: projectFramework,
                   userInstalled: true,
                   developmentDependency: dependency?.SuppressParent == LibraryIncludeFlags.All,
@@ -66,10 +88,9 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            var minVersion = GetMinVersion(dependency);
-
             if (dependency.AutoReferenced)
             {
+                var minVersion = GetMinVersion(dependency);
                 return new VersionRange(
                     minVersion: minVersion,
                     includeMinVersion: true,

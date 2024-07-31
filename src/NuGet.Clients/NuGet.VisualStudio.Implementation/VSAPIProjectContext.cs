@@ -21,7 +21,7 @@ namespace NuGet.VisualStudio
 
         public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled)
         {
-            SourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
+            SourceControlManagerProvider = ServiceLocator.GetComponentModelService<ISourceControlManagerProvider>();
             SkipAssemblyReferences = skipAssemblyReferences;
             BindingRedirectsDisabled = bindingRedirectsDisabled;
         }

@@ -1070,18 +1070,6 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
-        public async Task CopyNupkgAsync_Throws()
-        {
-            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
-            {
-                await Assert.ThrowsAsync<NotImplementedException>(
-                    () => test.Reader.CopyNupkgAsync(
-                        nupkgFilePath: "a",
-                        cancellationToken: CancellationToken.None));
-            }
-        }
-
         private static string ExtractFile(string sourcePath, string targetPath, Stream sourceStream)
         {
             using (var targetStream = File.OpenWrite(targetPath))

@@ -1,4 +1,4 @@
-﻿namespace NuGet.Configuration
+namespace NuGet.Configuration
 {
     public enum CredentialRequestType
     {

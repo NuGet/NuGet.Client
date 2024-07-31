@@ -37,6 +37,18 @@ namespace NuGet.Configuration
 
         Owners,
 
-        Repository
+        Repository,
+
+        FileCert,
+
+        StoreCert,
+
+        PackageSourceMapping,
+
+        PackageSource,
+
+        Package,
+
+        AuditSources,
     }
 }

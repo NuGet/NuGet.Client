@@ -180,41 +180,6 @@ function Test-GetPackageForProjectReturnsCorrectPackages2 {
     Assert-AreEqual "1.5.0" $result[0].Version
 }
 
-function Test-GetPackageForFSharpProjectReturnsCorrectPackages {
-    # Arrange
-    $p = New-FSharpConsoleApplication
-
-    Install-Package jQuery -Version 1.5 -Source $context.RepositoryPath
-
-    # Act
-    $result = @(Get-Package -ProjectName $p.Name)
-
-    # Assert
-    Assert-AreEqual 1 $result.Count
-    Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5.0" $result[0].Version
-}
-
-function Test-GetPackageForFSharpProjectReturnsCorrectPackages2 {
-    # Arrange
-    $p = New-FSharpConsoleApplication
-
-    # Note that installation of the second package on a project involves update of an existing packages.config
-    # which is different from the installation of the first package
-    Install-Package jQuery -Version 1.5 -Source $context.RepositoryPath
-    Install-Package MyAwesomeLibrary -Version 1.0 -Source $context.RepositoryPath
-
-    # Act
-    $result = @(Get-Package -ProjectName $p.Name)
-
-    # Assert
-    Assert-AreEqual 2 $result.Count
-    Assert-AreEqual "jQuery" $result[0].Id
-    Assert-AreEqual "1.5.0" $result[0].Version
-    Assert-AreEqual "MyAwesomeLibrary" $result[1].Id
-    Assert-AreEqual "1.0.0" $result[1].Version
-}
-
 function Test-GetPackageForProjectReturnsEmptyIfItHasNoInstalledPackage {
     # Arrange
     $p = New-ConsoleApplication
@@ -497,6 +462,7 @@ function Test-GetInstalledPackageWithFilterReturnsCorrectPackage
 
 function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPackageId
 {
+    [SkipTest('https://github.com/NuGet/Home/issues/10254')]
     param
     (
         $context
@@ -508,7 +474,7 @@ function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPac
     $p | Install-Package antlr -Version '3.1.1' -Source $SourceNuGet
 
     # Act
-    $packages = @(Get-Package -updates -Source 'https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json')
+    $packages = @(Get-Package -updates -Source 'https://pkgs.dev.azure.com/dnceng/public/_packaging/nuget-build/nuget/v3/index.json')
 
     # Assert
     Assert-AreEqual 0 $packages.Count

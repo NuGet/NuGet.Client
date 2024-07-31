@@ -184,7 +184,7 @@ namespace NuGet.Protocol
             get
             {
                 int x = 0;
-                Int32.TryParse(_downloadCount, out x);
+                _ = int.TryParse(_downloadCount, out x);
                 return x;
             }
         }
@@ -247,7 +247,7 @@ namespace NuGet.Protocol
                 }
                 else
                 {
-                    var results = new Dictionary<NuGetFramework, List<PackageDependency>>(new NuGetFrameworkFullComparer());
+                    var results = new Dictionary<NuGetFramework, List<PackageDependency>>(NuGetFrameworkFullComparer.Instance);
 
                     foreach (var set in Dependencies.Split('|'))
                     {
@@ -266,7 +266,7 @@ namespace NuGet.Protocol
 
                                 // Nexus will write "null" when there is no depenency version range.
                                 // Parse the optional version range
-                                if (!string.IsNullOrWhiteSpace(versionRangeString) 
+                                if (!string.IsNullOrWhiteSpace(versionRangeString)
                                     && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Attempt to parse the version
@@ -279,7 +279,7 @@ namespace NuGet.Protocol
                                     var frameworkString = parts[2];
 
                                     if (!string.IsNullOrWhiteSpace(frameworkString)
-                                        && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
+                                        && !string.Equals(NullString, frameworkString, StringComparison.OrdinalIgnoreCase))
                                     {
                                         framework = NuGetFramework.Parse(frameworkString);
                                     }

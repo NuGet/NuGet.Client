@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
@@ -23,11 +24,11 @@ namespace NuGet.Packaging.Rules
                     t.StartsWith(PackagingConstants.Folders.Tools + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase)))
             {
-                if(toolItem.EndsWith("install.ps1", StringComparison.OrdinalIgnoreCase))
+                if (toolItem.EndsWith("install.ps1", StringComparison.OrdinalIgnoreCase))
                 {
                     var issue = new List<PackagingLogMessage>();
                     issue.Add(PackagingLogMessage.CreateWarning(
-                        string.Format(MessageFormat), NuGetLogCode.NU5120));
+                        string.Format(CultureInfo.CurrentCulture, MessageFormat), NuGetLogCode.NU5120));
                     return issue;
                 }
             }

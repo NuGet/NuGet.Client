@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Windows.Forms;
 using NuGet.Configuration;
+using NuGet.VisualStudio.Internal.Contracts;
 using static System.Windows.Forms.Control;
 
-namespace NuGet.Options
+namespace NuGet.PackageManagement.UI.Options
 {
     internal class CheckedListBoxAccessibleObject : ControlAccessibleObject
     {
@@ -19,7 +21,7 @@ namespace NuGet.Options
             }
         }
 
-        internal void SelectChild(AccessibleSelection flags, int index)
+        internal void SelectChild(int index)
         {
             if (index >= 0 && index < CheckedListBox.Items.Count)
             {
@@ -31,7 +33,28 @@ namespace NuGet.Options
         {
             if (index >= 0 && index < CheckedListBox.Items.Count)
             {
-                var packageSource = (PackageSource)CheckedListBox.Items[index];
+                var item = (PackageSourceContextInfo)CheckedListBox.Items[index];
+                PackageSource packageSource = new PackageSource(item.Source, item.Name);
+                packageSource.AllowInsecureConnections = item.AllowInsecureConnections;
+
+                if (packageSource.IsHttp && !packageSource.IsHttps && !packageSource.AllowInsecureConnections)
+                {
+                    var sourceMessage = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Error_HttpSource_Single,
+                        packageSource.Source);
+                    return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, sourceMessage);
+                }
+
+                if (packageSource.AllowInsecureConnections)
+                {
+                    var insecureConnectionMessage = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Warning_HTTPSource,
+                        packageSource.Source);
+                    return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, insecureConnectionMessage);
+                }
+
                 return new CheckedListBoxItemAccessibleObject(this, packageSource.Name, index, packageSource.Source);
             }
             else

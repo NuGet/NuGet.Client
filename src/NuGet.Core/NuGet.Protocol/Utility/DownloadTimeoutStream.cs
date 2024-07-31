@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace NuGet.Protocol
             {
                 throw new ArgumentNullException(nameof(networkStream));
             }
-            
+
             _downloadName = downloadName;
             _networkStream = networkStream;
             _timeout = timeout;
@@ -55,7 +56,7 @@ namespace NuGet.Protocol
         {
             throw new NotSupportedException();
         }
-        
+
         public override int EndRead(IAsyncResult asyncResult)
         {
             throw new NotSupportedException();
@@ -69,6 +70,7 @@ namespace NuGet.Protocol
             CancellationToken cancellationToken)
         {
             var timeoutMessage = string.Format(
+                CultureInfo.CurrentCulture,
                 Strings.Error_DownloadTimeout,
                 _downloadName,
                 _timeout.TotalMilliseconds);
@@ -80,7 +82,7 @@ namespace NuGet.Protocol
                     timeout: _timeout,
                     timeoutMessage: null,
                     token: cancellationToken).ConfigureAwait(false);
-                    
+
                 return result;
             }
             catch (TimeoutException e)

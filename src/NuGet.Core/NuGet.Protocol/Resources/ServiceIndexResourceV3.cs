@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,6 @@ namespace NuGet.Protocol
         private readonly IDictionary<string, List<ServiceIndexEntry>> _index;
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
-        private static readonly IReadOnlyList<Uri> _emptyUris = new List<Uri>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime)

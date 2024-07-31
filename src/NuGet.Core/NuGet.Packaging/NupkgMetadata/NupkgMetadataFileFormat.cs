@@ -5,23 +5,19 @@ using System;
 using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 
 namespace NuGet.Packaging
 {
-    public class NupkgMetadataFileFormat
+    public static class NupkgMetadataFileFormat
     {
-        public static readonly int Version = 1;
+        public static readonly int Version = 2;
 
         private const string VersionProperty = "version";
         private const string HashProperty = "contentHash";
+        private const string SourceProperty = "source";
 
-        private static readonly JsonLoadSettings DefaultLoadSettings = new JsonLoadSettings()
-        {
-            LineInfoHandling = LineInfoHandling.Ignore,
-            CommentHandling = CommentHandling.Ignore
-        };
+        private static readonly JsonSerializer JsonSerializer = JsonSerializer.Create(GetSerializerSettings());
 
         public static NupkgMetadataFile Read(string filePath)
         {
@@ -30,10 +26,7 @@ namespace NuGet.Packaging
 
         public static NupkgMetadataFile Read(string filePath, ILogger log)
         {
-            using (var stream = File.OpenRead(filePath))
-            {
-                return Read(stream, log, filePath);
-            }
+            return FileUtility.SafeRead(filePath, (stream, nupkgMetadataFilePath) => Read(stream, log, nupkgMetadataFilePath));
         }
 
         public static NupkgMetadataFile Read(Stream stream, ILogger log, string path)
@@ -48,9 +41,15 @@ namespace NuGet.Packaging
         {
             try
             {
-                var json = LoadJson(reader);
-                var hashFile = ReadHashFile(json);
-                return hashFile;
+                using (var jsonReader = new JsonTextReader(reader))
+                {
+                    var nupkgMetadata = JsonSerializer.Deserialize<NupkgMetadataFile>(jsonReader);
+                    if (nupkgMetadata == null)
+                    {
+                        throw new InvalidDataException();
+                    }
+                    return nupkgMetadata;
+                }
             }
             catch (Exception ex)
             {
@@ -60,57 +59,6 @@ namespace NuGet.Packaging
 
                 throw;
             }
-        }
-
-        private static JObject LoadJson(TextReader reader)
-        {
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                while (jsonReader.TokenType != JsonToken.StartObject)
-                {
-                    if (!jsonReader.Read())
-                    {
-                        throw new InvalidDataException();
-                    }
-                }
-
-                return JObject.Load(jsonReader, DefaultLoadSettings);
-            }
-        }
-
-        private static NupkgMetadataFile ReadHashFile(JObject cursor)
-        {
-            var hashFile = new NupkgMetadataFile()
-            {
-                Version = ReadInt(cursor, VersionProperty, defaultValue: int.MinValue),
-                ContentHash = ReadProperty<string>(cursor, HashProperty),
-            };
-
-            return hashFile;
-        }
-
-        internal static int ReadInt(JToken cursor, string property, int defaultValue)
-        {
-            var valueToken = cursor[property];
-            if (valueToken == null)
-            {
-                return defaultValue;
-            }
-            return valueToken.Value<int>();
-        }
-
-        internal static TItem ReadProperty<TItem>(JObject jObject, string propertyName)
-        {
-            if (jObject != null)
-            {
-                JToken value;
-                if (jObject.TryGetValue(propertyName, out value) && value != null)
-                {
-                    return value.Value<TItem>();
-                }
-            }
-
-            return default(TItem);
         }
 
         public static void Write(string filePath, NupkgMetadataFile hashFile)
@@ -139,21 +87,100 @@ namespace NuGet.Packaging
             {
                 jsonWriter.Formatting = Formatting.Indented;
 
-                var json = WriteHashFile(hashFile);
-                json.WriteTo(jsonWriter);
+                JsonSerializer.Serialize(jsonWriter, hashFile);
             }
         }
 
-        private static JObject WriteHashFile(NupkgMetadataFile hashFile)
+        private static JsonSerializerSettings GetSerializerSettings()
         {
-            var json = new JObject
+            var settings = new JsonSerializerSettings()
             {
-                [VersionProperty] = new JValue(hashFile.Version),
-                [HashProperty] = hashFile.ContentHash
+                Formatting = Formatting.Indented
             };
-
-            return json;
+            settings.Converters.Add(NupkgMetadataConverter.Default);
+            return settings;
         }
 
+        private class NupkgMetadataConverter : JsonConverter
+        {
+            internal static NupkgMetadataConverter Default { get; } = new NupkgMetadataConverter();
+
+            private static readonly Type TargetType = typeof(NupkgMetadataFile);
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == TargetType;
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                NupkgMetadataFile nupkgMetadataFile = existingValue as NupkgMetadataFile;
+                if (nupkgMetadataFile == null)
+                {
+                    nupkgMetadataFile = new NupkgMetadataFile();
+                }
+
+                if (reader.TokenType != JsonToken.StartObject)
+                {
+                    throw new InvalidDataException();
+                }
+
+                while (reader.Read())
+                {
+                    switch (reader.TokenType)
+                    {
+                        case JsonToken.EndObject:
+                            return nupkgMetadataFile;
+
+                        case JsonToken.PropertyName:
+                            switch ((string)reader.Value)
+                            {
+                                case VersionProperty:
+                                    var intValue = reader.ReadAsInt32();
+                                    if (intValue.HasValue)
+                                    {
+                                        nupkgMetadataFile.Version = intValue.Value;
+                                    }
+                                    break;
+
+                                case HashProperty:
+                                    nupkgMetadataFile.ContentHash = reader.ReadAsString();
+                                    break;
+
+                                case SourceProperty:
+                                    nupkgMetadataFile.Source = reader.ReadAsString();
+                                    break;
+                            }
+                            break;
+
+                        default:
+                            reader.Skip();
+                            break;
+                    }
+                }
+
+                throw new JsonReaderException();
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                if (!(value is NupkgMetadataFile nupkgMetadataFile))
+                {
+                    throw new ArgumentException(message: "value is not of type NupkgMetadataFile", paramName: nameof(value));
+                }
+
+                writer.WriteStartObject();
+
+                writer.WritePropertyName(VersionProperty);
+                writer.WriteValue(nupkgMetadataFile.Version);
+
+                writer.WritePropertyName(HashProperty);
+                writer.WriteValue(nupkgMetadataFile.ContentHash);
+
+                writer.WritePropertyName(SourceProperty);
+                writer.WriteValue(nupkgMetadataFile.Source);
+
+                writer.WriteEndObject();
+            }
+        }
     }
 }

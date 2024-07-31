@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (!File.Exists(projectJsonFilePath))
             {
-                throw new FileNotFoundException(string.Format(Strings.Error_FileNotExists, projectJsonFilePath));
+                throw new FileNotFoundException(string.Format(CultureInfo.CurrentCulture, Strings.Error_FileNotExists, projectJsonFilePath));
             }
 
             var packageSpec = JsonPackageSpecReader.GetPackageSpec(
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (packageSpec == null)
             {
                 throw new InvalidOperationException(
-                    string.Format(Strings.Error_InvalidJson, projectJsonFilePath));
+                    string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidJson, projectJsonFilePath));
             }
 
             await MigrateDependenciesAsync(project, packageSpec);
@@ -59,8 +59,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static async Task MigrateDependenciesAsync(BuildIntegratedNuGetProject project, PackageSpec packageSpec)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (packageSpec.TargetFrameworks.Count > 1)
             {
                 throw new InvalidOperationException(
@@ -75,6 +73,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 dependencies.AddRange(targetFramework.Dependencies);
             }
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             dependencies.AddRange(packageSpec.Dependencies);
             foreach (var dependency in dependencies)
@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 buildProject.RemoveItem(projectJsonItem);
             }
         }
-        
+
 
         private static async Task CreateBackupAsync(
             BuildIntegratedNuGetProject project,

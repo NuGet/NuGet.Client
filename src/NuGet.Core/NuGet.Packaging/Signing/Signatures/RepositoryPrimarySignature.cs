@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 #endif
@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class RepositoryPrimarySignature : PrimarySignature, IRepositorySignature
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public Uri V3ServiceIndexUrl { get; }
         public IReadOnlyList<string> PackageOwners { get; }
 
@@ -37,7 +37,8 @@ namespace NuGet.Packaging.Signing
             var issues = new List<SignatureLog>();
             settings = settings ?? SignatureVerifySettings.Default;
 
-            issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
+            issues.Add(SignatureLog.MinimalLog(Environment.NewLine +
+                        string.Format(CultureInfo.CurrentCulture, Strings.SignatureType, Type.ToString())));
             issues.Add(SignatureLog.InformationLog(string.Format(CultureInfo.CurrentCulture, Strings.NuGetV3ServiceIndexUrl, V3ServiceIndexUrl.ToString())));
 
             if (PackageOwners != null)

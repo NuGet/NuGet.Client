@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,21 +18,22 @@ namespace NuGet.PackageManagement.UI
     /// The NuGet package management UI
     /// </summary>
     /// <remarks>This is not expected to be thread safe.</remarks>
-    public interface INuGetUI
+    public interface INuGetUI : IDisposable
     {
         bool PromptForPackageManagementFormat(PackageManagementFormat selectedFormat);
 
         bool ShowNuGetUpgradeWindow(NuGetProjectUpgradeWindowModel nuGetProjectUpgradeWindowModel);
 
-        Task UpdateNuGetProjectToPackageRef(IEnumerable<NuGetProject> msBuildProjects);
+        Task UpgradeProjectsToPackageReferenceAsync(IEnumerable<IProjectContextInfo> msBuildProjects);
 
-        bool WarnAboutDotnetDeprecation(IEnumerable<NuGetProject> projects);
+        Task<bool> WarnAboutDotnetDeprecationAsync(IEnumerable<IProjectContextInfo> projects, CancellationToken cancellationToken);
 
         bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages);
 
         void LaunchExternalLink(Uri url);
 
         void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen);
+        void LaunchNuGetOptionsDialog(PackageSourceMappingActionViewModel packageSourceMappingActionViewModel);
 
         /// <summary>
         /// Displays the preview window with options to accept or cancel
@@ -58,6 +60,8 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         INuGetUIContext UIContext { get; }
 
+        INuGetUILogger UILogger { get; }
+
         /// <summary>
         /// A project context used for NuGet operations
         /// </summary>
@@ -66,7 +70,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Target projects
         /// </summary>
-        IEnumerable<NuGetProject> Projects { get; }
+        IEnumerable<IProjectContextInfo> Projects { get; }
 
         /// <summary>
         /// True if the option to preview actions first is checked
@@ -81,7 +85,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Package currently selected in the UI
         /// </summary>
-        PackageIdentity SelectedPackage { get; }
+        string SelectedPackageId { get; set; }
 
         /// <summary>
         /// Reports that an error has occurred.
@@ -93,13 +97,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         FileConflictAction FileConflictAction { get; }
 
-        /// <summary>
-        /// Fires SolutionManager.ActionsExecuted event so that the UI will get 
-        /// refreshed.
-        /// </summary>
-        void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
-
-        IEnumerable<SourceRepository> ActiveSources { get; }
+        PackageSourceMoniker ActivePackageSourceMoniker { get; }
 
         bool RemoveDependencies { get; }
 

@@ -11,11 +11,21 @@ namespace NuGet.Commands.Test
     {
         private readonly X509Certificate2 _defaultCertificate;
 
+        private readonly TrustedTestCert<X509Certificate2> _trustedDefaultCertificate;
+
         private bool _isDisposed;
 
         public CertificatesFixture()
         {
             _defaultCertificate = SigningTestUtility.GenerateCertificate("test", generator => { });
+
+            X509Certificate2 _defaultCertificateForTrust = SigningTestUtility.GenerateCertificate("test trusted", generator => { });
+
+            _trustedDefaultCertificate = TrustedTestCert.Create(
+                new X509Certificate2(_defaultCertificateForTrust),
+                X509StorePurpose.CodeSigning,
+                StoreName.My,
+                StoreLocation.CurrentUser);
         }
 
         public void Dispose()
@@ -23,6 +33,8 @@ namespace NuGet.Commands.Test
             if (!_isDisposed)
             {
                 _defaultCertificate.Dispose();
+
+                _trustedDefaultCertificate.Dispose();
 
                 GC.SuppressFinalize(this);
 
@@ -32,14 +44,13 @@ namespace NuGet.Commands.Test
 
         public X509Certificate2 GetDefaultCertificate()
         {
-            return new X509Certificate2(_defaultCertificate.RawData);
+            X509Certificate2 certWithPrivateKey = SigningTestUtility.GetPublicCertWithPrivateKey(_defaultCertificate);
+            return certWithPrivateKey;
         }
 
-        public X509Certificate2 GetCertificateWithPassword(string password)
+        public X509Certificate2 GetTrustedCertificate()
         {
-            var bytes = _defaultCertificate.Export(X509ContentType.Pkcs12, password);
-
-            return new X509Certificate2(bytes, password, X509KeyStorageFlags.Exportable);
+            return _trustedDefaultCertificate.TrustedCert;
         }
     }
 }

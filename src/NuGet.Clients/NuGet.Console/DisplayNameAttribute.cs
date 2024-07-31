@@ -30,7 +30,7 @@ namespace NuGetConsole
         {
             if (displayName == null)
             {
-                throw new ArgumentNullException("displayName");
+                throw new ArgumentNullException(nameof(displayName));
             }
             this.DisplayName = displayName;
         }

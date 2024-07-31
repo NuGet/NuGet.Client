@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -48,6 +48,18 @@ namespace NuGet.Commands
                     return string.Empty;
                 }
             }
+        }
+
+        internal static MSBuildRestoreItemGroup Create(
+            string rootName,
+            int position)
+        {
+            var group = new MSBuildRestoreItemGroup();
+
+            group.RootName = rootName;
+            group.Position = position;
+
+            return group;
         }
 
         public static MSBuildRestoreItemGroup Create(

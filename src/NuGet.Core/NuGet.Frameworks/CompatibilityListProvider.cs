@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,12 +7,7 @@ using System.Linq;
 
 namespace NuGet.Frameworks
 {
-#if NUGET_FRAMEWORKS_INTERNAL
-    internal
-#else
-    public
-#endif
-    sealed class CompatibilityListProvider : IFrameworkCompatibilityListProvider
+    public sealed class CompatibilityListProvider : IFrameworkCompatibilityListProvider
     {
         private readonly IFrameworkNameProvider _nameProvider;
         private readonly IFrameworkCompatibilityProvider _compatibilityProvider;
@@ -20,13 +15,15 @@ namespace NuGet.Frameworks
 
         public CompatibilityListProvider(IFrameworkNameProvider nameProvider, IFrameworkCompatibilityProvider compatibilityProvider)
         {
-            _nameProvider = nameProvider;
-            _compatibilityProvider = compatibilityProvider;
+            _nameProvider = nameProvider ?? throw new ArgumentNullException(nameof(nameProvider));
+            _compatibilityProvider = compatibilityProvider ?? throw new ArgumentNullException(nameof(compatibilityProvider));
             _reducer = new FrameworkReducer(_nameProvider, _compatibilityProvider);
         }
 
         public IEnumerable<NuGetFramework> GetFrameworksSupporting(NuGetFramework target)
         {
+            if (target == null) throw new ArgumentNullException(nameof(target));
+
             var remaining = _nameProvider
                 .GetCompatibleCandidates()
                 .Where(candidate => _compatibilityProvider.IsCompatible(candidate, target));
@@ -36,7 +33,7 @@ namespace NuGet.Frameworks
             remaining = ReduceDownwards(remaining);
 
             return remaining
-                .OrderBy(f => f, new NuGetFrameworkSorter());
+                .OrderBy(f => f, NuGetFrameworkSorter.Instance);
         }
 
         private IEnumerable<NuGetFramework> ReduceDownwards(IEnumerable<NuGetFramework> frameworks)
@@ -50,7 +47,7 @@ namespace NuGet.Frameworks
                 .Concat(lookup[true]);
         }
 
-        private static IFrameworkCompatibilityListProvider _default;
+        private static IFrameworkCompatibilityListProvider? _default;
 
         public static IFrameworkCompatibilityListProvider Default
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class NETCoreProject2ProjectTests
     {
         [Theory]
@@ -211,7 +212,7 @@ namespace NuGet.Commands.Test
                 // Find all non _._ compile assets
                 var flowingCompile = assetsFile.Targets.Single().Libraries
                     .Where(e => e.Type == "project")
-                    .Where(e => e.CompileTimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Where(e => e.CompileTimeAssemblies.Any(f => !f.Path.EndsWith("_._")))
                     .Select(e => e.Name)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 
@@ -220,7 +221,7 @@ namespace NuGet.Commands.Test
                 // Runtime should always flow
                 var flowingRuntime = assetsFile.Targets.Single().Libraries
                     .Where(e => e.Type == "project")
-                    .Where(e => e.RuntimeAssemblies.Where(f => !f.Path.EndsWith("_._")).Any())
+                    .Where(e => e.RuntimeAssemblies.Any(f => !f.Path.EndsWith("_._")))
                     .Select(e => e.Name)
                     .OrderBy(s => s, StringComparer.OrdinalIgnoreCase);
 

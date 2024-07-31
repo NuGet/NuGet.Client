@@ -6,13 +6,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Interaction logic for NuGetProjectUpgradeWindow.xaml
     /// </summary>
-    public partial class NuGetProjectUpgradeWindow : VsDialogWindow
+    public partial class NuGetProjectUpgradeWindow : DialogWindow
     {
         public NuGetProjectUpgradeWindow(NuGetProjectUpgradeWindowModel model)
         {
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.UI
         {
             var model = DataContext as NuGetProjectUpgradeWindowModel;
             var checkBox = sender as CheckBox;
-            foreach(var item in model.TransitiveDependencies)
+            foreach (var item in model.TransitiveDependencies)
             {
                 item.InstallAsTopLevel = checkBox.IsChecked.GetValueOrDefault();
             }

@@ -4,9 +4,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
-using Xunit;
+using NuGet.Configuration;
 
 namespace NuGet.Test.Utility
 {
@@ -62,6 +63,19 @@ namespace NuGet.Test.Utility
             Save();
         }
 
+        /// <summary>
+        /// Just disable “Automatically check for missing packages during build in Visual Studio” and save the file.
+        /// </summary>
+        public void DisableAutomaticInPackageRestoreSection()
+        {
+            var section = GetOrAddSection(XML, "packageRestore");
+
+            AddEntry(section, "enabled", "True");
+            AddEntry(section, "automatic", "false");
+
+            Save();
+        }
+
         private static XDocument GetDefault(string userPackagesFolder, string packagesV2, string fallbackFolder, string packageSource)
         {
             var doc = GetEmptyConfig();
@@ -88,9 +102,11 @@ namespace NuGet.Test.Utility
             var packageSources = GetOrAddSection(doc, "packageSources");
             var disabledSources = GetOrAddSection(doc, "disabledPackageSources");
             var fallbackFolders = GetOrAddSection(doc, "fallbackPackageFolders");
+            var packageSourceMapping = GetOrAddSection(doc, "packageSourceMapping");
 
             packageSources.Add(new XElement(XName.Get("clear")));
             disabledSources.Add(new XElement(XName.Get("clear")));
+            packageSourceMapping.Add(new XElement(XName.Get("clear")));
 
             return doc;
         }
@@ -110,11 +126,51 @@ namespace NuGet.Test.Utility
             return node;
         }
 
+        public static void AddPackageSourceCredentialsSection(XDocument doc, string sourceName, string userName, string password, bool clearTextPassword)
+        {
+            var root = doc.Element(XName.Get("configuration"));
+
+            var sourceNode = new XElement(XName.Get(sourceName));
+            AddEntry(sourceNode, "Username", userName);
+            if (clearTextPassword)
+            {
+                AddEntry(sourceNode, "ClearTextPassword", password);
+            }
+            else
+            {
+                AddEntry(sourceNode, "Password", password);
+            }
+
+            var packageSourceCredentialsNode = new XElement(XName.Get("packageSourceCredentials"));
+            packageSourceCredentialsNode.Add(sourceNode);
+
+            root.Add(packageSourceCredentialsNode);
+        }
+
         public static void AddEntry(XElement section, string key, string value)
         {
             var setting = new XElement(XName.Get("add"));
             setting.Add(new XAttribute(XName.Get("key"), key));
             setting.Add(new XAttribute(XName.Get("value"), value));
+            section.Add(setting);
+        }
+
+        public static void AddEntry(XElement section, string key, string value, string additionalAtrributeName, string additionalAttributeValue)
+        {
+            var setting = new XElement(XName.Get("add"));
+            setting.Add(new XAttribute(XName.Get("key"), key));
+            setting.Add(new XAttribute(XName.Get("value"), value));
+            setting.Add(new XAttribute(XName.Get(additionalAtrributeName), additionalAttributeValue));
+            section.Add(setting);
+        }
+
+        public static void AddEntry(XElement section, string key, string value, string additionalAtrributeName, string additionalAttributeValue, string additionalAtrributeName2, string additionalAttributeValue2)
+        {
+            var setting = new XElement(XName.Get("add"));
+            setting.Add(new XAttribute(XName.Get("key"), key));
+            setting.Add(new XAttribute(XName.Get("value"), value));
+            setting.Add(new XAttribute(XName.Get(additionalAtrributeName), additionalAttributeValue));
+            setting.Add(new XAttribute(XName.Get(additionalAtrributeName2), additionalAttributeValue2));
             section.Add(setting);
         }
 
@@ -139,45 +195,108 @@ namespace NuGet.Test.Utility
             }
         }
 
-        // Add NetStandard.Library and NetCorePlatforms to the feed and save the file.
+        public static void RemoveSource(XDocument doc, string key)
+        {
+            var packageSources = GetOrAddSection(doc, "packageSources");
+
+            foreach (var item in packageSources.Elements(XName.Get("add")).Where(e => e.FirstAttribute.Value.Equals(key, StringComparison.OrdinalIgnoreCase)).ToArray())
+            {
+                item.Remove();
+            }
+        }
+
+        // Add nuget.org as package source when NetStandard.Library and NetCorePlatforms packages are needed and save the file.
         public void AddNetStandardFeeds()
         {
-            var reposRoot = GetRepositoryRootDirectory();
-            var netStandardLibraryPackageFeed = GetRepoPackageDirectoryPath(reposRoot, "netstandard.library");
-            var netCorePlatformsPackageFeed = GetRepoPackageDirectoryPath(reposRoot, "microsoft.netcore.platforms");
-
-            Assert.True(Directory.Exists(netStandardLibraryPackageFeed));
-            Assert.True(Directory.Exists(netCorePlatformsPackageFeed));
+            const string nuget = "https://api.nuget.org/v3/index.json";
 
             var section = GetOrAddSection(XML, "packageSources");
-            AddEntry(section, "NetStandardLibrary", netStandardLibraryPackageFeed);
-            AddEntry(section, "NetCorePlatforms", netCorePlatformsPackageFeed);
+            AddEntry(section, "nuget", nuget);
 
             Save();
         }
 
-        private static DirectoryInfo GetRepositoryRootDirectory()
+        public void RemoveSource(string key)
         {
-            DirectoryInfo currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
-            while (currentDir != null)
+            RemoveSource(XML, key);
+            Save();
+        }
+
+        public void AddSource(string sourceName, string sourceUri)
+        {
+            var section = GetOrAddSection(XML, "packageSources");
+            AddEntry(section, sourceName, sourceUri);
+            Save();
+        }
+
+        public void AddSource(string sourceName, string sourceUri, string allowInsecureConnectionsValue)
+        {
+            var section = GetOrAddSection(XML, "packageSources");
+            AddEntry(section, sourceName, sourceUri, "allowInsecureConnections", allowInsecureConnectionsValue);
+            Save();
+        }
+
+        public void AddSource(string sourceName, string sourceUri, string attributeName, string attributeValue)
+        {
+            var section = GetOrAddSection(XML, "packageSources");
+            AddEntry(section, sourceName, sourceUri, attributeName, attributeValue);
+            Save();
+        }
+
+        public void AddPackageSourceMapping(string sourceName, params string[] patterns)
+        {
+            XElement packageSourceMappingSection = GetOrAddSection(XML, "packageSourceMapping");
+
+            packageSourceMappingSection.Add(
+                new XElement(
+                    XName.Get("packageSource"),
+                    new XAttribute(XName.Get("key"), sourceName),
+                    patterns.Select(i => new XElement(
+                        XName.Get("package"),
+                        new XAttribute(
+                            XName.Get("pattern"),
+                            i)))));
+
+            Save();
+        }
+
+        // Simply add any text as section into nuget.config file, adding large child node into nuget.config via api is tedious.
+        public static void AddSectionIntoNuGetConfig(string path, string content, string parentNode)
+        {
+            FileAttributes attr = File.GetAttributes(path);
+            // if path is directory then add section to default nuget.config, else add to file.
+            string nugetConfigPath = (attr & FileAttributes.Directory) == FileAttributes.Directory ?
+                Path.Combine(path, NuGet.Configuration.Settings.DefaultSettingsFileName) : path;
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load(nugetConfigPath);
+            XmlNode docParentNode = doc.SelectSingleNode(parentNode);
+
+            XmlDocument tempDoc = new XmlDocument();
+            tempDoc.LoadXml(content);
+
+            foreach (XmlNode child in tempDoc.ChildNodes)
             {
-                if (File.Exists(Path.Combine(currentDir.FullName, "NuGet.sln")))
+                XmlNode existingNode = docParentNode.SelectSingleNode(child.Name);
+
+                if (existingNode != null)
                 {
-                    // We have found the repo root.
-                    return currentDir;
+                    throw new ArgumentException($"Element node {existingNode.Name} already exist inside {parentNode} element.");
                 }
 
-                currentDir = currentDir.Parent;
+                //necessary for crossing XmlDocument contexts
+                XmlNode importNode = docParentNode.OwnerDocument.ImportNode(node: child, deep: true);
+                docParentNode.AppendChild(importNode);
             }
 
-            throw new DirectoryNotFoundException($"Starting from {Directory.GetCurrentDirectory()} the directory containing 'NuGet.sln' could not be found.");
+            doc.Save(nugetConfigPath);
         }
 
-        private static string GetRepoPackageDirectoryPath(DirectoryInfo reposRoot, string packageId)
+        public void SetDefaultPushSource(string packageSource)
         {
-            var repoPackageDir = Path.Combine(reposRoot.FullName, "packages", packageId);
-            return repoPackageDir;
+            XElement config = GetOrAddSection(XML, ConfigurationConstants.Config);
+            AddEntry(config, ConfigurationConstants.DefaultPushSource, packageSource);
+            Save();
         }
-           
     }
 }

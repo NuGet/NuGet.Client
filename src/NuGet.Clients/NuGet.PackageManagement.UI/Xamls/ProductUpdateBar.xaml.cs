@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -23,7 +24,7 @@ namespace NuGet.PackageManagement.UI
 
             if (productUpdateService == null)
             {
-                throw new ArgumentNullException("productUpdateService");
+                throw new ArgumentNullException(nameof(productUpdateService));
             }
 
             _productUpdateService = productUpdateService;
@@ -49,7 +50,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                ShowUpdateBar(e.CurrentVersion, e.NewVersion);
+                ShowUpdateBar();
             });
         }
 
@@ -63,7 +64,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(() =>
             {
                 _productUpdateService.Update();
-            });
+            }).PostOnFailure(nameof(ProductUpdateBar));
         }
 
         private void OnDeclineUpdateLinkClick(object sender, RoutedEventArgs e)
@@ -78,7 +79,7 @@ namespace NuGet.PackageManagement.UI
             _productUpdateService.DeclineUpdate(true);
         }
 
-        public void ShowUpdateBar(Version currentVersion, Version newVersion)
+        public void ShowUpdateBar()
         {
             if (IsVisible)
             {

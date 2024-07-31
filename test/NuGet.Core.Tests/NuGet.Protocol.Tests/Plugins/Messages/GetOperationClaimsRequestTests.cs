@@ -49,7 +49,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData("{\"ServiceIndex\":3}")]
         public void JsonDeserialization_ThrowsForInvalidServiceIndexValue(string json)
         {
-            Assert.Throws<InvalidCastException>(
+            Assert.Throws<JsonSerializationException>(
                 () => JsonSerializationUtilities.Deserialize<GetOperationClaimsRequest>(json));
         }
 

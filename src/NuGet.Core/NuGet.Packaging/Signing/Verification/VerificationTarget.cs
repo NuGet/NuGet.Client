@@ -17,22 +17,22 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Don't target any signatures.
         /// </summary>
-        None        = 0,
+        None = 0,
 
         /// <summary>
         /// Target unknown primary signatures.
         /// </summary>
-        Unknown     = 1 << 1,
+        Unknown = 1 << 1,
 
         /// <summary>
         /// Target author signatures
         /// </summary>
-        Author      = 1 << 2,
+        Author = 1 << 2,
 
         /// <summary>
         /// Target repository signatures
         /// </summary>
-        Repository  = 1 << 3,
+        Repository = 1 << 3,
 
         /// <summary>
         /// Target all available signatures.

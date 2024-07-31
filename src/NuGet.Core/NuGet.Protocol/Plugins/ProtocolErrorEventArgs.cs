@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Plugins
         /// Instantiates a new <see cref="ProtocolErrorEventArgs" /> class.
         /// </summary>
         /// <param name="exception">An exception.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="exception" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="exception" /> is <see langword="null" />.</exception>
         public ProtocolErrorEventArgs(Exception exception)
         {
             if (exception == null)
@@ -40,8 +40,8 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="exception">An exception.</param>
         /// <param name="message">A message.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="exception" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="exception" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="message" /> is <see langword="null" />.</exception>
         public ProtocolErrorEventArgs(Exception exception, Message message)
             : this(exception)
         {

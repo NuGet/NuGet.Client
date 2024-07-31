@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
 
 namespace NuGet.Protocol
 {
@@ -23,9 +22,11 @@ namespace NuGet.Protocol
 
             if (serviceIndex != null)
             {
-                var rawSearch = await source.GetResourceAsync<RawSearchResourceV3>(token);
+                var endpoints = serviceIndex.GetServiceEntryUris(ServiceTypes.SearchQueryService);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
-                curResource = new PackageSearchResourceV3(rawSearch);
+                // construct a new resource
+                curResource = new PackageSearchResourceV3(httpSourceResource.HttpSource, endpoints);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

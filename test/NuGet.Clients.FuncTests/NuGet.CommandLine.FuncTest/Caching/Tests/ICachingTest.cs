@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Test.Caching
         /// Iteration count. How many times should the same commmand be executed.
         /// </summary>
         /// 
-        int IterationCount { get;  }
+        int IterationCount { get; }
 
         /// <summary>
         /// Prepares the test context or file system for the nuget.exe command.

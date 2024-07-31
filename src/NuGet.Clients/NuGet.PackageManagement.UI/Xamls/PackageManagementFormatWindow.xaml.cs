@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using Microsoft.VisualStudio.PlatformUI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 
@@ -12,7 +13,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageManagementFormatWindow.xaml
     /// </summary>
-    public partial class PackageManagementFormatWindow : VsDialogWindow
+    public partial class PackageManagementFormatWindow : DialogWindow
     {
         private INuGetUIContext _uiContext;
 

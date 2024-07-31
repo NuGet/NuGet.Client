@@ -27,9 +27,9 @@ namespace NuGet.Commands
         private readonly RestoreCollectorLogger _logger;
         private readonly ProjectRestoreRequest _request;
 
-        private const string WalkFrameworkDependencyDuration = "WalkFrameworkDependencyDuration";
-        private const string WalkRuntimeDependencyDuration = "WalkRuntimeDependencyDuration";
-        private const string EvaluateDownloadDependenciesDuration = "EvaluateDownloadDependenciesDuration";
+        private const string WalkFrameworkDependencyDuration = nameof(WalkFrameworkDependencyDuration);
+        private const string WalkRuntimeDependencyDuration = nameof(WalkRuntimeDependencyDuration);
+        private const string EvaluateDownloadDependenciesDuration = nameof(EvaluateDownloadDependenciesDuration);
 
         public Guid ParentId { get; }
 
@@ -48,7 +48,8 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             bool forceRuntimeGraphCreation,
             CancellationToken token,
-            TelemetryActivity telemetryActivity)
+            TelemetryActivity telemetryActivity,
+            string telemetryPrefix)
         {
             var allRuntimes = RuntimeGraph.Empty;
             var frameworkTasks = new List<Task<RestoreTargetGraph>>();
@@ -73,24 +74,22 @@ namespace NuGet.Commands
 
             graphs.AddRange(frameworkGraphs);
 
-            telemetryActivity.EndIntervalMeasure(WalkFrameworkDependencyDuration);
+            telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkFrameworkDependencyDuration);
 
             telemetryActivity.StartIntervalMeasure();
 
             var downloadDependencyResolutionTasks = new List<Task<DownloadDependencyResolutionResult>>();
-            var ddLibraryRangeToRemoteMatchCache = new ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>>();
             foreach (var targetFrameworkInformation in _request.Project.TargetFrameworks)
             {
-                downloadDependencyResolutionTasks.Add(ResolveDownloadDependencies(
+                downloadDependencyResolutionTasks.Add(ResolveDownloadDependenciesAsync(
                     context,
-                    ddLibraryRangeToRemoteMatchCache,
                     targetFrameworkInformation,
                     token));
             }
 
             var downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
 
-            telemetryActivity.EndIntervalMeasure(EvaluateDownloadDependenciesDuration);
+            telemetryActivity.EndIntervalMeasure(telemetryPrefix + EvaluateDownloadDependenciesDuration);
 
             var uniquePackages = new HashSet<LibraryIdentity>();
 
@@ -158,7 +157,7 @@ namespace NuGet.Commands
 
                 graphs.AddRange(runtimeGraphs);
 
-                telemetryActivity.EndIntervalMeasure(WalkRuntimeDependencyDuration);
+                telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkRuntimeDependencyDuration);
 
                 // Install runtime-specific packages
                 success &= await InstallPackagesAsync(
@@ -220,10 +219,10 @@ namespace NuGet.Commands
             return null;
         }
 
-        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependenciesAsync(RemoteWalkContext context, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
         {
-            var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(
-                    downloadDependenciesCache, downloadDependency, context.RemoteLibraryProviders, context.LocalLibraryProviders, context.CacheContext, _logger, token));
+            var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency =>
+            ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
 
             var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
 
@@ -253,6 +252,8 @@ namespace NuGet.Commands
             RemoteWalkContext context,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var name = FrameworkRuntimePair.GetTargetGraphName(framework, runtimeIdentifier);
             var graphs = new List<GraphNode<RemoteResolveResult>>
             {
@@ -302,14 +303,14 @@ namespace NuGet.Commands
             if (!graphSuccess)
             {
                 // Log message for any unresolved dependencies
-                await UnresolvedMessages.LogAsync(graphs, context, context.Logger, token);
+                await UnresolvedMessages.LogAsync(graphs, context, token);
             }
 
             var ddSuccess = downloadDependencyResults.All(e => e.Unresolved.Count == 0);
 
             if (!ddSuccess)
             {
-                await UnresolvedMessages.LogAsync(downloadDependencyResults, context.RemoteLibraryProviders, context.CacheContext, context.Logger, token);
+                await UnresolvedMessages.LogAsync(downloadDependencyResults, context, token);
             }
 
             return graphSuccess && ddSuccess;

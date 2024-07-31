@@ -12,6 +12,7 @@ namespace Test.Utility
     {
         private readonly Stream _innerStream;
         private readonly CancellationToken _cancellationToken;
+        internal bool _isDisposed = false; // internal for testing purposes
 
         public SlowStream(Stream innerStream)
             : this(innerStream, CancellationToken.None)
@@ -77,6 +78,24 @@ namespace Test.Utility
         {
             get { throw new NotSupportedException(); }
             set { throw new NotSupportedException(); }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                // free managed resources
+                _innerStream.Dispose();
+            }
+
+            _isDisposed = true;
         }
     }
 }

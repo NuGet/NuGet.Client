@@ -49,11 +49,14 @@ namespace NuGet.Packaging
             var filesAdded = new List<string>();
             var nupkgStartPosition = packageStream.Position;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
                 {
                     var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
+                    packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
+
                     var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
                     var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                     var packageDirectory = packageDirectoryInfo.FullName;
@@ -74,11 +77,6 @@ namespace NuGet.Packaging
                     }
                     catch (SignatureException)
                     {
-                        telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
                         throw;
                     }
 
@@ -134,12 +132,8 @@ namespace NuGet.Packaging
                             packageExtractionContext,
                             token));
                     }
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                      packageExtractionContext.PackageSaveMode,
-                                      NuGetOperationStatus.Succeeded,
-                                      ExtractionSource.NuGetFolderProject,
-                                      packageIdentityFromNuspec);
 
+                    packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                 }
 
                 return filesAdded;
@@ -175,10 +169,11 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var filesAdded = new List<string>();
 
-
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
+                packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
 
                 try
                 {
@@ -196,11 +191,6 @@ namespace NuGet.Packaging
                 }
                 catch (SignatureException)
                 {
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
                     throw;
                 }
 
@@ -246,12 +236,7 @@ namespace NuGet.Packaging
                         token));
                 }
 
-                telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Succeeded,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
-
+                packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                 return filesAdded;
             }
         }
@@ -285,9 +270,11 @@ namespace NuGet.Packaging
             var extractionId = Guid.NewGuid();
             var filesAdded = new List<string>();
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
+                packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
 
                 try
                 {
@@ -305,11 +292,6 @@ namespace NuGet.Packaging
                 }
                 catch (SignatureException)
                 {
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
                     throw;
                 }
 
@@ -348,11 +330,7 @@ namespace NuGet.Packaging
                         token));
                 }
 
-                telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Succeeded,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
+                packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                 return filesAdded;
             }
         }
@@ -394,7 +372,8 @@ namespace NuGet.Packaging
             var logger = packageExtractionContext.Logger;
             var extractionId = Guid.NewGuid();
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.DownloadResource, packageIdentity);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
 
                 var targetPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
@@ -418,12 +397,6 @@ namespace NuGet.Packaging
                         {
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
-
-                            logger.LogInformation(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_InstallingPackage,
-                                packageIdentity.Id,
-                                packageIdentity.Version));
 
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -453,6 +426,7 @@ namespace NuGet.Packaging
                             var tempHashPath = Path.Combine(targetPath, Path.GetRandomFileName());
                             var tempNupkgMetadataPath = Path.Combine(targetPath, Path.GetRandomFileName());
                             var packageSaveMode = packageExtractionContext.PackageSaveMode;
+                            string contentHash;
 
                             try
                             {
@@ -515,12 +489,13 @@ namespace NuGet.Packaging
                                         File.WriteAllText(tempHashPath, packageHash);
 
                                         // get hash for the unsigned content of package
-                                        var contentHash = packageReader.GetContentHash(cancellationToken, GetUnsignedPackageHash: () => packageHash);
+                                        contentHash = packageReader.GetContentHash(cancellationToken, GetUnsignedPackageHash: () => packageHash);
 
                                         // write the new hash file
                                         var hashFile = new NupkgMetadataFile()
                                         {
-                                            ContentHash = contentHash
+                                            ContentHash = contentHash,
+                                            Source = source
                                         };
 
                                         NupkgMetadataFileFormat.Write(tempNupkgMetadataPath, hashFile);
@@ -542,11 +517,6 @@ namespace NuGet.Packaging
                                         ex.Message));
                                 }
 
-                                telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.DownloadResource,
-                                       packageIdentity);
                                 throw;
                             }
 
@@ -579,13 +549,9 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataPath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                            logger.LogInformation(StringFormatter.Log_InstalledPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, source, contentHash, targetPath));
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Succeeded,
-                                       ExtractionSource.DownloadResource,
-                                       packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
                         }
                         else
@@ -593,11 +559,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose("Lock not required - Package already installed "
                                                 + $"{packageIdentity.Id} {packageIdentity.Version}");
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.NoOp,
-                                       ExtractionSource.DownloadResource,
-                                       packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.NoOp);
                             return false;
                         }
                     },
@@ -622,8 +584,8 @@ namespace NuGet.Packaging
 
                 // delete the parent directory if it is empty
                 if (Directory.Exists(parent.FullName) &&
-                parent.GetFiles().Count() == 0 &&
-                parent.GetDirectories().Count() == 0)
+                    !parent.GetFiles().Any() &&
+                    !parent.GetDirectories().Any())
                 {
                     Directory.Delete(parent.FullName);
                 }
@@ -650,7 +612,8 @@ namespace NuGet.Packaging
 
             var logger = packageExtractionContext.Logger;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.RestoreCommand, packageIdentity);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 var targetPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
                 var targetNuspec = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
@@ -673,12 +636,6 @@ namespace NuGet.Packaging
                         {
                             logger.LogVerbose(
                                 $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
-
-                            logger.LogInformation(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_InstallingPackage,
-                                packageIdentity.Id,
-                                packageIdentity.Version));
 
                             cancellationToken.ThrowIfCancellationRequested();
 
@@ -747,11 +704,6 @@ namespace NuGet.Packaging
                                             ex.Message));
                                     }
 
-                                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                        packageExtractionContext.PackageSaveMode,
-                                        NuGetOperationStatus.Failed,
-                                        ExtractionSource.RestoreCommand,
-                                        packageIdentity);
                                     throw;
                                 }
                             }
@@ -824,7 +776,8 @@ namespace NuGet.Packaging
                             // write the new hash file
                             var hashFile = new NupkgMetadataFile()
                             {
-                                ContentHash = contentHash
+                                ContentHash = contentHash,
+                                Source = packageDownloader.Source
                             };
 
                             NupkgMetadataFileFormat.Write(tempNupkgMetadataFilePath, hashFile);
@@ -863,13 +816,9 @@ namespace NuGet.Packaging
 
                             File.Move(tempNupkgMetadataFilePath, nupkgMetadataFilePath);
 
-                            logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                            logger.LogInformation(StringFormatter.Log_InstalledPackage(packageIdentity.Id, packageIdentity.Version.OriginalVersion, packageDownloader.Source, contentHash, targetPath));
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                packageExtractionContext.PackageSaveMode,
-                                NuGetOperationStatus.Succeeded,
-                                ExtractionSource.RestoreCommand,
-                                packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
                         }
                         else
@@ -877,11 +826,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose("Lock not required - Package already installed "
                                                 + $"{packageIdentity.Id} {packageIdentity.Version}");
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                packageExtractionContext.PackageSaveMode,
-                                NuGetOperationStatus.NoOp,
-                                ExtractionSource.RestoreCommand,
-                                packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.NoOp);
                             return false;
                         }
                     },
@@ -1114,7 +1059,7 @@ namespace NuGet.Packaging
                         if (packageExtractionContext.Logger is ICollectorLogger collectorLogger)
                         {
                             // collectorLogger.Errors is a collection of errors and warnings, we just need to fail if there are errors.
-                            if (collectorLogger.Errors.Where(e => e.Level >= LogLevel.Error).Any())
+                            if (collectorLogger.Errors.Any(e => e.Level >= LogLevel.Error))
                             {
                                 // Send empty results since errors and warnings have already been logged
                                 throw new SignatureException(results: Enumerable.Empty<PackageVerificationResult>().ToList(), package: package);

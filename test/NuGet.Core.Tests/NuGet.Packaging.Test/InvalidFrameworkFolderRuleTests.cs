@@ -59,7 +59,7 @@ namespace NuGet.Packaging.Test
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                Assert.True(runner.RunPackageBuild());
 
                 var ruleSet = RuleSet.PackageCreationRuleSet;
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Test
                         issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
                     }
 
-                    Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5103 && p.Message.Contains("'lib' is not recognized as a valid framework name")));
+                    Assert.Contains(issues, p => p.Code == NuGetLogCode.NU5103 && p.Message.Contains("'lib' is not recognized as a valid framework name"));
                 }
             }
         }
@@ -121,7 +121,7 @@ namespace NuGet.Packaging.Test
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                Assert.True(runner.RunPackageBuild());
 
                 var ruleSet = RuleSet.PackageCreationRuleSet;
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.Test
                         issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
                     }
 
-                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5103 && p.Message.Contains("'lib' is not recognized as a valid framework name")));
+                    Assert.DoesNotContain(issues, p => p.Code == NuGetLogCode.NU5103 && p.Message.Contains("'lib' is not recognized as a valid framework name"));
                 }
             }
         }

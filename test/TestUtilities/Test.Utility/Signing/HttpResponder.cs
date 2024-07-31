@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+#if IS_SIGNING_SUPPORTED
 using System.IO;
 using System.Net;
+#endif
 
 namespace Test.Utility.Signing
 {
@@ -11,7 +13,7 @@ namespace Test.Utility.Signing
     {
         public abstract Uri Url { get; }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public abstract void Respond(HttpListenerContext context);
 
         protected static bool IsGet(HttpListenerRequest request)
@@ -39,6 +41,20 @@ namespace Test.Utility.Signing
             using (var writer = new BinaryWriter(response.OutputStream))
             {
                 writer.Write(bytes);
+            }
+        }
+
+        protected static void WriteResponseBody(HttpListenerResponse response, ReadOnlyMemory<byte> bytes)
+        {
+            response.ContentLength64 = bytes.Length;
+
+            using (var writer = new BinaryWriter(response.OutputStream))
+            {
+#if NET5_0_OR_GREATER
+                writer.Write(bytes.Span);
+#else
+                writer.Write(bytes.ToArray());
+#endif
             }
         }
 #endif

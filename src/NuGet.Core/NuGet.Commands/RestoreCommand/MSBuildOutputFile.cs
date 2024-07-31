@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ namespace NuGet.Commands
         /// </summary>
         public XDocument Content { get; }
 
-        public MSBuildOutputFile (string path, XDocument content)
+        public MSBuildOutputFile(string path, XDocument content)
         {
             if (path == null)
             {

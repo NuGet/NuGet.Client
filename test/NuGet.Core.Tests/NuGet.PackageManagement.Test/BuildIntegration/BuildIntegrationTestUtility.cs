@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -37,12 +37,12 @@ namespace NuGet.PackageManagement.Test
         }
 
         public const string ProjectJsonWithPackage = @"{
-  'dependencies': {
-    'EntityFramework': '5.0.0'
+  ""dependencies"": {
+    ""EntityFramework"": ""5.0.0""
   },
-  'frameworks': {
-                'net46': { }
-            }
+  ""frameworks"": {
+    ""net46"": { }
+  }
 }";
 
         public static ExternalProjectReference CreateReference(string name)

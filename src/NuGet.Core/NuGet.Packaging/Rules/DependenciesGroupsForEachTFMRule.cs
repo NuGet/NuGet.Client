@@ -60,13 +60,15 @@ namespace NuGet.Packaging.Rules
 
         internal (HashSet<NuGetFramework>, HashSet<NuGetFramework>, HashSet<NuGetFramework>) Categorize(IEnumerable<string> files, IEnumerable<NuGetFramework> tfmsFromNuspec)
         {
-            var managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
+            var managedCodeConventions = new ManagedCodeConventions(RuntimeGraph.Empty);
             Func<object, object, bool> isCompatible = managedCodeConventions.Properties["tfm"].CompatibilityTest;
             var collection = new ContentItemCollection();
             collection.Load(files);
 
-            var libItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
-            var refItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
+            List<ContentItemGroup> libItems = new();
+            List<ContentItemGroup> refItems = new();
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies, libItems);
+            ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies, refItems);
 
             var tfmsFromFilesSet = new HashSet<NuGetFramework>();
             tfmsFromFilesSet.AddRange(ContentExtractor.GetGroupFrameworks(libItems));
@@ -100,7 +102,7 @@ namespace NuGet.Packaging.Rules
 
             return (compatNotExactMatches, noExactMatchesFromFile, noExactMatchesFromNuspec);
         }
-        
+
         internal (string noExactMatchString, string compatMatchString) GenerateWarningString(ICollection<NuGetFramework> noExactMatchesFromFile,
                 ICollection<NuGetFramework> noExactMatchesFromNuspec, ICollection<NuGetFramework> compatNotExactMatches)
         {
@@ -110,11 +112,11 @@ namespace NuGet.Packaging.Rules
             if (noExactMatchesFromFile.Count != 0)
             {
                 noExactMatchString.AppendLine(MessageFormat);
-                
+
                 foreach (var tfm in noExactMatchesFromFile)
                 {
-                    if(tfm == noExactMatchesFromFile.First())
-                    { 
+                    if (tfm == noExactMatchesFromFile.First())
+                    {
                         noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
                         noExactMatchString.Append(" ");
                         noExactMatchString.Append(tfm.GetFrameworkString());
@@ -122,7 +124,7 @@ namespace NuGet.Packaging.Rules
                     }
                     noExactMatchString.Append(" ");
                     noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
-                    
+
                     noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
                     noExactMatchString.Append(" ");
                     noExactMatchString.Append(tfm.GetFrameworkString());
@@ -136,7 +138,7 @@ namespace NuGet.Packaging.Rules
                 if (noExactMatchString.Length == 0)
                 {
                     noExactMatchString.AppendLine(MessageFormat);
-                    
+
                 }
 
                 foreach (var tfm in noExactMatchesFromNuspec)
@@ -161,7 +163,7 @@ namespace NuGet.Packaging.Rules
             if (compatNotExactMatches.Count != 0)
             {
                 compatMatchString.AppendLine(CompatMatchFoundWarningMessageFormat);
-                
+
                 foreach (var tfm in compatNotExactMatches)
                 {
                     if (tfm == compatNotExactMatches.First())
@@ -172,7 +174,7 @@ namespace NuGet.Packaging.Rules
                         continue;
                     }
                     compatMatchString.Append(" ");
-                    compatMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);                    
+                    compatMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
                     compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
                     compatMatchString.Append(" ");
                     compatMatchString.Append(tfm.GetFrameworkString());

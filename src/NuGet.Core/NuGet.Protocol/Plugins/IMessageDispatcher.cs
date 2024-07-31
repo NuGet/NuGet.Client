@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Sets the connection to be used for dispatching messages.
         /// </summary>
-        /// <param name="connection">A connection instance.  Can be <c>null</c>.</param>
+        /// <param name="connection">A connection instance.  Can be <see langword="null" />.</param>
         void SetConnection(IConnection connection);
     }
 }

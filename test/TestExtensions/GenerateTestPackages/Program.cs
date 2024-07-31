@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
@@ -11,9 +11,9 @@ namespace GenerateTestPackages
 {
     class Program
     {
-        const string keyFileName = "TestPackageKey.snk";
+        const string KeyFileName = "TestPackageKey.snk";
 
-        static Dictionary<string, PackageInfo> _packages = new Dictionary<string, PackageInfo>();
+        static Dictionary<string, PackageInfo> Packages = new Dictionary<string, PackageInfo>();
 
         static void Main(string[] args)
         {
@@ -35,7 +35,7 @@ namespace GenerateTestPackages
             var repositoryPath = Path.GetDirectoryName(nuspecPath);
             var basePath = Path.Combine(repositoryPath, "files", Path.GetFileNameWithoutExtension(nuspecPath));
             Directory.CreateDirectory(basePath);
-            
+
             var createdFiles = new List<string>();
             bool deleteDir = true;
             using (var fileStream = File.OpenRead(nuspecPath))
@@ -54,7 +54,7 @@ namespace GenerateTestPackages
                             // A user created file exists. Continue to next file.
                             continue;
                         }
-                        
+
                         createdFiles.Add(outputPath);
                         string outputDir = Path.GetDirectoryName(outputPath);
                         if (!Directory.Exists(outputDir))
@@ -77,7 +77,7 @@ namespace GenerateTestPackages
 
                     packageBuilder.PopulateFiles(basePath, manifest.Files);
                 }
-                
+
                 string nupkgDirectory = Path.GetFullPath("packages");
                 Directory.CreateDirectory(nupkgDirectory);
                 string nupkgPath = Path.Combine(nupkgDirectory, Path.GetFileNameWithoutExtension(nuspecPath)) + ".nupkg";
@@ -92,7 +92,7 @@ namespace GenerateTestPackages
                 {
                     Directory.Delete(basePath, recursive: true);
                 }
-                else 
+                else
                 {
                     // Delete files that we created.
                     createdFiles.ForEach(File.Delete);
@@ -108,23 +108,23 @@ namespace GenerateTestPackages
             XNamespace ns = "http://schemas.microsoft.com/vs/2009/dgml";
 
             // Parse through the dgml file and group things by Source
-            _packages = document.Descendants(ns + "Link")
+            Packages = document.Descendants(ns + "Link")
                 .ToLookup(l => l.Attribute("Source").Value)
                 .Select(group => new PackageInfo(group.Key, group.Select(GetDependencyInfoFromLinkTag)))
                 .ToDictionary(p => p.FullName.ToString());
 
             // Add all the packages that only exist as targets to the dictionary
-            var allPackageNames = _packages.Values.SelectMany(p => p.Dependencies).Select(dep => dep.FullName.ToString()).Distinct().ToList();
+            var allPackageNames = Packages.Values.SelectMany(p => p.Dependencies).Select(dep => dep.FullName.ToString()).Distinct().ToList();
             foreach (var dependency in allPackageNames)
             {
-                if (!_packages.ContainsKey(dependency))
+                if (!Packages.ContainsKey(dependency))
                 {
-                    _packages.Add(dependency, new PackageInfo(dependency));
+                    Packages.Add(dependency, new PackageInfo(dependency));
                 }
             }
 
             // Process all the packages
-            foreach (var p in _packages.Values)
+            foreach (var p in Packages.Values)
             {
                 EnsurePackageProcessed(p);
             }
@@ -136,7 +136,7 @@ namespace GenerateTestPackages
 
             foreach (var package in remainders)
             {
-                if (!_packages.ContainsKey(package.FullName.ToString()))
+                if (!Packages.ContainsKey(package.FullName.ToString()))
                 {
                     EnsurePackageProcessed(package);
                 }
@@ -154,7 +154,7 @@ namespace GenerateTestPackages
 
         static void EnsurePackageProcessed(string fullName)
         {
-            EnsurePackageProcessed(_packages[fullName]);
+            EnsurePackageProcessed(Packages[fullName]);
         }
 
         static void EnsurePackageProcessed(PackageInfo package)
@@ -183,9 +183,9 @@ namespace GenerateTestPackages
         {
 
             // Save the snk file from the embedded resource to the disk so we can use it when we compile
-            using (var resStream = typeof(Program).Assembly.GetManifestResourceStream("GenerateTestPackages." + keyFileName))
+            using (var resStream = typeof(Program).Assembly.GetManifestResourceStream("GenerateTestPackages." + KeyFileName))
             {
-                using (var snkStream = File.Create(keyFileName))
+                using (var snkStream = File.Create(KeyFileName))
                 {
                     resStream.CopyTo(snkStream);
                 }
@@ -196,7 +196,7 @@ namespace GenerateTestPackages
             var compilerParams = new CompilerParameters()
             {
                 OutputAssembly = outputPath ?? Path.GetFullPath(GetAssemblyFullPath(package.FullName)),
-                CompilerOptions = "/keyfile:" + keyFileName
+                CompilerOptions = "/keyfile:" + KeyFileName
             };
 
             // Add all the dependencies as referenced assemblies
@@ -214,7 +214,7 @@ namespace GenerateTestPackages
                 Console.WriteLine(results.Errors[0]);
             }
 
-            File.Delete(keyFileName);
+            File.Delete(KeyFileName);
         }
 
         static void CreatePackage(PackageInfo package)
@@ -235,7 +235,7 @@ namespace GenerateTestPackages
                 TargetPath = @"lib\" + Path.GetFileName(assemblySourcePath)
             });
 
-            var set = new PackageDependencySet(VersionUtility.DefaultTargetFramework, 
+            var set = new PackageDependencySet(VersionUtility.DefaultTargetFramework,
                 package.Dependencies.Select(dependency => new PackageDependency(dependency.Id, dependency.VersionSpec)));
             packageBuilder.DependencySets.Add(set);
 
@@ -247,7 +247,7 @@ namespace GenerateTestPackages
 
         static string GetAssemblyFullPath(FullPackageName fullName)
         {
-            string relativeDir = String.Format(@"Assemblies\{0}\{1}", fullName.Id, fullName.Version);
+            string relativeDir = string.Format(@"Assemblies\{0}\{1}", fullName.Id, fullName.Version);
             string fullDir = Path.GetFullPath(relativeDir);
             Directory.CreateDirectory(fullDir);
             return Path.Combine(fullDir, fullName.Id + ".dll");

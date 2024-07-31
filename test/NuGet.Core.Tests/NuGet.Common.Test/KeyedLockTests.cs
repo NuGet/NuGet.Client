@@ -30,7 +30,7 @@ namespace NuGet.Common.Test
         public async Task EnterAsync_WhenKeyIsNull_Throws()
         {
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                () => _mutex.EnterAsync(key: null, CancellationToken.None));
+                () => _mutex.EnterAsync(key: null!, CancellationToken.None));
 
             Assert.Equal("key", exception.ParamName);
         }
@@ -80,7 +80,7 @@ namespace NuGet.Common.Test
         [Fact]
         public void Enter_WhenKeyIsNull_Throws()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => _mutex.Enter(key: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _mutex.Enter(key: null!));
 
             Assert.Equal("key", exception.ParamName);
         }
@@ -94,29 +94,27 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void Enter_WhenCompleted_LockIsAcquired()
+        public async Task Enter_WhenCompleted_LockIsAcquired()
         {
             _mutex.Enter(Key);
 
             using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
             {
-                Assert.Throws<OperationCanceledException>(
-                    () => _mutex.EnterAsync(Key, cancellationTokenSource.Token).GetAwaiter().GetResult());
+                await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => _mutex.EnterAsync(Key, cancellationTokenSource.Token));
             }
 
             _mutex.Exit(Key);
         }
 
         [Fact]
-        public void Enter_WithDifferentKeys_DoesNotBlock()
+        public async Task Enter_WithDifferentKeys_DoesNotBlock()
         {
             _mutex.Enter(Key);
 
             using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
             {
-                Task task = Task.Run(() => _mutex.Enter(OtherKey));
-
-                task.GetAwaiter().GetResult();
+                await Task.Run(() => _mutex.Enter(OtherKey));
             }
 
             _mutex.Exit(Key);
@@ -126,7 +124,7 @@ namespace NuGet.Common.Test
         [Fact]
         public async Task ExitAsync_WhenKeyIsNull_Throws()
         {
-            var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => _mutex.ExitAsync(key: null));
+            var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => _mutex.ExitAsync(key: null!));
 
             Assert.Equal("key", exception.ParamName);
         }
@@ -162,7 +160,7 @@ namespace NuGet.Common.Test
         [Fact]
         public void Exit_WhenKeyIsNull_Throws()
         {
-            var exception = Assert.Throws<ArgumentNullException>(() => _mutex.Enter(key: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => _mutex.Enter(key: null!));
 
             Assert.Equal("key", exception.ParamName);
         }

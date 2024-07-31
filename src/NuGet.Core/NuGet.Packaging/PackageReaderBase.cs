@@ -33,7 +33,7 @@ namespace NuGet.Packaging
         /// Instantiates a new <see cref="PackageReaderBase" /> class.
         /// </summary>
         /// <param name="frameworkProvider">A framework mapping provider.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="frameworkProvider" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="frameworkProvider" /> is <see langword="null" />.</exception>
         public PackageReaderBase(IFrameworkNameProvider frameworkProvider)
             : this(frameworkProvider, new CompatibilityProvider(frameworkProvider))
         {
@@ -44,8 +44,8 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="frameworkProvider">A framework mapping provider.</param>
         /// <param name="compatibilityProvider">A framework compatibility provider.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="frameworkProvider" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="compatibilityProvider" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="frameworkProvider" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="compatibilityProvider" /> is <see langword="null" />.</exception>
         public PackageReaderBase(IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
         {
             if (frameworkProvider == null)
@@ -360,9 +360,13 @@ namespace NuGet.Packaging
         /// <summary>
         /// Frameworks mentioned in the package.
         /// </summary>
+        /// <remarks>
+        /// This method returns the target frameworks supported for packages.config projects.
+        /// For PackageReference compatibility, use <see cref="NuGet.Client.ManagedCodeConventions"/>
+        /// </remarks>
         public virtual IEnumerable<NuGetFramework> GetSupportedFrameworks()
         {
-            var frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
+            var frameworks = new HashSet<NuGetFramework>(NuGetFrameworkFullComparer.Instance);
 
             frameworks.UnionWith(GetLibItems().Select(g => g.TargetFramework));
 
@@ -374,9 +378,16 @@ namespace NuGet.Packaging
 
             frameworks.UnionWith(GetFrameworkItems().Select(g => g.TargetFramework));
 
-            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, new NuGetFrameworkSorter());
+            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, NuGetFrameworkSorter.Instance);
         }
 
+        /// <summary>
+        /// Frameworks mentioned in the package.
+        /// </summary>
+        /// <remarks>
+        /// This method returns the target frameworks supported for packages.config projects.
+        /// For PackageReference compatibility, use <see cref="NuGet.Client.ManagedCodeConventions"/>
+        /// </remarks>
         public virtual Task<IEnumerable<NuGetFramework>> GetSupportedFrameworksAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(GetSupportedFrameworks());
@@ -414,7 +425,7 @@ namespace NuGet.Packaging
 
         protected IEnumerable<FrameworkSpecificGroup> GetFileGroups(string folder)
         {
-            var groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
+            var groups = new Dictionary<NuGetFramework, List<string>>(NuGetFrameworkFullComparer.Instance);
             var allowSubFolders = true;
 
             foreach (var path in GetFiles(folder))
@@ -433,9 +444,9 @@ namespace NuGet.Packaging
             }
 
             // Sort the groups by framework, and the items by ordinal string compare to keep things deterministic
-            foreach (var framework in groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter()))
+            foreach ((var framework, var items) in groups.OrderBy(e => e.Key, NuGetFrameworkSorter.Instance))
             {
-                yield return new FrameworkSpecificGroup(framework, groups[framework].OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
+                yield return new FrameworkSpecificGroup(framework, items.OrderBy(e => e, StringComparer.OrdinalIgnoreCase));
             }
         }
 
@@ -545,7 +556,7 @@ namespace NuGet.Packaging
             // Destination and filePath must be normalized.
             var fullPath = Path.GetFullPath(Path.Combine(normalizedDestination, normalizedFilePath));
 
-            if(!fullPath.StartsWith(normalizedDestination,PathUtility.GetStringComparisonBasedOnOS()) || fullPath.Length == normalizedDestination.Length)
+            if (!fullPath.StartsWith(normalizedDestination, PathUtility.GetStringComparisonBasedOnOS()) || fullPath.Length == normalizedDestination.Length)
             {
                 throw new UnsafePackageEntryException(string.Format(
                     CultureInfo.CurrentCulture,
@@ -557,7 +568,7 @@ namespace NuGet.Packaging
 
         protected string NormalizeDirectoryPath(string path)
         {
-            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
             {
                 path += Path.DirectorySeparatorChar;
             }

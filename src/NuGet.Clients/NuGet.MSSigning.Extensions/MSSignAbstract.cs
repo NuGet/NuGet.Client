@@ -70,7 +70,7 @@ namespace NuGet.MSSigning.Extensions
                 {
                     throw new InvalidOperationException(NuGetMSSignCommand.MSSignCommandNoCngKeyException);
                 }
-            
+
                 if (cngkey.AlgorithmGroup != CngAlgorithmGroup.Rsa)
                 {
                     cngkey.Dispose();

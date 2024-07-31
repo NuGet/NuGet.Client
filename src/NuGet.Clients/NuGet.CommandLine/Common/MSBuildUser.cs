@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,14 +25,21 @@ namespace NuGet.Common
         // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\15.0\Bin
         public void LoadAssemblies(string msbuildDirectory)
         {
-            if (String.IsNullOrEmpty(msbuildDirectory))
+            if (string.IsNullOrEmpty(msbuildDirectory))
             {
                 throw new ArgumentNullException(nameof(msbuildDirectory));
             }
 
+            string microsoftBuildDllPath = Path.Combine(msbuildDirectory, "Microsoft.Build.dll");
+
+            if (!File.Exists(microsoftBuildDllPath))
+            {
+                throw new FileNotFoundException(message: null, microsoftBuildDllPath);
+            }
+
             _msbuildDirectory = msbuildDirectory;
-            _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
-            _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
+            _msbuildAssembly = Assembly.LoadFrom(microsoftBuildDllPath);
+            _frameworkAssembly = Assembly.LoadFrom(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
 
             LoadTypes();
         }
@@ -69,7 +76,7 @@ namespace NuGet.Common
                 resourceDir = new[] {
                     Path.Combine(_msbuildDirectory, CultureInfo.CurrentCulture.TwoLetterISOLanguageName),
                     Path.Combine(_msbuildDirectory, "en") }
-                    .FirstOrDefault(d => Directory.Exists(d));                
+                    .FirstOrDefault(d => Directory.Exists(d));
             }
             else
             {

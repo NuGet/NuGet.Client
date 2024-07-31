@@ -10,7 +10,7 @@ namespace NuGet.Commands.SignCommand
 {
     public interface IPasswordProvider
     {
-// Currently there is no cross platform interactive scenario
+        // Currently there is no cross platform interactive scenario
 #if IS_DESKTOP
         /// <summary>
         /// Requests user to input password and returns it as a SecureString.

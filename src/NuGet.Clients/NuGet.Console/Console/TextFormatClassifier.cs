@@ -27,15 +27,12 @@ namespace NuGetConsole.Implementation.Console
     [Export(typeof(ITextFormatClassifierProvider))]
     internal class TextFormatClassifierProvider : ITextFormatClassifierProvider
     {
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IStandardClassificationService StandardClassificationService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistryService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IClassificationFormatMapService ClassificationFormatMapService { get; set; }
 

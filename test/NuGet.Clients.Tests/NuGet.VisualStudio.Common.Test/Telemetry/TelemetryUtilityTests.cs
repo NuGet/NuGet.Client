@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using FluentAssertions;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
@@ -10,34 +13,6 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 {
     public class TelemetryUtilityTests
     {
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void CreateFileAndForgetEventName_WhenTypeNameIsNullOrEmpty_Throws(string typeName)
-        {
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => TelemetryUtility.CreateFileAndForgetEventName(typeName, "memberName"));
-
-            Assert.Equal("typeName", exception.ParamName);
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void CreateFileAndForgetEventName_WhenMemberNameIsNullOrEmpty_Throws(string memberName)
-        {
-            ArgumentException exception = Assert.Throws<ArgumentException>(() => TelemetryUtility.CreateFileAndForgetEventName("typeName", memberName));
-
-            Assert.Equal("memberName", exception.ParamName);
-        }
-
-        [Fact]
-        public void CreateFileAndForgetEventName_WhenArgumentsAreValid_ReturnsString()
-        {
-            string actualResult = TelemetryUtility.CreateFileAndForgetEventName("a", "b");
-
-            Assert.Equal("VS/NuGet/fileandforget/a/b", actualResult);
-        }
-
         [Fact]
         public void IsHttpV3_WhenSourceIsNull_Throws()
         {
@@ -111,7 +86,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = new PackageSource(sourceUrl);
 
             // Act
-            var actual = TelemetryUtility.IsNuGetOrg(source);
+            var actual = UriUtility.IsNuGetOrg(source.Source);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -198,6 +173,42 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
 
             Assert.True(actualResult);
+        }
+
+        [Theory]
+        [InlineData(@"C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\")]
+        [InlineData(@"C:\Program Files\Microsoft SDKs\NuGetPackages\")]
+        public void IsVSOfflineFeed_WithValidOfflineFeed_ReturnsTrue(string expectedOfflineFeed)
+        {
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(new PackageSource(expectedOfflineFeed));
+
+            Assert.True(actualResult);
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithEmptyArray_ReturnsEmptyString()
+        {
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(Enumerable.Empty<TimeSpan>()).Should().Be(string.Empty);
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithNullArgument_ReturnsEmptyString()
+        {
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(null).Should().Be(string.Empty);
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithOneValue_ReturnsTimingsInSeconds()
+        {
+            TimeSpan[] values = new[] { new TimeSpan(hours: 0, minutes: 0, seconds: 5) };
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(values).Should().Be("[5]");
+        }
+
+        [Fact]
+        public void ToJsonArrayOfTimingsInSeconds_WithMultipleValues_AppendsValuesWithComma()
+        {
+            TimeSpan[] values = new[] { new TimeSpan(hours: 0, minutes: 0, seconds: 5), new TimeSpan(days: 0, hours: 0, minutes: 1, seconds: 0, milliseconds: 500) };
+            TelemetryUtility.ToJsonArrayOfTimingsInSeconds(values).Should().Be("[5,60.5]");
         }
     }
 }

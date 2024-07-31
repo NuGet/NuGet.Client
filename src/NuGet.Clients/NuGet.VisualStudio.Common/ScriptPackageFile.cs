@@ -13,12 +13,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (path == null)
             {
-                throw new ArgumentNullException("ScriptPackageFilePath");
+                throw new ArgumentNullException(nameof(path));
             }
 
             if (targetFramework == null)
             {
-                throw new ArgumentNullException("ScriptPackageFileTargetFramework");
+                throw new ArgumentNullException(nameof(targetFramework));
             }
 
             Path = path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);

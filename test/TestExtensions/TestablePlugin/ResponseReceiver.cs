@@ -44,12 +44,12 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 
                         var response = JsonSerializationUtilities.Deserialize<Response>(text);
 
-                        _responses.Add(response);
+                        _responses.Add(response, cancellationToken);
                     }
                 }
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

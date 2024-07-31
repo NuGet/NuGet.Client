@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -11,7 +11,6 @@ namespace NuGet.Protocol
     /// </summary>
     public class NullThrottle : IThrottle
     {
-        private static readonly Task _completedTask = Task.FromResult(true);
         private static readonly NullThrottle _instance = new NullThrottle();
 
         public static NullThrottle Instance
@@ -24,7 +23,7 @@ namespace NuGet.Protocol
 
         public Task WaitAsync()
         {
-            return _completedTask;
+            return Task.CompletedTask;
         }
 
         public void Release()

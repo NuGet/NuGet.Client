@@ -2,7 +2,7 @@ namespace NuGet.CommandLine
 {
     internal static class CommandLineConstants
     {
-        internal static readonly string UserAgent = "NuGet Command Line";
+        internal const string UserAgent = "NuGet Command Line";
 
         internal static string NuGetDocs = "https://docs.nuget.org/";
 

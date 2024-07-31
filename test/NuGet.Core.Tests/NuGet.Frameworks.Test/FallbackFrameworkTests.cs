@@ -1,12 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using NuGet.Frameworks;
 using Xunit;
 
-namespace NuGet.Test
+namespace NuGet.Frameworks.Test
 {
     public class FallbackFrameworkTests
     {
@@ -17,11 +14,11 @@ namespace NuGet.Test
             var a = new FallbackFramework(
                 NuGetFramework.Parse("net45"),
                 new[] { NuGetFramework.Parse("dnxcore50") });
-            
+
             // Act & Assert
             Assert.Equal(a, a);
         }
-        
+
         [Fact]
         public void FallbackFramework_Equals()
         {
@@ -32,12 +29,12 @@ namespace NuGet.Test
             var b = new FallbackFramework(
                 NuGetFramework.Parse("net45"),
                 new[] { NuGetFramework.Parse("dnxcore50") });
-            
+
             // Act & Assert
             Assert.Equal(a, b);
             Assert.Equal(b, a);
         }
-        
+
         [Fact]
         public void FallbackFramework_DifferentPrimary()
         {
@@ -48,12 +45,12 @@ namespace NuGet.Test
             var b = new FallbackFramework(
                 NuGetFramework.Parse("net46"),
                 new[] { NuGetFramework.Parse("dnxcore50") });
-            
+
             // Act & Assert
             Assert.NotEqual(a, b);
             Assert.NotEqual(b, a);
         }
-        
+
         [Fact]
         public void FallbackFramework_SubsetFallbacks()
         {
@@ -64,12 +61,12 @@ namespace NuGet.Test
             var b = new FallbackFramework(
                 NuGetFramework.Parse("net45"),
                 new[] { NuGetFramework.Parse("dnxcore50"), NuGetFramework.Parse("netstandard1.1") });
-            
+
             // Act & Assert
             Assert.NotEqual(a, b);
             Assert.NotEqual(b, a);
         }
-        
+
         [Fact]
         public void FallbackFramework_DifferentFallbackOrder()
         {
@@ -80,12 +77,12 @@ namespace NuGet.Test
             var b = new FallbackFramework(
                 NuGetFramework.Parse("netstandardapp1.5"),
                 new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") });
-            
+
             // Act & Assert
             Assert.NotEqual(a, b);
             Assert.NotEqual(b, a);
         }
-        
+
         [Fact]
         public void FallbackFramework_DifferentFallbacks()
         {
@@ -96,12 +93,12 @@ namespace NuGet.Test
             var b = new FallbackFramework(
                 NuGetFramework.Parse("net45"),
                 new[] { NuGetFramework.Parse("win8") });
-            
+
             // Act & Assert
             Assert.NotEqual(a, b);
             Assert.NotEqual(b, a);
         }
-        
+
         [Fact]
         public void FallbackFramework_CompareAsNuGetFramework()
         {
@@ -112,12 +109,12 @@ namespace NuGet.Test
             var b = new FallbackFramework(
                 NuGetFramework.Parse("net45"),
                 new[] { NuGetFramework.Parse("win8") });
-            
+
             // Act & Assert
-            Assert.Equal(a, (NuGetFramework) b);
-            Assert.Equal(b, (NuGetFramework) a);
-            Assert.Equal((NuGetFramework) a, b);
-            Assert.Equal((NuGetFramework) b, a);
+            Assert.Equal(a, (NuGetFramework)b);
+            Assert.Equal(b, (NuGetFramework)a);
+            Assert.Equal((NuGetFramework)a, b);
+            Assert.Equal((NuGetFramework)b, a);
         }
     }
 }

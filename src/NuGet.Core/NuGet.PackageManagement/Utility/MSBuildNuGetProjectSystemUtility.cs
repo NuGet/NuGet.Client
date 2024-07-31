@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -19,6 +20,24 @@ namespace NuGet.ProjectManagement
 {
     public static class MSBuildNuGetProjectSystemUtility
     {
+        internal static XDocument GetOrCreateDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
+        {
+            if (File.Exists(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path)))
+            {
+                try
+                {
+                    return Shared.XmlUtility.Load(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path), LoadOptions.PreserveWhitespace);
+                }
+                catch (FileNotFoundException) { }
+            }
+
+            var document = new XDocument(new XElement(rootName));
+            // Add it to the project system
+            AddFile(msBuildNuGetProjectSystem, path, document.Save);
+
+            return document;
+        }
+
         public static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework,
             IEnumerable<FrameworkSpecificGroup> itemGroups)
         {
@@ -84,6 +103,8 @@ namespace NuGet.ProjectManagement
             Func<Task<Stream>> streamTaskFactory,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (projectSystem.FileExistsInProject(path))
             {
                 // file exists in project, ask user if he wants to overwrite or ignore
@@ -122,7 +143,7 @@ namespace NuGet.ProjectManagement
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
 
             var packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.ToList();
-            packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
+            packageItemListAsArchiveEntryNames.Sort(PackageItemComparer.Instance);
 
             try
             {
@@ -207,9 +228,9 @@ namespace NuGet.ProjectManagement
 
             // Get all directories that this package may have added
             var directories = from grouping in directoryLookup
-                from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
-                orderby directory.Length descending
-                select directory;
+                              from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
+                              orderby directory.Length descending
+                              select directory;
 
             var projectFullPath = projectSystem.ProjectFullPath;
 
@@ -242,7 +263,7 @@ namespace NuGet.ProjectManagement
                     if (projectSystem.IsSupportedFile(path))
                     {
                         // Register the file being uninstalled (used by web site project system).
-                        projectSystem.RegisterProcessedFiles(new[] {path});
+                        projectSystem.RegisterProcessedFiles(new[] { path });
 
                         if (transformer != null)
                         {
@@ -363,6 +384,8 @@ namespace NuGet.ProjectManagement
             IMSBuildProjectSystem projectSystem,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Only delete the file if it exists and the checksum is the same
             if (projectSystem.FileExistsInProject(path))
             {
@@ -533,7 +556,7 @@ namespace NuGet.ProjectManagement
             string effectivePath,
             out string truncatedPath)
         {
-            foreach (var transformExtensions in fileTransformers.Keys)
+            foreach ((var transformExtensions, var fileTransformer) in fileTransformers)
             {
                 var extension = extensionSelector(transformExtensions);
                 if (effectivePath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
@@ -545,7 +568,7 @@ namespace NuGet.ProjectManagement
                     var fileName = Path.GetFileName(truncatedPath);
                     if (!Constants.PackageReferenceFile.Equals(fileName, StringComparison.OrdinalIgnoreCase))
                     {
-                        return fileTransformers[transformExtensions];
+                        return fileTransformer;
                     }
                 }
             }
@@ -606,6 +629,8 @@ namespace NuGet.ProjectManagement
 
         private class PackageItemComparer : IComparer<string>
         {
+            public static PackageItemComparer Instance { get; } = new();
+
             public int Compare(string x, string y)
             {
                 // BUG 636: We sort files so that they are added in the correct order

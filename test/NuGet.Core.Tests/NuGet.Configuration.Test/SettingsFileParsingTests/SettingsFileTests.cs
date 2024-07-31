@@ -17,7 +17,7 @@ namespace NuGet.Configuration.Test
         public void SettingsFile_Constructor_WithNullRoot_Throws()
         {
             // Act & Assert
-            var ex = Record.Exception(() => new SettingsFile(null));
+            var ex = Record.Exception(() => new SettingsFile(null!));
             Assert.NotNull(ex);
             Assert.IsAssignableFrom<ArgumentException>(ex);
         }
@@ -109,13 +109,13 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var key1Element = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
+                var key1Element = section!.GetFirstItemWithAttribute<AddItem>("key", "key1");
                 var key2Element = section.GetFirstItemWithAttribute<AddItem>("key", "key2");
                 key1Element.Should().NotBeNull();
                 key2Element.Should().NotBeNull();
 
-                key1Element.Value.Should().Be("value1");
-                key2Element.Value.Should().Be("value2");
+                key1Element!.Value.Should().Be("value1");
+                key2Element!.Value.Should().Be("value2");
             }
         }
 
@@ -142,13 +142,13 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var key1Element = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
+                var key1Element = section!.GetFirstItemWithAttribute<AddItem>("key", "key1");
                 var key2Element = section.GetFirstItemWithAttribute<AddItem>("key", "key2");
                 key1Element.Should().NotBeNull();
                 key2Element.Should().NotBeNull();
 
-                key1Element.Value.Should().Be("value1");
-                key2Element.Value.Should().Be("value2");
+                key1Element!.Value.Should().Be("value1");
+                key2Element!.Value.Should().Be("value2");
             }
         }
 
@@ -215,10 +215,10 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var addItem = section.Items.FirstOrDefault() as AddItem;
+                var addItem = section!.Items.FirstOrDefault() as AddItem;
                 addItem.Should().NotBeNull();
 
-                addItem.Key.Should().Be("key1");
+                addItem!.Key.Should().Be("key1");
                 addItem.Value.Should().Be("value1");
             }
         }
@@ -253,7 +253,7 @@ namespace NuGet.Configuration.Test
                 var settingsFile = new SettingsFile(mockBaseDirectory);
 
                 // Act & Assert
-                var ex = Record.Exception(() => settingsFile.AddOrUpdate("SomeKey", item: null));
+                var ex = Record.Exception(() => settingsFile.AddOrUpdate("SomeKey", item: null!));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<ArgumentNullException>();
             }
@@ -276,18 +276,53 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
+                ex.Message.Should().Be(Resources.CannotUpdateMachineWide);
 
                 settingsFile.SaveToDisk();
 
                 var section = settingsFile.GetSection("Section");
-                section.Items.Count.Should().Be(1);
+                section!.Items.Count.Should().Be(1);
+
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                updatedFileHash.Should().BeEquivalentTo(configFileHash);
+            }
+        }
+
+        [Fact]
+        public void SettingsFile_AddOrUpdate_WithReadOnlySettings_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: false, isReadOnly: true);
+
+                // Act
+                var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
+
+                settingsFile.SaveToDisk();
+
+                var section = settingsFile.GetSection("Section");
+                section!.Items.Count.Should().Be(1);
 
                 var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().BeEquivalentTo(configFileHash);
@@ -330,7 +365,7 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, configFile))).Should().Be(result);
                 var section = settingsFile.GetSection("NewSectionName");
                 section.Should().NotBeNull();
-                section.Items.Count.Should().Be(1);
+                section!.Items.Count.Should().Be(1);
             }
         }
 
@@ -402,9 +437,9 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<AddItem>("key", "key");
+                var item = section!.GetFirstItemWithAttribute<AddItem>("key", "key");
                 item.Should().NotBeNull();
-                item.Value.Should().Be("NewValue");
+                item!.Value.Should().Be("NewValue");
             }
         }
 
@@ -454,9 +489,9 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<AddItem>("key", "newKey");
+                var item = section!.GetFirstItemWithAttribute<AddItem>("key", "newKey");
                 item.Should().NotBeNull();
-                item.Value.Should().Be("value");
+                item!.Value.Should().Be("value");
             }
         }
 
@@ -510,9 +545,9 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<AddItem>("key", "newKey");
+                var item = section!.GetFirstItemWithAttribute<AddItem>("key", "newKey");
                 item.Should().NotBeNull();
-                item.Value.Should().Be("value");
+                item!.Value.Should().Be("value");
             }
         }
 
@@ -533,15 +568,15 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act & Assert
                 var section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<AddItem>("key", "key0");
+                var item = section!.GetFirstItemWithAttribute<AddItem>("key", "key0");
                 item.Should().NotBeNull();
-                item.Value.Should().Be("value0");
+                item!.Value.Should().Be("value0");
 
                 var ex = Record.Exception(() => settingsFile.Remove("Section", item));
                 ex.Should().NotBeNull();
@@ -551,7 +586,49 @@ namespace NuGet.Configuration.Test
                 settingsFile.SaveToDisk();
 
                 var section1 = settingsFile.GetSection("Section");
-                section1.Items.Count.Should().Be(1);
+                section1!.Items.Count.Should().Be(1);
+
+                var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                updatedFileHash.Should().BeEquivalentTo(configFileHash);
+            }
+        }
+
+        [Fact]
+        public void SettingsFile_Remove_WithReadOnlySettings_Throws()
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
+
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: false, isReadOnly: true);
+
+                // Act & Assert
+                var section = settingsFile.GetSection("Section");
+                section.Should().NotBeNull();
+
+                var item = section!.GetFirstItemWithAttribute<AddItem>("key", "key0");
+                item.Should().NotBeNull();
+                item!.Value.Should().Be("value0");
+
+                var ex = Record.Exception(() => settingsFile.Remove("Section", item));
+                ex.Should().NotBeNull();
+                ex.Should().BeOfType<InvalidOperationException>();
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
+
+                settingsFile.SaveToDisk();
+
+                var section1 = settingsFile.GetSection("Section");
+                section1!.Items.Count.Should().Be(1);
 
                 var updatedFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
                 updatedFileHash.Should().BeEquivalentTo(configFileHash);
@@ -580,9 +657,9 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
+                var item = section!.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
                 item.Should().NotBeNull();
-                item.Value.Should().Be("value2");
+                item!.Value.Should().Be("value2");
 
                 settingsFile.Remove("SectionName", item);
                 settingsFile.SaveToDisk();
@@ -593,7 +670,7 @@ namespace NuGet.Configuration.Test
                 section.Should().BeNull();
             }
         }
-        
+
 
         [Fact]
         public void SettingsFile_Remove_WithValidSectionAndKey_DeletesTheEntry()
@@ -620,8 +697,8 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
-                settingsFile.Remove("SectionName", item);
+                var item = section!.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
+                settingsFile.Remove("SectionName", item!);
                 settingsFile.SaveToDisk();
 
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -639,7 +716,7 @@ namespace NuGet.Configuration.Test
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                item = section.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
+                item = section!.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
                 item.Should().BeNull();
             }
         }
@@ -672,8 +749,8 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
-                settingsFile.Remove("SectionName", item);
+                var item = section!.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
+                settingsFile.Remove("SectionName", item!);
                 settingsFile.SaveToDisk();
 
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -694,7 +771,7 @@ namespace NuGet.Configuration.Test
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                item = section.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
+                item = section!.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
                 item.Should().BeNull();
             }
         }
@@ -729,8 +806,8 @@ namespace NuGet.Configuration.Test
                 var section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                var item = section.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
-                settingsFile.Remove("SectionName", item);
+                var item = section!.GetFirstItemWithAttribute<SettingItem>("key", "DeleteMe");
+                settingsFile.Remove("SectionName", item!);
                 settingsFile.SaveToDisk();
 
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -753,7 +830,7 @@ namespace NuGet.Configuration.Test
                 section = settingsFile.GetSection("SectionName");
                 section.Should().NotBeNull();
 
-                item = section.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
+                item = section!.GetFirstItemWithAttribute<AddItem>("key", "DeleteMe");
                 item.Should().BeNull();
             }
         }
@@ -869,7 +946,7 @@ namespace NuGet.Configuration.Test
                 foreach (var pair in settingsDict)
                 {
                     expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
-                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection!).Should().BeTrue();
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();
@@ -918,7 +995,7 @@ namespace NuGet.Configuration.Test
                 foreach (var pair in settingsDict)
                 {
                     expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
-                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection!).Should().BeTrue();
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();
@@ -962,10 +1039,38 @@ namespace NuGet.Configuration.Test
                 foreach (var pair in settingsDict)
                 {
                     expectedSettingsDict.TryGetValue(pair.Key, out var expectedSection).Should().BeTrue();
-                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection).Should().BeTrue();
+                    SettingsTestUtils.DeepEquals(pair.Value, expectedSection!).Should().BeTrue();
                     expectedSettingsDict.Remove(pair.Key);
                 }
                 expectedSettingsDict.Should().BeEmpty();
+            }
+        }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, true)]
+        public void SettingsFile_Constructor_MachineWideConfigsAreReadOnly(bool isMachineWide, bool isReadOnlyInput, bool expected)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                // Set-up and Act
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: isMachineWide, isReadOnly: isReadOnlyInput);
+
+                // Assert
+                settingsFile.IsReadOnly.Should().Be(expected);
+                settingsFile.IsMachineWide.Should().Be(isMachineWide);
             }
         }
     }

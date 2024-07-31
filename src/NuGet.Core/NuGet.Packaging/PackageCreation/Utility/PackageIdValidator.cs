@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,16 +10,22 @@ namespace NuGet.Packaging
 {
     public static class PackageIdValidator
     {
+        /// <summary>
+        /// Max allowed length for package Id.
+        /// In case update this value please update in src\NuGet.Core\NuGet.Configuration\PackageSourceMapping\PackageSourceMapping.cs too.
+        /// </summary>
         public const int MaxPackageIdLength = 100;
-        private static readonly Regex _idRegex = new Regex(@"^\w+([_.-]\w+)*$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+        private static readonly Regex IdRegex = new Regex(pattern: @"^\w+([.-]\w+)*$",
+            options: RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant,
+            matchTimeout: TimeSpan.FromSeconds(10));
 
         public static bool IsValidPackageId(string packageId)
         {
             if (packageId == null)
             {
-                throw new ArgumentException(nameof(packageId));
+                throw new ArgumentNullException(nameof(packageId));
             }
-            return _idRegex.IsMatch(packageId);
+            return IdRegex.IsMatch(packageId);
         }
 
         public static void ValidatePackageId(string packageId)
@@ -31,7 +37,7 @@ namespace NuGet.Packaging
 
             if (!IsValidPackageId(packageId))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, packageId));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, packageId));
             }
         }
     }

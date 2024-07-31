@@ -1,6 +1,7 @@
 <UserControl
   x:Class="NuGet.PackageManagement.UI.DetailControl"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -22,7 +23,7 @@
   <UserControl.CommandBindings>
     <CommandBinding
       Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-      Executed="ExecuteOpenLicenseLink" />
+      Executed="ExecuteOpenExternalLink" />
   </UserControl.CommandBindings>
   <ScrollViewer
     x:Name="_root"
@@ -36,6 +37,8 @@
         <RowDefinition
           Height="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewHeightConverter}}"
           MinHeight="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewMinHeightConverter}}" />
+        <RowDefinition
+          Height="Auto" />
         <RowDefinition
           Height="Auto" />
         <RowDefinition
@@ -118,7 +121,8 @@
               Style="{StaticResource HyperlinkStyle}"
               ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
               AutomationProperties.LabeledBy="{Binding ElementName=_packageDetailsUrlIcon}"
-              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+              CommandParameter="{x:Static nugettel:HyperlinkType.Header}">
               <Run Text="{Binding Path=PackageMetadata.PackageDetailsText}" />
             </Hyperlink>
           </TextBlock>
@@ -129,9 +133,8 @@
       <nuget:ProjectView
         Grid.Row="1"
         Margin="0,8"
-        InstallButtonClicked="ProjectInstallButtonClicked"
-        UninstallButtonClicked="ProjectUninstallButtonClicked"
-        Visibility="{Binding Path=IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
+        x:Name="_projectView"
+        Visibility="{Binding Path=IsSolution, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" />
 
       <!-- solution view when in solution package manager -->
       <nuget:SolutionView
@@ -139,8 +142,6 @@
         x:Name="_solutionView"
         Grid.Row="1"
         Margin="0,8"
-        InstallButtonClicked="SolutionInstallButtonClicked"
-        UninstallButtonClicked="SolutionUninstallButtonClicked"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
 
       <!-- the splitter is shown when in solution package manager -->
@@ -149,7 +150,7 @@
         Height="4"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Margin="-24,0,-7,0"
+        Margin="-24,0,-7,12"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_ThumbName}"
         AutomationProperties.HelpText="{x:Static nuget:Resources.Accessibility_ThumbHelp}"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -157,9 +158,24 @@
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1" />
 
-      <!-- deprecation info -->
+      <!-- vulnerabilities info -->
       <Border
         Grid.Row="3"
+        Margin="0,11,0,0"
+        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+        Visibility="{Binding Path=IsPackageVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
+        BorderThickness="0,1,0,0">
+        <Grid>
+          <nuget:VulnerabilitiesControl
+            x:Name="_vulnerabilitiesControl"
+            DataContext="{Binding}"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageVulnerabilities}" />
+        </Grid>
+      </Border>
+
+      <!-- deprecation info -->
+      <Border
+        Grid.Row="4"
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         Visibility="{Binding Path=IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -188,7 +204,8 @@
             <Hyperlink
               NavigateUri="{Binding Path=OptionsBlockedUrl}"
               Style="{StaticResource HyperlinkStyle}"
-              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+              Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+              CommandParameter="{x:Static nugettel:HyperlinkType.OptionsBlocked}">
               <Run Text="{Binding Path=OptionsBlockedUrlText}" />
             </Hyperlink>
           </TextBlock>

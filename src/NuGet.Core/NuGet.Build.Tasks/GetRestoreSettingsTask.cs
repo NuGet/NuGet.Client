@@ -17,7 +17,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Get all the settings to be used for project restore.
     /// </summary>
-    public class GetRestoreSettingsTask : Task
+    public class GetRestoreSettingsTask : Microsoft.Build.Utilities.Task
     {
         [Required]
         public string ProjectUniqueName { get; set; }
@@ -94,23 +94,14 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
+#if DEBUG
+            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_SETTINGS_TASK");
+            if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                System.Diagnostics.Debugger.Launch();
+            }
+#endif
             var log = new MSBuildLogger(Log);
-
-            // Log Inputs
-            BuildTasksUtility.LogInputParam(log, nameof(ProjectUniqueName), ProjectUniqueName);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreSources), RestoreSources);
-            BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPath), RestorePackagesPath);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreRepositoryPath), RestoreRepositoryPath);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFolders), RestoreFallbackFolders);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreConfigFile), RestoreConfigFile);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreSolutionDirectory), RestoreSolutionDirectory);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreRootConfigDirectory), RestoreRootConfigDirectory);
-            BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPathOverride), RestorePackagesPathOverride);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreSourcesOverride), RestoreSourcesOverride);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFoldersOverride), RestoreFallbackFoldersOverride);
-            BuildTasksUtility.LogInputParam(log, nameof(RestoreProjectStyle), RestoreProjectStyle);
-            BuildTasksUtility.LogInputParam(log, nameof(MSBuildStartupDirectory), MSBuildStartupDirectory);
-
 
             try
             {
@@ -159,6 +150,7 @@ namespace NuGet.Build.Tasks
 
                 // Sources
                 OutputSources = BuildTasksUtility.GetSources(
+                    MSBuildStartupDirectory,
                     Path.GetDirectoryName(ProjectUniqueName),
                     RestoreSources,
                     RestoreSourcesOverride,
@@ -167,6 +159,7 @@ namespace NuGet.Build.Tasks
 
                 // Fallback folders
                 OutputFallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                    MSBuildStartupDirectory,
                     Path.GetDirectoryName(ProjectUniqueName),
                     RestoreFallbackFolders, RestoreFallbackFoldersOverride,
                     GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),
@@ -179,13 +172,6 @@ namespace NuGet.Build.Tasks
                 ExceptionUtilities.LogException(ex, log);
                 return false;
             }
-
-            // Log Outputs
-            BuildTasksUtility.LogOutputParam(log, nameof(OutputPackagesPath), OutputPackagesPath);
-            BuildTasksUtility.LogOutputParam(log, nameof(OutputRepositoryPath), OutputRepositoryPath);
-            BuildTasksUtility.LogOutputParam(log, nameof(OutputSources), OutputSources);
-            BuildTasksUtility.LogOutputParam(log, nameof(OutputFallbackFolders), OutputFallbackFolders);
-            BuildTasksUtility.LogOutputParam(log, nameof(OutputConfigFilePaths), OutputConfigFilePaths);
 
             return true;
         }

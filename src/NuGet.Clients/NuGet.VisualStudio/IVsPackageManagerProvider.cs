@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace NuGet.VisualStudio
     /// For example jQuery may appear on Bower and npm,
     /// it might be more appropriate to install a package from them for certain projects. 
     /// </summary>
+    [Obsolete]
     [ComImport]
     [Guid("BCED5BF2-40FC-4D9F-BF0A-43CD4E9FF65F")]
     public interface IVsPackageManagerProvider
@@ -44,5 +46,5 @@ namespace NuGet.VisualStudio
         /// <param name="packageId">Current package id</param>
         /// <param name="projectName">Unique project name for finding the project through VS dte</param>
         void GoToPackage(string packageId, string projectName);
-    }    
+    }
 }

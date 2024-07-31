@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,7 +56,7 @@ namespace NuGet.Resolver
                 throw new ArgumentNullException(nameof(availablePackages));
             }
 
-            if(packageSources == null)
+            if (packageSources == null)
             {
                 throw new ArgumentNullException(nameof(packageSources));
             }
@@ -108,7 +108,7 @@ namespace NuGet.Resolver
         /// Dependency behavior
         /// </summary>
         public DependencyBehavior DependencyBehavior { get; }
-        
+
         /// <summary>
         /// Package Sources
         /// </summary>

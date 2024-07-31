@@ -3,31 +3,94 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft;
+using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
-using NuGet.ProjectManagement;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
     internal class PackageSolutionDetailControlModel : DetailControlModel
     {
-        private readonly ISolutionManager _solutionManager;
+        // This class does not own this instance, so do not dispose of it in this class.
+        private INuGetSolutionManagerService _solutionManager;
+        private string _installedVersions; // The text describing the installed versions information, such as "not installed", "multiple versions installed" etc.
+        private int _installedVersionsCount; // the count of different installed versions
+        private bool _canUninstall;
+        private bool _canInstall;
+        // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
+        private bool _updatingSelectCheckBoxState;
+        private bool? _selectCheckBoxState;
+        private bool _isInBatchUpdate;
+        private List<PackageInstallationInfo> _projects; // List of projects in the solution
 
-        private IEnumerable<IVsPackageManagerProvider> _packageManagerProviders;
+        private PackageSolutionDetailControlModel(
+            IServiceBroker serviceBroker,
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController)
+            : base(serviceBroker, projects, uiController)
+        {
+            IsRequestedVisible = projects.Any(p => p.ProjectStyle == ProjectStyle.PackageReference);
+        }
 
-        // List of projects in the solution
-        private List<PackageInstallationInfo> _projects;
+        private async ValueTask InitializeAsync(
+            INuGetSolutionManagerService solutionManager,
+            CancellationToken cancellationToken)
+        {
+            _solutionManager = solutionManager;
+            _solutionManager.ProjectAdded += SolutionProjectChanged;
+            _solutionManager.ProjectRemoved += SolutionProjectChanged;
+            _solutionManager.ProjectUpdated += SolutionProjectChanged;
+            _solutionManager.ProjectRenamed += SolutionProjectChanged;
+
+            // when the SelectedVersion is changed, we need to update CanInstall and CanUninstall.
+            PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(SelectedVersion))
+                {
+                    UpdateCanInstallAndCanUninstall();
+                }
+            };
+
+            await CreateProjectListsAsync(cancellationToken);
+        }
+
+        public static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
+            IServiceBroker serviceBroker,
+            INuGetSolutionManagerService solutionManager,
+            IEnumerable<IProjectContextInfo> projects,
+            INuGetUI uiController,
+            CancellationToken cancellationToken)
+        {
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
+            return packageSolutionDetailControlModel;
+        }
+
+        internal static async ValueTask<PackageSolutionDetailControlModel> CreateAsync(
+            INuGetSolutionManagerService solutionManager,
+            IEnumerable<IProjectContextInfo> projects,
+            IServiceBroker serviceBroker,
+            INuGetUI uiController,
+            CancellationToken cancellationToken)
+        {
+            var packageSolutionDetailControlModel = new PackageSolutionDetailControlModel(serviceBroker, projects, uiController);
+            await packageSolutionDetailControlModel.InitializeAsync(solutionManager, cancellationToken);
+            return packageSolutionDetailControlModel;
+        }
 
         public List<PackageInstallationInfo> Projects
         {
-            get
-            {
-                return _projects;
-            }
+            get => _projects;
             set
             {
                 _projects = value;
@@ -35,26 +98,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override bool IsSolution
-        {
-            get { return true; }
-        }
+        public override bool IsSolution => true;
 
-        public override void Refresh()
+        public override async Task RefreshAsync(CancellationToken cancellationToken)
         {
-            UpdateInstalledVersions();
+            await UpdateInstalledVersionsAsync(cancellationToken);
         }
-
-        // The text describing the installed versions information, such as "not installed",
-        // "multiple versions installed" etc.
-        private string _installedVersions;
 
         public string InstalledVersions
         {
-            get
-            {
-                return _installedVersions;
-            }
+            get => _installedVersions;
             set
             {
                 _installedVersions = value;
@@ -62,7 +115,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void UpdateInstalledVersions()
+        public bool IsRequestedVisible { get; private set; }
+
+        private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
             var hash = new HashSet<NuGetVersion>();
 
@@ -70,20 +125,26 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    var installedVersion = GetInstalledPackage(project.NuGetProject, Id);
+                    IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
                     if (installedVersion != null)
                     {
-                        project.InstalledVersion = installedVersion.PackageIdentity.Version;
-                        hash.Add(installedVersion.PackageIdentity.Version);
-                        project.AutoReferenced = (installedVersion as BuildIntegratedPackageReference)?.Dependency?.AutoReferenced == true;
+                        project.InstalledVersion = installedVersion.Identity.Version;
+                        hash.Add(installedVersion.Identity.Version);
+                        project.AutoReferenced = installedVersion.IsAutoReferenced;
+
+                        if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
+                        {
+                            project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                        }
                     }
                     else
                     {
+                        project.RequestedVersion = null;
                         project.InstalledVersion = null;
                         project.AutoReferenced = false;
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     project.InstalledVersion = null;
 
@@ -116,54 +177,47 @@ namespace NuGet.PackageManagement.UI
             AutoSelectProjects();
         }
 
-        private NuGetVersion GetInstalledVersion(NuGetProject project, string packageId)
-        {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                var installedPackage = installedPackages
-                    .FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId));
-
-                return installedPackage?.PackageIdentity.Version;
-            });
-        }
-
         /// <summary>
         /// This method is called from several methods that are called from properties and LINQ queries
-        /// It is likely not called more than once in an action. So, consolidating the use of JTF.Run in this method
+        /// It is likely not called more than once in an action.
         /// </summary>
-        private static Packaging.PackageReference GetInstalledPackage(NuGetProject project, string id)
+        private async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(
+            IProjectContextInfo project,
+            string packageId,
+            CancellationToken cancellationToken)
         {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
-                    var installedPackage = installedPackages
-                        .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, id))
-                        .FirstOrDefault();
-                    return installedPackage;
-                });
+            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
+                ServiceBroker,
+                cancellationToken);
+            IPackageReferenceContextInfo installedPackage = installedPackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
+                .FirstOrDefault();
+            return installedPackage;
         }
 
-        protected override void CreateVersions()
+        protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)
         {
-            _versions = new List<DisplayVersion>();
-            var allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v);
-
-            // allVersions is null if server doesn't return any versions.
-            if (allVersions == null || !allVersions.Any())
+            // The value will be null if the server does not return any versions.
+            if (_allPackageVersions == null || _allPackageVersions.Count == 0)
             {
                 return;
             }
 
+            _versions.Clear();
+            List<(NuGetVersion version, bool isDeprecated, bool isVulnerable)> allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v.version).ToList();
+
             // null, if no version constraint defined in package.config
-            var allowedVersions = GetAllowedVersions();
+            VersionRange allowedVersions = await GetAllowedVersionsAsync(cancellationToken);
             var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToArray();
 
-            // null, if all versions are allowed to install or update
-            var blockedVersions = allVersions
-                .Select(v => v.version)
-                .Where(v => !allVersionsAllowed.Any(allowed => allowed.version.Equals(v)))
-                .ToArray();
+            var blockedVersions = new List<NuGetVersion>(allVersions.Count);
+            foreach ((NuGetVersion version, bool isDeprecated, bool isVulnerable) in allVersions)
+            {
+                if (!allVersionsAllowed.Any(a => a.version.Version.Equals(version.Version)))
+                {
+                    blockedVersions.Add(version);
+                }
+            }
 
             // get latest prerelease or stable based on allowed versions
             var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
@@ -172,12 +226,14 @@ namespace NuGet.PackageManagement.UI
             if (latestPrerelease.version != null
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version))
             {
-                _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
+                var versionRange = new VersionRange(latestPrerelease.version, true, latestPrerelease.version, true);
+                _versions.Add(new DisplayVersion(versionRange, version: latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated, isVulnerable: latestPrerelease.isVulnerable));
             }
 
             if (latestStableVersion.version != null)
             {
-                _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
+                var versionRange = new VersionRange(latestStableVersion.version, true, latestStableVersion.version, true);
+                _versions.Add(new DisplayVersion(versionRange, version: latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated, isVulnerable: latestStableVersion.isVulnerable));
             }
 
             // add a separator
@@ -189,12 +245,13 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                _versions.Add(new DisplayVersion(version.version, string.Empty, isDeprecated: version.isDeprecated));
+                var versionRange = new VersionRange(version.version, true, version.version, true);
+                _versions.Add(new DisplayVersion(versionRange, version: version.version, null, isDeprecated: version.isDeprecated, isVulnerable: version.isVulnerable));
             }
 
-            var selectedProjects = GetConstraintsForSelectedProjects().ToArray();
+            ProjectVersionConstraint[] selectedProjects = (await GetConstraintsForSelectedProjectsAsync(cancellationToken)).ToArray();
 
-            var autoReferenced = selectedProjects.Length > 0 && selectedProjects.All(e => e.IsAutoReferenced);
+            bool autoReferenced = selectedProjects.Length > 0 && selectedProjects.All(e => e.IsAutoReferenced);
 
             // Disable controls if this is an auto referenced package.
             SetAutoReferencedCheck(autoReferenced);
@@ -202,20 +259,16 @@ namespace NuGet.PackageManagement.UI
             // Add disabled versions
             AddBlockedVersions(blockedVersions);
 
-            SelectVersion();
+            var latestVersion = latestPrerelease.version > latestStableVersion.version ? latestPrerelease.version : latestStableVersion.version;
+
+            SelectVersion(latestVersion);
 
             OnPropertyChanged(nameof(Versions));
         }
 
-        // the count of different installed versions
-        private int _installedVersionsCount;
-
         public int InstalledVersionsCount
         {
-            get
-            {
-                return _installedVersionsCount;
-            }
+            get => _installedVersionsCount;
             set
             {
                 _installedVersionsCount = value;
@@ -223,56 +276,25 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageSolutionDetailControlModel(
-            ISolutionManager solutionManager,
-            IEnumerable<NuGetProject> projects,
-            IEnumerable<IVsPackageManagerProvider> packageManagerProviders)
-            :
-                base(projects)
-        {
-            _solutionManager = solutionManager;
-            _solutionManager.NuGetProjectAdded += SolutionProjectChanged;
-            _solutionManager.NuGetProjectRemoved += SolutionProjectChanged;
-            _solutionManager.NuGetProjectUpdated += SolutionProjectChanged;
-            _solutionManager.NuGetProjectRenamed += SolutionProjectChanged;
-
-            // when the SelectedVersion is changed, we need to update CanInstall
-            // and CanUninstall.
-            PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(SelectedVersion))
-                {
-                    UpdateCanInstallAndCanUninstall();
-                }
-            };
-
-            _packageManagerProviders = packageManagerProviders;
-
-            CreateProjectLists();
-        }
-
         // The event handler that is called when a project is added, removed or renamed.
-        private void SolutionProjectChanged(object sender, NuGetProjectEventArgs e)
+        private void SolutionProjectChanged(object sender, IProjectContextInfo project)
         {
-            CreateProjectLists();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateProjectListsAsync(CancellationToken.None))
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(SolutionProjectChanged));
         }
 
         protected override void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
         {
-            CreateVersions();
-
-            UpdateCanInstallAndCanUninstall();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAndUpdateInstallUninstallAsync())
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(DependencyBehavior_SelectedChanged));
         }
 
         public override void CleanUp()
         {
-            // unhook event handlers
-            _solutionManager.NuGetProjectAdded -= SolutionProjectChanged;
-            _solutionManager.NuGetProjectRemoved -= SolutionProjectChanged;
-            _solutionManager.NuGetProjectRenamed -= SolutionProjectChanged;
-            _solutionManager.NuGetProjectUpdated -= SolutionProjectChanged;
-
-            Options.SelectedChanged -= DependencyBehavior_SelectedChanged;
+            _solutionManager.ProjectAdded -= SolutionProjectChanged;
+            _solutionManager.ProjectRemoved -= SolutionProjectChanged;
+            _solutionManager.ProjectRenamed -= SolutionProjectChanged;
+            _solutionManager.ProjectUpdated -= SolutionProjectChanged;
 
             if (Projects != null)
             {
@@ -284,40 +306,49 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Creates the project lists. Also called after a project is added/removed/renamed.
-        private void CreateProjectLists()
+        private async Task CreateProjectListsAsync(CancellationToken cancellationToken)
         {
             // unhook event handler
             if (Projects != null)
             {
-                foreach (var project in Projects)
+                foreach (PackageInstallationInfo project in Projects)
                 {
                     project.SelectedChanged -= Project_SelectedChanged;
                 }
             }
 
-            _nugetProjects = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await _solutionManager.GetNuGetProjectsAsync());
-            Projects = _nugetProjects.Select(
-                nugetProject => new PackageInstallationInfo(nugetProject))
-                .ToList();
+            IReadOnlyCollection<IProjectContextInfo> projectContexts;
+
+            using (INuGetProjectManagerService projectManagerService = await ServiceBroker.GetProxyAsync<INuGetProjectManagerService>(
+                NuGetServices.ProjectManagerService))
+            {
+                Assumes.NotNull(projectManagerService);
+                projectContexts = await projectManagerService.GetProjectsAsync(cancellationToken);
+            }
+
+            var packageInstallationInfos = new List<PackageInstallationInfo>();
+            foreach (IProjectContextInfo project in projectContexts)
+            {
+                PackageInstallationInfo packageInstallationInfo = await PackageInstallationInfo.CreateAsync(
+                    ServiceBroker,
+                    project,
+                    cancellationToken);
+                packageInstallationInfos.Add(packageInstallationInfo);
+            }
+
+            Projects = packageInstallationInfos;
 
             // hook up event handler
-            foreach (var project in Projects)
+            foreach (PackageInstallationInfo project in Projects)
             {
                 project.SelectedChanged += Project_SelectedChanged;
             }
 
-            UpdateInstalledVersions();
+            await UpdateInstalledVersionsAsync(cancellationToken);
             UpdateSelectCheckBoxState();
             CanUninstall = false;
             CanInstall = false;
         }
-
-        // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is
-        // being updated by code, while false means the state is changed by user clicking the checkbox.
-        private bool _updatingSelectCheckBoxState;
-
-        // the state the select checkbox
-        private bool? _selectCheckBoxState;
 
         public bool? SelectCheckBoxState
         {
@@ -332,8 +363,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool _canInstall;
-
         public bool CanInstall
         {
             get
@@ -346,8 +375,6 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged(nameof(CanInstall));
             }
         }
-
-        private bool _canUninstall;
 
         public bool CanUninstall
         {
@@ -364,10 +391,26 @@ namespace NuGet.PackageManagement.UI
 
         private void Project_SelectedChanged(object sender, EventArgs e)
         {
+            if (_isInBatchUpdate)
+            {
+                return;
+            }
+
+            UpdateSelectAllAfterProjectSelectionChanged();
+        }
+
+        private void UpdateSelectAllAfterProjectSelectionChanged()
+        {
             UpdateSelectCheckBoxState();
 
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => CreateVersionsAndUpdateInstallUninstallAsync())
+                .PostOnFailure(nameof(PackageSolutionDetailControlModel), nameof(UpdateSelectAllAfterProjectSelectionChanged));
+        }
+
+        private async Task CreateVersionsAndUpdateInstallUninstallAsync()
+        {
             // update versions list everytime selected projects change
-            CreateVersions();
+            await CreateVersionsAsync(CancellationToken.None);
 
             UpdateCanInstallAndCanUninstall();
         }
@@ -396,22 +439,32 @@ namespace NuGet.PackageManagement.UI
         {
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
 
-            CanInstall = SelectedVersion != null && Projects.Any(
-                project => project.IsSelected &&
-                    VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
+            CanInstall = SelectedVersion != null
+                && CanInstallWithPackageSourceMapping
+                && Projects.Any(project => project.IsSelected
+                    && VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
         }
 
-        private IEnumerable<ProjectVersionConstraint> GetConstraintsForSelectedProjects()
+        private async ValueTask<IEnumerable<ProjectVersionConstraint>> GetConstraintsForSelectedProjectsAsync(
+            CancellationToken cancellationToken)
         {
-            var selectedProjectsNames = Projects.Where(p => p.IsSelected).Select(p => p.NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
+            var selectedProjectsNames = new List<string>();
+            foreach (PackageInstallationInfo project in Projects.Where(p => p.IsSelected).ToList())
+            {
+                IProjectMetadataContextInfo projectMetadata = await project.NuGetProject.GetMetadataAsync(
+                    ServiceBroker,
+                    cancellationToken);
+
+                selectedProjectsNames.Add(projectMetadata.Name);
+            }
 
             return _projectVersionConstraints.Where(e => selectedProjectsNames.Contains(e.ProjectName, StringComparer.OrdinalIgnoreCase));
         }
 
-        private VersionRange GetAllowedVersions()
+        private async ValueTask<VersionRange> GetAllowedVersionsAsync(CancellationToken cancellationToken)
         {
             // allowed version ranges for selected list of projects
-            var allowedVersionsRange = GetConstraintsForSelectedProjects()
+            IEnumerable<VersionRange> allowedVersionsRange = (await GetConstraintsForSelectedProjectsAsync(cancellationToken))
                 .Select(e => e.VersionRange)
                 .Where(v => v != null);
 
@@ -419,76 +472,24 @@ namespace NuGet.PackageManagement.UI
             return allowedVersionsRange.Any() ? VersionRange.CommonSubSet(allowedVersionsRange) : VersionRange.All;
         }
 
-        public void SelectAllProjects()
+        internal async Task SelectAllProjectsAsync(bool select)
         {
             if (_updatingSelectCheckBoxState)
             {
                 return;
             }
 
-            foreach (var project in Projects)
-            {
-                project.IsSelected = true;
-            }
-
-            // update versions list everytime selected projects change
-            CreateVersions();
-
-            UpdateCanInstallAndCanUninstall();
+            await BatchUpdateIsSelectedAsync(select);
         }
 
-        public void UnselectAllProjects()
-        {
-            if (_updatingSelectCheckBoxState)
-            {
-                return;
-            }
-
-            foreach (var project in Projects)
-            {
-                project.IsSelected = false;
-            }
-
-            // update versions list everytime selected projects change
-            CreateVersions();
-
-            UpdateCanInstallAndCanUninstall();
-        }
-
-        private static bool IsInstalled(NuGetProject project, string id)
-        {
-            var packageReference = GetInstalledPackage(project, id);
-            return packageReference != null;
-        }
-
-        [SuppressMessage("Microsoft.VisualStudio.Threading.Analyzers", "VSTHRD100", Justification = "NuGet/Home#4833 Baseline")]
-        protected override async void OnCurrentPackageChanged()
+        protected override async Task OnCurrentPackageChanged()
         {
             if (_searchResultPackage == null)
             {
                 return;
             }
 
-            UpdateInstalledVersions();
-
-            // update alternative package managers
-            if (_packageManagerProviders.Any())
-            {
-                // clear providers first
-                foreach (var p in _projects)
-                {
-                    p.Providers = null;
-                }
-
-                // update the providers list async
-                foreach (var p in _projects)
-                {
-                    p.Providers = await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                        _packageManagerProviders,
-                        Id,
-                        p.NuGetProject);
-                }
-            }
+            await UpdateInstalledVersionsAsync(CancellationToken.None);
         }
 
         // auto select projects based on the current tab and currently selected package
@@ -497,10 +498,7 @@ namespace NuGet.PackageManagement.UI
             if (_filter == ItemFilter.Consolidate ||
                 _filter == ItemFilter.UpdatesAvailable)
             {
-                foreach (var project in _projects)
-                {
-                    project.IsSelected = project.InstalledVersion != null;
-                }
+                BatchUpdateIsSelectedBasedOnInstalledVersion();
             }
         }
 
@@ -513,16 +511,13 @@ namespace NuGet.PackageManagement.UI
             if ((previousFilter == ItemFilter.Consolidate || previousFilter == ItemFilter.UpdatesAvailable) &&
                 (_filter == ItemFilter.All || _filter == ItemFilter.Installed))
             {
-                foreach (var project in _projects)
-                {
-                    project.IsSelected = false;
-                }
+                BatchUnselectAllProjects();
             }
         }
 
-        public override IEnumerable<NuGetProject> GetSelectedProjects(UserAction action)
+        public override IEnumerable<IProjectContextInfo> GetSelectedProjects(UserAction action)
         {
-            var selectedProjects = new List<NuGetProject>();
+            var selectedProjects = new List<IProjectContextInfo>();
 
             foreach (var project in _projects)
             {
@@ -554,6 +549,68 @@ namespace NuGet.PackageManagement.UI
             }
 
             return selectedProjects;
+        }
+
+        private void BatchUnselectAllProjects()
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = false;
+                }
+
+                UpdateSelectCheckBoxState();
+                UpdateSelectAllAfterProjectSelectionChanged();
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        private void BatchUpdateIsSelectedBasedOnInstalledVersion()
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = project.InstalledVersion != null;
+                }
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        private async ValueTask BatchUpdateIsSelectedAsync(bool isSelected)
+        {
+            _isInBatchUpdate = true;
+
+            try
+            {
+                foreach (PackageInstallationInfo project in Projects)
+                {
+                    project.IsSelected = isSelected;
+                }
+
+                UpdateSelectCheckBoxState();
+                await CreateVersionsAndUpdateInstallUninstallAsync();
+            }
+            finally
+            {
+                _isInBatchUpdate = false;
+            }
+        }
+
+        public override void SetInstalledOrUpdateButtonIsEnabled()
+        {
+            UpdateCanInstallAndCanUninstall();
         }
     }
 }

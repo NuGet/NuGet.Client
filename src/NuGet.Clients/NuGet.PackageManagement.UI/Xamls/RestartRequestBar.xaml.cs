@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
 
 namespace NuGet.PackageManagement.UI
@@ -83,7 +84,7 @@ namespace NuGet.PackageManagement.UI
                        CultureInfo.CurrentCulture,
                        UI.Resources.RequestRestartToCompleteUninstallSinglePackage, packagesMarkedForDeletion[0]);
                     RequestRestartMessage.Text = message;
-                    RestartBar.Visibility = Visibility.Visible;
+                    Visibility = Visibility.Visible;
                 }
                 else if (count > 1)
                 {
@@ -91,13 +92,13 @@ namespace NuGet.PackageManagement.UI
                        CultureInfo.CurrentCulture,
                        UI.Resources.RequestRestartToCompleteUninstallMultiplePackages);
                     RequestRestartMessage.Text = message;
-                    RestartBar.Visibility = Visibility.Visible;
+                    Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    RestartBar.Visibility = Visibility.Collapsed;
+                    Visibility = Visibility.Collapsed;
                 }
-            });
+            }).PostOnFailure(nameof(RestartRequestBar));
         }
 
         private void ExecuteRestart(object sender, EventArgs e)
@@ -154,7 +155,7 @@ namespace NuGet.PackageManagement.UI
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;
-            });
+            }).PostOnFailure(nameof(RestartRequestBar));
         }
     }
 }

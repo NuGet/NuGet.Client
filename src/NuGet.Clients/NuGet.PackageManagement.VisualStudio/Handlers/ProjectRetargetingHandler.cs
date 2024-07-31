@@ -4,18 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -26,7 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private DTE _dte;
         private ISolutionManager _solutionManager;
         private IVsTrackProjectRetargeting _vsTrackProjectRetargeting;
-        private ErrorListProvider _errorListProvider;
+        private readonly ErrorListProvider _errorListProvider;
         private IVsMonitorSelection _vsMonitorSelection;
         private string _platformRetargetingProject;
 
@@ -42,7 +43,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Otherwise, it simply exits
         /// </summary>
         /// <param name="dte"></param>
-        public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel)
+        public ProjectRetargetingHandler(DTE dte, ISolutionManager solutionManager, IServiceProvider serviceProvider, IComponentModel componentModel, IVsTrackProjectRetargeting vsTrackProjectRetargeting, IVsMonitorSelection vsMonitorSelection)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -56,24 +57,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(solutionManager));
             }
 
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
             if (componentModel == null)
             {
                 throw new ArgumentNullException(nameof(componentModel));
             }
 
+            _vsMonitorSelection = vsMonitorSelection;
+            Assumes.Present(_vsMonitorSelection);
+
             _solutionRestoreWorker = new Lazy<ISolutionRestoreWorker>(
                 () => componentModel.GetService<ISolutionRestoreWorker>());
 
-            var vsTrackProjectRetargeting = serviceProvider.GetService(typeof(SVsTrackProjectRetargeting)) as IVsTrackProjectRetargeting;
             if (vsTrackProjectRetargeting != null)
             {
-                _vsMonitorSelection = (IVsMonitorSelection)serviceProvider.GetService(typeof(IVsMonitorSelection));
-                Debug.Assert(_vsMonitorSelection != null);
                 _errorListProvider = new ErrorListProvider(serviceProvider);
                 _dte = dte;
                 _solutionManager = solutionManager;
@@ -141,6 +137,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(solution != null);
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             foreach (Project project in solution.Projects)
             {
                 var nuGetProject = await EnvDTEProjectUtility.GetNuGetProjectAsync(project, _solutionManager);
@@ -149,8 +147,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     var packageReferencesToBeReinstalled = ProjectRetargetingUtility.GetPackageReferencesMarkedForReinstallation(nuGetProject);
                     if (packageReferencesToBeReinstalled.Count > 0)
                     {
-                        Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                        var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                        Debug.Assert(await ProjectRetargetingUtility.IsNuGetInUseAsync(project));
+                        var projectHierarchy = await project.ToVsHierarchyAsync();
                         ShowRetargetingErrorTask(packageReferencesToBeReinstalled.Select(p => p.PackageIdentity.Id), projectHierarchy, TaskErrorCategory.Warning, TaskPriority.Normal);
                     }
                 }
@@ -185,8 +183,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), pAfterChangeHier, TaskErrorCategory.Error, TaskPriority.High);
                     }
-// NuGet/Home#4833 Baseline
-// Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
+                    // NuGet/Home#4833 Baseline
+                    // Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
 #pragma warning disable CS4014
                     ProjectRetargetingUtility.MarkPackagesForReinstallation(retargetedProject, packagesToBeReinstalled);
 #pragma warning restore CS4014
@@ -196,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (retargetedProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
-                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.ProjectRetargeting), CancellationToken.None));
             }
             return VSConstants.S_OK;
         }
@@ -231,12 +229,12 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var project = EnvDTEProjectInfoUtility.GetActiveProject(_vsMonitorSelection);
+                var project = _vsMonitorSelection.GetActiveProject();
 
                 if (project != null)
                 {
                     _platformRetargetingProject = null;
-                    var frameworkName = EnvDTEProjectInfoUtility.GetTargetFrameworkString(project);
+                    var frameworkName = project.GetTargetFrameworkString();
                     if (NETCore45.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows80.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
                     {
                         _platformRetargetingProject = project.UniqueName;
@@ -268,20 +266,20 @@ namespace NuGet.PackageManagement.VisualStudio
 
                             if (ProjectRetargetingUtility.IsProjectRetargetable(nuGetProject))
                             {
-                                var frameworkName = EnvDTEProjectInfoUtility.GetTargetFrameworkString(project);
+                                var frameworkName = project.GetTargetFrameworkString();
                                 if (NETCore451.Equals(frameworkName, StringComparison.OrdinalIgnoreCase) || Windows81.Equals(frameworkName, StringComparison.OrdinalIgnoreCase))
                                 {
                                     var packagesToBeReinstalled = await ProjectRetargetingUtility.GetPackagesToBeReinstalled(nuGetProject);
                                     if (packagesToBeReinstalled.Count > 0)
                                     {
                                         // By asserting that NuGet is in use, we are also asserting that NuGet.VisualStudio.dll is already loaded
-                                        // Hence, it is okay to call project.ToVsHierarchy()
-                                        Debug.Assert(ProjectRetargetingUtility.IsNuGetInUse(project));
-                                        var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+                                        // Hence, it is okay to call project.ToVsHierarchyAsync()
+                                        Debug.Assert(await ProjectRetargetingUtility.IsNuGetInUseAsync(project));
+                                        var projectHierarchy = await project.ToVsHierarchyAsync();
                                         ShowRetargetingErrorTask(packagesToBeReinstalled.Select(p => p.Id), projectHierarchy, TaskErrorCategory.Error, TaskPriority.High);
                                     }
-// NuGet/Home#4833 Baseline
-// Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
+                                    // NuGet/Home#4833 Baseline
+                                    // Because this call is not awaited, execution of the current method continues before the call is completed. Consider applying the 'await' operator to the result of the call.
 #pragma warning disable CS4014
                                     ProjectRetargetingUtility.MarkPackagesForReinstallation(nuGetProject, packagesToBeReinstalled);
 #pragma warning restore CS4014
@@ -300,7 +298,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (nuGetProject is LegacyPackageReferenceProject)
             {
                 // trigger solution restore and don't wait for it to be complete and hold the UI thread
-                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), CancellationToken.None));
+                System.Threading.Tasks.Task.Run(() => _solutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByUserCommand(ExplicitRestoreReason.ProjectRetargeting), CancellationToken.None));
             }
 
             return VSConstants.S_OK;
@@ -332,7 +330,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         _dte.Events.BuildEvents.OnBuildBegin -= BuildEvents_OnBuildBegin;
                         _dte.Events.SolutionEvents.AfterClosing -= SolutionEvents_AfterClosing;
                     }
-                });
+                }).PostOnFailure(nameof(ProjectRetargetingHandler));
             }
         }
     }

@@ -15,6 +15,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Attempts to create an instance of <see cref="IVsPathContext"/>.
         /// </summary>
+        /// <remarks>Can be called from a background thread.</remarks>
         /// <param name="projectUniqueName">
         /// Unique identificator of the project. Should be a full path to project file.
         /// </param>

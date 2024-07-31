@@ -13,13 +13,6 @@ namespace NuGet.PackageManagement.VisualStudio
     public interface IVsProjectAdapterProvider
     {
         /// <summary>
-        /// Check if given file path exists from AnyCode api in LSL mode.
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns>true, if file path exists</returns>
-        Task<bool> EntityExistsAsync(string filePath);
-
-        /// <summary>
         /// Creates a project adapter for fully loaded project represented by DTE object.
         /// </summary>
         /// <param name="dteProject">Input project object</param>
@@ -27,17 +20,17 @@ namespace NuGet.PackageManagement.VisualStudio
         Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(EnvDTE.Project dteProject);
 
         /// <summary>
+        /// Creates a project adapter for fully loaded project represented by IVsHierarchy object.
+        /// </summary>
+        /// <param name="hierarchy">Input hierarchy object</param>
+        /// <returns>New instance of project adapter encapsulating hierarchy project.</returns>
+        Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(IVsHierarchy hierarchy);
+
+        /// <summary>
         /// Creates a project adapter for fully loaded project represented by DTE object.
         /// </summary>
         /// <param name="dteProject">Input project object</param>
         /// <returns>New instance of project adapter encapsulating DTE project.</returns>
         IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject);
-
-        /// <summary>
-        /// Creates a project adapter for deferred project represented by hierarchy object.
-        /// </summary>
-        /// <param name="project">Input project object</param>
-        /// <returns>New instance of project adapter encapsulating deferred project.</returns>
-        Task<IVsProjectAdapter> CreateAdapterForDeferredProjectAsync(IVsHierarchy project);
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="message">The fault message.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="message" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         [JsonConstructor]
         public Fault(string message)
         {

@@ -17,6 +17,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.FuncTest.Commands
 {
@@ -27,7 +28,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class RestoreCommandSignPackagesTests
     {
-        private static readonly string NU3008Message = "The package integrity check failed.";
+        private static readonly string NU3008Message = "The package integrity check failed. The package has changed since it was signed. Try clearing the local http-cache and run nuget operation again.";
         private static readonly string NU3008 = "NU3008: {0}";
         private static readonly string NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
         private static readonly string NU3027 = "NU3027: {0}";
@@ -35,12 +36,14 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private static readonly string NU3005 = "NU3005: {0}";
 
         private SignCommandTestFixture _testFixture;
+        private readonly ITestOutputHelper _testOutputHelper;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private readonly string _nugetExePath;
 
-        public RestoreCommandSignPackagesTests(SignCommandTestFixture fixture)
+        public RestoreCommandSignPackagesTests(SignCommandTestFixture fixture, ITestOutputHelper testOutputHelper)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
+            _testOutputHelper = testOutputHelper;
             _trustedTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
             _nugetExePath = _testFixture.NuGetExePath;
         }
@@ -281,11 +284,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
+                result.Errors.Should().Contain(string.Format(NU3005, "Warning As Error: " + SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3005);
-                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().Message.Should().Be("Warning As Error: " + SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(0);
@@ -377,12 +380,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
         [Fact]
         public void GetCertificateChain_WithUntrustedRoot_Throws()
         {
-            using (var chainHolder = new X509ChainHolder())
+            using (X509ChainHolder chainHolder = X509ChainHolder.CreateForCodeSigning())
             using (var rootCertificate = SigningTestUtility.GetCertificate("root.crt"))
             using (var intermediateCertificate = SigningTestUtility.GetCertificate("intermediate.crt"))
             using (var leafCertificate = SigningTestUtility.GetCertificate("leaf.crt"))
             {
-                var chain = chainHolder.Chain;
                 var extraStore = new X509Certificate2Collection() { rootCertificate, intermediateCertificate };
                 var logger = new TestLogger();
 
@@ -395,9 +397,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 Assert.Equal(NuGetLogCode.NU3018, exception.Code);
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
-
                 Assert.Equal(1, logger.Errors);
-                Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
 
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
                 SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
@@ -409,7 +409,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        public static CommandRunnerResult RunRestore(string nugetExe, SimpleTestPathContext pathContext, int expectedExitCode = 0, params string[] additionalArgs)
+        public CommandRunnerResult RunRestore(string nugetExe, SimpleTestPathContext pathContext, int expectedExitCode = 0, params string[] additionalArgs)
         {
             // Store the dg file for debugging
             var envVars = new Dictionary<string, string>()
@@ -431,8 +431,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 nugetExe,
                 pathContext.WorkingDirectory,
                 string.Join(" ", args),
-                waitForExit: true,
-                environmentVariables: envVars);
+                environmentVariables: envVars,
+                testOutputHelper: _testOutputHelper);
 
             // Assert
             Assert.True(expectedExitCode == r.ExitCode, r.AllOutput);

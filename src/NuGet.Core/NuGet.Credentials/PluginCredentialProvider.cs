@@ -24,7 +24,7 @@ namespace NuGet.Credentials
         private readonly string _verbosity;
         private const string NormalVerbosity = "normal";
         private const string CrossPlatformPluginLink = "https://aka.ms/nuget-cross-platform-authentication-plugin";
-        private int _deprecationMessageWarningLogged; 
+        private int _deprecationMessageWarningLogged;
 
         /// <summary>
         /// Constructor
@@ -180,7 +180,7 @@ namespace NuGet.Credentials
             // since normal is default
             if (PassVerbosityFlag(request))
             {
-                argumentString += $" -verbosity {request.Verbosity.ToLower()}";
+                argumentString += $" -verbosity {request.Verbosity.ToLower(CultureInfo.InvariantCulture)}";
             }
 
             var startInfo = new ProcessStartInfo
@@ -208,7 +208,7 @@ namespace NuGet.Credentials
             {
                 // Mono will add utf-16 byte order mark to the start of stdOut, remove it here.
                 credentialResponse =
-                    JsonConvert.DeserializeObject<PluginCredentialResponse>(stdOut.Trim(new char[] { '\uFEFF' })) 
+                    JsonConvert.DeserializeObject<PluginCredentialResponse>(stdOut.Trim(new char[] { '\uFEFF' }))
                     ?? new PluginCredentialResponse();
             }
             catch (Exception)
@@ -250,7 +250,7 @@ namespace NuGet.Credentials
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var process = Process.Start(startInfo);
+            using var process = Process.Start(startInfo);
             if (process == null)
             {
                 throw PluginException.CreateNotStartedMessage(Path);

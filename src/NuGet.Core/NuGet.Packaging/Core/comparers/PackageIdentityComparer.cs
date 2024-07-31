@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Core
         /// Default version range comparer.
         /// </summary>
         public PackageIdentityComparer()
-            : this(new VersionComparer(VersionComparison.Default))
+            : this(VersionComparer.Default)
         {
         }
 
@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Core
         /// Compare versions with a specific VersionComparison
         /// </summary>
         public PackageIdentityComparer(VersionComparison versionComparison)
-            : this(new VersionComparer(versionComparison))
+            : this(VersionComparer.Get(versionComparison))
         {
         }
 
@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Core
         {
             if (versionComparer == null)
             {
-                throw new ArgumentNullException("versionComparer");
+                throw new ArgumentNullException(nameof(versionComparer));
             }
 
             _versionComparer = versionComparer;
@@ -46,9 +46,22 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Default comparer that compares on the id, version, and version release labels.
         /// </summary>
-        public static PackageIdentityComparer Default
+        public static PackageIdentityComparer Default { get; } = new PackageIdentityComparer();
+
+        internal static PackageIdentityComparer Version { get; } = new PackageIdentityComparer(VersionComparison.Version);
+        internal static PackageIdentityComparer VersionRelease { get; } = new PackageIdentityComparer(VersionComparison.VersionRelease);
+        internal static PackageIdentityComparer VersionReleaseMetadata { get; } = new PackageIdentityComparer(VersionComparison.VersionReleaseMetadata);
+
+        internal static PackageIdentityComparer Get(VersionComparison versionComparison)
         {
-            get { return new PackageIdentityComparer(); }
+            return versionComparison switch
+            {
+                VersionComparison.Default => Default,
+                VersionComparison.Version => Version,
+                VersionComparison.VersionRelease => VersionRelease,
+                VersionComparison.VersionReleaseMetadata => VersionReleaseMetadata,
+                _ => new PackageIdentityComparer(versionComparison),
+            };
         }
 
         /// <summary>
@@ -68,7 +81,7 @@ namespace NuGet.Packaging.Core
             }
 
             return _versionComparer.Equals(x.Version, y.Version)
-                   && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
+                && StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id);
         }
 
         /// <summary>
@@ -84,7 +97,7 @@ namespace NuGet.Packaging.Core
             var combiner = new HashCodeCombiner();
 
             combiner.AddObject(obj.Id, StringComparer.OrdinalIgnoreCase);
-            combiner.AddObject(_versionComparer.GetHashCode(obj.Version));
+            combiner.AddObject(obj.Version, _versionComparer);
 
             return combiner.CombinedHash;
         }
@@ -109,7 +122,7 @@ namespace NuGet.Packaging.Core
                 return 1;
             }
 
-            var result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
+            int result = StringComparer.OrdinalIgnoreCase.Compare(x.Id, y.Id);
 
             if (result == 0)
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -45,6 +45,33 @@ namespace NuGet.Test.Utility
                     {
                         result.Add(key, item.Value);
                     }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Read a targets or props file and find all the items.
+        /// </summary>
+        public static List<(string, Dictionary<string, string>)> GetMSBuildItems(XDocument doc)
+        {
+            var result = new List<(string, Dictionary<string, string>)>();
+
+            var itemGroupName = XName.Get("ItemGroup", "http://schemas.microsoft.com/developer/msbuild/2003");
+
+            foreach (var group in doc.Root.Elements(itemGroupName))
+            {
+                foreach (var item in group.Elements())
+                {
+                    var key = item.Name.LocalName;
+
+                    var attributeValues = new Dictionary<string, string>();
+                    foreach (var attribute in item.Attributes())
+                    {
+                        attributeValues.Add(attribute.Name.LocalName, attribute.Value);
+                    }
+                    result.Add((key, attributeValues));
                 }
             }
 

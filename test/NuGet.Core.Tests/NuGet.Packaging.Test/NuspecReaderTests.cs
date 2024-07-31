@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using NuGet.Frameworks;
-using Xunit;
-using NuGet.Packaging.Core;
-using System.Collections.Generic;
-using NuGet.Versioning;
 using FluentAssertions;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
-using System.Globalization;
+using NuGet.Versioning;
+using Xunit;
 
 namespace NuGet.Packaging.Test
 {
@@ -393,7 +393,7 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string LicenseExpressionBasicNonStandardLicense= @"<?xml version=""1.0""?>
+        private const string LicenseExpressionBasicNonStandardLicense = @"<?xml version=""1.0""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
                   <metadata>
                     <id>packageA</id>
@@ -471,7 +471,7 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string EmbeddedIconTestTemplate = @"<?xml version=""1.0""?>
+        private const string EmbeddedElementTestTemplate = @"<?xml version=""1.0""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
                   <metadata>
                     <id>trumpet</id>
@@ -479,8 +479,23 @@ namespace NuGet.Packaging.Test
                     <title>trumpet package</title>
                     <authors>alice, bob</authors>
                     <owners>alice, bob</owners>
-                    <description>This is a package icon test</description>
+                    <description>This is an embedded package element test</description>
                     {0}
+                  </metadata>
+                </package>";
+
+        private const string ContentFilesTestTemplate = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>crumpet</id>
+                    <version>0.0.1</version>
+                    <title>crumpet package</title>
+                    <authors>tim, eric</authors>
+                    <owners>tim, eric</owners>
+                    <description>This is a package with content files, ostensibly.</description>
+                    <contentFiles>
+                      <files include=""cs/**/*.*"" buildAction=""Compile"" {0} />
+                    </contentFiles>
                   </metadata>
                 </package>";
 
@@ -1130,7 +1145,7 @@ namespace NuGet.Packaging.Test
         [InlineData("<icon>content\\icon.jpg</icon>", "content\\icon.jpg")]
         public void NuspecReaderTests_EmbeddedIcon(string icon, string expectedRead)
         {
-            string nuspec = string.Format(EmbeddedIconTestTemplate, icon);
+            string nuspec = string.Format(EmbeddedElementTestTemplate, icon);
 
             // Arrange
             var reader = GetReader(nuspec);
@@ -1140,6 +1155,61 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Equal(iconPath, expectedRead);
+        }
+
+        [Theory]
+        [InlineData("<readme>readme.md</readme>", "readme.md")]
+        [InlineData("<readme></readme>", "")]
+        [InlineData("<readme/>", "")]
+        [InlineData("", null)]
+        [InlineData("<readme>path/readme.md</readme>", "path/readme.md")]
+        [InlineData("<readme>content\\readme.md</readme>", "content\\readme.md")]
+        public void NuspecReaderTests_EmbeddedReadme(string readme, string expectedRead)
+        {
+            string nuspec = string.Format(EmbeddedElementTestTemplate, readme);
+
+            // Arrange
+            var reader = GetReader(nuspec);
+
+            // Act
+            var readmePath = reader.GetReadme();
+
+            // Assert
+            Assert.Equal(readmePath, expectedRead);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_ContentFiles()
+        {
+            // Arrange
+            string nuspec = string.Format(ContentFilesTestTemplate, string.Empty);
+            var reader = GetReader(nuspec);
+
+            // Act
+            var contentFiles = reader.GetContentFiles().ToList();
+
+            // Assert
+            var contentFile = Assert.Single(contentFiles);
+            Assert.Equal("cs/**/*.*", contentFile.Include);
+            Assert.Equal("Compile", contentFile.BuildAction);
+            Assert.Null(contentFile.CopyToOutput);
+            Assert.Null(contentFile.Exclude);
+            Assert.Null(contentFile.Flatten);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_InvalidContentFilesBool()
+        {
+            // Arrange
+            var badBool = @"flatten=""bad""";
+            string nuspec = string.Format(ContentFilesTestTemplate, badBool);
+            var reader = GetReader(nuspec);
+
+            // Act & Assert
+            var ex = Assert.Throws<PackagingException>(() => reader.GetContentFiles().ToList());
+            Assert.StartsWith("The nuspec contains an invalid entry", ex.Message);
+            Assert.Contains(badBool, ex.Message);
+            Assert.Contains(reader.GetIdentity().ToString(), ex.Message);
         }
 
         private static NuspecReader GetReader(string nuspec)

@@ -14,11 +14,11 @@ namespace NuGet.Packaging.Rules
         internal static readonly Uri SampleProjectUrl = new Uri("http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE");
         internal static readonly Uri SampleLicenseUrl = new Uri("http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE");
         internal static readonly Uri SampleIconUrl = new Uri("http://ICON_URL_HERE_OR_DELETE_THIS_LINE");
-        internal static readonly string SampleTags = "Tag1 Tag2";
-        internal static readonly string SampleReleaseNotes = "Summary of changes made in this release of the package.";
-        internal static readonly string SampleDescription = "Package description";
-        internal static readonly string SampleManifestDependencyId = "SampleDependency";
-        internal static readonly string SampleManifestDependencyVersion = "1.0";
+        internal const string SampleTags = "Tag1 Tag2";
+        internal const string SampleReleaseNotes = "Summary of changes made in this release of the package.";
+        internal const string SampleDescription = "Package description";
+        internal const string SampleManifestDependencyId = "SampleDependency";
+        internal const string SampleManifestDependencyVersion = "1.0";
 
         public string MessageFormat { get; }
 
@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            if(builder == null)
+            if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }

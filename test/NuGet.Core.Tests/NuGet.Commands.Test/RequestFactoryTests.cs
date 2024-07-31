@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -58,7 +58,7 @@ namespace NuGet.Commands.Test
 
                     // Act
                     var supports = await provider.Supports(dgSpec);
-                    Assert.Equal(true, supports);
+                    Assert.True(supports);
 
                     var requests = await provider.CreateRequests(dgSpec, context);
                     Assert.Equal(1, requests.Count);

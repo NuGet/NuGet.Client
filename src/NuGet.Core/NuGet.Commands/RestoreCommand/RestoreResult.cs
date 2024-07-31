@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -57,6 +57,12 @@ namespace NuGet.Commands
         public TimeSpan ElapsedTime { get; }
 
         /// <summary>
+        /// The log messages raised during this restore operation
+        /// </summary>
+        /// <remarks>The messages here are usually sources from the <see cref="LockFile"/> in full restores or <see cref="CacheFile"/> for no-op restores.</remarks>
+        public virtual IList<IAssetsLogMessage> LogMessages { get; internal set; }
+
+        /// <summary>
         ///  Cache File. The previous cache file for this project
         /// </summary>
         private CacheFile CacheFile { get; }
@@ -64,7 +70,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Cache File path. The file path where the cache is written out
         /// </summary>
-        protected string CacheFilePath { get;  }
+        protected string CacheFilePath { get; }
 
         /// <summary>
         /// New Packages lock file path
@@ -74,12 +80,16 @@ namespace NuGet.Commands
         /// <summary>
         /// NuGet lock file which is either generated or updated to lock down NuGet packages version
         /// </summary>
-        private readonly PackagesLockFile _newPackagesLockFile;
+        internal PackagesLockFile _newPackagesLockFile { get; }
 
 
         private readonly string _dependencyGraphSpecFilePath;
 
         private readonly DependencyGraphSpec _dependencyGraphSpec;
+
+        private readonly Lazy<bool> _isAssetsFileDirty;
+        private readonly Lazy<List<MSBuildOutputFile>> _dirtyMSBuildFiles;
+
 
         public RestoreResult(
             bool success,
@@ -113,6 +123,13 @@ namespace NuGet.Commands
             _dependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
+            LogMessages = lockFile?.LogMessages ?? new List<IAssetsLogMessage>();
+            _isAssetsFileDirty = new Lazy<bool>(() => PreviousLockFile == null
+                || !PreviousLockFile.Equals(LockFile));
+            _dirtyMSBuildFiles = new Lazy<List<MSBuildOutputFile>>(() =>
+            {
+                return MSBuildOutputFiles.Where(e => BuildAssetsUtils.HasChanges(e.Content, e.Path, NullLogger.Instance)).ToList();
+            });
         }
 
         /// <summary>
@@ -147,51 +164,61 @@ namespace NuGet.Commands
         ///  the file will not be written to disk.</remarks>
         public virtual async Task CommitAsync(ILogger log, CancellationToken token)
         {
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
 
             var isTool = ProjectStyle == ProjectStyle.DotnetCliTool;
 
             // Commit the assets file to disk.
+            if (NuGetEventSource.IsEnabled) TraceEvents.WriteAssetsFileStart(LockFilePath);
             await CommitAssetsFileAsync(
                 lockFileFormat,
-                result: this,
                 log: log,
                 toolCommit: isTool,
                 token: token);
-            
+            if (NuGetEventSource.IsEnabled) TraceEvents.WriteAssetsFileStop(LockFilePath);
+
             //Commit the cache file to disk
+            if (NuGetEventSource.IsEnabled) TraceEvents.WriteCacheFileStart(CacheFilePath);
             await CommitCacheFileAsync(
                 log: log,
-                toolCommit : isTool);
+                toolCommit: isTool);
+            if (NuGetEventSource.IsEnabled) TraceEvents.WriteCacheFileStop(CacheFilePath);
 
             // Commit the lock file to disk
+            if (NuGetEventSource.IsEnabled) TraceEvents.WritePackagesLockFileStart(_newPackagesLockFilePath);
             await CommitLockFileAsync(
                 log: log,
                 toolCommit: isTool);
+            if (NuGetEventSource.IsEnabled) TraceEvents.WritePackagesLockFileStop(_newPackagesLockFilePath);
 
             // Commit the dg spec file to disk
+            if (NuGetEventSource.IsEnabled) TraceEvents.WriteDgSpecFileStart(_dependencyGraphSpecFilePath);
             await CommitDgSpecFileAsync(
                 log: log,
                 toolCommit: isTool);
+            if (NuGetEventSource.IsEnabled) TraceEvents.WriteDgSpecFileStop(_dependencyGraphSpecFilePath);
         }
 
         private async Task CommitAssetsFileAsync(
             LockFileFormat lockFileFormat,
-            IRestoreResult result,
             ILogger log,
             bool toolCommit,
             CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             // Commit targets/props to disk before the assets file.
             // Visual Studio typically watches the assets file for changes
             // and begins a reload when that file changes.
-            var buildFilesToWrite = result.MSBuildOutputFiles
-                    .Where(e => BuildAssetsUtils.HasChanges(e.Content, e.Path, log));
+            BuildAssetsUtils.WriteFiles(_dirtyMSBuildFiles.Value, log);
 
-            BuildAssetsUtils.WriteFiles(buildFilesToWrite, log);
-
-            if (result.LockFile == null || result.LockFilePath ==  null)
+            if (LockFile == null || LockFilePath == null)
             {
                 // there is no assets file to be written so just return
                 return;
@@ -199,28 +226,27 @@ namespace NuGet.Commands
 
             // Avoid writing out the lock file if it is the same to avoid triggering an intellisense
             // update on a restore with no actual changes.
-            if (result.PreviousLockFile == null
-                || !result.PreviousLockFile.Equals(result.LockFile))
+            if (_isAssetsFileDirty.Value)
             {
                 if (toolCommit)
                 {
                     log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                     Strings.Log_ToolWritingAssetsFile,
-                    result.LockFilePath));
+                    LockFilePath));
 
                     await FileUtility.ReplaceWithLock(
-                        (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
-                        result.LockFilePath);
+                        (outputPath) => lockFileFormat.Write(outputPath, LockFile),
+                        LockFilePath);
                 }
                 else
                 {
                     log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_WritingAssetsFile,
-                        result.LockFilePath));
+                        LockFilePath));
 
                     FileUtility.Replace(
-                        (outputPath) => lockFileFormat.Write(outputPath, result.LockFile),
-                        result.LockFilePath);
+                        (outputPath) => lockFileFormat.Write(outputPath, LockFile),
+                        LockFilePath);
                 }
             }
             else
@@ -229,26 +255,28 @@ namespace NuGet.Commands
                 {
                     log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_ToolSkippingAssetsFile,
-                        result.LockFilePath));
+                        LockFilePath));
                 }
                 else
                 {
                     log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                         Strings.Log_SkippingAssetsFile,
-                        result.LockFilePath));
+                        LockFilePath));
                 }
             }
         }
 
         private async Task CommitCacheFileAsync(ILogger log, bool toolCommit)
         {
-            if (CacheFile != null && CacheFilePath != null) { // This is done to preserve the old behavior
+            if (CacheFile != null && CacheFilePath != null)
+            { // This is done to preserve the old behavior
 
-                if (toolCommit) { 
+                if (toolCommit)
+                {
                     log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
                             Strings.Log_ToolWritingCacheFile,
                             CacheFilePath));
-                } 
+                }
                 else
                 {
                     log.LogVerbose(string.Format(CultureInfo.CurrentCulture,
@@ -286,6 +314,127 @@ namespace NuGet.Commands
                 await FileUtility.ReplaceWithLock(
                     (outputPath) => _dependencyGraphSpec.Save(outputPath),
                     _dependencyGraphSpecFilePath);
+            }
+        }
+
+        internal virtual IReadOnlyList<string> GetDirtyFiles()
+        {
+            List<string> dirtyFiles = null;
+
+            if (_dirtyMSBuildFiles.Value.Count > 0)
+            {
+                dirtyFiles = _dirtyMSBuildFiles.Value.Select(e => e.Path).ToList();
+            }
+            if (_isAssetsFileDirty.Value)
+            {
+                dirtyFiles ??= new List<string>(1);
+                dirtyFiles.Add(LockFilePath);
+            }
+
+            return dirtyFiles;
+        }
+
+        private static class TraceEvents
+        {
+            private const string EventNameWriteAssetsFile = "RestoreResult/WriteAssetsFile";
+            private const string EventNameWriteCacheFile = "RestoreResult/WriteCacheFile";
+            private const string EventNameWritePackagesLockFile = "RestoreResult/WritePackagesLockFile";
+            private const string EventNameWriteDgSpecFile = "RestoreResult/WriteDgSpecFile";
+
+            public static void WriteAssetsFileStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWriteAssetsFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WriteAssetsFileStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWriteAssetsFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WriteCacheFileStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWriteCacheFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WriteCacheFileStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWriteCacheFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WritePackagesLockFileStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWritePackagesLockFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WritePackagesLockFileStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWritePackagesLockFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WriteDgSpecFileStart(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Start
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWriteDgSpecFile, eventOptions, new { FilePath = filePath });
+            }
+
+            public static void WriteDgSpecFileStop(string filePath)
+            {
+                var eventOptions = new EventSourceOptions
+                {
+                    Keywords = NuGetEventSource.Keywords.Performance |
+                                NuGetEventSource.Keywords.Restore,
+                    Opcode = EventOpcode.Stop
+                };
+
+                NuGetEventSource.Instance.Write(EventNameWriteDgSpecFile, eventOptions, new { FilePath = filePath });
             }
         }
     }

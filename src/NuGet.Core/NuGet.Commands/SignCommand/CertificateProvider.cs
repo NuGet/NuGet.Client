@@ -32,8 +32,14 @@ namespace NuGet.Commands
 
         private const int MACOS_INVALID_CERT = -25257;
 
+
+#if IS_SIGNING_SUPPORTED && IS_CORECLR
+        //Generic exception ASN1 corrupted data
+        private const int OPENSSL_ASN1_CORRUPTED_DATA_ERROR = unchecked((int)0x80131501);
+#else
         // OpenSSL:  error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error
         private const int OPENSSL_ERR_R_NESTED_ASN1_ERROR = 0x0D07803A;
+#endif
 
         /// <summary>
         /// Looks for X509Certificates using the CertificateSourceOptions.
@@ -77,7 +83,11 @@ namespace NuGet.Commands
                                     options.CertificatePath)));
 
                         case CRYPT_E_NO_MATCH_HRESULT:
+#if IS_SIGNING_SUPPORTED && IS_CORECLR
+                        case OPENSSL_ASN1_CORRUPTED_DATA_ERROR:
+#else
                         case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
+#endif
                         case MACOS_INVALID_CERT:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
@@ -147,8 +157,9 @@ namespace NuGet.Commands
 
         private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
         {
-            X509Certificate2Collection resultCollection = null;
-            var store = new X509Store(options.StoreName, options.StoreLocation);
+            X509Certificate2Collection resultCollection = new();
+
+            using var store = new X509Store(options.StoreName, options.StoreLocation);
 
             OpenStore(store);
 
@@ -158,20 +169,35 @@ namespace NuGet.Commands
             // validity checks ourselves.
             const bool validOnly = false;
 
-            if (!string.IsNullOrEmpty(options.Fingerprint))
+            if (!string.IsNullOrEmpty(options.Fingerprint) &&
+                CertificateUtility.TryDeduceHashAlgorithm(options.Fingerprint, out Common.HashAlgorithmName hashAlgorithmName))
             {
-                resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly);
+                if (hashAlgorithmName == Common.HashAlgorithmName.SHA1)
+                {
+                    resultCollection = store.Certificates.Find(X509FindType.FindByThumbprint, options.Fingerprint, validOnly);
+                }
+                else if (hashAlgorithmName != Common.HashAlgorithmName.Unknown)
+                {
+                    foreach (var cert in store.Certificates)
+                    {
+                        string actualFingerprint = CertificateUtility.GetHashString(cert, hashAlgorithmName);
+
+                        if (string.Equals(actualFingerprint, options.Fingerprint, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            resultCollection.Add(cert);
+                            break;
+                        }
+                    }
+
+                }
             }
             else if (!string.IsNullOrEmpty(options.SubjectName))
             {
                 resultCollection = store.Certificates.Find(X509FindType.FindBySubjectName, options.SubjectName, validOnly);
             }
 
-#if IS_DESKTOP
             store.Close();
-#endif
 
-            resultCollection = resultCollection ?? new X509Certificate2Collection();
             resultCollection = GetValidCertificates(resultCollection);
 
             return resultCollection;

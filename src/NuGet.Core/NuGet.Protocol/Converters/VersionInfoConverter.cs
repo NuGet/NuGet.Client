@@ -3,7 +3,6 @@
 
 using System;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -19,7 +18,7 @@ namespace NuGet.Protocol
         {
             var v = JsonUtility.LoadJson(reader);
             var nugetVersion = NuGetVersion.Parse(v.Value<string>("version"));
-            var count = v.Value<int?>("downloads");
+            var count = v.Value<long?>("downloads");
             return new VersionInfo(nugetVersion, count);
         }
 

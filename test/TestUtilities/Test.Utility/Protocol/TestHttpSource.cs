@@ -19,21 +19,23 @@ namespace Test.Utility
     /// </summary>
     public class TestHttpSource : HttpSource
     {
-        public TestHttpSource(PackageSource source, Dictionary<string, string> responses, string errorContent = "") : base(
+        public TestHttpSource(PackageSource source, Dictionary<string, string> responses, string errorContent = "", bool throwOperationCancelledException = false) : base(
             source,
             () => Task.FromResult<HttpHandlerResource>(
                     new TestHttpHandler(
                         new TestMessageHandler(responses, errorContent))),
             NullThrottle.Instance)
         {
+            _throwOperationCancelledException = throwOperationCancelledException;
         }
 
-        public TestHttpSource(PackageSource source, Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses) : base(
+        public TestHttpSource(PackageSource source, Dictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> responses, bool throwOperationCancelledException = false) : base(
             source,
             () => Task.FromResult<HttpHandlerResource>(
                     new TestHttpHandler(new TestMessageHandler(responses))),
             NullThrottle.Instance)
         {
+            _throwOperationCancelledException = throwOperationCancelledException;
         }
 
         /// <summary>
@@ -46,9 +48,15 @@ namespace Test.Utility
         public bool DisableCaching { get; set; } = true;
         public int CacheHits { get; private set; }
         public int CacheMisses { get; private set; }
+        private readonly bool _throwOperationCancelledException;
 
         public override Task<T> GetAsync<T>(HttpSourceCachedRequest request, Func<HttpSourceResult, Task<T>> processAsync, ILogger log, CancellationToken token)
         {
+            if (_throwOperationCancelledException)
+            {
+                throw new OperationCanceledException(token);
+            }
+
             HttpSourceCachedRequestInspector?.Invoke(request);
 
             return base.GetAsync(request, processAsync, log, token);
@@ -60,9 +68,9 @@ namespace Test.Utility
             {
                 return null;
             }
-            
+
             var result = base.TryReadCacheFile(uri, maxAge, cacheFile);
-            
+
             if (result == null)
             {
                 CacheMisses++;

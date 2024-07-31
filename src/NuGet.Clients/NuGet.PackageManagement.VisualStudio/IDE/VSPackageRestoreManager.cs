@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 await TaskScheduler.Default;
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(VSPackageRestoreManager), nameof(OnSolutionOpened)));
+            .PostOnFailure(nameof(VSPackageRestoreManager), nameof(OnSolutionOpened));
         }
 
         private void OnSolutionClosed(object sender, EventArgs e)
@@ -71,8 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(VSPackageRestoreManager), nameof(OnNuGetProjectAdded)));
-
+            .PostOnFailure(nameof(VSPackageRestoreManager), nameof(OnNuGetProjectAdded));
         }
     }
 }

@@ -70,8 +70,10 @@ namespace NuGetVSExtension
                 toolWindow?.Show();
 
                 IVsOutputWindowPane pane;
-                if (_vsOutputWindow.Value.GetPane(ref NuGetConsole.GuidList.guidNuGetOutputWindowPaneGuid, out pane) == VSConstants.S_OK)
+                Guid outputWindowPaneId = NuGetConsole.GuidList.NuGetOutputWindowPaneGuid;
+                if (_vsOutputWindow.Value.GetPane(ref outputWindowPaneId, out pane) == VSConstants.S_OK)
                 {
+                    NuGetConsole.GuidList.NuGetOutputWindowPaneGuid = outputWindowPaneId;
                     pane.Activate();
                 }
             });

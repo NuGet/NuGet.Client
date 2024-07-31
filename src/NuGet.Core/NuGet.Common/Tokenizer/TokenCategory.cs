@@ -1,4 +1,4 @@
-﻿namespace NuGet.Common
+namespace NuGet.Common
 {
     public enum TokenCategory
     {

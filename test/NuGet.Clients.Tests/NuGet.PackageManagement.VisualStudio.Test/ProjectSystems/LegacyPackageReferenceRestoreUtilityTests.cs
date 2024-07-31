@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
+using Microsoft.VisualStudio.Sdk.TestFramework;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -21,21 +21,24 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Test.Utility;
-using Test.Utility.Threading;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
 {
-    [Collection(DispatcherThreadCollection.CollectionName)]
-    public class LegacyPackageReferenceRestoreUtilityTests
+    [Collection(MockedVS.Collection)]
+    public class LegacyPackageReferenceRestoreUtilityTests : MockedVSCollectionTests
     {
         private readonly IVsProjectThreadingService _threadingService;
 
-        public LegacyPackageReferenceRestoreUtilityTests(DispatcherThreadFixture fixture)
-        {
-            Assumes.Present(fixture);
+        private static readonly string _projectGuid1 = Guid.NewGuid().ToString();
+        private static readonly string _projectGuid2 = Guid.NewGuid().ToString();
 
-            _threadingService = new TestProjectThreadingService(fixture.JoinableTaskFactory);
+        public LegacyPackageReferenceRestoreUtilityTests(GlobalServiceProvider globalServiceProvider)
+            : base(globalServiceProvider)
+        {
+            globalServiceProvider.Reset();
+
+            _threadingService = new TestProjectThreadingService(NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         [Fact]
@@ -67,7 +70,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -86,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var legacyPRProject = new LegacyPackageReferenceProject(
                         vsProjectAdapter,
-                        Guid.NewGuid().ToString(),
+                        projectNames.ProjectId,
                         projectServices,
                         _threadingService);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
@@ -156,7 +160,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -185,7 +190,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -296,7 +302,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -354,8 +361,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.True(File.Exists(projectLockFilePath));
 
                     // delete existing restore output files
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
+                    string msBuildProjectExtensionsPath = vsProjectAdapter.GetMSBuildProjectExtensionsPath();
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPath, "project.assets.json"));
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     // add a new package
                     var newPackageContext = new SimpleTestPackageContext("packageA", "1.0.1");
@@ -383,7 +391,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.False(restoreSummary.NoOpRestore);
                     }
 
-                    var lockFilePath = Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json");
+                    var lockFilePath = Path.Combine(msBuildProjectExtensionsPath, "project.assets.json");
                     Assert.True(File.Exists(lockFilePath));
 
                     var lockFile = new LockFileFormat().Read(lockFilePath);
@@ -425,7 +433,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -482,9 +491,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.False(restoreSummary.NoOpRestore);
                     }
 
+                    string msBuildProjectExtensionsPath = vsProjectAdapter.GetMSBuildProjectExtensionsPath();
+
                     // Initial asserts
                     Assert.True(File.Exists(projectLockFilePath));
-                    var assetsFilePath = Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json");
+                    var assetsFilePath = Path.Combine(msBuildProjectExtensionsPath, "project.assets.json");
                     Assert.True(File.Exists(assetsFilePath));
 
                     // Assert that there is no warning logged into assets file
@@ -492,7 +503,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.False(assetsFile.LogMessages.Any());
 
                     // delete existing restore output files
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPath, "project.assets.json"));
 
                     // install a new package
                     projectServices.SetupInstalledPackages(
@@ -577,7 +588,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -665,7 +677,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -798,7 +811,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -856,8 +870,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.True(File.Exists(projectLockFilePath));
 
                     // delete existing restore output files
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
+                    string msBuildProjectExtensionsPath = vsProjectAdapter.GetMSBuildProjectExtensionsPath();
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPath, "project.assets.json"));
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     // clean packages folder
                     Directory.Delete(testSolutionManager.GlobalPackagesFolder, true);
@@ -920,7 +935,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -989,7 +1005,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.True(File.Exists(projectLockFilePath));
 
                     // delete existing restore output files
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
+                    File.Delete(Path.Combine(vsProjectAdapter.GetMSBuildProjectExtensionsPath(), "project.assets.json"));
 
                     // clean packages folder
                     Directory.Delete(testSolutionManager.GlobalPackagesFolder, true);
@@ -1049,7 +1065,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_Duality()
+        public async Task InstallPackageAsync_LegacyPackageRefProjects_Duality()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1078,7 +1094,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1098,7 +1115,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1139,7 +1157,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                     // Assert
-                    var lockFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    var lockFilePath = Path.Combine(vsProjectAdapterA.GetMSBuildProjectExtensionsPath(), "project.assets.json");
                     Assert.True(File.Exists(lockFilePath));
 
                 }
@@ -1147,7 +1165,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_developmentDependency()
+        public async Task InstallPackageAsync_LegacyPackageRefProjects_developmentDependency()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1177,7 +1195,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1210,7 +1229,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                             sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                     // Assert
-                    var assetsFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    var assetsFilePath = Path.Combine(vsProjectAdapterA.GetMSBuildProjectExtensionsPath(), "project.assets.json");
                     Assert.True(File.Exists(assetsFilePath));
 
                     var assetsFile = new LockFileFormat().Read(assetsFilePath);
@@ -1221,8 +1240,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         var dependency = target.Libraries.FirstOrDefault(lib => lib.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase));
 
                         Assert.NotNull(dependency);
-                        Assert.False(dependency.CompileTimeAssemblies.Any(item => item.Path.Equals("lib/net45/a.dll")));
-                        Assert.True(dependency.RuntimeAssemblies.Any(item => item.Path.Equals("lib/net45/a.dll")));
+                        Assert.DoesNotContain(dependency.CompileTimeAssemblies, item => item.Path.Equals("lib/net45/a.dll"));
+                        Assert.Contains(dependency.RuntimeAssemblies, item => item.Path.Equals("lib/net45/a.dll"));
                     }
 
                     var expectedIncludeFlags = LibraryIncludeFlags.All & ~LibraryIncludeFlags.Compile;
@@ -1241,7 +1260,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task TestPacMan_LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata()
+        public async Task LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1271,7 +1290,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
 
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
@@ -1330,7 +1350,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         CancellationToken.None);
 
                     // Assert
-                    var assetsFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    var assetsFilePath = Path.Combine(vsProjectAdapterA.GetMSBuildProjectExtensionsPath(), "project.assets.json");
                     Assert.True(File.Exists(assetsFilePath));
 
                     var assetsFile = new LockFileFormat().Read(assetsFilePath);
@@ -1353,9 +1373,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
-                    new List<Configuration.PackageSource>()
+                    new List<PackageSource>()
                     {
-                        new Configuration.PackageSource(packageSource.Path)
+                        new PackageSource(packageSource.Path)
                     });
 
                 using (var testSolutionManager = new TestSolutionManager())
@@ -1376,7 +1396,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1405,7 +1426,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1491,6 +1513,197 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        /// <summary>
+        /// projectA -> projectB -> projectC
+        /// Unload projectB & projectC. Ensure the full restore graph is loaded
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task DependencyGraphRestoreUtility_WithMissingMultiLevelProjectClosure_Succeeds()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        new TestDeleteOnRestartManager());
+
+                    // set up projects
+
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPathC = Path.Combine(testSolutionManager.TestDirectory, "ProjectC", "project3.csproj");
+                    var projectNamesC = new ProjectNames(
+                        fullName: fullProjectPathC,
+                        uniqueName: Path.GetFileName(fullProjectPathC),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathC),
+                        customUniqueName: Path.GetFileName(fullProjectPathC),
+                        projectId: _projectGuid1);
+                    var vsProjectAdapterC = new TestVSProjectAdapter(
+                        fullProjectPathC,
+                        projectNamesC,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesC = new TestProjectSystemServices();
+                    projectServicesC.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageC",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    var legacyPRProjectC = new LegacyPackageReferenceProject(
+                        vsProjectAdapterC,
+                        Guid.NewGuid().ToString(),
+                        projectServicesC,
+                        _threadingService);
+
+                    var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "project2.csproj");
+                    var projectNamesB = new ProjectNames(
+                        fullName: fullProjectPathB,
+                        uniqueName: Path.GetFileName(fullProjectPathB),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
+                    var vsProjectAdapterB = new TestVSProjectAdapter(
+                        fullProjectPathB,
+                        projectNamesB,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesB = new TestProjectSystemServices();
+                    projectServicesB.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageB",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    projectServicesB.SetupProjectDependencies(
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = fullProjectPathC,
+                            ProjectPath = fullProjectPathC
+                        });
+
+                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                        vsProjectAdapterB,
+                        Guid.NewGuid().ToString(),
+                        projectServicesB,
+                        _threadingService);
+
+                    var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
+                    var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
+                    var projectNamesA = new ProjectNames(
+                        fullName: fullProjectPathA,
+                        uniqueName: Path.GetFileName(fullProjectPathA),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
+                    var vsProjectAdapterA = new TestVSProjectAdapter(
+                        fullProjectPathA,
+                        projectNamesA,
+                        projectTargetFrameworkStr,
+                        restorePackagesWithLockFile: "true");
+
+                    var projectServicesA = new TestProjectSystemServices();
+                    projectServicesA.SetupProjectDependencies(
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = fullProjectPathB,
+                            ProjectPath = fullProjectPathB
+                        });
+
+                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                        vsProjectAdapterA,
+                        Guid.NewGuid().ToString(),
+                        projectServicesA,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectC);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
+
+                    var packageContextB = new SimpleTestPackageContext("packageB", "1.0.0");
+                    packageContextB.AddFile("lib/net45/b.dll");
+                    var packageContextC = new SimpleTestPackageContext("packageC", "1.0.0");
+                    packageContextC.AddFile("lib/net45/c.dll");
+                    var packages = new List<SimpleTestPackageContext>() { packageContextB, packageContextC };
+                    SimpleTestPackageUtility.CreateOPCPackages(packages, packageSource);
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        providersCache,
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
+
+                    // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    // remove ProjectB and ProjectC from the solution
+                    testSolutionManager.NuGetProjects.Remove(legacyPRProjectB);
+                    testSolutionManager.NuGetProjects.Remove(legacyPRProjectC);
+                    dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        providersCache,
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
+
+                    // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.NoOpRestore);
+                    }
+                }
+            }
+        }
+
         [Fact]
         public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_ResolveExactVersion()
         {
@@ -1523,7 +1736,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectAPath,
                         uniqueName: Path.GetFileName(fullProjectAPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectAPath),
-                        customUniqueName: Path.GetFileName(fullProjectAPath));
+                        customUniqueName: Path.GetFileName(fullProjectAPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectAPath,
                         projectANames,
@@ -1554,7 +1768,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectBPath,
                         uniqueName: Path.GetFileName(fullProjectBPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectBPath),
-                        customUniqueName: Path.GetFileName(fullProjectBPath));
+                        customUniqueName: Path.GetFileName(fullProjectBPath),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectBPath,
                         projectBNames,
@@ -1616,7 +1831,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     Assert.True(File.Exists(projectLockFilePath));
 
-                    var lockFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    string msBuildProjectExtensionsPathA = vsProjectAdapterA.GetMSBuildProjectExtensionsPath();
+
+                    var lockFilePath = Path.Combine(msBuildProjectExtensionsPathA, "project.assets.json");
                     Assert.True(File.Exists(lockFilePath));
 
                     var lockFile = new LockFileFormat().Read(lockFilePath);
@@ -1624,8 +1841,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal("1.0.0", resolvedVersion.ToNormalizedString());
 
                     // delete existing restore output files
-                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json"));
-                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPathA, "project.assets.json"));
+                    File.Delete(Path.Combine(msBuildProjectExtensionsPathA, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     //clear packageA 1.0.0 from global packages folder
                     var packageAPath = Path.Combine(testSolutionManager.GlobalPackagesFolder, "packagea", "1.0.0");
@@ -1685,7 +1902,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1716,7 +1934,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1795,8 +2014,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(PackageDependencyType.Project, lockFile.Targets[0].Dependencies[1].Type);
 
                     // Act
-                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
-                    File.Delete(Path.Combine(vsProjectAdapterB.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
+                    File.Delete(Path.Combine(vsProjectAdapterA.GetMSBuildProjectExtensionsPath(), NoOpRestoreUtilities.NoOpCacheFileName));
+                    File.Delete(Path.Combine(vsProjectAdapterB.GetMSBuildProjectExtensionsPath(), NoOpRestoreUtilities.NoOpCacheFileName));
 
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                         testSolutionManager,
@@ -1852,7 +2071,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath2,
                         uniqueName: Path.GetFileName(fullProjectPath2),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath2),
-                        customUniqueName: Path.GetFileName(fullProjectPath2));
+                        customUniqueName: Path.GetFileName(fullProjectPath2),
+                        projectId: _projectGuid2);
                     var vsProjectAdapter2 = new TestVSProjectAdapter(
                         fullProjectPath2,
                         projectNames2,
@@ -1881,7 +2101,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath1,
                         uniqueName: Path.GetFileName(fullProjectPath1),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath1),
-                        customUniqueName: Path.GetFileName(fullProjectPath1));
+                        customUniqueName: Path.GetFileName(fullProjectPath1),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPath1,
                         projectNames1,
@@ -1941,7 +2162,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.False(restoreSummary.NoOpRestore);
                     }
 
-                    var assetsFilePath = Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json");
+                    var assetsFilePath = Path.Combine(vsProjectAdapterA.GetMSBuildProjectExtensionsPath(), "project.assets.json");
                     Assert.True(File.Exists(assetsFilePath));
 
                     var assetsFile = new LockFileFormat().Read(assetsFilePath);
@@ -1954,6 +2175,152 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.True(library.Build.Any(build => build.Path.Equals("buildTransitive/packageB.targets")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                         Assert.False(library.Build.Any(build => build.Path.Equals("build/packageB.props")), $"All build assets: {string.Join(", ", library.Build.Select(e => e.Path))}" + Environment.NewLine + string.Join(Environment.NewLine, testLogger.Messages));
                     }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_CPVM_Restore()
+        {
+            var packageA = (PackageId: "packageA", Version: "1.2.3");
+            var packageB = (PackageId: "packageB", Version: "3.4.5");
+
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    // set up projects
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPath = Path.Combine(testSolutionManager.TestDirectory, "Project2", "project2.csproj");
+                    var projectNames = new ProjectNames(
+                        fullName: fullProjectPath,
+                        uniqueName: Path.GetFileName(fullProjectPath),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid2);
+                    var vsProjectAdapter = new TestVSProjectAdapter(
+                        fullProjectPath,
+                        projectNames,
+                        projectTargetFrameworkStr,
+                        restorePackagesWithLockFile: null,
+                        nuGetLockFilePath: null,
+                        restoreLockedMode: false,
+                        projectPackageVersions: new List<(string Id, string Version)>() { packageA, packageB });
+
+                    var projectServices = new TestProjectSystemServices();
+                    projectServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                packageA.PackageId,
+                                versionRange: null,
+                                LibraryDependencyTarget.Package),
+                        });
+
+                    var legacyPRProject = new LegacyPackageReferenceProject(
+                        vsProjectAdapter,
+                        Guid.NewGuid().ToString(),
+                        projectServices,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProject);
+
+                    var packageContextB = new SimpleTestPackageContext(packageB.PackageId, packageB.Version);
+                    packageContextB.Files.Clear();
+                    packageContextB.AddFile("lib/net45/b.dll");
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextB);
+
+                    var packageContextA = new SimpleTestPackageContext(packageA.PackageId, packageA.Version);
+                    packageContextA.Files.Clear();
+                    packageContextA.AddFile("lib/net45/a.dll");
+                    packageContextA.Dependencies.Add(packageContextB);
+
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextA);
+
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        providersCache,
+                        cacheContextModifier: _ => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
+
+                    // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    var assetsFilePath = Path.Combine(vsProjectAdapter.GetMSBuildProjectExtensionsPath(), "project.assets.json");
+                    Assert.True(File.Exists(assetsFilePath));
+
+                    var assetsFile = new LockFileFormat().Read(assetsFilePath);
+                    var targetFramework = assetsFile.PackageSpec.TargetFrameworks.First();
+
+                    Assert.NotNull(assetsFile);
+
+                    Assert.Equal(2, targetFramework.CentralPackageVersions.Count);
+                    Assert.Contains(targetFramework.CentralPackageVersions.Keys, k => k == packageA.PackageId);
+                    Assert.Contains(targetFramework.CentralPackageVersions.Keys, k => k == packageB.PackageId);
+
+                    foreach (var centralPackage in targetFramework.CentralPackageVersions)
+                    {
+                        switch (centralPackage.Key)
+                        {
+                            case "packageA":
+                                Assert.Equal(VersionRange.Parse(packageA.Version), centralPackage.Value.VersionRange);
+                                break;
+                            case "packageB":
+                                Assert.Equal(VersionRange.Parse(packageB.Version), centralPackage.Value.VersionRange);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    Assert.Equal(1, targetFramework.Dependencies.Count);
+                    Assert.Equal(packageA.PackageId, targetFramework.Dependencies.First().Name);
+                    Assert.Equal(VersionRange.Parse(packageA.Version), targetFramework.Dependencies.First().LibraryRange.VersionRange);
+                    Assert.True(targetFramework.Dependencies.First().VersionCentrallyManaged);
+
+                    Assert.Equal(2, assetsFile.Libraries.Count);
+
+                    Assert.Contains(assetsFile.Libraries, l => l.Name == packageA.PackageId);
+                    Assert.Contains(assetsFile.Libraries, l => l.Name == packageB.PackageId);
+
+                    Assert.Contains(assetsFile.Libraries, l => l.Version.ToNormalizedString() == packageA.Version);
+                    Assert.Contains(assetsFile.Libraries, l => l.Version.ToNormalizedString() == packageB.Version);
                 }
             }
         }

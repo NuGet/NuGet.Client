@@ -9,7 +9,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Credentials;
@@ -44,7 +43,7 @@ namespace NuGet.CommandLine
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
-        [Option("help", AltName = "?")]
+        [Option(typeof(NuGetCommand), "Option_Help", AltName = "?")]
         public bool Help { get; set; }
 
         [Option(typeof(NuGetCommand), "Option_Verbosity")]
@@ -60,6 +59,21 @@ namespace NuGet.CommandLine
         public bool ForceEnglishOutput { get; set; }
 
         protected Configuration.ICredentialService CredentialService { get; private set; }
+
+        public DeprecatedCommandAttribute DeprecatedCommandAttribute
+        {
+            get
+            {
+                var deprecatedAttrs = GetType().GetCustomAttributes(typeof(DeprecatedCommandAttribute), false);
+
+                if (deprecatedAttrs.Length > 0)
+                {
+                    return deprecatedAttrs[0] as DeprecatedCommandAttribute;
+                }
+
+                return null;
+            }
+        }
 
         public string CurrentDirectory
         {
@@ -115,6 +129,12 @@ namespace NuGet.CommandLine
         {
             if (Help)
             {
+                if (DeprecatedCommandAttribute != null)
+                {
+                    var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(CommandAttribute.CommandName);
+                    Console.WriteWarning(deprecationMessage);
+                }
+
                 HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
             }
             else
@@ -152,6 +172,12 @@ namespace NuGet.CommandLine
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
+                if (DeprecatedCommandAttribute != null)
+                {
+                    var deprecationMessage = DeprecatedCommandAttribute.GetDeprecationMessage(CommandAttribute.CommandName);
+                    Console.WriteWarning(deprecationMessage);
+                }
+
                 OutputNuGetVersion();
                 ExecuteCommandAsync().GetAwaiter().GetResult();
             }
@@ -164,8 +190,8 @@ namespace NuGet.CommandLine
         {
             if (ShouldOutputNuGetVersion)
             {
-                var assemblyName = Assembly.GetExecutingAssembly().GetName();
-                var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+                var assemblyName = typeof(Command).Assembly.GetName();
+                var assemblyLocation = typeof(Command).Assembly.Location;
                 var version = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyLocation).FileVersion;
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
@@ -234,7 +260,7 @@ namespace NuGet.CommandLine
         public virtual Task ExecuteCommandAsync()
         {
             ExecuteCommand();
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public virtual void ExecuteCommand()

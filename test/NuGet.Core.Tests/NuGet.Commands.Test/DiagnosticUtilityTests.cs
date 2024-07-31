@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -103,7 +103,7 @@ namespace NuGet.Commands.Test
             var messages = new List<RestoreLogMessage>();
             messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1000, "test", "a", "abc"));
 
-            DiagnosticUtility.MergeOnTargetGraph(messages).ShouldBeEquivalentTo(messages);
+            DiagnosticUtility.MergeOnTargetGraph(messages).Should().BeEquivalentTo(messages);
         }
 
         [Fact]
@@ -116,7 +116,7 @@ namespace NuGet.Commands.Test
             var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
 
             outMessages.Count.Should().Be(1);
-            outMessages.Single().TargetGraphs.ShouldAllBeEquivalentTo(new[] { "abc" });
+            outMessages.Single().TargetGraphs.Should().BeEquivalentTo(new[] { "abc" });
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace NuGet.Commands.Test
             var outMessages = DiagnosticUtility.MergeOnTargetGraph(messages).ToList();
 
             outMessages.Count.Should().Be(1);
-            outMessages.Single().TargetGraphs.ShouldAllBeEquivalentTo(new[] { "abc", "xyz" });
+            outMessages.Single().TargetGraphs.Should().BeEquivalentTo(new[] { "abc", "xyz" });
         }
 
         [Fact]

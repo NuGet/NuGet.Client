@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,12 +22,12 @@ namespace NuGet.Packaging.Core
         {
             if (identityComparer == null)
             {
-                throw new ArgumentNullException("identityComparer");
+                throw new ArgumentNullException(nameof(identityComparer));
             }
 
             if (dependencyComparer == null)
             {
-                throw new ArgumentNullException("dependencyComparer");
+                throw new ArgumentNullException(nameof(dependencyComparer));
             }
 
             _identityComparer = identityComparer;
@@ -37,10 +37,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Default comparer
         /// </summary>
-        public static PackageDependencyInfoComparer Default
-        {
-            get { return new PackageDependencyInfoComparer(); }
-        }
+        public static PackageDependencyInfoComparer Default { get; } = new PackageDependencyInfoComparer();
 
         public bool Equals(PackageDependencyInfo x, PackageDependencyInfo y)
         {
@@ -55,29 +52,29 @@ namespace NuGet.Packaging.Core
                 return false;
             }
 
-            var result = _identityComparer.Equals(x, y);
+            bool areEqual = _identityComparer.Equals(x, y);
 
-            if (result)
+            if (areEqual)
             {
                 // counts must match
-                result = x.Dependencies.Count() == y.Dependencies.Count();
+                areEqual = x.Dependencies.Count() == y.Dependencies.Count();
             }
 
-            if (result)
+            if (areEqual)
             {
                 var dependencies = new HashSet<PackageDependency>(_dependencyComparer);
 
                 dependencies.UnionWith(x.Dependencies);
 
-                var before = dependencies.Count;
+                int before = dependencies.Count;
 
                 dependencies.UnionWith(y.Dependencies);
 
                 // verify all dependencies are the same
-                result = dependencies.Count == before;
+                areEqual = dependencies.Count == before;
             }
 
-            return result;
+            return areEqual;
         }
 
         public int GetHashCode(PackageDependencyInfo obj)
@@ -89,13 +86,8 @@ namespace NuGet.Packaging.Core
 
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(PackageIdentityComparer.Default.GetHashCode(obj));
-
-            // order the dependencies by hash code to make this consistent
-            foreach (var hash in obj.Dependencies.Select(e => _dependencyComparer.GetHashCode(e)).OrderBy(h => h))
-            {
-                combiner.AddObject(hash);
-            }
+            combiner.AddObject(obj, PackageIdentityComparer.Default);
+            combiner.AddUnorderedSequence(obj.Dependencies, _dependencyComparer);
 
             return combiner.CombinedHash;
         }

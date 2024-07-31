@@ -1,5 +1,6 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -70,6 +71,7 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdateLoadingState(IItemLoaderState loaderState)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             ViewModel?.UpdateModel(loaderState);
         }
 

@@ -24,7 +24,6 @@ namespace NuGet.Configuration
         /// nuget.exe setApiKey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
         /// </remarks>
         public static readonly string DefaultGalleryServerUrl = "https://www.nuget.org";
-        public static readonly string DefaultSymbolServerUrl = "https://nuget.smbsrc.net/";
 
         public static readonly string ReadmeFileName = "readme.txt";
         public static readonly string NuGetSolutionSettingsFolder = ".nuget";
@@ -34,12 +33,11 @@ namespace NuGet.Configuration
         public static readonly string SymbolsExtension = ".symbols" + PackageExtension;
         public static readonly string ManifestExtension = ".nuspec";
         public static readonly string ManifestSymbolsExtension = ".symbols" + ManifestExtension;
+        public static readonly string ReadmeExtension = ".md";
         public static readonly string PackageReferenceFile = "packages.config";
         public static readonly string PackageSpecFileName = "project.json";
 
         public static readonly string FeedName = "nuget.org";
-
-        public static readonly string AddV3TrackFile = "nugetorgadd.trk";
 
         public static readonly string DefaultConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>

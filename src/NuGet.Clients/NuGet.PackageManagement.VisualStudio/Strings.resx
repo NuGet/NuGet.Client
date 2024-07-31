@@ -165,9 +165,6 @@
   <data name="InstallingPackage" xml:space="preserve">
     <value>Installing NuGet package {0}.</value>
   </data>
-  <data name="UninstallingPackage" xml:space="preserve">
-    <value>Uninstalling NuGet package {0}.</value>
-  </data>
   <data name="Warning_FailedToDeleteMarkedPackageDirectory" xml:space="preserve">
     <value>Failed to remove package directory '{0}' that was marked for deletion on Visual Studio restart.</value>
   </data>
@@ -204,25 +201,9 @@
     <value>The {0} MSBuild property could not be found for project '{1}'.</value>
     <comment>{0} is the name of the property that was not set.  {1} is the full path to the project.</comment>
   </data>
-  <data name="ProjectCouldNotBeCastedToBuildPropertyStorage" xml:space="preserve">
-    <value>The project '{0}' could not be cast to a build property storage interface, which is required to get MSBuild properties inside Visual Studio.</value>
-    <comment>{0} is the full path to the project.</comment>
-  </data>
   <data name="UnableToGetCPSPackageInstallationService" xml:space="preserve">
     <value>Unable to get the project's package installation service for project '{0}'.</value>
     <comment>{0} is the full path to the project.</comment>
-  </data>
-  <data name="AccountProvider_FailedToLoadAccountManager" xml:space="preserve">
-    <value>Could not get the account manager, unable to check the keychain.</value>
-  </data>
-  <data name="AccountProvider_FailedToLoadVSOAccountProvider" xml:space="preserve">
-    <value>Could not get the account provider, unable to check the keychain.</value>
-  </data>
-  <data name="AccountProvider_NoValidCrededentialsFound" xml:space="preserve">
-    <value>No valid credentials found for VSO account.</value>
-  </data>
-  <data name="AccountProvider_TriedToShowUIOnNonInteractive" xml:space="preserve">
-    <value>Unable to authenticate without prompting user.</value>
   </data>
   <data name="CredentialProviderFailed_VisualStudioCredentialProvider" xml:space="preserve">
     <value>The Visual Studio credential provider failed to load.</value>
@@ -251,9 +232,6 @@
   </data>
   <data name="Debug_RemovedFolder" xml:space="preserve">
     <value>Removed folder '{0}'.</value>
-  </data>
-  <data name="PackageStreamShouldBeSeekable" xml:space="preserve">
-    <value>Package stream should be seekable</value>
   </data>
   <data name="Warning_DirectoryNotEmpty" xml:space="preserve">
     <value>Directory '{0}' is not empty. Skipping...</value>
@@ -288,5 +266,27 @@
   </data>
   <data name="CredentialProviderFailed_PluginCredentialProvider" xml:space="preserve">
     <value>The plugin credential providers could not be loaded.</value>
+  </data>
+  <data name="AggregateSourceName" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="ProjectWithIdNotFound" xml:space="preserve">
+    <value>A project with ID '{0}' was not found.</value>
+    <comment>{0} is the project's unique ID (ProjectGuid)</comment>
+  </data>
+  <data name="UnsupportedFeedType" xml:space="preserve">
+    <value>The feed type '{0}' is unsupported.</value>
+    <comment>{0} is the ItemFilter type which correlates to the selected tab</comment>
+  </data>
+  <data name="PropertyCannotBeNull" xml:space="preserve">
+    <value>'{0}' cannot be null.</value>
+    <comment>0 - property name</comment>
+  </data>
+  <data name="Exception_InvalidContinuationToken" xml:space="preserve">
+    <value>Invalid token</value>
+  </data>
+  <data name="Error_VulnerabilityDataFetch" xml:space="preserve">
+    <value>Error occurred while getting package vulnerability data: {0}</value>
+    <comment>{0} is an error message</comment>
   </data>
 </root>

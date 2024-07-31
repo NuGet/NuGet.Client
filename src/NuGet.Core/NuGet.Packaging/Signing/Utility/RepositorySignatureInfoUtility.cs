@@ -3,15 +3,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.Shared;
 
 namespace NuGet.Packaging.Signing
 {
     public static class RepositorySignatureInfoUtility
     {
         /// <summary>
-        /// Gets SignedPackageVerifierSettings from a given RepositorySignatureInfo. 
+        /// Gets SignedPackageVerifierSettings from a given RepositorySignatureInfo.
         /// </summary>
         /// <param name="repoSignatureInfo">RepositorySignatureInfo to be used.</param>
         /// <param name="fallbackSettings">SignedPackageVerifierSettings to be used if RepositorySignatureInfo is unavailable.</param>

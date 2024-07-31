@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Xml.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using NuGet.Common;
 
 namespace NuGet.ProjectManagement
 {
@@ -25,7 +25,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         /// <param name="nodeActions">A dictionary of XML node names to node actions.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="nodeActions" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         public XmlTransformer(IDictionary<XName, Action<XElement, XElement>> nodeActions)
         {
             if (nodeActions == null)
@@ -45,9 +45,9 @@ namespace NuGet.ProjectManagement
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamTaskFactory" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectSystem" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task TransformFileAsync(
@@ -71,7 +71,7 @@ namespace NuGet.ProjectManagement
             // Get the xml fragment
             var xmlFragment = await GetXmlAsync(streamTaskFactory, projectSystem, cancellationToken);
 
-            var transformDocument = XmlUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
+            var transformDocument = MSBuildNuGetProjectSystemUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
 
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);
@@ -89,9 +89,9 @@ namespace NuGet.ProjectManagement
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="streamTaskFactory" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="projectSystem" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public async Task RevertFileAsync(
@@ -153,21 +153,20 @@ namespace NuGet.ProjectManagement
         {
             string content;
 
-            using (var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath))
+            using var packageStream = File.OpenRead(packageFileInfo.ZipArchivePath);
+            using var zipArchive = new ZipArchive(packageStream);
+
+            var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
+
+            if (zipArchivePackageEntry == null)
             {
-                var zipArchive = new ZipArchive(packageStream);
-                var zipArchivePackageEntry = PathUtility.GetEntry(zipArchive, packageFileInfo.ZipArchiveEntryFullName);
-
-                if (zipArchivePackageEntry == null)
-                {
-                    throw new ArgumentException("internalZipFileInfo");
-                }
-
-                content = await Preprocessor.ProcessAsync(
-                    () => Task.FromResult(zipArchivePackageEntry.Open()),
-                    projectSystem,
-                    cancellationToken);
+                throw new ArgumentException("internalZipFileInfo");
             }
+
+            content = await Preprocessor.ProcessAsync(
+                () => Task.FromResult(zipArchivePackageEntry.Open()),
+                projectSystem,
+                cancellationToken);
 
             return XElement.Parse(content, LoadOptions.PreserveWhitespace);
         }

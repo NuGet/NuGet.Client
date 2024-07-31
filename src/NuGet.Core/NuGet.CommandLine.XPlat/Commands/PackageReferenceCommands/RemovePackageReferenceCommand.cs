@@ -9,7 +9,7 @@ using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class RemovePackageReferenceCommand
+    internal class RemovePackageReferenceCommand
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger,
             Func<IPackageReferenceCommandRunner> getCommandRunner)
@@ -45,9 +45,10 @@ namespace NuGet.CommandLine.XPlat
                     ValidateArgument(projectPath, removePkg.Name);
                     ValidateProjectPath(projectPath, removePkg.Name);
                     var logger = getLogger();
-                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), id.Value(), logger)
+                    var packageRefArgs = new PackageReferenceArgs(projectPath.Value(), logger)
                     {
-                        Interactive = interactive.HasValue()
+                        Interactive = interactive.HasValue(),
+                        PackageId = id.Value()
                     };
                     var msBuild = new MSBuildAPIUtility(logger);
                     var removePackageRefCommandRunner = getCommandRunner();

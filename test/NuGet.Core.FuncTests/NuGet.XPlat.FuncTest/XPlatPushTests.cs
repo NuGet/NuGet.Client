@@ -1,18 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.XPlat.FuncTest
 {
     public class XPlatPushTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public XPlatPushTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [PackageSourceTheory]
         [PackageSourceData(TestSources.MyGet)]
         [PackageSourceData(TestSources.ProGet, Skip = "No such host is known")]
@@ -28,7 +35,7 @@ namespace NuGet.XPlat.FuncTest
                 var packageVersion = "1.0.0";
                 var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
-                var log = new TestCommandOutputLogger();
+                var log = new TestCommandOutputLogger(_testOutputHelper);
 
                 var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
@@ -70,8 +77,8 @@ namespace NuGet.XPlat.FuncTest
                 var packageVersion = "1.0.0";
                 var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
-                var logFirstPush = new TestCommandOutputLogger();
-                var logSecondPush = new TestCommandOutputLogger();
+                var logFirstPush = new TestCommandOutputLogger(_testOutputHelper);
+                var logSecondPush = new TestCommandOutputLogger(_testOutputHelper);
 
                 var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
@@ -119,12 +126,12 @@ namespace NuGet.XPlat.FuncTest
                 var packageVersion = "1.0.0";
                 var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
-                var log = new TestCommandOutputLogger();
+                var log = new TestCommandOutputLogger(_testOutputHelper);
 
                 var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
 
-                DeletePackageBeforePush(packageId, packageVersion, packageSource.Source, apiKey);
+                DeletePackageBeforePush(packageId, packageVersion, packageSource.Source, apiKey, _testOutputHelper);
 
                 var pushArgs = new List<string>
                 {
@@ -147,14 +154,53 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
+        // Tests pushing multiple packages (multiple paths)
+        [Fact]
+        public async Task PushMultiplePathsToFileSystemSource()
+        {
+            using (var packageDirectory = TestDirectory.Create())
+            using (var source = TestDirectory.Create())
+            {
+                // Arrange
+                var log = new TestCommandOutputLogger(_testOutputHelper);
+                var packageInfoCollection = new[]
+                {
+                    await TestPackagesCore.GetRuntimePackageAsync(packageDirectory, "testPackageA", "1.1.0"),
+                    await TestPackagesCore.GetRuntimePackageAsync(packageDirectory, "testPackageB", "1.1.0"),
+                };
+
+                var pushArgs = new List<string>
+                {
+                    "push",
+                    packageInfoCollection[0].FullName,
+                    packageInfoCollection[1].FullName,
+                    "--source",
+                    source,
+                };
+
+                // Act
+                var exitCode = CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+
+                // Assert
+                Assert.Equal(string.Empty, log.ShowErrors());
+                Assert.Equal(0, exitCode);
+
+                foreach (var packageInfo in packageInfoCollection)
+                {
+                    Assert.Contains($"Pushing {packageInfo.Name}", log.ShowMessages());
+                    Assert.True(File.Exists(Path.Combine(source, packageInfo.Name)));
+                }
+            }
+        }
+
         /// <summary>
         /// This is called when the package must be deleted before being pushed. It's ok if this
         /// fails, maybe the package was never pushed.
         /// </summary>
-        private static void DeletePackageBeforePush(string packageId, string packageVersion, string sourceUri, string apiKey)
+        private static void DeletePackageBeforePush(string packageId, string packageVersion, string sourceUri, string apiKey, ITestOutputHelper testOutputHelper)
         {
             var packageUri = $"{sourceUri.TrimEnd('/')}/{packageId}/{packageVersion}";
-            var log = new TestCommandOutputLogger();
+            var log = new TestCommandOutputLogger(testOutputHelper);
             var args = new List<string>
             {
                 "delete",

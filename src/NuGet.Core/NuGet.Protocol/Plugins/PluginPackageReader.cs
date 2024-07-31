@@ -40,11 +40,11 @@ namespace NuGet.Protocol.Plugins
         /// <param name="plugin">A plugin.</param>
         /// <param name="packageIdentity">A package identity.</param>
         /// <param name="packageSourceRepository">A package source repository location.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="plugin" /> is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageSourceRepository" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         public PluginPackageReader(IPlugin plugin, PackageIdentity packageIdentity, string packageSourceRepository)
             : base(DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
@@ -91,7 +91,7 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="Stream" />.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="path" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<Stream> GetStreamAsync(string path, CancellationToken cancellationToken)
@@ -106,7 +106,7 @@ namespace NuGet.Protocol.Plugins
             var lazyCreator = _fileStreams.GetOrAdd(
                 path,
                 p => new Lazy<Task<FileStreamCreator>>(
-                    () => GetStreamInternalAsync(p, cancellationToken)));
+                    () => GetStreamInternalAsync(p)));
 
             await lazyCreator.Value;
 
@@ -184,7 +184,7 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{String}" />.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="folder" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="folder" /> is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<IEnumerable<string>> GetFilesAsync(
@@ -233,10 +233,10 @@ namespace NuGet.Protocol.Plugins
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{String}" />.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="destination" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageFiles" />
-        /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <c>null</c>.</exception>
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" /> is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<IEnumerable<string>> CopyFilesAsync(
@@ -507,21 +507,13 @@ namespace NuGet.Protocol.Plugins
             throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Asynchronously gets supported frameworks.
-        /// </summary>
-        /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A task that represents the asynchronous operation.
-        /// The task result (<see cref="Task{TResult}.Result" />) returns an
-        /// <see cref="IEnumerable{NuGetFramework}" />.</returns>
-        /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
-        /// is cancelled.</exception>
+        /// <inheritdoc cref="PackageReaderBase.GetSupportedFrameworksAsync(CancellationToken)"/>
         public override async Task<IEnumerable<NuGetFramework>> GetSupportedFrameworksAsync(
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var frameworks = new HashSet<NuGetFramework>(new NuGetFrameworkFullComparer());
+            var frameworks = new HashSet<NuGetFramework>(NuGetFrameworkFullComparer.Instance);
 
             frameworks.UnionWith((await GetLibItemsAsync(cancellationToken)).Select(g => g.TargetFramework));
 
@@ -533,7 +525,7 @@ namespace NuGet.Protocol.Plugins
 
             frameworks.UnionWith((await GetFrameworkItemsAsync(cancellationToken)).Select(g => g.TargetFramework));
 
-            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, new NuGetFrameworkSorter());
+            return frameworks.Where(f => !f.IsUnsupported).OrderBy(f => f, NuGetFrameworkSorter.Instance);
         }
 
         /// <summary>
@@ -719,7 +711,7 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns an
         /// <see cref="IEnumerable{FrameworkSpecificGroup}" />.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="folderName" /> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="folderName" /> is <see langword="null" />.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override Task<IEnumerable<FrameworkSpecificGroup>> GetItemsAsync(
@@ -916,7 +908,7 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="string" />.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="nupkgFilePath" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is either <see langword="null" /> or an empty string.</exception>
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="cancellationToken" />
         /// is cancelled.</exception>
         public override async Task<string> CopyNupkgAsync(
@@ -998,7 +990,7 @@ namespace NuGet.Protocol.Plugins
             string folder,
             CancellationToken cancellationToken)
         {
-            var groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
+            var groups = new Dictionary<NuGetFramework, List<string>>(NuGetFrameworkFullComparer.Instance);
 
             var isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.Folders.Content);
             var allowSubFolders = true;
@@ -1019,13 +1011,12 @@ namespace NuGet.Protocol.Plugins
             }
 
             // Sort the groups by framework, and the items by ordinal string compare to keep things deterministic
-            return groups.Keys.OrderBy(e => e, new NuGetFrameworkSorter())
+            return groups.Keys.OrderBy(e => e, NuGetFrameworkSorter.Instance)
                 .Select(framework => new FrameworkSpecificGroup(framework, groups[framework].OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
         }
 
         private async Task<FileStreamCreator> GetStreamInternalAsync(
-            string pathInPackage,
-            CancellationToken cancellationToken)
+            string pathInPackage)
         {
             var packageId = _packageIdentity.Id;
             var packageVersion = _packageIdentity.Version.ToNormalizedString();
@@ -1098,9 +1089,9 @@ namespace NuGet.Protocol.Plugins
                                 packageVersion));
 
                     case MessageResponseCode.NotFound:
-                        // This class is only created if a success response code is received for a
-                        // PrefetchPackageRequest, meaning that the plugin has already confirmed
-                        // that the package exists.
+                    // This class is only created if a success response code is received for a
+                    // PrefetchPackageRequest, meaning that the plugin has already confirmed
+                    // that the package exists.
 
                     default:
                         break;
@@ -1122,7 +1113,7 @@ namespace NuGet.Protocol.Plugins
 
         private static string GetTemporaryDirectoryPath()
         {
-            var tempDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var tempDirectoryPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Path.GetRandomFileName());
 
             Directory.CreateDirectory(tempDirectoryPath);
 
@@ -1131,12 +1122,12 @@ namespace NuGet.Protocol.Plugins
 
         public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)
         {
-            return Task.FromResult<PrimarySignature>(null);
+            return TaskResult.Null<PrimarySignature>();
         }
 
         public override Task<bool> IsSignedAsync(CancellationToken token)
         {
-            return Task.FromResult(false);
+            return TaskResult.False;
         }
 
         public override Task ValidateIntegrityAsync(SignatureContent signatureContent, CancellationToken token)
@@ -1151,7 +1142,7 @@ namespace NuGet.Protocol.Plugins
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             if (!verifierSettings.AllowUnsigned)
             {
                 throw new SignatureException(NuGetLogCode.NU3041, Strings.Plugin_DownloadNotSupportedSinceUnsignedNotAllowed);
@@ -1159,7 +1150,7 @@ namespace NuGet.Protocol.Plugins
 #endif
             return false;
         }
-        
+
         public override string GetContentHash(CancellationToken token, Func<string> GetUnsignedPackageHash = null)
         {
             // Plugin Download doesn't support signed packages so simply return null... and even then they aren't always packages.

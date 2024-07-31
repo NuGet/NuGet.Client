@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -55,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static SearchResult<T> Empty<T>() => new SearchResult<T>
         {
-            Items = new T[] { }
+            Items = Array.Empty<T>()
         };
     }
 }

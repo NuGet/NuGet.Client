@@ -11,9 +11,10 @@ namespace NuGet.Packaging.Signing
 {
     public class KeyPairFileReader : IDisposable
     {
-        private static readonly Regex _namePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$");
+        private static readonly Regex NamePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$", RegexOptions.CultureInvariant);
 
         private readonly StreamReader _reader;
+        private bool _disposed;
 
         public KeyPairFileReader(Stream stream, Encoding encoding)
         {
@@ -73,13 +74,17 @@ namespace NuGet.Packaging.Signing
 
         private static KeyValuePair<string, string> GetProperty(string line)
         {
+#if NETCOREAPP
+            var pos = line.IndexOf(':', StringComparison.Ordinal);
+#else
             var pos = line.IndexOf(':');
+#endif
 
             if (pos > 0)
             {
                 var key = line.Substring(0, pos);
 
-                if (_namePattern.IsMatch(key))
+                if (NamePattern.IsMatch(key))
                 {
                     var value = line.Substring(pos + 1);
 
@@ -100,7 +105,23 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            _reader.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                _reader.Dispose();
+            }
+
+            _disposed = true;
         }
     }
 }

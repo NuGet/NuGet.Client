@@ -4,11 +4,20 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Documents;
+using Microsoft.ServiceHub.Framework;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Common;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -16,23 +25,23 @@ namespace NuGet.PackageManagement.UI
     {
         internal static IReadOnlyList<IText> GenerateLicenseLinks(DetailedPackageMetadata metadata)
         {
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Id), metadata.LoadFileAsText);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Id), metadata.PackagePath, new PackageIdentity(metadata.Id, metadata.Version));
         }
 
         internal static IReadOnlyList<IText> GenerateLicenseLinks(IPackageSearchMetadata metadata)
         {
             if (metadata is LocalPackageSearchMetadata localMetadata)
             {
-                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Identity.Id), localMetadata.LoadFileAsText);
+                return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, string.Format(CultureInfo.CurrentCulture, Resources.WindowTitle_LicenseFileWindow, metadata.Identity.Id), localMetadata.PackagePath, metadata.Identity);
             }
-            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, null);
+            return GenerateLicenseLinks(metadata.LicenseMetadata, metadata.LicenseUrl, metadata.Identity.Id, null, metadata.Identity);
         }
 
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, string licenseFileHeader, Func<string, string> loadFile)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata licenseMetadata, Uri licenseUrl, string licenseFileHeader, string packagePath, PackageIdentity packageIdentity)
         {
             if (licenseMetadata != null)
             {
-                return GenerateLicenseLinks(licenseMetadata, licenseFileHeader, loadFile);
+                return GenerateLicenseLinks(licenseMetadata, licenseFileHeader, packagePath, packageIdentity);
             }
             else if (licenseUrl != null)
             {
@@ -56,7 +65,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Internal for testing purposes.
-        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, string licenseFileHeader, Func<string, string> loadFile)
+        internal static IReadOnlyList<IText> GenerateLicenseLinks(LicenseMetadata metadata, string licenseFileHeader, string packagePath, PackageIdentity packageIdentity)
         {
             var list = new List<IText>();
 
@@ -70,7 +79,7 @@ namespace NuGet.PackageManagement.UI
                 case LicenseType.Expression:
 
                     if (metadata.LicenseExpression != null && !metadata.LicenseExpression.IsUnlicensed())
-                    { 
+                    {
                         var identifiers = new List<string>();
                         PopulateLicenseIdentifiers(metadata.LicenseExpression, identifiers);
 
@@ -78,13 +87,13 @@ namespace NuGet.PackageManagement.UI
 
                         foreach (var identifier in identifiers)
                         {
-                            var licenseStart = licenseToBeProcessed.IndexOf(identifier);
+                            var licenseStart = licenseToBeProcessed.IndexOf(identifier, StringComparison.OrdinalIgnoreCase);
                             if (licenseStart != 0)
                             {
                                 list.Add(new FreeText(licenseToBeProcessed.Substring(0, licenseStart)));
                             }
                             var license = licenseToBeProcessed.Substring(licenseStart, identifier.Length);
-                            list.Add(new LicenseText(license, new Uri(string.Format(LicenseMetadata.LicenseServiceLinkTemplate, license))));
+                            list.Add(new LicenseText(license, new Uri(string.Format(CultureInfo.CurrentCulture, LicenseMetadata.LicenseServiceLinkTemplate, license))));
                             licenseToBeProcessed = licenseToBeProcessed.Substring(licenseStart + identifier.Length);
                         }
 
@@ -101,7 +110,10 @@ namespace NuGet.PackageManagement.UI
                     break;
 
                 case LicenseType.File:
-                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, loadFile, metadata.License));
+                    NuGetPackageFileService.AddLicenseToCache(
+                        packageIdentity,
+                        CreateEmbeddedLicenseUri(packagePath, metadata));
+                    list.Add(new LicenseFileText(Resources.Text_ViewLicense, licenseFileHeader, packagePath, metadata.License, packageIdentity));
                     break;
 
                 default:
@@ -109,6 +121,18 @@ namespace NuGet.PackageManagement.UI
             }
 
             return list;
+        }
+
+        private static Uri CreateEmbeddedLicenseUri(string packagePath, LicenseMetadata licenseMetadata)
+        {
+            Uri baseUri = new Uri(packagePath, UriKind.Absolute);
+
+            var builder = new UriBuilder(baseUri)
+            {
+                Fragment = licenseMetadata.License
+            };
+
+            return builder.Uri;
         }
 
         private static void PopulateLicenseIdentifiers(NuGetLicenseExpression expression, IList<string> identifiers)
@@ -144,6 +168,33 @@ namespace NuGet.PackageManagement.UI
                 default:
                     break;
             }
+        }
+
+        public static async Task<string> GetEmbeddedLicenseAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
+        {
+            string content = null;
+
+            IServiceBrokerProvider serviceBrokerProvider = await ServiceLocator.GetComponentModelServiceAsync<IServiceBrokerProvider>();
+            IServiceBroker serviceBroker = await serviceBrokerProvider.GetAsync();
+
+            using (INuGetPackageFileService packageFileService = await serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService))
+            {
+                if (packageFileService != null)
+                {
+                    using (Stream stream = await packageFileService.GetEmbeddedLicenseAsync(packageIdentity, CancellationToken.None))
+                    {
+                        if (stream != null)
+                        {
+                            using (var reader = new StreamReader(stream))
+                            {
+                                content = reader.ReadToEnd();
+                            }
+                        }
+                    }
+                }
+            }
+
+            return content;
         }
     }
 }

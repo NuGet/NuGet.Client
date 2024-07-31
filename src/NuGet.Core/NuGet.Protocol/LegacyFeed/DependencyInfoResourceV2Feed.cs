@@ -53,7 +53,7 @@ namespace NuGet.Protocol
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, _source);
+                var error = String.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, package, _source);
 
                 throw new FatalProtocolException(error, ex);
             }
@@ -84,7 +84,7 @@ namespace NuGet.Protocol
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source);
+                var error = String.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, packageId, _source);
 
                 throw new FatalProtocolException(error, ex);
             }

@@ -12,13 +12,12 @@ using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Xml;
+using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.Packaging
 {
     public class Manifest
     {
-        private const string SchemaVersionAttributeName = "schemaVersion";
-
         public Manifest(ManifestMetadata metadata)
                     : this(metadata, null)
         {
@@ -114,7 +113,7 @@ namespace NuGet.Packaging
             XDocument document;
             if (propertyProvider == null)
             {
-                document = XmlUtility.LoadSafe(stream, ignoreWhiteSpace: true);
+                document = Load(stream);
             }
             else
             {
@@ -198,6 +197,7 @@ namespace NuGet.Packaging
 #if !IS_CORECLR // CORECLR_TODO: XmlSchema
             // Get the metadata node and look for the schemaVersion attribute
             XElement metadata = GetMetadataElement(document);
+            const string SchemaVersionAttributeName = "schemaVersion";
 
             if (metadata != null)
             {

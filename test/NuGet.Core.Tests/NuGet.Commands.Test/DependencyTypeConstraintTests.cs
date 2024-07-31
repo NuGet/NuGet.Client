@@ -17,6 +17,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class DependencyTypeConstraintTests
     {
         // Root project is favored over package in global folder
@@ -53,7 +54,7 @@ namespace NuGet.Commands.Test
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
 
                 var project1PackagePath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
@@ -162,7 +163,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -248,9 +249,9 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
                 var specPath3 = Path.Combine(packageAExternalProject.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
-                var spec3 = JsonPackageSpecReader.GetPackageSpec(packageAExternalProjectJson, "packageA", specPath3);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2).EnsureProjectJsonRestoreMetadata();
+                var spec3 = JsonPackageSpecReader.GetPackageSpec(packageAExternalProjectJson, "packageA", specPath3).EnsureProjectJsonRestoreMetadata();
 
                 var packageAPath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
@@ -355,8 +356,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var specPath2 = Path.Combine(packageAProject.FullName, "project.json");
-                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2);
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1).EnsureProjectJsonRestoreMetadata();
+                var spec2 = JsonPackageSpecReader.GetPackageSpec(packageAProjectJson, "packageA", specPath2).EnsureProjectJsonRestoreMetadata();
 
                 var packageAPath = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     packageSource.FullName,
@@ -475,7 +476,7 @@ namespace NuGet.Commands.Test
                 spec2 = spec2.WithTestRestoreMetadata();
                 spec1 = spec1.WithTestRestoreMetadata().WithTestProjectReference(spec2);
 
-                var request = await ProjectJsonTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
+                var request = await ProjectTestHelpers.GetRequestAsync(restoreContext, spec1, spec2);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 

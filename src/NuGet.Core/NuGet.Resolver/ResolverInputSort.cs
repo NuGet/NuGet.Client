@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -85,10 +85,8 @@ namespace NuGet.Resolver
                 childrenOfLastId.Clear();
 
                 // Remove the id from the parent list now that we have found a place for it
-                foreach (var childId in parents.Keys)
+                foreach ((var childId, var parentIds) in parents)
                 {
-                    var parentIds = parents[childId];
-
                     if (parentIds.Remove(nextId))
                     {
                         childrenOfLastId.Add(childId);

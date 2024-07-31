@@ -1,7 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -12,8 +14,10 @@ namespace NuGet.PackageManagement.VisualStudio
     /// Since the base class <see cref="MSBuildNuGetProject"/> is in the NuGet.Core solution, it does not have
     /// references to DTE.
     /// </summary>
-    internal class VsMSBuildNuGetProject : MSBuildNuGetProject
+    public class VsMSBuildNuGetProject : MSBuildNuGetProject
     {
+        private readonly IVsProjectAdapter _adapter;
+
         public VsMSBuildNuGetProject(
             IVsProjectAdapter projectAdapter,
             IMSBuildProjectSystem msbuildNuGetProjectSystem,
@@ -25,13 +29,24 @@ namespace NuGet.PackageManagement.VisualStudio
                 folderNuGetProjectPath,
                 packagesConfigFolderPath)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.Present(projectAdapter);
             Assumes.Present(msbuildNuGetProjectSystem);
             Assumes.Present(projectServices);
 
+            _adapter = projectAdapter;
+
             InternalMetadata.Add(NuGetProjectMetadataKeys.ProjectId, projectAdapter.ProjectId);
+            InternalMetadata.Add(ProjectBuildProperties.NuGetAudit, projectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAudit));
+            InternalMetadata.Add(ProjectBuildProperties.NuGetAuditLevel, projectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.NuGetAuditLevel));
 
             ProjectServices = projectServices;
+        }
+
+        public IReadOnlyList<(string id, string[] metadata)> GetItems(string itemName, params string[] metadataNames)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return VsManagedLanguagesProjectSystemServices.GetItems(_adapter, itemName, metadataNames);
         }
     }
 }

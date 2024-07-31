@@ -3,57 +3,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Castle.DynamicProxy.Generators.Emitters;
 using NuGet.Common;
 using NuGet.Packaging.Rules;
-using Org.BouncyCastle.Asn1.X509;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
     public class UpholdBuildConventionRuleTests
     {
-        [Theory]
-        [MemberData("WarningNotRaisedData", MemberType = typeof(FileSource))]
-        public void WarningNotRaisedWhenGenerateWarningsCalledAndConventionIsFollowed(string[] files)
-        {
-            //Arrange
-            string packageId = "packageId";
-
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
-
-            //Assert
-            Assert.Empty(issues);
-        }
-
-        [Theory]
-        [MemberData("WarningRaisedData", MemberType = typeof(FileSource))]
-        public void WarningRaisedWhenGenerateWarningsCalledAndConventionIsNotFollowed(string[] files)
-        {
-            //Arrange
-            string packageId = "packageId";
-
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
-
-            //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129);
-        }
-
-        public static class FileSource
-        {
-            public static readonly List<object[]> WarningNotRaisedData
-                = new List<object[]>
-                {
+        public static readonly List<object[]> WarningNotRaisedData
+            = new List<object[]>
+            {
                     new object[] { new string[] { "build/packageId.props" } },
                     new object[] { new string[] { "build/net45/packageId.props" } },
                     new object[] { new string[] { "build/net45/packageId.targets" } },
@@ -67,237 +27,263 @@ namespace NuGet.Packaging.Test
                     new object[] { new string[] { "buildCrossTargeting/packageId.props", "buildCrossTargeting/packageId.targets" } },
                     new object[] { new string[] { "buildCrossTargeting/net45/packageId.props", "buildCrossTargeting/net45/packageId.targets" } },
                     new object[] { new string[] { "buildTransitive/packageId.props", "buildTransitive/packageId.targets" } },
-                    new object[] { new string[] { "buildTransitive/net45/packageId.props", "buildTransitive/net45/packageId.targets" } }
-                };
+                    new object[] { new string[] { "buildTransitive/net45/packageId.props", "buildTransitive/net45/packageId.targets" } },
+                    new object[] { new string[] { @"build\packageId.props" } },
+            };
 
-            public static readonly List<object[]> WarningRaisedData
-                = new List<object[]>
-                {
-                    new object[] { new string[] { "build/package_Id.props" } },
-                    new object[] { new string[] { "build/net45/package_Id.props" } },
-                    new object[] { new string[] { "build/net45/package_Id.targets" } },
-                    new object[] { new string[] { "build/package_Id.targets" } },
-                    new object[] { new string[] { "build/extra/packageId.props" } },
-                    new object[] { new string[] { "build/net45/extra/packageId.props" } },
-                    new object[] { new string[] { "buildCrossTargeting/net45/package_Id.props"} },
-                    new object[] { new string[] { "buildCrossTargeting/net45/extra/packageId.props"} },
-                    new object[] { new string[] { "buildCrossTargeting/package_Id.props"} },
-                    new object[] { new string[] { "buildCrossTargeting/extra/package_Id.props"} },
-                    new object[] { new string[] { "buildTransitive/net45/package_Id.props"} },
-                    new object[] { new string[] { "buildTransitive/net45/extra/packageId.props"} },
-                    new object[] { new string[] { "buildTransitive/package_Id.props"} },
-                    new object[] { new string[] { "buildTransitive/extra/package_Id.props"} }
-                };
-        }
-
-        [Fact]
-        public void GenerateWarnings_PackageWithPropsAndTargetsInSameSubFolderDoesNotFollowConvention_ShouldWarn()
+        [Theory]
+        [MemberData(nameof(WarningNotRaisedData))]
+        public void FindAbsentExpectedFiles_PackageWithCorrectlyNamedMSBuildFile_FindsZero(string[] files)
         {
             //Arrange
             string packageId = "packageId";
-            var files = new string[]
-            {
-                "build/net45/package_Id.props",
-                "build/net45/package_Id.targets"
-            };
+
             //Act
             var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
+            var actual = rule.FindAbsentExpectedFiles(files, packageId);
 
             //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129);
-            var expectedMessage = "- At least one .targets file was found in 'build/net45/', but 'build/net45/packageId.targets' was not." + Environment.NewLine +
-                "- At least one .props file was found in 'build/net45/', but 'build/net45/packageId.props' was not." + Environment.NewLine;
-            Assert.True(singleIssue.Message.Equals(expectedMessage));
+            Assert.Empty(actual);
         }
 
-        [Fact]
-        public void GenerateWarnings_PackageWithPropsAndTargetsInMultipleSubFolders_ShouldWarn()
+        public static readonly List<object[]> WarningRaisedData
+            = new List<object[]>
+            {
+                    new object[] { new string[] { "build/other.props" } },
+                    new object[] { new string[] { "build/net45/other.props" } },
+                    new object[] { new string[] { "build/net45/other.targets" } },
+                    new object[] { new string[] { "build/other.targets" } },
+                    new object[] { new string[] { "build/extra/other.props" } },
+                    new object[] { new string[] { "build/net45/extra/other.props" } },
+                    new object[] { new string[] { "buildCrossTargeting/net45/other.props"} },
+                    new object[] { new string[] { "buildCrossTargeting/net45/extra/other.props"} },
+                    new object[] { new string[] { "buildCrossTargeting/other.props"} },
+                    new object[] { new string[] { "buildCrossTargeting/extra/other.props"} },
+                    new object[] { new string[] { "buildTransitive/net45/other.props"} },
+                    new object[] { new string[] { "buildTransitive/net45/extra/other.props"} },
+                    new object[] { new string[] { "buildTransitive/other.props"} },
+                    new object[] { new string[] { "buildTransitive/extra/other.props"} },
+                    new object[] { new string[] { @"build\other.props" } }
+            };
+
+        [Theory]
+        [MemberData(nameof(WarningRaisedData))]
+        public void FindAbsentExpectedFiles_PackageWithIncorrectlyNamedMSBuildFile_FindsOne(string[] files)
         {
             //Arrange
             string packageId = "packageId";
-            var files = new string[]
-            {
-                "build/net45/package_Id.props",
-                "build/net462/package_Id.props",
-                "build/net471/package_Id.props",
-                "build/netstandard1.3/package_Id.props",
-                "build/netcoreapp1.1/package_Id.props"
-
-            };
 
             //Act
             var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
+            var issues = rule.FindAbsentExpectedFiles(files, packageId);
 
             //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129);
-            var expectedMessage = "- At least one .props file was found in 'build/net45/', but 'build/net45/packageId.props' was not." + Environment.NewLine +
-                "- At least one .props file was found in 'build/net462/', but 'build/net462/packageId.props' was not." + Environment.NewLine +
-                "- At least one .props file was found in 'build/net471/', but 'build/net471/packageId.props' was not." + Environment.NewLine +
-                "- At least one .props file was found in 'build/netstandard1.3/', but 'build/netstandard1.3/packageId.props' was not." + Environment.NewLine +
-                "- At least one .props file was found in 'build/netcoreapp1.1/', but 'build/netcoreapp1.1/packageId.props' was not." + Environment.NewLine;
-            Assert.True(singleIssue.Message.Equals(expectedMessage));
+            Assert.Single(issues);
         }
 
         [Fact]
-        public void GenerateWarnings_PackageWithPropsAndTargetsUnderBuild_ShouldWarn()
+        public void FindAbsentExpectedFiles_PackageWithFileNameSimilarToBuildDirectory_DoesNotWarn()
         {
-            //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            // Arrange
+            var packageId = "PackageId";
+            var files = new[]
             {
-                "build/package_Id.props",
-                "build/package_Id.targets"
+                @"buildCustom\anything.props",
+                "buildCustom/anything.targets"
             };
 
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
-            //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129);
-            var expectedMessage = "- At least one .targets file was found in 'build/', but 'build/packageId.targets' was not." + Environment.NewLine +
-                "- At least one .props file was found in 'build/', but 'build/packageId.props' was not." + Environment.NewLine;
-            Assert.True(singleIssue.Message.Equals(expectedMessage));
+            // Assert
+            Assert.Empty(actual);
         }
 
         [Fact]
-        public void IdentifyViolators_PackageWithPropsAndTargetsFilesInSubfolders_ShouldHaveTheCorrectLocations()
+        public void FindAbsentExpectedFiles_NonCompliantFileInBuildRoot_ExpectedPathIsBuildRoot()
         {
-            //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            // Arrange
+            var files = new[]
             {
-                "build/net45/packageId.props",
-                "build/net45/package_ID.props",
-                "build/net462/package_Id.props",
-                "build/netstandard1.3/packageId.targets",
-                "build/netstandard1.3/package_Id.targets",
-                "build/netcoreapp1.1/package_Id.props",
-                "build/packageId.props",
-                "build/package_ID.props"
+                "build/other.props"
             };
+            var packageId = "packageId";
 
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
-            //Assert
-            Assert.Equal(2, conventionViolators.Count());
-            Assert.False(conventionViolators.Any(t => t.Path.Equals("build/net45/")));
-            Assert.False(conventionViolators.Any(t => t.Path.Equals("build/netstandard1.3/")));
-            Assert.False(conventionViolators.Any(t => t.Path.Equals("build/")));
-            var secondIssue = conventionViolators.Single(t => t.Path.Equals("build/netcoreapp1.1/"));
-            var thirdIssue = conventionViolators.Single(t => t.Path.Equals("build/net462/"));
+            // Assert
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/", expectedFile.Path);
+            Assert.Equal("build/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void IdentifyViolators_PackageWithPropsAndTargetsFilesUnderBuild_ShouldHaveTheCorrectLocations()
+        public void FindAbsentExpectedFiles_NonCompliantFileInNonTfmPath_ExpectedPathIsBuildRoot()
         {
-            //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            // Arrange
+            var files = new[]
             {
-                "build/packageId.props",
-                "build/package_ID.props",
-                "build/package_Id.targets"
+                "build/custom/other.props"
             };
+            var packageId = "packageId";
 
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
-            //Assert
-            Assert.Equal(conventionViolators.Count(), 1);
-            Assert.True(conventionViolators.All(t => t.Path.Equals("build/")));
+            // Assert
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/", expectedFile.Path);
+            Assert.Equal("build/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void GenerateWarnings_PackageHasInvalidBuildAndValidBuildTransitiveAndValidBuildCross_ShouldWarnOnce()
+        public void FindAbsentExpectedFiles_NonCompliantFileInTfmPath_ExpectedPathIsBuildRoot()
         {
-            //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            // Arrange
+            var files = new[]
             {
-                "build/package_Id.props",
-                "buildTransitive/packageId.props",
-                "buildCrossTargeting/packageId.props"
+                "build/net5.0/other.props"
             };
+            var packageId = "packageId";
 
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
-            //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129);
-            var expectedMessage = "- At least one .props file was found in 'build/', but 'build/packageId.props' was not." + Environment.NewLine;
-            Assert.True(singleIssue.Message.Equals(expectedMessage));
+            // Assert
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/net5.0/", expectedFile.Path);
+            Assert.Equal("build/net5.0/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void GenerateWarnings_PackageHasInvalidBuildAndInvalidBuildTransitiveAndValidBuildCross_ShouldWarnTwice()
+        public void FindAbsentExpectedFiles_NonCompliantFileInTfmSubDirectory_ExpectedPathIsBuildRoot()
         {
-            //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            // Arrange
+            var files = new[]
             {
-                "build/package_Id.props",
-                "buildTransitive/package_Id.props",
-                "buildCrossTargeting/packageId.props"
+                "build/net5.0/custom/other.props"
             };
+            var packageId = "packageId";
 
-            //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
-            //Assert
-            Assert.Equal(issues.Count(), 2);
-            var firstIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129 && p.Message.Contains("build/packageId.props"));
-            var firstExpectedMessage = "- At least one .props file was found in 'build/', but 'build/packageId.props' was not." + Environment.NewLine;
-            Assert.True(firstIssue.Message.Equals(firstExpectedMessage));
-            var secondIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129 && p.Message.Contains("buildTransitive/packageId.props"));
-            var secondExpectedMessage = "- At least one .props file was found in 'buildTransitive/', but 'buildTransitive/packageId.props' was not." + Environment.NewLine;
-            Assert.True(secondIssue.Message.Equals(secondExpectedMessage));
+            // Assert
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/net5.0/", expectedFile.Path);
+            Assert.Equal("build/net5.0/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void GenerateWarnings_PackageHasInvalidBuildAndInvalidBuildTransitiveAndInvalidBuildCross_ShouldWarnThrice()
+        public void FindAbsentExpectedFiles_MultiplePropsInOneDirectory_FindsOne()
+        {
+            // Arrange
+            var files = new[]
+            {
+                "build/one.props",
+                "build/two.props"
+            };
+            var packageId = "PackageId";
+
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
+
+            // Assert
+            Assert.Equal(1, actual.Count);
+        }
+
+        [Theory]
+        [InlineData("build/")]
+        [InlineData("build/net5.0/")]
+        public void FindAbsentExpectedFiles_MultiplePropsInSubDirectories_FindsOne(string pathToTest)
+        {
+            // Arrange
+            var files = new[]
+            {
+                pathToTest + "one.props",
+                pathToTest + "two/two.props",
+                pathToTest + "three/three.props"
+            };
+            var packageId = "PackageId";
+
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
+
+            // Assert
+            Assert.Equal(1, actual.Count);
+        }
+
+        [Fact]
+        public void FindAbsentExpectedFiles_DifferentPathSeparators_GroupTogether()
+        {
+            // Arrange
+            var files = new[]
+            {
+                "build/net5.0/one.props",
+                @"build\net5.0\two.props"
+            };
+            var packageId = "PackageId";
+
+            // Act
+            var target = new UpholdBuildConventionRule();
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
+
+            // Assert
+            Assert.Equal(1, actual.Count);
+        }
+
+        [Fact]
+        public void GenerateWarnings_SingleIssue_SingleLineMessage()
         {
             //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            var issues = new[]
             {
-                "build/package_Id.props",
-                "buildTransitive/package_Id.props",
-                "buildCrossTargeting/package_Id.props"
+                new UpholdBuildConventionRule.ExpectedFile("build/net45/", ".props", "build/net45/packageId.props")
             };
 
             //Act
-            var rule = new UpholdBuildConventionRule();
-            var conventionViolators = rule.IdentifyViolators(files, packageId);
-            var issues = rule.GenerateWarnings(conventionViolators);
+            var target = new UpholdBuildConventionRule();
+            var warning = target.GenerateWarning(issues);
 
             //Assert
-            Assert.Equal(issues.Count(), 3);
-            var firstIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129 && p.Message.Contains("build/packageId.props"));
-            var firstExpectedMessage = "- At least one .props file was found in 'build/', but 'build/packageId.props' was not." + Environment.NewLine;
-            Assert.True(firstIssue.Message.Equals(firstExpectedMessage));
-            var secondIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129 && p.Message.Contains("buildTransitive/packageId.props"));
-            var secondExpectedMessage = "- At least one .props file was found in 'buildTransitive/', but 'buildTransitive/packageId.props' was not." + Environment.NewLine;
-            Assert.True(secondIssue.Message.Equals(secondExpectedMessage));
-            var thirdIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129 && p.Message.Contains("buildCrossTargeting/packageId.props"));
-            var thirdExpectedMessage = "- At least one .props file was found in 'buildCrossTargeting/', but 'buildCrossTargeting/packageId.props' was not." + Environment.NewLine;
-            Assert.True(thirdIssue.Message.Equals(thirdExpectedMessage));
+            Assert.NotNull(warning);
+            Assert.Equal(NuGetLogCode.NU5129, warning.Code);
+            var expectedMessage = "- At least one .props file was found in 'build/net45/', but 'build/net45/packageId.props' was not." + Environment.NewLine;
+
+            Assert.Equal(expectedMessage, warning.Message);
+        }
+
+        [Fact]
+        public void GenerateWarnings_MultipleIssues_MultiLineMessage()
+        {
+            //Arrange
+            var issues = new List<UpholdBuildConventionRule.ExpectedFile>
+            {
+                new UpholdBuildConventionRule.ExpectedFile("build/net45/", ".props", "build/net45/packageId.props"),
+                new UpholdBuildConventionRule.ExpectedFile("build/net45/", ".targets", "build/net45/packageId.targets")
+            };
+
+            issues.Sort(UpholdBuildConventionRule.ExpectedFileComparer.Instance);
+
+            //Act
+            var target = new UpholdBuildConventionRule();
+            var warning = target.GenerateWarning(issues);
+
+            //Assert
+            Assert.NotNull(warning);
+            Assert.Equal(NuGetLogCode.NU5129, warning.Code);
+            var expectedMessage = "- At least one .props file was found in 'build/net45/', but 'build/net45/packageId.props' was not." + Environment.NewLine
+                + "- At least one .targets file was found in 'build/net45/', but 'build/net45/packageId.targets' was not." + Environment.NewLine;
+
+            Assert.Equal(expectedMessage, warning.Message);
         }
     }
 }

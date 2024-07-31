@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
@@ -146,7 +145,7 @@ namespace NuGet.CommandLine
 
                 using (var cacheContext = new SourceCacheContext())
                 {
-                    cacheContext.NoCache = NoCache;
+                    cacheContext.NoCache = NoCache || NoHttpCache;
                     cacheContext.DirectDownload = DirectDownload;
 
                     var restoreContext = restoreInputs.RestoreV3Context;
@@ -264,12 +263,48 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());
+            // EffectivePackageSaveMode is None when -PackageSaveMode is not provided by the user. None is treated as
+            // Defaultv3 for V3 restore and should be treated as Defaultv2 for V2 restore. This is the case in the
+            // actual V2 restore flow and should match in this preliminary missing packages check.
+            var packageSaveMode = EffectivePackageSaveMode == Packaging.PackageSaveMode.None ?
+                Packaging.PackageSaveMode.Defaultv2 :
+                EffectivePackageSaveMode;
+
+            List<PackageRestoreData> packageRestoreData = new();
+            bool areAnyPackagesMissing = false;
+            Dictionary<string, RestoreAuditProperties> restoreAuditProperties = null;
+
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
-                installedPackageReferences.AddRange(packageRestoreInputs
-                    .PackagesConfigFiles
-                    .SelectMany(file => GetInstalledPackageReferences(file, allowDuplicatePackageIds: true)));
+                Dictionary<string, HashSet<string>> configToProjectPath = GetPackagesConfigToProjectsPath(packageRestoreInputs);
+                Dictionary<PackageReference, List<string>> packageReferenceToProjects = new(PackageReferenceComparer.Instance);
+
+                foreach (string configFile in packageRestoreInputs.PackagesConfigFiles.Distinct())
+                {
+                    foreach (PackageReference packageReference in GetInstalledPackageReferences(configFile))
+                    {
+                        if (!configToProjectPath.TryGetValue(configFile, out HashSet<string> projectPath))
+                        {
+                            projectPath = new HashSet<string> { configFile };
+                        }
+
+                        if (!packageReferenceToProjects.TryGetValue(packageReference, out List<string> value))
+                        {
+                            value ??= new();
+                            packageReferenceToProjects.Add(packageReference, value);
+                        }
+                        value.AddRange(projectPath);
+                    }
+                }
+
+                foreach (KeyValuePair<PackageReference, List<string>> package in packageReferenceToProjects)
+                {
+                    var exists = nuGetPackageManager.PackageExistsInPackagesFolder(package.Key.PackageIdentity, packageSaveMode);
+                    packageRestoreData.Add(new PackageRestoreData(package.Key, package.Value, !exists));
+                    areAnyPackagesMissing |= !exists;
+                }
+                restoreAuditProperties = GetRestoreAuditProperties(packageRestoreInputs);
+
             }
             else if (packageRestoreInputs.PackagesConfigFiles.Count > 0)
             {
@@ -290,22 +325,35 @@ namespace NuGet.CommandLine
 
                     throw new InvalidOperationException(message);
                 }
+                restoreAuditProperties = new(PathUtility.GetStringComparerBasedOnOS());
 
-                installedPackageReferences.AddRange(
-                    GetInstalledPackageReferences(packageReferenceFile, allowDuplicatePackageIds: true));
+                string referenceFile = packageReferenceFile;
+                // If restoring with a csproj directly, ensure we read the audit configuration.
+                if (packageRestoreInputs.ProjectFiles.Count > 0)
+                {
+                    var packageSpec = packageRestoreInputs.ProjectReferenceLookup.GetProjectSpec(packageRestoreInputs.ProjectFiles.First());
+                    if (packageSpec != null)
+                    {
+                        referenceFile = packageSpec.FilePath;
+                        restoreAuditProperties.Add(referenceFile, packageSpec.RestoreMetadata.RestoreAuditProperties);
+                    }
+                }
+
+                foreach (PackageReference packageReference in GetInstalledPackageReferences(packageReferenceFile))
+                {
+                    bool exists = nuGetPackageManager.PackageExistsInPackagesFolder(packageReference.PackageIdentity, packageSaveMode);
+                    packageRestoreData.Add(new PackageRestoreData(packageReference, [referenceFile], !exists));
+                    areAnyPackagesMissing |= !exists;
+                }
             }
 
-            // EffectivePackageSaveMode is None when -PackageSaveMode is not provided by the user. None is treated as
-            // Defaultv3 for V3 restore and should be treated as Defaultv2 for V2 restore. This is the case in the
-            // actual V2 restore flow and should match in this preliminary missing packages check.
-            var packageSaveMode = EffectivePackageSaveMode == Packaging.PackageSaveMode.None ?
-                Packaging.PackageSaveMode.Defaultv2 :
-                EffectivePackageSaveMode;
+            var packageSources = GetPackageSources(Settings);
 
-            var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
+            var repositories = packageSources
+                .Select(sourceRepositoryProvider.CreateRepository)
+                .ToList();
 
-            if (missingPackageReferences.Length == 0)
+            if (!areAnyPackagesMissing)
             {
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
@@ -322,6 +370,18 @@ namespace NuGet.CommandLine
                     packagesFolderPath,
                     restoreSummaries);
 
+                using SourceCacheContext cacheContext = new();
+
+                var auditSources = GetAuditSources();
+
+                var auditUtility = new AuditChecker(
+                    repositories,
+                    auditSources,
+                    cacheContext,
+                    Console);
+
+                await auditUtility.CheckPackageVulnerabilitiesAsync(packageRestoreData, restoreAuditProperties, CancellationToken.None);
+
                 if (restoreSummaries.Count == 0)
                 {
                     restoreSummaries.Add(new RestoreSummary(success: true));
@@ -329,20 +389,6 @@ namespace NuGet.CommandLine
 
                 return restoreSummaries;
             }
-
-            var packageRestoreData = missingPackageReferences.Select(reference =>
-                new PackageRestoreData(
-                    reference,
-                    new[] { packageRestoreInputs.RestoringWithSolutionFile
-                                ? packageRestoreInputs.DirectoryOfSolutionFile
-                                : packageRestoreInputs.PackagesConfigFiles[0] },
-                    isMissing: true));
-
-            var packageSources = GetPackageSources(Settings);
-
-            var repositories = packageSources
-                .Select(sourceRepositoryProvider.CreateRepository)
-                .ToArray();
 
             var installCount = 0;
             var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
@@ -358,6 +404,8 @@ namespace NuGet.CommandLine
                 maxNumberOfParallelTasks: DisableParallelProcessing
                         ? 1
                         : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                enableNuGetAudit: true,
+                restoreAuditProperties,
                 logger: collectorLogger);
 
             CheckRequireConsent();
@@ -379,10 +427,12 @@ namespace NuGet.CommandLine
 
             using (var cacheContext = new SourceCacheContext())
             {
-                cacheContext.NoCache = NoCache;
+                cacheContext.NoCache = NoCache || NoHttpCache;
                 cacheContext.DirectDownload = DirectDownload;
 
-                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload)
+                var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(Settings);
+
+                var downloadContext = new PackageDownloadContext(cacheContext, packagesFolderPath, DirectDownload, packageSourceMapping)
                 {
                     ClientPolicyContext = clientPolicyContext
                 };
@@ -420,6 +470,60 @@ namespace NuGet.CommandLine
 
                 return restoreSummaries;
             }
+        }
+
+        private List<SourceRepository> GetAuditSources()
+        {
+            IReadOnlyList<PackageSource> auditSources = SourceProvider.LoadAuditSources();
+
+            List<SourceRepository> auditRepositories = new List<SourceRepository>(auditSources.Count);
+            for (int i = 0; i < auditSources.Count; i++)
+            {
+                PackageSource source = auditSources[i];
+                if (source.IsEnabled)
+                {
+                    SourceRepository repository = Repository.Factory.GetCoreV3(source);
+                    auditRepositories.Add(repository);
+                }
+            }
+
+            return auditRepositories;
+        }
+
+        private Dictionary<string, HashSet<string>> GetPackagesConfigToProjectsPath(PackageRestoreInputs packageRestoreInputs)
+        {
+            Dictionary<string, HashSet<string>> configToProjectPath = new();
+            foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects)
+            {
+                if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
+                {
+                    var packagesConfig = ((PackagesConfigProjectRestoreMetadata)project.RestoreMetadata).PackagesConfigPath;
+
+                    if (configToProjectPath.TryGetValue(packagesConfig, out HashSet<string> existingValue))
+                    {
+                        existingValue.Add(project.FilePath);
+                    }
+                    else
+                    {
+                        configToProjectPath.Add(packagesConfig, new HashSet<string> { project.FilePath });
+                    }
+                }
+            }
+            return configToProjectPath;
+        }
+
+        private static Dictionary<string, RestoreAuditProperties> GetRestoreAuditProperties(PackageRestoreInputs packageRestoreInputs)
+        {
+            Dictionary<string, RestoreAuditProperties> restoreAuditProperties = new(PathUtility.GetStringComparerBasedOnOS());
+            foreach (PackageSpec project in packageRestoreInputs.ProjectReferenceLookup.Projects.NoAllocEnumerate())
+            {
+                if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackagesConfig)
+                {
+                    restoreAuditProperties.Add(project.FilePath, project.RestoreMetadata.RestoreAuditProperties);
+                }
+            }
+
+            return restoreAuditProperties;
         }
 
         /// <summary>
@@ -496,7 +600,22 @@ namespace NuGet.CommandLine
             {
                 // Restore takes multiple arguments, each could be a file or directory
                 var argument = Arguments.Single();
-                var fullPath = Path.GetFullPath(argument);
+                string fullPath;
+                try
+                {
+                    fullPath = Path.GetFullPath(argument);
+                }
+                catch (ArgumentException)
+                {
+                    // Treat "invalid characters in path" like a file not found.
+                    // Afterall, a filename with invalid characters can't exist.
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("RestoreCommandFileNotFound"),
+                        argument);
+
+                    throw new InvalidOperationException(message);
+                }
 
                 if (Directory.Exists(fullPath))
                 {
@@ -614,10 +733,8 @@ namespace NuGet.CommandLine
 
             // Filter down to just the requested projects in the file
             // that support transitive references.
-            var v3RestoreProjects = dgFileOutput.Projects
-                .Where(project => (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                    || project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
-                    && entryPointProjects.Contains(project));
+            var v3RestoreProjects = entryPointProjects
+                .Where(project => project.RestoreMetadata.ProjectStyle is ProjectStyle.PackageReference or ProjectStyle.ProjectJson);
 
             packageRestoreInputs.RestoreV3Context.Inputs.AddRange(v3RestoreProjects
                 .Select(project => project.RestoreMetadata.ProjectPath));
@@ -717,7 +834,8 @@ namespace NuGet.CommandLine
             {
                 packageRestoreInputs.RestoreV3Context.Inputs.Add(projectFilePath);
             }
-            else if (projectFileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+            else if (projectFileName.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
+                || projectFileName.EndsWith(".slnf", StringComparison.OrdinalIgnoreCase))
             {
                 ProcessSolutionFile(projectFilePath, packageRestoreInputs);
             }
@@ -818,7 +936,7 @@ namespace NuGet.CommandLine
         /// </summary>
         private static bool IsPackagesConfig(string projectFileName)
         {
-            return string.Equals(projectFileName, Constants.PackageReferenceFile)
+            return string.Equals(projectFileName, Constants.PackageReferenceFile, PathUtility.GetStringComparisonBasedOnOS())
                 || (projectFileName.StartsWith("packages.", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(
                     Path.GetExtension(projectFileName),
@@ -884,10 +1002,22 @@ namespace NuGet.CommandLine
             restoreInputs.NameOfSolutionFile = Path.GetFileNameWithoutExtension(solutionFileFullPath);
 
             // restore packages for the solution
-            var solutionLevelPackagesConfig = Path.Combine(
-                restoreInputs.DirectoryOfSolutionFile,
-                NuGetConstants.NuGetSolutionSettingsFolder,
-                Constants.PackageReferenceFile);
+            string solutionLevelPackagesConfig;
+
+            try
+            {
+                solutionLevelPackagesConfig = Path.Combine(
+                    restoreInputs.DirectoryOfSolutionFile,
+                    NuGetConstants.NuGetSolutionSettingsFolder,
+                    Constants.PackageReferenceFile);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_InvalidSolutionDirectory"),
+                        restoreInputs.DirectoryOfSolutionFile),
+                    e);
+            }
 
             if (File.Exists(solutionLevelPackagesConfig))
             {

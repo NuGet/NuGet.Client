@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -17,9 +17,7 @@ namespace NuGet.Packaging.Signing
     /// </summary>
     internal static class Rfc3161TimestampVerificationUtility
     {
-        private const double _millisecondsPerMicrosecond = 0.001;
-
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
         internal static bool ValidateSignerCertificateAgainstTimestamp(
             X509Certificate2 signerCertificate,
@@ -34,20 +32,21 @@ namespace NuGet.Packaging.Signing
 
         internal static bool TryReadTSTInfoFromSignedCms(
             SignedCms timestampCms,
-            out Rfc3161TimestampTokenInfo tstInfo)
+            out IRfc3161TimestampTokenInfo tstInfo)
         {
             tstInfo = null;
-            if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentType))
+            if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentType, StringComparison.Ordinal))
             {
-                tstInfo = new Rfc3161TimestampTokenInfo(timestampCms.ContentInfo.Content);
+                tstInfo = Rfc3161TimestampTokenInfoFactory.Create(timestampCms.ContentInfo.Content);
                 return true;
             }
             // return false if the signedCms object does not contain the right ContentType
             return false;
         }
 
-        internal static double GetAccuracyInMilliseconds(Rfc3161TimestampTokenInfo tstInfo)
+        internal static double GetAccuracyInMilliseconds(IRfc3161TimestampTokenInfo tstInfo)
         {
+            const double _millisecondsPerMicrosecond = 0.001;
             double accuracyInMilliseconds;
 
             if (!tstInfo.AccuracyInMicroseconds.HasValue)

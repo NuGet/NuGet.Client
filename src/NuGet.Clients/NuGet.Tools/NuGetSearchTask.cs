@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,23 +22,23 @@ namespace NuGetVSExtension
         {
             if (provider == null)
             {
-                throw new ArgumentNullException("provider");
+                throw new ArgumentNullException(nameof(provider));
             }
             if (searchQuery == null)
             {
-                throw new ArgumentNullException("searchQuery");
+                throw new ArgumentNullException(nameof(searchQuery));
             }
             if (searchCallback == null)
             {
-                throw new ArgumentNullException("searchCallback");
+                throw new ArgumentNullException(nameof(searchCallback));
             }
             if (managePackageDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageDialogCommand));
             }
             if (managePackageForSolutionDialogCommand == null)
             {
-                throw new ArgumentNullException("managePackageForSolutionDialogCommand");
+                throw new ArgumentNullException(nameof(managePackageForSolutionDialogCommand));
             }
             _provider = provider;
             _searchCallback = searchCallback;
@@ -98,6 +98,7 @@ namespace NuGetVSExtension
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands", Justification = "Just to make TeamCity build happy. We don't see any FxCop issue when built locally.")]
         private OleMenuCommand GetSupportedManagePackageCommand()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             // Call QueryStatus for _managePackageDialogCommand and _managePackageForSolutionDialogCommand below
             // to refresh the visibility of the command which is used to determine whether search results should be displayed or not.
             // The following API QueryStatusCommand returns S_OK if successful

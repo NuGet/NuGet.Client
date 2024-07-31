@@ -1,17 +1,15 @@
-﻿<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>NuGet's implementation for reading nupkg package and nuspec package specification files.</Description>
-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <Description>NuGet's understanding of packages. Reading nuspec, nupkgs and package signing.</Description>
+    <TargetFrameworks>$(TargetFrameworksLibraryForSigning)</TargetFrameworks>
     <TargetFramework />
-    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572</NoWarn>
-    <NoWarn Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">$(NoWarn);CS0414</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1572;RS0041</NoWarn>
+    <NoWarn Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)'">$(NoWarn);CS0414</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
+    <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -24,11 +22,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)\NuGet.Configuration\NuGet.Configuration.csproj" />
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Versioning\NuGet.Versioning.csproj" />
+    <ProjectReference Include="..\NuGet.Configuration\NuGet.Configuration.csproj" />
+    <ProjectReference Include="..\NuGet.Versioning\NuGet.Versioning.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsDesktop)' == 'true' ">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.IO.Compression" />
@@ -41,10 +39,11 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Dynamic.Runtime" />
+  <ItemGroup Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)'">
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -88,7 +87,14 @@
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  
-  <Import Project="$(BuildCommonDirectory)common.targets" />
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dotnet.Integration.Test" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    <InternalsVisibleTo Include="NuGet.CommandLine.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Commands.Test" />
+    <InternalsVisibleTo Include="NuGet.Packaging.FuncTest" />
+    <InternalsVisibleTo Include="NuGet.Packaging.Test" />
+    <InternalsVisibleTo Include="Test.Utility" />
+  </ItemGroup>
 </Project>

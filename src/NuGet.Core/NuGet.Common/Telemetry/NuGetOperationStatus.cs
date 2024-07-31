@@ -3,29 +3,19 @@
 
 namespace NuGet.Common
 {
-    /// <summary>
-    /// Define different states for nuget operation status.
-    /// </summary>
+    /// <summary> Define different states for NuGet operation status. </summary>
     public enum NuGetOperationStatus
     {
-        /// <summary>
-        /// no operation performed.
-        /// </summary>
+        /// <summary> No operation performed. </summary>
         NoOp = 0,
 
-        /// <summary>
-        /// operation was successful.
-        /// </summary>
+        /// <summary> Operation was successful. </summary>
         Succeeded = 1,
 
-        /// <summary>
-        /// operation failed.
-        /// </summary>
+        /// <summary> Operation failed. </summary>
         Failed = 2,
 
-        /// <summary>
-        /// operation was cancelled
-        /// </summary>
+        /// <summary> Operation was cancelled. </summary>
         Cancelled = 3
     }
 }

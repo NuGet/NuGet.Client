@@ -82,7 +82,7 @@ namespace NuGet.ProjectModel
         public string GetBestToolDirectoryPath(string packageId, VersionRange versionRange, NuGetFramework framework)
         {
             var availableToolVersions = GetAvailableToolVersions(packageId);
-            
+
             var bestVersion = versionRange.FindBestMatch(availableToolVersions);
             if (bestVersion == null)
             {
@@ -111,10 +111,7 @@ namespace NuGet.ProjectModel
             {
                 var version = Path.GetFileName(versionDirectory);
 
-                NuGetVersion nugetVersion = null;
-                NuGetVersion.TryParse(version, out nugetVersion);
-
-                if (nugetVersion != null)
+                if (NuGetVersion.TryParse(version, out var nugetVersion))
                 {
                     availableVersions.Add(nugetVersion);
                 }

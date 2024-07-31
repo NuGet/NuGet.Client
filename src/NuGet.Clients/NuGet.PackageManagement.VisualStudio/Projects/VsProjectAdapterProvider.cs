@@ -2,52 +2,57 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using NuGet.ProjectManagement;
+using NuGet.PackageManagement.VisualStudio.Telemetry;
 using NuGet.VisualStudio;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IVsProjectAdapterProvider))]
     internal class VsProjectAdapterProvider : IVsProjectAdapterProvider
     {
-        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService = null;
         private readonly IVsProjectThreadingService _threadingService;
-
-        private readonly Lazy<IVsSolution> _vsSolution;
+        private readonly AsyncLazy<SVsSolution> _vsSolution;
+        private readonly IVsProjectBuildPropertiesTelemetry _buildPropertiesTelemetry;
 
         [ImportingConstructor]
         public VsProjectAdapterProvider(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
-            Lazy<IDeferredProjectWorkspaceService> workspaceService,
-            IVsProjectThreadingService threadingService)
+            [Import(typeof(SAsyncServiceProvider))]
+            IAsyncServiceProvider serviceProvider,
+            IVsProjectThreadingService threadingService,
+            [Import(typeof(IVsProjectBuildPropertiesTelemetry), RequiredCreationPolicy = CreationPolicy.Shared)]
+            IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry)
+            : this(
+                  threadingService,
+                  new AsyncLazy<SVsSolution>(() => serviceProvider.GetServiceAsync<SVsSolution, SVsSolution>(throwOnFailure: false), threadingService.JoinableTaskFactory),
+                  buildPropertiesTelemetry)
         {
-            Assumes.Present(serviceProvider);
-            Assumes.Present(threadingService);
-            Assumes.Present(workspaceService);
-
-            _workspaceService = workspaceService;
-            _threadingService = threadingService;
-            _vsSolution = new Lazy<IVsSolution>(() => serviceProvider.GetService<SVsSolution, IVsSolution>());
         }
 
-        public async Task<bool> EntityExistsAsync(string filePath)
+        internal VsProjectAdapterProvider(
+            IVsProjectThreadingService threadingService,
+            AsyncLazy<SVsSolution> vsSolution,
+            IVsProjectBuildPropertiesTelemetry buildPropertiesTelemetry)
         {
-            return await _workspaceService.Value.EntityExistsAsync(filePath);
+            Assumes.Present(threadingService);
+            Assumes.Present(vsSolution);
+
+            _threadingService = threadingService;
+            _vsSolution = vsSolution;
+            _buildPropertiesTelemetry = buildPropertiesTelemetry;
         }
 
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
         {
-            return _threadingService.ExecuteSynchronously(
+            return _threadingService.JoinableTaskFactory.Run(
                 () => CreateAdapterForFullyLoadedProjectAsync(dteProject));
         }
 
@@ -55,123 +60,78 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(dteProject);
 
+            // Get services while we might be on background thread
+            var vsSolution = await _vsSolution.GetValueAsync();
+
+            // switch to main thread and use services we know must be done on main thread.
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsHierarchyItem = VsHierarchyItem.FromDteProject(dteProject);
+            var vsHierarchyItem = await VsHierarchyItem.FromDteProjectAsync(dteProject);
             Func<IVsHierarchy, EnvDTE.Project> loadDteProject = _ => dteProject;
+
+            string[] projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(vsHierarchyItem.VsHierarchy);
 
             var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
             var vsBuildProperties = new VsProjectBuildProperties(
-                dteProject, buildStorageProperty, _threadingService);
+                dteProject, buildStorageProperty, _buildPropertiesTelemetry, projectTypeGuids);
 
-            var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject);
-            var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
+            var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, vsSolution);
+            var fullProjectPath = dteProject.GetFullProjectPath();
+            if (fullProjectPath == null && dteProject.IsWebSite())
+            {
+                var projectDirectory = await dteProject.GetFullPathAsync();
+
+                return new VsProjectAdapter(
+                    vsHierarchyItem,
+                    projectNames,
+                    fullProjectPath,
+                    projectDirectory,
+                    loadDteProject,
+                    vsBuildProperties,
+                    _threadingService);
+            }
 
             return new VsProjectAdapter(
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
-                dteProject.Kind,
                 loadDteProject,
                 vsBuildProperties,
                 _threadingService);
         }
 
-        public async Task<IVsProjectAdapter> CreateAdapterForDeferredProjectAsync(IVsHierarchy project)
+        public async Task<IVsProjectAdapter> CreateAdapterForFullyLoadedProjectAsync(IVsHierarchy hierarchy)
         {
-            Assumes.Present(project);
+            Assumes.Present(hierarchy);
 
+            // Get services while we might be on background thread
+            var vsSolution = await _vsSolution.GetValueAsync();
+
+            // switch to main thread and use services we know must be done on main thread.
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var vsHierarchyItem = VsHierarchyItem.FromVsHierarchy(project);
-            var fullProjectPath = VsHierarchyUtility.GetProjectPath(project);
+            var vsHierarchyItem = VsHierarchyItem.FromVsHierarchy(hierarchy);
+            Func<IVsHierarchy, EnvDTE.Project> loadDteProject = VsHierarchyUtility.GetProjectFromHierarchy;
 
-            var uniqueName = string.Empty;
-            _vsSolution.Value.GetUniqueNameOfProject(project, out uniqueName);
+            var projectTypeGuids = VsHierarchyUtility.GetProjectTypeGuidsFromHierarchy(hierarchy);
 
-            var projectNames = new ProjectNames(
-                fullName: fullProjectPath,
-                uniqueName: uniqueName,
-                shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                customUniqueName: GetCustomUniqueName(uniqueName));
+            var buildStorageProperty = vsHierarchyItem.VsHierarchy as IVsBuildPropertyStorage;
+            var vsBuildProperties = new VsProjectBuildProperties(
+                new Lazy<EnvDTE.Project>(() => loadDteProject(hierarchy)), buildStorageProperty, _buildPropertiesTelemetry, projectTypeGuids);
 
-            var workspaceBuildProperties = new WorkspaceProjectBuildProperties(
-                fullProjectPath, _workspaceService.Value, _threadingService);
+            var fullProjectPath = projectTypeGuids.Contains(VsProjectTypes.WebSiteProjectTypeGuid) ?
+                VsHierarchyUtility.GetProjectPathForWebsiteProject(hierarchy)
+                : VsHierarchyUtility.GetProjectPath(hierarchy);
 
-            var projectTypeGuid = await _workspaceService.Value.GetProjectTypeGuidAsync(fullProjectPath);
+            var projectNames = await ProjectNames.FromIVsSolution2(fullProjectPath, (IVsSolution2)vsSolution, hierarchy, CancellationToken.None);
 
             return new VsProjectAdapter(
                 vsHierarchyItem,
                 projectNames,
                 fullProjectPath,
-                projectTypeGuid,
-                EnsureProjectIsLoaded,
-                workspaceBuildProperties,
-                _threadingService,
-                _workspaceService.Value);
-        }
-
-        public EnvDTE.Project EnsureProjectIsLoaded(IVsHierarchy project)
-        {
-            return _threadingService.ExecuteSynchronously(async () =>
-            {
-                await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // 1. Ask the solution to load the required project. To reduce wait time,
-                //    we load only the project we need, not the entire solution.
-                ErrorHandler.ThrowOnFailure(project.GetGuidProperty(
-                    (uint)VSConstants.VSITEMID.Root,
-                    (int)__VSHPROPID.VSHPROPID_ProjectIDGuid,
-                    out Guid projectGuid));
-
-                var asVsSolution4 = _vsSolution.Value as IVsSolution4;
-                Assumes.Present(asVsSolution4);
-
-                ErrorHandler.ThrowOnFailure(asVsSolution4.EnsureProjectIsLoaded(
-                    projectGuid,
-                    (uint)__VSBSLFLAGS.VSBSLFLAGS_None));
-
-                // 2. After the project is loaded, grab the latest IVsHierarchy object.
-                ErrorHandler.ThrowOnFailure(_vsSolution.Value.GetProjectOfGuid(
-                    projectGuid,
-                    out IVsHierarchy loadedProject));
-                Assumes.Present(loadedProject);
-
-                object extObject = null;
-                ErrorHandler.ThrowOnFailure(loadedProject.GetProperty(
-                    (uint)VSConstants.VSITEMID.Root,
-                    (int)__VSHPROPID.VSHPROPID_ExtObject,
-                    out extObject));
-
-                var dteProject = extObject as EnvDTE.Project;
-                Assumes.Present(dteProject);
-
-                return dteProject;
-            });
-        }
-
-        // Get DTE-like customUniqueName from unique Name
-        // eg: A/A.proj -> A, foo/A/A.csproj -> foo/A
-        private string GetCustomUniqueName(string uniqueName)
-        {
-            var names = uniqueName.Split(Path.DirectorySeparatorChar);
-            var nameParts = new List<string>(names);
-
-            if (nameParts.Count == 1)
-            {
-                return nameParts[0];
-            }
-            else
-            {
-                var fileName = nameParts[nameParts.Count - 1];
-                var directoryName = nameParts[nameParts.Count - 2];
-                nameParts.RemoveAt(nameParts.Count - 1);
-                nameParts.RemoveAt(nameParts.Count - 1);
-
-                nameParts.Add(Path.GetFileNameWithoutExtension(fileName));
-
-                return string.Join(Path.DirectorySeparatorChar.ToString(), nameParts);
-            }
+                loadDteProject,
+                vsBuildProperties,
+                _threadingService);
         }
     }
 }

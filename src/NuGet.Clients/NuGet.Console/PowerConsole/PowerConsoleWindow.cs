@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -22,20 +22,15 @@ namespace NuGetConsole.Implementation.PowerConsole
         private Dictionary<string, HostInfo> _hostInfos;
         private HostInfo _activeHostInfo;
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import(typeof(SVsServiceProvider))]
         internal IServiceProvider ServiceProvider { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [Import]
         internal IWpfConsoleService WpfConsoleService { get; set; }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         [ImportMany]
         internal IEnumerable<Lazy<IHostProvider, IHostMetadata>> HostProviders { get; set; }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "_hostInfo collection is disposed.")]
         private Dictionary<string, HostInfo> HostInfos
         {
             get
@@ -126,7 +121,7 @@ namespace NuGetConsole.Implementation.PowerConsole
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var vsUIShell = ServiceProvider.GetService<IVsUIShell>(typeof(SVsUIShell));
+                var vsUIShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell, IVsUIShell>(throwOnFailure: false);
                 if (vsUIShell != null)
                 {
                     var guid = typeof(PowerConsoleToolWindow).GUID;
@@ -142,9 +137,9 @@ namespace NuGetConsole.Implementation.PowerConsole
             });
         }
 
-        public void Start()
+        public Task StartAsync()
         {
-            ActiveHostInfo.WpfConsole.Dispatcher.Start();
+            return ActiveHostInfo.WpfConsole.Dispatcher.StartAsync();
         }
 
         public void SetDefaultRunspace()

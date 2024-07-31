@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,14 +23,21 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly Guid _parentId;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
+        private readonly PackageSourceMapping _packageSourceMappingConfiguration;
 
-        internal static readonly string EventName = "PackageSourceDiagnostics";
+        internal const string EventName = "PackageSourceDiagnostics";
 
         public enum TelemetryAction
         {
             Unknown = 0,
             Restore,
             Search
+        }
+
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action, PackageSourceMapping packageSourceMappingConfiguration)
+            : this(sources, parentId, action)
+        {
+            _packageSourceMappingConfiguration = packageSourceMappingConfiguration;
         }
 
         public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
@@ -47,7 +55,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
 
             var data = new Dictionary<string, Data>(_sources.Count);
-            foreach (var source in _sources.Keys)
+            foreach ((var source, _) in _sources)
             {
                 data[source] = new Data();
             }
@@ -201,7 +209,7 @@ namespace NuGet.VisualStudio.Telemetry
                     sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
-                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName);
+                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageSourceMappingConfiguration);
 
                 if (telemetry != null)
                 {
@@ -210,7 +218,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName)
+        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration)
         {
             if (data.Resources.Count == 0)
             {
@@ -222,11 +230,14 @@ namespace NuGet.VisualStudio.Telemetry
             TelemetryEvent telemetry;
             lock (data._lock)
             {
+                bool isPackageSourceMappingEnabled = packageSourceMappingConfiguration?.IsEnabled ?? false;
+
                 telemetry = new TelemetryEvent(EventName,
                     new Dictionary<string, object>()
                     {
                     { PropertyNames.ParentId, parentId },
-                    { PropertyNames.Action, actionName }
+                    { PropertyNames.Action, actionName },
+                    { PropertyNames.PackageSourceMapping.IsMappingEnabled, isPackageSourceMappingEnabled }
                     });
 
                 AddSourceProperties(telemetry, sourceRepository, feedType);
@@ -286,11 +297,11 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static TelemetryEvent ToResourceDetailsTelemetry(Dictionary<string, (int count, TimeSpan duration)> resources)
         {
-            var subevent = new TelemetryEvent(eventName: null);
+            var subevent = new TelemetryEvent(eventName: string.Empty);
 
             foreach (var resource in resources)
             {
-                var details = new TelemetryEvent(eventName: null);
+                var details = new TelemetryEvent(eventName: string.Empty);
                 details["count"] = resource.Value.count;
                 details["duration"] = resource.Value.duration.TotalMilliseconds;
 
@@ -302,21 +313,21 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
         {
-            var subevent = new TelemetryEvent(eventName: null);
+            var subevent = new TelemetryEvent(eventName: string.Empty);
 
             foreach (var pair in statusCodes)
             {
-                subevent[pair.Key.ToString()] = pair.Value;
+                subevent[pair.Key.ToString(CultureInfo.CurrentCulture)] = pair.Value;
             }
 
             return subevent;
         }
 
-        private static string GetMsFeed(PackageSource source)
+        internal static string GetMsFeed(PackageSource source)
         {
             if (source.IsHttp)
             {
-                if (TelemetryUtility.IsNuGetOrg(source))
+                if (UriUtility.IsNuGetOrg(source.Source))
                 {
                     return "nuget.org";
                 }
@@ -460,6 +471,11 @@ namespace NuGet.VisualStudio.Telemetry
                     internal const string Total = "http.duration.total";
                     internal const string Header = "http.duration.header";
                 }
+            }
+
+            internal static class PackageSourceMapping
+            {
+                internal const string IsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
             }
         }
     }

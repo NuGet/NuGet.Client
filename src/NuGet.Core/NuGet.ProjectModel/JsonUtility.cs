@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -13,6 +14,8 @@ namespace NuGet.ProjectModel
 {
     internal static class JsonUtility
     {
+        internal static string NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING = nameof(NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING);
+        internal static bool? UseNewtonsoftJson = null;
         internal static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
 
         /// <summary>
@@ -43,6 +46,16 @@ namespace NuGet.ProjectModel
             }
         }
 
+        internal static LockFile LoadJson(Stream stream, Utf8JsonStreamLockFileConverter converter, LockFileReadFlags flags)
+        {
+            var streamingJsonReader = new Utf8JsonStreamReader(stream);
+            var lockFile = converter.Read(ref streamingJsonReader, flags);
+
+            streamingJsonReader.Dispose();
+
+            return lockFile;
+        }
+
         internal static PackageDependency ReadPackageDependency(string property, JToken json)
         {
             var versionStr = json.Value<string>();
@@ -51,11 +64,47 @@ namespace NuGet.ProjectModel
                 versionStr == null ? null : VersionRange.Parse(versionStr));
         }
 
+        internal static bool UseNewtonsoftJsonForParsing(IEnvironmentVariableReader environmentVariableReader, bool bypassCache)
+        {
+            if (!UseNewtonsoftJson.HasValue || bypassCache)
+            {
+                if (bool.TryParse(environmentVariableReader.GetEnvironmentVariable(NUGET_EXPERIMENTAL_USE_NJ_FOR_FILE_PARSING), out var useNj))
+                {
+                    UseNewtonsoftJson = useNj;
+                }
+                else
+                {
+                    UseNewtonsoftJson = false;
+                }
+            }
+
+            return UseNewtonsoftJson.Value;
+        }
+
+        internal static JProperty WritePackageDependencyWithLegacyString(PackageDependency item)
+        {
+            return new JProperty(
+                item.Id,
+                WriteString(item.VersionRange?.ToNonSnapshotRange().ToLegacyShortString()));
+        }
+
+        internal static void WritePackageDependencyWithLegacyString(JsonWriter writer, PackageDependency item)
+        {
+            writer.WritePropertyName(item.Id);
+            writer.WriteValue(item.VersionRange?.ToNonSnapshotRange().ToLegacyShortString());
+        }
+
         internal static JProperty WritePackageDependency(PackageDependency item)
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToLegacyShortString()));
+                WriteString(item.VersionRange?.ToString()));
+        }
+
+        internal static void WritePackageDependency(JsonWriter writer, PackageDependency item)
+        {
+            writer.WritePropertyName(item.Id);
+            writer.WriteValue(item.VersionRange?.ToString());
         }
 
         internal static TItem ReadProperty<TItem>(JObject jObject, string propertyName)
@@ -76,9 +125,9 @@ namespace NuGet.ProjectModel
         {
             if (jObject == null)
             {
-                return new List<TItem>();
+                return new List<TItem>(0);
             }
-            var items = new List<TItem>();
+            var items = new List<TItem>(jObject.Count);
             foreach (var child in jObject)
             {
                 items.Add(readItem(child.Key, child.Value));
@@ -94,6 +143,18 @@ namespace NuGet.ProjectModel
                 array.Add(writeItem(item));
             }
             return array;
+        }
+
+        internal static void WriteObject<TItem>(JsonWriter writer, IEnumerable<TItem> items, Action<JsonWriter, TItem> writeItem)
+        {
+            writer.WriteStartObject();
+
+            foreach (var item in items)
+            {
+                writeItem(writer, item);
+            }
+
+            writer.WriteEndObject();
         }
 
         internal static int ReadInt(JToken cursor, string property, int defaultValue)

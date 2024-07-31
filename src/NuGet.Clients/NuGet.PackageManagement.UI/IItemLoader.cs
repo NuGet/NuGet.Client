@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.PackageManagement.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement.UI
     {
         LoadingStatus LoadingStatus { get; }
         int ItemsCount { get; }
-        IDictionary<string, LoadingStatus> SourceLoadingStatus { get; }
+        IReadOnlyDictionary<string, LoadingStatus> SourceLoadingStatus { get; }
         Guid? OperationId { get; }
     }
 

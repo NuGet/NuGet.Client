@@ -19,6 +19,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    [Collection(nameof(NotThreadSafeResourceCollection))]
     public class RestoreBuildTargetsAndPropsTests
     {
         [Fact]
@@ -419,7 +420,7 @@ namespace NuGet.Commands.Test
 
                 // Set proj properties
                 spec.FilePath = project.ProjectPath;
-                spec.RestoreMetadata.OutputPath = project.OutputPath;
+                spec.RestoreMetadata.OutputPath = project.ProjectExtensionsPath;
                 spec.RestoreMetadata.ProjectPath = project.ProjectPath;
 
                 projects.Add(project);
@@ -461,7 +462,8 @@ namespace NuGet.Commands.Test
             var frameworkGroups = frameworks.Select(s =>
                 new TargetFrameworkInformation()
                 {
-                    FrameworkName = NuGetFramework.Parse(s)
+                    FrameworkName = NuGetFramework.Parse(s),
+                    TargetAlias = s,
                 })
                 .ToList();
 
@@ -485,7 +487,7 @@ namespace NuGet.Commands.Test
             foreach (var frameworkInfo in frameworkGroups)
             {
                 spec.RestoreMetadata.TargetFrameworks.Add(
-                    new ProjectRestoreMetadataFrameworkInfo(frameworkInfo.FrameworkName));
+                    new ProjectRestoreMetadataFrameworkInfo(frameworkInfo.FrameworkName) { TargetAlias = frameworkInfo.TargetAlias });
             }
 
             return spec;

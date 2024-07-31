@@ -1,4 +1,4 @@
-﻿{
+{
   "version": 2,
   "targets": {
     ".NETStandard,Version=v1.4": {
@@ -3587,8 +3587,22 @@
             "target": "Package",
             "version": "4.0.0-zlocal-*"
           }
+        },
+        "centralPackageVersions": {
+          "Newtonsoft.Json": "[12.0.3, )"
+        }
+      }
+    }
+  },
+  "centralTransitiveDependencyGroups": {
+    "netstandard1.4": {
+        "Newtonsoft.Json": {
+          "include": "Compile, Native, BuildTransitive",
+          "target": "Package",
+          "version": "[12.0.3, )",
+          "autoReferenced": true,
+          "versionCentrallyManaged": true
         }
       }
     }
   }
-}

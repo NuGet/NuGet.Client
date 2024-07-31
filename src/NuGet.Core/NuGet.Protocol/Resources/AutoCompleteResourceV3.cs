@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -44,15 +45,17 @@ namespace NuGet.Protocol
             var queryUrl = new UriBuilder(searchUrl.AbsoluteUri);
             var queryString =
                 "q=" + WebUtility.UrlEncode(packageIdPrefix) +
-                "&prerelease=" + includePrerelease.ToString().ToLowerInvariant() +
+                "&prerelease=" + includePrerelease.ToString(CultureInfo.CurrentCulture).ToLowerInvariant() +
                 "&semVerLevel=2.0.0";
 
             queryUrl.Query = queryString;
 
+            Common.ILogger logger = log ?? Common.NullLogger.Instance;
+
             var queryUri = queryUrl.Uri;
             var results = await _client.GetJObjectAsync(
-                new HttpSourceRequest(queryUri, Common.NullLogger.Instance),
-                Common.NullLogger.Instance,
+                new HttpSourceRequest(queryUri, logger),
+                logger,
                 token);
             token.ThrowIfCancellationRequested();
             if (results == null)
@@ -86,8 +89,10 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
+            Common.ILogger logger = log ?? Common.NullLogger.Instance;
+
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
-            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, Common.NullLogger.Instance, token);
+            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, sourceCacheContext, logger, token);
             var versions = new List<NuGetVersion>();
             foreach (var package in packages)
             {

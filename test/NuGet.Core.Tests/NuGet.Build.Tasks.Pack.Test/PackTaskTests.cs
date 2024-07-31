@@ -44,12 +44,13 @@ namespace NuGet.Build.Tasks.Pack.Test
 
             var target = new PackTask();
             target.PackTaskLogic = logic.Object;
-            
+
             // Act
             var result = target.Execute();
 
             // Assert
-            Assert.True(result);
+            // We cannot mock the PackCommandRunner because it's not overridable.
+            Assert.False(result);
             Assert.NotNull(request);
             logic.Verify(x => x.GetPackArgs(request));
             logic.Verify(x => x.GetPackageBuilder(request));
@@ -93,7 +94,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                runner.RunPackageBuild();
             }
         }
 
@@ -318,12 +319,12 @@ namespace NuGet.Build.Tasks.Pack.Test
             var target = new PackTask
             {
                 AssemblyName = "AssemblyName",
-                FrameworkAssemblyReferences = new ITaskItem[0],
+                FrameworkAssemblyReferences = Array.Empty<ITaskItem>(),
                 Authors = Array.Empty<string>(),
                 AllowedOutputExtensionsInPackageBuildOutputFolder = Array.Empty<string>(),
                 AllowedOutputExtensionsInSymbolsPackageBuildOutputFolder = Array.Empty<string>(),
                 BuildOutputFolders = new string[] { "lib", "embed" },
-                ContentTargetFolders = new string[] { "ContentTargetFolders" } ,
+                ContentTargetFolders = new string[] { "ContentTargetFolders" },
                 ContinuePackingAfterGeneratingNuspec = true,
                 Copyright = "Copyright",
                 Description = "Description",
@@ -339,13 +340,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                 NuspecOutputPath = "NuspecOutputPath",
                 NuspecProperties = Array.Empty<string>(),
                 PackItem = null, // This is asserted by other tests. It does not serialize well.
-                PackageFiles = new ITaskItem[0],
-                PackageFilesToExclude = new ITaskItem[0],
+                PackageFiles = Array.Empty<ITaskItem>(),
+                PackageFilesToExclude = Array.Empty<ITaskItem>(),
                 PackageId = "PackageId",
                 PackageOutputPath = "PackageOutputPath",
                 PackageTypes = Array.Empty<string>(),
                 PackageVersion = "PackageVersion",
-                ProjectReferencesWithVersions = new ITaskItem[0],
+                ProjectReferencesWithVersions = Array.Empty<ITaskItem>(),
                 ProjectUrl = "ProjectUrl",
                 ReleaseNotes = "ReleaseNotes",
                 RepositoryType = "RepositoryType",
@@ -354,13 +355,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                 RepositoryBranch = "RepositoryBranch",
                 RequireLicenseAcceptance = true,
                 Serviceable = true,
-                SourceFiles = new ITaskItem[0],
+                SourceFiles = Array.Empty<ITaskItem>(),
                 Tags = Array.Empty<string>(),
                 TargetFrameworks = Array.Empty<string>(),
-                BuildOutputInPackage = new ITaskItem[0],
-                TargetPathsToSymbols = new ITaskItem[0],
-                FrameworksWithSuppressedDependencies = new ITaskItem[0],
-    };
+                BuildOutputInPackage = Array.Empty<ITaskItem>(),
+                TargetPathsToSymbols = Array.Empty<ITaskItem>(),
+                FrameworksWithSuppressedDependencies = Array.Empty<ITaskItem>(),
+            };
 
             var settings = new JsonSerializerSettings
             {
@@ -368,22 +369,26 @@ namespace NuGet.Build.Tasks.Pack.Test
                 Formatting = Formatting.Indented
             };
 
+            var jsonModelBefore = JObject.FromObject(target, JsonSerializer.Create(settings));
+
             // Exclude properties on the build task but not used for the pack task request.
-            var excludedProperties = new[]
+            var excludedBuildEngineProperty = new List<string>(jsonModelBefore.Properties().
+                Where(p => p.Name.StartsWith("BuildEngine", StringComparison.OrdinalIgnoreCase)).
+                Select(p => p.Name));
+
+            var excludedOtherProperties = new[]
             {
-                "BuildEngine",
-                "BuildEngine2",
-                "BuildEngine3",
-                "BuildEngine4",
-                "BuildEngine5",
-                "BuildEngine6",
                 "HostObject",
                 "Log",
                 "PackTaskLogic",
             };
 
-            var jsonModelBefore = JObject.FromObject(target, JsonSerializer.Create(settings));
-            foreach (var property in excludedProperties)
+            foreach (var property in excludedBuildEngineProperty)
+            {
+                jsonModelBefore.Remove(property);
+            }
+
+            foreach (var property in excludedOtherProperties)
             {
                 jsonModelBefore.Remove(property);
             }
@@ -407,7 +412,7 @@ namespace NuGet.Build.Tasks.Pack.Test
             logic
                 .Setup(x => x.GetPackArgs(It.IsAny<IPackTaskRequest<IMSBuildItem>>()))
                 .Callback<IPackTaskRequest<IMSBuildItem>>(r => request = r);
-            
+
             target.PackTaskLogic = logic.Object;
 
             // Act

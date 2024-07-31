@@ -8,7 +8,6 @@ namespace NuGetVSExtension
     internal static class GuidList
     {
         public const string guidNuGetPkgString = "5fcc8577-4feb-4d04-ad72-d6c629b083cc";
-        private const string guidNuGetVSEventsPackagePkgString = "38ebd926-b8b6-44e9-952d-1cfd38c84209";
 
         private const string guidNuGetConsoleCmdSetString = "1E8A55F6-C18D-407F-91C8-94B02AE1CED6";
         private const string guidNuGetDialogCmdSetString = "25fd982b-8cae-4cbd-a440-e03ffccde106";

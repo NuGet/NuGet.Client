@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
@@ -53,12 +54,12 @@ namespace NuGet.CommandLine.XPlat
                 var disableBuffering = push.Option(
                     "-d|--disable-buffering",
                     Strings.DisableBuffering_Description,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var noSymbols = push.Option(
                     "-n|--no-symbols",
                     Strings.NoSymbols_Description,
-                    CommandOptionType.SingleValue);
+                    CommandOptionType.NoValue);
 
                 var arguments = push.Argument(
                     "[root]",
@@ -87,7 +88,7 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_MissingArguments);
                     }
 
-                    string packagePath = arguments.Values[0];
+                    IList<string> packagePaths = arguments.Values;
                     string sourcePath = source.Value();
                     string apiKeyValue = apikey.Value();
                     string symbolSourcePath = symbolSource.Value();
@@ -104,7 +105,7 @@ namespace NuGet.CommandLine.XPlat
                     }
 
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
+                    var sourceProvider = new PackageSourceProvider(XPlatUtility.GetSettingsForCurrentWorkingDirectory(), enablePackageSourcesChangedEvent: false);
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     try
@@ -113,7 +114,7 @@ namespace NuGet.CommandLine.XPlat
                         await PushRunner.Run(
                             sourceProvider.Settings,
                             sourceProvider,
-                            packagePath,
+                            packagePaths,
                             sourcePath,
                             apiKeyValue,
                             symbolSourcePath,
