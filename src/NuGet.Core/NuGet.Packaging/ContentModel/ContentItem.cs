@@ -10,7 +10,7 @@ namespace NuGet.ContentModel
         private Dictionary<string, object> _properties;
         public string Path { get; set; }
 
-        public Dictionary<string, object> Properties // TODO
+        public Dictionary<string, object> Properties
         {
             get => _properties ?? CreateDictionary();
             internal set => _properties = value;

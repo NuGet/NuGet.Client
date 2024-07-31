@@ -182,12 +182,10 @@ namespace NuGet.Commands
             }
         }
 
-        static int Stuff = 1;
-
         /// <summary>
         /// Populate assets for a <see cref="LockFileLibrary"/>.
         /// </summary>
-        internal static void AddAssets(
+        private static void AddAssets(
             string aliases,
             LockFileLibrary library,
             LocalPackageInfo package,
@@ -213,15 +211,9 @@ namespace NuGet.Commands
                 contentItems,
                 applyAliases,
                 managedCodeConventions.Patterns.CompileRefAssemblies,
-                managedCodeConventions.Patterns.CompileLibAssemblies
-                );
+                managedCodeConventions.Patterns.CompileLibAssemblies);
 
             lockFileLib.CompileTimeAssemblies.AddRange(compileGroup);
-
-            if (Stuff == 0)
-            {
-                return;
-            }
 
             // Runtime
             var runtimeGroup = GetLockFileItems(
@@ -254,7 +246,6 @@ namespace NuGet.Commands
                 managedCodeConventions.Patterns.NativeLibraries);
 
             lockFileLib.NativeLibraries.AddRange(nativeGroup);
-
 
             // Add MSBuild files
             AddMSBuildAssets(library.Name, managedCodeConventions, lockFileLib, orderedCriteria, contentItems);
