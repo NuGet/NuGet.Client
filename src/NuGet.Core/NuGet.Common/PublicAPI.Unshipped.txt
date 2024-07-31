@@ -1,6 +1,12 @@
 #nullable enable
+NuGet.Common.FileSystemConcurrencyUtility
+NuGet.Common.FileSystemConcurrencyUtility.ExecuteWithFileLockedAsync<T>(string! filePath, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>!>! action, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
+NuGet.Common.FileSystemConcurrencyUtility.FileSystemConcurrencyUtility() -> void
+NuGet.Common.IConcurrencyUtility
+NuGet.Common.IConcurrencyUtility.ExecuteWithFileLockedAsync<T>(string! filePath, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>!>! action, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>!
 NuGet.Common.NuGetLogCode.NU1302 = 1302 -> NuGet.Common.NuGetLogCode
 NuGet.Common.HashAlgorithmName.SHA1 = 4 -> NuGet.Common.HashAlgorithmName
 NuGet.Common.NuGetLogCode.NU3043 = 3043 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1905 = 1905 -> NuGet.Common.NuGetLogCode
 NuGet.Common.NuGetLogCode.NU1508 = 1508 -> NuGet.Common.NuGetLogCode
+static NuGet.Common.FileSystemConcurrencyUtility.Instance.get -> NuGet.Common.FileSystemConcurrencyUtility!
