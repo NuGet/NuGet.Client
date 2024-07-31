@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using NuGet.Client;
@@ -13,13 +12,13 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Versioning;
 
 namespace Benchmarks
 {
     [MemoryDiagnoser]
-    public class Md5VsSha256
+    public class Benchmarks
     {
-
         public RuntimeGraph _runtimeGraph;
         public NuGetv3LocalRepository _repository;
         public NuGetFramework _framework = NuGetFramework.Parse("net9.0");
@@ -27,37 +26,19 @@ namespace Benchmarks
         public LockFileBuilderCache _cache = new();
         public List<(List<SelectionCriteria>, bool)> _orderedCriteria;
 
-        //private LocalPackageInfo _package;
-        private ContentItemCollection _contentItems;
-        private LockFileLibrary _library;
-        private LockFileTargetLibrary _lockFileLib;
-        //private NuspecReader _nuspecReader;
+//        | Method           | Mean     | Error    | StdDev   | Allocated |
+//|----------------- |---------:|---------:|---------:|----------:|
+//| RMC_GetHashCode  | 34.56 ns | 0.064 ns | 0.060 ns |         - |
+//| RMC_GetHashCode2 | 51.22 ns | 0.084 ns | 0.074 ns |         - |
 
-        private List<(LocalPackageInfo,NuspecReader)> _packages = new();
+        public List<string> strings = new List<string> { "ABCDEFG", "abcdefg", "ABCDEFGH", "ZABCDEFG", "123465", "12345", "1234765", "net9.0", "net10.0", "netcoreapp3.1", "Newtonsoft.Json" };
 
-        public Md5VsSha256()
+        private List<(LocalPackageInfo, NuspecReader)> _packages = new();
+        private (LocalPackageInfo, NuspecReader) _microsoftBuildRuntime;
+        private (LocalPackageInfo, NuspecReader) _newtonsoftJson;
+
+        public Benchmarks()
         {
-            //// Not package specific.
-            //_runtimeGraph = new RuntimeGraph();
-            //_repository = new NuGetv3LocalRepository("E:\\.packages");
-            //_managedCodeConventions = new ManagedCodeConventions(_runtimeGraph);
-            //_cache = new();
-            //_orderedCriteria = LockFileUtils.CreateOrderedCriteriaSets(_managedCodeConventions, _framework, runtimeIdentifier: null);
-
-            //// Are these temp?
-
-            //_package = _repository.FindPackage("NuGet.Commands", NuGetVersion.Parse("6.10.0"));
-            //_contentItems = _cache.GetContentItems(null, _package);
-
-            //_library = LockFileBuilder.CreateLockFileLibrary(_package, _package.Sha512, _package.ExpandedPath);
-            //_lockFileLib = new LockFileTargetLibrary()
-            //{
-            //    Name = _package.Id,
-            //    Version = _package.Version,
-            //    Type = LibraryType.Package,
-            //    PackageType = new List<PackageType>()
-            //};
-            //_nuspecReader = _package.Nuspec;
         }
 
         [GlobalSetup]
@@ -74,43 +55,123 @@ namespace Benchmarks
             // These can be more than 1 package, for example, they can be a list.
 
             IEnumerable<NuGet.Protocol.LocalPackageInfo> results = NuGet.Protocol.LocalFolderUtility.GetPackagesV3(path, NuGet.Common.NullLogger.Instance);
-            foreach(NuGet.Protocol.LocalPackageInfo package in results)
+
+            var nj = _repository.FindPackage("Newtonsoft.Json", NuGetVersion.Parse("13.0.3"));
+            _newtonsoftJson = (nj, nj.Nuspec);
+
+            var microsoftBuildRuntime = _repository.FindPackage("microsoft.build.runtime", NuGetVersion.Parse("15.1.546"));
+            _microsoftBuildRuntime = (microsoftBuildRuntime, microsoftBuildRuntime.Nuspec);
+
+            foreach (NuGet.Protocol.LocalPackageInfo package in results)
             {
                 LocalPackageInfo realLocalPackageInfo = _repository.FindPackage(package.Identity.Id, package.Identity.Version);
                 _packages.Add((realLocalPackageInfo, realLocalPackageInfo.Nuspec));
             }
-
-            //_package = _repository.FindPackage("newtonsoft.json", NuGetVersion.Parse("13.0.3"));
-            //_nuspecReader = _package.Nuspec;
         }
 
         [Benchmark]
-        public void Sha256()
+        public void RMC_GetHashCode()
         {
-            foreach (var _package in _packages)
+            foreach (var str in strings)
             {
-                _contentItems = _cache.GetContentItems(null, _package.Item1);
+                ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(str.AsMemory());
+            }
+        }
 
-                _library = LockFileBuilder.CreateLockFileLibrary(_package.Item1, _package.Item1.Sha512, _package.Item1.ExpandedPath);
-                _lockFileLib = new LockFileTargetLibrary()
+        [Benchmark]
+        public void RMC_GetHashCode2()
+        {
+            foreach (var str in strings)
+            {
+                ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode2(str.AsMemory());
+            }
+        }
+
+        //[Benchmark]
+        public void NJ()
+        {
+            var contentItems = _cache.GetContentItems(null, _newtonsoftJson.Item1);
+
+            var library = LockFileBuilder.CreateLockFileLibrary(_newtonsoftJson.Item1, _newtonsoftJson.Item1.Sha512, _newtonsoftJson.Item1.ExpandedPath);
+            var lockFileLib = new LockFileTargetLibrary()
+            {
+                Name = _newtonsoftJson.Item1.Id,
+                Version = _newtonsoftJson.Item1.Version,
+                Type = LibraryType.Package,
+                PackageType = new List<PackageType>()
+            };
+
+            LockFileUtils.AddAssets(
+                null,
+                library,
+                _newtonsoftJson.Item1,
+                _managedCodeConventions,
+                LibraryIncludeFlags.All,
+                lockFileLib,
+                _framework,
+                null,
+                contentItems,
+                _newtonsoftJson.Item2,
+                _orderedCriteria[0].Item1
+                );
+        }
+
+        //[Benchmark]
+        public void MicrosoftBuildRuntime()
+        {
+            var contentItems = _cache.GetContentItems(null, _microsoftBuildRuntime.Item1);
+
+            var library = LockFileBuilder.CreateLockFileLibrary(_microsoftBuildRuntime.Item1, _microsoftBuildRuntime.Item1.Sha512, _microsoftBuildRuntime.Item1.ExpandedPath);
+            var lockFileLib = new LockFileTargetLibrary()
+            {
+                Name = _microsoftBuildRuntime.Item1.Id,
+                Version = _microsoftBuildRuntime.Item1.Version,
+                Type = LibraryType.Package,
+                PackageType = new List<PackageType>()
+            };
+
+            LockFileUtils.AddAssets(
+                null,
+                library,
+                _microsoftBuildRuntime.Item1,
+                _managedCodeConventions,
+                LibraryIncludeFlags.All,
+                lockFileLib,
+                _framework,
+                null,
+                contentItems,
+               _microsoftBuildRuntime.Item2,
+                _orderedCriteria[0].Item1
+                );
+        }
+
+        //[Benchmark]
+        public void AllPackages()
+        {
+            foreach (var package in _packages)
+            {
+                var contentItems = _cache.GetContentItems(null, package.Item1);
+
+                var library = LockFileBuilder.CreateLockFileLibrary(package.Item1, package.Item1.Sha512, package.Item1.ExpandedPath);
+                var lockFileLib = new LockFileTargetLibrary()
                 {
-                    Name = _package.Item1.Id,
-                    Version = _package.Item1.Version,
+                    Name = package.Item1.Id,
+                    Version = package.Item1.Version,
                     Type = LibraryType.Package,
                     PackageType = new List<PackageType>()
                 };
 
                 LockFileUtils.AddAssets(
                     null,
-                    _library,
-                    _package.Item1,
+                    library,
+                    package.Item1,
                     _managedCodeConventions,
                     LibraryIncludeFlags.All,
-                    _lockFileLib,
+                    lockFileLib,
                     _framework,
                     null,
-                    _contentItems,
-                    _package.Item2,
+                    contentItems,
+                    package.Item2,
                     _orderedCriteria[0].Item1
                     );
 
@@ -118,11 +179,19 @@ namespace Benchmarks
         }
     }
 
+
     public class Program
     {
+
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<Md5VsSha256>();
+#if DEBUG
+            var benchmark = new Benchmarks();
+            benchmark.GlobalSetup();
+            benchmark.MicrosoftBuildRuntime();
+#else
+            var summary = BenchmarkRunner.Run<Benchmarks>();
+#endif
         }
     }
 }
