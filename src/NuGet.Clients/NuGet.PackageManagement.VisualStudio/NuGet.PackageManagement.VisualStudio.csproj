@@ -31,8 +31,8 @@
 
   <ItemGroup Label="transitive package pinning">
     <!--
-      These packages are dependencies of directly referenced PackageReferences.
-      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
+      These packages are dependencies of Microsoft.TeamFoundationServer.ExtendedClient
+      When it is upgraded to a newer version, try deleting the below PackageReferences
       -->
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />

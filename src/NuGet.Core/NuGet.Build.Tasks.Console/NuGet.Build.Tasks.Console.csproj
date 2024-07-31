@@ -36,8 +36,8 @@
 
   <ItemGroup Label="transitive package pinning">
     <!--
-      These packages are dependencies of directly referenced PackageReferences.
-      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
+      These packages are dependencies of MSBuild
+      When it is upgraded to a newer version, try deleting the below PackageReferences
       -->
     <PackageReference Include="Microsoft.IO.Redist" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
   </ItemGroup>

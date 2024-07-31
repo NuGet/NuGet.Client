@@ -48,8 +48,8 @@
 
   <ItemGroup Label="transitive package pinning">
     <!--
-      These packages are dependencies of directly referenced PackageReferences.
-      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
+      This package is a dependency of System.Security.Cryptography.Pkcs
+      When it is upgraded to a newer version, try deleting the below PackageReference
       -->
     <PackageReference Include="System.Formats.Asn1" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)'" />
   </ItemGroup>

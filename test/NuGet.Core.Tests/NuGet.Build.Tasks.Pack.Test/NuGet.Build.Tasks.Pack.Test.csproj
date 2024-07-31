@@ -20,14 +20,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Label="transitive package pinning">
-    <!--
-      These packages are dependencies of directly referenced PackageReferences.
-      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
-      -->
-    <PackageReference Include="System.Formats.Asn1" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' " />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">
     <Reference Include="System.IO.Compression" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />

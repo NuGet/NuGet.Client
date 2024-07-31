@@ -49,8 +49,8 @@
 
   <ItemGroup Label="transitive package pinning">
     <!--
-      These packages are dependencies of directly referenced PackageReferences.
-      When the above PackageReferences are upgraded to newer versions, try deleting the below PackageReferences
+      This package is a dependency of Microsoft.Build.Tasks.Core
+      When it is upgraded to a newer version, try deleting the below PackageReference
       -->
     <PackageReference Include="System.Security.Cryptography.Xml" GeneratePathProperty="true" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)' " />
   </ItemGroup>
