@@ -1,5 +1,14 @@
 # This is a pipeline that will run NuGet.Client's Visual Studio integration tests
 
+pr: none
+trigger:
+  branches:
+    include:
+    - dev-*
+  paths:
+    exclude:
+    - '*.md'
+
 parameters:
 # build parameters
 - name: NuGetLocalizationType
