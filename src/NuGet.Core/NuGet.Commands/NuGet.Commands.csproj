@@ -66,6 +66,5 @@
     <InternalsVisibleTo Include="Test.Utility" />
     <InternalsVisibleTo Include="NuGet.Commands.FuncTest"/>
     <InternalsVisibleTo Include="Dotnet.Integration.Test" />
-    <InternalsVisibleTo Include="Benchmarks" />
   </ItemGroup>
 </Project>
