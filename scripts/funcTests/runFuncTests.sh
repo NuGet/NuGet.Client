@@ -77,7 +77,7 @@ if [ "$MONO_TESTS" == "1" ]; then
             Darwin)
                 echo "==================== Run mono tests started at `date -u +"%Y-%m-%dT%H:%M:%S"` ======================"
                 set -x
-                mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --logger:"console;verbosity=$VsTestVerbosity" --logger:trx --diag:$BUILD_STAGINGDIRECTORY/binlog/vstest.diag.log --ResultsDirectory:$TestResultsDir
+                mono $VsTestConsole $TestDir/NuGet.CommandLine.Test.dll --logger:"console;verbosity=$VsTestVerbosity" --logger:trx --diag:$BUILD_STAGINGDIRECTORY/binlog/vstest.diag.log --ResultsDirectory:$TestResultsDir --Settings:$DIR/build/xunit.runsettings
                 EXIT_CODE=$?
                 set +x
                 echo "================== mono tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"` ==================="
