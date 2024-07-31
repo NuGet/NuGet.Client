@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Memory" Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)'">
