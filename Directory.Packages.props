@@ -61,6 +61,7 @@
     <PackageVersion Include="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
     <PackageVersion Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="16.153.0" />
     <PackageVersion Include="Microsoft.Test.Apex.VisualStudio" Version="17.11.35005.70" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.1.0" />
     <PackageVersion Include="Microsoft.VisualStudio.LanguageServices" Version="4.3.1" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem" Version="17.4.221-pre" />
     <PackageVersion Include="Microsoft.VisualStudio.ProjectSystem.Managed" Version="17.2.0-beta1-20502-01" />
