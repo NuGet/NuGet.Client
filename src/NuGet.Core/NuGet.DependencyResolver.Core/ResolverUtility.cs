@@ -65,7 +65,7 @@ namespace NuGet.DependencyResolver
             // the package.
             for (var i = 0; i < 2 && graphItem == null; i++)
             {
-                RemoteMatch match = null;
+                RemoteMatch? match = null;
 
                 var matchTask = FindLibraryMatchAsync(
                     libraryRange,
