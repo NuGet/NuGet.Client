@@ -26,10 +26,10 @@ namespace Benchmarks
         public LockFileBuilderCache _cache = new();
         public List<(List<SelectionCriteria>, bool)> _orderedCriteria;
 
-//        | Method           | Mean     | Error    | StdDev   | Allocated |
-//|----------------- |---------:|---------:|---------:|----------:|
-//| RMC_GetHashCode  | 34.56 ns | 0.064 ns | 0.060 ns |         - |
-//| RMC_GetHashCode2 | 51.22 ns | 0.084 ns | 0.074 ns |         - |
+        //        | Method           | Mean     | Error    | StdDev   | Allocated |
+        //|----------------- |---------:|---------:|---------:|----------:|
+        //| RMC_GetHashCode  | 34.56 ns | 0.064 ns | 0.060 ns |         - |
+        //| RMC_GetHashCode2 | 51.22 ns | 0.084 ns | 0.074 ns |         - |
 
         public List<string> strings = new List<string> { "ABCDEFG", "abcdefg", "ABCDEFGH", "ZABCDEFG", "123465", "12345", "1234765", "net9.0", "net10.0", "netcoreapp3.1", "Newtonsoft.Json" };
 
@@ -70,24 +70,6 @@ namespace Benchmarks
         }
 
         [Benchmark]
-        public void RMC_GetHashCode()
-        {
-            foreach (var str in strings)
-            {
-                ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode(str.AsMemory());
-            }
-        }
-
-        [Benchmark]
-        public void RMC_GetHashCode2()
-        {
-            foreach (var str in strings)
-            {
-                ReadOnlyMemoryCharComparerOrdinal.Instance.GetHashCode2(str.AsMemory());
-            }
-        }
-
-        //[Benchmark]
         public void NJ()
         {
             var contentItems = _cache.GetContentItems(null, _newtonsoftJson.Item1);
@@ -116,7 +98,7 @@ namespace Benchmarks
                 );
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void MicrosoftBuildRuntime()
         {
             var contentItems = _cache.GetContentItems(null, _microsoftBuildRuntime.Item1);
@@ -145,7 +127,7 @@ namespace Benchmarks
                 );
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void AllPackages()
         {
             foreach (var package in _packages)

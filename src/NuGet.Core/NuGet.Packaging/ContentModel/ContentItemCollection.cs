@@ -289,8 +289,8 @@ namespace NuGet.ContentModel
                 if (asset.Path is not null)
                 {
                     var extension = GetExtension(asset);
-                    
-                    if (extension != string.Empty &&
+
+                    if (extension.Length > 0 &&
                         //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
                         !ReadOnlyMemoryEquals(extension, Dll) &&
                         !ReadOnlyMemoryEquals(extension, Exe) &&
