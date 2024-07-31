@@ -70,6 +70,18 @@ namespace NuGet.ContentModel
 
         internal Func<ReadOnlyMemory<char>, PatternTable, bool, object> Parser { get; }
 
+        /// <summary>
+        /// Looks up a definition for the given substring.
+        /// Example, say this definition is for an assembly. 
+        /// If the name is "assembly.dll", this method would return true and the value would be the assembly name.
+        /// If the name is "assembly.xml" this method would return flase and the value would be the null.
+        /// If this is a match only lookup the value will be null, but the return bool will be true. This is a performance optimization since the value is unused.
+        /// </summary>
+        /// <param name="name">The name to lookup.</param>
+        /// <param name="table">A replacement table. If name matches a value in the replacement table, it'll be returned instead. </param>
+        /// <param name="matchOnly">Whether this is a grouping match, or we actually want to actualize the value of name as a string.</param>
+        /// <param name="value">The out param. If matchonly, it will always be null. Otherwise, set to actualized value of name if the return is true, set to null if false.</param>
+        /// <returns>True if the name matches the definition. False otherwise.</returns>
         internal virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly, out object value)
         {
             if (name.IsEmpty)
