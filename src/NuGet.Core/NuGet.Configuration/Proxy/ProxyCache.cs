@@ -29,10 +29,12 @@ namespace NuGet.Configuration
         // so not passing machine wide settings to Settings.LoadDefaultSettings() should be fine.
         private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => FromDefaultSettings());
 
+        public static bool LoadUserWideSettings { get; set; } = true;
+
         private static ProxyCache FromDefaultSettings()
         {
             return new ProxyCache(
-                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null),
+                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null, LoadUserWideSettings),
                 EnvironmentVariableWrapper.Instance);
         }
 

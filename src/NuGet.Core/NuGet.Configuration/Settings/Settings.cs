@@ -302,6 +302,15 @@ namespace NuGet.Configuration
             return LoadDefaultSettings(root, configFileName, machineWideSettings, settingsLoadingContext: null);
         }
 
+        public static ISettings LoadDefaultSettings(
+            string? root,
+            string? configFileName,
+            IMachineWideSettings? machineWideSettings,
+            bool loadUserWideSettings)
+        {
+            return LoadDefaultSettings(root, configFileName, machineWideSettings, loadUserWideSettings, settingsLoadingContext: null);
+        }
+
         /// <summary>
         /// Loads user settings from the NuGet configuration files. The method walks the directory
         /// tree in <paramref name="root" /> up to its root, and reads each NuGet.config file
@@ -344,6 +353,22 @@ namespace NuGet.Configuration
                 configFileName,
                 machineWideSettings,
                 loadUserWideSettings: true,
+                useTestingGlobalPath: false,
+                settingsLoadingContext);
+        }
+
+        public static ISettings LoadDefaultSettings(
+            string? root,
+            string? configFileName,
+            IMachineWideSettings? machineWideSettings,
+            bool loadUserWideSettings,
+            SettingsLoadingContext? settingsLoadingContext)
+        {
+            return LoadSettings(
+                root,
+                configFileName,
+                machineWideSettings,
+                loadUserWideSettings,
                 useTestingGlobalPath: false,
                 settingsLoadingContext);
         }
