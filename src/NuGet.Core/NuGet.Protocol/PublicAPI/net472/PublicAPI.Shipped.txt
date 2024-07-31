@@ -2114,7 +2114,6 @@ virtual NuGet.Protocol.Core.Types.SourceCacheContext.Dispose(bool disposing) -> 
 ~virtual NuGet.Protocol.FindLocalPackagesResource.Exists(string packageId, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> bool
 virtual NuGet.Protocol.HttpSource.Dispose(bool disposing) -> void
 ~virtual NuGet.Protocol.HttpSource.GetAsync<T>(NuGet.Protocol.HttpSourceCachedRequest request, System.Func<NuGet.Protocol.HttpSourceResult, System.Threading.Tasks.Task<T>> processAsync, NuGet.Common.ILogger log, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
-~virtual NuGet.Protocol.HttpSource.TryReadCacheFile(string uri, System.TimeSpan maxAge, string cacheFile) -> System.IO.Stream
 virtual NuGet.Protocol.HttpSourceResult.Dispose(bool disposing) -> void
 ~virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddFiles(string expandedPath) -> System.Lazy<System.Collections.Generic.IReadOnlyList<string>>
 ~virtual NuGet.Protocol.LocalPackageFileCache.GetOrAddNuspec(string manifestPath, string expandedPath) -> System.Lazy<NuGet.Packaging.NuspecReader>

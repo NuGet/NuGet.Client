@@ -1,1 +1,14 @@
 #nullable enable
+NuGet.Protocol.FileSystemHttpCacheUtility
+NuGet.Protocol.FileSystemHttpCacheUtility.FileSystemHttpCacheUtility() -> void
+NuGet.Protocol.IHttpCacheUtility
+~NuGet.Protocol.FileSystemHttpCacheUtility.CreateCacheFileAsync(NuGet.Protocol.HttpCacheResult result, System.Net.Http.HttpResponseMessage response, System.Action<System.IO.Stream> ensureValidContents, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~NuGet.Protocol.FileSystemHttpCacheUtility.InitializeHttpCacheResult(string httpCacheDirectory, System.Uri sourceUri, string cacheKey, NuGet.Protocol.Core.Types.HttpSourceCacheContext context) -> NuGet.Protocol.HttpCacheResult
+~NuGet.Protocol.FileSystemHttpCacheUtility.TryReadCacheFileAsync(System.TimeSpan maxAge, string cacheFile) -> System.Threading.Tasks.Task<System.IO.Stream>
+~NuGet.Protocol.HttpSource.HttpSource(NuGet.Configuration.PackageSource packageSource, System.Func<System.Threading.Tasks.Task<NuGet.Protocol.Core.Types.HttpHandlerResource>> messageHandlerFactory, NuGet.Protocol.IThrottle throttle, NuGet.Protocol.IHttpCacheUtility httpCacheUtility, NuGet.Common.IConcurrencyUtility concurrencyUtility) -> void
+~NuGet.Protocol.IHttpCacheUtility.CreateCacheFileAsync(NuGet.Protocol.HttpCacheResult result, System.Net.Http.HttpResponseMessage response, System.Action<System.IO.Stream> ensureValidContents, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task
+~NuGet.Protocol.IHttpCacheUtility.InitializeHttpCacheResult(string httpCacheDirectory, System.Uri sourceUri, string cacheKey, NuGet.Protocol.Core.Types.HttpSourceCacheContext context) -> NuGet.Protocol.HttpCacheResult
+~NuGet.Protocol.IHttpCacheUtility.TryReadCacheFileAsync(System.TimeSpan maxAge, string cacheFile) -> System.Threading.Tasks.Task<System.IO.Stream>
+~static NuGet.Protocol.FileSystemHttpCacheUtility.Instance.get -> NuGet.Protocol.FileSystemHttpCacheUtility
+~static NuGet.Protocol.HttpSource.Create(NuGet.Protocol.Core.Types.SourceRepository source, NuGet.Protocol.IThrottle throttle, NuGet.Protocol.IHttpCacheUtility httpCacheUtility, NuGet.Common.IConcurrencyUtility concurrencyUtility) -> NuGet.Protocol.HttpSource
+~virtual NuGet.Protocol.HttpSource.TryReadCacheFileAsync(string uri, System.TimeSpan maxAge, string cacheFile) -> System.Threading.Tasks.Task<System.IO.Stream>
