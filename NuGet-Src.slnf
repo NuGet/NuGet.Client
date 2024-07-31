@@ -37,7 +37,8 @@
       "src\\NuGet.Core\\NuGet.ProjectModel\\NuGet.ProjectModel.csproj",
       "src\\NuGet.Core\\NuGet.Protocol\\NuGet.Protocol.csproj",
       "src\\NuGet.Core\\NuGet.Resolver\\NuGet.Resolver.csproj",
-      "src\\NuGet.Core\\NuGet.Versioning\\NuGet.Versioning.csproj"
+      "src\\NuGet.Core\\NuGet.Versioning\\NuGet.Versioning.csproj",
+      "test\\TestExtensions\\Benchmarks\\Benchmarks.csproj"
     ]
   }
 }

@@ -17,21 +17,21 @@ namespace NuGet.ContentModel
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser)
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser)
             : this(name, parser, null, null, null, false)
         {
         }
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             Func<object, object, bool> compatibilityTest)
             : this(name, parser, compatibilityTest, null, null, false)
         {
         }
 
         internal ContentPropertyDefinition(string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest)
             : this(name, parser, compatibilityTest, compareTest, null, false)
@@ -40,7 +40,7 @@ namespace NuGet.ContentModel
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             IEnumerable<string> fileExtensions)
             : this(name, parser, null, null, fileExtensions, false)
         {
@@ -48,7 +48,7 @@ namespace NuGet.ContentModel
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest,
             IEnumerable<string> fileExtensions,
@@ -68,9 +68,9 @@ namespace NuGet.ContentModel
 
         public bool FileExtensionAllowSubFolders { get; }
 
-        internal Func<ReadOnlyMemory<char>, PatternTable, object> Parser { get; }
+        internal Func<ReadOnlyMemory<char>, PatternTable, bool, object> Parser { get; }
 
-        internal virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, out object value)
+        internal virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly, out object value)
         {
             if (name.IsEmpty)
             {
@@ -86,7 +86,14 @@ namespace NuGet.ContentModel
                     {
                         if (name.Span.EndsWith(fileExtension.AsSpan(), StringComparison.OrdinalIgnoreCase))
                         {
-                            value = name.ToString();
+                            if (!matchOnly)
+                            {
+                                value = name.ToString();
+                            }
+                            else
+                            {
+                                value = null;
+                            }
                             return true;
                         }
                     }
@@ -95,7 +102,7 @@ namespace NuGet.ContentModel
 
             if (Parser != null)
             {
-                value = Parser.Invoke(name, table);
+                value = Parser.Invoke(name, table, matchOnly);
                 if (value != null)
                 {
                     return true;

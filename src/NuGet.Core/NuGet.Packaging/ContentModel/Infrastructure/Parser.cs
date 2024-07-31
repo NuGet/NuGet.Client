@@ -71,7 +71,7 @@ namespace NuGet.ContentModel.Infrastructure
             foreach (var segment in _segments)
             {
                 int endIndex;
-                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
+                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex)) // Do we ever use the "any" token. 
                 {
                     startIndex = endIndex;
                     continue;
@@ -89,13 +89,13 @@ namespace NuGet.ContentModel.Infrastructure
                     item = new ContentItem
                     {
                         Path = path,
-                        Properties = _defaults
+                        Properties = _defaults // Shouldn't this do copying instead?
                     };
                 }
                 else
                 {
                     // item already created, append defaults
-                    foreach (var pair in _defaults)
+                    foreach (var pair in _defaults) // TODO NK - Don't allocate enumerator
                     {
                         item.Properties[pair.Key] = pair.Value;
                     }
@@ -151,6 +151,7 @@ namespace NuGet.ContentModel.Infrastructure
             private readonly char _delimiter;
             private readonly bool _matchOnly;
             private readonly PatternTable _table;
+            private readonly bool _preserveRawValue = false;
 
             public TokenSegment(string token, char delimiter, bool matchOnly, PatternTable table)
             {
@@ -158,6 +159,7 @@ namespace NuGet.ContentModel.Infrastructure
                 _delimiter = delimiter;
                 _matchOnly = matchOnly;
                 _table = table;
+                _preserveRawValue = StringComparer.Ordinal.Equals(_token, "tfm");
             }
 
             internal override bool TryMatch(
@@ -192,7 +194,7 @@ namespace NuGet.ContentModel.Infrastructure
                     }
                     ReadOnlyMemory<char> substring = path.AsMemory(startIndex, delimiterIndex - startIndex);
                     object value;
-                    if (propertyDefinition.TryLookup(substring, _table, out value))
+                    if (propertyDefinition.TryLookup(substring, _table, _matchOnly, out value))
                     {
                         if (!_matchOnly)
                         {
@@ -204,7 +206,7 @@ namespace NuGet.ContentModel.Infrastructure
                                     Path = path
                                 };
                             }
-                            if (StringComparer.Ordinal.Equals(_token, "tfm"))
+                            if (_preserveRawValue)
                             {
                                 item.Properties.Add("tfm_raw", substring.ToString());
                             }

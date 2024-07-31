@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+//#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.ContentModel.Infrastructure;
@@ -14,11 +17,29 @@ namespace NuGet.ContentModel
     {
         public PatternSet(IReadOnlyDictionary<string, ContentPropertyDefinition> properties, IEnumerable<PatternDefinition> groupPatterns, IEnumerable<PatternDefinition> pathPatterns)
         {
-            GroupPatterns = groupPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>();
-            PathPatterns = pathPatterns?.ToList()?.AsReadOnly() ?? Enumerable.Empty<PatternDefinition>();
+            if (properties == null) throw new ArgumentNullException(nameof(properties));
+            if (groupPatterns == null) throw new ArgumentNullException(nameof(groupPatterns));
+            if (pathPatterns == null) throw new ArgumentNullException(nameof(pathPatterns));
+
+            var groupPatternsArray = groupPatterns as PatternDefinition[] ?? groupPatterns.ToArray();
+            var pathPatternsArray = pathPatterns as PatternDefinition[] ?? pathPatterns.ToArray();
+
+            GroupPatterns = groupPatternsArray;
+            PathPatterns = pathPatternsArray;
             PropertyDefinitions = properties;
-            GroupExpressions = GroupPatterns.Select(pattern => new PatternExpression(pattern)).ToArray();
-            PathExpressions = PathPatterns.Select(pattern => new PatternExpression(pattern)).ToArray();
+            GroupExpressions = CreatePatternExpressions(groupPatternsArray);
+            PathExpressions = CreatePatternExpressions(pathPatternsArray);
+        }
+
+        private static PatternExpression[] CreatePatternExpressions(PatternDefinition[] patternDefinitions)
+        {
+            PatternExpression[] patternExpressions = new PatternExpression[patternDefinitions.Length];
+            for (int i = 0; i < patternDefinitions.Length; i++)
+            {
+                patternExpressions[i] = new PatternExpression(patternDefinitions[i]);
+            }
+
+            return patternExpressions;
         }
 
         /// <summary>
