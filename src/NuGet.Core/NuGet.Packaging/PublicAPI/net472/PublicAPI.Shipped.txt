@@ -7,6 +7,7 @@ NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria
 ~NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForFrameworkAndRuntime(NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier) -> NuGet.ContentModel.SelectionCriteria
 ~NuGet.Client.ManagedCodeConventions.ManagedCodeCriteria.ForRuntime(string runtimeIdentifier) -> NuGet.ContentModel.SelectionCriteria
 NuGet.Client.ManagedCodeConventions.ManagedCodePatterns
+~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.AnyTargettedFile.get -> NuGet.ContentModel.PatternSet
 ~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.CompileLibAssemblies.get -> NuGet.ContentModel.PatternSet
 ~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.CompileRefAssemblies.get -> NuGet.ContentModel.PatternSet
 ~NuGet.Client.ManagedCodeConventions.ManagedCodePatterns.ContentFiles.get -> NuGet.ContentModel.PatternSet
