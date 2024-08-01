@@ -21,7 +21,7 @@ namespace NuGet.Client
 
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(
             PropertyNames.AnyValue,
-            parser: (o, t) => o.ToString()); // Identity parser, all strings are valid for any
+            parser: IdentityParser); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
             parser: AllowEmptyFolderParser,
             fileExtensions: new[] { ".dll", ".winmd", ".exe" });
@@ -88,7 +88,7 @@ namespace NuGet.Client
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
-                parser: (o, t) => o.ToString(), // Identity parser, all strings are valid runtime ids
+                parser: IdentityParser, // Identity parser, all strings are valid runtime ids
                 compatibilityTest: RuntimeIdentifier_CompatibilityTest);
 
             props[PropertyNames.TargetFrameworkMoniker] = new ContentPropertyDefinition(
@@ -123,7 +123,11 @@ namespace NuGet.Client
             }
         }
 
-        private static object CodeLanguage_Parser(ReadOnlyMemory<char> name, PatternTable table)
+        /// <summary>
+        /// If matchOnly is true, then an empty string may be returned as a performance optimization.
+        /// If matchOnly is false, the parsed result will be returned.
+        /// </summary>
+        private static object CodeLanguage_Parser(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly)
         {
             if (table != null)
             {
@@ -143,10 +147,20 @@ namespace NuGet.Client
                     return null;
                 }
             }
+
+            if (matchOnly)
+            {
+                return string.Empty;
+            }
+
             return name.ToString();
         }
 
-        private static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table)
+        /// <summary>
+        /// If matchOnly is true, then an empty string may be returned as a performance optimization.
+        /// If matchOnly is false, the parsed result will be returned.
+        /// </summary>
+        private static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly)
         {
             if (table != null)
             {
@@ -159,10 +173,18 @@ namespace NuGet.Client
 
             if (name.Length == 2)
             {
+                if (matchOnly)
+                {
+                    return string.Empty;
+                }
                 return name.ToString();
             }
             else if (name.Length >= 4 && name.Span[2] == '-')
             {
+                if (matchOnly)
+                {
+                    return string.Empty;
+                }
                 return name.ToString();
             }
 
@@ -171,7 +193,8 @@ namespace NuGet.Client
 
         private object TargetFrameworkName_Parser(
             ReadOnlyMemory<char> name,
-            PatternTable table)
+            PatternTable table,
+            bool matchOnly)
         {
             object obj = null;
 
@@ -224,12 +247,35 @@ namespace NuGet.Client
             return new NuGetFramework(name, FrameworkConstants.EmptyVersion);
         }
 
-        private static object AllowEmptyFolderParser(ReadOnlyMemory<char> s, PatternTable table)
+        /// <summary>
+        /// Identity parser, returns the input string as is.
+        /// If matchOnly is true, then an empty string is returned as a performance optimization.
+        /// If matchOnly is false, the string will be actualized.
+        /// </summary>
+        private static object IdentityParser(ReadOnlyMemory<char> s, PatternTable _, bool matchOnly)
+        {
+            if (matchOnly)
+            {
+                return string.Empty;
+            }
+            return s.ToString();
+        }
+
+
+        /// <summary>
+        /// If matchOnly is true, then an empty string is returned as a performance optimization.
+        /// If matchOnly is false, the parsed result will be returned.
+        /// </summary>
+        private static object AllowEmptyFolderParser(ReadOnlyMemory<char> s, PatternTable table, bool matchOnly)
         {
             // Accept "_._" as a pseudo-assembly
             if (MemoryExtensions.Equals(PackagingCoreConstants.EmptyFolder.AsSpan(), s.Span, StringComparison.Ordinal))
             {
-                return s.ToString();
+                if (matchOnly)
+                {
+                    return string.Empty;
+                }
+                return PackagingCoreConstants.EmptyFolder;
             }
 
             return null;

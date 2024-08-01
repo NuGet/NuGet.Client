@@ -17,21 +17,21 @@ namespace NuGet.ContentModel
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser)
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser)
             : this(name, parser, null, null, null, false)
         {
         }
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             Func<object, object, bool> compatibilityTest)
             : this(name, parser, compatibilityTest, null, null, false)
         {
         }
 
         internal ContentPropertyDefinition(string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest)
             : this(name, parser, compatibilityTest, compareTest, null, false)
@@ -40,7 +40,7 @@ namespace NuGet.ContentModel
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             IEnumerable<string> fileExtensions)
             : this(name, parser, null, null, fileExtensions, false)
         {
@@ -48,7 +48,7 @@ namespace NuGet.ContentModel
 
         internal ContentPropertyDefinition(
             string name,
-            Func<ReadOnlyMemory<char>, PatternTable, object> parser,
+            Func<ReadOnlyMemory<char>, PatternTable, bool, object> parser,
             Func<object, object, bool> compatibilityTest,
             Func<object, object, object, int> compareTest,
             IEnumerable<string> fileExtensions,
@@ -68,9 +68,27 @@ namespace NuGet.ContentModel
 
         public bool FileExtensionAllowSubFolders { get; }
 
-        internal Func<ReadOnlyMemory<char>, PatternTable, object> Parser { get; }
+        /// <summary>
+        /// Parse a ReadOnlyMemory char if it's off the form of this definition.
+        /// A null return value means the ReadOnlyMemory char does not match this definition.
+        /// If the bool is true, the return object will be non-null, and match what the ReadOnlyMemory char represents.
+        /// If the bool is false, the return object will be non-null if the ReadOnlyMemory char represents a valid value for this definition. This is a performance optimization.
+        /// </summary>
+        internal Func<ReadOnlyMemory<char>, PatternTable, bool, object> Parser { get; }
 
-        internal virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, out object value)
+        /// <summary>
+        /// Looks up a definition for the given substring.
+        /// Example, say this definition is for an assembly. 
+        /// If the name is "assembly.dll", this method would return true and the value would be the assembly name.
+        /// If the name is "assembly.xml" this method would return flase and the value would be the null.
+        /// If this is a match only lookup the value will be null, but the return bool will be true. This is a performance optimization since the value is unused.
+        /// </summary>
+        /// <param name="name">The name to lookup.</param>
+        /// <param name="table">A replacement table. If name matches a value in the replacement table, it'll be returned instead. </param>
+        /// <param name="matchOnly">Whether this is a grouping match, or we actually want to actualize the value of name as a string.</param>
+        /// <param name="value">The out param. If matchonly, it will always be null. Otherwise, set to actualized value of name if the return is true, set to null if false.</param>
+        /// <returns>True if the name matches the definition. False otherwise.</returns>
+        internal virtual bool TryLookup(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly, out object value)
         {
             if (name.IsEmpty)
             {
@@ -86,7 +104,14 @@ namespace NuGet.ContentModel
                     {
                         if (name.Span.EndsWith(fileExtension.AsSpan(), StringComparison.OrdinalIgnoreCase))
                         {
-                            value = name.ToString();
+                            if (!matchOnly)
+                            {
+                                value = name.ToString();
+                            }
+                            else
+                            {
+                                value = null;
+                            }
                             return true;
                         }
                     }
@@ -95,7 +120,7 @@ namespace NuGet.ContentModel
 
             if (Parser != null)
             {
-                value = Parser.Invoke(name, table);
+                value = Parser.Invoke(name, table, matchOnly);
                 if (value != null)
                 {
                     return true;

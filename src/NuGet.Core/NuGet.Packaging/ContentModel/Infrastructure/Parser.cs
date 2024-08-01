@@ -151,6 +151,7 @@ namespace NuGet.ContentModel.Infrastructure
             private readonly char _delimiter;
             private readonly bool _matchOnly;
             private readonly PatternTable _table;
+            private readonly bool _preserveRawValue = false;
 
             public TokenSegment(string token, char delimiter, bool matchOnly, PatternTable table)
             {
@@ -158,6 +159,7 @@ namespace NuGet.ContentModel.Infrastructure
                 _delimiter = delimiter;
                 _matchOnly = matchOnly;
                 _table = table;
+                _preserveRawValue = StringComparer.Ordinal.Equals(_token, "tfm");
             }
 
             internal override bool TryMatch(
@@ -192,7 +194,7 @@ namespace NuGet.ContentModel.Infrastructure
                     }
                     ReadOnlyMemory<char> substring = path.AsMemory(startIndex, delimiterIndex - startIndex);
                     object value;
-                    if (propertyDefinition.TryLookup(substring, _table, out value))
+                    if (propertyDefinition.TryLookup(substring, _table, _matchOnly, out value))
                     {
                         if (!_matchOnly)
                         {
@@ -204,7 +206,7 @@ namespace NuGet.ContentModel.Infrastructure
                                     Path = path
                                 };
                             }
-                            if (StringComparer.Ordinal.Equals(_token, "tfm"))
+                            if (_preserveRawValue)
                             {
                                 item.Properties.Add("tfm_raw", substring.ToString());
                             }
