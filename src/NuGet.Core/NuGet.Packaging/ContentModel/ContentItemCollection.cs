@@ -2,17 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace NuGet.ContentModel
 {
     public class ContentItemCollection
     {
+        private static readonly ReadOnlyMemory<char> Dll = ".dll".AsMemory();
+        private static readonly ReadOnlyMemory<char> Exe = ".exe".AsMemory();
+        private static readonly ReadOnlyMemory<char> Winmd = ".winmd".AsMemory();
+
         private List<Asset> _assets;
-        private ConcurrentDictionary<string, string> _assemblyRelatedExtensions;
+        private Dictionary<ReadOnlyMemory<char>, string> _assemblyRelatedExtensions;
 
         /// <summary>
         /// True if lib/contract exists
@@ -22,7 +24,7 @@ namespace NuGet.ContentModel
         public void Load(IEnumerable<string> paths)
         {
             // Cache for assembly and it's related file extensions.
-            _assemblyRelatedExtensions = new ConcurrentDictionary<string, string>();
+            _assemblyRelatedExtensions = new();
 
             // Read already loaded assets
             _assets = new List<Asset>();
@@ -50,6 +52,7 @@ namespace NuGet.ContentModel
             }
         }
 
+        [Obsolete("Unused and will be removed in a future version.")]
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
         {
             return FindItemsImplementation(definition, _assets);
@@ -271,7 +274,7 @@ namespace NuGet.ContentModel
         internal string GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
         {
             //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
-            string assemblyPrefix = assemblyPath.Substring(0, assemblyPath.LastIndexOf('.') + 1);
+            ReadOnlyMemory<char> assemblyPrefix = assemblyPath.AsMemory(0, assemblyPath.LastIndexOf('.') + 1);
 
             if (_assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out string relatedProperty))
             {
@@ -283,16 +286,17 @@ namespace NuGet.ContentModel
             {
                 if (asset.Path is not null)
                 {
-                    string extension = Path.GetExtension(asset.Path);
-                    if (extension != string.Empty &&
+                    var extension = GetExtension(asset);
+
+                    if (extension.Length > 0 &&
                         //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
-                        !extension.Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
-                        !extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) &&
-                        !extension.Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
+                        !ReadOnlyMemoryEquals(extension, Dll) &&
+                        !ReadOnlyMemoryEquals(extension, Exe) &&
+                        !ReadOnlyMemoryEquals(extension, Winmd) &&
                         !asset.Path.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
                         //The prefix should match exactly (case sensitive), as file names are case sensitive on certain OSes.
                         //E.g. for lib/net472/A.B.C.dll and lib/net472/a.b.c.xml, if we generate related property '.xml', the related file path is not predictable on case sensitive OSes.
-                        asset.Path.StartsWith(assemblyPrefix, StringComparison.Ordinal))
+                        asset.Path.AsMemory().Span.StartsWith(assemblyPrefix.Span, StringComparison.Ordinal))
                     {
                         if (relatedFileExtensionList is null)
                         {
@@ -306,15 +310,30 @@ namespace NuGet.ContentModel
             // If no related files found.
             if (relatedFileExtensionList is null || relatedFileExtensionList.Count == 0)
             {
-                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, null);
+                _assemblyRelatedExtensions[assemblyPrefix] = null;
                 return null;
             }
             else
             {
                 relatedFileExtensionList.Sort();
                 string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList);
-                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
+                _assemblyRelatedExtensions[assemblyPrefix] = relatedFileExtensionsProperty;
                 return relatedFileExtensionsProperty;
+            }
+
+            static bool ReadOnlyMemoryEquals(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y)
+            {
+                return x.Span.Equals(y.Span, StringComparison.OrdinalIgnoreCase);
+            }
+
+            static ReadOnlyMemory<char> GetExtension(Asset asset)
+            {
+                int lastIndexOfDot = asset.Path.LastIndexOf('.');
+                if (lastIndexOfDot != -1)
+                {
+                    return asset.Path.AsMemory(lastIndexOfDot);
+                }
+                return default;
             }
         }
 
