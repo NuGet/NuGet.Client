@@ -446,7 +446,11 @@ namespace Test.Utility.Signing
                 }
             }
 
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadPkcs12(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#else
             return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#endif
         }
 
         private static RSASignaturePadding ToPadding(this RSASignaturePaddingMode mode)
@@ -485,7 +489,11 @@ namespace Test.Utility.Signing
 
             var certResult = request.CreateSelfSigned(notBefore: DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)), notAfter: DateTime.UtcNow.Add(TimeSpan.FromHours(1)));
 
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadPkcs12(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#else
             return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#endif
         }
 
         public static X509Certificate2 GenerateCertificate(
@@ -522,7 +530,11 @@ namespace Test.Utility.Signing
             using (var temp = request.Create(issuerDN, generator, notBefore, notAfter, serialNumber))
             {
                 var certResult = temp.CopyWithPrivateKey(algorithm);
+#if NET9_0_OR_GREATER
+                return X509CertificateLoader.LoadPkcs12(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#else
                 return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#endif
             }
         }
 
@@ -557,7 +569,11 @@ namespace Test.Utility.Signing
                 var now = DateTime.UtcNow;
                 var certResult = request.CreateSelfSigned(notBefore: now, notAfter: now.AddHours(1));
 
+#if NET9_0_OR_GREATER
+                return X509CertificateLoader.LoadPkcs12(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#else
                 return new X509Certificate2(certResult.Export(X509ContentType.Pkcs12), password: (string)null, keyStorageFlags: X509KeyStorageFlags.Exportable);
+#endif
             }
         }
 
@@ -620,7 +636,11 @@ namespace Test.Utility.Signing
         /// </summary>
         public static X509Certificate2 GetPublicCert(X509Certificate2 cert)
         {
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadCertificate(cert.Export(X509ContentType.Cert));
+#else
             return new X509Certificate2(cert.Export(X509ContentType.Cert));
+#endif
         }
 
         /// <summary>
@@ -629,7 +649,11 @@ namespace Test.Utility.Signing
         public static X509Certificate2 GetPublicCertWithPrivateKey(X509Certificate2 cert)
         {
             var password = new Guid().ToString();
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadPkcs12(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+#else
             return new X509Certificate2(cert.Export(X509ContentType.Pfx, password), password, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+#endif
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificate()
@@ -726,7 +750,11 @@ namespace Test.Utility.Signing
         {
             var bytes = GetResourceBytes(name);
 
+#if NET9_0_OR_GREATER
+            return X509CertificateLoader.LoadCertificate(bytes);
+#else
             return new X509Certificate2(bytes);
+#endif
         }
 
         public static byte[] GetHash(X509Certificate2 certificate, NuGet.Common.HashAlgorithmName hashAlgorithm)
