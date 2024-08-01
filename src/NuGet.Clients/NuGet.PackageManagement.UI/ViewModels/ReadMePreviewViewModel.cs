@@ -3,9 +3,12 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI.ViewModels
@@ -63,50 +66,40 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task LoadReadme(string packagePath, string packageId)
+        public async Task LoadReadme(DetailedPackageMetadata package)
         {
+            await TaskScheduler.Default;
+            var currentThread = Thread.CurrentThread.ManagedThreadId;
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
             bool canDetermineReadMeDefined = false;
-#pragma warning disable CA1031 // Do not catch general exception types
-            try
+
+            var packageHasReadme = await package.GetHasReadMe();
+            if (packageHasReadme.HasValue)
             {
-                if (!string.IsNullOrEmpty(packagePath))
+                if (packageHasReadme.Value)
                 {
-                    var packageDirectory = Path.GetDirectoryName(packagePath);
-                    var nuspecPath = Path.Combine(packageDirectory, $"{packageId}{PackagingCoreConstants.NuspecExtension}");
-                    var nuspectFileInfo = new FileInfo(nuspecPath);
-                    if (nuspectFileInfo.Exists)
-                    {
-                        canDetermineReadMeDefined = true;
-                        var nuspecReader = new NuspecReader(nuspecPath);
-                        var readMePath = nuspecReader.GetReadme();
-                        if (!string.IsNullOrEmpty(readMePath))
-                        {
-                            var readMeFullPath = Path.Combine(packageDirectory, readMePath);
-                            var readMeFileInfo = new FileInfo(readMeFullPath);
-                            if (readMeFileInfo.Exists)
-                            {
-                                using var readMeStreamReader = readMeFileInfo.OpenText();
-                                var readMeContents = await readMeStreamReader.ReadToEndAsync();
-                                newReadMeValue = readMeContents;
-                            }
-                        }
-                    }
+                    newReadMeValue = await package.GetReadMe();
+                    isErrorWithReadMe = false;
+                    canDetermineReadMeDefined = true;
+                }
+                else
+                {
+                    newReadMeValue = string.Empty;
+                    isErrorWithReadMe = false;
+                    canDetermineReadMeDefined = true;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                isErrorWithReadMe = true;
-                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
+                newReadMeValue = string.Empty;
+                canDetermineReadMeDefined = false;
+                isErrorWithReadMe = false;
             }
-            finally
-            {
-                IsErrorWithReadMe = isErrorWithReadMe;
-                ReadMeMarkdown = newReadMeValue;
-                CanDetermineReadMeDefined = canDetermineReadMeDefined;
-            }
-#pragma warning restore CA1031 // Do not catch general exception types
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            IsErrorWithReadMe = isErrorWithReadMe;
+            ReadMeMarkdown = newReadMeValue;
+            CanDetermineReadMeDefined = canDetermineReadMeDefined;
         }
     }
 }

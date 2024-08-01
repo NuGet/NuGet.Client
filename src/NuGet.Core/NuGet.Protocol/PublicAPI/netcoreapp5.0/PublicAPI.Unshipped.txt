@@ -1,1 +1,12 @@
 #nullable enable
+NuGet.Protocol.Core.Types.IPackageSearchMetadata.HasReadme.get -> bool?
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.HasReadme.get -> bool?
+NuGet.Protocol.LocalPackageSearchMetadata.HasReadme.get -> bool?
+NuGet.Protocol.PackageSearchMetadata.HasReadme.get -> bool?
+NuGet.Protocol.PackageSearchMetadataV2Feed.HasReadme.get -> bool?
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.WithReadme(System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.IPackageSearchMetadata> packageSearchMetadataItems) -> NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder
+~NuGet.Protocol.LocalPackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.PackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.PackageSearchMetadataV2Feed.GetReadMeAsync() -> System.Threading.Tasks.Task<string>

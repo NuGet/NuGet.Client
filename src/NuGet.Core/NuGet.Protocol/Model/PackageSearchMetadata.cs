@@ -248,8 +248,15 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
 
+        public Task<string> GetReadMeAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
+
+        public bool? HasReadme => null;
     }
 }

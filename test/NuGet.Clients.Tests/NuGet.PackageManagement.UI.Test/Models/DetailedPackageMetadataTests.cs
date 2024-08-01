@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.UI
 
             var packageSearchMetadataContextInfo = PackageSearchMetadataContextInfo.Create(packageSearchMetadata);
 
-            var target = new DetailedPackageMetadata(packageSearchMetadataContextInfo, deprecationMetadata: null, downloadCount: null);
+            var target = new DetailedPackageMetadata(packageSearchMetadataContextInfo, deprecationMetadata: null, packageItemViewModel: null, downloadCount: null);
 
             Assert.Equal(expected, target.PackageDetailsText);
         }

@@ -37,6 +37,8 @@ namespace NuGet.Protocol.Core.Types
         bool IsListed { get; }
         bool PrefixReserved { get; }
 
+        bool? HasReadme { get; }
+
         LicenseMetadata LicenseMetadata { get; }
 
         /// <summary>
@@ -52,6 +54,11 @@ namespace NuGet.Protocol.Core.Types
         /// Lists the available versions of the package on the source.
         /// </summary>
         Task<IEnumerable<VersionInfo>> GetVersionsAsync();
+
+        /// <summary>
+        /// Gets the ReadMe for the package
+        /// </summary>
+        Task<string> GetReadMeAsync();
 
         /// <summary>
         /// Gets the vulnerability metadata for the package.

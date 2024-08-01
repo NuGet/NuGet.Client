@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using NuGet.Packaging;
 using NuGet.Versioning;
@@ -17,8 +18,9 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, long? downloadCount)
+        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, PackageItemViewModel packageItemViewModel, long? downloadCount)
         {
+            _packageItemViewModel = packageItemViewModel;
             Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
@@ -72,6 +74,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private PackageItemViewModel _packageItemViewModel;
+
         public string Id { get; set; }
 
         public NuGetVersion Version { get; set; }
@@ -119,5 +123,15 @@ namespace NuGet.PackageManagement.UI
         private static readonly IReadOnlyList<PackageDependencySetMetadata> NoDependenciesPlaceholder = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(dependencyGroup: null) };
 
         public string PackagePath { get; set; }
+
+        virtual public async Task<bool?> GetHasReadMe()
+        {
+            return await _packageItemViewModel?.GetHasReadmeAsync();
+        }
+
+        virtual public async Task<string> GetReadMe()
+        {
+            return await _packageItemViewModel?.GetReadmeAsync();
+        }
     }
 }

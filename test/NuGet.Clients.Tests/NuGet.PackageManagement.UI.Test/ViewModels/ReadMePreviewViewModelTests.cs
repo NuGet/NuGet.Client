@@ -1,156 +1,67 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
-using NuGet.Common;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Sdk.TestFramework;
+using Moq;
 using NuGet.PackageManagement.UI.ViewModels;
-using NuGet.Packaging;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.ViewModels
 {
+    [Collection(MockedVS.Collection)]
     public class ReadMePreviewViewModelTests
     {
         [Fact]
-        public async void ReadMePreviewViewModelTests_NoPackagePathOrPackageId_NoErrorNoReadmeMarkdown()
+        public async void ReadMePreviewViewModelTests_PackageWithNoReadme_NoErrorNoReadmeMarkdown()
         {
             var readMePreviewViewModel = new ReadMePreviewViewModel();
 
-            await readMePreviewViewModel.LoadReadme("", "");
+            Mock<DetailedPackageMetadata> packageMetadata = new Mock<DetailedPackageMetadata>();
+            bool? falseValue = false;
+            packageMetadata.Setup(x => x.GetHasReadMe()).Returns(Task.FromResult(falseValue));
+
+            await readMePreviewViewModel.LoadReadme(packageMetadata.Object);
 
             Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
-            Assert.True(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
-            Assert.False(readMePreviewViewModel.CanDetermineReadMeDefined);
-        }
-
-        [LocalOnlyFact]
-        public async void ReadMePreviewViewModelTests_PackageWithoutReadme_NoErrorNoReadmeMarkdown()
-        {
-            var readMePreviewViewModel = new ReadMePreviewViewModel();
-            var packageId = "testpackage";
-            var packageVersion = "1.0.0";
-            var packageIdVer = $"{packageId}.{packageVersion}";
-            var packageNupkg = $"{packageIdVer}.nupkg";
-            using var testDir = TestDirectory.Create();
-            var zipPath = Path.Combine(testDir, packageNupkg);
-            var extractPath = Path.Combine(testDir, "extract");
-
-            CreateDummyPackage("testpackage", "1.0.0", zipPath, extractPath);
-
-            var packageLocation = Path.Combine(extractPath, packageIdVer, packageNupkg);
-            await readMePreviewViewModel.LoadReadme(packageLocation, packageId);
-
-            Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
-            Assert.True(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
-            Assert.True(readMePreviewViewModel.CanDetermineReadMeDefined);
-
-        }
-
-        [LocalOnlyFact]
-        public async void ReadMePreviewViewModelTests_PackageWithReadme_NoErrorReadmeMarkdown()
-        {
-            var readMePreviewViewModel = new ReadMePreviewViewModel();
-            var packageId = "testpackage";
-            var packageVersion = "1.0.0";
-            var packageIdVer = $"{packageId}.{packageVersion}";
-            var packageNupkg = $"{packageIdVer}.nupkg";
-            using var testDir = TestDirectory.Create();
-            var zipPath = Path.Combine(testDir, packageNupkg);
-            var extractPath = Path.Combine(testDir, "extract");
-
-            CreateDummyPackage(packageId, packageVersion, zipPath, extractPath, "readme.md", "some readme content");
-
-            var packageLocation = Path.Combine(extractPath, packageIdVer, packageNupkg);
-            await readMePreviewViewModel.LoadReadme(packageLocation, packageId);
-
-            Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
-            Assert.False(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
-            Assert.Equal("some readme content", readMePreviewViewModel.ReadMeMarkdown);
+            Assert.Equal(string.Empty, readMePreviewViewModel.ReadMeMarkdown);
             Assert.True(readMePreviewViewModel.CanDetermineReadMeDefined);
         }
 
-        [LocalOnlyFact]
-        public async void ReadMePreviewViewModelTests_InvalidPackagePath_NoErrorNoReadmeMarkdown()
+        [Fact]
+        public async void ReadMePreviewViewModelTests_PackageWithReadme_NoErrorNoReadmeMarkdown()
         {
             var readMePreviewViewModel = new ReadMePreviewViewModel();
-            await readMePreviewViewModel.LoadReadme("path/to/nowhere", "packageId");
+
+            Mock<DetailedPackageMetadata> packageMetadata = new Mock<DetailedPackageMetadata>();
+            bool? trueValue = true;
+            var readmeContent = "some readme content";
+            packageMetadata.Setup(x => x.GetHasReadMe()).Returns(Task.FromResult(trueValue));
+            packageMetadata.Setup(x => x.GetReadMe()).Returns(Task.FromResult(readmeContent));
+
+
+            await readMePreviewViewModel.LoadReadme(packageMetadata.Object);
 
             Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
-            Assert.False(readMePreviewViewModel.CanDetermineReadMeDefined);
-            Assert.True(string.IsNullOrWhiteSpace(readMePreviewViewModel.ReadMeMarkdown));
+            Assert.Equal(readmeContent, readMePreviewViewModel.ReadMeMarkdown);
+            Assert.True(readMePreviewViewModel.CanDetermineReadMeDefined);
         }
 
-        private static async void CreateDummyPackage(
-            string packageId,
-            string packageVersion,
-            string nupkgPath,
-            string extractedPath,
-            string readmePath = "",
-            string readmeContent = "")
+        [Fact]
+        public async void ReadMePreviewViewModelTests_CannotDetermineReadme_NoErrorNoReadmeMarkdown()
         {
-            var iconFile = "icon.png";
-            var dir = Path.GetDirectoryName(nupkgPath);
-            var holdDir = "pkg";
-            var folderPath = Path.Combine(dir, holdDir);
+            var readMePreviewViewModel = new ReadMePreviewViewModel();
 
-            // base dir
-            Directory.CreateDirectory(folderPath);
+            Mock<DetailedPackageMetadata> packageMetadata = new Mock<DetailedPackageMetadata>();
+            bool? nullValue = null;
+            packageMetadata.Setup(x => x.GetHasReadMe()).Returns(Task.FromResult(nullValue));
 
-            // create nuspec
-            var nuspec = NuspecBuilder.Create()
-                .WithPackageId(packageId)
-                .WithPackageVersion(packageVersion)
-                .WithIcon(iconFile)
-                .WithFile("icon.png", "");
 
-            var iconPath = Path.Combine(folderPath, iconFile);
-            var iconDir = Path.GetDirectoryName(iconPath);
-            Directory.CreateDirectory(iconDir);
-            File.WriteAllText(iconPath, "I am an image");
+            await readMePreviewViewModel.LoadReadme(packageMetadata.Object);
 
-            if (!string.IsNullOrWhiteSpace(readmePath))
-            {
-                nuspec.WithReadme(readmePath)
-                    .WithFile(readmePath);
-
-                // create readme
-                var readmePathFullPath = Path.Combine(folderPath, readmePath);
-                var readmeDirectory = Path.GetDirectoryName(readmePathFullPath);
-                Directory.CreateDirectory(readmeDirectory);
-
-                if (!string.IsNullOrEmpty(readmeContent))
-                {
-                    File.WriteAllText(readmePathFullPath, readmeContent);
-                }
-            }
-
-            // Create nuget package
-            using (var nuspecStream = new MemoryStream())
-            using (FileStream nupkgStream = File.Create(nupkgPath))
-            using (var writer = new StreamWriter(nuspecStream))
-            {
-                nuspec.Write(writer);
-                writer.Flush();
-                nuspecStream.Position = 0;
-                var pkgBuilder = new PackageBuilder(stream: nuspecStream, basePath: folderPath);
-                pkgBuilder.Save(nupkgStream);
-            }
-
-            using (FileStream nupkgstream = File.OpenRead(nupkgPath))
-            {
-                await PackageExtractor.ExtractPackageAsync(
-                    extractedPath,
-                    nupkgstream,
-                    new PackagePathResolver(extractedPath),
-                    new PackageExtractionContext(
-                        PackageSaveMode.Defaultv3,
-                        XmlDocFileSaveMode.Skip,
-                        null,
-                        NullLogger.Instance),
-                    System.Threading.CancellationToken.None);
-
-            }
+            Assert.False(readMePreviewViewModel.IsErrorWithReadMe);
+            Assert.Equal(string.Empty, readMePreviewViewModel.ReadMeMarkdown);
+            Assert.False(readMePreviewViewModel.CanDetermineReadMeDefined);
         }
     }
 }

@@ -112,7 +112,14 @@ namespace NuGet.Test.Utility
                 throw new NotImplementedException();
             }
 
+            public Task<string> GetReadMeAsync()
+            {
+                throw new NotImplementedException();
+            }
+
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
+
+            public bool? HasReadme => null;
         }
     }
 }

@@ -59,6 +59,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => _packageSearchMetadata.Vulnerabilities;
 
+        public bool? HasReadme => null;
+
         private readonly IPackageSearchMetadata _packageSearchMetadata;
 
         public TransitivePackageSearchMetadata(IPackageSearchMetadata package, IReadOnlyCollection<PackageIdentity> transitiveOrigins)
@@ -75,6 +77,11 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync()
         {
             return _packageSearchMetadata.GetVersionsAsync();
+        }
+
+        public Task<string> GetReadMeAsync()
+        {
+            return _packageSearchMetadata.GetReadMeAsync();
         }
     }
 }

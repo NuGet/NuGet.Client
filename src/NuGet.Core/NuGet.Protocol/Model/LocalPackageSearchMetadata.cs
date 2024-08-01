@@ -139,6 +139,20 @@ namespace NuGet.Protocol
 
         public string PackagePath => _package.Path;
 
+        public bool? HasReadme
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_package.Path) && _package.Nuspec is not null)
+                {
+                    var readMePath = _package.Nuspec.GetReadme();
+
+                    return !string.IsNullOrEmpty(readMePath);
+                }
+                return null;
+            }
+        }
+
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 
         public string LoadFileAsText(string path)
@@ -205,6 +219,28 @@ namespace NuGet.Protocol
 
             // get the special icon url
             return builder.Uri;
+        }
+
+        public async Task<string> GetReadMeAsync()
+        {
+            if (!string.IsNullOrEmpty(_package.Path) && _package.Nuspec is not null)
+            {
+                var readMePath = _package.Nuspec.GetReadme();
+
+                if (!string.IsNullOrEmpty(readMePath))
+                {
+                    var packageDirectory = Path.GetDirectoryName(_package.Path);
+                    var readMeFullPath = Path.Combine(packageDirectory, readMePath);
+                    var readMeFileInfo = new FileInfo(readMeFullPath);
+                    if (readMeFileInfo.Exists)
+                    {
+                        using var readMeStreamReader = readMeFileInfo.OpenText();
+                        var readMeContents = await readMeStreamReader.ReadToEndAsync();
+                        return readMeContents;
+                    }
+                }
+            }
+            return null;
         }
     }
 }
