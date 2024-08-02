@@ -40,8 +40,8 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
-    <Compile Include="$(SharedDirectory)\TaskResult.cs" />
     <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\TaskResult.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -31,11 +31,11 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
-    <Compile Include="$(SharedDirectory)\TaskResultCache.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
-    <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
     <Compile Include="$(SharedDirectory)\TaskResult.cs" />
+    <Compile Include="$(SharedDirectory)\TaskResultCache.cs" />
   </ItemGroup>
 
   <ItemGroup>

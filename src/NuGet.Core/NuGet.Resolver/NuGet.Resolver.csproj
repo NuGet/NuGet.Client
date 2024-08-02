@@ -28,9 +28,9 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
+    <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
     <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
     <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
-    <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -71,9 +71,9 @@
   </ItemGroup>
 
   <ItemGroup Label="NuGet Shared">
+    <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
     <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
-    <Compile Include="$(SharedDirectory)\DeconstructionExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
