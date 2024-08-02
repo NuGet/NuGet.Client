@@ -52,7 +52,6 @@ namespace NuGet.ContentModel
             }
         }
 
-        [Obsolete("Unused and will be removed in a future version.")]
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
         {
             return FindItemsImplementation(definition, _assets);
