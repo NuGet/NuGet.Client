@@ -15,7 +15,6 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Configuration.Test;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.Test;
 using NuGet.Packaging.Core;
@@ -267,7 +266,7 @@ namespace NuGet.VisualStudio.Common.Test
                 Directory.CreateDirectory(privateRepositoryPath);
 
                 var configPath = Path.Combine(solutionManager.TestDirectory, "nuget.config");
-                SettingsTestUtils.CreateConfigurationFile(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                File.WriteAllText(configPath, $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
     <!--To inherit the global NuGet package sources remove the <clear/> line below -->
