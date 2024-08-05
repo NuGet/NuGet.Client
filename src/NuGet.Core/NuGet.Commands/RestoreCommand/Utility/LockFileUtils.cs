@@ -617,7 +617,7 @@ namespace NuGet.Commands
 
                     // Compile
                     // ref takes precedence over lib
-                    var compileGroup = GetLockFileItems( // TODO NK - Do we ever need these?
+                    var compileGroup = GetLockFileItems(
                         orderedCriteria,
                         contentItems,
                         targetGraph.Conventions.Patterns.CompileRefAssemblies,
@@ -673,7 +673,7 @@ namespace NuGet.Commands
             IList<LockFileItem> items)
         {
             var results = new List<LockFileItem>(items.Count);
-            foreach (var item in items.NoAllocEnumerate()) // TODO NK - Next thing to look into
+            foreach (var item in items.NoAllocEnumerate())
             {
                 var diskPath = fileLookup[item.Path].AbsolutePath;
                 var fixedPath = PathUtility.GetPathWithForwardSlashes(
