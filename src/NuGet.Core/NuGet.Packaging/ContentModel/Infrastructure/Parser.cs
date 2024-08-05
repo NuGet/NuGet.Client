@@ -71,7 +71,7 @@ namespace NuGet.ContentModel.Infrastructure
             foreach (var segment in _segments)
             {
                 int endIndex;
-                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex)) // Do we ever use the "any" token. 
+                if (segment.TryMatch(ref item, path, propertyDefinitions, startIndex, out endIndex))
                 {
                     startIndex = endIndex;
                     continue;
@@ -89,13 +89,13 @@ namespace NuGet.ContentModel.Infrastructure
                     item = new ContentItem
                     {
                         Path = path,
-                        Properties = _defaults // Shouldn't this do copying instead?
+                        Properties = _defaults
                     };
                 }
                 else
                 {
                     // item already created, append defaults
-                    foreach (var pair in _defaults) // TODO NK - Don't allocate enumerator
+                    foreach (var pair in _defaults)
                     {
                         item.Properties[pair.Key] = pair.Value;
                     }
