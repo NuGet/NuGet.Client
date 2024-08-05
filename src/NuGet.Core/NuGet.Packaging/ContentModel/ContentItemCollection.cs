@@ -129,6 +129,7 @@ namespace NuGet.ContentModel
             }
         }
 
+        [Obsolete("Unused and will be removed in a future version.")]
         public bool HasItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             return FindBestItemGroup(criteria, definitions) != null;
@@ -136,6 +137,10 @@ namespace NuGet.ContentModel
 
         public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
+            if (criteria is null)
+            {
+                throw new ArgumentNullException(nameof(criteria));
+            }
             if (definitions.Length == 0)
             {
                 return null;
