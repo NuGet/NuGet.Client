@@ -57,15 +57,15 @@
   </ItemGroup>
 
 <ItemGroup Label="NuGet Shared">
-    <Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />
-    <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
-    <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
-    <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
-    <Compile Include="$(SharedDirectory)\TaskResult.cs" />
-    <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
-    <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
-    <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
     <Compile Include="$(SharedDirectory)\EqualityUtility.cs" />
+    <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs" />
+    <Compile Include="$(SharedDirectory)\IsExternalInit.cs" />
+    <Compile Include="$(SharedDirectory)\NoAllocEnumerateExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
+    <Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />
+    <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\TaskResult.cs" />
+    <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
   </ItemGroup>
 
   <ItemGroup>
