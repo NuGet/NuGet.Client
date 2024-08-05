@@ -14,11 +14,11 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 {
     public class NuGetReposignCommandTest
     {
-        private const string _noPackageException = "No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference";
-        private const string _invalidArgException = "Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign";
-        private const string _noCertificateException = "No {0} provided or provided file is not a p7b file.";
-        private const string _invalidCertificateFingerprint = "Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).";
-        private const string _sha1Hash = "89967D1DD995010B6C66AE24FF8E66885E6E03A8";
+        private const string NoPackageException = "No package was provided. For a list of accepted ways to provide a package, please visit https://docs.nuget.org/docs/reference/command-line-reference";
+        private const string InvalidArgException = "Invalid value provided for '{0}'. For a list of accepted values, please visit https://learn.microsoft.com/nuget/reference/cli-reference/cli-ref-sign";
+        private const string NoCertificateException = "No {0} provided or provided file is not a p7b file.";
+        private const string InvalidCertificateFingerprint = "Invalid value for 'CertificateFingerprint' option. The value must be a SHA-256, SHA-384, or SHA-512 certificate fingerprint (in hexadecimal).";
+        private const string Sha256Hash = "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b55b046cbb7f506fb";
 
         [Fact]
         public void ReposignCommandArgParsing_NoPackagePath()
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(_noPackageException, ex.Message);
+                Assert.Equal(NoPackageException, ex.Message);
             }
         }
 
@@ -78,7 +78,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_noCertificateException, nameof(reposignCommand.CertificateFile)), ex.Message);
+                Assert.Equal(string.Format(NoCertificateException, nameof(reposignCommand.CertificateFile)), ex.Message);
             }
         }
 
@@ -91,7 +91,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
@@ -110,7 +110,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.CSPName)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.CSPName)), ex.Message);
             }
         }
 
@@ -123,7 +123,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var cspName = "cert provider";
                 var v3serviceIndexUrl = "https://v3serviceIndex.test/api/index.json";
 
@@ -142,7 +142,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.KeyContainer)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.KeyContainer)), ex.Message);
             }
         }
 
@@ -174,7 +174,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(_invalidCertificateFingerprint, ex.Message);
+                Assert.Equal(InvalidCertificateFingerprint, ex.Message);
             }
         }
 
@@ -209,7 +209,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(_invalidCertificateFingerprint, ex.Message);
+                Assert.Equal(InvalidCertificateFingerprint, ex.Message);
             }
         }
 
@@ -222,7 +222,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
 
@@ -241,7 +241,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
             }
         }
 
@@ -254,7 +254,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "not-valid-uri";
@@ -275,7 +275,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
             }
         }
 
@@ -288,7 +288,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "http://validv3NonhttpsUri.test/api/index.json";
@@ -309,7 +309,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.V3ServiceIndexUrl)), ex.Message);
             }
         }
 
@@ -322,7 +322,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "https://v3serviceindex.test/api/index.json";
@@ -345,7 +345,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.PackageOwners)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.PackageOwners)), ex.Message);
             }
         }
 
@@ -365,7 +365,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "https://v3serviceindex.test/api/index.json";
@@ -388,7 +388,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 // Act & Assert
                 Assert.True(parsable);
                 var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.NotEqual(string.Format(_invalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
+                Assert.NotEqual(string.Format(InvalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
             }
         }
 
@@ -401,7 +401,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "https://v3serviceindex.test/api/index.json";
@@ -424,7 +424,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.HashAlgorithm)), ex.Message);
             }
         }
 
@@ -444,7 +444,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "https://v3serviceindex.test/api/index.json";
@@ -467,7 +467,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 // Act & Assert
                 Assert.True(parsable);
                 var ex = Assert.Throws<CryptographicException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.NotEqual(string.Format(_invalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
+                Assert.NotEqual(string.Format(InvalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
             }
         }
 
@@ -480,7 +480,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
                 var packagePath = Path.Combine(dir, "package.nupkg");
                 var timestamper = "https://timestamper.test";
                 var certFile = Path.Combine(dir, "cert.p7b");
-                var certificateFingerprint = _sha1Hash;
+                var certificateFingerprint = Sha256Hash;
                 var keyContainer = new Guid().ToString();
                 var cspName = "cert provider";
                 var serviceIndex = "https://v3serviceindex.test/api/index.json";
@@ -503,7 +503,7 @@ namespace NuGet.CommandLine.MSSigning.Extensions.Test
 
                 // Act & Assert
                 var ex = Assert.Throws<ArgumentException>(() => reposignCommand.GetRepositorySignRequest());
-                Assert.Equal(string.Format(_invalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
+                Assert.Equal(string.Format(InvalidArgException, nameof(reposignCommand.TimestampHashAlgorithm)), ex.Message);
             }
         }
     }

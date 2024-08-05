@@ -25,13 +25,14 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
     {
         private readonly string _noTimestamperWarningCode = NuGetLogCode.NU3002.ToString();
         private readonly string _invalidCertificateFingerprintCode = NuGetLogCode.NU3043.ToString();
-        private const string _sha1Hash = "89967D1DD995010B6C66AE24FF8E66885E6E03A8";
+        private const string Sha1Hash = "89967D1DD995010B6C66AE24FF8E66885E6E03A8";
+        private const string Sha256Hash = "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b55b046cbb7f506fb";
 
-        private TrustedTestCert<TestCertificate> _trustedTestCertWithPrivateKey;
-        private TrustedTestCert<TestCertificate> _trustedTestCertWithoutPrivateKey;
+        private readonly TrustedTestCert<TestCertificate> _trustedTestCertWithPrivateKey;
+        private readonly TrustedTestCert<TestCertificate> _trustedTestCertWithoutPrivateKey;
 
         private MSSignCommandTestFixture _testFixture;
-        private string _nugetExePath;
+        private readonly string _nugetExePath;
 
         public ReposignCommandTests(MSSignCommandTestFixture fixture)
         {
@@ -128,8 +129,10 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             }
         }
 
-        [CIOnlyFact]
-        public void GetRepositorySignRequest_InvalidFingerprint()
+        [CIOnlyTheory]
+        [InlineData(Sha1Hash)]
+        [InlineData(Sha256Hash)]
+        public void GetRepositorySignRequest_InvalidFingerprint(string certificateFingerPrint)
         {
             var mockConsole = new Mock<IConsole>();
             var v3serviceIndex = "https://v3serviceindex.test/api/index.json";
@@ -146,7 +149,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     CertificateFile = test.CertificatePath,
                     CSPName = test.CertificateCSPName,
                     KeyContainer = test.CertificateKeyContainer,
-                    CertificateFingerprint = _sha1Hash,
+                    CertificateFingerprint = certificateFingerPrint,
                     V3ServiceIndexUrl = v3serviceIndex,
                 };
                 reposignCommand.Arguments.Add(Path.Combine(dir, "package.nupkg"));
