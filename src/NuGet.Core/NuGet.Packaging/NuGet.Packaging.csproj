@@ -46,6 +46,14 @@
     <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
+  <ItemGroup Label="transitive package pinning">
+    <!--
+      This package is a dependency of System.Security.Cryptography.Pkcs
+      When it is upgraded to a newer version, try deleting the below PackageReference
+      -->
+    <PackageReference Include="System.Formats.Asn1" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)'" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Signing\DerEncoding\SR.Designer.cs">
       <DesignTime>True</DesignTime>
