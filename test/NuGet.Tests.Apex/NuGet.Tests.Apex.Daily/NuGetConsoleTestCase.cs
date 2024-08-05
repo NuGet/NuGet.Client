@@ -17,34 +17,40 @@ namespace NuGet.Tests.Apex.Daily
     public class NuGetConsoleTestCase : SharedVisualStudioHostTestClass
     {
         [DataTestMethod]
-        [DynamicData(nameof(GetNetCoreTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.NetCoreConsoleApp)]
+        [DataRow(ProjectTemplate.ConsoleApplication)]
+        [DataRow(ProjectTemplate.UAPBlankApplication)]
         [Timeout(DefaultTimeout)]
         public async Task VerifyCacheFileInsideObjFolder(ProjectTemplate projectTemplate)
         {
             // Arrange
             EnsureVisualStudioHost();
-
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true))
+            using (var simpleTestPathContext = new SimpleTestPathContext())
             {
-                var packageName = "VerifyCacheFilePackage";
-                var packageVersion = "1.0.0";
-                await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
-                var nugetConsole = GetConsole(testContext.Project);
+                simpleTestPathContext.Settings.SetPackageManagementToPackageReference();
 
-                //Act
-                nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
-                FileInfo CacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
+                {
+                    var packageName = "VerifyCacheFilePackage";
+                    var packageVersion = "1.0.0";
+                    await CommonUtility.CreatePackageInSourceAsync(testContext.PackageSource, packageName, packageVersion);
+                    var nugetConsole = GetConsole(testContext.Project);
 
-                // Assert
-                testContext.SolutionService.Build();
-                testContext.NuGetApexTestService.WaitForAutoRestore();
-                CommonUtility.WaitForFileExists(CacheFilePath);
+                    //Act
+                    nugetConsole.InstallPackageFromPMC(packageName, packageVersion);
+                    FileInfo CacheFilePath = CommonUtility.GetCacheFilePath(testContext.Project.FullPath);
 
-                testContext.Project.Rebuild();
-                CommonUtility.WaitForFileExists(CacheFilePath);
+                    // Assert
+                    testContext.SolutionService.Build();
+                    testContext.NuGetApexTestService.WaitForAutoRestore();
+                    CommonUtility.WaitForFileExists(CacheFilePath);
 
-                testContext.Project.Clean();
-                CommonUtility.WaitForFileNotExists(CacheFilePath);
+                    testContext.Project.Rebuild();
+                    CommonUtility.WaitForFileExists(CacheFilePath);
+
+                    testContext.Project.Clean();
+                    CommonUtility.WaitForFileNotExists(CacheFilePath);
+                }
             }
         }
 
