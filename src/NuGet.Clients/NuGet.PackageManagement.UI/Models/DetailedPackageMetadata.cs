@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.Packaging;
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.UI
             Id = string.Empty;
         }
 
-        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, PackageItemViewModel? searchResultPackage, long? downloadCount)
+        public DetailedPackageMetadata(PackageSearchMetadataContextInfo serverData, PackageDeprecationMetadataContextInfo deprecationMetadata, ImmutableList<KnownOwnerViewModel>? knownOwnerViewModels, long? downloadCount)
         {
             Id = serverData.Identity?.Id ?? string.Empty;
             Version = serverData.Identity?.Version;
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.UI
             Description = serverData.Description;
             Authors = serverData.Authors;
             Owners = serverData.Owners;
-            KnownOwnerViewModels = searchResultPackage?.KnownOwnerViewModels;
+            KnownOwnerViewModels = knownOwnerViewModels;
             IconUrl = serverData.IconUrl;
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
