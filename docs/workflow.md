@@ -27,7 +27,6 @@ This repo has bots that manage all stale PRs. Stale PRs will be autoclosed.
 - Leaving [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request) is welcomed, but please never commit them for a PR you did not create.
 - When you are seeking to understand something rather than request corrections, it is suggested to use language such as "I'm curious ..." as a prefix to comments.
 - For comments that are just optional suggestions or are explicitly non-blocking, prefix them with "nit: " or "non-blocking: ".
-- Avoid marking a PR as "Request Changes" ![2022_01_27_08_33_07_Changes_for_discussion_to_the_PR_Template_by_christothes_Pull_Request_26631_](https://user-images.githubusercontent.com/1279263/151379844-b9babb22-b0fe-4b9c-b749-eb7488a38d84.png) unless you have serious concerns that should block the PR from merging.
 - When to mark a PR as "Approved"
   - You feel confident that the code meets a high quality bar, has adequate test coverage, is ready to merge.
   - You have left comments that are uncontroversial and there is a shared understanding with the author that the comments can be addressed or resolved prior to being merged without significant discussion or significant change to the design or approach.
@@ -36,8 +35,6 @@ This repo has bots that manage all stale PRs. Stale PRs will be autoclosed.
   - You have feedback that may require detailed discussion or may indicate a need to change the current design or approach in a non-trivial way.
 - When to mark a PR as "Request Changes"
   - You have significant concerns that must be addressed before this PR should be merged such as unintentional breaking changes, security issues, or potential data loss.
-
-
 
 #### Merge commit considerations
 
