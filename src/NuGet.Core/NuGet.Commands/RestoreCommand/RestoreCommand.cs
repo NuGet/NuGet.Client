@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -175,8 +176,7 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
-            if (request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled
-                || request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
+            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
             {
                 _usePrototype = 0;
             }
@@ -1580,6 +1580,8 @@ namespace NuGet.Commands
 
                 Dictionary<LibraryRangeIndex,(LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)>(1024);
 
+                Dictionary<LibraryDependencyIndex, LibraryDependency> pinnedPackages = null;
+
                 sw3_preamble.Stop();
 
                 sw5_fullImport.Start();
@@ -1668,6 +1670,11 @@ namespace NuGet.Commands
 #endif
                             continue;
                         }
+                    }
+
+                    if (pinnedPackages != null && pinnedPackages.TryGetValue(currentRefDependencyIndex, out LibraryDependency pinnedRef))
+                    {
+                        currentRef = pinnedRef;
                     }
 
                     //else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
@@ -1966,6 +1973,7 @@ namespace NuGet.Commands
                     HashSet<LibraryDependencyIndex> suppressions = null;
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> finalVersionOverrides = null;
                     Dictionary<LibraryDependencyIndex, VersionRange> newOverrides = null;
+
                     //Scan for supressions and overrides
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
@@ -1986,6 +1994,16 @@ namespace NuGet.Commands
                                 newOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(OverridesDictionarySize);
                             }
                             newOverrides[depIndex] = dep.VersionOverride;
+                        }
+
+                        if (_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && dep.ReferenceType == LibraryDependencyReferenceType.None && dep.VersionCentrallyManaged == true)
+                        {
+                            if (pinnedPackages == null)
+                            {
+                                pinnedPackages = new Dictionary<LibraryDependencyIndex, LibraryDependency>(refItemResult.Item.Data.Dependencies.Count);
+                            }
+
+                            pinnedPackages[depIndex] = dep;
                         }
                     }
 
@@ -2030,6 +2048,12 @@ namespace NuGet.Commands
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
                         var dep = refItemResult.Item.Data.Dependencies[i];
+
+                        if (_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && dep.ReferenceType == LibraryDependencyReferenceType.None && dep.VersionCentrallyManaged == true)
+                        {
+                            continue;
+                        }
+
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
 #if verboseLog
                         //if(dep.Name.Contains("Microsoft.Cloud.InstrumentationFramework.VC14"))
@@ -2136,6 +2160,19 @@ namespace NuGet.Commands
 
                 var versionConflicts = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
 
+                var pins = new Dictionary<LibraryRangeIndex, List<GraphNode<RemoteResolveResult>>>();
+
+                if (_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
+                {
+                    foreach (var chosenResolvedItem in chosenResolvedItems)
+                    {
+                        if (chosenResolvedItem.Value.libRef.ReferenceType == LibraryDependencyReferenceType.None && chosenResolvedItem.Value.libRef.VersionCentrallyManaged && !pins.ContainsKey(chosenResolvedItem.Value.rangeIndex))
+                        {
+                            pins.Add(chosenResolvedItem.Value.rangeIndex, new List<GraphNode<RemoteResolveResult>>());
+                        }
+                    }
+                }
+
                 itemsToFlatten.Enqueue((initialProjectIndex, rootGraphNode));
                 while (itemsToFlatten.Count > 0)
                 {
@@ -2188,6 +2225,11 @@ namespace NuGet.Commands
 
                             var chosenItemRangeIndex = chosenItem.rangeIndex;
                             LibraryDependency actualDep = chosenItem.libRef;
+
+                            if ((currentGraphNode.Key.TypeConstraint == LibraryDependencyTarget.Package || currentGraphNode.Key.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal) && pins.TryGetValue(chosenItemRangeIndex, out List<GraphNode<RemoteResolveResult>> parents))
+                            {
+                                parents.Add(currentGraphNode);
+                            }
 
                             if (!visitedItems.Add(depIndex))
                             {
@@ -2249,6 +2291,11 @@ namespace NuGet.Commands
                             currentGraphNode.InnerNodes.Add(newGraphNode);
                             newGraphNode.OuterNode = currentGraphNode;
 
+                            if (_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && actualDep.ReferenceType == LibraryDependencyReferenceType.None && actualDep.VersionCentrallyManaged == true)
+                            {
+                                newGraphNode.Item.IsCentralTransitive = true;
+                            }
+                            
                             if (newGraphNode.Item.Key.Type != LibraryType.Project && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && !dep.LibraryRange.VersionRange.Satisfies(newGraphNode.Item.Key.Version))
                             {
                                 currentGraphNode.InnerNodes.Remove(newGraphNode);
@@ -2267,6 +2314,8 @@ namespace NuGet.Commands
 
                                 continue;
                             }
+
+                            newGraphNode.Disposition = Disposition.Accepted;
 
                             nodesById.Add(chosenItemRangeIndex, newGraphNode);
                             itemsToFlatten.Enqueue((depIndex, newGraphNode));
@@ -2292,6 +2341,17 @@ namespace NuGet.Commands
                         _logger.LogMinimal($"BSW_ERR2, {chosenRefRangeIndex}");
                     }
 #endif
+                }
+
+                if (pins.Count > 0)
+                {
+                    foreach (var parents in pins)
+                    {
+                        if (nodesById.TryGetValue(parents.Key, out var node))
+                        {
+                            node.ParentNodes.AddRange(parents.Value);
+                        }
+                    }
                 }
 
                 if (versionConflicts.Count > 0)
