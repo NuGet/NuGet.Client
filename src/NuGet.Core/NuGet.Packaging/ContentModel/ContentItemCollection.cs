@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,8 +15,7 @@ namespace NuGet.ContentModel
         private static readonly ReadOnlyMemory<char> Winmd = ".winmd".AsMemory();
 
         private List<Asset> _assets;
-        private Dictionary<ReadOnlyMemory<char>, string> _assemblyRelatedExtensions;
-
+        private ConcurrentDictionary<ReadOnlyMemory<char>, string> _assemblyRelatedExtensions;
         /// <summary>
         /// True if lib/contract exists
         /// </summary>
@@ -309,14 +309,14 @@ namespace NuGet.ContentModel
             // If no related files found.
             if (relatedFileExtensionList is null || relatedFileExtensionList.Count == 0)
             {
-                _assemblyRelatedExtensions[assemblyPrefix] = null;
+                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, null);
                 return null;
             }
             else
             {
                 relatedFileExtensionList.Sort();
                 string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList);
-                _assemblyRelatedExtensions[assemblyPrefix] = relatedFileExtensionsProperty;
+                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
                 return relatedFileExtensionsProperty;
             }
 
