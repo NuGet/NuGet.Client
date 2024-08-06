@@ -1,1 +1,2 @@
 #nullable enable
+static NuGet.Versioning.VersionRange.PreciseEquals(NuGet.Versioning.VersionRange! a, NuGet.Versioning.VersionRange! b) -> bool

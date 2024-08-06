@@ -1,1 +1,4 @@
 #nullable enable
+~static NuGet.DependencyResolver.GraphNode<TItem>.Create(NuGet.LibraryModel.LibraryRange key, bool hasInnerNodes, bool hasParentNodes, NuGet.DependencyResolver.GraphItem<TItem> item) -> NuGet.DependencyResolver.GraphNode<TItem>
+~static NuGet.DependencyResolver.RemoteDependencyWalker.EvaluateRuntimeDependencies(ref NuGet.LibraryModel.LibraryRange libraryRange, string runtimeName, NuGet.RuntimeModel.RuntimeGraph runtimeGraph, ref System.Collections.Generic.HashSet<NuGet.LibraryModel.LibraryDependency> runtimeDependencies) -> void
+~static NuGet.DependencyResolver.RemoteDependencyWalker.MergeRuntimeDependencies(System.Collections.Generic.HashSet<NuGet.LibraryModel.LibraryDependency> runtimeDependencies, NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult> node) -> void

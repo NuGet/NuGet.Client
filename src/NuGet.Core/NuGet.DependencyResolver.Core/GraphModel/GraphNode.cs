@@ -36,6 +36,14 @@ namespace NuGet.DependencyResolver
         /// </summary>
         public IList<GraphNode<TItem>> ParentNodes { get; }
 
+        public static GraphNode<TItem> Create(LibraryRange key, bool hasInnerNodes, bool hasParentNodes, GraphItem<TItem> item)
+        {
+            return new GraphNode<TItem>(key, hasInnerNodes, hasParentNodes)
+            {
+                Item = item
+            };
+        }
+
         internal bool AreAllParentsRejected()
         {
             var pCount = ParentNodes.Count;

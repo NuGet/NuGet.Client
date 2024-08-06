@@ -381,11 +381,11 @@ namespace NuGet.Versioning
         /// </summary>
         public override string ToString()
         {
-            StringBuilder sb = StringBuilderPool.Shared.Rent(256);
+            StringBuilder sb = SharedStringBuilder.Instance.Rent(256);
 
             ToString(sb);
 
-            return StringBuilderPool.Shared.ToStringAndReturn(sb);
+            return SharedStringBuilder.Instance.ToStringAndReturn(sb);
         }
 
         /// <summary>
