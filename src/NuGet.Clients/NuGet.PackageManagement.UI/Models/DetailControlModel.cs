@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            _allPackageVersions = versions
+            _allPackageVersions = versions?
                 .Where(v => v?.Version != null)
                 .Select(GetVersion)
                 .ToList();

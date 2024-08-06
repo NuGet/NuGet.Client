@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -16,6 +17,7 @@ using Microsoft.VisualStudio.Shell.ServiceBroker;
 using Moq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -627,7 +629,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("3.0.1-beta", "3.0.1-beta", true, true)]
         public async Task WhenPackageStyleIsPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
-            // Arange project
+            // Arrange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
             Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
@@ -736,7 +738,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             // Updates Tab wont show package if it is latest
             Assert.Equal(isLatest, false);
 
-            // Arange project
+            // Arrange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
             Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
@@ -857,7 +859,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData("3.0.1-beta", "3.0.1-beta", true, true)]
         public async Task WhenPackageStyleIsPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
-            // Arange project
+            // Arrange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
             Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
@@ -1067,7 +1069,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", true, false)]
         public async Task WhenPackageStyleIsNotPackageReference_And_CustomVersion_InstalledTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
-            // Arange project
+            // Arrange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
             Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
@@ -1170,7 +1172,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [InlineData(NuGetProjectKind.ProjectK, ProjectModel.ProjectStyle.ProjectJson, "[3.0.0,)", "3.0.0", true, false)]
         public async Task WhenPackageStyleIsNotPackageReference_And_CustomVersion_BrowseTab_IsSelectedVersionCorrect(NuGetProjectKind projectKind, ProjectModel.ProjectStyle projectStyle, string allowedVersions, string installedVersion, bool isLatest, bool includePrerelease)
         {
-            // Arange project
+            // Arrange project
             Mock<IServiceBroker> mockServiceBroker = new Mock<IServiceBroker>();
             Mock<INuGetSearchService> mockSearchService = new Mock<INuGetSearchService>();
 
@@ -1729,6 +1731,52 @@ namespace NuGet.PackageManagement.UI.Test.Models
                 nameof(PackageSolutionDetailControlModel.CanUninstall) + " should have raised a PropertyChanged when calling "
                 + nameof(DetailControlModel.SetInstalledOrUpdateButtonIsEnabled) + " and the value should become true.");
         }
+
+
+        //[Fact]
+        //public async Task SetCurrentPackageAsync_WithKnownOwnerViewModels_PropagatedToDetailedPackageMetadata()
+        //{
+        //    // Arrange
+        //    NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+        //    var testVersions = new List<VersionInfoContextInfo>() {
+        //        new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
+        //        new VersionInfoContextInfo(new NuGetVersion("1.0.1")),
+        //    };
+
+        //    var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
+
+        //    ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = new List<KnownOwnerViewModel>()
+        //    {
+        //        new KnownOwnerViewModel(new KnownOwner("a", new Uri("https://dev.nugettest.org/profiles/a"))),
+        //        new KnownOwnerViewModel(new KnownOwner("b", new Uri("https://dev.nugettest.org/profiles/b"))),
+        //        new KnownOwnerViewModel(new KnownOwner("c", new Uri("https://dev.nugettest.org/profiles/c")))
+        //    }.ToImmutableList();
+
+        //    var searchService = new Mock<INuGetSearchService>();
+        //    searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+        //        It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
+        //        .ReturnsAsync(testVersions);
+
+        //    var packageItemViewModel = new PackageItemViewModel(searchService.Object)
+        //    {
+        //        Id = "package",
+        //        InstalledVersion = installedVersion,
+        //        Version = installedVersion,
+        //        KnownOwnerViewModels = knownOwnerViewModels
+        //    };
+
+        //    // Act
+        //    await _testInstance.SetCurrentPackageAsync(
+        //        packageItemViewModel,
+        //        ItemFilter.All,
+        //        () => packageItemViewModel);
+
+        //    // Assert
+        //    var resultKnownOwnerViewModels = _testInstance.PackageMetadata.KnownOwnerViewModels;
+        //    resultKnownOwnerViewModels.Should().NotBeNull();
+        //    resultKnownOwnerViewModels.Count.Should().Be(5);
+        //    resultKnownOwnerViewModels.Should().ContainInOrder(knownOwnerViewModels);
+        //}
     }
 
     public interface IPropertyChangedEventHandler
