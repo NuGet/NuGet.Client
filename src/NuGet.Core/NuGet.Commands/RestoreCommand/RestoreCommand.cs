@@ -115,25 +115,16 @@ namespace NuGet.Commands
         private const string AuditDurationCheck = "Audit.Duration.Check";
         private const string AuditDurationOutput = "Audit.Duration.Output";
         private const string AuditDurationTotal = "Audit.Duration.Total";
+        private const string DisableNewDependencyResolverEnvironmentVariableName = "RESTORE_ENABLE_NEW_RESOLVER";
 
-
-        private static int UsePrototypeRestore = -1;
-
-        static RestoreCommand()
+        private readonly static Lazy<bool> EnableNewDependencyResolverLazy = new Lazy<bool>(() =>
         {
-            string subProtoNugValue = Environment.GetEnvironmentVariable("SubProtoNug");
-            if (subProtoNugValue != null)
-            {
-                if (subProtoNugValue == "1")
-                    UsePrototypeRestore = 1;
-                else if (subProtoNugValue == "2")
-                    UsePrototypeRestore = 2;
-                else
-                    UsePrototypeRestore = 0;
-            }
-            else
-                UsePrototypeRestore = 0;
-        }
+            string value = Environment.GetEnvironmentVariable(DisableNewDependencyResolverEnvironmentVariableName);
+
+            return !string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
+        });
+
+        private readonly bool _enableNewDependencyResolver = EnableNewDependencyResolverLazy.Value;
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -163,7 +154,7 @@ namespace NuGet.Commands
 
             if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
             {
-                UsePrototypeRestore = 0;
+                _enableNewDependencyResolver = false;
             }
         }
 
@@ -323,33 +314,22 @@ namespace NuGet.Commands
                 {
                     using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
-                        long originalTimeMs = -1;
-                        long prototypeTimeMs = -1;
                         if (NuGetEventSource.IsEnabled)
                         {
                             TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
                         }
 
-                        switch (UsePrototypeRestore)
+                        if (_enableNewDependencyResolver)
                         {
-                            case 1:
-                                {
-                                    Stopwatch sw = Stopwatch.StartNew();
-                                    // Restore using the prototype
-                                    graphs = await ExecuteSubProtoTypeRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                                    prototypeTimeMs = sw.ElapsedMilliseconds;
+                            // Restore using new dependency resolver
+                            graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
 
-                                    await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
-                                }
-                                break;
-                            default:
-                                {
-                                    Stopwatch sw = Stopwatch.StartNew();
-                                    // Restore
-                                    graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                                    originalTimeMs = sw.ElapsedMilliseconds;
-                                }
-                                break;
+                            await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
+                        }
+                        else
+                        {
+                            // Restore using the legacy dependency resolver
+                            graphs = await ExecuteLegacyRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
                         }
 
                         if (NuGetEventSource.IsEnabled)
@@ -1184,12 +1164,7 @@ namespace NuGet.Commands
             return checkResults;
         }
 
-        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(
-            NuGetv3LocalRepository userPackageFolder,
-            IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
-            RemoteWalkContext context,
-            CancellationToken token,
-            TelemetryActivity telemetryActivity)
+        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteLegacyRestoreAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, CancellationToken token, TelemetryActivity telemetryActivity)
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
@@ -1359,7 +1334,7 @@ namespace NuGet.Commands
         private const int OverridesDictionarySize = 1024;
 
 #pragma warning disable CA1505
-        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteSubProtoTypeRestoreAsync(
+        private async Task<IEnumerable<RestoreTargetGraph>> ExecuteRestoreAsync(
             NuGetv3LocalRepository userPackageFolder,
             IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders,
             RemoteWalkContext context,
@@ -1838,7 +1813,7 @@ namespace NuGet.Commands
                     // Otherwise, just use the incoming set of overrides.
                     if (newOverrides != null)
                     {
-                        Dictionary<LibraryDependencyIndex, VersionRange> allOverrides = new (currentOverrides.Count + newOverrides.Count);
+                        Dictionary<LibraryDependencyIndex, VersionRange> allOverrides = new(currentOverrides.Count + newOverrides.Count);
                         allOverrides.AddRange(currentOverrides);
                         foreach (var overridePair in newOverrides)
                         {
@@ -2332,26 +2307,26 @@ namespace NuGet.Commands
             return updatedExternalProjects;
         }
 
-        private static IEnumerable<FrameworkRuntimePair> CreateFrameworkRuntimePairs(
-            PackageSpec packageSpec,
-            ISet<string> runtimeIds)
+        internal static IEnumerable<FrameworkRuntimePair> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
         {
-            var projectFrameworkRuntimePairs = new List<FrameworkRuntimePair>();
-            foreach (var framework in packageSpec.TargetFrameworks)
+            List<FrameworkRuntimePair> frameworkRuntimePairs = new(capacity: packageSpec.TargetFrameworks.Count + runtimeIds.Count);
+
+            // Add the RID-less pairs first since those packages will need to be installed before the runtime.json can be parsed
+            for (int i = 0; i < packageSpec.TargetFrameworks.Count; i++)
             {
-                // We care about TFM only and null RID for compilation purposes
-                projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
+                frameworkRuntimePairs.Add(new FrameworkRuntimePair(packageSpec.TargetFrameworks[i].FrameworkName, null));
             }
 
-            foreach (var framework in packageSpec.TargetFrameworks)
+            // Add the RID-specific pairs at the end of the list
+            for (int i = 0; i < packageSpec.TargetFrameworks.Count; i++)
             {
                 foreach (var runtimeId in runtimeIds)
                 {
-                    projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
+                    frameworkRuntimePairs.Add(new FrameworkRuntimePair(packageSpec.TargetFrameworks[i].FrameworkName, runtimeId));
                 }
             }
 
-            return projectFrameworkRuntimePairs;
+            return frameworkRuntimePairs;
         }
 
         private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request, RestoreCollectorLogger logger)
