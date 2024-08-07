@@ -125,7 +125,7 @@ namespace NuGet.Packaging
 
         private static void UpdateChildCounts(ItemDependencyInfo package)
         {
-            // Decrement the parent count for each child of this package.
+            // Decrement the parent _count for each child of this package.
             var children = package.Children;
             if (children != null)
             {
@@ -197,7 +197,7 @@ namespace NuGet.Packaging
 
             public int Compare(ItemDependencyInfo x, ItemDependencyInfo y)
             {
-                // Order packages by parent count
+                // Order packages by parent _count
                 if (x.ActiveParents < y.ActiveParents)
                 {
                     return -1;

@@ -9,7 +9,7 @@ namespace NuGet.ContentModel
     {
         private Dictionary<string, object> _properties;
         public string Path { get; set; }
-
+        internal static int Count = 0;
         public Dictionary<string, object> Properties
         {
             get => _properties ?? CreateDictionary();
@@ -25,6 +25,7 @@ namespace NuGet.ContentModel
         {
             var properties = new Dictionary<string, object>();
             _properties = properties;
+            Count++;
             return properties;
         }
     }

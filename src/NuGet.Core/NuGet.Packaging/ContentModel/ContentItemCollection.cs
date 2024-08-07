@@ -135,6 +135,8 @@ namespace NuGet.ContentModel
             return FindBestItemGroup(criteria, definitions) != null;
         }
 
+        internal static Dictionary<int, int> Counts = new();
+
         public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             if (criteria is null)
@@ -158,6 +160,17 @@ namespace NuGet.ContentModel
 
                     foreach (var itemGroup in itemGroups)
                     {
+                        Counts.TryGetValue(itemGroup.Properties.Count, out int value);
+                        if (value == 0)
+                        {
+                            Counts[itemGroup.Properties.Count] = 1;
+                        }
+                        else
+                        {
+                            Counts[itemGroup.Properties.Count] = value + 1;
+                        }
+
+
                         var groupIsValid = true;
                         foreach (var criteriaProperty in criteriaEntry.Properties.NoAllocEnumerate())
                         {
