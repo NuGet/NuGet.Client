@@ -25,7 +25,7 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="data">The data to be included in the hash.</param>
         /// <param name="offset">The offset from which data should be read.</param>
-        /// <param name="count">The _count of bytes to read.</param>
+        /// <param name="count">The count of bytes to read.</param>
         void Update(byte[] data, int offset, int count);
     }
 }

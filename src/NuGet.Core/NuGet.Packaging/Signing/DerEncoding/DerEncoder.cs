@@ -149,7 +149,7 @@ namespace NuGet.Packaging.Signing.DerEncoding
         /// </summary>
         /// <param name="bigEndianBytes">The value to encode, in big integer representation.</param>
         /// <param name="offset">The offset into bigEndianBytes to read</param>
-        /// <param name="count">The _count of bytes to read, must be greater than 0</param>
+        /// <param name="count">The count of bytes to read, must be greater than 0</param>
         /// <returns>The encoded segments { tag, length, value }</returns>
         internal static byte[][] SegmentedEncodeUnsignedInteger(byte[] bigEndianBytes, int offset, int count)
         {

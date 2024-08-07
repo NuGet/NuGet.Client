@@ -66,7 +66,7 @@ namespace NuGet.Packaging
         {
             int index = Math.Max(0, Array.IndexOf(VersionToSchemaMappings, @namespace));
 
-            // we _count version from 1 instead of 0
+            // we count version from 1 instead of 0
             return index + 1;
         }
 
