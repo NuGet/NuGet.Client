@@ -18,7 +18,7 @@ namespace NuGet.Tests.Apex.Daily
         [DataRow(ProjectTemplate.NetStandardClassLib)]
         [DataRow(ProjectTemplate.ASPNETCoreWebApplication)]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
+        public async Task InstallPackageToSDKBasedProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
 
@@ -50,7 +50,7 @@ namespace NuGet.Tests.Apex.Daily
         [DataRow(ProjectTemplate.NetStandardClassLib)]
         [DataRow(ProjectTemplate.ASPNETCoreWebApplication)]
         [Timeout(DefaultTimeout)]
-        public async Task UpdatePackageToNetCoreProjectFromUI(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageToSDKBasedProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
 
@@ -91,7 +91,7 @@ namespace NuGet.Tests.Apex.Daily
         [DataRow(ProjectTemplate.NetStandardClassLib)]
         [DataRow(ProjectTemplate.ASPNETCoreWebApplication)]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallPackageFromNetCoreProjectFromUI(ProjectTemplate projectTemplate)
+        public async Task UninstallPackageFromSDKBasedProjectFromUI(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
 

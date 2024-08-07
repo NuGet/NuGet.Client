@@ -79,7 +79,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Set default package management format to PackageReference.
         /// </summary>
-        public void SetPackageManagementToPackageReference()
+        public void SetPackageFormatToPackageReference()
         {
             var section = GetOrAddSection(XML, "packageManagement");
 

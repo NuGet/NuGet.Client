@@ -27,7 +27,7 @@ namespace NuGet.Tests.Apex.Daily
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
-                simpleTestPathContext.Settings.SetPackageManagementToPackageReference();
+                simpleTestPathContext.Settings.SetPackageFormatToPackageReference();
 
                 using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, addNetStandardFeeds: true, simpleTestPathContext: simpleTestPathContext))
                 {
@@ -102,15 +102,16 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.MauiClassLibrary)]
+        [DataRow(ProjectTemplate.WebApplicationEmpty)]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageForMauiProjectInPMC(ProjectTemplate projectTemplate)
+        public async Task InstallPackageInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageName = "IOSTestPackage";
+                var packageName = "TestPackage";
                 var v100 = "1.0.0";
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
                 simpleTestPathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
@@ -130,22 +131,30 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, Logger);
+                    if (projectTemplate.ToString().Equals("WebApplicationEmpty"))
+                    {
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v100, Logger);
+                    }
+                    else
+                    {
+                        CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, Logger);
+                    }
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.MauiClassLibrary)]
+        [DataRow(ProjectTemplate.WebApplicationEmpty)]
         [Timeout(DefaultTimeout)]
-        public async Task UpdatePackageForMauiProjectInPMC(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var packageName = "IOSTestPackage";
+                var packageName = "TestPackage";
                 var v100 = "1.0.0";
                 var v200 = "2.0.0";
 
@@ -172,22 +181,30 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, Logger);
+                    if (projectTemplate.ToString().Equals("WebApplicationEmpty"))
+                    {
+                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200, Logger);
+                    }
+                    else
+                    {
+                        CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, Logger);
+                    }
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
         [DataTestMethod]
-        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
+        [DataRow(ProjectTemplate.MauiClassLibrary)]
+        [DataRow(ProjectTemplate.WebApplicationEmpty)]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallPackageForMauiProjectInPMC(ProjectTemplate projectTemplate)
+        public async Task UninstallPackageInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
             {
                 // Arrange
-                var PackageName = "IOSTestPackage";
+                var PackageName = "TestPackage";
                 var v100 = "1.0.0";
 
                 await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
@@ -213,7 +230,14 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, Logger);
+                    if (projectTemplate.ToString().Equals("WebApplicationEmpty"))
+                    {
+                        CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, PackageName, v100, Logger);
+                    }
+                    else
+                    {
+                        CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, Logger);
+                    }
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
