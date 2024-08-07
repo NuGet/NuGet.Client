@@ -103,7 +103,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [DataTestMethod]
         [DataRow(ProjectTemplate.MauiClassLibrary)]
-        [DataRow(ProjectTemplate.WebApplicationEmpty)]
+        [DataRow(ProjectTemplate.WebSiteEmpty)]
         [Timeout(DefaultTimeout)]
         public async Task InstallPackageInPMC(ProjectTemplate projectTemplate)
         {
@@ -131,7 +131,7 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (projectTemplate.ToString().Equals("WebApplicationEmpty"))
+                    if (projectTemplate.ToString().Equals("WebSiteEmpty"))
                     {
                         CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v100, Logger);
                     }
@@ -146,7 +146,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [DataTestMethod]
         [DataRow(ProjectTemplate.MauiClassLibrary)]
-        [DataRow(ProjectTemplate.WebApplicationEmpty)]
+        [DataRow(ProjectTemplate.WebSiteEmpty)]
         [Timeout(DefaultTimeout)]
         public async Task UpdatePackageInPMC(ProjectTemplate projectTemplate)
         {
@@ -181,7 +181,7 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (projectTemplate.ToString().Equals("WebApplicationEmpty"))
+                    if (projectTemplate.ToString().Equals("WebSiteEmpty"))
                     {
                         CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200, Logger);
                     }
@@ -196,7 +196,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [DataTestMethod]
         [DataRow(ProjectTemplate.MauiClassLibrary)]
-        [DataRow(ProjectTemplate.WebApplicationEmpty)]
+        [DataRow(ProjectTemplate.WebSiteEmpty)]
         [Timeout(DefaultTimeout)]
         public async Task UninstallPackageInPMC(ProjectTemplate projectTemplate)
         {
@@ -230,7 +230,7 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (projectTemplate.ToString().Equals("WebApplicationEmpty"))
+                    if (projectTemplate.ToString().Equals("WebSiteEmpty"))
                     {
                         CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, PackageName, v100, Logger);
                     }
