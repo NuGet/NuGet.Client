@@ -1733,50 +1733,49 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
 
-        //[Fact]
-        //public async Task SetCurrentPackageAsync_WithKnownOwnerViewModels_PropagatedToDetailedPackageMetadata()
-        //{
-        //    // Arrange
-        //    NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
-        //    var testVersions = new List<VersionInfoContextInfo>() {
-        //        new VersionInfoContextInfo(new NuGetVersion("1.0.0")),
-        //        new VersionInfoContextInfo(new NuGetVersion("1.0.1")),
-        //    };
+        [Fact]
+        public async Task SetCurrentPackageAsync_WithKnownOwnerViewModels_PropagatedToDetailedPackageMetadata()
+        {
+            // Arrange
+            NuGetVersion installedVersion = NuGetVersion.Parse("1.0.0");
+            PackageIdentity packageIdentity = new PackageIdentity("package", installedVersion);
 
-        //    var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
+            var mockPropertyChangedEventHandler = new Mock<IPropertyChangedEventHandler>();
 
-        //    ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = new List<KnownOwnerViewModel>()
-        //    {
-        //        new KnownOwnerViewModel(new KnownOwner("a", new Uri("https://dev.nugettest.org/profiles/a"))),
-        //        new KnownOwnerViewModel(new KnownOwner("b", new Uri("https://dev.nugettest.org/profiles/b"))),
-        //        new KnownOwnerViewModel(new KnownOwner("c", new Uri("https://dev.nugettest.org/profiles/c")))
-        //    }.ToImmutableList();
+            ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = new List<KnownOwnerViewModel>(capacity: 3)
+            {
+                new KnownOwnerViewModel(new KnownOwner("a", new Uri("https://dev.nugettest.org/profiles/a"))),
+                new KnownOwnerViewModel(new KnownOwner("b", new Uri("https://dev.nugettest.org/profiles/b"))),
+                new KnownOwnerViewModel(new KnownOwner("c", new Uri("https://dev.nugettest.org/profiles/c")))
+            }.ToImmutableList();
 
-        //    var searchService = new Mock<INuGetSearchService>();
-        //    searchService.Setup(s => s.GetPackageVersionsAsync(It.IsAny<PackageIdentity>(), It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
-        //        It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<IProjectContextInfo>>(), It.IsAny<CancellationToken>()))
-        //        .ReturnsAsync(testVersions);
+            var packageSearchMetadata = PackageSearchMetadataContextInfo.Create(_testData.TestData);
 
-        //    var packageItemViewModel = new PackageItemViewModel(searchService.Object)
-        //    {
-        //        Id = "package",
-        //        InstalledVersion = installedVersion,
-        //        Version = installedVersion,
-        //        KnownOwnerViewModels = knownOwnerViewModels
-        //    };
+            var mockSearchService = new Mock<INuGetSearchService>();
+            mockSearchService.Setup(s => s.GetPackageMetadataAsync(packageIdentity,
+                It.IsAny<ReadOnlyCollection<PackageSourceContextInfo>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((packageSearchMetadata, It.IsAny<PackageDeprecationMetadataContextInfo>()));
 
-        //    // Act
-        //    await _testInstance.SetCurrentPackageAsync(
-        //        packageItemViewModel,
-        //        ItemFilter.All,
-        //        () => packageItemViewModel);
+            var packageItemViewModel = new PackageItemViewModel(mockSearchService.Object)
+            {
+                Id = "package",
+                InstalledVersion = installedVersion,
+                Version = installedVersion,
+                KnownOwnerViewModels = knownOwnerViewModels
+            };
 
-        //    // Assert
-        //    var resultKnownOwnerViewModels = _testInstance.PackageMetadata.KnownOwnerViewModels;
-        //    resultKnownOwnerViewModels.Should().NotBeNull();
-        //    resultKnownOwnerViewModels.Count.Should().Be(5);
-        //    resultKnownOwnerViewModels.Should().ContainInOrder(knownOwnerViewModels);
-        //}
+            // Act
+            await _testInstance.SetCurrentPackageAsync(
+                packageItemViewModel,
+                ItemFilter.All,
+                () => packageItemViewModel);
+
+            // Assert
+            var resultKnownOwnerViewModels = _testInstance.PackageMetadata.KnownOwnerViewModels;
+            resultKnownOwnerViewModels.Should().NotBeNull();
+            resultKnownOwnerViewModels.Count.Should().Be(3);
+            resultKnownOwnerViewModels.Should().ContainInOrder(knownOwnerViewModels);
+        }
     }
 
     public interface IPropertyChangedEventHandler
