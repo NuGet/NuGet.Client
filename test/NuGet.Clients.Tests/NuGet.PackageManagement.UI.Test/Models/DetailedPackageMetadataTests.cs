@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
         [InlineData("https://foo.www.nuget.org/", "foo.www.nuget.org")]
         [InlineData("https://WWW.NUGET.ORG/", "nuget.org")]
         [InlineData("https://wWw.NUGET.ORG/", "nuget.org")]
-        [InlineData("https://www.nÃ¼get.org/", "nÃ¼get.org")]
+        [InlineData("https://www.nüget.org/", "nüget.org")]
         [InlineData("https://nuget.org/", "nuget.org")]
         [InlineData("https://www.nugettest.org/", "nugettest.org")]
         [InlineData("https://dev.nugettest.org/", "dev.nugettest.org")]
