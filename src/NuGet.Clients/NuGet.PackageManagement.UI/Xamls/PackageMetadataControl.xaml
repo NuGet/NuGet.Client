@@ -166,7 +166,7 @@
         AlternationCount="{Binding RelativeSource={RelativeSource Self}, Path=Items.Count}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
-            <StackPanel Orientation="Horizontal" />
+            <WrapPanel Orientation="Horizontal" />
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
@@ -176,6 +176,7 @@
                 NavigateUri="{Binding Link, Mode=OneWay}"
                 ToolTip="{Binding Link, Mode=OneWay}"
                 Style="{StaticResource HyperlinkStyle}"
+                AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_Owner}"
                 Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
                 <Run Text="{Binding Name, Mode=OneTime}" />
               </Hyperlink><TextBlock Margin="0,0,2,0" Text=",">
