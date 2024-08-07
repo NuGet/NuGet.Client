@@ -574,13 +574,8 @@ namespace NuGet.Commands
                         }
                     }
 
-                    VersionRange? nvr = dependencyGraphItem.LibraryDependency.LibraryRange.VersionRange;
-                    VersionRange? ovr = resolvedItem.LibraryDependency.LibraryRange.VersionRange;
-
-                    if (nvr == null || ovr == null)
-                    {
-                        return false;
-                    }
+                    VersionRange nvr = dependencyGraphItem.LibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
+                    VersionRange ovr = resolvedItem.LibraryDependency.LibraryRange.VersionRange ?? VersionRange.All;
 
                     if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                     {
