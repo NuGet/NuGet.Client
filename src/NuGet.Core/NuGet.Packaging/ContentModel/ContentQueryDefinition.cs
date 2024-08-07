@@ -87,7 +87,7 @@ namespace NuGet.ContentModel
         /// </summary>
         public PatternTable? Table { get; }
 
-        internal bool PreserveRawValues { get; set; }
+        internal bool PreserveRawValues { get; init; }
 
         public PatternDefinition(string pattern)
             : this(pattern, table: null, defaults: Enumerable.Empty<KeyValuePair<string, object>>())
