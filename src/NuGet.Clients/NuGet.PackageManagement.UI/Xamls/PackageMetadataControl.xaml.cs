@@ -4,6 +4,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.VisualStudio.VCProjectEngine;
 using NuGet.PackageManagement.UI.ViewModels;
 
 namespace NuGet.PackageManagement.UI
@@ -14,6 +15,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageMetadataControl : UserControl, IDisposable
     {
+        private bool _disposed = false;
         private TabItem SelectedTabItem
         {
             get
@@ -83,11 +85,16 @@ namespace NuGet.PackageManagement.UI
 
         protected virtual void Dispose(bool disposing)
         {
+            if (_disposed)
+            {
+                return;
+            }
             if (disposing)
             {
                 _packageMetadataReadMeControl?.Dispose();
                 ReadMePreviewViewModel.PropertyChanged -= ReadMePreviewViewModel_PropertyChanged;
             }
+            _disposed = true;
         }
 
         private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
