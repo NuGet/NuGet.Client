@@ -322,8 +322,6 @@ namespace NuGet.Commands
                         {
                             // Restore using new dependency resolver
                             graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-
-                            await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
                         }
                         else
                         {

@@ -167,11 +167,13 @@ namespace NuGet.Commands
 
             telemetryActivity.EndIntervalMeasure(ProjectRestoreCommand.WalkFrameworkDependencyDuration);
 
-            installPackagesSuccess &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
-
             // Update the logger with the restore target graphs
             // This allows lazy initialization for the Transitive Warning Properties
             _logger.ApplyRestoreOutput(allGraphs);
+
+            await UnexpectedDependencyMessages.LogAsync(allGraphs, _restoreRequest.Project, _logger);
+
+            installPackagesSuccess &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
 
             if (!restoreSuccess)
             {
