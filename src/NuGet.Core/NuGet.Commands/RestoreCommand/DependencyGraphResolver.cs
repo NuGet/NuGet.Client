@@ -111,15 +111,13 @@ namespace NuGet.Commands
                     TypeConstraint = LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject
                 });
 
-                DependencyGraphItem projectDependencyGraphItem = new()
+                DependencyGraphItem projectDependencyGraphItem = new(libraryDependency: initialProject)
                 {
                     DirectPackageReferenceFromRootProject = false,
-                    LibraryDependency = initialProject,
                     LibraryDependencyIndex = libraryDependencyInterningTable.Intern(initialProject),
                     LibraryRangeIndex = libraryRangeInterningTable.Intern(initialProject.LibraryRange),
-                    Path = Array.Empty<LibraryRangeIndex>(),
-                    Suppressions = new HashSet<LibraryDependencyIndex>(),
-                    VersionOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
+                    Suppressions = DependencyGraphItem.EmptySuppressions,
+                    VersionOverrides = DependencyGraphItem.EmptyVersionOverrides,
                 };
 
                 bool resolveSuccess = ResolveItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, frameworkRuntimePair, restoreTargetGraph, runtimeGraph, context, projectRestoreCommand, userPackageFolder, libraryRangeInterningTable, libraryDependencyInterningTable, cancellationToken);
@@ -784,9 +782,8 @@ namespace NuGet.Commands
                         continue;
                     }
 
-                    dependencyGraphItems.Enqueue(new DependencyGraphItem()
+                    dependencyGraphItems.Enqueue(new DependencyGraphItem(libraryDependency: dep)
                     {
-                        LibraryDependency = dep,
                         LibraryDependencyIndex = depIndex,
                         LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(i),
                         Path = DependencyGraphItem.CreatePathToRef(dependencyGraphItem.Path, dependencyGraphItem.LibraryRangeIndex),
@@ -831,9 +828,8 @@ namespace NuGet.Commands
                         {
                             foreach (var dep in runtimeDependencies)
                             {
-                                dependencyGraphItems.Enqueue(new DependencyGraphItem()
+                                dependencyGraphItems.Enqueue(new DependencyGraphItem(libraryDependency: dep)
                                 {
-                                    LibraryDependency = dep,
                                     LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
                                     LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(runtimeDependencyIndex),
                                     Path = DependencyGraphItem.CreatePathToRef(dependencyGraphItem.Path, dependencyGraphItem.LibraryRangeIndex),
@@ -897,7 +893,7 @@ namespace NuGet.Commands
         }
 
         [DebuggerDisplay("{LibraryDependency},nq")]
-        private struct DependencyGraphItem
+        private class DependencyGraphItem
         {
             public static readonly HashSet<LibraryDependencyIndex> EmptySuppressions = new();
 
