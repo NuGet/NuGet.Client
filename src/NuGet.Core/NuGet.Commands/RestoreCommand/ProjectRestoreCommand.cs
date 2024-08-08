@@ -27,7 +27,7 @@ namespace NuGet.Commands
         private readonly RestoreCollectorLogger _logger;
         private readonly ProjectRestoreRequest _request;
 
-        private const string WalkFrameworkDependencyDuration = nameof(WalkFrameworkDependencyDuration);
+        internal const string WalkFrameworkDependencyDuration = nameof(WalkFrameworkDependencyDuration);
         private const string WalkRuntimeDependencyDuration = nameof(WalkRuntimeDependencyDuration);
         private const string EvaluateDownloadDependenciesDuration = nameof(EvaluateDownloadDependenciesDuration);
 

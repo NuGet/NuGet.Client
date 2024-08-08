@@ -56,7 +56,7 @@ namespace NuGet.Commands
             Invalid = -1,
         }
 
-        public async Task<ValueTuple<bool, IEnumerable<RestoreTargetGraph>?>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, List<ExternalProjectReference> projectReferences, CancellationToken cancellationToken)
+        public async Task<ValueTuple<bool, IEnumerable<RestoreTargetGraph>?>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, List<ExternalProjectReference> projectReferences, TelemetryActivity telemetryActivity, CancellationToken cancellationToken)
         {
             bool success = true;
 
@@ -84,6 +84,8 @@ namespace NuGet.Commands
             Dictionary<NuGetFramework, RestoreTargetGraph> restoreTargetGraphsByFramework = new();
 
             bool havePackagesBeenInstalled = false;
+
+            telemetryActivity.StartIntervalMeasure();
 
             foreach (FrameworkRuntimePair frameworkRuntimePair in RestoreCommand.CreateFrameworkRuntimePairs(_restoreRequest.Project, RequestRuntimeUtility.GetRestoreRuntimes(_restoreRequest)))
             {
@@ -166,6 +168,8 @@ namespace NuGet.Commands
                     restoreTargetGraphsByFramework.Add(frameworkRuntimePair.Framework, restoreTargetGraph);
                 }
             }
+
+            telemetryActivity.EndIntervalMeasure(ProjectRestoreCommand.WalkFrameworkDependencyDuration);
 
             success &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
 

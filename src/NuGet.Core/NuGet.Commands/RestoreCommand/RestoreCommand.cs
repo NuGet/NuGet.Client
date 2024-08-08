@@ -1347,11 +1347,14 @@ namespace NuGet.Commands
 
             List<ExternalProjectReference> projectReferences = GetProjectReferences();
 
-            (bool success, IEnumerable<RestoreTargetGraph> allGraphs) = await dependencyGraphResolver.ResolveAsync(userPackageFolder, fallbackPackageFolders, context, projectReferences, token);
+            using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
+            {
+                (bool success, IEnumerable<RestoreTargetGraph> allGraphs) = await dependencyGraphResolver.ResolveAsync(userPackageFolder, fallbackPackageFolders, context, projectReferences, telemetryActivity, token);
 
-            _success = success;
+                _success &= success;
 
             return success ? allGraphs : GetEmptyGraphs(context);
+        }
         }
 
 
