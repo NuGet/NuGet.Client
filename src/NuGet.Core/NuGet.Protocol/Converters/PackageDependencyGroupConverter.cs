@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
@@ -15,6 +14,8 @@ namespace NuGet.Protocol
         public override bool CanConvert(Type objectType) => (objectType == typeof(PackageDependencyGroup));
 
         public override bool CanWrite => false;
+
+        private readonly PackageDependencyConverter _converter = new PackageDependencyConverter();
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -29,26 +30,8 @@ namespace NuGet.Protocol
                         // Dependencies are stored in an array
                         while (reader.Read() && reader.TokenType != JsonToken.EndArray)
                         {
-                            string id = null;
-                            string version = null;
-                            while (reader.Read() && reader.TokenType != JsonToken.EndObject)
-                            {
-                                if (reader.TokenType.Equals(JsonToken.PropertyName) && reader.Value.Equals(JsonProperties.PackageId))
-                                {
-                                    reader.Read();
-                                    id = reader.Value.ToString();
-                                }
-                                if (reader.TokenType.Equals(JsonToken.PropertyName) && reader.Value.Equals(JsonProperties.Range))
-                                {
-                                    reader.Read();
-                                    version = reader.Value.ToString();
-                                }
-                            }
-
-                            if (id != null)
-                            {
-                                packages.Add(new Packaging.Core.PackageDependency(id, string.IsNullOrEmpty(version) ? null : VersionRange.Parse(version)));
-                            }
+                            Packaging.Core.PackageDependency package = (Packaging.Core.PackageDependency)_converter.ReadJson(reader, typeof(Packaging.Core.PackageDependency), null, serializer);
+                            packages.Add(package);
                         }
                     }
                     else if (reader.Value.Equals(JsonProperties.TargetFramework))

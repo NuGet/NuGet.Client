@@ -1,8 +1,11 @@
 #nullable enable
+NuGet.Protocol.PackageDependencyConverter
+NuGet.Protocol.PackageDependencyConverter.PackageDependencyConverter() -> void
 NuGet.Protocol.Providers.OwnerDetailsUriResourceV3Provider
 NuGet.Protocol.Providers.OwnerDetailsUriResourceV3Provider.OwnerDetailsUriResourceV3Provider() -> void
 NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3
 NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.GetUri(string! owner) -> System.Uri!
+override NuGet.Protocol.PackageDependencyConverter.CanWrite.get -> bool
 override NuGet.Protocol.Providers.OwnerDetailsUriResourceV3Provider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository! source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource?>!>!
 static NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.CreateOrNull(System.Uri! uriTemplate) -> NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3?
 ~NuGet.Protocol.Core.Types.IPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
@@ -11,3 +14,6 @@ static NuGet.Protocol.Resources.OwnerDetailsUriTemplateResourceV3.CreateOrNull(S
 ~NuGet.Protocol.LocalPackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.PackageSearchMetadata.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
 ~NuGet.Protocol.PackageSearchMetadataV2Feed.OwnersList.get -> System.Collections.Generic.IReadOnlyList<string>
+~override NuGet.Protocol.PackageDependencyConverter.CanConvert(System.Type objectType) -> bool
+~override NuGet.Protocol.PackageDependencyConverter.ReadJson(Newtonsoft.Json.JsonReader reader, System.Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) -> object
+~override NuGet.Protocol.PackageDependencyConverter.WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer) -> void
