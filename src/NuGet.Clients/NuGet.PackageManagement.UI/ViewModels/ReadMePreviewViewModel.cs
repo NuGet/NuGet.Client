@@ -28,11 +28,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get => _isErrorWithReadMe;
             set
             {
-                if (_isErrorWithReadMe != value)
-                {
-                    _isErrorWithReadMe = value;
-                    RaisePropertyChanged(nameof(IsErrorWithReadMe));
-                }
+                SetAndRaisePropertyChanged(ref _isErrorWithReadMe, value);
             }
         }
 
@@ -43,11 +39,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get => _rawReadMe;
             set
             {
-                if (_rawReadMe != value)
-                {
-                    _rawReadMe = value;
-                    RaisePropertyChanged(nameof(ReadMeMarkdown));
-                }
+                SetAndRaisePropertyChanged(ref _rawReadMe, value);
             }
         }
 
@@ -58,18 +50,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get => _canDetermineReadMeDefined;
             set
             {
-                if (_canDetermineReadMeDefined != value)
-                {
-                    _canDetermineReadMeDefined = value;
-                    RaisePropertyChanged(nameof(CanDetermineReadMeDefined));
-                }
+                SetAndRaisePropertyChanged(ref _canDetermineReadMeDefined, value);
+
             }
         }
 
         public async Task LoadReadme(DetailedPackageMetadata package)
         {
             await TaskScheduler.Default;
-            var currentThread = Thread.CurrentThread.ManagedThreadId;
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
             bool canDetermineReadMeDefined = false;
