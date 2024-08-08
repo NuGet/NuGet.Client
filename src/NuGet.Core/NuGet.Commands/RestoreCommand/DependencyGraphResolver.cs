@@ -332,7 +332,7 @@ namespace NuGet.Commands
                         currentGraphNode.InnerNodes.Add(newGraphNode);
                         newGraphNode.OuterNode = currentGraphNode;
 
-                        if (newGraphNode.Item.Key.Type != LibraryType.Project && !versionConflicts.ContainsKey(chosenItemRangeIndex) && libraryDependency.SuppressParent != LibraryIncludeFlags.All && !libraryDependency.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version))
+                        if (newGraphNode.Item.Key.Type != LibraryType.Project && newGraphNode.Item.Key.Type != LibraryType.ExternalProject && newGraphNode.Item.Key.Type != LibraryType.Unresolved && !versionConflicts.ContainsKey(chosenItemRangeIndex) && libraryDependency.SuppressParent != LibraryIncludeFlags.All && libraryDependency.LibraryRange.VersionRange != null && !libraryDependency.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version))
                         {
                             currentGraphNode.InnerNodes.Remove(newGraphNode);
 
