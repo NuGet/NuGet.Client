@@ -1355,30 +1355,6 @@ namespace NuGet.Commands
         }
 
 
-        internal static async Task<bool> InstallPackagesAsync(PackageSpec packageSpec, IEnumerable<RestoreTargetGraph> graphs, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, NuGetv3LocalRepository userPackageFolder, TelemetryActivity telemetryActivity, CancellationToken token)
-        {
-            bool success = true;
-
-            DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(packageSpec, context, telemetryActivity, string.Empty, token);
-
-            HashSet<LibraryIdentity> uniquePackages = new HashSet<LibraryIdentity>();
-
-            success &= await projectRestoreCommand.InstallPackagesAsync(
-                uniquePackages,
-                graphs,
-                downloadDependencyResolutionResults,
-                userPackageFolder,
-                token);
-
-            if (downloadDependencyResolutionResults.Any(e => e.Unresolved.Count > 0))
-            {
-                success = false;
-                await UnresolvedMessages.LogAsync(downloadDependencyResolutionResults, context, token);
-            }
-
-            return success;
-        }
-
         internal static IEnumerable<RestoreTargetGraph> GetEmptyGraphs(RestoreRequest restoreRequest, RemoteWalkContext context)
         {
             List<RestoreTargetGraph> allGraphs = new();

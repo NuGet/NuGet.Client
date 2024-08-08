@@ -58,8 +58,10 @@ namespace NuGet.Commands
 
         public async Task<ValueTuple<bool, IEnumerable<RestoreTargetGraph>?>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, List<ExternalProjectReference> projectReferences, TelemetryActivity telemetryActivity, CancellationToken cancellationToken)
         {
-            bool restoreSuccess = true;
-            bool installPackagesSuccess = true;
+            bool success = true;
+
+            HashSet<LibraryIdentity> uniquePackages = new();
+            DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = Array.Empty<DownloadDependencyResolutionResult>();
 
             var projectRestoreRequest = new ProjectRestoreRequest(_restoreRequest, _restoreRequest.Project, _restoreRequest.ExistingLockFile, _logger)
             {
@@ -81,6 +83,7 @@ namespace NuGet.Commands
             LibraryDependencyInterningTable libraryDependencyInterningTable = new LibraryDependencyInterningTable();
 
             List<RestoreTargetGraph> allGraphs = new();
+            List<RestoreTargetGraph> runtimeGraphs = new();
             RuntimeGraph allRuntimes = RuntimeGraph.Empty;
             Dictionary<NuGetFramework, RestoreTargetGraph> restoreTargetGraphsByFramework = new();
 
@@ -93,7 +96,9 @@ namespace NuGet.Commands
                 // Install packages once we get to the first RID-specific framework/runtime pair but only once
                 if (!string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) && !havePackagesBeenInstalled)
                 {
-                    installPackagesSuccess &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
+                    downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_restoreRequest.Project, context, telemetryActivity, telemetryPrefix: string.Empty, cancellationToken);
+
+                    success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, downloadDependencyResolutionResults, userPackageFolder, cancellationToken);
 
                     havePackagesBeenInstalled = true;
                 }
@@ -127,7 +132,7 @@ namespace NuGet.Commands
                     return (false, RestoreCommand.GetEmptyGraphs(_restoreRequest, context));
                 }
 
-                restoreSuccess &= FlattenResolvedItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, context, restoreTargetGraph);
+                success &= FlattenResolvedItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, context, restoreTargetGraph);
 
                 foreach (var profile in _restoreRequest.Project.RuntimeGraph.Supports)
                 {
@@ -157,6 +162,11 @@ namespace NuGet.Commands
 
                 allGraphs.Add(restoreTargetGraph);
 
+                if (!string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier))
+                {
+                    runtimeGraphs.Add(restoreTargetGraph);
+                }
+
                 if (string.IsNullOrEmpty(frameworkRuntimePair.RuntimeIdentifier))
                 {
                     restoreTargetGraphsByFramework.Add(frameworkRuntimePair.Framework, restoreTargetGraph);
@@ -165,21 +175,31 @@ namespace NuGet.Commands
 
             telemetryActivity.EndIntervalMeasure(ProjectRestoreCommand.WalkFrameworkDependencyDuration);
 
+
+            // Install packages once we get to the first RID-specific framework/runtime pair but only once
+            if (!havePackagesBeenInstalled)
+            {
+                downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_restoreRequest.Project, context, telemetryActivity, telemetryPrefix: string.Empty, cancellationToken);
+
+                success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, downloadDependencyResolutionResults, userPackageFolder, cancellationToken);
+
+                havePackagesBeenInstalled = true;
+            }
+
+            if (runtimeGraphs.Count > 0)
+            {
+                success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, Array.Empty<DownloadDependencyResolutionResult>(), userPackageFolder, cancellationToken);
+            }
+
             // Update the logger with the restore target graphs
             // This allows lazy initialization for the Transitive Warning Properties
             _logger.ApplyRestoreOutput(allGraphs);
 
             await UnexpectedDependencyMessages.LogAsync(allGraphs, _restoreRequest.Project, _logger);
 
-            installPackagesSuccess &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
+            success &= await projectRestoreCommand.ResolutionSucceeded(allGraphs, downloadDependencyResolutionResults, context, cancellationToken);
 
-            if (!restoreSuccess)
-            {
-                // Log message for any unresolved dependencies
-                await UnresolvedMessages.LogAsync(allGraphs, context, cancellationToken);
-            }
-
-            return (restoreSuccess && installPackagesSuccess, allGraphs);
+            return (success, allGraphs);
         }
 
         private static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
