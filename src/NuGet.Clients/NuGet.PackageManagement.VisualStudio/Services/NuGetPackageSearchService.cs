@@ -196,7 +196,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetPackageVersionsAsync(identity, packageSources, includePrerelease, isTransitive, projects: null, cancellationToken);
         }
 
-        public async Task<string> GetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
+        public async Task<(bool?, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
         {
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
             if (backgroundDataCache != null && backgroundDataCache.HasReadMe().GetValueOrDefault())
             {
-                return await backgroundDataCache.GetPackageReadMeAsync();
+                return (backgroundDataCache.HasReadMe(), await backgroundDataCache.GetPackageReadMeAsync());
             }
 
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
@@ -216,34 +216,12 @@ namespace NuGet.PackageManagement.VisualStudio
             cacheEntry.UpdateSearchMetadata(packageMetadata);
             PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, CacheItemPolicy);
 
-            if (cacheEntry.HasReadMe().GetValueOrDefault())
+            if (cacheEntry.HasReadMe().GetValueOrDefault(false))
             {
-                return await cacheEntry.GetPackageReadMeAsync();
+
+                return (cacheEntry.HasReadMe(), await cacheEntry.GetPackageReadMeAsync());
             }
-            return string.Empty;
-        }
-
-        public async Task<bool?> GetPackageHasReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
-        {
-            Assumes.NotNull(identity);
-            Assumes.NotNullOrEmpty(packageSources);
-
-            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
-            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
-            if (backgroundDataCache != null)
-            {
-                return backgroundDataCache.HasReadMe();
-            }
-
-            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
-            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-
-            // Update the cache
-            var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
-            cacheEntry.UpdateSearchMetadata(packageMetadata);
-            PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, CacheItemPolicy);
-
-            return cacheEntry.HasReadMe();
+            return (cacheEntry.HasReadMe(), string.Empty);
         }
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(

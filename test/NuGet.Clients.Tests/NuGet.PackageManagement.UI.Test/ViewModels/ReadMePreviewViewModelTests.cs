@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -36,7 +35,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var readMePreviewViewModel = new ReadMePreviewViewModel();
             Mock<DetailedPackageMetadata> packageMetadata = new Mock<DetailedPackageMetadata>();
             bool? falseValue = false;
-            packageMetadata.Setup(x => x.GetHasReadMe()).Returns(Task.FromResult(falseValue));
+            packageMetadata.Setup(x => x.TryGetReadme()).Returns(Task.FromResult((falseValue, string.Empty)));
 
             //Act
             await readMePreviewViewModel.LoadReadme(packageMetadata.Object);
@@ -55,8 +54,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             Mock<DetailedPackageMetadata> packageMetadata = new Mock<DetailedPackageMetadata>();
             bool? trueValue = true;
             var readmeContent = "some readme content";
-            packageMetadata.Setup(x => x.GetHasReadMe()).Returns(Task.FromResult(trueValue));
-            packageMetadata.Setup(x => x.GetReadMe()).Returns(Task.FromResult(readmeContent));
+            packageMetadata.Setup(x => x.TryGetReadme()).Returns(Task.FromResult((trueValue, readmeContent)));
 
             //Act
             await readMePreviewViewModel.LoadReadme(packageMetadata.Object);
@@ -74,7 +72,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var readMePreviewViewModel = new ReadMePreviewViewModel();
             Mock<DetailedPackageMetadata> packageMetadata = new Mock<DetailedPackageMetadata>();
             bool? nullValue = null;
-            packageMetadata.Setup(x => x.GetHasReadMe()).Returns(Task.FromResult(nullValue));
+            packageMetadata.Setup(x => x.TryGetReadme()).Returns(Task.FromResult((nullValue,string.Empty)));
 
             //Act
             await readMePreviewViewModel.LoadReadme(packageMetadata.Object);

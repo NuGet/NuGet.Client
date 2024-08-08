@@ -124,14 +124,9 @@ namespace NuGet.PackageManagement.UI
 
         public string PackagePath { get; set; }
 
-        virtual public async Task<bool?> GetHasReadMe()
+        virtual public async Task<(bool?, string)> TryGetReadme()
         {
-            return await _packageItemViewModel?.GetHasReadmeAsync();
-        }
-
-        virtual public async Task<string> GetReadMe()
-        {
-            return await _packageItemViewModel?.GetReadmeAsync();
+            return await _packageItemViewModel?.TryGetReadmeAsync();
         }
     }
 }

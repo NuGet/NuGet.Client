@@ -151,14 +151,10 @@ namespace NuGet.PackageManagement.UI.Utility
                 return _parent._service.GetPackageMetadataListAsync(id, packageSources, includePrerelease, includeUnlisted, cancellationToken);
             }
 
-            public Task<string> GetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
-            {
-                return _parent._service.GetPackageReadMeAsync(identity, packageSources, includePrerelease, cancellationToken);
-            }
 
-            public Task<bool?> GetPackageHasReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
+            public Task<(bool?, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
             {
-                return _parent._service.GetPackageHasReadMeAsync(identity, packageSources, includePrerelease, cancellationToken);
+                return _parent._service.TryGetPackageReadMeAsync(identity, packageSources, includePrerelease, cancellationToken);
             }
 
             public ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
