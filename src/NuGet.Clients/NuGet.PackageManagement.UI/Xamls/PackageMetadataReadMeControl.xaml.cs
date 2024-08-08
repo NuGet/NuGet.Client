@@ -79,8 +79,7 @@ namespace NuGet.PackageManagement.UI
            DependencyObject dependencyObject,
            DependencyPropertyChangedEventArgs e)
         {
-            var control = (PackageMetadataReadMeControl)dependencyObject;
-            if (e.Property == PackageMetadataProperty)
+            if (e.Property == PackageMetadataProperty && dependencyObject is PackageMetadataReadMeControl control)
             {
                 control?.UpdateControl((DetailedPackageMetadata)e.OldValue, (DetailedPackageMetadata)e.NewValue);
             }

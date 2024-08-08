@@ -257,7 +257,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
-            if (_globalLocalRepositories != null && _globalLocalRepositories.Any())
+            if (_globalLocalRepositories != null)
             {
                 _globalLocalRepositories.ForEach(x =>
                     tasks.Add(x.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken)));
