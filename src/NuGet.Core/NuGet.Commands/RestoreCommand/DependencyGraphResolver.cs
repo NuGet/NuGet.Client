@@ -122,9 +122,9 @@ namespace NuGet.Commands
                     VersionOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
                 };
 
-                restoreSuccess &= ResolveItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, frameworkRuntimePair, restoreTargetGraph, runtimeGraph, context, projectRestoreCommand, userPackageFolder, libraryRangeInterningTable, libraryDependencyInterningTable, cancellationToken);
+                bool resolveSuccess = ResolveItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, frameworkRuntimePair, restoreTargetGraph, runtimeGraph, context, projectRestoreCommand, userPackageFolder, libraryRangeInterningTable, libraryDependencyInterningTable, cancellationToken);
 
-                if (!restoreSuccess)
+                if (!resolveSuccess)
                 {
                     return (false, RestoreCommand.GetEmptyGraphs(_restoreRequest, context));
                 }

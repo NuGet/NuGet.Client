@@ -299,7 +299,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
 
-        [CIOnlyFact]
+        [Fact]
         public async Task Restore_PackageWithCompressedSignature_RequireMode_FailsAndDoesNotExpandAsync()
         {
             // Arrange
