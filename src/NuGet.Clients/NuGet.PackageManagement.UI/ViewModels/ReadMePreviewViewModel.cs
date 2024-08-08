@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -57,6 +58,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public async Task LoadReadme(DetailedPackageMetadata package)
         {
+            Assumes.NotNull(package);
             await TaskScheduler.Default;
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
