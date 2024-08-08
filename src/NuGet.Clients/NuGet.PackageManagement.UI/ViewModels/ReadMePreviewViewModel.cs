@@ -67,17 +67,12 @@ namespace NuGet.PackageManagement.UI.ViewModels
             var packageHasReadme = await package.GetHasReadMe();
             if (packageHasReadme.HasValue)
             {
+                newReadMeValue = string.Empty;
+                isErrorWithReadMe = false;
+                canDetermineReadMeDefined = true;
                 if (packageHasReadme.Value)
                 {
                     newReadMeValue = await package.GetReadMe();
-                    isErrorWithReadMe = false;
-                    canDetermineReadMeDefined = true;
-                }
-                else
-                {
-                    newReadMeValue = string.Empty;
-                    isErrorWithReadMe = false;
-                    canDetermineReadMeDefined = true;
                 }
             }
             else
