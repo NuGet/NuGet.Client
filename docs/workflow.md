@@ -25,7 +25,7 @@ This repo has bots that manage all stale PRs. Stale PRs will be autoclosed.
 
 - If you disagree with the overall approach of the PR, comment on the general PR rather than individual lines of code.
 - Leaving [suggested changes](https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-line-comments-to-a-pull-request) is welcomed, but please never commit them for a PR you did not create.
-- When you are seeking to understand something rather than request corrections, it is suggested to use language such as "I'm curious ..." as a prefix to comments.
+- Make sure your intent is clear. Is your comment about just trying to understand the code? Use softer language, such as "I'm curious ...". Do you have a knowledge that the change could introduce a regression? Make your comment emphasize that!
 - For comments that are just optional suggestions or are explicitly non-blocking, prefix them with "nit: " or "non-blocking: ".
 - When to mark a PR as "Approved"
   - You feel confident that the code meets a high quality bar, has adequate test coverage, is ready to merge.
