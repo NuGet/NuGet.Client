@@ -1352,7 +1352,7 @@ namespace NuGet.Commands
 
                 _success &= success;
 
-                return success ? allGraphs : GetEmptyGraphs(context);
+                return allGraphs;
             }
         }
 
@@ -1381,13 +1381,13 @@ namespace NuGet.Commands
             return success;
         }
 
-        internal IEnumerable<RestoreTargetGraph> GetEmptyGraphs(RemoteWalkContext context)
+        internal static IEnumerable<RestoreTargetGraph> GetEmptyGraphs(RestoreRequest restoreRequest, RemoteWalkContext context)
         {
             List<RestoreTargetGraph> allGraphs = new();
 
-            foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+            foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(restoreRequest.Project, RequestRuntimeUtility.GetRestoreRuntimes(restoreRequest)))
             {
-                allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                allGraphs.Add(RestoreTargetGraph.Create(restoreRequest.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, context.Logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
             }
 
             return allGraphs;

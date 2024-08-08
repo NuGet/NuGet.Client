@@ -58,7 +58,8 @@ namespace NuGet.Commands
 
         public async Task<ValueTuple<bool, IEnumerable<RestoreTargetGraph>?>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, List<ExternalProjectReference> projectReferences, TelemetryActivity telemetryActivity, CancellationToken cancellationToken)
         {
-            bool success = true;
+            bool restoreSuccess = true;
+            bool installPackagesSuccess = true;
 
             var projectRestoreRequest = new ProjectRestoreRequest(_restoreRequest, _restoreRequest.Project, _restoreRequest.ExistingLockFile, _logger)
             {
@@ -92,12 +93,7 @@ namespace NuGet.Commands
                 // Install packages once we get to the first RID-specific framework/runtime pair but only once
                 if (!string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) && !havePackagesBeenInstalled)
                 {
-                    success &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
-
-                    if (!success)
-                    {
-                        return (false, null);
-                    }
+                    installPackagesSuccess &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
 
                     havePackagesBeenInstalled = true;
                 }
@@ -126,14 +122,14 @@ namespace NuGet.Commands
                     VersionOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
                 };
 
-                success &= ResolveItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, frameworkRuntimePair, restoreTargetGraph, runtimeGraph, context, projectRestoreCommand, userPackageFolder, libraryRangeInterningTable, libraryDependencyInterningTable, cancellationToken);
+                restoreSuccess &= ResolveItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, frameworkRuntimePair, restoreTargetGraph, runtimeGraph, context, projectRestoreCommand, userPackageFolder, libraryRangeInterningTable, libraryDependencyInterningTable, cancellationToken);
 
-                if (!success)
+                if (!restoreSuccess)
                 {
-                    return (false, null);
+                    return (false, RestoreCommand.GetEmptyGraphs(_restoreRequest, context));
                 }
 
-                success &= FlattenResolvedItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, context, restoreTargetGraph);
+                restoreSuccess &= FlattenResolvedItems(initialProject, projectDependencyGraphItem, resolvedItems, findLibraryCachedAsyncResultCache, context, restoreTargetGraph);
 
                 foreach (var profile in _restoreRequest.Project.RuntimeGraph.Supports)
                 {
@@ -171,19 +167,19 @@ namespace NuGet.Commands
 
             telemetryActivity.EndIntervalMeasure(ProjectRestoreCommand.WalkFrameworkDependencyDuration);
 
-            success &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
+            installPackagesSuccess &= await RestoreCommand.InstallPackagesAsync(_restoreRequest.Project, allGraphs, context, projectRestoreCommand, userPackageFolder, _telemetryActivity, cancellationToken);
 
             // Update the logger with the restore target graphs
             // This allows lazy initialization for the Transitive Warning Properties
             _logger.ApplyRestoreOutput(allGraphs);
 
-            if (!success)
+            if (!restoreSuccess)
             {
                 // Log message for any unresolved dependencies
                 await UnresolvedMessages.LogAsync(allGraphs, context, cancellationToken);
             }
 
-            return (success, allGraphs);
+            return (restoreSuccess && installPackagesSuccess, allGraphs);
         }
 
         private static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
@@ -202,50 +198,6 @@ namespace NuGet.Commands
 
             // TODO: Should there be other cases here?
             return false;
-        }
-
-        private (RestoreTargetGraph, RuntimeGraph?) CreateRestoreTargetGraph(FrameworkRuntimePair frameworkRuntimePair, RuntimeGraph allRuntimes, Dictionary<NuGetFramework, RestoreTargetGraph> restoreTargetGraphsByFramework, List<NuGetv3LocalRepository> localRepositories)
-        {
-            var restoreTargetGraph = new RestoreTargetGraph
-            {
-                AnalyzeResult = new AnalyzeResult<RemoteResolveResult>(),
-                Conflicts = new List<ResolverConflict>(),
-                InConflict = false,
-                Install = new HashSet<RemoteMatch>(),
-                ResolvedDependencies = new HashSet<ResolvedDependencyKey>(),
-                Unresolved = new HashSet<LibraryRange>(),
-                Framework = frameworkRuntimePair.Framework,
-                RuntimeIdentifier = string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) ? null : frameworkRuntimePair.RuntimeIdentifier,
-            };
-
-            restoreTargetGraph.Name = FrameworkRuntimePair.GetName(restoreTargetGraph.Framework, restoreTargetGraph.RuntimeIdentifier);
-            restoreTargetGraph.TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(restoreTargetGraph.Framework, restoreTargetGraph.RuntimeIdentifier);
-
-            RestoreTargetGraph? tfmNonRidGraph;
-            RuntimeGraph? runtimeGraph = default;
-
-            if (!string.IsNullOrEmpty(frameworkRuntimePair.RuntimeIdentifier))
-            {
-                // We start with the non-RID TFM graph.
-                // This is guaranteed to be computed before any graph with a RID, so we can assume this will return a value.
-                tfmNonRidGraph = restoreTargetGraphsByFramework[frameworkRuntimePair.Framework];
-
-                // PCL Projects with Supports have a runtime graph but no matching framework.
-                string? runtimeGraphPath = _restoreRequest.Project.TargetFrameworks.FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, tfmNonRidGraph.Framework))?.RuntimeIdentifierGraphPath;
-
-                RuntimeGraph? projectProviderRuntimeGraph = default;
-                if (!string.IsNullOrWhiteSpace(runtimeGraphPath))
-                {
-                    projectProviderRuntimeGraph = ProjectRestoreCommand.GetRuntimeGraph(runtimeGraphPath, _logger);
-                }
-
-                runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
-                allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
-            }
-
-            restoreTargetGraph.Conventions = new Client.ManagedCodeConventions(runtimeGraph);
-
-            return (restoreTargetGraph, runtimeGraph);
         }
 
         private static bool FlattenResolvedItems(LibraryDependency initialProject, DependencyGraphItem projectDependencyGraphItem, Dictionary<LibraryDependencyIndex, ResolvedItem> resolvedItems, Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> allResolvedItems, RemoteWalkContext context, RestoreTargetGraph restoreTargetGraph)
@@ -896,6 +848,50 @@ namespace NuGet.Commands
             }
 
             return true;
+        }
+
+        private (RestoreTargetGraph, RuntimeGraph?) CreateRestoreTargetGraph(FrameworkRuntimePair frameworkRuntimePair, RuntimeGraph allRuntimes, Dictionary<NuGetFramework, RestoreTargetGraph> restoreTargetGraphsByFramework, List<NuGetv3LocalRepository> localRepositories)
+        {
+            var restoreTargetGraph = new RestoreTargetGraph
+            {
+                AnalyzeResult = new AnalyzeResult<RemoteResolveResult>(),
+                Conflicts = new List<ResolverConflict>(),
+                InConflict = false,
+                Install = new HashSet<RemoteMatch>(),
+                ResolvedDependencies = new HashSet<ResolvedDependencyKey>(),
+                Unresolved = new HashSet<LibraryRange>(),
+                Framework = frameworkRuntimePair.Framework,
+                RuntimeIdentifier = string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) ? null : frameworkRuntimePair.RuntimeIdentifier,
+            };
+
+            restoreTargetGraph.Name = FrameworkRuntimePair.GetName(restoreTargetGraph.Framework, restoreTargetGraph.RuntimeIdentifier);
+            restoreTargetGraph.TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(restoreTargetGraph.Framework, restoreTargetGraph.RuntimeIdentifier);
+
+            RestoreTargetGraph? tfmNonRidGraph;
+            RuntimeGraph? runtimeGraph = default;
+
+            if (!string.IsNullOrEmpty(frameworkRuntimePair.RuntimeIdentifier))
+            {
+                // We start with the non-RID TFM graph.
+                // This is guaranteed to be computed before any graph with a RID, so we can assume this will return a value.
+                tfmNonRidGraph = restoreTargetGraphsByFramework[frameworkRuntimePair.Framework];
+
+                // PCL Projects with Supports have a runtime graph but no matching framework.
+                string? runtimeGraphPath = _restoreRequest.Project.TargetFrameworks.FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, tfmNonRidGraph.Framework))?.RuntimeIdentifierGraphPath;
+
+                RuntimeGraph? projectProviderRuntimeGraph = default;
+                if (!string.IsNullOrWhiteSpace(runtimeGraphPath))
+                {
+                    projectProviderRuntimeGraph = ProjectRestoreCommand.GetRuntimeGraph(runtimeGraphPath, _logger);
+                }
+
+                runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
+                allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
+            }
+
+            restoreTargetGraph.Conventions = new Client.ManagedCodeConventions(runtimeGraph);
+
+            return (restoreTargetGraph, runtimeGraph);
         }
 
         [DebuggerDisplay("{LibraryDependency},nq")]
