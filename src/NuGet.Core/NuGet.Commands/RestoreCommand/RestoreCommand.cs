@@ -16,7 +16,6 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -152,7 +151,7 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
-            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
+            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference || request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
             {
                 _enableNewDependencyResolver = false;
             }
@@ -1353,8 +1352,8 @@ namespace NuGet.Commands
 
                 _success &= success;
 
-            return success ? allGraphs : GetEmptyGraphs(context);
-        }
+                return success ? allGraphs : GetEmptyGraphs(context);
+            }
         }
 
 

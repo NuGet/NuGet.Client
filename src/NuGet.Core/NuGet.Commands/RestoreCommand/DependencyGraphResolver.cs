@@ -248,7 +248,7 @@ namespace NuGet.Commands
             return (restoreTargetGraph, runtimeGraph);
         }
 
-        private bool FlattenResolvedItems(LibraryDependency initialProject, DependencyGraphItem projectDependencyGraphItem, Dictionary<LibraryDependencyIndex, ResolvedItem> resolvedItems, Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> allResolvedItems, RemoteWalkContext context, RestoreTargetGraph restoreTargetGraph)
+        private static bool FlattenResolvedItems(LibraryDependency initialProject, DependencyGraphItem projectDependencyGraphItem, Dictionary<LibraryDependencyIndex, ResolvedItem> resolvedItems, Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> allResolvedItems, RemoteWalkContext context, RestoreTargetGraph restoreTargetGraph)
         {
             bool success = true;
 
@@ -270,19 +270,6 @@ namespace NuGet.Commands
 
             var versionConflicts = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
 
-            var pins = new Dictionary<LibraryRangeIndex, List<GraphNode<RemoteResolveResult>>>();
-
-            if (_restoreRequest.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
-            {
-                foreach (var chosenResolvedItem in resolvedItems)
-                {
-                    if (chosenResolvedItem.Value.LibraryDependency.ReferenceType == LibraryDependencyReferenceType.None && chosenResolvedItem.Value.LibraryDependency.VersionCentrallyManaged && !pins.ContainsKey(chosenResolvedItem.Value.LibraryRangeIndex))
-                    {
-                        pins.Add(chosenResolvedItem.Value.LibraryRangeIndex, new List<GraphNode<RemoteResolveResult>>());
-                    }
-                }
-            }
-
             itemsToFlatten.Enqueue((projectDependencyGraphItem.LibraryDependencyIndex, rootGraphNode));
             while (itemsToFlatten.Count > 0)
             {
@@ -292,8 +279,6 @@ namespace NuGet.Commands
                 {
                     continue;
                 }
-
-                //(LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, bool directPackageReferenceFromRootProject, var chosenSuppressions) = foundItem;
 
                 if (allResolvedItems.TryGetValue(foundItem.LibraryRangeIndex, out FindLibraryCachedAsyncResult node))
                 {
@@ -332,11 +317,6 @@ namespace NuGet.Commands
 
                         LibraryRangeIndex chosenItemRangeIndex = resolvedItem.LibraryRangeIndex;
                         LibraryDependency actualDep = resolvedItem.LibraryDependency;
-
-                        if ((currentGraphNode.Key.TypeConstraint == LibraryDependencyTarget.Package || currentGraphNode.Key.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal) && pins.TryGetValue(chosenItemRangeIndex, out List<GraphNode<RemoteResolveResult>>? parents))
-                        {
-                            parents.Add(currentGraphNode);
-                        }
 
                         if (!visitedItems.Add(depIndex))
                         {
@@ -398,11 +378,6 @@ namespace NuGet.Commands
                         currentGraphNode.InnerNodes.Add(newGraphNode);
                         newGraphNode.OuterNode = currentGraphNode;
 
-                        if (_restoreRequest.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && actualDep.ReferenceType == LibraryDependencyReferenceType.None && actualDep.VersionCentrallyManaged == true)
-                        {
-                            newGraphNode.Item.IsCentralTransitive = true;
-                        }
-
                         if (newGraphNode.Item.Key.Type != LibraryType.Project && !versionConflicts.ContainsKey(chosenItemRangeIndex) && libraryDependency.SuppressParent != LibraryIncludeFlags.All && !libraryDependency.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version))
                         {
                             currentGraphNode.InnerNodes.Remove(newGraphNode);
@@ -440,17 +415,6 @@ namespace NuGet.Commands
                             parent: newGraphNode.OuterNode.Item.Key,
                             range: newGraphNode.Key.VersionRange,
                             child: newGraphNode.Item.Key));
-                    }
-                }
-            }
-
-            if (pins.Count > 0)
-            {
-                foreach (var parents in pins)
-                {
-                    if (nodesById.TryGetValue(parents.Key, out var node))
-                    {
-                        node.ParentNodes.AddRange(parents.Value);
                     }
                 }
             }
@@ -500,7 +464,7 @@ namespace NuGet.Commands
             return success;
         }
 
-        private bool ResolveItems(LibraryDependency initialProject, DependencyGraphItem projectDependencyGraphItem, Dictionary<LibraryDependencyIndex, ResolvedItem> resolvedItems, Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> findLibraryCache, FrameworkRuntimePair frameworkRuntimePair, RestoreTargetGraph restoreTargetGraph, RuntimeGraph? runtimeGraph, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, NuGetv3LocalRepository userPackageFolder, LibraryRangeInterningTable libraryRangeInterningTable, LibraryDependencyInterningTable libraryDependencyInterningTable, CancellationToken cancellationToken)
+        private static bool ResolveItems(LibraryDependency initialProject, DependencyGraphItem projectDependencyGraphItem, Dictionary<LibraryDependencyIndex, ResolvedItem> resolvedItems, Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> findLibraryCache, FrameworkRuntimePair frameworkRuntimePair, RestoreTargetGraph restoreTargetGraph, RuntimeGraph? runtimeGraph, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, NuGetv3LocalRepository userPackageFolder, LibraryRangeInterningTable libraryRangeInterningTable, LibraryDependencyInterningTable libraryDependencyInterningTable, CancellationToken cancellationToken)
         {
             int maxOutstandingRefs = 0;
             int totalLookups = 0;
@@ -511,8 +475,6 @@ namespace NuGet.Commands
             Queue<DependencyGraphItem> dependencyGraphItems = new Queue<DependencyGraphItem>(4096);
 
             Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new(1024);
-
-            Dictionary<LibraryDependencyIndex, LibraryDependency>? pinnedPackages = default;
 
         ProcessDeepEviction:
 
@@ -548,11 +510,6 @@ namespace NuGet.Commands
                     {
                         continue;
                     }
-                }
-
-                if (pinnedPackages != null && pinnedPackages.TryGetValue(dependencyGraphItem.LibraryDependencyIndex, out LibraryDependency? pinnedLibraryDependency))
-                {
-                    libraryDependency = pinnedLibraryDependency;
                 }
 
                 // else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
@@ -761,7 +718,6 @@ namespace NuGet.Commands
                                 }
 
                                 // slightly evil, but works.. we should just shift to the current thing as ref?
-                                //resolvedItems.Add(dependencyGraphItem.LibraryDependencyIndex, (libraryDependency, dependencyGraphItem.LibraryRangeIndex, dependencyGraphItem.Path, packageReferenceFromRootProject, newSuppressionsAndOverrides));
                                 resolvedItems.Add(dependencyGraphItem.LibraryDependencyIndex, new ResolvedItem(dependencyGraphItem, libraryDependency));
                             }
                         }
@@ -832,16 +788,6 @@ namespace NuGet.Commands
 
                         newOverrides[depIndex] = dep.VersionOverride;
                     }
-
-                    if (_restoreRequest.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && dep.ReferenceType == LibraryDependencyReferenceType.None && dep.VersionCentrallyManaged == true)
-                    {
-                        if (pinnedPackages == null)
-                        {
-                            pinnedPackages = new Dictionary<LibraryDependencyIndex, LibraryDependency>(findLibraryCachedAsyncResult.Item.Data.Dependencies.Count);
-                        }
-
-                        pinnedPackages[depIndex] = dep;
-                    }
                 }
 
                 // If the override set has been mutated, then add the rest of the overrides.
@@ -875,12 +821,6 @@ namespace NuGet.Commands
                 for (int i = 0; i < findLibraryCachedAsyncResult.Item.Data.Dependencies.Count; i++)
                 {
                     LibraryDependency dep = findLibraryCachedAsyncResult.Item.Data.Dependencies[i];
-
-                    if (_restoreRequest.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && dep.ReferenceType == LibraryDependencyReferenceType.None && dep.VersionCentrallyManaged == true)
-                    {
-                        // Skip pinned transitive dependencies since they are always referenced by the project even if they weren't used
-                        continue;
-                    }
 
                     LibraryDependencyIndex depIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(i);
 
