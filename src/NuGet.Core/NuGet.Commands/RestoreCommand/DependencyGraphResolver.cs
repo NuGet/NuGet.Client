@@ -899,11 +899,6 @@ namespace NuGet.Commands
 
             _success &= await projectRestoreCommand.ResolutionSucceeded(allGraphs, downloadDependencyResolutionResults, context, token);
 
-            if (!_success)
-            {
-                // Log message for any unresolved dependencies
-                await UnresolvedMessages.LogAsync(allGraphs, context, token);
-            }
             return (_success, allGraphs, allRuntimes);
         }
 

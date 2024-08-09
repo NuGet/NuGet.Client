@@ -1379,6 +1379,7 @@ namespace NuGet.Commands
             List<RestoreTargetGraph> graphs = null;
             RuntimeGraph runtimes = null;
 
+            bool failed = false;
             using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
             {
                 try
@@ -1387,24 +1388,21 @@ namespace NuGet.Commands
 
                     _success &= result.Success;
 
-                    if (result.Success)
-                    {
-                        graphs = result.Graphs;
-                    }
+                    graphs = result.Graphs;
 
                     runtimes = result.Runtimes;
                 }
                 catch (FatalProtocolException)
                 {
-                    _success = false;
+                    failed = true;
                 }
                 catch (AggregateException e) when (e.InnerException is FatalProtocolException)
                 {
-                    _success = false;
+                    failed = true;
                 }
             }
 
-            if (!_success)
+            if (failed)
             {
                 graphs = new List<RestoreTargetGraph>();
 
