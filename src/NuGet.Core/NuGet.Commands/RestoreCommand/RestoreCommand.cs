@@ -1924,7 +1924,7 @@ namespace NuGet.Commands
                         GraphItem<RemoteResolveResult> refItem;
                         try
                         {
-                            refItem = ResolverUtility.FindLibraryCachedAsync(
+                            refItem = ResolverUtility.FindLibraryEntryAsync(
                                 currentRef.LibraryRange,
                                 newRTG.Framework,
                                 newRTG.RuntimeIdentifier,
