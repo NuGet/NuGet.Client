@@ -1929,8 +1929,7 @@ namespace NuGet.Commands
                                 newRTG.Framework,
                                 newRTG.RuntimeIdentifier,
                                 context,
-                                CancellationToken.None,
-                                noLock: true).GetAwaiter().GetResult();
+                                CancellationToken.None).GetAwaiter().GetResult();
                         }
                         catch (FatalProtocolException)
                         {

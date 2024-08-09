@@ -25,14 +25,13 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string? runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken,
-            bool noLock = false)
+            CancellationToken cancellationToken)
         {
             LibraryRangeCacheKey key = new(libraryRange, framework);
 
             return context.FindLibraryEntryCache.GetOrAddAsync(key,
-                static state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken, state.noLock),
-                (key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken, noLock),
+                static state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken),
+                (key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken),
                 cancellationToken);
         }
 
@@ -41,8 +40,7 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string? runtimeIdentifier,
             RemoteWalkContext context,
-            CancellationToken cancellationToken,
-            bool noLock = false)
+            CancellationToken cancellationToken)
         {
             if (libraryRange == null) throw new ArgumentNullException(nameof(libraryRange));
             if (framework == null) throw new ArgumentNullException(nameof(framework));
@@ -64,9 +62,7 @@ namespace NuGet.DependencyResolver
             // the package.
             for (var i = 0; i < 2 && graphItem == null; i++)
             {
-                RemoteMatch? match = null;
-
-                var matchTask = FindLibraryMatchAsync(
+                RemoteMatch? match = await FindLibraryMatchAsync(
                     libraryRange,
                     framework,
                     runtimeIdentifier,
@@ -78,15 +74,6 @@ namespace NuGet.DependencyResolver
                     context.Logger,
                     cancellationToken);
 
-                if (noLock)
-                {
-                    match = matchTask.GetAwaiter().GetResult();
-                }
-                else
-                {
-                    match = await matchTask;
-                }
-
 
                 if (match == null)
                 {
@@ -97,16 +84,7 @@ namespace NuGet.DependencyResolver
 
                     try
                     {
-                        var graphItemTask = CreateGraphItemAsync(match, framework, currentCacheContext, context.Logger, cancellationToken);
-
-                        if (noLock)
-                        {
-                            graphItem = graphItemTask.GetAwaiter().GetResult();
-                        }
-                        else
-                        {
-                            graphItem = await graphItemTask;
-                        }
+                        graphItem = await CreateGraphItemAsync(match, framework, currentCacheContext, context.Logger, cancellationToken);
                     }
                     catch (InvalidCacheProtocolException) when (i == 0)
                     {
