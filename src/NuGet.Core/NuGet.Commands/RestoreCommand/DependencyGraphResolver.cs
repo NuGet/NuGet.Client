@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -74,7 +76,7 @@ namespace NuGet.Commands
             _telemetryActivity.StartIntervalMeasure();
 
             bool hasInstallBeenCalledAlready = false;
-            DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = null;
+            DownloadDependencyResolutionResult[]? downloadDependencyResolutionResults = default;
 
             foreach (var pair in projectFrameworkRuntimePairs)
             {
@@ -104,20 +106,17 @@ namespace NuGet.Commands
                 newRTG.Name = FrameworkRuntimePair.GetName(newRTG.Framework, newRTG.RuntimeIdentifier);
                 newRTG.TargetGraphName = FrameworkRuntimePair.GetTargetGraphName(newRTG.Framework, newRTG.RuntimeIdentifier);
 
-                RestoreTargetGraph tfmNonRidGraph = null;
-                RuntimeGraph runtimeGraph = null;
-                if (!string.IsNullOrEmpty(pair.RuntimeIdentifier))
+                RuntimeGraph? runtimeGraph = default;
+                if (!string.IsNullOrEmpty(pair.RuntimeIdentifier) && graphByTFM.TryGetValue(pair.Framework, out var tfmNonRidGraph))
                 {
                     // We start with the non-RID TFM graph.
                     // This is guaranteed to be computed before any graph with a RID, so we can assume this will return a value.
-                    tfmNonRidGraph = graphByTFM[pair.Framework];
-                    Debug.Assert(tfmNonRidGraph != null);
 
                     // PCL Projects with Supports have a runtime graph but no matching framework.
                     var runtimeGraphPath = _request.Project.TargetFrameworks.
                             FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, tfmNonRidGraph.Framework))?.RuntimeIdentifierGraphPath;
 
-                    RuntimeGraph projectProviderRuntimeGraph = null;
+                    RuntimeGraph? projectProviderRuntimeGraph = default;
                     if (runtimeGraphPath != null)
                     {
                         projectProviderRuntimeGraph = ProjectRestoreCommand.GetRuntimeGraph(runtimeGraphPath, _logger);
@@ -172,12 +171,12 @@ namespace NuGet.Commands
                 while (refImport.Count > 0)
                 {
                     DependencyGraphItem importRefItem = refImport.Dequeue();
-                    var currentRef = importRefItem.LibraryDependency;
+                    var currentRef = importRefItem.LibraryDependency!;
                     var currentRefDependencyIndex = importRefItem.LibraryDependencyIndex;
                     var currentRefRangeIndex = importRefItem.LibraryRangeIndex;
                     var pathToCurrentRef = importRefItem.Path;
                     var currentSuppressions = importRefItem.Suppressions;
-                    var currentOverrides = importRefItem.VersionOverrides;
+                    var currentOverrides = importRefItem.VersionOverrides!;
                     var directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
                     LibraryRangeIndex libraryRangeOfCurrentRef = importRefItem.LibraryRangeIndex;
 
@@ -225,7 +224,7 @@ namespace NuGet.Commands
                         if ((chosenRefRangeIndex == currentRefRangeIndex) &&
                             LibraryDependencyTargetUtils.EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
                         {
-                            if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out FindLibraryEntryResult resolvedItem) && resolvedItem.Item.Key.Type == LibraryType.Project)
+                            if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out FindLibraryEntryResult? resolvedItem) && resolvedItem.Item.Key.Type == LibraryType.Project)
                             {
                                 // We need to evict the chosen item because this one has a more stringent type constraint.
                                 evictOnTypeConstraint = true;
@@ -233,10 +232,11 @@ namespace NuGet.Commands
                         }
 
                         // TODO: Handle null version ranges
-                        VersionRange nvr = currentRef.LibraryRange.VersionRange;
-                        VersionRange ovr = chosenRef.LibraryRange.VersionRange;
+                        VersionRange nvr = currentRef.LibraryRange.VersionRange ?? VersionRange.All;
+                        VersionRange ovr = chosenRef.LibraryRange.VersionRange ?? VersionRange.All;
 
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
+
                         {
                             if (chosenRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal)
                             {
@@ -272,7 +272,7 @@ namespace NuGet.Commands
 
                             int deepEvictions = 0;
                             //unwind anything chosen by the node we're evicting..
-                            HashSet<LibraryRangeIndex> evicteesToRemove = null;
+                            HashSet<LibraryRangeIndex>? evicteesToRemove = default;
                             foreach (var evictee in evictions)
                             {
                                 (LibraryRangeIndex[] evicteePath, LibraryDependencyIndex evicteeDepIndex, LibraryDependencyTarget evicteeTypeConstraint) = evictee.Value;
@@ -325,7 +325,7 @@ namespace NuGet.Commands
                                     {
                                         new SuppressionsAndVersionOverrides
                                         {
-                                            Suppressions = currentSuppressions,
+                                            Suppressions = currentSuppressions!,
                                             VersionOverrides = currentOverrides
                                         }
                                     }
@@ -358,7 +358,7 @@ namespace NuGet.Commands
                                 continue;
                             }
                             //if the one we are now looking at is pure, then we should replace the one we have chosen because if we're here it isnt pure.
-                            else if ((currentSuppressions.Count == 0) && (currentOverrides.Count == 0))
+                            else if ((currentSuppressions!.Count == 0) && (currentOverrides.Count == 0))
                             {
                                 chosenResolvedItems.Remove(currentRefDependencyIndex);
                                 //slightly evil, but works.. we should just shift to the current thing as ref?
@@ -393,7 +393,7 @@ namespace NuGet.Commands
                                     {
                                         foreach (var chosenOverride in chosenImportDisposition.VersionOverrides)
                                         {
-                                            if (!currentOverrides.TryGetValue(chosenOverride.Key, out VersionRange currentOverride))
+                                            if (!currentOverrides.TryGetValue(chosenOverride.Key, out VersionRange? currentOverride))
                                             {
                                                 localIsEqualOrSuperSetOverride = false;
                                                 break;
@@ -460,14 +460,14 @@ namespace NuGet.Commands
                                 {
                                     new SuppressionsAndVersionOverrides
                                     {
-                                        Suppressions = currentSuppressions,
+                                        Suppressions = currentSuppressions!,
                                         VersionOverrides = currentOverrides
                                     }
                                 }
                             });
                     }
-                    FindLibraryEntryResult refItemResult = null;
-                    if (!findLibraryEntryCache.TryGetValue(libraryRangeOfCurrentRef, out refItemResult))
+                    
+                    if (!findLibraryEntryCache.TryGetValue(libraryRangeOfCurrentRef, out FindLibraryEntryResult? refItemResult))
                     {
                         GraphItem<RemoteResolveResult> refItem = ResolverUtility.FindLibraryEntryAsync(
                                 currentRef.LibraryRange,
@@ -487,9 +487,9 @@ namespace NuGet.Commands
                         findLibraryEntryCache.Add(libraryRangeOfCurrentRef, refItemResult);
                     }
 
-                    HashSet<LibraryDependencyIndex> suppressions = null;
-                    IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> finalVersionOverrides = null;
-                    Dictionary<LibraryDependencyIndex, VersionRange> newOverrides = null;
+                    HashSet<LibraryDependencyIndex>? suppressions = default;
+                    IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? finalVersionOverrides = default;
+                    Dictionary<LibraryDependencyIndex, VersionRange>? newOverrides = default;
                     //Scan for suppressions and overrides
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
@@ -548,7 +548,7 @@ namespace NuGet.Commands
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
 
                         //Suppress this node
-                        if (suppressions.Contains(depIndex))
+                        if (suppressions!.Contains(depIndex))
                         {
                             continue;
                         }
@@ -572,7 +572,7 @@ namespace NuGet.Commands
                         HashSet<LibraryDependency> runtimeDependencies = new HashSet<LibraryDependency>();
                         LibraryRange libraryRange = currentRef.LibraryRange;
 
-                        FindLibraryEntryResult findLibraryCachedAsyncResult = null;
+                        FindLibraryEntryResult? findLibraryCachedAsyncResult = default;
                         RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, pair.RuntimeIdentifier, runtimeGraph, ref runtimeDependencies);
 
                         if (runtimeDependencies.Count > 0)
@@ -600,7 +600,7 @@ namespace NuGet.Commands
                             findLibraryEntryCache.Add(libraryRangeOfCurrentRef, findLibraryCachedAsyncResult);
 
                             // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
-                            if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies.Count)
+                            if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies!.Count)
                             {
                                 foreach (var dep in runtimeDependencies)
                                 {
@@ -765,7 +765,7 @@ namespace NuGet.Commands
                                     Disposition = Disposition.Acceptable
                                 };
 
-                                conflictingNode.Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(dep.Name, dep.LibraryRange.VersionRange.MinVersion, LibraryType.Package));
+                                conflictingNode.Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(dep.Name, dep.LibraryRange.VersionRange.MinVersion!, LibraryType.Package));
                                 currentGraphNode.InnerNodes.Add(conflictingNode);
                                 conflictingNode.OuterNode = currentGraphNode;
 
@@ -820,7 +820,7 @@ namespace NuGet.Commands
 
                         var downgradedFrom = new GraphNode<RemoteResolveResult>(downgrade.Value.LibraryDependency.LibraryRange)
                         {
-                            Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(downgrade.Value.LibraryDependency.Name, downgrade.Value.LibraryDependency.LibraryRange.VersionRange.MinVersion, LibraryType.Package)),
+                            Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(downgrade.Value.LibraryDependency.Name, downgrade.Value.LibraryDependency.LibraryRange.VersionRange?.MinVersion!, LibraryType.Package)),
                             OuterNode = downgrade.Value.OuterNode
                         };
 
@@ -875,7 +875,7 @@ namespace NuGet.Commands
             {
                 var runtimes = allRuntimes;
 
-                CompatibilityProfile compatProfile;
+                CompatibilityProfile? compatProfile;
                 if (profile.Value.RestoreContexts.Any())
                 {
                     // Just use the contexts from the project definition
@@ -986,7 +986,7 @@ namespace NuGet.Commands
         {
             public bool IsDirectPackageReferenceFromRootProject { get; set; }
 
-            public LibraryDependency LibraryDependency { get; set; }
+            public LibraryDependency? LibraryDependency { get; set; }
 
             public LibraryDependencyIndex LibraryDependencyIndex { get; set; } = LibraryDependencyIndex.Invalid;
 
@@ -994,9 +994,9 @@ namespace NuGet.Commands
 
             public LibraryRangeIndex[] Path { get; set; } = Array.Empty<LibraryRangeIndex>();
 
-            public HashSet<LibraryDependencyIndex> Suppressions { get; set; }
+            public HashSet<LibraryDependencyIndex>? Suppressions { get; set; }
 
-            public IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> VersionOverrides { get; set; }
+            public IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? VersionOverrides { get; set; }
         }
 
         private class FindLibraryEntryResult
