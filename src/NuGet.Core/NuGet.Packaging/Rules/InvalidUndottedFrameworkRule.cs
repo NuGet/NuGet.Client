@@ -229,7 +229,7 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (ContentItem item in group.Items.NoAllocEnumerate())
                     {
-                        var exists = item.Properties.TryGetValue("tfm_raw", out var frameworkRaw);
+                        var exists = item.TryGetValue("tfm_raw", out var frameworkRaw);
                         string frameworkString = (string)frameworkRaw;
                         if (!exists || string.IsNullOrEmpty(frameworkString))
                         {

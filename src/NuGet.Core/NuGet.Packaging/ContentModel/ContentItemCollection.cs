@@ -5,6 +5,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Client;
+using NuGet.Shared;
 
 namespace NuGet.ContentModel
 {
@@ -84,13 +86,12 @@ namespace NuGet.ContentModel
                     foreach (var grouping in groupAssets.GroupBy(key => key.Item, GroupComparer.DefaultComparer))
                     {
                         yield return new ContentItemGroup(
-                            properties: new Dictionary<string, object>(grouping.Key.Properties),
+                            properties: grouping.Key.Properties,
                             items: FindItemsImplementation(definition, grouping.Select(match => match.Asset)));
                     }
                 }
             }
         }
-
         /// <summary>
         /// Populate the provided list with ContentItemGroups based on a provided pattern set.
         /// </summary>
@@ -122,7 +123,7 @@ namespace NuGet.ContentModel
                     foreach (var grouping in groupAssets.GroupBy(key => key.Item, GroupComparer.DefaultComparer))
                     {
                         contentItemGroupList.Add(new ContentItemGroup(
-                            properties: new Dictionary<string, object>(grouping.Key.Properties),
+                            properties: grouping.Key.Properties,
                             items: FindItemsImplementation(definition, grouping.Select(match => match.Asset))));
                     }
                 }
@@ -134,6 +135,8 @@ namespace NuGet.ContentModel
         {
             return FindBestItemGroup(criteria, definitions) != null;
         }
+
+        internal static Dictionary<int, int> Counts = new();
 
         public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
@@ -158,6 +161,17 @@ namespace NuGet.ContentModel
 
                     foreach (var itemGroup in itemGroups)
                     {
+                        Counts.TryGetValue(itemGroup.Properties.Count, out int value);
+                        if (value == 0)
+                        {
+                            Counts[itemGroup.Properties.Count] = 1;
+                        }
+                        else
+                        {
+                            Counts[itemGroup.Properties.Count] = value + 1;
+                        }
+
+
                         var groupIsValid = true;
                         foreach (var criteriaProperty in criteriaEntry.Properties.NoAllocEnumerate())
                         {
@@ -258,12 +272,12 @@ namespace NuGet.ContentModel
                     if (contentItem != null)
                     {
                         //If the item is assembly, populate the "related files extensions property".
-                        if (contentItem.Properties.ContainsKey("assembly"))
+                        if (contentItem.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
                         {
                             string relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem.Path, assets);
                             if (relatedFileExtensionsProperty is not null)
                             {
-                                contentItem.Properties.Add("related", relatedFileExtensionsProperty);
+                                contentItem.Add("related", relatedFileExtensionsProperty);
                             }
                         }
                         items.Add(contentItem);
@@ -365,19 +379,56 @@ namespace NuGet.ContentModel
             public int GetHashCode(ContentItem obj)
             {
                 var hashCode = 0;
-                foreach (var property in obj.Properties)
+                if (obj._properties != null)
                 {
-                    if (property.Key.Equals("tfm_raw", StringComparison.Ordinal))
+                    foreach (var property in obj._properties)
                     {
-                        // We store the raw version of the TFM, but we don't want it to affect the result.
-                        continue;
-                    }
 #if NETFRAMEWORK || NETSTANDARD
-                    hashCode ^= property.Key.GetHashCode();
+                        hashCode ^= property.Key.GetHashCode();
 #else
-                    hashCode ^= property.Key.GetHashCode(StringComparison.Ordinal);
+                        hashCode ^= property.Key.GetHashCode(StringComparison.Ordinal);
 #endif
-                    hashCode ^= property.Value.GetHashCode();
+                        hashCode ^= property.Value.GetHashCode();
+                    }
+                }
+                else
+                {
+                    if (obj._assembly != null)
+                    {
+                        hashCode ^= obj._assembly.GetHashCode();
+                    }
+                    if (obj._locale != null)
+                    {
+                        hashCode ^= obj._locale.GetHashCode();
+                    }
+                    if (obj._related != null)
+                    {
+                        hashCode ^= obj._related.GetHashCode();
+                    }
+                    if (obj._msbuild != null)
+                    {
+                        hashCode ^= obj._msbuild.GetHashCode();
+                    }
+                    if (obj._tfm != null)
+                    {
+                        hashCode ^= obj._tfm.GetHashCode();
+                    }
+                    if (obj._rid != null)
+                    {
+                        hashCode ^= obj._rid.GetHashCode();
+                    }
+                    if (obj._any != null)
+                    {
+                        hashCode ^= obj._any.GetHashCode();
+                    }
+                    if (obj._satelliteAssembly != null)
+                    {
+                        hashCode ^= obj._satelliteAssembly.GetHashCode();
+                    }
+                    if (obj._codeLanguage != null)
+                    {
+                        hashCode ^= obj._codeLanguage.GetHashCode();
+                    }
                 }
                 return hashCode;
             }
@@ -389,38 +440,83 @@ namespace NuGet.ContentModel
                     return true;
                 }
 
-                if (x.Properties.Count != y.Properties.Count)
+                if (x._properties == null && y._properties != null)
                 {
                     return false;
                 }
 
-                foreach (var xProperty in x.Properties)
+                if (x._properties != null && y._properties == null)
                 {
-                    if (xProperty.Key.Equals("tfm_raw", StringComparison.Ordinal))
+                    return false;
+                }
+
+                if (x._properties?.Count != y._properties?.Count)
+                {
+                    return false;
+                }
+
+                if (x._properties != null && y._properties != null)
+                {
+                    foreach (var xProperty in x._properties)
                     {
-                        // We store the raw version of the TFM, but we don't want it to affect the result.
-                        continue;
+                        object yValue;
+                        if (!y._properties.TryGetValue(xProperty.Key, out yValue))
+                        {
+                            return false;
+                        }
+                        if (!Equals(xProperty.Value, yValue))
+                        {
+                            return false;
+                        }
                     }
-                    object yValue;
-                    if (!y.Properties.TryGetValue(xProperty.Key, out yValue))
+                    foreach (var yProperty in y._properties)
+                    {
+                        object xValue;
+                        if (!x._properties.TryGetValue(yProperty.Key, out xValue))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!EqualityUtility.EqualsWithNullCheck(x._assembly, y._assembly))
                     {
                         return false;
                     }
-                    if (!Equals(xProperty.Value, yValue))
+                    if (!EqualityUtility.EqualsWithNullCheck(x._locale, y._locale))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._related, y._related))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._msbuild, y._msbuild))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._tfm, y._tfm))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._rid, y._rid))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._any, y._any))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._satelliteAssembly, y._satelliteAssembly))
+                    {
+                        return false;
+                    }
+                    if (!EqualityUtility.EqualsWithNullCheck(x._codeLanguage, y._codeLanguage))
                     {
                         return false;
                     }
                 }
-
-                foreach (var yProperty in y.Properties)
-                {
-                    object xValue;
-                    if (!x.Properties.TryGetValue(yProperty.Key, out xValue))
-                    {
-                        return false;
-                    }
-                }
-
                 return true;
             }
         }

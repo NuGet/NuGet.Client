@@ -840,7 +840,8 @@ namespace NuGet.Packaging
                 {
                     foreach (ContentItem item in group.Items.NoAllocEnumerate())
                     {
-                        var framework = (NuGetFramework)item.Properties["tfm"];
+                        item.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out object value);
+                        var framework = (NuGetFramework)value;
                         if (framework == null)
                         {
                             continue;
