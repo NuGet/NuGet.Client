@@ -187,6 +187,7 @@ namespace NuGet.Commands
         {
             if (File.Exists(runtimeGraphPath))
             {
+#pragma warning disable CA1031 // Do not catch general exception types, any exception reading the runtime.json should be logged as an error
                 try
                 {
                     using (var stream = File.OpenRead(runtimeGraphPath))
@@ -205,6 +206,7 @@ namespace NuGet.Commands
                              runtimeGraphPath,
                              e.Message)));
                 }
+#pragma warning restore CA1031 // Do not catch general exception types
             }
             else
             {
