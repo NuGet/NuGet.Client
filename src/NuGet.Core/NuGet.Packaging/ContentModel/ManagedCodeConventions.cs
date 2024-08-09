@@ -536,7 +536,7 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable), // Say, we do a type here.
+                        new PatternDefinition("runtimes/{rid}/lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable),
                         new PatternDefinition("lib/{tfm}/{locale?}/{any?}", table: DotnetAnyTable),
                     },
                     pathPatterns: new PatternDefinition[]

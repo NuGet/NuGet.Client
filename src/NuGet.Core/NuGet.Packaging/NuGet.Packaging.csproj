@@ -9,9 +9,7 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
-    <NoWarn>$(NoWarn);RS0017</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -118,6 +116,5 @@
     <InternalsVisibleTo Include="NuGet.Packaging.FuncTest" />
     <InternalsVisibleTo Include="NuGet.Packaging.Test" />
     <InternalsVisibleTo Include="Test.Utility" />
-    <InternalsVisibleTo Include="Benchmarks" />
   </ItemGroup>
 </Project>
