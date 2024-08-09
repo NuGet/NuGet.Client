@@ -55,9 +55,9 @@ namespace NuGet
         /// <param name="state">A state object to pass to the value factory.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use for signaling that an operation should be cancelled.</param>
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
-        public Task<TValue> GetOrAddAsync<TState>(TKey key, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken, bool noLock = false)
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken)
         {
-            return GetOrAddAsync(key, refresh: false, valueFactory, state, cancellationToken, noLock);
+            return GetOrAddAsync(key, refresh: false, valueFactory, state, cancellationToken);
         }
 
         /// <summary>
@@ -69,36 +69,24 @@ namespace NuGet
         /// <param name="state">A state object to pass to the value factory.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to use for signaling that an operation should be cancelled.</param>
         /// <returns>A <see cref="Task{TResult}" /> for the specified asynchronous operation from the cache if found, otherwise the scheduled asynchronous operation to await.</returns>
-        public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken, bool noLock = false)
+        public Task<TValue> GetOrAddAsync<TState>(TKey key, bool refresh, Func<TState, Task<TValue>> valueFactory, TState state, CancellationToken cancellationToken)
         {
             if (!refresh && _cache.TryGetValue(key, out Task<TValue>? value))
             {
                 return value;
             }
 
-            if (!noLock)
-            {
-                // Get a lock object for this one single key which allows other asynchronous tasks to be added and retrieved at the same time
-                // rather than locking the entire cache.
-                object lockObject = _perTaskLock.GetOrAdd(key, static (TKey _) => new object());
+            // Get a lock object for this one single key which allows other asynchronous tasks to be added and retrieved at the same time
+            // rather than locking the entire cache.
+            object lockObject = _perTaskLock.GetOrAdd(key, static (TKey _) => new object());
 
-                lock (lockObject)
+            lock (lockObject)
+            {
+                if (!refresh && _cache.TryGetValue(key, out value))
                 {
-                    if (!refresh && _cache.TryGetValue(key, out value))
-                    {
-                        return value;
-                    }
-
-                    return _cache[key] = valueFactory(state)
-                        .ContinueWith(
-                            static task => task.GetAwaiter().GetResult(),
-                            cancellationToken,
-                            TaskContinuationOptions.RunContinuationsAsynchronously,
-                            TaskScheduler.Default);
+                    return value;
                 }
-            }
-            else
-            {
+
                 return _cache[key] = valueFactory(state)
                     .ContinueWith(
                         static task => task.GetAwaiter().GetResult(),

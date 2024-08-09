@@ -33,8 +33,7 @@ namespace NuGet.DependencyResolver
             return context.FindLibraryEntryCache.GetOrAddAsync(key,
                 static state => FindLibraryEntryAsync(state.LibraryRange, state.framework, state.runtimeIdentifier, state.context, state.cancellationToken, state.noLock),
                 (key.LibraryRange, framework, runtimeIdentifier, context, cancellationToken, noLock),
-                cancellationToken,
-                noLock);
+                cancellationToken);
         }
 
         public static async Task<GraphItem<RemoteResolveResult>> FindLibraryEntryAsync(
