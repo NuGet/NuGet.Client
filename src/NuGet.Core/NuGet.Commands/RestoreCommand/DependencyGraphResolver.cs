@@ -195,8 +195,7 @@ namespace NuGet.Commands
                 Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult> allResolvedItems =
                     new Dictionary<LibraryRangeIndex, FindLibraryCachedAsyncResult>(2048);
 
-                Dictionary<LibraryDependencyIndex, (LibraryDependency libRef, LibraryRangeIndex rangeIndex, LibraryRangeIndex[] pathToRef, bool directPackageReferenceFromRootProject, List<(HashSet<LibraryDependencyIndex> currentSuppressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)> chosenResolvedItems =
-                                            new Dictionary<LibraryDependencyIndex, (LibraryDependency, LibraryRangeIndex, LibraryRangeIndex[], bool, List<(HashSet<LibraryDependencyIndex> currentSuppressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)>)>(2048);
+                Dictionary<LibraryDependencyIndex, ResolvedDependencyGraphItem> chosenResolvedItems = new(2048);
 
                 Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)>(1024);
 
@@ -263,8 +262,11 @@ namespace NuGet.Commands
                     //else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
                     if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out var chosenResolvedItem))
                     {
-                        (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathChosenRef, bool packageReferenceFromRootProject,
-                            List<(HashSet<LibraryDependencyIndex> currentSuppressions, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides)> chosenSuppressions) = chosenResolvedItem;
+                        LibraryDependency chosenRef = chosenResolvedItem.libRef;
+                        LibraryRangeIndex chosenRefRangeIndex = chosenResolvedItem.rangeIndex;
+                        LibraryRangeIndex[] pathChosenRef = chosenResolvedItem.pathToRef;
+                        bool packageReferenceFromRootProject = chosenResolvedItem.directPackageReferenceFromRootProject;
+                        List<SuppressionsAndOverrides> chosenSuppressions = chosenResolvedItem.chosenSuppressions;
 
                         if (packageReferenceFromRootProject)
                         {
@@ -366,8 +368,23 @@ namespace NuGet.Commands
                                 goto ProcessDeepEviction;
                             }
                             //Since this is a "new" choice, its gets a new import context list
-                            chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, packageReferenceFromRootProject,
-                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSuppressions, currentOverrides) }));
+                            chosenResolvedItems.Add(
+                                currentRefDependencyIndex,
+                                new ResolvedDependencyGraphItem
+                                {
+                                    libRef = currentRef,
+                                    rangeIndex = currentRefRangeIndex,
+                                    pathToRef = pathToCurrentRef,
+                                    directPackageReferenceFromRootProject = directPackageReferenceFromRootProject,
+                                    chosenSuppressions = new List<SuppressionsAndOverrides>
+                                    {
+                                        new SuppressionsAndOverrides
+                                        {
+                                            currentSuppressions = currentSuppressions,
+                                            currentOverrides = currentOverrides
+                                        }
+                                    }
+                                });
 
                             //if we are going to live with this queue and chosen state, we need to also kick
                             // any queue members who were descendants of the thing we just evicted.
@@ -400,8 +417,23 @@ namespace NuGet.Commands
                             {
                                 chosenResolvedItems.Remove(currentRefDependencyIndex);
                                 //slightly evil, but works.. we should just shift to the current thing as ref?
-                                chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, packageReferenceFromRootProject,
-                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSuppressions, currentOverrides) }));
+                                chosenResolvedItems.Add(
+                                    currentRefDependencyIndex,
+                                    new ResolvedDependencyGraphItem
+                                    {
+                                        libRef = currentRef,
+                                        rangeIndex = currentRefRangeIndex,
+                                        pathToRef = pathToCurrentRef,
+                                        directPackageReferenceFromRootProject = packageReferenceFromRootProject,
+                                        chosenSuppressions = new List<SuppressionsAndOverrides>
+                                        {
+                                            new SuppressionsAndOverrides
+                                            {
+                                                currentSuppressions = currentSuppressions,
+                                                currentOverrides = currentOverrides
+                                            }
+                                        }
+                                    });
                             }
                             else
                             //check to see if we are equal to one of the dispositions or if we are less restrictive than one
@@ -445,10 +477,24 @@ namespace NuGet.Commands
                                     //a disposition if its less restrictive than another.  But we'll just add it to the list.
                                     chosenResolvedItems.Remove(currentRefDependencyIndex);
                                     var newImportDisposition =
-                                        new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSuppressions, currentOverrides) };
+                                        new List<SuppressionsAndOverrides> {
+                                            new SuppressionsAndOverrides
+                                            {
+                                                currentSuppressions = currentSuppressions,
+                                                currentOverrides = currentOverrides
+                                            }
+                                        };
                                     newImportDisposition.AddRange(chosenSuppressions);
                                     //slightly evil, but works.. we should just shift to the current thing as ref?
-                                    chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, packageReferenceFromRootProject, newImportDisposition));
+                                    chosenResolvedItems.Add(
+                                        currentRefDependencyIndex,
+                                        new ResolvedDependencyGraphItem {
+                                            libRef = currentRef,
+                                            rangeIndex = currentRefRangeIndex,
+                                            pathToRef = pathToCurrentRef,
+                                            directPackageReferenceFromRootProject = packageReferenceFromRootProject,
+                                            chosenSuppressions = newImportDisposition
+                                        });
                                 }
                             }
                         }
@@ -456,8 +502,23 @@ namespace NuGet.Commands
                     else
                     {
                         //This is now the thing we think is the highest version of this ref
-                        chosenResolvedItems.Add(currentRefDependencyIndex, (currentRef, currentRefRangeIndex, pathToCurrentRef, directPackageReferenceFromRootProject,
-                                new List<(HashSet<LibraryDependencyIndex>, IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>)> { (currentSuppressions, currentOverrides) }));
+                        chosenResolvedItems.Add(
+                            currentRefDependencyIndex,
+                            new ResolvedDependencyGraphItem
+                            {
+                                libRef = currentRef,
+                                rangeIndex = currentRefRangeIndex,
+                                pathToRef = pathToCurrentRef,
+                                directPackageReferenceFromRootProject = directPackageReferenceFromRootProject,
+                                chosenSuppressions = new List<SuppressionsAndOverrides>
+                                {
+                                    new SuppressionsAndOverrides
+                                    {
+                                        currentSuppressions = currentSuppressions,
+                                        currentOverrides = currentOverrides
+                                    }
+                                }
+                            });
                     }
                     FindLibraryCachedAsyncResult refItemResult = null;
                     if (!allResolvedItems.TryGetValue(libraryRangeOfCurrentRef, out refItemResult))
@@ -666,7 +727,11 @@ namespace NuGet.Commands
                     {
                         continue;
                     }
-                    (LibraryDependency chosenRef, LibraryRangeIndex chosenRefRangeIndex, LibraryRangeIndex[] pathToChosenRef, bool directPackageReferenceFromRootProject, var chosenSuppressions) = foundItem;
+                    LibraryDependency chosenRef = foundItem.libRef;
+                    LibraryRangeIndex chosenRefRangeIndex = foundItem.rangeIndex;
+                    LibraryRangeIndex[] pathToChosenRef = foundItem.pathToRef;
+                    bool directPackageReferenceFromRootProject = foundItem.directPackageReferenceFromRootProject;
+                    List<SuppressionsAndOverrides> chosenSuppressions = foundItem.chosenSuppressions;
 
                     if (allResolvedItems.TryGetValue(chosenRefRangeIndex, out var node))
                     {
@@ -1020,6 +1085,22 @@ namespace NuGet.Commands
             public LibraryDependency Ref { get; set; }
 
             public HashSet<LibraryDependencyIndex> Suppressions { get; set; }
+        }
+
+        public struct ResolvedDependencyGraphItem
+        {
+            public LibraryDependency libRef { get; set; }
+            public LibraryRangeIndex rangeIndex { get; set; }
+            public LibraryRangeIndex [] pathToRef { get; set; }
+            public bool directPackageReferenceFromRootProject { get; set; }
+
+            public List<SuppressionsAndOverrides> chosenSuppressions { get; set; }
+        }
+
+        public struct SuppressionsAndOverrides
+        {
+            public HashSet<LibraryDependencyIndex> currentSuppressions { get; set; }
+            public IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides {get; set;}
         }
     }
 }
