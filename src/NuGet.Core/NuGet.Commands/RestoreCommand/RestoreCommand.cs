@@ -153,7 +153,7 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
-            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
+            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference || request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
             {
                 _enableNewDependencyResolver = false;
             }
@@ -1338,15 +1338,106 @@ namespace NuGet.Commands
             CancellationToken token,
             TelemetryActivity telemetryActivity)
         {
-            var dependencyGraphResolver = new DependencyGraphResolver(_logger, _request, telemetryActivity, _operationId);
+            if (_request.Project.TargetFrameworks.Count == 0)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1001, message));
 
-            (bool success, IEnumerable<RestoreTargetGraph> graphs) = await dependencyGraphResolver.ResolveAsync(
-                userPackageFolder,
-                fallbackPackageFolders,
-                context,
-                token);
+                _success = false;
 
-            _success = success;
+                return Enumerable.Empty<RestoreTargetGraph>();
+            }
+
+            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
+
+            var projectRestoreRequest = new ProjectRestoreRequest(
+             _request,
+             _request.Project,
+             _request.ExistingLockFile,
+             _logger)
+            {
+                ParentId = _operationId
+            };
+
+            var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
+
+            var localRepositories = new List<NuGetv3LocalRepository>();
+            localRepositories.Add(userPackageFolder);
+            localRepositories.AddRange(fallbackPackageFolders);
+
+            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
+
+            // Get external project references
+            // If the top level project already exists, update the package spec provided
+            // with the RestoreRequest spec.
+            var updatedExternalProjects = GetProjectReferences(_request);
+
+            // Load repositories
+            // the external project provider is specific to the current restore project
+            context.ProjectLibraryProviders.Add(
+                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
+
+            DependencyGraphResolver dependencyGraphResolver = new(_logger, _request, telemetryActivity, _operationId);
+
+            List<RestoreTargetGraph> graphs = null;
+            RuntimeGraph runtimes = null;
+
+            using (telemetryActivity.StartIndependentInterval(CreateRestoreTargetGraphDuration))
+            {
+                try
+                {
+                    (bool Success, List<RestoreTargetGraph> Graphs, RuntimeGraph Runtimes) result = await dependencyGraphResolver.ResolveAsync(userPackageFolder, fallbackPackageFolders, context, projectRestoreCommand, localRepositories, token);
+
+                    _success &= result.Success;
+
+                    graphs = result.Graphs;
+
+                    runtimes = result.Runtimes;
+                }
+                catch (FatalProtocolException)
+                {
+                    _success = false;
+                }
+                catch (AggregateException e) when (e.InnerException is FatalProtocolException)
+                {
+                    _success = false;
+                }
+            }
+
+            if (!_success)
+            {
+                // When we fail to create the graphs, we want to write a `target` for each target framework
+                // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
+                foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
+                {
+                    graphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
+                }
+            }
+
+            // Calculate compatibility profiles to check by merging those defined in the project with any from the command line
+            foreach (var profile in _request.Project.RuntimeGraph.Supports)
+            {
+                CompatibilityProfile compatProfile;
+                if (profile.Value.RestoreContexts.Any())
+                {
+                    // Just use the contexts from the project definition
+                    compatProfile = profile.Value;
+                }
+                else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                {
+                    // No definition of this profile found, so just continue to the next one
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
+
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
+                    continue;
+                }
+
+                foreach (var pair in compatProfile.RestoreContexts)
+                {
+                    _logger.LogDebug($" {profile.Value.Name} -> +{pair}");
+                    _request.CompatibilityProfiles.Add(pair);
+                }
+            }
 
             return graphs;
         }

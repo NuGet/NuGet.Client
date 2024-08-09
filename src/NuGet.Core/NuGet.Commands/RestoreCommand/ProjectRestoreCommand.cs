@@ -27,7 +27,7 @@ namespace NuGet.Commands
         private readonly RestoreCollectorLogger _logger;
         private readonly ProjectRestoreRequest _request;
 
-        private const string WalkFrameworkDependencyDuration = nameof(WalkFrameworkDependencyDuration);
+        internal const string WalkFrameworkDependencyDuration = nameof(WalkFrameworkDependencyDuration);
         private const string WalkRuntimeDependencyDuration = nameof(WalkRuntimeDependencyDuration);
         private const string EvaluateDownloadDependenciesDuration = nameof(EvaluateDownloadDependenciesDuration);
 
@@ -291,7 +291,7 @@ namespace NuGet.Commands
             return RestoreTargetGraph.Create(runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
         }
 
-        private async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
+        internal async Task<bool> ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs, IList<DownloadDependencyResolutionResult> downloadDependencyResults, RemoteWalkContext context, CancellationToken token)
         {
             var graphSuccess = true;
             foreach (var graph in graphs)

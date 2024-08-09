@@ -48,45 +48,10 @@ namespace NuGet.Commands
             _operationId = operationId;
         }
 
-        public async Task<ValueTuple<bool, IEnumerable<RestoreTargetGraph>>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, CancellationToken token)
+        public async Task<ValueTuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, List<NuGetv3LocalRepository> localRepositories,CancellationToken token)
         {
             bool _success = true;
-
-            if (_request.Project.TargetFrameworks.Count == 0)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath);
-                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1001, message));
-
-                _success = false;
-                return (_success, Enumerable.Empty<RestoreTargetGraph>());
-            }
-
-            var projectRestoreRequest = new ProjectRestoreRequest(
-             _request,
-             _request.Project,
-             _request.ExistingLockFile,
-             _logger)
-            {
-                ParentId = _operationId
-            };
-
-            var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
-
-            var localRepositories = new List<NuGetv3LocalRepository>();
-            localRepositories.Add(userPackageFolder);
-            localRepositories.AddRange(fallbackPackageFolders);
-
-            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
-
-            // Get external project references
-            // If the top level project already exists, update the package spec provided
-            // with the RestoreRequest spec.
-            var updatedExternalProjects = RestoreCommand.GetProjectReferences(_request);
-
-            // Load repositories
-            // the external project provider is specific to the current restore project
-            context.ProjectLibraryProviders.Add(
-                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
+            var uniquePackages = new HashSet<LibraryIdentity>();
 
             var projectRange = new LibraryRange()
             {
@@ -97,20 +62,27 @@ namespace NuGet.Commands
 
             // Resolve dependency graphs
             var allGraphs = new List<RestoreTargetGraph>();
+            var runtimeGraphs = new List<RestoreTargetGraph>();
             var graphByTFM = new Dictionary<NuGetFramework, RestoreTargetGraph>();
             var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
-            var projectFrameworkRuntimePairs = RestoreCommand.CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
+            IEnumerable<FrameworkRuntimePair> projectFrameworkRuntimePairs = RestoreCommand.CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
             RuntimeGraph allRuntimes = RuntimeGraph.Empty;
 
             LibraryRangeInterningTable libraryRangeInterningTable = new LibraryRangeInterningTable();
             LibraryDependencyInterningTable libraryDependencyInterningTable = new LibraryDependencyInterningTable();
 
+            _telemetryActivity.StartIntervalMeasure();
+
             bool hasInstallBeenCalledAlready = false;
+            DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = null;
+
             foreach (var pair in projectFrameworkRuntimePairs)
             {
                 if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) && !hasInstallBeenCalledAlready)
                 {
-                    await InstallPackagesAsync(allGraphs);
+                    downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: String.Empty, token);
+
+                    _success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, downloadDependencyResolutionResults, userPackageFolder, token);
 
                     hasInstallBeenCalledAlready = true;
                 }
@@ -497,27 +469,12 @@ namespace NuGet.Commands
                     FindLibraryEntryResult refItemResult = null;
                     if (!findLibraryEntryCache.TryGetValue(libraryRangeOfCurrentRef, out refItemResult))
                     {
-                        GraphItem<RemoteResolveResult> refItem;
-                        try
-                        {
-                            refItem = ResolverUtility.FindLibraryEntryAsync(
+                        GraphItem<RemoteResolveResult> refItem = ResolverUtility.FindLibraryEntryAsync(
                                 currentRef.LibraryRange,
                                 newRTG.Framework,
                                 newRTG.RuntimeIdentifier,
                                 context,
                                 CancellationToken.None).GetAwaiter().GetResult();
-                        }
-                        catch (FatalProtocolException)
-                        {
-                            foreach (FrameworkRuntimePair frameworkRuntimePair in RestoreCommand.CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
-                            {
-                                allGraphs.Add(RestoreTargetGraph.Create(_request.Project.RuntimeGraph, Enumerable.Empty<GraphNode<RemoteResolveResult>>(), context, _logger, frameworkRuntimePair.Framework, frameworkRuntimePair.RuntimeIdentifier));
-                            }
-
-                            _success = false;
-
-                            return (_success, allGraphs);
-                        }
 
                         refItemResult = new FindLibraryEntryResult(
                             currentRef,
@@ -798,7 +755,7 @@ namespace NuGet.Commands
                             currentGraphNode.InnerNodes.Add(newGraphNode);
                             newGraphNode.OuterNode = currentGraphNode;
 
-                            if (newGraphNode.Item.Key.Type != LibraryType.Project && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && !dep.LibraryRange.VersionRange.Satisfies(newGraphNode.Item.Key.Version))
+                            if (newGraphNode.Item.Key.Type != LibraryType.Project && newGraphNode.Item.Key.Type != LibraryType.ExternalProject && newGraphNode.Item.Key.Type != LibraryType.Unresolved && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && dep.LibraryRange.VersionRange != null && !dep.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version))
                             {
                                 currentGraphNode.InnerNodes.Remove(newGraphNode);
 
@@ -879,33 +836,12 @@ namespace NuGet.Commands
 
                 newRTG.Graphs = nGraph;
 
-                foreach (var profile in _request.Project.RuntimeGraph.Supports)
-                {
-                    var runtimes = allRuntimes;
-
-                    CompatibilityProfile compatProfile;
-                    if (profile.Value.RestoreContexts.Any())
-                    {
-                        // Just use the contexts from the project definition
-                        compatProfile = profile.Value;
-                    }
-                    else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
-                    {
-                        // No definition of this profile found, so just continue to the next one
-                        var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
-
-                        await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
-                        continue;
-                    }
-
-                    foreach (var frameworkRuntimePair in compatProfile.RestoreContexts)
-                    {
-                        _logger.LogDebug($" {profile.Value.Name} -> +{frameworkRuntimePair}");
-                        _request.CompatibilityProfiles.Add(frameworkRuntimePair);
-                    }
-                }
-
                 allGraphs.Add(newRTG);
+
+                if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier))
+                {
+                    runtimeGraphs.Add(newRTG);
+                }
 
                 if (string.IsNullOrEmpty(pair.RuntimeIdentifier))
                 {
@@ -913,41 +849,62 @@ namespace NuGet.Commands
                 }
             }
 
-            await InstallPackagesAsync(allGraphs);
+            _telemetryActivity.EndIntervalMeasure(ProjectRestoreCommand.WalkFrameworkDependencyDuration);
+
+            await UnexpectedDependencyMessages.LogAsync(allGraphs, _request.Project, _logger);
 
             // Update the logger with the restore target graphs
             // This allows lazy initialization for the Transitive Warning Properties
             _logger.ApplyRestoreOutput(allGraphs);
+
+            if (!hasInstallBeenCalledAlready)
+            {
+                downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: String.Empty, token);
+
+                _success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, downloadDependencyResolutionResults, userPackageFolder, token);
+
+                hasInstallBeenCalledAlready = true;
+            }
+
+            if (runtimeGraphs.Count > 0)
+            {
+                _success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, runtimeGraphs, Array.Empty<DownloadDependencyResolutionResult>(), userPackageFolder, token);
+            }
+
+            foreach (var profile in _request.Project.RuntimeGraph.Supports)
+            {
+                var runtimes = allRuntimes;
+
+                CompatibilityProfile compatProfile;
+                if (profile.Value.RestoreContexts.Any())
+                {
+                    // Just use the contexts from the project definition
+                    compatProfile = profile.Value;
+                }
+                else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
+                {
+                    // No definition of this profile found, so just continue to the next one
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key);
+
+                    await _logger.LogAsync(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1502, message));
+                    continue;
+                }
+
+                foreach (var frameworkRuntimePair in compatProfile.RestoreContexts)
+                {
+                    _logger.LogDebug($" {profile.Value.Name} -> +{frameworkRuntimePair}");
+                    _request.CompatibilityProfiles.Add(frameworkRuntimePair);
+                }
+            }
+
+            _success &= await projectRestoreCommand.ResolutionSucceeded(allGraphs, downloadDependencyResolutionResults, context, token);
 
             if (!_success)
             {
                 // Log message for any unresolved dependencies
                 await UnresolvedMessages.LogAsync(allGraphs, context, token);
             }
-            return (_success, allGraphs);
-
-            async Task<bool> InstallPackagesAsync(IEnumerable<RestoreTargetGraph> graphs)
-            {
-                DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, string.Empty, token);
-
-                HashSet<LibraryIdentity> uniquePackages = new HashSet<LibraryIdentity>();
-
-                _success &= await projectRestoreCommand.InstallPackagesAsync(
-                    uniquePackages,
-                graphs,
-                    downloadDependencyResolutionResults,
-                    userPackageFolder,
-                    token);
-
-                if (downloadDependencyResolutionResults.Any(e => e.Unresolved.Count > 0))
-                {
-                    _success = false;
-
-                    await UnresolvedMessages.LogAsync(downloadDependencyResolutionResults, context, token);
-                }
-
-                return _success;
-            }
+            return (_success, allGraphs, allRuntimes);
         }
 
         private struct ResolvedDependencyGraphItem
