@@ -208,9 +208,9 @@ namespace NuGet.Packaging.Rules
             var frameworkPatterns = new List<PatternSet>()
             {
                 GetPatternSetThatPreservesRawValues(patterns.RuntimeAssemblies),
-                GetPatternSetThatPreservesRawValues( patterns.CompileRefAssemblies),
+                GetPatternSetThatPreservesRawValues(patterns.CompileRefAssemblies),
                 GetPatternSetThatPreservesRawValues(patterns.CompileLibAssemblies),
-                GetPatternSetThatPreservesRawValues( patterns.NativeLibraries),
+                GetPatternSetThatPreservesRawValues(patterns.NativeLibraries),
                 GetPatternSetThatPreservesRawValues(patterns.ResourceAssemblies),
                 GetPatternSetThatPreservesRawValues(patterns.MSBuildFiles),
                 GetPatternSetThatPreservesRawValues(patterns.ContentFiles),
