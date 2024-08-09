@@ -11,16 +11,13 @@ using NuGet.Common;
 using NuGet.Repositories;
 using NuGet.DependencyResolver;
 using NuGet.ProjectModel;
-using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using NuGet.LibraryModel;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using NuGet.Protocol.Core.Types;
 
 using LibraryDependencyIndex = NuGet.Commands.DependencyGraphResolver.LibraryDependencyInterningTable.LibraryDependencyIndex;
 using LibraryRangeIndex = NuGet.Commands.DependencyGraphResolver.LibraryRangeInterningTable.LibraryRangeIndex;
@@ -82,7 +79,7 @@ namespace NuGet.Commands
             {
                 if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) && !hasInstallBeenCalledAlready)
                 {
-                    downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: String.Empty, token);
+                    downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: string.Empty, token);
 
                     _success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, downloadDependencyResolutionResults, userPackageFolder, token);
 
@@ -221,8 +218,7 @@ namespace NuGet.Commands
                         // We should evict on type constraint if the type constraint of the current ref is more stringent than the chosen ref.
                         // This happens when a previous type constraint is broader (e.g. PackageProjectExternal) than the current type constraint (e.g. Package).
                         bool evictOnTypeConstraint = false;
-                        if ((chosenRefRangeIndex == currentRefRangeIndex) &&
-                            LibraryDependencyTargetUtils.EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
+                        if ((chosenRefRangeIndex == currentRefRangeIndex) && EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
                         {
                             if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out FindLibraryEntryResult? resolvedItem) && resolvedItem.Item.Key.Type == LibraryType.Project)
                             {
@@ -344,7 +340,7 @@ namespace NuGet.Commands
                             refImport = newRefImport;
                         }
                         //if its lower we'll never do anything other than skip it.
-                        else if (!VersionRange.PreciseEquals(ovr, nvr))
+                        else if (!VersionRangePreciseEquals(ovr, nvr))
                         {
                             continue;
                         }
@@ -398,7 +394,7 @@ namespace NuGet.Commands
                                                 localIsEqualOrSuperSetOverride = false;
                                                 break;
                                             }
-                                            if (!VersionRange.PreciseEquals(currentOverride, chosenOverride.Value))
+                                            if (!VersionRangePreciseEquals(currentOverride, chosenOverride.Value))
                                             {
                                                 localIsEqualOrSuperSetOverride = false;
                                                 break;
@@ -859,7 +855,7 @@ namespace NuGet.Commands
 
             if (!hasInstallBeenCalledAlready)
             {
-                downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: String.Empty, token);
+                downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: string.Empty, token);
 
                 _success &= await projectRestoreCommand.InstallPackagesAsync(uniquePackages, allGraphs, downloadDependencyResolutionResults, userPackageFolder, token);
 
@@ -900,6 +896,66 @@ namespace NuGet.Commands
             _success &= await projectRestoreCommand.ResolutionSucceeded(allGraphs, downloadDependencyResolutionResults, context, token);
 
             return (_success, allGraphs, allRuntimes);
+        }
+
+        private static bool VersionRangePreciseEquals(VersionRange a, VersionRange b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            if ((a.MinVersion != null) != (b.MinVersion != null))
+            {
+                return false;
+            }
+            if (a.MinVersion != b.MinVersion)
+            {
+                return false;
+            }
+            if ((a.MaxVersion != null) != (b.MaxVersion != null))
+            {
+                return false;
+            }
+            if (a.MaxVersion != b.MaxVersion)
+            {
+                return false;
+            }
+            if (a.IsMinInclusive != b.IsMinInclusive)
+            {
+                return false;
+            }
+            if (a.IsMaxInclusive != b.IsMaxInclusive)
+            {
+                return false;
+            }
+            if ((a.Float != null) != (b.Float != null))
+            {
+                return false;
+            }
+            if (a.Float != b.Float)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
+        {
+            if (current == previous)
+            {
+                return false;
+            }
+
+            if (previous == LibraryDependencyTarget.PackageProjectExternal)
+            {
+                LibraryDependencyTarget ppeFlags = current & LibraryDependencyTarget.PackageProjectExternal;
+                LibraryDependencyTarget nonPpeFlags = current & ~LibraryDependencyTarget.PackageProjectExternal;
+                return (ppeFlags != LibraryDependencyTarget.None && nonPpeFlags == LibraryDependencyTarget.None);
+            }
+
+            // TODO: Should there be other cases here?
+            return false;
         }
 
         private struct ResolvedDependencyGraphItem
