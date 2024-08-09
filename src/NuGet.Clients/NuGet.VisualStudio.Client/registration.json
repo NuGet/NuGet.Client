@@ -2,6 +2,7 @@
   "properties": {
     "nuGetPackageManager.general.externalSettings": {
       "type": "external",
+      "title": "@115;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
 
       // should be a resource ID in real registration
       // The text inside %...%, if any, will be rendered as a link which invokes IExternalSettingsProvider.OpenBackingStoreAsync when clicked.
