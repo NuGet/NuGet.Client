@@ -314,24 +314,22 @@ namespace NuGet.Commands
                 {
                     using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
-                        if (!_enableNewDependencyResolver)
+                        if (NuGetEventSource.IsEnabled)
+                            TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
+
+                        if (_enableNewDependencyResolver)
                         {
-                            // Restore
-                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
-                            graphs = await ExecuteLegacyRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
+                            graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
+                            
                         }
                         else
                         {
-                            Stopwatch sw = Stopwatch.StartNew();
-                            // Restore using the prototype
-                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
-                            graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                            if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
-                            
-
-                            await UnexpectedDependencyMessages.LogAsync(graphs, _request.Project, _logger);
+                            // Restore using the legacy code path if the optimized dependency resolution is disabled.
+                            graphs = await ExecuteLegacyRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
                         }
+
+                        if (NuGetEventSource.IsEnabled)
+                            TraceEvents.BuildRestoreGraphStop(_request.Project.FilePath);
                     }
                 }
                 else
