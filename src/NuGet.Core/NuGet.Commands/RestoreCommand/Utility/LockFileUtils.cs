@@ -709,7 +709,7 @@ namespace NuGet.Commands
                     {
                         var newItem = new LockFileItem(item.Path);
                         object locale;
-                        if (item.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out locale)) // Do I actually need this?
+                        if (item.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out locale))
                         {
                             newItem.Properties[ManagedCodeConventions.PropertyNames.Locale] = (string)locale;
                         }

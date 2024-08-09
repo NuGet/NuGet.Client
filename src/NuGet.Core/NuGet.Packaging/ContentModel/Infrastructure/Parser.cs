@@ -97,7 +97,7 @@ namespace NuGet.ContentModel.Infrastructure
                     // item already created, append defaults
                     foreach (var pair in _defaults)
                     {
-                        item.Add(pair.Key, pair.Value); // This is technically a change, it used to be overwrite will it break?
+                        item.Add(pair.Key, pair.Value);
                     }
                 }
                 return item;
