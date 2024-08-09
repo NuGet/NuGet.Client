@@ -1345,8 +1345,6 @@ namespace NuGet.Commands
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
 
-            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
-
             var projectRestoreRequest = new ProjectRestoreRequest(
              _request,
              _request.Project,
