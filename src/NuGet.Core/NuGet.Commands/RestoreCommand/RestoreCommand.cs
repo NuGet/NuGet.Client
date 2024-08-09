@@ -1,4 +1,3 @@
-//#define verboseLog
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -120,9 +119,7 @@ namespace NuGet.Commands
         private const string AuditDurationTotal = "Audit.Duration.Total";
 
 
-        //BSW - variable to control if we use the prototype or not
         private static int _usePrototype = -1;
-        //
 
 #pragma warning disable RS0016
         public static int UsePrototype
@@ -133,7 +130,6 @@ namespace NuGet.Commands
 
         static RestoreCommand()
         {
-            //BSW - set
             string subProtoNugValue = Environment.GetEnvironmentVariable("SubProtoNug");
             if (subProtoNugValue != null)
             {
@@ -146,7 +142,6 @@ namespace NuGet.Commands
             }
             else
                 _usePrototype = 0;
-            //BSW
         }
 
         public RestoreCommand(RestoreRequest request)
@@ -370,21 +365,12 @@ namespace NuGet.Commands
 
                             await UnexpectedDependencyMessages.LogAsync(prototypeGraphs, _request.Project, _logger);
                         }
-#if bswlog
-                        _logger.LogMinimal($"BSW_Rt: orig={originalTimeMs}, prototype={prototypeTimeMs}, {_request.Project.FilePath}");
-#endif
                         if (_usePrototype == 1)
                         {
-#if bswlog
-                            _logger.LogMinimal($"***** Using SubProtoNug for {_request.Project.FilePath}");
-#endif
                             graphs = prototypeGraphs;
                         }
                         if (_usePrototype == 2)
                         {
-#if bswlog
-                            _logger.LogMinimal($"***** Using SubProtoNug flattened graph for {_request.Project.FilePath}");
-#endif
                             foreach (var originalGraph in graphs)
                             {
                                 originalGraph.Flattened = null; // assure we are actually assigning a flattened graph to everything
