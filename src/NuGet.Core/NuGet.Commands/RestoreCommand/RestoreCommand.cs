@@ -1387,7 +1387,10 @@ namespace NuGet.Commands
 
                     _success &= result.Success;
 
-                    graphs = result.Graphs;
+                    if (result.Success)
+                    {
+                        graphs = result.Graphs;
+                    }
 
                     runtimes = result.Runtimes;
                 }
@@ -1403,6 +1406,8 @@ namespace NuGet.Commands
 
             if (!_success)
             {
+                graphs = new List<RestoreTargetGraph>();
+
                 // When we fail to create the graphs, we want to write a `target` for each target framework
                 // in order to avoid missing target errors from the SDK build tasks and ensure that NuGet errors don't get cleared.
                 foreach (FrameworkRuntimePair frameworkRuntimePair in CreateFrameworkRuntimePairs(_request.Project, RequestRuntimeUtility.GetRestoreRuntimes(_request)))
