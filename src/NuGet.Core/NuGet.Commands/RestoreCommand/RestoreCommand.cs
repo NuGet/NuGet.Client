@@ -314,7 +314,7 @@ namespace NuGet.Commands
                 {
                     using (telemetry.StartIndependentInterval(GenerateRestoreGraphDuration))
                     {
-                        if (_enableNewDependencyResolver)
+                        if (!_enableNewDependencyResolver)
                         {
                             // Restore
                             if (NuGetEventSource.IsEnabled) TraceEvents.BuildRestoreGraphStart(_request.Project.FilePath);
