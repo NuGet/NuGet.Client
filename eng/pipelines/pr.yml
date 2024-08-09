@@ -116,6 +116,7 @@ stages:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
         testTargetFramework: net472
+        timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
@@ -133,6 +134,7 @@ stages:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
         testTargetFramework: net8.0
+        timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
@@ -150,6 +152,7 @@ stages:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
         testTargetFramework: netcoreapp3.1
+        timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
   - stage:
@@ -189,6 +192,7 @@ stages:
         vmImage: ubuntu-latest
         testType: Functional
         testTargetFramework: net8.0
+        timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
   - stage:
@@ -241,6 +245,7 @@ stages:
         vmImage: macos-latest
         testType: Functional
         testTargetFramework: net8.0
+        timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnMacOS, true) }}:
   - stage:
