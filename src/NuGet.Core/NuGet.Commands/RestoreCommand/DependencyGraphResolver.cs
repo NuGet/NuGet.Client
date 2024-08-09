@@ -50,7 +50,7 @@ namespace NuGet.Commands
             _operationId = operationId;
         }
 
-        public async Task<ValueTuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, List<NuGetv3LocalRepository> localRepositories,CancellationToken token)
+        public async Task<ValueTuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, List<NuGetv3LocalRepository> localRepositories, CancellationToken token)
         {
             bool _success = true;
             var uniquePackages = new HashSet<LibraryIdentity>();
@@ -466,7 +466,7 @@ namespace NuGet.Commands
                                 }
                             });
                     }
-                    
+
                     if (!findLibraryEntryCache.TryGetValue(libraryRangeOfCurrentRef, out FindLibraryEntryResult? refItemResult))
                     {
                         GraphItem<RemoteResolveResult> refItem = ResolverUtility.FindLibraryEntryAsync(

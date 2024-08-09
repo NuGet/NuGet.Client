@@ -320,7 +320,6 @@ namespace NuGet.Commands
                         if (_enableNewDependencyResolver)
                         {
                             graphs = await ExecuteRestoreAsync(_request.DependencyProviders.GlobalPackages, _request.DependencyProviders.FallbackPackageFolders, contextForProject, token, telemetry);
-                            
                         }
                         else
                         {
