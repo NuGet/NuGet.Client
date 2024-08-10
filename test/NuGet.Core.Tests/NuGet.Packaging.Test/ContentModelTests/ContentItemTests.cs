@@ -7,6 +7,11 @@ using Xunit;
 
 namespace NuGet.Packaging.Test.ContentModelTests
 {
+    // TODO:
+    // Add verification that the _properties is not created.
+    // Add verification for addition and reading of keys that don't get packed.
+    // Add tests that verify the dictionary is created properly.
+    // Add GroupComparer tests.
     public class ContentItemTests
     {
         [Fact]
