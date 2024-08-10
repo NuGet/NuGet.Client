@@ -58,6 +58,10 @@ namespace NuGet.Commands
 
         public ISet<ResolvedDependencyKey> ResolvedDependencies { get; internal set; }
 
+        internal RestoreTargetGraph()
+        {
+        }
+
         private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts,
                                    NuGetFramework framework,
                                    string runtimeIdentifier,
@@ -86,8 +90,6 @@ namespace NuGet.Commands
             Unresolved = unresolved;
             ResolvedDependencies = resolvedDependencies;
         }
-        internal RestoreTargetGraph()
-        { }
 
         public static RestoreTargetGraph Create(IEnumerable<GraphNode<RemoteResolveResult>> graphs, RemoteWalkContext context, ILogger logger, NuGetFramework framework)
         {
