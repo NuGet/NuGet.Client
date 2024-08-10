@@ -14,9 +14,7 @@ namespace NuGet.DependencyResolver
         {
         }
 
-#pragma warning disable RS0016
         public GraphNode(LibraryRange key, bool hasInnerNodes, bool hasParentNodes)
-#pragma warning restore
         {
             Key = key;
             Disposition = Disposition.Acceptable;

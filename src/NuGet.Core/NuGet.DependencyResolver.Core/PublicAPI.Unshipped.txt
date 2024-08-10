@@ -1,1 +1,2 @@
 #nullable enable
+~NuGet.DependencyResolver.GraphNode<TItem>.GraphNode(NuGet.LibraryModel.LibraryRange key, bool hasInnerNodes, bool hasParentNodes) -> void
