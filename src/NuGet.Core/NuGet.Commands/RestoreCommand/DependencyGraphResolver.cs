@@ -470,7 +470,7 @@ namespace NuGet.Commands
                         GraphItem<RemoteResolveResult> refItem = ResolverUtility.FindLibraryEntryAsync(
                                 currentRef.LibraryRange,
                                 newRTG.Framework,
-                                newRTG.RuntimeIdentifier,
+                                runtimeIdentifier: null,
                                 context,
                                 CancellationToken.None).GetAwaiter().GetResult();
 
