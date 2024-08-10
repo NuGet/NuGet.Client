@@ -48,6 +48,7 @@ namespace NuGet.Commands
         }
 
 #pragma warning disable CA1505 // 'ResolveAsync' has a maintainability index of '0'. Rewrite or refactor the code to increase its maintainability index (MI) above '9'.  This will be refactored in a future change.
+
         public async Task<ValueTuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, List<NuGetv3LocalRepository> localRepositories, CancellationToken token)
 #pragma warning restore CA1505
         {
@@ -900,6 +901,24 @@ namespace NuGet.Commands
             return (_success, allGraphs, allRuntimes);
         }
 
+        private static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
+        {
+            if (current == previous)
+            {
+                return false;
+            }
+
+            if (previous == LibraryDependencyTarget.PackageProjectExternal)
+            {
+                LibraryDependencyTarget ppeFlags = current & LibraryDependencyTarget.PackageProjectExternal;
+                LibraryDependencyTarget nonPpeFlags = current & ~LibraryDependencyTarget.PackageProjectExternal;
+                return (ppeFlags != LibraryDependencyTarget.None && nonPpeFlags == LibraryDependencyTarget.None);
+            }
+
+            // TODO: Should there be other cases here?
+            return false;
+        }
+
         private static bool VersionRangePreciseEquals(VersionRange a, VersionRange b)
         {
             if (ReferenceEquals(a, b))
@@ -940,24 +959,6 @@ namespace NuGet.Commands
             }
 
             return true;
-        }
-
-        private static bool EvictOnTypeConstraint(LibraryDependencyTarget current, LibraryDependencyTarget previous)
-        {
-            if (current == previous)
-            {
-                return false;
-            }
-
-            if (previous == LibraryDependencyTarget.PackageProjectExternal)
-            {
-                LibraryDependencyTarget ppeFlags = current & LibraryDependencyTarget.PackageProjectExternal;
-                LibraryDependencyTarget nonPpeFlags = current & ~LibraryDependencyTarget.PackageProjectExternal;
-                return (ppeFlags != LibraryDependencyTarget.None && nonPpeFlags == LibraryDependencyTarget.None);
-            }
-
-            // TODO: Should there be other cases here?
-            return false;
         }
 
         private struct ResolvedDependencyGraphItem
