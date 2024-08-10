@@ -849,12 +849,6 @@ namespace NuGet.Commands
 
             _telemetryActivity.EndIntervalMeasure(ProjectRestoreCommand.WalkFrameworkDependencyDuration);
 
-            await UnexpectedDependencyMessages.LogAsync(allGraphs, _request.Project, _logger);
-
-            // Update the logger with the restore target graphs
-            // This allows lazy initialization for the Transitive Warning Properties
-            _logger.ApplyRestoreOutput(allGraphs);
-
             if (!hasInstallBeenCalledAlready)
             {
                 downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: string.Empty, token);
@@ -894,6 +888,12 @@ namespace NuGet.Commands
                     _request.CompatibilityProfiles.Add(frameworkRuntimePair);
                 }
             }
+
+            // Update the logger with the restore target graphs
+            // This allows lazy initialization for the Transitive Warning Properties
+            _logger.ApplyRestoreOutput(allGraphs);
+
+            await UnexpectedDependencyMessages.LogAsync(allGraphs, _request.Project, _logger);
 
             _success &= await projectRestoreCommand.ResolutionSucceeded(allGraphs, downloadDependencyResolutionResults, context, token);
 
