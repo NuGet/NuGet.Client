@@ -251,9 +251,7 @@ namespace NuGet.DependencyResolver
             return rootNode;
         }
 
-#pragma warning disable RS0016
         public static void EvaluateRuntimeDependencies(ref LibraryRange libraryRange, string runtimeName, RuntimeGraph runtimeGraph, ref HashSet<LibraryDependency> runtimeDependencies)
-#pragma warning restore
         {
             // HACK(davidfowl): This is making runtime.json support package redirects
 
@@ -288,9 +286,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-#pragma warning disable RS0016
         public static void MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphNode<RemoteResolveResult> node)
-#pragma warning restore
         {
             // Merge in runtime dependencies
             if (runtimeDependencies?.Count > 0)
@@ -619,8 +615,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-#pragma warning disable RS0016
-        public class LibraryDependencyNameComparer : IEqualityComparer<LibraryDependency>
+        private class LibraryDependencyNameComparer : IEqualityComparer<LibraryDependency>
         {
             public static readonly IEqualityComparer<LibraryDependency> OrdinalIgnoreCaseNameComparer = new LibraryDependencyNameComparer();
 
@@ -636,7 +631,6 @@ namespace NuGet.DependencyResolver
                 return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Name);
             }
         }
-#pragma warning restore
 
         /// <summary>
         /// Captures state to begin or resume processing of a GraphNode
