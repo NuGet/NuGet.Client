@@ -7,6 +7,19 @@ namespace NuGet.ContentModel
 {
     public class ContentItem
     {
+        // These must match ManagedCodeConventions.PropertyNames. They cannot be used since they're static and switch requires const.
+        internal const string TargetFrameworkMoniker = "tfm";
+        internal const string RuntimeIdentifier = "rid";
+        internal const string AnyValue = "any";
+        internal const string ManagedAssembly = "assembly";
+        internal const string Locale = "locale";
+        internal const string MSBuild = "msbuild";
+        internal const string SatelliteAssembly = "satelliteAssembly";
+        internal const string CodeLanguage = "codeLanguage";
+
+        internal const string Related = "related";
+        internal const string TfmRaw = "tfm_raw";
+
         public string Path { get; set; }
 
         internal Dictionary<string, object> _properties;
@@ -38,34 +51,34 @@ namespace NuGet.ContentModel
             bool found = true;
             switch (key)
             {
-                case "tfm":
+                case TargetFrameworkMoniker:
                     value = _tfm;
                     break;
-                case "rid":
+                case RuntimeIdentifier:
                     value = _rid;
                     break;
-                case "any":
+                case AnyValue:
                     value = _any;
                     break;
-                case "assembly":
+                case ManagedAssembly:
                     value = _msbuild;
                     break;
-                case "locale":
+                case Locale:
                     value = _locale;
                     break;
-                case "msbuild":
+                case MSBuild:
                     value = _msbuild;
                     break;
-                case "related":
+                case Related:
                     value = _related;
                     break;
-                case "satelliteAssembly":
+                case SatelliteAssembly:
                     value = _satelliteAssembly;
                     break;
-                case "codeLanguage":
+                case CodeLanguage:
                     value = _codeLanguage;
                     break;
-                case "tfm_raw":
+                case TfmRaw:
                     value = _tfmRaw;
                     break;
                 default:
@@ -91,34 +104,34 @@ namespace NuGet.ContentModel
 
             switch (key)
             {
-                case "tfm":
+                case TargetFrameworkMoniker:
                     _tfm = value;
                     break;
-                case "rid":
+                case RuntimeIdentifier:
                     _rid = value;
                     break;
-                case "any":
+                case AnyValue:
                     _any = value;
                     break;
-                case "assembly":
-                    _msbuild = value;
+                case ManagedAssembly:
+                    _assembly = value;
                     break;
-                case "locale":
+                case Locale:
                     _locale = value;
                     break;
-                case "msbuild":
+                case MSBuild:
                     _msbuild = value;
                     break;
-                case "related":
+                case Related:
                     _related = value;
                     break;
-                case "satelliteAssembly":
+                case SatelliteAssembly:
                     _satelliteAssembly = value;
                     break;
-                case "codeLanguage":
+                case CodeLanguage:
                     _codeLanguage = value;
                     break;
-                case "tfm_raw":
+                case TfmRaw:
                     _tfmRaw = value;
                     break;
                 default:
@@ -137,43 +150,43 @@ namespace NuGet.ContentModel
             var properties = new Dictionary<string, object>();
             if (_assembly != null) // We always initialize the dictionary with the packed values. 
             {
-                properties.Add("assembly", _assembly);
+                properties.Add(ManagedAssembly, _assembly);
             }
             if (_locale != null)
             {
-                properties.Add("locale", _locale);
+                properties.Add(Locale, _locale);
             }
             if (_related != null)
             {
-                properties.Add("related", _related);
+                properties.Add(Related, _related);
             }
             if (_msbuild != null)
             {
-                properties.Add("msbuild", _msbuild);
+                properties.Add(MSBuild, _msbuild);
             }
             if (_tfm != null)
             {
-                properties.Add("tfm", _tfm);
+                properties.Add(TargetFrameworkMoniker, _tfm);
             }
             if (_rid != null)
             {
-                properties.Add("rid", _rid);
+                properties.Add(RuntimeIdentifier, _rid);
             }
             if (_any != null)
             {
-                properties.Add("any", _any);
+                properties.Add(AnyValue, _any);
             }
             if (_satelliteAssembly != null)
             {
-                properties.Add("satelliteAssembly", _satelliteAssembly);
+                properties.Add(SatelliteAssembly, _satelliteAssembly);
             }
             if (_codeLanguage != null)
             {
-                properties.Add("codeLanguage", _codeLanguage);
+                properties.Add(CodeLanguage, _codeLanguage);
             }
             if (_tfmRaw != null)
             {
-                properties.Add("tfm_raw", _tfmRaw);
+                properties.Add(TfmRaw, _tfmRaw);
             }
             _properties = properties;
             return properties;
