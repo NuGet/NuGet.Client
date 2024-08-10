@@ -52,12 +52,7 @@ namespace NuGet.Commands
             string telemetryPrefix)
         {
             var allRuntimes = RuntimeGraph.Empty;
-            //BSW - changes here to make each TFM/RID version run in series to make them easier to debug
-            //This shouldn't have an effect on overall performance, and can be undone if people would prefer parallelism
-
-            //START EDIT
-            //var frameworkTasks = new List<Task<RestoreTargetGraph>>();
-            var frameworkWDAResults = new List<RestoreTargetGraph>();
+            var frameworkTasks = new List<Task<RestoreTargetGraph>>();
             var graphs = new List<RestoreTargetGraph>();
             var runtimesByFramework = frameworkRuntimePairs.ToLookup(p => p.Framework, p => p.RuntimeIdentifier);
             var success = true;
@@ -68,23 +63,16 @@ namespace NuGet.Commands
             {
                 _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, pair.Key.DotNetFrameworkName));
 
-                //frameworkTasks.Add(WalkDependenciesAsync(projectRange,
-                //  pair.Key,
-                //  remoteWalker,
-                //  context,
-                //  token: token));
-                var task = WalkDependenciesAsync(projectRange,
+                frameworkTasks.Add(WalkDependenciesAsync(projectRange,
                                     pair.Key,
                                     remoteWalker,
                                     context,
-                                    token: token);
-
-                frameworkWDAResults.Add(task.GetAwaiter().GetResult());
+                    token: token));
             }
-            graphs.AddRange(frameworkWDAResults);
-            //var frameworkGraphs = await Task.WhenAll(frameworkTasks);
-            //graphs.AddRange(frameworkGraphs);
-            //END EDIT
+
+            var frameworkGraphs = await Task.WhenAll(frameworkTasks);
+
+            graphs.AddRange(frameworkGraphs);
 
             telemetryActivity.EndIntervalMeasure(telemetryPrefix + WalkFrameworkDependencyDuration);
 
