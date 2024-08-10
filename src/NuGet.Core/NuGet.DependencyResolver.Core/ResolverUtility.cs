@@ -19,7 +19,6 @@ namespace NuGet.DependencyResolver
 {
     public static class ResolverUtility
     {
-#pragma warning disable RS0016
         public static Task<GraphItem<RemoteResolveResult>> FindLibraryCachedAsync(
             LibraryRange libraryRange,
             NuGetFramework framework,
@@ -74,7 +73,6 @@ namespace NuGet.DependencyResolver
                     context.Logger,
                     cancellationToken);
 
-
                 if (match == null)
                 {
                     return CreateUnresolvedResult(libraryRange);
@@ -108,8 +106,6 @@ namespace NuGet.DependencyResolver
 
             return graphItem!;
         }
-
-#pragma warning restore
 
         private static async Task<GraphItem<RemoteResolveResult>> CreateGraphItemAsync(
             RemoteMatch match,
