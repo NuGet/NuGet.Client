@@ -61,7 +61,7 @@ namespace NuGet.ContentModel
                     value = _any;
                     break;
                 case ManagedAssembly:
-                    value = _msbuild;
+                    value = _assembly;
                     break;
                 case Locale:
                     value = _locale;

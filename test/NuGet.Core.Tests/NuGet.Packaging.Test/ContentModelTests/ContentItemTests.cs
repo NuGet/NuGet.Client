@@ -118,5 +118,126 @@ namespace NuGet.Packaging.Test.ContentModelTests
             // Assert
             contentItem._tfmRaw.Should().Be(value);
         }
+
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithAssembly_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._assembly = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.ManagedAssembly, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithTfm_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._tfm = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.TargetFrameworkMoniker, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithRuntimeIdentifier_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._rid = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.RuntimeIdentifier, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithAny_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._any = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.AnyValue, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithLocale_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._locale = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.Locale, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithMsbuild_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._msbuild = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.MSBuild, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithSatelliteAssembly_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._satelliteAssembly = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.SatelliteAssembly, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithCodeLanguage_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._codeLanguage = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.CodeLanguage, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithRelated_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._related = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.Related, out object result);
+            result.Should().Be(value);
+        }
+
+        [Fact]
+        public void TryGetValue_WithPropertiesNotInitialized__WithTfmRaw_GetsCorrectValue()
+        {
+            var contentItem = new ContentItem();
+            var value = "value";
+            // Act
+            contentItem._tfmRaw = value;
+            // Assert
+            contentItem.TryGetValue(ContentItem.TfmRaw, out object result);
+            result.Should().Be(value);
+        }
     }
 }
