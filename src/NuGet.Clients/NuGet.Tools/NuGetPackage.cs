@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
-using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
