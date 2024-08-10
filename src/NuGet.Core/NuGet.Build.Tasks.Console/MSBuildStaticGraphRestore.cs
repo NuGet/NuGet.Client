@@ -942,13 +942,6 @@ namespace NuGet.Build.Tasks.Console
                     });
                 }
 
-                int nodeCount = 1;
-                string strNodeCount = Environment.GetEnvironmentVariable("RESTORE_MSBUILD_NODE_COUNT");
-                if (string.IsNullOrEmpty(strNodeCount) || !int.TryParse(strNodeCount, out nodeCount))
-                {
-                    nodeCount = 1;
-                }
-
                 var projects = new ConcurrentDictionary<string, ProjectWithInnerNodes>(StringComparer.OrdinalIgnoreCase);
 
                 using var projectCollection = new ProjectCollection(
@@ -959,7 +952,7 @@ namespace NuGet.Build.Tasks.Console
                     toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
                     // Having more than 1 node spins up multiple msbuild.exe instances to run builds in parallel
                     // However, these targets complete so quickly that the added overhead makes it take longer
-                    maxNodeCount: nodeCount,
+                    maxNodeCount: 1,
                     onlyLogCriticalEvents: false,
                     // Loading projects as readonly makes parsing a little faster since comments and whitespace can be ignored
                     loadProjectsReadOnly: true);
@@ -1024,22 +1017,19 @@ namespace NuGet.Build.Tasks.Console
                                 // Suppresses an error that a target does not exist because it may or may not contain the targets that we're running
                                 BuildRequestDataFlags.SkipNonexistentTargets));
 
-                        //BuildResult result = buildSubmission.Execute();
-                        buildSubmission.ExecuteAsync((submission) =>
+                        BuildResult result = buildSubmission.Execute();
+
+                        if (result.OverallResult == BuildResultCode.Failure)
                         {
-                            BuildResult result = submission.BuildResult;
-                            if (result.OverallResult == BuildResultCode.Failure)
-                            {
-                                failedBuildSubmissionCount++;
-                            }
+                            failedBuildSubmissionCount++;
+                        }
 
-                            buildCount++;
+                        buildCount++;
 
-                            projects.AddOrUpdate(
-                                projectInstance.FullPath,
-                                key => new ProjectWithInnerNodes(targetFramework, new MSBuildProjectInstance(projectInstance)),
-                                (_, item) => item.Add(targetFramework, new MSBuildProjectInstance(projectInstance)));
-                        }, null);
+                        projects.AddOrUpdate(
+                            projectInstance.FullPath,
+                            key => new ProjectWithInnerNodes(targetFramework, new MSBuildProjectInstance(projectInstance)),
+                            (_, item) => item.Add(targetFramework, new MSBuildProjectInstance(projectInstance)));
                     }
                 }
                 finally
