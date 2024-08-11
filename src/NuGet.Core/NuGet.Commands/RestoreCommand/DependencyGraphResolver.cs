@@ -48,7 +48,6 @@ namespace NuGet.Commands
         }
 
 #pragma warning disable CA1505 // 'ResolveAsync' has a maintainability index of '0'. Rewrite or refactor the code to increase its maintainability index (MI) above '9'.  This will be refactored in a future change.
-
         public async Task<ValueTuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> ResolveAsync(NuGetv3LocalRepository userPackageFolder, IReadOnlyList<NuGetv3LocalRepository> fallbackPackageFolders, RemoteWalkContext context, ProjectRestoreCommand projectRestoreCommand, List<NuGetv3LocalRepository> localRepositories, CancellationToken token)
 #pragma warning restore CA1505
         {

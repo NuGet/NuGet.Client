@@ -64,9 +64,9 @@ namespace NuGet.Commands
                 _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, pair.Key.DotNetFrameworkName));
 
                 frameworkTasks.Add(WalkDependenciesAsync(projectRange,
-                                    pair.Key,
-                                    remoteWalker,
-                                    context,
+                    pair.Key,
+                    remoteWalker,
+                    context,
                     token: token));
             }
 
@@ -175,7 +175,6 @@ namespace NuGet.Commands
         {
             if (File.Exists(runtimeGraphPath))
             {
-#pragma warning disable CA1031 // Do not catch general exception types, any exception reading the runtime.json should be logged as an error
                 try
                 {
                     using (var stream = File.OpenRead(runtimeGraphPath))
@@ -194,7 +193,6 @@ namespace NuGet.Commands
                              runtimeGraphPath,
                              e.Message)));
                 }
-#pragma warning restore CA1031 // Do not catch general exception types
             }
             else
             {
