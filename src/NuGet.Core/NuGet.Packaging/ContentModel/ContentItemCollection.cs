@@ -359,7 +359,7 @@ namespace NuGet.ContentModel
             return false;
         }
 
-        private class GroupComparer : IEqualityComparer<ContentItem>
+        internal class GroupComparer : IEqualityComparer<ContentItem>
         {
             public static readonly GroupComparer DefaultComparer = new GroupComparer();
 

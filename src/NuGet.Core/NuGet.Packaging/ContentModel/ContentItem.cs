@@ -101,42 +101,45 @@ namespace NuGet.ContentModel
             {
                 _properties.Add(key, value);
             }
-
-            switch (key)
+            else
             {
-                case TargetFrameworkMoniker:
-                    _tfm = value;
-                    break;
-                case RuntimeIdentifier:
-                    _rid = value;
-                    break;
-                case AnyValue:
-                    _any = value;
-                    break;
-                case ManagedAssembly:
-                    _assembly = value;
-                    break;
-                case Locale:
-                    _locale = value;
-                    break;
-                case MSBuild:
-                    _msbuild = value;
-                    break;
-                case Related:
-                    _related = value;
-                    break;
-                case SatelliteAssembly:
-                    _satelliteAssembly = value;
-                    break;
-                case CodeLanguage:
-                    _codeLanguage = value;
-                    break;
-                case TfmRaw:
-                    _tfmRaw = value;
-                    break;
-                default:
-                    Properties.Add(key, value); // A property we can't pack means we should be using the dictionary instead.
-                    break;
+
+                switch (key)
+                {
+                    case TargetFrameworkMoniker:
+                        _tfm = value;
+                        break;
+                    case RuntimeIdentifier:
+                        _rid = value;
+                        break;
+                    case AnyValue:
+                        _any = value;
+                        break;
+                    case ManagedAssembly:
+                        _assembly = value;
+                        break;
+                    case Locale:
+                        _locale = value;
+                        break;
+                    case MSBuild:
+                        _msbuild = value;
+                        break;
+                    case Related:
+                        _related = value;
+                        break;
+                    case SatelliteAssembly:
+                        _satelliteAssembly = value;
+                        break;
+                    case CodeLanguage:
+                        _codeLanguage = value;
+                        break;
+                    case TfmRaw:
+                        _tfmRaw = value;
+                        break;
+                    default:
+                        Properties.Add(key, value); // A property we can't pack means we should be using the dictionary instead.
+                        break;
+                }
             }
         }
 
