@@ -36,8 +36,7 @@ namespace NuGet.Protocol
                     }
                     else if (reader.Value.Equals(JsonProperties.TargetFramework))
                     {
-                        reader.Read();
-                        fxName = reader.Value.ToString();
+                        fxName = reader.ReadAsString();
                     }
                 }
             }
