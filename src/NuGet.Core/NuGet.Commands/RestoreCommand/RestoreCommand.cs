@@ -122,7 +122,7 @@ namespace NuGet.Commands
             return !string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
         });
 
-        private readonly bool _enableNewDependencyResolver = EnableNewDependencyResolverLazy.Value;
+        private readonly bool _enableNewDependencyResolver;
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -153,6 +153,10 @@ namespace NuGet.Commands
             if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference || request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled)
             {
                 _enableNewDependencyResolver = false;
+            }
+            else
+            {
+                _enableNewDependencyResolver = !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
             }
         }
 

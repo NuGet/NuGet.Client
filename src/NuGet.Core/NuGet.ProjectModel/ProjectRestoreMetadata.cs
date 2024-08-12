@@ -146,6 +146,8 @@ namespace NuGet.ProjectModel
         /// </summary>
         public bool UsingMicrosoftNETSdk { get; set; }
 
+        public bool UseLegacyDependencyResolver { get; set; }
+
         public override int GetHashCode()
         {
             StringComparer osStringComparer = PathUtility.GetStringComparerBasedOnOS();
