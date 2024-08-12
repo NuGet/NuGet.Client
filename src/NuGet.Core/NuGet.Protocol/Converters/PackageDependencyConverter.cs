@@ -9,10 +9,7 @@ namespace NuGet.Protocol
 {
     public class PackageDependencyConverter : JsonConverter
     {
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(Packaging.Core.PackageDependency);
-        }
+        public override bool CanConvert(Type objectType) => objectType == typeof(Packaging.Core.PackageDependency);
 
         public override bool CanWrite => false;
 
