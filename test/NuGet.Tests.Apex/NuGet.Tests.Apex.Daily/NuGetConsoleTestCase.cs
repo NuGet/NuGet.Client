@@ -102,10 +102,9 @@ namespace NuGet.Tests.Apex.Daily
         }
 
         [DataTestMethod]
-        [DataRow(ProjectTemplate.MauiClassLibrary)]
-        [DataRow(ProjectTemplate.WebSiteEmpty)]
+        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task InstallPackageInPMC(ProjectTemplate projectTemplate)
+        public async Task InstallPackageForPRInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -131,24 +130,16 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (projectTemplate.ToString().Equals("WebSiteEmpty"))
-                    {
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v100, Logger);
-                    }
-                    else
-                    {
-                        CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, Logger);
-                    }
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v100, Logger);
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
         [DataTestMethod]
-        [DataRow(ProjectTemplate.MauiClassLibrary)]
-        [DataRow(ProjectTemplate.WebSiteEmpty)]
+        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task UpdatePackageInPMC(ProjectTemplate projectTemplate)
+        public async Task UpdatePackageForPRInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -181,24 +172,16 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (projectTemplate.ToString().Equals("WebSiteEmpty"))
-                    {
-                        CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200, Logger);
-                    }
-                    else
-                    {
-                        CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, Logger);
-                    }
+                    CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, packageName, v200, Logger);
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
         }
 
         [DataTestMethod]
-        [DataRow(ProjectTemplate.MauiClassLibrary)]
-        [DataRow(ProjectTemplate.WebSiteEmpty)]
+        [DynamicData(nameof(GetMauiTemplates), DynamicDataSourceType.Method)]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallPackageInPMC(ProjectTemplate projectTemplate)
+        public async Task UninstallPackageForPRInPMC(ProjectTemplate projectTemplate)
         {
             EnsureVisualStudioHost();
             using (var simpleTestPathContext = new SimpleTestPathContext())
@@ -230,14 +213,115 @@ namespace NuGet.Tests.Apex.Daily
 
                     // Assert
                     VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
-                    if (projectTemplate.ToString().Equals("WebSiteEmpty"))
-                    {
-                        CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, testContext.Project, PackageName, v100, Logger);
-                    }
-                    else
-                    {
-                        CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, Logger);
-                    }
+                    CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, testContext.Project, PackageName, v100, Logger);
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetWebSiteTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageForPCInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageName = "TestPackage";
+                var v100 = "1.0.0";
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    testContext.SolutionService.Build();
+
+                    // Act
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v100, Logger);
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetWebSiteTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageForPCInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var packageName = "TestPackage";
+                var v100 = "1.0.0";
+                var v200 = "2.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v100);
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, packageName, v200);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    testContext.SolutionService.Build();
+
+                    // Act
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(packageName, v100);
+                    testContext.SolutionService.Build();
+
+                    nugetConsole.UpdatePackageFromPMC(packageName, v200);
+                    testContext.SolutionService.Build();
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
+                    CommonUtility.AssertPackageInPackagesConfig(VisualStudio, testContext.Project, packageName, v200, Logger);
+                    Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
+                }
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(GetWebSiteTemplates), DynamicDataSourceType.Method)]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallPackageForPCInPMC(ProjectTemplate projectTemplate)
+        {
+            EnsureVisualStudioHost();
+            using (var simpleTestPathContext = new SimpleTestPathContext())
+            {
+                // Arrange
+                var PackageName = "TestPackage";
+                var v100 = "1.0.0";
+
+                await CommonUtility.CreatePackageInSourceAsync(simpleTestPathContext.PackageSource, PackageName, v100);
+
+                using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, Logger, simpleTestPathContext: simpleTestPathContext))
+                {
+                    VisualStudio.AssertNoErrors();
+                    var solutionService = VisualStudio.Get<SolutionService>();
+                    testContext.SolutionService.Build();
+
+                    // Act
+                    var nugetConsole = GetConsole(testContext.Project);
+
+                    nugetConsole.InstallPackageFromPMC(PackageName, v100);
+                    testContext.SolutionService.Build();
+
+                    nugetConsole.UninstallPackageFromPMC(PackageName);
+                    testContext.SolutionService.Build();
+
+                    // Assert
+                    VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
                     Assert.IsTrue(VisualStudio.HasNoErrorsInOutputWindows());
                 }
             }
@@ -425,5 +509,11 @@ namespace NuGet.Tests.Apex.Daily
         {
             yield return new object[] { ProjectTemplate.MauiClassLibrary };
         }
+
+        public static IEnumerable<object[]> GetWebSiteTemplates()
+        {
+            yield return new object[] { ProjectTemplate.WebSiteEmpty };
+        }
+
     }
 }
