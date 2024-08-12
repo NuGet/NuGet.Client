@@ -29,7 +29,7 @@ namespace NuGet.Protocol
                     {
                         id = reader.ReadAsString();
                     }
-                    if (reader.Value.Equals(JsonProperties.Range))
+                    else if (reader.Value.Equals(JsonProperties.Range))
                     {
                         version = id = reader.ReadAsString();
                     }
