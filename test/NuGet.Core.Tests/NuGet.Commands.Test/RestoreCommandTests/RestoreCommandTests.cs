@@ -27,6 +27,7 @@ using NuGet.Versioning;
 using Test.Utility;
 using Test.Utility.Commands;
 using Test.Utility.ProjectManagement;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test.RestoreCommandTests
@@ -2987,8 +2988,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             projectInformationEvent["FallbackFoldersCount"].Should().Be(0);
             projectInformationEvent["IsLockFileEnabled"].Should().Be(false);
             projectInformationEvent["NoOpCacheFileAgeDays"].Should().NotBeNull();
-            projectInformationEvent["UseLegacyDependencyResolver"].Should().BeOfType<bool>(),
-            projectInformationEvent["UsedLegacyDependencyResolver"].Should().BeOfType<bool>(),
+            projectInformationEvent["UseLegacyDependencyResolver"].Should().BeOfType<bool>();
+            projectInformationEvent["UsedLegacyDependencyResolver"].Should().BeOfType<bool>();
         }
 
         [Fact]
