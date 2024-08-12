@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -21,6 +22,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio.PackageFeeds;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
@@ -391,7 +393,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using NuGetPackageSearchService searchService = SetupSearchService();
 
             // Act
-            (IPackageFeed main, IPackageFeed recommender) = await searchService.CreatePackageFeedAsync(
+            IPackageFeed packageFeed = await searchService.CreatePackageFeedAsync(
                 projectContextInfos: _projects,
                 targetFrameworks: new List<string>() { "net45" },
                 itemFilter: itemFilter,
@@ -401,8 +403,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 cancellationToken: CancellationToken.None);
 
             // Assert
-            Assert.IsType(expectedFeedType, main);
-            Assert.Null(recommender);
+            Assert.IsType(expectedFeedType, packageFeed);
+            Assert.IsNotType<CombinedPackageFeed>(packageFeed);
         }
 
         private NuGetPackageSearchService SetupSearchService()

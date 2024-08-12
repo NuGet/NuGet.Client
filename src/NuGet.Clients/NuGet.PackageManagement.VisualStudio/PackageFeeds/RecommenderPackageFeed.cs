@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return RecommendPackagesAsync(searchToken, cancellationToken);
         }
 
-        public async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
+        private async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             var searchToken = continuationToken as RecommendSearchToken;
             if (searchToken is null)
@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public Task<SearchResult<IPackageSearchMetadata>> RefreshSearchAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
             => System.Threading.Tasks.Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
 
-        public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             // first we try and load the metadata from a local package
             var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // and failing that we go to the network
                 packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
             }
-            return packageMetadata;
+            return new RecommendedPackageSearchMetadata(packageMetadata, VersionInfo);
         }
 
     }
