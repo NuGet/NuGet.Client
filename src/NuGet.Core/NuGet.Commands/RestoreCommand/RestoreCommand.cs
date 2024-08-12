@@ -85,7 +85,7 @@ namespace NuGet.Commands
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
         private const string UseLegacyDependencyResolver = nameof(UseLegacyDependencyResolver);
-        private const string UsedLegacyDepenendencyResolver = nameof(UsedLegacyDepenendencyResolver);
+        private const string UsedLegacyDependencyResolver = nameof(UsedLegacyDependencyResolver);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -183,7 +183,7 @@ namespace NuGet.Commands
                 bool isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
                 telemetry.TelemetryEvent[IsLockFileEnabled] = isLockFileEnabled;
                 telemetry.TelemetryEvent[UseLegacyDependencyResolver] = _request.Project.RestoreMetadata.UseLegacyDependencyResolver;
-                telemetry.TelemetryEvent[UsedLegacyDepenendencyResolver] = !_enableNewDependencyResolver;
+                telemetry.TelemetryEvent[UsedLegacyDependencyResolver] = !_enableNewDependencyResolver;
 
                 _operationId = telemetry.OperationId;
 
