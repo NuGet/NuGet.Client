@@ -13,6 +13,7 @@
     <SkipAnalyzers>true</SkipAnalyzers>
     <UsePublicApiAnalyzer>false</UsePublicApiAnalyzer>
     <SignWithNuGetKey>true</SignWithNuGetKey>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,7 @@
     <InternalsVisibleTo Include="NuGet.Packaging.FuncTest" />
     <InternalsVisibleTo Include="NuGet.Packaging.Test" />
     <InternalsVisibleTo Include="NuGet.Signing.CrossFramework.Test" />
+    <InternalsVisibleTo Include="Benchmarks" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31418.319
@@ -337,6 +338,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ensure-nupkg-dependencies-on-source", "tools-local\ensure-nupkg-dependencies-on-source\ensure-nupkg-dependencies-on-source.csproj", "{719AC60C-59EF-4A63-AC9E-7841DF14179D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tests.Apex.Daily", "test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\NuGet.Tests.Apex.Daily.csproj", "{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks", "test\TestExtensions\Benchmarks\Benchmarks.csproj", "{B3CCD91F-8B53-4A6F-9352-EEEA99371B0C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -712,6 +715,10 @@ Global
 		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3CCD91F-8B53-4A6F-9352-EEEA99371B0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3CCD91F-8B53-4A6F-9352-EEEA99371B0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3CCD91F-8B53-4A6F-9352-EEEA99371B0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3CCD91F-8B53-4A6F-9352-EEEA99371B0C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -827,6 +834,7 @@ Global
 		{1BCC177E-D529-4015-93E2-4C254FA015AA} = {23CEFC88-9365-4464-A517-700224ECA033}
 		{719AC60C-59EF-4A63-AC9E-7841DF14179D} = {CE4C7E1B-6883-49C3-A407-F807094777CC}
 		{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275} = {3150445A-C422-4D40-B341-DE5AD063C632}
+		{B3CCD91F-8B53-4A6F-9352-EEEA99371B0C} = {23CEFC88-9365-4464-A517-700224ECA033}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}

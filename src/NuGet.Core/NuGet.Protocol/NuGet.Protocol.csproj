@@ -10,6 +10,7 @@
     <XPLATProject>true</XPLATProject>
     <Description>NuGet's implementation for interacting with feeds. Contains functionality for all feed types.</Description>
     <UsePublicApiAnalyzer>perTfm</UsePublicApiAnalyzer>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">
@@ -59,5 +60,6 @@
     <InternalsVisibleTo Include="NuGet.VisualStudio.Common.Test" />
     <InternalsVisibleTo Include="NuGet.XPlat.FuncTest" />
     <InternalsVisibleTo Include="Test.Utility" />
+    <InternalsVisibleTo Include="Benchmarks" />
   </ItemGroup>
 </Project>

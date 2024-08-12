@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Benchmarks.Benchmarks-20240812-114638</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3880/23H2/2023Update/SunValley3) (Hyper-V)
+Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 9.0.100-preview.6.24328.19
+  [Host]     : .NET 7.0.20 (7.0.2024.26716), X64 RyuJIT AVX2
+  DefaultJob : .NET 7.0.20 (7.0.2024.26716), X64 RyuJIT AVX2
+</code></pre>
+<pre><code></code></pre>
+
+<table>
+<thead><tr><th>Method            </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>ConverterWithoutLoadJson</td><td>19.16 &mu;s</td><td>0.134 &mu;s</td><td>0.125 &mu;s</td><td>0.8545</td><td>-</td><td>21.18 KB</td>
+</tr><tr><td>ConverterUsingLoadJson</td><td>28.62 &mu;s</td><td>0.129 &mu;s</td><td>0.121 &mu;s</td><td>1.2512</td><td>0.0610</td><td>31.11 KB</td>
+</tr></tbody></table>
+</body>
+</html>
