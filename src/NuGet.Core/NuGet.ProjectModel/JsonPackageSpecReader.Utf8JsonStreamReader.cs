@@ -950,7 +950,7 @@ namespace NuGet.ProjectModel
             var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
             bool usingMicrosoftNetSdk = true;
             NuGetVersion sdkAnalysisLevel = null;
-            bool useLegacyDependencyResolverPropertyName = false;
+            bool useLegacyDependencyResolver = false;
 
             if (jsonReader.Read() && jsonReader.TokenType == JsonTokenType.StartObject)
             {
@@ -1203,7 +1203,7 @@ namespace NuGet.ProjectModel
                     }
                     else if (jsonReader.ValueTextEquals(UseLegacyDependencyResolverPropertyName))
                     {
-                        useLegacyDependencyResolverPropertyName = jsonReader.ReadNextTokenAsBoolOrThrowAnException(UseLegacyDependencyResolverPropertyName);
+                        useLegacyDependencyResolver = jsonReader.ReadNextTokenAsBoolOrThrowAnException(UseLegacyDependencyResolverPropertyName);
                     }
                     else
                     {
@@ -1231,7 +1231,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.RestoreAuditProperties = auditProperties;
             msbuildMetadata.SdkAnalysisLevel = sdkAnalysisLevel;
             msbuildMetadata.UsingMicrosoftNETSdk = usingMicrosoftNetSdk;
-            msbuildMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolverPropertyName;
+            msbuildMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolver;
 
             if (configFilePaths != null)
             {
