@@ -1175,7 +1175,6 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "UsingMicrosoftNETSdk":
-
                         try
                         {
                             usingMicrosoftNetSdk = jsonReader.ReadAsBoolean() ?? usingMicrosoftNetSdk;

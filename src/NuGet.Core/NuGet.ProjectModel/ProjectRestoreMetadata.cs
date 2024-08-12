@@ -180,6 +180,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(RestoreAuditProperties);
             hashCode.AddObject(UsingMicrosoftNETSdk);
             hashCode.AddObject(SdkAnalysisLevel);
+            hashCode.AddObject(UseLegacyDependencyResolver);
 
             return hashCode.CombinedHash;
         }
@@ -227,7 +228,8 @@ namespace NuGet.ProjectModel
                    EqualityUtility.EqualsWithNullCheck(CentralPackageTransitivePinningEnabled, other.CentralPackageTransitivePinningEnabled) &&
                    RestoreAuditProperties == other.RestoreAuditProperties &&
                    UsingMicrosoftNETSdk == other.UsingMicrosoftNETSdk &&
-                   EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel);
+                   EqualityUtility.EqualsWithNullCheck(SdkAnalysisLevel, other.SdkAnalysisLevel) &&
+                   UseLegacyDependencyResolver == other.UseLegacyDependencyResolver;
         }
 
         private HashSet<string> GetSources(IList<PackageSource> sources)
@@ -280,6 +282,7 @@ namespace NuGet.ProjectModel
             clone.RestoreAuditProperties = RestoreAuditProperties?.Clone();
             clone.SdkAnalysisLevel = SdkAnalysisLevel;
             clone.UsingMicrosoftNETSdk = UsingMicrosoftNETSdk;
+            clone.UseLegacyDependencyResolver = UseLegacyDependencyResolver;
         }
     }
 }
