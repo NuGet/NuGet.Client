@@ -71,12 +71,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 canDetermineReadMeDefined = true;
                 newReadMeValue = readme;
             }
-            else
-            {
-                newReadMeValue = string.Empty;
-                canDetermineReadMeDefined = false;
-                isErrorWithReadMe = false;
-            }
+
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             IsErrorWithReadMe = isErrorWithReadMe;
             ReadMeMarkdown = newReadMeValue;

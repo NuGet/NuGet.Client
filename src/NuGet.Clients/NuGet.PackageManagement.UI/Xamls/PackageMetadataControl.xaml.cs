@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement.UI
 
         private ReadMePreviewViewModel _readMePreviewViewModel;
 
-        public PackageMetadataTab SelectedTab { get => (PackageMetadataTab)SelectedTabItem?.Tag; }
+        internal PackageMetadataTab SelectedTab { get => (PackageMetadataTab)SelectedTabItem?.Tag; }
 
 
         public PackageMetadataControl()
