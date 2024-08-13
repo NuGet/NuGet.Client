@@ -10,7 +10,7 @@ using System.IO;
 using Microsoft.Build.Evaluation;
 using NuGet.ProjectModel;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.Commands.Why
 {
     internal static class WhyCommandRunner
     {

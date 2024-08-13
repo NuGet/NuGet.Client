@@ -7,7 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Help;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.CommandLine.XPlat.Commands.Why
 {
     internal static class WhyCommand
     {
