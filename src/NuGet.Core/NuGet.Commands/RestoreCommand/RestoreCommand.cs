@@ -84,6 +84,8 @@ namespace NuGet.Commands
         private const string ValidateRestoreGraphsDuration = nameof(ValidateRestoreGraphsDuration);
         private const string CreateRestoreResultDuration = nameof(CreateRestoreResultDuration);
         private const string IsCentralPackageTransitivePinningEnabled = nameof(IsCentralPackageTransitivePinningEnabled);
+        private const string UseLegacyDependencyResolver = nameof(UseLegacyDependencyResolver);
+        private const string UsedLegacyDependencyResolver = nameof(UsedLegacyDependencyResolver);
 
         // PackageSourceMapping names
         private const string PackageSourceMappingIsMappingEnabled = "PackageSourceMapping.IsMappingEnabled";
@@ -122,7 +124,7 @@ namespace NuGet.Commands
             return !string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
         });
 
-        private readonly bool _enableNewDependencyResolver = EnableNewDependencyResolverLazy.Value;
+        private readonly bool _enableNewDependencyResolver;
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -154,6 +156,10 @@ namespace NuGet.Commands
             {
                 _enableNewDependencyResolver = false;
             }
+            else
+            {
+                _enableNewDependencyResolver = !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+            }
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -176,6 +182,8 @@ namespace NuGet.Commands
                 telemetry.TelemetryEvent[FallbackFoldersCount] = _request.DependencyProviders.FallbackPackageFolders.Count;
                 bool isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
                 telemetry.TelemetryEvent[IsLockFileEnabled] = isLockFileEnabled;
+                telemetry.TelemetryEvent[UseLegacyDependencyResolver] = _request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+                telemetry.TelemetryEvent[UsedLegacyDependencyResolver] = !_enableNewDependencyResolver;
 
                 _operationId = telemetry.OperationId;
 
