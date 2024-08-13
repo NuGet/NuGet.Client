@@ -117,13 +117,6 @@ namespace NuGet.Commands
         private const string AuditDurationOutput = "Audit.Duration.Output";
         private const string AuditDurationTotal = "Audit.Duration.Total";
 
-        private readonly static Lazy<bool> EnableNewDependencyResolverLazy = new Lazy<bool>(() =>
-        {
-            string value = Environment.GetEnvironmentVariable("RESTORE_ENABLE_NEW_RESOLVER");
-
-            return !string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
-        });
-
         private readonly bool _enableNewDependencyResolver;
 
         public RestoreCommand(RestoreRequest request)
@@ -152,14 +145,8 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
-            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference)
-            {
-                _enableNewDependencyResolver = false;
-            }
-            else
-            {
-                _enableNewDependencyResolver = !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
-            }
+            // Disable the new dependency resolver if the project is not using PackageReference or if the user has explicitly opted out of using it
+            _enableNewDependencyResolver = request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
         }
 
         public Task<RestoreResult> ExecuteAsync()
