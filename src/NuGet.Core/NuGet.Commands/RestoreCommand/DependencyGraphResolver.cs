@@ -820,8 +820,12 @@ namespace NuGet.Commands
                                 newGraphNode.OuterNode = currentGraphNode;
                                 currentGraphNode.InnerNodes.Add(newGraphNode);
                             }
+                            if (isCentralPackageTransitivePinningEnabled && !downgrades.ContainsKey(chosenItemRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenItem.LibraryDependency.LibraryRange.VersionRange, dep.LibraryRange.VersionRange))
+                            {
+                                downgrades.Add(chosenItem.LibraryRangeIndex, (currentGraphNode, dep));
+                            }
 
-                            if (newGraphNode.Item.Key.Type != LibraryType.Project && newGraphNode.Item.Key.Type != LibraryType.ExternalProject && newGraphNode.Item.Key.Type != LibraryType.Unresolved && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && dep.LibraryRange.VersionRange != null && !dep.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version))
+                            if (newGraphNode.Item.Key.Type != LibraryType.Project && newGraphNode.Item.Key.Type != LibraryType.ExternalProject && newGraphNode.Item.Key.Type != LibraryType.Unresolved && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && dep.LibraryRange.VersionRange != null && !dep.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version) && !downgrades.ContainsKey(chosenItemRangeIndex))
                             {
                                 currentGraphNode.InnerNodes.Remove(newGraphNode);
 
