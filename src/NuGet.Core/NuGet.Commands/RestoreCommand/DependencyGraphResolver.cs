@@ -517,6 +517,13 @@ namespace NuGet.Commands
                             libraryRangeInterningTable);
 
                         findLibraryEntryCache.Add(libraryRangeOfCurrentRef, refItemResult);
+
+                        // If the package came from a remote library provider, it needs to be installed locally.
+                        var isRemote = context.RemoteLibraryProviders.Contains(refItem.Data.Match.Provider);
+                        if (isRemote)
+                        {
+                            newRTG.Install.Add(refItem.Data.Match);
+                        }
                     }
 
                     HashSet<LibraryDependencyIndex>? suppressions = default;
@@ -715,13 +722,6 @@ namespace NuGet.Commands
                     if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out var node))
                     {
                         newFlattened.Add(node.Item);
-
-                        // If the package came from a remote library provider, it needs to be installed locally.
-                        var isRemote = context.RemoteLibraryProviders.Contains(node.Item.Data.Match.Provider);
-                        if (isRemote)
-                        {
-                            newRTG.Install.Add(node.Item.Data.Match);
-                        }
 
                         for (int i = 0; i < node.Item.Data.Dependencies.Count; i++)
                         {
