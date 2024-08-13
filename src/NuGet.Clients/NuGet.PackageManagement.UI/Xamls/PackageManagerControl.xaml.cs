@@ -129,6 +129,7 @@ namespace NuGet.PackageManagement.UI
 
             _packageDetail.Control = this;
             _packageDetail.Visibility = Visibility.Hidden;
+            _packageDetail.InitializeReadmePreview();
 
             await SetTitleAsync();
 

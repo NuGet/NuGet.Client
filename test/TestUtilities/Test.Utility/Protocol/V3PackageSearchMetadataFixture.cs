@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -112,14 +114,14 @@ namespace NuGet.Test.Utility
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetReadMeAsync()
+            public Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }
 
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
 
-            public bool? HasReadme => null;
+            public ReadmeAvailability ReadmeAvailability => ReadmeAvailability.Unknown;
         }
     }
 }

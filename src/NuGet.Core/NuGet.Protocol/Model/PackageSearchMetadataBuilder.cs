@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Model;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -19,8 +21,8 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
         private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
-        private AsyncLazy<string> _lazyGetReadme;
-        private bool? _hasReadMe = null;
+        private Func<ILogger, CancellationToken, Task<string>> _getReadmeFunc;
+        private ReadmeAvailability? _readmeAvailability = null;
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
             private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
@@ -56,8 +58,16 @@ namespace NuGet.Protocol.Core.Types
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
 
-            internal AsyncLazy<string> LazyGetReadme { get; set; }
-            public async Task<string> GetReadMeAsync() => await (LazyGetReadme);
+            internal Func<ILogger, CancellationToken, Task<string>> GetReadmeFunction { get; set; }
+
+            public async Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken)
+            {
+                if (GetReadmeFunction is not null)
+                {
+                    return await GetReadmeFunction(logger, cancellationToken);
+                }
+                return null;
+            }
 
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
             public bool IsListed { get; set; }
@@ -65,7 +75,18 @@ namespace NuGet.Protocol.Core.Types
             public Func<PackageReaderBase> PackageReader { get; set; }
             public string PackagePath { get; set; }
 
-            public bool? HasReadme { get; internal set; }
+            private ReadmeAvailability _readmeAvailability = ReadmeAvailability.Unknown;
+            public ReadmeAvailability ReadmeAvailability
+            {
+                get
+                {
+                    return _readmeAvailability;
+                }
+                internal set
+                {
+                    _readmeAvailability = value;
+                }
+            }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -91,15 +112,30 @@ namespace NuGet.Protocol.Core.Types
 
         public PackageSearchMetadataBuilder WithReadme(IEnumerable<IPackageSearchMetadata> packageSearchMetadataItems)
         {
-            foreach (var item in packageSearchMetadataItems)
+            var metadata = packageSearchMetadataItems.FirstOrDefault(item => item.ReadmeAvailability == ReadmeAvailability.Available);
+            if (metadata != null)
             {
-                if (item.HasReadme.GetValueOrDefault(false))
-                {
-                    _lazyGetReadme = AsyncLazy.New(item.GetReadMeAsync);
-                    _hasReadMe = item.HasReadme;
-                    break;
-                }
+                _getReadmeFunc = metadata.GetReadMeAsync;
+                _readmeAvailability = metadata.ReadmeAvailability;
+                return this;
             }
+
+            metadata = packageSearchMetadataItems.FirstOrDefault(item => item.ReadmeAvailability == ReadmeAvailability.Unavailable);
+            if (metadata != null)
+            {
+                _readmeAvailability = metadata.ReadmeAvailability;
+                return this;
+            }
+
+            metadata = packageSearchMetadataItems.FirstOrDefault(item => item.ReadmeAvailability == ReadmeAvailability.UnknownCanDownload);
+            if (metadata != null)
+            {
+                _getReadmeFunc = metadata.GetReadMeAsync;
+                _readmeAvailability = metadata.ReadmeAvailability;
+                return this;
+            }
+
+            _readmeAvailability = ReadmeAvailability.Unknown;
             return this;
         }
 
@@ -129,8 +165,8 @@ namespace NuGet.Protocol.Core.Types
                 IsListed = _metadata.IsListed,
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
-                HasReadme = _hasReadMe ?? _metadata.HasReadme,
-                LazyGetReadme = _lazyGetReadme ?? AsyncLazy.New(_metadata.GetReadMeAsync),
+                ReadmeAvailability = _readmeAvailability ?? _metadata.ReadmeAvailability,
+                GetReadmeFunction = _getReadmeFunc ?? _metadata.GetReadMeAsync,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
                 Vulnerabilities = _metadata.Vulnerabilities,
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -3,10 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -147,9 +150,9 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => TaskResult.Null<PackageDeprecationMetadata>();
 
-        public Task<string> GetReadMeAsync()
+        public Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
@@ -157,6 +160,6 @@ namespace NuGet.Protocol
 
         public bool IsListed { get; }
 
-        public bool? HasReadme => null;
+        public ReadmeAvailability ReadmeAvailability => ReadmeAvailability.Unknown;
     }
 }

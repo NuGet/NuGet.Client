@@ -10,8 +10,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -55,15 +57,12 @@ namespace NuGet.PackageManagement.VisualStudio
             return cacheItemEntry;
         }
 
-        public async Task<string> GetPackageReadMeAsync()
+        public async Task<string> GetPackageReadMeAsync(ILogger logger, CancellationToken cancellationToken)
         {
-            return await _packageSearchMetadata.GetReadMeAsync();
+            return await _packageSearchMetadata.GetReadMeAsync(logger, cancellationToken);
         }
 
-        public bool? HasReadMe()
-        {
-            return _packageSearchMetadata.HasReadme;
-        }
+        public ReadmeAvailability ReadmeAvailability => _packageSearchMetadata.ReadmeAvailability;
 
         public void UpdateSearchMetadata(IPackageSearchMetadata packageSearchMetadata)
         {

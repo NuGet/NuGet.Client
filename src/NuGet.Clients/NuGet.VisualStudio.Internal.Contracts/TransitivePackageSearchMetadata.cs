@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -59,7 +62,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => _packageSearchMetadata.Vulnerabilities;
 
-        public bool? HasReadme => null;
+        public ReadmeAvailability ReadmeAvailability => ReadmeAvailability.Unknown;
 
         private readonly IPackageSearchMetadata _packageSearchMetadata;
 
@@ -79,9 +82,9 @@ namespace NuGet.VisualStudio.Internal.Contracts
             return _packageSearchMetadata.GetVersionsAsync();
         }
 
-        public Task<string> GetReadMeAsync()
+        public Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken)
         {
-            return _packageSearchMetadata.GetReadMeAsync();
+            return _packageSearchMetadata.GetReadMeAsync(logger, cancellationToken);
         }
     }
 }

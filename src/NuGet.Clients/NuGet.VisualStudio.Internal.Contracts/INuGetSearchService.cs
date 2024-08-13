@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 
 namespace NuGet.VisualStudio.Internal.Contracts
 {
@@ -67,7 +68,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool isTransitive,
             CancellationToken cancellationToken);
 
-        Task<(bool?, string)> TryGetPackageReadMeAsync(
+        Task<(ReadmeAvailability, string)> TryGetPackageReadMeAsync(
             PackageIdentity identity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
             bool includePrerelease,

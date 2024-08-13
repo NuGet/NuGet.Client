@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using NuGet.Packaging;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -124,7 +125,10 @@ namespace NuGet.PackageManagement.UI
 
         public string PackagePath { get; set; }
 
-        virtual public async Task<(bool?, string)> TryGetReadme()
+        public IReadOnlyCollection<PackageSourceContextInfo> Sources => _packageItemViewModel?.Sources;
+
+
+        virtual public async Task<(ReadmeAvailability, string)> TryGetReadme()
         {
             return await _packageItemViewModel?.TryGetReadmeAsync();
         }

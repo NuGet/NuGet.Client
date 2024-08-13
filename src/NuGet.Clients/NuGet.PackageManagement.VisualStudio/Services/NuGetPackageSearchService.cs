@@ -20,6 +20,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Shared;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -196,16 +197,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetPackageVersionsAsync(identity, packageSources, includePrerelease, isTransitive, projects: null, cancellationToken);
         }
 
-        public async Task<(bool?, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
+        public async Task<(ReadmeAvailability, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
         {
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
+            var logger = new VisualStudioActivityLogger();
 
             string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
             PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
-            if (backgroundDataCache != null && backgroundDataCache.HasReadMe().GetValueOrDefault())
+            if (backgroundDataCache != null && backgroundDataCache.ReadmeAvailability == ReadmeAvailability.Available)
             {
-                return (backgroundDataCache.HasReadMe(), await backgroundDataCache.GetPackageReadMeAsync());
+                return (backgroundDataCache.ReadmeAvailability, await backgroundDataCache.GetPackageReadMeAsync(logger, cancellationToken));
             }
 
             IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
@@ -216,12 +218,11 @@ namespace NuGet.PackageManagement.VisualStudio
             cacheEntry.UpdateSearchMetadata(packageMetadata);
             PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, CacheItemPolicy);
 
-            if (cacheEntry.HasReadMe().GetValueOrDefault(false))
+            if (cacheEntry.ReadmeAvailability == ReadmeAvailability.Available || cacheEntry.ReadmeAvailability == ReadmeAvailability.UnknownCanDownload)
             {
-
-                return (cacheEntry.HasReadMe(), await cacheEntry.GetPackageReadMeAsync());
+                return (cacheEntry.ReadmeAvailability, await cacheEntry.GetPackageReadMeAsync(logger, cancellationToken));
             }
-            return (cacheEntry.HasReadMe(), string.Empty);
+            return (cacheEntry.ReadmeAvailability, string.Empty);
         }
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.VCProjectEngine;
 using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -37,9 +38,13 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
             Visibility = Visibility.Collapsed;
-            ReadMePreviewViewModel = new ReadMePreviewViewModel();
-            _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
             DataContextChanged += PackageMetadataControl_DataContextChanged;
+        }
+
+        public void InitializeReadmePreview(INuGetSearchService searchService)
+        {
+            ReadMePreviewViewModel = new ReadMePreviewViewModel(searchService);
+            _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
             ReadMePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
         }
 
@@ -93,6 +98,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageMetadataReadMeControl?.Dispose();
                 ReadMePreviewViewModel.PropertyChanged -= ReadMePreviewViewModel_PropertyChanged;
+                ReadMePreviewViewModel.Dispose();
             }
             _disposed = true;
         }

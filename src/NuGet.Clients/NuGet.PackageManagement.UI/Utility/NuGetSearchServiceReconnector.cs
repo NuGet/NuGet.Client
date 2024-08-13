@@ -9,6 +9,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 
@@ -152,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Utility
             }
 
 
-            public Task<(bool?, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
+            public Task<(ReadmeAvailability, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
             {
                 return _parent._service.TryGetPackageReadMeAsync(identity, packageSources, includePrerelease, cancellationToken);
             }

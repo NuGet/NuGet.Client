@@ -23,6 +23,7 @@ namespace NuGet.Protocol
         private readonly ReportAbuseResourceV3 _reportAbuseResource;
         private readonly PackageDetailsUriResourceV3 _packageDetailsUriResource;
         private readonly HttpSource _client;
+        private readonly ReadmeDownloadResource _readmeDownloadResource;
 
         public PackageMetadataResourceV3(
             HttpSource client,
@@ -34,6 +35,21 @@ namespace NuGet.Protocol
             _client = client;
             _reportAbuseResource = reportAbuseResource;
             _packageDetailsUriResource = packageDetailsUriResource;
+            _readmeDownloadResource = null;
+        }
+
+        public PackageMetadataResourceV3(
+            HttpSource client,
+            RegistrationResourceV3 regResource,
+            ReportAbuseResourceV3 reportAbuseResource,
+            PackageDetailsUriResourceV3 packageDetailsUriResource,
+            ReadmeDownloadResource readmeResource)
+        {
+            _regResource = regResource;
+            _client = client;
+            _reportAbuseResource = reportAbuseResource;
+            _packageDetailsUriResource = packageDetailsUriResource;
+            _readmeDownloadResource = readmeResource;
         }
 
         /// <param name="packageId">PackageId for package we're looking.</param>
@@ -270,6 +286,7 @@ namespace NuGet.Protocol
                     catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry = metadataCache.GetObject(catalogEntry);
+                    catalogEntry.ReadmeDownloadResource = _readmeDownloadResource;
                     results.Add(catalogEntry);
                 }
             }

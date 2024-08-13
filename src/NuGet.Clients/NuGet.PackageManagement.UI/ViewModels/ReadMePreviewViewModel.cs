@@ -2,22 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class ReadMePreviewViewModel : ViewModelBase
+    public sealed class ReadMePreviewViewModel : ViewModelBase, IDisposable
     {
-        public ReadMePreviewViewModel()
+        private readonly CancellationTokenSource _cancellationTokenSource;
+        private INuGetSearchService _searchService;
+
+        public ReadMePreviewViewModel(INuGetSearchService searchService)
         {
+            Assumes.NotNull(searchService);
+            _cancellationTokenSource = new CancellationTokenSource();
+            _searchService = searchService;
             _isErrorWithReadMe = false;
             _rawReadMe = string.Empty;
         }
@@ -52,35 +58,26 @@ namespace NuGet.PackageManagement.UI.ViewModels
             set
             {
                 SetAndRaisePropertyChanged(ref _canDetermineReadMeDefined, value);
-
             }
         }
 
-        public async Task LoadReadme(DetailedPackageMetadata package)
+        public async Task LoadReadme(string id, NuGetVersion version, IReadOnlyCollection<PackageSourceContextInfo> sources)
         {
-            Assumes.NotNull(package);
-            await TaskScheduler.Default;
-            var newReadMeValue = string.Empty;
-            var isErrorWithReadMe = false;
-            bool canDetermineReadMeDefined = false;
+            Assumes.NotNull(version);
+            Assumes.NotNullOrEmpty(id);
 
-            (var packageHasReadme, var readme) = await package.TryGetReadme();
-            if (packageHasReadme.HasValue)
-            {
-                isErrorWithReadMe = false;
-                canDetermineReadMeDefined = true;
-                newReadMeValue = readme;
-            }
-            else
-            {
-                newReadMeValue = string.Empty;
-                canDetermineReadMeDefined = false;
-                isErrorWithReadMe = false;
-            }
+            await TaskScheduler.Default;
+            (var packageHasReadme, var readme) = await _searchService.TryGetPackageReadMeAsync(new PackageIdentity(id, version), sources, true, _cancellationTokenSource.Token);
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            IsErrorWithReadMe = isErrorWithReadMe;
-            ReadMeMarkdown = newReadMeValue;
-            CanDetermineReadMeDefined = canDetermineReadMeDefined;
+            CanDetermineReadMeDefined = packageHasReadme != Protocol.Model.ReadmeAvailability.Unknown;
+            IsErrorWithReadMe = false;
+            ReadMeMarkdown = readme;
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
         }
     }
 }

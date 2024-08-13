@@ -1,12 +1,24 @@
 #nullable enable
-NuGet.Protocol.Core.Types.IPackageSearchMetadata.HasReadme.get -> bool?
-NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.HasReadme.get -> bool?
-NuGet.Protocol.LocalPackageSearchMetadata.HasReadme.get -> bool?
-NuGet.Protocol.PackageSearchMetadata.HasReadme.get -> bool?
-NuGet.Protocol.PackageSearchMetadataV2Feed.HasReadme.get -> bool?
-~NuGet.Protocol.Core.Types.IPackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
-~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
+NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeAvailability.get -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeAvailability.get -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.LocalPackageSearchMetadata.ReadmeAvailability.get -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.Model.ReadmeAvailability.Available = 0 -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.Model.ReadmeAvailability.Unavailable = 1 -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.Model.ReadmeAvailability.Unknown = 3 -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.Model.ReadmeAvailability.UnknownCanDownload = 2 -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.PackageSearchMetadata.ReadmeAvailability.get -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeAvailability.get -> NuGet.Protocol.Model.ReadmeAvailability
+NuGet.Protocol.ReadmeDownloadResource
+NuGet.Protocol.ReadmeDownloadResourceProvider
+NuGet.Protocol.ReadmeDownloadResourceProvider.ReadmeDownloadResourceProvider() -> void
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.GetReadMeAsync(NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.GetReadMeAsync(NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
 ~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.WithReadme(System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.IPackageSearchMetadata> packageSearchMetadataItems) -> NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder
-~NuGet.Protocol.LocalPackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
-~NuGet.Protocol.PackageSearchMetadata.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
-~NuGet.Protocol.PackageSearchMetadataV2Feed.GetReadMeAsync() -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.LocalPackageSearchMetadata.GetReadMeAsync(NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.PackageMetadataResourceV3.PackageMetadataResourceV3(NuGet.Protocol.HttpSource client, NuGet.Protocol.RegistrationResourceV3 regResource, NuGet.Protocol.ReportAbuseResourceV3 reportAbuseResource, NuGet.Protocol.PackageDetailsUriResourceV3 packageDetailsUriResource, NuGet.Protocol.ReadmeDownloadResource readmeResource) -> void
+~NuGet.Protocol.PackageSearchMetadata.GetReadMeAsync(NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.PackageSearchMetadataV2Feed.GetReadMeAsync(NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.ReadmeDownloadResource.DownloadReadmeAsync(string packageId, NuGet.Versioning.NuGetVersion packageVersion, NuGet.Common.ILogger logger, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string>
+~NuGet.Protocol.ReadmeDownloadResource.ReadmeDownloadResource(string source, NuGet.Protocol.HttpSource client, string packageBaseAddress) -> void
+~override NuGet.Protocol.ReadmeDownloadResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>

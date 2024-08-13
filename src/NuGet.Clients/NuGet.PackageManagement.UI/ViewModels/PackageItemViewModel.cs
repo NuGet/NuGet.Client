@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -560,7 +561,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task<(bool?, string)> TryGetReadmeAsync()
+        public async Task<(ReadmeAvailability, string)> TryGetReadmeAsync()
         {
             var identity = new PackageIdentity(Id, Version);
             return await _searchService.TryGetPackageReadMeAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);

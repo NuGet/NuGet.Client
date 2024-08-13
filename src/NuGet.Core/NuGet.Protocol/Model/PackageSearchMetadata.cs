@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -248,15 +251,27 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
 
-        public Task<string> GetReadMeAsync()
+        internal ReadmeDownloadResource ReadmeDownloadResource { get; set; }
+
+        public async Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (ReadmeDownloadResource is not null)
+            {
+                return await ReadmeDownloadResource.DownloadReadmeAsync(PackageId, Version, logger, cancellationToken);
+            }
+            return null;
         }
 
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         [JsonProperty(PropertyName = JsonProperties.Vulnerabilities)]
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; private set; }
 
-        public bool? HasReadme => null;
+        public ReadmeAvailability ReadmeAvailability
+        {
+            get
+            {
+                return ReadmeDownloadResource == null ? ReadmeAvailability.Unknown : ReadmeAvailability.UnknownCanDownload;
+            }
+        }
     }
 }

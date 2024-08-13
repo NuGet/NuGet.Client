@@ -30,6 +30,11 @@ namespace NuGet.PackageManagement.UI
             DataContextChanged += PackageSolutionDetailControl_DataContextChanged;
         }
 
+        public void InitializeReadmePreview()
+        {
+            _packageMetadataControl.InitializeReadmePreview(Control.Model.Context.NuGetSearchService);
+        }
+
         private void PackageSolutionDetailControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             var dataContext = DataContext as DetailControlModel;

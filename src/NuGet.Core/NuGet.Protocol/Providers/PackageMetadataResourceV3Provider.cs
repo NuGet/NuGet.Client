@@ -4,7 +4,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -27,13 +26,16 @@ namespace NuGet.Protocol
                 var packageDetailsUriResource = await source.GetResourceAsync<PackageDetailsUriResourceV3>(token);
 
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+                var readmeResource = await source.GetResourceAsync<ReadmeDownloadResource>(token);
+
 
                 // construct a new resource
                 curResource = new PackageMetadataResourceV3(
                     httpSourceResource.HttpSource,
                     regResource,
                     reportAbuseResource,
-                    packageDetailsUriResource);
+                    packageDetailsUriResource,
+                    readmeResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

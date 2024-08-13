@@ -46,6 +46,7 @@ namespace NuGet.Protocol.Core.Types
                 yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV3Provider());
                 yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourcePluginProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV3Provider());
+                yield return new Lazy<INuGetResourceProvider>(() => new ReadmeDownloadResourceProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
 #pragma warning disable CS0618 // Type or member is obsolete
                 yield return new Lazy<INuGetResourceProvider>(() => new RawSearchResourceV3Provider());

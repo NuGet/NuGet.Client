@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 
 namespace NuGet.Protocol
 {
@@ -139,17 +141,18 @@ namespace NuGet.Protocol
 
         public string PackagePath => _package.Path;
 
-        public bool? HasReadme
+        public ReadmeAvailability ReadmeAvailability
         {
             get
             {
                 if (!string.IsNullOrEmpty(_package.Path) && _package.Nuspec is not null)
                 {
-                    var readMePath = _package.Nuspec.GetReadme();
+                    return ReadmeAvailability.UnknownCanDownload;
+                    //var readMePath = _package.Nuspec.GetReadme();
 
-                    return !string.IsNullOrEmpty(readMePath);
+                    //return string.IsNullOrEmpty(readMePath) ? ReadmeAvailability.Unavailable : ReadmeAvailability.Available;
                 }
-                return null;
+                return ReadmeAvailability.Unknown;
             }
         }
 
@@ -221,7 +224,7 @@ namespace NuGet.Protocol
             return builder.Uri;
         }
 
-        public async Task<string> GetReadMeAsync()
+        public async Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(_package.Path) && _package.Nuspec is not null)
             {

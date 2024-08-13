@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Model;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -37,7 +40,7 @@ namespace NuGet.Protocol.Core.Types
         bool IsListed { get; }
         bool PrefixReserved { get; }
 
-        bool? HasReadme { get; }
+        ReadmeAvailability ReadmeAvailability { get; }
 
         LicenseMetadata LicenseMetadata { get; }
 
@@ -58,7 +61,7 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Gets the ReadMe for the package
         /// </summary>
-        Task<string> GetReadMeAsync();
+        Task<string> GetReadMeAsync(ILogger logger, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets the vulnerability metadata for the package.
