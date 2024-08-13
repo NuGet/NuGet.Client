@@ -33,7 +33,6 @@ namespace NuGet.PackageManagement.UI
 
         private ReadMePreviewViewModel ReadMeViewModel { get => (ReadMePreviewViewModel)DataContext; }
 
-        [Obsolete]
         public PackageMetadataReadMeControl()
         {
             InitializeComponent();
