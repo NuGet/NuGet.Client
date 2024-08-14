@@ -9,12 +9,12 @@ Param(
     [string] $logsFolderPath,
     [string] $nugetFoldersPath,
     [int] $iterationCount,
-    [string] $extraArguments
+    [string] $additionalOptions
 )
 
 . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-if(![string]::IsNullOrEmpty($extraArguments))
+if(![string]::IsNullOrEmpty($additionalOptions))
 {
 RunPerformanceTestsOnGitRepository `
     -nugetClientFilePath $nugetClientFilePath `
@@ -26,7 +26,7 @@ RunPerformanceTestsOnGitRepository `
     -logsFolderPath $logsFolderPath `
     -nugetFoldersPath $nugetFoldersPath `
     -iterationCount $iterationCount `
-    -extraArguments $extraArguments
+    -additionalOptions $additionalOptions
 } 
 Else 
 {

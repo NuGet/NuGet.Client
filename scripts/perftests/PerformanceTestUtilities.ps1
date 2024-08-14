@@ -181,7 +181,7 @@ Function GetClientVersion([string] $nugetClientFilePath)
     ElseIf($(IsClientMSBuildExe $nugetClientFilePath))
     {
         $clientDir = Split-Path -Path $nugetClientFilePath
-        $nugetClientPath = Resolve-Path (Join-Path -Path $clientDir -ChildPath "../../../Common7/IDE/CommonExtensions/Microsoft/NuGet/NuGet.Build.Tasks.dll")
+        $nugetClientPath = Resolve-Path (Join-Path -Path $clientDir -ChildPath "../../../../Common7/IDE/CommonExtensions/Microsoft/NuGet/NuGet.Build.Tasks.dll")
         $versionInfo = Get-ChildItem $nugetClientPath | % versioninfo | Select-Object FileVersion
         Return $(($versionInfo -split '\n')[0]).TrimStart("@{").TrimEnd('}').Substring("FileVersion=".Length)
     }
@@ -249,13 +249,12 @@ Function RunPerformanceTestsOnGitRepository(
     [string] $nugetFoldersPath,
     [string] $logsFolderPath,
     [int] $iterationCount,
-    [switch] $staticGraphRestore,
-    [string] $extraArguments)
+    [string] $additionalOptions)
 {
     $testCaseName = GenerateNameFromGitUrl $repoUrl
     $resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
-    $sb = [scriptblock]::Create("$PSScriptRoot\RunPerformanceTests.ps1 -nugetClientFilePath ""$nugetClientFilePath"" -solutionFilePath $solutionFilePath -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -nugetFoldersPath $nugetFoldersPath -iterationCount $iterationCount " + $extraArguments)
+    $sb = [scriptblock]::Create("$PSScriptRoot\RunPerformanceTests.ps1 -nugetClientFilePath ""$nugetClientFilePath"" -solutionFilePath $solutionFilePath -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -nugetFoldersPath $nugetFoldersPath -iterationCount $iterationCount " + $additionalOptions)
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
     & $sb
 }
@@ -348,7 +347,8 @@ Function RunRestore(
     [switch] $killMsBuildAndDotnetExeProcesses,
     [switch] $force,
     [switch] $staticGraphRestore,
-    [switch] $cleanRepository)
+    [switch] $cleanRepository,
+    [switch] $useLocallyBuiltNuGet)
 {
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
     $isClientMSBuild = IsClientMSBuildExe $nugetClientFilePath
@@ -489,9 +489,40 @@ Function RunRestore(
         $arguments.Add("/p:NuGetAudit=false")   
     }
 
+    if($useLocallyBuiltNuGet)
+    {
+        if($isClientMSBuild)
+        {
+            $NETFramework = "net472"
+            $NETStandard = "netstandard2.0"
+            $NETCoreApp = "netcoreapp5.0"
+            $Configuration = "release"
+            $packDllPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Pack\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Pack.dll"
+            $packTargetsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.targets"
+            $restoreDllPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.dll"
+            $nugetRestoreTargetsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets"
+            $nugetPropsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks\NuGet.props"
+            $consoleExePath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Console\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Console.exe"
+            $arguments.Add("/p:NuGetRestoreTargets=$nugetRestoreTargetsPath");
+            $arguments.Add("/p:NuGetPropsFile=$nugetPropsPath");
+            $arguments.Add("/p:RestoreTaskAssemblyFile=$restoreDllPath");
+            $arguments.Add("/p:NuGetBuildTasksPackTargets=$packTargetsPath");
+            $arguments.Add("/p:NuGetConsoleProcessFileName=$consoleExePath");
+            $arguments.Add("/p:ImportNuGetBuildTasksPackTargetsFromSdk=true");
+            $arguments.Add("/p:NuGetPackTaskAssemblyFile=$packDllPath");
+        } 
+        else 
+        {
+            Log "Locally built NuGet can only be used with msbuild.exe" "red"
+        }
+    }
+
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    
+    # What if I invoke nuget custom here.
 
     $logs = . $nugetClientFilePath $arguments | Out-String
+
     if($LASTEXITCODE -ne 0)
     { 
         throw "The command `"$nugetClientFilePath $arguments`" finished with exit code $LASTEXITCODE.`n" + $logs
@@ -526,7 +557,7 @@ Function RunRestore(
 
     If (!(Test-Path $resultsFilePath))
     {
-        $columnHeaders = "Client Name,Client Version,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force,Static Graph," + `
+        $columnHeaders = "Client Name,Client Version,Locally Built NuGet,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force,Static Graph," + `
             "Global Packages Folder .nupkg Count,Global Packages Folder .nupkg Size (MB),Global Packages Folder File Count,Global Packages Folder File Size (MB),Clean Global Packages Folder," + `
             "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes,Clean git repo," + `
             "Processor Name,Processor Physical Core Count,Processor Logical Core Count"
@@ -534,7 +565,7 @@ Function RunRestore(
         OutFileWithCreateFolders $resultsFilePath $columnHeaders
     }
 
-    $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue," + `
+    $data = "$clientName,$clientVersion,$useLocallyBuiltNuGet,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue," + `
         "$($globalPackagesFolderNupkgFilesInfo.Count),$($globalPackagesFolderNupkgFilesInfo.TotalSizeInMB),$($globalPackagesFolderFilesInfo.Count),$($globalPackagesFolderFilesInfo.TotalSizeInMB),$cleanGlobalPackagesFolder," + `
         "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$cleanRepository" + `
         "$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"

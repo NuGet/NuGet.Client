@@ -50,6 +50,9 @@ Skips no-op restore.
 .PARAMETER staticGraphRestore
 Uses static graph restore if applicable for the client.
 
+.PARAMETER useLocallyBuiltNuGet
+Whether to use locally built NuGet. Only works with msbuild.exe. It simply bootstraps the release configuration pre-built version of NuGet .
+
 .EXAMPLE
 .\RunPerformanceTests.ps1 -nugetClientFilePath "C:\Program Files\dotnet\dotnet.exe" -solutionFilePath F:\NuGet.Client\NuGet.sln -resultsFilePath results.csv
 #>
@@ -69,7 +72,8 @@ Param(
     [switch] $skipColdRestores,
     [switch] $skipForceRestores,
     [switch] $skipNoOpRestores,
-    [switch] $staticGraphRestore
+    [switch] $staticGraphRestore,
+    [switch] $useLocallyBuiltNuGet
 )
 
 . "$PSScriptRoot\PerformanceTestUtilities.ps1"
@@ -191,6 +195,10 @@ Try
         {
             $enabledSwitches += "staticGraphRestore"
         }
+        If ($useLocallyBuiltNuGet)
+        {
+            $enabledSwitches += "useLocallyBuiltNuGet"
+        }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "warmup" -enabledSwitches $enabledSwitches
         RunRestore @arguments
     }
@@ -206,6 +214,10 @@ Try
         If ($staticGraphRestore)
         {
             $enabledSwitches += "staticGraphRestore"
+        }
+        If ($useLocallyBuiltNuGet)
+        {
+            $enabledSwitches += "useLocallyBuiltNuGet"
         }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "arctic" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
@@ -223,6 +235,10 @@ Try
         {
             $enabledSwitches += "staticGraphRestore"
         }
+        If ($useLocallyBuiltNuGet)
+        {
+            $enabledSwitches += "useLocallyBuiltNuGet"
+        }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "cold" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
     }
@@ -235,6 +251,10 @@ Try
         {
             $enabledSwitches += "staticGraphRestore"
         }
+        If ($useLocallyBuiltNuGet)
+        {
+            $enabledSwitches += "useLocallyBuiltNuGet"
+        }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "force" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
     }
@@ -242,14 +262,19 @@ Try
     If (!$skipNoOpRestores)
     {
         Log "Running $($iterationCount)x no-op restores"
+
+        $enabledSwitches = @("")
         If ($staticGraphRestore)
         {
-            $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop" -enabledSwitches @("staticGraphRestore")
+            $enabledSwitches += "staticGraphRestore"
         }
-        Else
+        If ($useLocallyBuiltNuGet)
         {
-            $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop"
+            $enabledSwitches += "useLocallyBuiltNuGet"
         }
+
+        $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop" -enabledSwitches $enabledSwitches
+        
         1..$iterationCount | % { RunRestore @arguments }
     }
 

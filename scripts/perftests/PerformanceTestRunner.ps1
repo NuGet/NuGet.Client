@@ -20,7 +20,10 @@ How many times to run each test. The default is 3
 .PARAMETER skipRepoCleanup
 Whether to delete the checked out repos from the test cases.
 
-.PARAMETER extraArguments
+.PARAMETER additionalOptions
+Additional options such as ones to skip certain runs like -skipWarmup or maybe run the local version of NuGet, -useLocallyBuiltNuGet. 
+To get the list of all options check out RunPerformanceTests.ps1 in the same folder.
+
 .EXAMPLE
 .\PerformanceTestRunner.ps1 -resultsFolderPath resultsFolder -nugetClientFilePaths F:\NuGetExe\NuGet.exe,"C:\Program Files\dotnet\dotnet.exe" 
 #>
@@ -34,7 +37,7 @@ Param(
     [int] $iterationCount = 3,
     [string] $testCaseDirectory,
     [switch] $skipRepoCleanup,
-    [string] $extraArguments
+    [string] $additionalOptions
 )
 
 . "$PSScriptRoot\PerformanceTestUtilities.ps1"
@@ -110,7 +113,7 @@ Try
                         -logsFolderPath $logsFolderPath `
                         -nugetFoldersPath $nugetFoldersPath `
                         -iterationCount $iterationCount `
-                        -extraArguments $extraArguments
+                        -additionalOptions $additionalOptions
                 }
                 Catch
                 {

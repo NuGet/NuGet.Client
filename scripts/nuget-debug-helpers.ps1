@@ -1,6 +1,11 @@
+Param([string] $Config)
+
 $NuGetClientRoot= Resolve-Path $(Join-Path $PSScriptRoot "..\")
 
-$Configuration = "Debug"
+if (-not [string]::IsNullOrEmpty($Config)) {
+    $Configuration = "Debug"
+}
+
 $NETFramework = "net472"
 $NETStandard = "netstandard2.0"
 $NETCoreApp = "netcoreapp5.0"
