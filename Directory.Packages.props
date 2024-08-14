@@ -144,6 +144,7 @@
 
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'perTfm' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
+
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
