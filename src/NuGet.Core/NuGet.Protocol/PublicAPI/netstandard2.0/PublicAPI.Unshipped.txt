@@ -6,5 +6,6 @@ NuGet.Protocol.LocalReadmeResourceProvider
 NuGet.Protocol.LocalReadmeResourceProvider.LocalReadmeResourceProvider() -> void
 ~abstract NuGet.Protocol.Core.Types.ReadmeResource.GetReadmeAsync(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<string>
 ~NuGet.Protocol.LocalReadmeResource.LocalReadmeResource(NuGet.Protocol.FindLocalPackagesResource localResource) -> void
+~NuGet.Protocol.LocalReadmeResource.TryGetReadmeAsync(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<(bool?, string)>
 ~override NuGet.Protocol.LocalReadmeResource.GetReadmeAsync(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<string>
 ~override NuGet.Protocol.LocalReadmeResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>

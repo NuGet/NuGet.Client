@@ -28,6 +28,25 @@ namespace NuGet.Protocol
             _localResource = localResource;
         }
 
+        /// <summary>
+        /// Tries to load the readme for a package. 
+        /// </summary>
+        /// <param name="identity">Package to get the readme for</param>
+        /// <param name="logger"></param>
+        /// <param name="token"></param>
+        /// <returns>bool? indicates if a readme was found, if it's null we cannot determine, string contains the readme value</returns>
+        public async Task<(bool?, string)> TryGetReadmeAsync(PackageIdentity identity, ILogger logger, CancellationToken token)
+        {
+            var package = _localResource.GetPackage(identity, logger, token);
+            string readme = null;
+            bool? foundReadme = null;
+            if (package is not null)
+            {
+                (foundReadme, readme) = await GetReadmeAsync(package);
+            }
+            return (foundReadme, readme);
+        }
+
         public override async Task<string> GetReadmeAsync(
             PackageIdentity identity,
             ILogger logger,
@@ -35,6 +54,14 @@ namespace NuGet.Protocol
         {
             using var cacheContext = new SourceCacheContext();
             var package = _localResource.GetPackage(identity, logger, token);
+            (var _, var readme) = await GetReadmeAsync(package);
+            return readme;
+        }
+
+        private static async Task<(bool?, string)> GetReadmeAsync(LocalPackageInfo package)
+        {
+            bool? foundReadme = null;
+            string readme = null;
             if (package is not null && !string.IsNullOrEmpty(package.Path) && package.Nuspec is not null)
             {
                 var readMePath = package.Nuspec.GetReadme();
@@ -47,12 +74,16 @@ namespace NuGet.Protocol
                     if (readMeFileInfo.Exists)
                     {
                         using var readMeStreamReader = readMeFileInfo.OpenText();
-                        var readMeContents = await readMeStreamReader.ReadToEndAsync();
-                        return readMeContents;
+                        readme = await readMeStreamReader.ReadToEndAsync();
+                        foundReadme = true;
                     }
                 }
+                else
+                {
+                    foundReadme = false;
+                }
             }
-            return null;
+            return (foundReadme, readme);
         }
 
     }

@@ -213,14 +213,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
             foreach (var localReadmeResource in localReadmeResources)
             {
-                var readme = await localReadmeResource.GetReadmeAsync(identity, new VisualStudioActivityLogger(), cancellationToken);
-                if (!string.IsNullOrWhiteSpace(readme))
+                (var foundReadme, var readme) = await ((LocalReadmeResource)localReadmeResource).TryGetReadmeAsync(identity, new VisualStudioActivityLogger(), cancellationToken);
+                if (foundReadme.HasValue)
                 {
-                    return (true, readme);
+                    return (foundReadme, readme);
                 }
             }
 
-            return (false, string.Empty);
+            return (null, string.Empty);
         }
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
