@@ -143,6 +143,7 @@ namespace NuGet.PackageManagement.UI
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
             var isReadmeTabEnabled = await _nugetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
+            _packageDetail._packageMetadataControl.InitializedReadmePreviewViewModel(Model.Context.NuGetSearchService, Model.Context.SourceService);
             _packageDetail._packageMetadataControl.SetReadmeTabVisibility(isReadmeTabEnabled ? Visibility.Visible : Visibility.Collapsed);
             InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
             await InitPackageSourcesAsync(settings, CancellationToken.None);
@@ -180,7 +181,6 @@ namespace NuGet.PackageManagement.UI
             Model.Context.ProjectActionsExecuted += OnProjectActionsExecuted;
 
             Model.Context.SourceService.PackageSourcesChanged += PackageSourcesChanged;
-
             Unloaded += PackageManagerUnloaded;
 
             if (IsUILegalDisclaimerSuppressed())
@@ -200,6 +200,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public PackageRestoreBar RestoreBar { get; private set; }
+
         public PackageManagerModel Model { get; private set; }
 
         public ISettings Settings { get; private set; }

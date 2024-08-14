@@ -1,25 +1,27 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
     public sealed class ReadMePreviewViewModel : ViewModelBase
     {
-        public ReadMePreviewViewModel()
+        private INuGetSourcesService _sourceService;
+        private INuGetSearchService _searchService;
+
+        public ReadMePreviewViewModel(INuGetSearchService nuGetSearchService, INuGetSourcesService sourceService)
         {
             _isErrorWithReadMe = false;
             _rawReadMe = string.Empty;
+            _searchService = nuGetSearchService;
+            _sourceService = sourceService;
         }
 
         private bool _isErrorWithReadMe = false;
@@ -56,15 +58,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task LoadReadme(DetailedPackageMetadata package)
+        public async Task LoadReadme(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
-            Assumes.NotNull(package);
             await TaskScheduler.Default;
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
             bool canDetermineReadMeDefined = false;
 
-            (var packageHasReadme, var readme) = await package.TryGetReadme();
+            (var packageHasReadme, var readme) = await _searchService.TryGetPackageReadMeAsync(new PackageIdentity(id, version), await _sourceService.GetPackageSourcesAsync(cancellationToken), true, cancellationToken);
             if (packageHasReadme.HasValue)
             {
                 isErrorWithReadMe = false;
@@ -72,7 +73,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 newReadMeValue = readme;
             }
 
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             IsErrorWithReadMe = isErrorWithReadMe;
             ReadMeMarkdown = newReadMeValue;
             CanDetermineReadMeDefined = canDetermineReadMeDefined;

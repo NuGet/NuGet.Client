@@ -19,6 +19,8 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public partial class PackageMetadataReadMeControl : UserControl, IDisposable
     {
+        internal CancellationTokenSource _loadCts;
+
         public static readonly DependencyProperty PackageMetadataProperty =
             DependencyProperty.Register(
                 nameof(PackageMetadata),
@@ -36,6 +38,7 @@ namespace NuGet.PackageManagement.UI
         public PackageMetadataReadMeControl()
         {
             InitializeComponent();
+            _loadCts = new CancellationTokenSource();
         }
 
         public void Dispose()
@@ -66,6 +69,8 @@ namespace NuGet.PackageManagement.UI
 
             if (disposing)
             {
+                _loadCts.Cancel();
+                _loadCts.Dispose();
                 _markdownPreview?.Dispose();
                 var viewModel = (ReadMePreviewViewModel)DataContext;
                 viewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
@@ -88,14 +93,19 @@ namespace NuGet.PackageManagement.UI
         {
             if (newValue is not null &&
                 (oldValue?.Id != newValue.Id ||
-                oldValue?.PackagePath != newValue.PackagePath))
+                oldValue?.Version != newValue.Version))
             {
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
+
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    await ReadMeViewModel.LoadReadme(newValue);
+                    await ReadMeViewModel.LoadReadme(newValue.Id, newValue.Version, _loadCts.Token);
                 })
-                .PostOnFailure(nameof(DetailControlModel));
+                .PostOnFailure(nameof(PackageMetadataReadMeControl));
             }
         }
 

@@ -19,8 +19,6 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
         private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
-        private AsyncLazy<string> _lazyGetReadme;
-        private bool? _hasReadMe = null;
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
             private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
@@ -56,16 +54,11 @@ namespace NuGet.Protocol.Core.Types
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
 
-            internal AsyncLazy<string> LazyGetReadme { get; set; }
-            public async Task<string> GetReadMeAsync() => await (LazyGetReadme);
-
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
             public bool IsListed { get; set; }
             [Obsolete("PackagePath is recommended in place of PackageReader")]
             public Func<PackageReaderBase> PackageReader { get; set; }
             public string PackagePath { get; set; }
-
-            public bool? HasReadme { get; internal set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -86,20 +79,6 @@ namespace NuGet.Protocol.Core.Types
         public PackageSearchMetadataBuilder WithDeprecation(AsyncLazy<PackageDeprecationMetadata> lazyDeprecationFactory)
         {
             _lazyDeprecationFactory = lazyDeprecationFactory;
-            return this;
-        }
-
-        public PackageSearchMetadataBuilder WithReadme(IEnumerable<IPackageSearchMetadata> packageSearchMetadataItems)
-        {
-            foreach (var item in packageSearchMetadataItems)
-            {
-                if (item.HasReadme.GetValueOrDefault(false))
-                {
-                    _lazyGetReadme = AsyncLazy.New(item.GetReadMeAsync);
-                    _hasReadMe = item.HasReadme;
-                    break;
-                }
-            }
             return this;
         }
 
@@ -129,8 +108,6 @@ namespace NuGet.Protocol.Core.Types
                 IsListed = _metadata.IsListed,
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
-                HasReadme = _hasReadMe ?? _metadata.HasReadme,
-                LazyGetReadme = _lazyGetReadme ?? AsyncLazy.New(_metadata.GetReadMeAsync),
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
                 Vulnerabilities = _metadata.Vulnerabilities,
 #pragma warning disable CS0618 // Type or member is obsolete

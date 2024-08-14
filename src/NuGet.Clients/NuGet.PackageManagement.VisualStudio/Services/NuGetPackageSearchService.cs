@@ -201,27 +201,26 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(identity);
             Assumes.NotNullOrEmpty(packageSources);
 
-            string cacheId = PackageSearchMetadataCacheItem.GetCacheId(identity.Id, includePrerelease, packageSources);
-            PackageSearchMetadataCacheItem? backgroundDataCache = PackageSearchMetadataMemoryCache.Get(cacheId) as PackageSearchMetadataCacheItem;
-            if (backgroundDataCache != null && backgroundDataCache.HasReadMe().GetValueOrDefault())
+            IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
+            var globalPackage = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
+            var localPackageFolder = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
+
+            var localReadmeResources = sourceRepositories
+                .Concat(globalPackage)
+                .Concat(new List<SourceRepository> { localPackageFolder })
+                .Select(x => x.GetResource<ReadmeResource>(cancellationToken))
+                .Where(x => x is LocalReadmeResource);
+
+            foreach (var localReadmeResource in localReadmeResources)
             {
-                return (backgroundDataCache.HasReadMe(), await backgroundDataCache.GetPackageReadMeAsync());
+                var readme = await localReadmeResource.GetReadmeAsync(identity, new VisualStudioActivityLogger(), cancellationToken);
+                if (!string.IsNullOrWhiteSpace(readme))
+                {
+                    return (true, readme);
+                }
             }
 
-            IPackageMetadataProvider packageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, cancellationToken);
-            IPackageSearchMetadata packageMetadata = await packageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-
-            // Update the cache
-            var cacheEntry = new PackageSearchMetadataCacheItem(packageMetadata, packageMetadataProvider);
-            cacheEntry.UpdateSearchMetadata(packageMetadata);
-            PackageSearchMetadataMemoryCache.AddOrGetExisting(cacheId, cacheEntry, CacheItemPolicy);
-
-            if (cacheEntry.HasReadMe().GetValueOrDefault(false))
-            {
-
-                return (cacheEntry.HasReadMe(), await cacheEntry.GetPackageReadMeAsync());
-            }
-            return (cacheEntry.HasReadMe(), string.Empty);
+            return (false, string.Empty);
         }
 
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(

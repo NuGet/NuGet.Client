@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -112,14 +111,7 @@ namespace NuGet.Test.Utility
                 throw new NotImplementedException();
             }
 
-            public Task<string> GetReadMeAsync()
-            {
-                throw new NotImplementedException();
-            }
-
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
-
-            public bool? HasReadme => null;
         }
     }
 }

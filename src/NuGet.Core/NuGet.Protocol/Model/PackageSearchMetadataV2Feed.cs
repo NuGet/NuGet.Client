@@ -147,16 +147,9 @@ namespace NuGet.Protocol
         /// <inheritdoc cref="IPackageSearchMetadata.GetDeprecationMetadataAsync" />
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => TaskResult.Null<PackageDeprecationMetadata>();
 
-        public Task<string> GetReadMeAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <inheritdoc cref="IPackageSearchMetadata.Vulnerabilities" />
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; } = null; // Vulnerability metadata is not added to nuget.org's v2 feed.
 
         public bool IsListed { get; }
-
-        public bool? HasReadme => null;
     }
 }

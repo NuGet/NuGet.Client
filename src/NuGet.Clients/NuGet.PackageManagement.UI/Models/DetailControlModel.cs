@@ -264,7 +264,6 @@ namespace NuGet.PackageManagement.UI
                 var detailedPackageMetadata = new DetailedPackageMetadata(
                     packageSearchMetadata,
                     packageDeprecationMetadata,
-                    _searchResultPackage,
                     searchResultPackage.DownloadCount);
 
                 _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;
@@ -648,7 +647,6 @@ namespace NuGet.PackageManagement.UI
                 PackageMetadata = new DetailedPackageMetadata(
                     packageSearchMetadata,
                     packageDeprecationMetadata,
-                    _searchResultPackage,
                     packageItemViewModel.DownloadCount);
             }
             else
@@ -668,7 +666,6 @@ namespace NuGet.PackageManagement.UI
                     var detailedPackageMetadata = new DetailedPackageMetadata(
                         searchMetadata,
                         deprecationData,
-                        _searchResultPackage,
                         searchMetadata.DownloadCount);
 
                     _metadataDict[detailedPackageMetadata.Version] = detailedPackageMetadata;

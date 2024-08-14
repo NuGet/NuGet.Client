@@ -55,16 +55,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return cacheItemEntry;
         }
 
-        public async Task<string> GetPackageReadMeAsync()
-        {
-            return await _packageSearchMetadata.GetReadMeAsync();
-        }
-
-        public bool? HasReadMe()
-        {
-            return _packageSearchMetadata.HasReadme;
-        }
-
         public void UpdateSearchMetadata(IPackageSearchMetadata packageSearchMetadata)
         {
             _packageSearchMetadata = packageSearchMetadata;

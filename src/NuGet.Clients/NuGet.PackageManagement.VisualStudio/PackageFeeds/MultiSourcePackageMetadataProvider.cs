@@ -272,7 +272,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var clonedResult = metadataBuilder
                 .WithVersions(AsyncLazy.New(() => MergeVersionsAsync(identity, completed)))
-                .WithReadme(completed)
                 .Build();
 
             return clonedResult;

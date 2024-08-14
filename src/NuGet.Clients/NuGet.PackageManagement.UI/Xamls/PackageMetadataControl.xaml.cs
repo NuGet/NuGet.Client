@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.VCProjectEngine;
 using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -37,9 +39,15 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
             Visibility = Visibility.Collapsed;
-            ReadMePreviewViewModel = new ReadMePreviewViewModel();
-            _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
+
             DataContextChanged += PackageMetadataControl_DataContextChanged;
+
+        }
+
+        internal void InitializedReadmePreviewViewModel(INuGetSearchService nuGetSearchService, INuGetSourcesService sourceService)
+        {
+            ReadMePreviewViewModel = new ReadMePreviewViewModel(nuGetSearchService, sourceService);
+            _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
             ReadMePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
         }
 
