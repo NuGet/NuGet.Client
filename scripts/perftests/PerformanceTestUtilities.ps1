@@ -102,12 +102,13 @@ Function DownloadRepository([string] $repository, [string] $commitHash, [string]
 {
     If (Test-Path $sourceFolderPath)
     {
-        Log "Skipping the cloning of $repository as $sourceFolderPath is not empty" -color "Yellow"
+        Log "Skipping the cloning of $repository as $sourceFolderPath is not empty. Running git clean" -color "Yellow"
+        git clean -xdf
     }
     Else
     {
         git clone $repository $sourceFolderPath
-        git -C $sourceFolderPath checkout $commitHash
+        git -C $sourceFolderPath checkout $commitHash | out-null
     }
 }
 
@@ -124,7 +125,7 @@ Function GetSolutionFilePath([string] $repository, [string] $sourceFolderPath)
     }
     Else
     {
-        $possibleSln = Get-ChildItem $sourceFolderPath *.sln
+        $possibleSln = Get-ChildItem $sourceFolderPath *.sln  | Where-Object{$_.FullName -notlike '*.slnf'}
         If ($possibleSln.Length -eq 0)
         {
             Log "No solution files found in $sourceFolderPath" "red"
@@ -224,7 +225,7 @@ Function SetupNuGetFolders([string] $nugetClientFilePath, [string] $nugetFolders
 # This should only be invoked by the the performance tests
 Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $nugetFoldersPath)
 {
-    Log "Cleanup up the NuGet folders - global packages folder, http/plugins caches. Client: $nugetClientFilePath. Folders: $nugetFoldersPath"
+    Log "Cleanup the NuGet folders - global packages folder, http/plugins caches. Client: $nugetClientFilePath. Folders: $nugetFoldersPath"
 
     LocalsClearAll $nugetClientFilePath
 
@@ -249,8 +250,12 @@ Function RunPerformanceTestsOnGitRepository(
     [string] $nugetFoldersPath,
     [string] $logsFolderPath,
     [int] $iterationCount,
-    [switch] $staticGraphRestore)
+    [switch] $staticGraphRestore,
+    [string] $extraArguments)
 {
+    Log $extraArguments "red"
+    $sb = [scriptblock]::Create($extraArguments)
+    Log $sb "green"
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
     . "$PSScriptRoot\RunPerformanceTests.ps1" `
@@ -260,7 +265,8 @@ Function RunPerformanceTestsOnGitRepository(
         -logsFolderPath $logsFolderPath `
         -nugetFoldersPath $nugetFoldersPath `
         -iterationCount $iterationCount `
-        -staticGraphRestore:$staticGraphRestore
+        -staticGraphRestore:$staticGraphRestore `
+        $sb
 }
 
 Function GetProcessorInfo()

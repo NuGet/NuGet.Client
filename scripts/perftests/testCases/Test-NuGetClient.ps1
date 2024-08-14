@@ -8,36 +8,42 @@ Param(
     [Parameter(Mandatory = $True)]
     [string] $logsFolderPath,
     [string] $nugetFoldersPath,
-    [int] $iterationCount
+    [int] $iterationCount,
+    [string] $extraArguments
 )
+
+Log $extraArguments "blue"
 
 . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
 $repoUrl = "https://github.com/NuGet/NuGet.Client.git"
-$commitHash = "37c31cd7c1c2429a643a881fe637dc1d718d7259"
-$repoName = GenerateNameFromGitUrl $repoUrl
-$resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$repoName.csv")
-$sourcePath = $([System.IO.Path]::Combine($sourceRootFolderPath, $repoName))
-$solutionFilePath = SetupGitRepository $repoUrl $commitHash $sourcePath
-# It's fine if this is run from here. It is run again the performance test script, but it'll set it to the same values.
-# Additionally, this will cleanup the extras from the bootstrapping which are already in the local folder, allowing us to get more accurate measurements
-SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
-$currentWorkingDirectory = $pwd
+$testCaseName = GenerateNameFromGitUrl $repoUrl
+$resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
 
-Try
+if(![string]::IsNullOrEmpty($extraArguments))
 {
-    Set-Location $sourcePath
-    . "$sourcePath\configure.ps1" *>>$null
-}
-Finally
-{
-    Set-Location $currentWorkingDirectory
-}
-
-. "$PSScriptRoot\..\RunPerformanceTests.ps1" `
+RunPerformanceTestsOnGitRepository `
     -nugetClientFilePath $nugetClientFilePath `
-    -solutionFilePath $solutionFilePath `
+    -sourceRootFolderPath $sourceRootFolderPath `
+    -testCaseName $testCaseName `
+    -repoUrl $repoUrl `
+    -commitHash "f6279fb833960d9128d16c4e911705167e0bb754" `
+    -resultsFilePath $resultsFilePath `
+    -logsFolderPath $logsFolderPath `
+    -nugetFoldersPath $nugetFoldersPath `
+    -iterationCount $iterationCount `
+    -extraArguments $extraArguments
+} 
+Else {
+
+RunPerformanceTestsOnGitRepository `
+    -nugetClientFilePath $nugetClientFilePath `
+    -sourceRootFolderPath $sourceRootFolderPath `
+    -testCaseName $testCaseName `
+    -repoUrl $repoUrl `
+    -commitHash "f6279fb833960d9128d16c4e911705167e0bb754" `
     -resultsFilePath $resultsFilePath `
     -logsFolderPath $logsFolderPath `
     -nugetFoldersPath $nugetFoldersPath `
     -iterationCount $iterationCount
+}
