@@ -14,17 +14,30 @@ Param(
 
 . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-$repoUrl = "https://github.com/OrchardCMS/OrchardCore.git"
-$testCaseName = GenerateNameFromGitUrl $repoUrl
-$resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
-
+if(![string]::IsNullOrEmpty($extraArguments))
+{
 RunPerformanceTestsOnGitRepository `
     -nugetClientFilePath $nugetClientFilePath `
     -sourceRootFolderPath $sourceRootFolderPath `
     -testCaseName $testCaseName `
-    -repoUrl $repoUrl `
+    -repoUrl "https://github.com/OrchardCMS/OrchardCore.git" `
     -commitHash "991ff7b536811c8ff2c603e30d754b858d009fa2" `
-    -resultsFilePath $resultsFilePath `
+    -resultsFolderPath $resultsFolderPath `
     -logsFolderPath $logsFolderPath `
     -nugetFoldersPath $nugetFoldersPath `
-    -iterationCount $iterationCount
+    -iterationCount $iterationCount `
+    -extraArguments $extraArguments
+} 
+Else 
+{
+RunPerformanceTestsOnGitRepository `
+    -nugetClientFilePath $nugetClientFilePath `
+    -sourceRootFolderPath $sourceRootFolderPath `
+    -testCaseName $testCaseName `
+    -repoUrl "https://github.com/OrchardCMS/OrchardCore.git" `
+    -commitHash "991ff7b536811c8ff2c603e30d754b858d009fa2" `
+    -resultsFolderPath $resultsFolderPath `
+    -logsFolderPath $logsFolderPath `
+    -nugetFoldersPath $nugetFoldersPath `
+    -iterationCount $iterationCount 
+}

@@ -32,7 +32,7 @@ Param(
     [string] $testRootFolderPath,
     [string] $logsFolderPath,
     [int] $iterationCount = 3,
-    [string] $testCaseDirectory
+    [string] $testCaseDirectory,
     [switch] $skipRepoCleanup,
     [string] $extraArguments
 )
@@ -89,8 +89,8 @@ Try
                 Exit 1
             }
 
-            $testCasesDirectory = $PSScriptRoot\testCases
-            If ([string]::IsNullOrWhiteSpace($testCaseDirectory))
+            $testCasesDirectory = "$PSScriptRoot\testCases"
+            If (-not [string]::IsNullOrWhiteSpace($testCaseDirectory))
             {
                 $testCasesDirectory = $testCaseDirectory
             }

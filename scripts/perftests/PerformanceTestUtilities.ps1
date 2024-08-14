@@ -243,16 +243,17 @@ Function CleanNuGetFolders([string] $nugetClientFilePath, [string] $nugetFolders
 Function RunPerformanceTestsOnGitRepository(
     [string] $nugetClientFilePath,
     [string] $sourceRootFolderPath,
-    [string] $testCaseName,
     [string] $repoUrl,
     [string] $commitHash,
-    [string] $resultsFilePath,
+    [string] $resultsFolderPath,
     [string] $nugetFoldersPath,
     [string] $logsFolderPath,
     [int] $iterationCount,
     [switch] $staticGraphRestore,
     [string] $extraArguments)
 {
+    $testCaseName = GenerateNameFromGitUrl $repoUrl
+    $resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
 
     $sb = [scriptblock]::Create("$PSScriptRoot\RunPerformanceTests.ps1 -nugetClientFilePath ""$nugetClientFilePath"" -solutionFilePath $solutionFilePath -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -nugetFoldersPath $nugetFoldersPath -iterationCount $iterationCount " + $extraArguments)

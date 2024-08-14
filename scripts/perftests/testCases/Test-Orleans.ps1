@@ -14,17 +14,30 @@ Param(
 
 . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
-$repoUrl = "https://github.com/dotnet/orleans.git"
-$testCaseName = GenerateNameFromGitUrl $repoUrl
-$resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
-
+if(![string]::IsNullOrEmpty($extraArguments))
+{
 RunPerformanceTestsOnGitRepository `
     -nugetClientFilePath $nugetClientFilePath `
     -sourceRootFolderPath $sourceRootFolderPath `
     -testCaseName $testCaseName `
-    -repoUrl $repoUrl `
+    -repoUrl "https://github.com/dotnet/orleans.git" `
     -commitHash "00fe587cc9d18db3bb238f1e78abf46835b97457" `
-    -resultsFilePath $resultsFilePath `
+    -resultsFolderPath $resultsFolderPath `
     -logsFolderPath $logsFolderPath `
     -nugetFoldersPath $nugetFoldersPath `
-    -iterationCount $iterationCount
+    -iterationCount $iterationCount `
+    -extraArguments $extraArguments
+} 
+Else 
+{
+RunPerformanceTestsOnGitRepository `
+    -nugetClientFilePath $nugetClientFilePath `
+    -sourceRootFolderPath $sourceRootFolderPath `
+    -testCaseName $testCaseName `
+    -repoUrl "https://github.com/dotnet/orleans.git" `
+    -commitHash "00fe587cc9d18db3bb238f1e78abf46835b97457" `
+    -resultsFolderPath $resultsFolderPath `
+    -logsFolderPath $logsFolderPath `
+    -nugetFoldersPath $nugetFoldersPath `
+    -iterationCount $iterationCount 
+}
