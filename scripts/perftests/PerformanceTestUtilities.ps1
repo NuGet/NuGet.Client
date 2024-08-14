@@ -253,20 +253,12 @@ Function RunPerformanceTestsOnGitRepository(
     [switch] $staticGraphRestore,
     [string] $extraArguments)
 {
-    Log $extraArguments "red"
-    $sb = [scriptblock]::Create($extraArguments)
-    Log $sb "green"
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
+
+    $sb = [scriptblock]::Create("$PSScriptRoot\RunPerformanceTests.ps1 -nugetClientFilePath ""$nugetClientFilePath"" -solutionFilePath $solutionFilePath -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -nugetFoldersPath $nugetFoldersPath -iterationCount $iterationCount " + $extraArguments)
+    Log $sb "green"
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
-    . "$PSScriptRoot\RunPerformanceTests.ps1" `
-        -nugetClientFilePath $nugetClientFilePath `
-        -solutionFilePath $solutionFilePath `
-        -resultsFilePath $resultsFilePath `
-        -logsFolderPath $logsFolderPath `
-        -nugetFoldersPath $nugetFoldersPath `
-        -iterationCount $iterationCount `
-        -staticGraphRestore:$staticGraphRestore `
-        $sb
+    & $sb
 }
 
 Function GetProcessorInfo()
@@ -537,5 +529,5 @@ Function RunRestore(
 
     Add-Content -Path $resultsFilePath -Value $data
 
-    Log "Finished measuring."
+    Log "Finished measuring in $totalTime sec"
 }

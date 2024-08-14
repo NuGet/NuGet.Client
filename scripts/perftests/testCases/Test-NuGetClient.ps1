@@ -12,8 +12,6 @@ Param(
     [string] $extraArguments
 )
 
-Log $extraArguments "blue"
-
 . "$PSScriptRoot\..\PerformanceTestUtilities.ps1"
 
 $repoUrl = "https://github.com/NuGet/NuGet.Client.git"
@@ -34,8 +32,8 @@ RunPerformanceTestsOnGitRepository `
     -iterationCount $iterationCount `
     -extraArguments $extraArguments
 } 
-Else {
-
+Else 
+{
 RunPerformanceTestsOnGitRepository `
     -nugetClientFilePath $nugetClientFilePath `
     -sourceRootFolderPath $sourceRootFolderPath `
