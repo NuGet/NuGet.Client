@@ -103,7 +103,7 @@ Function DownloadRepository([string] $repository, [string] $commitHash, [string]
     If (Test-Path $sourceFolderPath)
     {
         Log "Skipping the cloning of $repository as $sourceFolderPath is not empty. Running git clean" -color "Yellow"
-        git clean -xdf | out-null
+        git -C $sourceFolderPath clean -xdf | out-null
     }
     Else
     {
@@ -347,7 +347,8 @@ Function RunRestore(
     [switch] $cleanPluginsCache,
     [switch] $killMsBuildAndDotnetExeProcesses,
     [switch] $force,
-    [switch] $staticGraphRestore)
+    [switch] $staticGraphRestore,
+    [switch] $cleanRepository)
 {
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
     $isClientMSBuild = IsClientMSBuildExe $nugetClientFilePath
@@ -359,7 +360,7 @@ Function RunRestore(
         Return
     }
 
-    Log "Running $nugetClientFilePath restore with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force"
+    Log "Running $nugetClientFilePath restore with cleanGlobalPackagesFolder:$cleanGlobalPackagesFolder cleanHttpCache:$cleanHttpCache cleanPluginsCache:$cleanPluginsCache killMsBuildAndDotnetExeProcesses:$killMsBuildAndDotnetExeProcesses force:$force staticGraphRestore:$staticGraphRestore cleanRepository:$cleanRepository"
 
     $solutionPackagesFolderPath = $Env:NUGET_SOLUTION_PACKAGES_FOLDER_PATH
 
@@ -405,6 +406,12 @@ Function RunRestore(
             Remove-Item $solutionPackagesFolderPath -Recurse -Force -ErrorAction Ignore > $Null
             mkdir $solutionPackagesFolderPath > $Null
         }
+    }
+
+    if($cleanRepository)
+    {
+        $repositoryPath = [System.IO.Path]::GetDirectoryName($solutionFilePath)
+        git -C $repositoryPath clean -xdf | out-null
     }
 
     if($killMsBuildAndDotnetExeProcesses)
@@ -521,7 +528,7 @@ Function RunRestore(
     {
         $columnHeaders = "Client Name,Client Version,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force,Static Graph," + `
             "Global Packages Folder .nupkg Count,Global Packages Folder .nupkg Size (MB),Global Packages Folder File Count,Global Packages Folder File Size (MB),Clean Global Packages Folder," + `
-            "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes," + `
+            "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes,Clean git repo," + `
             "Processor Name,Processor Physical Core Count,Processor Logical Core Count"
 
         OutFileWithCreateFolders $resultsFilePath $columnHeaders
@@ -529,7 +536,7 @@ Function RunRestore(
 
     $data = "$clientName,$clientVersion,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue," + `
         "$($globalPackagesFolderNupkgFilesInfo.Count),$($globalPackagesFolderNupkgFilesInfo.TotalSizeInMB),$($globalPackagesFolderFilesInfo.Count),$($globalPackagesFolderFilesInfo.TotalSizeInMB),$cleanGlobalPackagesFolder," + `
-        "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses," + `
+        "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$cleanRepository" + `
         "$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"
 
     Add-Content -Path $resultsFilePath -Value $data

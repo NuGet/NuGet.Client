@@ -182,7 +182,7 @@ Try
     If (!$skipWarmup)
     {
         Log "Running 1x warmup restore"
-        $enabledSwitches = @("cleanGlobalPackagesFolder", "cleanHttpCache", "cleanPluginsCache", "killMSBuildAndDotnetExeProcess")
+        $enabledSwitches = @("cleanGlobalPackagesFolder", "cleanHttpCache", "cleanPluginsCache", "killMSBuildAndDotnetExeProcess", "cleanRepository")
         If ($isPackagesConfig)
         {
             $enabledSwitches += "isPackagesConfig"
@@ -198,7 +198,7 @@ Try
     If (!$skipCleanRestores)
     {
         Log "Running $($iterationCount)x clean restores"
-        $enabledSwitches = @("cleanGlobalPackagesFolder", "cleanHttpCache", "cleanPluginsCache", "killMSBuildAndDotnetExeProcess")
+        $enabledSwitches = @("cleanGlobalPackagesFolder", "cleanHttpCache", "cleanPluginsCache", "killMSBuildAndDotnetExeProcess", "cleanRepository")
         If ($isPackagesConfig)
         {
             $enabledSwitches += "isPackagesConfig"
@@ -214,7 +214,7 @@ Try
     If (!$skipColdRestores)
     {
         Log "Running $($iterationCount)x without a global packages folder"
-        $enabledSwitches = @("cleanGlobalPackagesFolder", "killMSBuildAndDotnetExeProcess")
+        $enabledSwitches = @("cleanGlobalPackagesFolder", "killMSBuildAndDotnetExeProcess", "cleanRepository")
         If ($isPackagesConfig)
         {
             $enabledSwitches += "isPackagesConfig"
