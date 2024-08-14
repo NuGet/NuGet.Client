@@ -63,7 +63,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     if (dependencyGraphPerFramework != null)
                     {
                         whyCommandArgs.Logger.LogMinimal(
-                            string.Format(
+                            string.Format(CultureInfo.CurrentCulture,
                                 Strings.WhyCommand_Message_DependencyGraphsFoundInProject,
                                 assetsFile.PackageSpec.Name,
                                 targetPackage));
@@ -73,7 +73,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                     else
                     {
                         whyCommandArgs.Logger.LogMinimal(
-                            string.Format(
+                            string.Format(CultureInfo.CurrentCulture,
                                 Strings.WhyCommand_Message_NoDependencyGraphsFoundInProject,
                                 assetsFile.PackageSpec.Name,
                                 targetPackage));
