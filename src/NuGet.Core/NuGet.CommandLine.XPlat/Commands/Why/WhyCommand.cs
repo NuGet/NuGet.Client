@@ -15,9 +15,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
         private static CliArgument<string> Path = new CliArgument<string>("PROJECT|SOLUTION")
         {
             Description = Strings.WhyCommand_PathArgument_Description,
-            // We really want this to be zero or one, however, because this is the first argument, in order to maintain
-            // backwards compatibility, we need to use a CustomParser to choose if the argument is the path, or the
-            // package. In order for the parser to tell us there's more than 1 argument, we need to tell CliArgument
+            // We really want this to be zero or one, however, because this is the first argument, it doesn't work.
+            // Instead, we need to use a CustomParser to choose if the argument is the path, or the package.
+            // In order for the parser to tell us there's more than 1 argument available, we need to tell CliArgument
             // that it supports more than one, but then in the custom parser we'll make sure we only take at most 1.
             Arity = ArgumentArity.ZeroOrMore,
             CustomParser = ar =>
