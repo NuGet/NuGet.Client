@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.CommandLine.XPlat;
+using NuGet.CommandLine.XPlat.Commands.Why;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Test.Utility;

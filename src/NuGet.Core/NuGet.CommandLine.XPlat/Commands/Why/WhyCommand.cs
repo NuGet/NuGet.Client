@@ -62,6 +62,11 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
         internal static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger)
         {
+            Register(rootCommand, getLogger, WhyCommandRunner.ExecuteCommand);
+        }
+
+        internal static void Register(CliCommand rootCommand, Func<ILoggerWithColor> getLogger, Func<WhyCommandArgs, int> action)
+        {
             var whyCommand = new CliCommand("why", Strings.WhyCommand_Description);
 
             whyCommand.Arguments.Add(Path);
@@ -81,7 +86,7 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                         parseResult.GetValue(Frameworks),
                         logger);
 
-                    int exitCode = WhyCommandRunner.ExecuteCommand(whyCommandArgs);
+                    int exitCode = action(whyCommandArgs);
                     return exitCode;
                 }
                 catch (ArgumentException ex)
