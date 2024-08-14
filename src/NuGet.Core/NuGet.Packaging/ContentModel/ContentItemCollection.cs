@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,8 +18,8 @@ namespace NuGet.ContentModel
         private static readonly ReadOnlyMemory<char> Exe = ".exe".AsMemory();
         private static readonly ReadOnlyMemory<char> Winmd = ".winmd".AsMemory();
 
-        private List<Asset> _assets;
-        private ConcurrentDictionary<ReadOnlyMemory<char>, string> _assemblyRelatedExtensions;
+        private List<Asset>? _assets;
+        private ConcurrentDictionary<ReadOnlyMemory<char>, string?>? _assemblyRelatedExtensions;
         /// <summary>
         /// True if lib/contract exists
         /// </summary>
@@ -25,6 +27,10 @@ namespace NuGet.ContentModel
 
         public void Load(IEnumerable<string> paths)
         {
+            if (paths == null)
+            {
+                throw new ArgumentNullException(nameof(paths));
+            }
             // Cache for assembly and it's related file extensions.
             _assemblyRelatedExtensions = new();
 
@@ -56,17 +62,29 @@ namespace NuGet.ContentModel
 
         public IEnumerable<ContentItem> FindItems(PatternSet definition)
         {
-            return FindItemsImplementation(definition, _assets);
+            if (definition == null)
+            {
+                throw new ArgumentNullException(nameof(definition));
+            }
+            if (_assets != null)
+            {
+                return FindItemsImplementation(definition, _assets);
+            }
+            return Enumerable.Empty<ContentItem>();
         }
 
         [Obsolete("This method causes excessive memory allocation with yield return. Use ContentItemCollection.PopulateItemGroups instead.")]
         public IEnumerable<ContentItemGroup> FindItemGroups(PatternSet definition)
         {
-            if (_assets.Count > 0)
+            if (definition == null)
+            {
+                throw new ArgumentNullException(nameof(definition));
+            }
+            if (_assets != null && _assets.Count > 0)
             {
                 var groupPatterns = definition.GroupExpressions;
 
-                List<(ContentItem Item, Asset Asset)> groupAssets = null;
+                List<(ContentItem Item, Asset Asset)>? groupAssets = null;
 
                 foreach (var asset in _assets)
                 {
@@ -99,11 +117,19 @@ namespace NuGet.ContentModel
         /// <param name="contentItemGroupList">The list that will be mutated and populated with the item groups</param>
         public void PopulateItemGroups(PatternSet definition, IList<ContentItemGroup> contentItemGroupList)
         {
-            if (_assets.Count > 0)
+            if (definition == null)
+            {
+                throw new ArgumentNullException(nameof(definition));
+            }
+            if (contentItemGroupList == null)
+            {
+                throw new ArgumentNullException(nameof(contentItemGroupList));
+            }
+            if (_assets != null && _assets.Count > 0)
             {
                 var groupPatterns = definition.GroupExpressions;
 
-                List<(ContentItem Item, Asset Asset)> groupAssets = null;
+                List<(ContentItem Item, Asset Asset)>? groupAssets = null;
 
                 foreach (var asset in _assets)
                 {
@@ -136,7 +162,7 @@ namespace NuGet.ContentModel
             return FindBestItemGroup(criteria, definitions) != null;
         }
 
-        public ContentItemGroup FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
+        public ContentItemGroup? FindBestItemGroup(SelectionCriteria criteria, params PatternSet[] definitions)
         {
             if (criteria is null)
             {
@@ -154,7 +180,7 @@ namespace NuGet.ContentModel
                 PopulateItemGroups(definition, itemGroups);
                 foreach (var criteriaEntry in criteria.Entries.NoAllocEnumerate())
                 {
-                    ContentItemGroup bestGroup = null;
+                    ContentItemGroup? bestGroup = null;
                     var bestAmbiguity = false;
 
                     foreach (var itemGroup in itemGroups)
@@ -172,13 +198,13 @@ namespace NuGet.ContentModel
                             }
                             else
                             {
-                                object itemProperty;
+                                object? itemProperty;
                                 if (!itemGroup.Properties.TryGetValue(criteriaProperty.Key, out itemProperty))
                                 {
                                     groupIsValid = false;
                                     break;
                                 }
-                                ContentPropertyDefinition propertyDefinition;
+                                ContentPropertyDefinition? propertyDefinition;
                                 if (!definition.PropertyDefinitions.TryGetValue(criteriaProperty.Key, out propertyDefinition))
                                 {
                                     groupIsValid = false;
@@ -261,7 +287,7 @@ namespace NuGet.ContentModel
                         //If the item is assembly, populate the "related files extensions property".
                         if (contentItem.TryGetValue(ManagedCodeConventions.PropertyNames.ManagedAssembly, out _))
                         {
-                            string relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem.Path, assets);
+                            string? relatedFileExtensionsProperty = GetRelatedFileExtensionProperty(contentItem.Path, assets);
                             if (relatedFileExtensionsProperty is not null)
                             {
                                 contentItem.Add("related", relatedFileExtensionsProperty);
@@ -276,17 +302,17 @@ namespace NuGet.ContentModel
             return items;
         }
 
-        internal string GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
+        internal string? GetRelatedFileExtensionProperty(string assemblyPath, IEnumerable<Asset> assets)
         {
             //E.g. if path is "lib/net472/A.B.C.dll", the prefix will be "lib/net472/A.B.C."
             ReadOnlyMemory<char> assemblyPrefix = assemblyPath.AsMemory(0, assemblyPath.LastIndexOf('.') + 1);
 
-            if (_assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out string relatedProperty))
+            if (_assemblyRelatedExtensions != null && _assemblyRelatedExtensions.TryGetValue(assemblyPrefix, out string? relatedProperty))
             {
                 return relatedProperty;
             }
 
-            List<string> relatedFileExtensionList = null;
+            List<string>? relatedFileExtensionList = null;
             foreach (Asset asset in assets.NoAllocEnumerate())
             {
                 if (asset.Path is not null)
@@ -315,14 +341,20 @@ namespace NuGet.ContentModel
             // If no related files found.
             if (relatedFileExtensionList is null || relatedFileExtensionList.Count == 0)
             {
-                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, null);
+                if (_assemblyRelatedExtensions != null)
+                {
+                    _assemblyRelatedExtensions.TryAdd(assemblyPrefix, null);
+                }
                 return null;
             }
             else
             {
                 relatedFileExtensionList.Sort();
                 string relatedFileExtensionsProperty = string.Join(";", relatedFileExtensionList);
-                _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
+                if (_assemblyRelatedExtensions != null)
+                {
+                    _assemblyRelatedExtensions.TryAdd(assemblyPrefix, relatedFileExtensionsProperty);
+                }
                 return relatedFileExtensionsProperty;
             }
 
@@ -420,11 +452,15 @@ namespace NuGet.ContentModel
                 return hashCode;
             }
 
-            public bool Equals(ContentItem x, ContentItem y)
+            public bool Equals(ContentItem? x, ContentItem? y)
             {
                 if (ReferenceEquals(x, y))
                 {
                     return true;
+                }
+                if (x is null || y is null)
+                {
+                    return false;
                 }
 
                 if (x._properties == null && y._properties != null)
@@ -446,7 +482,7 @@ namespace NuGet.ContentModel
                 {
                     foreach (var xProperty in x._properties)
                     {
-                        object yValue;
+                        object? yValue;
                         if (!y._properties.TryGetValue(xProperty.Key, out yValue))
                         {
                             return false;
@@ -458,7 +494,7 @@ namespace NuGet.ContentModel
                     }
                     foreach (var yProperty in y._properties)
                     {
-                        object xValue;
+                        object? xValue;
                         if (!x._properties.TryGetValue(yProperty.Key, out xValue))
                         {
                             return false;
