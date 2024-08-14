@@ -26,6 +26,13 @@ To get the list of all options check out RunPerformanceTests.ps1 in the same fol
 
 .EXAMPLE
 .\PerformanceTestRunner.ps1 -resultsFolderPath resultsFolder -nugetClientFilePaths F:\NuGetExe\NuGet.exe,"C:\Program Files\dotnet\dotnet.exe" 
+
+.EXAMPLE
+.\PerformanceTestRunner.ps1 -resultsFolderPath resultsFolder -nugetClientFilePaths "C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Current\Bin\amd64\MSBuild.exe" -skipRepoCleanup -additionalOptions "-useLocallyBuiltNuGet -staticGraphRestore"
+
+.EXAMPLE
+.\PerformanceTestRunner.ps1 -resultsFolderPath resultsFolder -nugetClientFilePaths "C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Current\Bin\amd64\MSBuild.exe" -skipRepoCleanup -additionalOptions "-useLocallyBuiltNuGet"
+
 #>
 Param(
     [Parameter(Mandatory = $true)]
