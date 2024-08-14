@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections.Generic;
 
 namespace NuGet.ContentModel
@@ -21,9 +23,9 @@ namespace NuGet.ContentModel
         internal const string Related = "related";
         internal const string TfmRaw = "tfm_raw";
 
-        public string Path { get; set; }
+        public required string Path { get; init; }
 
-        internal Dictionary<string, object> _properties;
+        internal Dictionary<string, object>? _properties;
 
         public Dictionary<string, object> Properties
         {
@@ -31,18 +33,18 @@ namespace NuGet.ContentModel
             internal set => _properties = value;
         }
 
-        internal object _assembly;
-        internal object _locale;
-        internal object _related;
-        internal object _msbuild;
-        internal object _tfm;
-        internal object _rid;
-        internal object _any;
-        internal object _satelliteAssembly;
-        internal object _codeLanguage;
-        internal object _tfmRaw;
+        internal object? _assembly;
+        internal object? _locale;
+        internal object? _related;
+        internal object? _msbuild;
+        internal object? _tfm;
+        internal object? _rid;
+        internal object? _any;
+        internal object? _satelliteAssembly;
+        internal object? _codeLanguage;
+        internal object? _tfmRaw;
 
-        internal bool TryGetValue(string key, out object value)
+        internal bool TryGetValue(string key, out object? value)
         {
             if (_properties != null)
             {

@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithAssembly_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.ManagedAssembly, value);
@@ -28,7 +28,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithTfm_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.TargetFrameworkMoniker, value);
@@ -41,7 +41,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithRuntimeIdentifier_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.RuntimeIdentifier, value);
@@ -53,7 +53,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithAny_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.AnyValue, value);
@@ -65,7 +65,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithLocale_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.Locale, value);
@@ -77,7 +77,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithMsbuild_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.MSBuild, value);
@@ -89,7 +89,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithSatelliteAssembly_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.SatelliteAssembly, value);
@@ -101,7 +101,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithCodeLanguage_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.CodeLanguage, value);
@@ -113,7 +113,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithRelated_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.Related, value);
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void Add_WithPropertiesNotInitialized__WithTfmRaw_SetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add(ContentItem.TfmRaw, value);
@@ -138,7 +138,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithAssembly_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._assembly = value;
@@ -151,7 +151,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithTfm_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._tfm = value;
@@ -164,7 +164,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithRuntimeIdentifier_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._rid = value;
@@ -177,7 +177,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithAny_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._any = value;
@@ -190,7 +190,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithLocale_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._locale = value;
@@ -203,7 +203,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithMsbuild_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._msbuild = value;
@@ -216,7 +216,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithSatelliteAssembly_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._satelliteAssembly = value;
@@ -229,7 +229,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithCodeLanguage_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._codeLanguage = value;
@@ -242,7 +242,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithRelated_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._related = value;
@@ -255,7 +255,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void TryGetValue_WithPropertiesNotInitialized__WithTfmRaw_GetsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem._tfmRaw = value;
@@ -268,7 +268,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void AddAndTryGetValues_WithUnknownProperty_InitiailizesDictionary_AndReturnsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Act
             contentItem.Add("assembly_raw", value);
@@ -288,7 +288,7 @@ namespace NuGet.Packaging.Test.ContentModelTests
         [Fact]
         public void AddAndTryGetValues_WithUnknownPropertyFollowingAPackedOne_InitiailizesDictionary_AndReturnsCorrectValue()
         {
-            var contentItem = new ContentItem();
+            var contentItem = new ContentItem() { Path = "lib/net5.0/a.dll" };
             var value = "value";
             // Pre-conditions
             contentItem.Add(ContentItem.ManagedAssembly, value);
