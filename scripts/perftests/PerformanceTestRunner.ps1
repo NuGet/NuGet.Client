@@ -32,6 +32,7 @@ Param(
     [string] $testRootFolderPath,
     [string] $logsFolderPath,
     [int] $iterationCount = 3,
+    [string] $testCaseDirectory
     [switch] $skipRepoCleanup,
     [string] $extraArguments
 )
@@ -88,10 +89,16 @@ Try
                 Exit 1
             }
 
-            Log "Discovering the test cases."
-            $testFiles = $(Get-ChildItem $PSScriptRoot\testCases "Test-*.ps1" ) | ForEach-Object { $_.FullName }
-            Log "Discovered test cases: $testFiles" "green"
+            $testCasesDirectory = $PSScriptRoot\testCases
+            If ([string]::IsNullOrWhiteSpace($testCaseDirectory))
+            {
+                $testCasesDirectory = $testCaseDirectory
+            }
 
+            Log "Discovering the test cases in $testCasesDirectory"
+            $testFiles = $(Get-ChildItem $testCasesDirectory "Test-*.ps1" ) | ForEach-Object { $_.FullName }
+            Log "Discovered test cases: $testFiles" "green"
+            
             $testFiles | ForEach-Object {
                 $testCase = $_
                 Try
