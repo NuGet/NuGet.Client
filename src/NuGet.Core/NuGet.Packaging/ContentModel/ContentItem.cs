@@ -106,7 +106,6 @@ namespace NuGet.ContentModel
             }
             else
             {
-
                 switch (key)
                 {
                     case TargetFrameworkMoniker:
