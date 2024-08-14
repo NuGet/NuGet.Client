@@ -11,7 +11,6 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
-
     /// <summary>
     /// Interaction logic for PackageMetadataDescriptionControl.xaml
     /// </summary>
