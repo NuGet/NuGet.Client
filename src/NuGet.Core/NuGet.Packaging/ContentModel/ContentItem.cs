@@ -17,6 +17,7 @@ namespace NuGet.ContentModel
         internal const string SatelliteAssembly = "satelliteAssembly";
         internal const string CodeLanguage = "codeLanguage";
 
+        // These do not map to ManagedCodeConventions, they're used internally
         internal const string Related = "related";
         internal const string TfmRaw = "tfm_raw";
 
