@@ -477,6 +477,12 @@ Function RunRestore(
         $staticGraphOutputValue = "N/A"
     }
 
+    If($isClientDotnetExe -Or $isClientMSBuild)
+    {
+        # Always disable NuGetAudit. It's something impacted by the time of execution
+        $arguments.Add("/p:NuGetAudit=false")   
+    }
+
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     $logs = . $nugetClientFilePath $arguments | Out-String
