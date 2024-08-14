@@ -103,7 +103,7 @@ Function DownloadRepository([string] $repository, [string] $commitHash, [string]
     If (Test-Path $sourceFolderPath)
     {
         Log "Skipping the cloning of $repository as $sourceFolderPath is not empty. Running git clean" -color "Yellow"
-        git clean -xdf
+        git clean -xdf | out-null
     }
     Else
     {
@@ -255,9 +255,9 @@ Function RunPerformanceTestsOnGitRepository(
     $testCaseName = GenerateNameFromGitUrl $repoUrl
     $resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
-
+    
     $sb = [scriptblock]::Create("$PSScriptRoot\RunPerformanceTests.ps1 -nugetClientFilePath ""$nugetClientFilePath"" -solutionFilePath $solutionFilePath -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -nugetFoldersPath $nugetFoldersPath -iterationCount $iterationCount " + $extraArguments)
-    Log $sb "green"
+    Log $sb "cyan"
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
     & $sb
 }
