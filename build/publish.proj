@@ -68,8 +68,6 @@
       PublishingVersion="3" />
 
     <PushMetadataToBuildAssetRegistry
-      BuildAssetRegistryToken="$(MaestroAccessToken)"
-      MaestroApiEndpoint="$(MaestroApiEndpoint)"
       ManifestsPath="$(ArtifactsLogDir)AssetManifest\"
       AssetVersion="$(Version)" />
   </Target>
