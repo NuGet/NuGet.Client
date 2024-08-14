@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    
+
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">7.0.3</SystemTextJsonVersion>
@@ -18,7 +18,7 @@
     <!-- The last package version of MSBuild that works with net5.0 is 16.11.0.  Our assemblies are still compiled against MSBuild assembly version 15.1.0.0 which will work with all versions -->
     <MicrosoftBuildVersion Condition="'$(TargetFramework)' == 'netcoreapp5.0'">16.11.0</MicrosoftBuildVersion>
   </PropertyGroup>
-  
+
   <!-- Overridden by source build to ensure the same version is used across products, do not remove these properties -->
   <!-- For each property in this group, there is an appropriate package dependency in eng/Version.Details.xml -->
   <!-- All .NET package dependencies have to use proper version property names -->
@@ -32,7 +32,7 @@
     <SystemSecurityCryptographyXmlVersion Condition="'$(SystemSecurityCryptographyXmlVersion)' == ''">6.0.1</SystemSecurityCryptographyXmlVersion>
     <SystemSecurityCryptographyXmlVersion Condition="'$(MicrosoftBuildVersion)' == '16.8.0' Or '$(MicrosoftBuildVersion)' == '16.11.0'">4.7.1</SystemSecurityCryptographyXmlVersion>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageVersion Include="FluentAssertions" Version="6.12.0" />
     <PackageVersion Include="ILMerge" Version="3.0.41" />
@@ -110,7 +110,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.StaFact" Version="1.1.11" />
   </ItemGroup>
-  
+
   <!--
     Packages that provide NuGet's Visual Studio extensibility APIs should not depend on the Visual Studio SDK, to ensure
     there are no circular references in case the VS SDK itself adds our package as a dependency. Everything else, however
@@ -128,20 +128,20 @@
     <PackageVersion Update="Microsoft.VisualStudio.SDK" Version="" />
     <PackageVersion Include="Microsoft.VisualStudio.Shell.15.0" Version="17.10.40173" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" version="1.0.0" Condition=" '$(DotNetBuildSourceOnly)' != 'true' " />
   </ItemGroup>
-  
+
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'true' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
-    
+
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
-  
+
   <ItemGroup Condition=" '$(UsePublicApiAnalyzer)' == 'perTfm' ">
     <GlobalPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
     <None Remove="$(MSBuildProjectDirectory)\PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
@@ -160,9 +160,9 @@
     <ItemGroup>
       <_allowBuildFromSourcePackage Remove="@(_allowBuildFromSourcePackage)" />
       <_sourceBuildUnexpectedPackage Remove="@(_sourceBuildUnexpectedPackage)" />
-      
+
       <_allowBuildFromSourcePackage Include="@(PackageReference)" Condition=" '%(PackageReference.IsImplicitlyDefined)' == 'true' " />
-      
+
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Framework" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Tasks.Core" />
       <_allowBuildFromSourcePackage Include="Microsoft.Build.Utilities.Core" />
@@ -181,10 +181,10 @@
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.ProtectedData" />
       <_allowBuildFromSourcePackage Include="System.Security.Cryptography.Xml" />
       <_allowBuildFromSourcePackage Include="System.Text.Json" />
-      
+
       <_sourceBuildUnexpectedPackage Include="@(PackageReference)" Exclude="@(_allowBuildFromSourcePackage)" />
     </ItemGroup>
     <Error Text="Found @(_sourceBuildUnexpectedPackage-&gt;Count()) PackageReferences not on DotNetBuildSourceOnly allow list: '@(_sourceBuildUnexpectedPackage)'" Condition=" '@(_sourceBuildUnexpectedPackage)' != '' " />
   </Target>
-  
+
 </Project>
