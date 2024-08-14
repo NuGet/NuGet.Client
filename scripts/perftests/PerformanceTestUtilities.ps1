@@ -255,9 +255,7 @@ Function RunPerformanceTestsOnGitRepository(
     $testCaseName = GenerateNameFromGitUrl $repoUrl
     $resultsFilePath = [System.IO.Path]::Combine($resultsFolderPath, "$testCaseName.csv")
     $solutionFilePath = SetupGitRepository -repository $repoUrl -commitHash $commitHash -sourceFolderPath $([System.IO.Path]::Combine($sourceRootFolderPath, $testCaseName))
-    
     $sb = [scriptblock]::Create("$PSScriptRoot\RunPerformanceTests.ps1 -nugetClientFilePath ""$nugetClientFilePath"" -solutionFilePath $solutionFilePath -resultsFilePath $resultsFilePath -logsFolderPath $logsFolderPath -nugetFoldersPath $nugetFoldersPath -iterationCount $iterationCount " + $extraArguments)
-    Log $sb "cyan"
     SetupNuGetFolders $nugetClientFilePath $nugetFoldersPath
     & $sb
 }
