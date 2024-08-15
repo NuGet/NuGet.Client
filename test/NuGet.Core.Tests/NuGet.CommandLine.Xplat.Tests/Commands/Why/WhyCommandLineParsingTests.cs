@@ -156,5 +156,26 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
             result.Errors.Should().BeEmpty();
             result.Invoke();
         }
+
+        [Fact]
+        public void HelpOption_ShowsHelp()
+        {
+            // Arrange
+            CliCommand rootCommand = new("nuget");
+
+            WhyCommand.Register(rootCommand, NullLoggerWithColor.GetInstance, whyCommandArgs =>
+            {
+                // Assert
+                whyCommandArgs.Path.Should().Be("my.proj");
+                whyCommandArgs.Package.Should().Be("packageid");
+                whyCommandArgs.Frameworks.Should().Equal(["net8.0", "net481"]);
+                return 0;
+            });
+
+            // Act
+            var result = rootCommand.Parse($"nuget why -h");
+            result.Errors.Should().BeEmpty();
+            result.Action.Should().BeOfType<System.CommandLine.Help.HelpAction>();
+        }
     }
 }
