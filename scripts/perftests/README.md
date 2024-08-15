@@ -13,6 +13,7 @@ The scenarios are sequential as follows:
 
 1. Clean restore - no http cache & other local caches, no files in the global package folder, absolutely everything gets downloaded and extracted.
 1. Cold restore - There is only an http cache. This tells us more about the installation/extraction time. Potentially we might see some extra http calls depending on the project graph.
+1. Offline restore - no http cache or plugin cache, but there is a global packages folder. This simulates setups where the gpf is shared across different machines. Ideally these restores are offline, and do not make any remote calls.
 1. Force restore - The http cache & global packages folder are full. This usually means that there are no package downloads or installations happening.
 1. NoOp restore
 
