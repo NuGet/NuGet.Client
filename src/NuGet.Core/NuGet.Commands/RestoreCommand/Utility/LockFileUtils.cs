@@ -643,7 +643,7 @@ namespace NuGet.Commands
         /// Create lock file items for the best matching group.
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
-        private static List<LockFileItem> GetLockFileItems(
+        private static IList<LockFileItem> GetLockFileItems(
             List<SelectionCriteria> criteria,
             ContentItemCollection items,
             Action<LockFileItem> additionalAction,
@@ -666,7 +666,7 @@ namespace NuGet.Commands
                         object locale;
                         if (item.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out locale))
                         {
-                            newItem.Properties[ManagedCodeConventions.PropertyNames.Locale] = (string)locale;
+                            newItem.Properties["locale"] = (string)locale;
                         }
                         object related;
                         if (item.Properties.TryGetValue("related", out related))
@@ -687,10 +687,10 @@ namespace NuGet.Commands
         /// Create lock file items for the best matching group.
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
-        private static List<LockFileItem> GetLockFileItems(
-            List<SelectionCriteria> criteria,
-            ContentItemCollection items,
-            params PatternSet[] patterns)
+        private static IList<LockFileItem> GetLockFileItems(
+           List<SelectionCriteria> criteria,
+           ContentItemCollection items,
+           params PatternSet[] patterns)
         {
             return GetLockFileItems(criteria, items, additionalAction: null, patterns);
         }
