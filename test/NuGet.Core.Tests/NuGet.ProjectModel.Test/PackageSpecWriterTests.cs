@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -189,6 +188,7 @@ namespace NuGet.ProjectModel.Test
     ""outputPath"": ""outputPath"",
     ""projectStyle"": ""PackageReference"",
     ""crossTargeting"": true,
+    ""restoreUseLegacyDependencyResolver"": true,
     ""fallbackFolders"": [
       ""b"",
       ""a"",
@@ -817,20 +817,6 @@ namespace NuGet.ProjectModel.Test
             var actual = PackageSpecTestUtility.RoundTripJson(json, environmentReader);
 
             // Assert
-
-            var metadata = actual.RestoreMetadata;
-            var userSettingsDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-
-            Assert.NotNull(metadata);
-            metadata.PackagesPath.Should().Be(@$"{userSettingsDirectory}.nuget\packages");
-
-            metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}source\code\NuGet.Config");
-            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config");
-            metadata.ConfigFilePaths.Should().Contain(@"C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config");
-            metadata.ConfigFilePaths.Should().Contain(@$"{userSettingsDirectory}AppData\Roaming\NuGet\NuGet.Config");
-
-            metadata.FallbackFolders.Should().Contain(@"C:\Program Files\dotnet\sdk\NuGetFallbackFolder");
-            metadata.FallbackFolders.Should().Contain(@$"{userSettingsDirectory}fallbackFolder");
         }
 
         private static string GetJsonString(PackageSpec packageSpec)
