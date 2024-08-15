@@ -688,9 +688,9 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>Enumerate this once after calling.</remarks>
         private static IList<LockFileItem> GetLockFileItems(
-           List<SelectionCriteria> criteria,
-           ContentItemCollection items,
-           params PatternSet[] patterns)
+            List<SelectionCriteria> criteria,
+            ContentItemCollection items,
+            params PatternSet[] patterns)
         {
             return GetLockFileItems(criteria, items, additionalAction: null, patterns);
         }
