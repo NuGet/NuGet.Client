@@ -500,8 +500,6 @@ Function RunRestore(
         if($isClientMSBuild)
         {
             $NETFramework = "net472"
-            $NETStandard = "netstandard2.0"
-            $NETCoreApp = "netcoreapp5.0"
             $Configuration = "release"
             $packDllPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Pack\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Pack.dll"
             $packTargetsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.targets"
@@ -565,7 +563,7 @@ Function RunRestore(
     {
         $columnHeaders = "Client Name,Client Version,Locally Built NuGet,Solution Name,Test Run ID,Scenario Name,Total Time (seconds),Core Restore Time (seconds),Force,Static Graph," + `
             "Global Packages Folder .nupkg Count,Global Packages Folder .nupkg Size (MB),Global Packages Folder File Count,Global Packages Folder File Size (MB),Clean Global Packages Folder," + `
-            "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes,Clean git repo," + `
+            "HTTP Cache File Count,HTTP Cache File Size (MB),Clean HTTP Cache,Plugins Cache File Count,Plugins Cache File Size (MB),Clean Plugins Cache,Kill MSBuild and dotnet Processes,Clean git repo,Force Legacy resolver," + `
             "Processor Name,Processor Physical Core Count,Processor Logical Core Count"
 
         OutFileWithCreateFolders $resultsFilePath $columnHeaders
@@ -573,7 +571,7 @@ Function RunRestore(
 
     $data = "$clientName,$clientVersion,$useLocallyBuiltNuGet,$solutionName,$testRunId,$scenarioName,$totalTime,$restoreCoreTime,$force,$staticGraphOutputValue," + `
         "$($globalPackagesFolderNupkgFilesInfo.Count),$($globalPackagesFolderNupkgFilesInfo.TotalSizeInMB),$($globalPackagesFolderFilesInfo.Count),$($globalPackagesFolderFilesInfo.TotalSizeInMB),$cleanGlobalPackagesFolder," + `
-        "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$cleanRepository" + `
+        "$($httpCacheFilesInfo.Count),$($httpCacheFilesInfo.TotalSizeInMB),$cleanHttpCache,$($pluginsCacheFilesInfo.Count),$($pluginsCacheFilesInfo.TotalSizeInMB),$cleanPluginsCache,$killMsBuildAndDotnetExeProcesses,$cleanRepository,$forceLegacyResolverFallback," + `
         "$($processorInfo.Name),$($processorInfo.NumberOfCores),$($processorInfo.NumberOfLogicalProcessors)"
 
     Add-Content -Path $resultsFilePath -Value $data

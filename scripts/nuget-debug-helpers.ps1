@@ -2,7 +2,7 @@ Param([string] $Config)
 
 $NuGetClientRoot= Resolve-Path $(Join-Path $PSScriptRoot "..\")
 
-if (-not [string]::IsNullOrEmpty($Config)) {
+if ([string]::IsNullOrEmpty($Config)) {
     $Configuration = "Debug"
 }
 
