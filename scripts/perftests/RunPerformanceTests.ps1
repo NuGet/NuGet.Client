@@ -51,7 +51,9 @@ Skips no-op restore.
 Uses static graph restore if applicable for the client.
 
 .PARAMETER useLocallyBuiltNuGet
-Whether to use locally built NuGet. Only works with msbuild.exe. It simply bootstraps the release configuration pre-built version of NuGet .
+Whether to use locally built NuGet. Only works with msbuild.exe. It simply bootstraps the release configuration pre-built version of NuGet
+
+.PARAMETER forceLegacyResolverFallback
 
 .EXAMPLE
 .\RunPerformanceTests.ps1 -nugetClientFilePath "C:\Program Files\dotnet\dotnet.exe" -solutionFilePath F:\NuGet.Client\NuGet.sln -resultsFilePath results.csv
@@ -73,7 +75,8 @@ Param(
     [switch] $skipForceRestores,
     [switch] $skipNoOpRestores,
     [switch] $staticGraphRestore,
-    [switch] $useLocallyBuiltNuGet
+    [switch] $useLocallyBuiltNuGet,
+    [switch] $forceLegacyResolverFallback
 )
 
 . "$PSScriptRoot\PerformanceTestUtilities.ps1"
@@ -199,6 +202,10 @@ Try
         {
             $enabledSwitches += "useLocallyBuiltNuGet"
         }
+        If ($forceLegacyResolverFallback)
+        {
+            $enabledSwitches += "forceLegacyResolverFallback"
+        }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "warmup" -enabledSwitches $enabledSwitches
         RunRestore @arguments
     }
@@ -218,6 +225,10 @@ Try
         If ($useLocallyBuiltNuGet)
         {
             $enabledSwitches += "useLocallyBuiltNuGet"
+        }
+        If ($forceLegacyResolverFallback)
+        {
+            $enabledSwitches += "forceLegacyResolverFallback"
         }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "arctic" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
@@ -239,6 +250,10 @@ Try
         {
             $enabledSwitches += "useLocallyBuiltNuGet"
         }
+        If ($forceLegacyResolverFallback)
+        {
+            $enabledSwitches += "forceLegacyResolverFallback"
+        }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "cold" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
     }
@@ -254,6 +269,10 @@ Try
         If ($useLocallyBuiltNuGet)
         {
             $enabledSwitches += "useLocallyBuiltNuGet"
+        }
+        If ($forceLegacyResolverFallback)
+        {
+            $enabledSwitches += "forceLegacyResolverFallback"
         }
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "force" -enabledSwitches $enabledSwitches
         1..$iterationCount | % { RunRestore @arguments }
@@ -271,6 +290,10 @@ Try
         If ($useLocallyBuiltNuGet)
         {
             $enabledSwitches += "useLocallyBuiltNuGet"
+        }
+        If ($forceLegacyResolverFallback)
+        {
+            $enabledSwitches += "forceLegacyResolverFallback"
         }
 
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop" -enabledSwitches $enabledSwitches

@@ -348,7 +348,8 @@ Function RunRestore(
     [switch] $force,
     [switch] $staticGraphRestore,
     [switch] $cleanRepository,
-    [switch] $useLocallyBuiltNuGet)
+    [switch] $useLocallyBuiltNuGet,
+    [switch] $forceLegacyResolverFallback)
 {
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
     $isClientMSBuild = IsClientMSBuildExe $nugetClientFilePath
@@ -485,8 +486,13 @@ Function RunRestore(
 
     If($isClientDotnetExe -Or $isClientMSBuild)
     {
-        # Always disable NuGetAudit. It's something impacted by the time of execution
+        # Always disable NuGetAudit. It's something impacted by the time of execution, and not helpful in these type of performance tests.
         $arguments.Add("/p:NuGetAudit=false")   
+    }
+
+    if(($isClientDotnetExe -Or $isClientMSBuild) -And $forceLegacyResolverFallback)
+    {
+        $arguments.Add("/p:RestoreUseLegacyDependencyResolver=true")
     }
 
     if($useLocallyBuiltNuGet)
