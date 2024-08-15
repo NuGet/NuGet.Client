@@ -559,9 +559,7 @@ namespace NuGet.Commands
 
             if (rootProjectStyle == ProjectStyle.PackageReference)
             {
-                // Add files under asset groups
-                object msbuildPath;
-                if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out msbuildPath))
+                if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out object msbuildPath))
                 {
                     // Find the project path, this is provided by the resolver
                     var msbuildFilePathInfo = new FileInfo((string)msbuildPath);
@@ -569,14 +567,12 @@ namespace NuGet.Commands
                     // Ensure a trailing slash for the relative path helper.
                     var projectDir = PathUtility.EnsureTrailingSlash(msbuildFilePathInfo.Directory.FullName);
 
-
                     // Create an ordered list of selection criteria. Each will be applied, if the result is empty
                     // fallback frameworks from "imports" will be tried.
                     // These are only used for framework/RID combinations where content model handles everything.
                     var orderedCriteria = CreateCriteria(targetGraph.Conventions, targetGraph.Framework, targetGraph.RuntimeIdentifier);
 
                     string libAnyPath = $"lib/{targetGraph.Framework.GetShortFolderName()}/any.dll";
-
                     var contentItems = new ContentItemCollection();
 
                     // Read files from the project if they were provided.
@@ -623,28 +619,25 @@ namespace NuGet.Commands
                     }
                     else
                     {
-
                         // If the project did not provide a list of assets, add in default ones.
-                        // When there's only lib assets, compile and runtime groups are always equivalent.
                         contentItems.Load([libAnyPath]);
 
+                        // When there's only lib assets, compile and runtime groups are always equivalent.
                         var compileGroup = GetLockFileItems(
                             orderedCriteria,
                             contentItems,
                             targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
-                        string defaultAssetAbsolutePath = Path.Combine(projectDir, "bin", "placeholder", $"{localMatch.Library.Name}.dll");
-                        var assemblies = new List<LockFileItem> { ConvertToProjectPaths(projectDir, defaultAssetAbsolutePath, compileGroup[0]) };
-
                         if (compileGroup.Count > 0)
                         {
+                            string relativePath = PathUtility.GetPathWithForwardSlashes(Path.Combine("bin", "placeholder", $"{localMatch.Library.Name}.dll"));
+                            List<LockFileItem> assemblies = [new LockFileItem(relativePath)];
                             projectLib.CompileTimeAssemblies = assemblies;
                             projectLib.RuntimeAssemblies = assemblies;
                         }
                     }
                 }
             }
-
 
             // Add frameworkAssemblies for projects
             object frameworkAssembliesObject;
@@ -673,20 +666,6 @@ namespace NuGet.Commands
             projectLib.Freeze();
 
             return projectLib;
-        }
-
-        /// <summary>
-        /// Convert from the expected nupkg path to the on disk path.
-        /// </summary>
-        private static LockFileItem ConvertToProjectPaths(
-            string diskPath,
-            string projectDir,
-            LockFileItem item)
-        {
-            string fixedPath = PathUtility.GetPathWithForwardSlashes(
-            PathUtility.GetRelativePath(projectDir, diskPath));
-
-            return new LockFileItem(fixedPath);
         }
 
         private static List<LockFileItem> ConvertToProjectPaths(
