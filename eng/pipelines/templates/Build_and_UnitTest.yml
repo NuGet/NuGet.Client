@@ -406,7 +406,7 @@ steps:
     scriptType: ps
     scriptLocation: inlineScript
     inlineScript: |
-      dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog
+      dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /property:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /property:BUILD_BUILDNUMBER=$(Build.BuildNumber) /property:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /property:BUILD_SOURCEVERSION=$(Build.SourceVersion) /property:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /property:BUILD_REPOSITORY_NAME=$(Build.Repository.Name) /property:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /binarylogger:$(Build.StagingDirectory)\binlog\21.PublishToBuildAssetRegistry.binlog /property:MaestroApiEndpoint=$(MaestroApiEndpoint)
     workingDirectory: cli
     failOnStderr: true
   env:
