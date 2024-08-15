@@ -264,7 +264,7 @@ Try
 
     If (!$skipOfflineRestores)
     {
-        Log "Running $($iterationCount)x without a global packages folder"
+        Log "Running $($iterationCount)x offline restores without http cache"
         $enabledSwitches = @("cleanHttpCache", "cleanPluginsCache", "killMSBuildAndDotnetExeProcess", "cleanRepository")
         If ($isPackagesConfig)
         {
