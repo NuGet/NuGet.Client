@@ -302,6 +302,22 @@
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
 
+          <GridViewColumn
+            DisplayMemberBinding="{Binding TransitiveVersion}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader
+      AutomationProperties.Name="Referenced by"
+      x:Name="_referencedByColumnHeader"
+      Click="ColumnHeader_Clicked"
+      Content="Referenced by"
+      HorizontalContentAlignment="Left"
+      SizeChanged="SortableColumnHeader_SizeChanged"
+      PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+      Focusable="True"
+      IsTabStop="True"
+      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
+            </GridViewColumn.Header>
+          </GridViewColumn>
           <!-- the version column may be inserted here dynamically from code -->
 
           <!-- the installed column -->
@@ -322,7 +338,9 @@
                 FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
             </GridViewColumn.Header>
           </GridViewColumn>
+
         </GridView>
+
       </ListView.View>
     </local:ToggleableListView>
 

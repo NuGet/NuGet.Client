@@ -48,6 +48,7 @@ namespace NuGet.PackageManagement.UI
 
         private NuGetVersion _versionInstalled;
         private string _versionRequested;
+        private string _transitiveVersion;
 
         public NuGetVersion InstalledVersion
         {
@@ -56,6 +57,16 @@ namespace NuGet.PackageManagement.UI
             {
                 _versionInstalled = value;
                 OnPropertyChanged(nameof(InstalledVersion));
+            }
+        }
+
+        public string TransitiveVersion
+        {
+            get => _transitiveVersion;
+            set
+            {
+                _transitiveVersion = value;
+                OnPropertyChanged(nameof(TransitiveVersion));
             }
         }
 

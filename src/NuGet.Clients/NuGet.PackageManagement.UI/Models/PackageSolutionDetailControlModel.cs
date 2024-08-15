@@ -126,15 +126,16 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
-                    if (installedVersion != null)
+                    var a = await GetInstalledAndTransitivePackagesAsync(project.NuGetProject, Id, cancellationToken);
+                    if (a.InstalledPackages.Count > 0)
                     {
-                        project.InstalledVersion = installedVersion.Identity.Version;
-                        hash.Add(installedVersion.Identity.Version);
-                        project.AutoReferenced = installedVersion.IsAutoReferenced;
+                        project.InstalledVersion = a.InstalledPackages.First().Identity.Version;
+                        hash.Add(a.InstalledPackages.First().Identity.Version);
+                        project.AutoReferenced = a.InstalledPackages.First().IsAutoReferenced;
 
                         if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
                         {
-                            project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                            project.RequestedVersion = a.InstalledPackages.First()?.AllowedVersions?.OriginalString;
                         }
                     }
                     else
@@ -142,6 +143,15 @@ namespace NuGet.PackageManagement.UI
                         project.RequestedVersion = null;
                         project.InstalledVersion = null;
                         project.AutoReferenced = false;
+                    }
+
+                    if (a.TransitivePackages.Count > 0)
+                    {
+                        project.TransitiveVersion = a.TransitivePackages.FirstOrDefault()?.Identity.Version.ToString();
+                    }
+                    else
+                    {
+                        project.TransitiveVersion = null;
                     }
                 }
                 catch (Exception ex)
@@ -193,6 +203,23 @@ namespace NuGet.PackageManagement.UI
                 .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
                 .FirstOrDefault();
             return installedPackage;
+        }
+
+        private async Task<IInstalledAndTransitivePackages> GetInstalledAndTransitivePackagesAsync(
+            IProjectContextInfo project,
+            string packageId,
+            CancellationToken cancellationToken)
+        {
+            var packages = await project.GetInstalledAndTransitivePackagesAsync(ServiceBroker, true, cancellationToken);
+            var installedPackagesContextInfos = packages.InstalledPackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
+                .ToList();
+
+            var transitivePackageContextInfos = packages.TransitivePackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
+                .ToList();
+
+            return new InstalledAndTransitivePackages(installedPackagesContextInfos, transitivePackageContextInfos);
         }
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)
