@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using FluentAssertions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
