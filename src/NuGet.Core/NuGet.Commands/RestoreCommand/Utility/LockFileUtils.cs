@@ -576,64 +576,68 @@ namespace NuGet.Commands
                     var contentItems = new ContentItemCollection();
 
                     // Read files from the project if they were provided.
+
                     if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.ProjectRestoreMetadataFiles, out object filesObject))
                     {
                         List<ProjectRestoreMetadataFile> files = (List<ProjectRestoreMetadataFile>)filesObject;
-                        var fileLookup = new Dictionary<string, ProjectRestoreMetadataFile>(StringComparer.OrdinalIgnoreCase);
-                        // Process and de-dupe files
-                        for (var i = 0; i < files.Count; i++)
+                        if (files.Count > 0)
                         {
-                            var path = files[i].PackagePath;
-
-                            // LIBANY avoid compatibility checks and will always be used.
-                            if (LIBANY.Equals(path, StringComparison.Ordinal))
+                            var fileLookup = new Dictionary<string, ProjectRestoreMetadataFile>(StringComparer.OrdinalIgnoreCase);
+                            // Process and de-dupe files
+                            for (var i = 0; i < files.Count; i++)
                             {
-                                path = libAnyPath;
+                                var path = files[i].PackagePath;
+
+                                // LIBANY avoid compatibility checks and will always be used.
+                                if (LIBANY.Equals(path, StringComparison.Ordinal))
+                                {
+                                    path = libAnyPath;
+                                }
+
+                                if (!fileLookup.ContainsKey(path))
+                                {
+                                    fileLookup.Add(path, files[i]);
+                                }
                             }
 
-                            if (!fileLookup.ContainsKey(path))
-                            {
-                                fileLookup.Add(path, files[i]);
-                            }
+                            contentItems.Load(fileLookup.Keys);
+
+                            // Compile
+                            // ref takes precedence over lib
+                            var compileGroup = GetLockFileItems(
+                                orderedCriteria,
+                                contentItems,
+                                targetGraph.Conventions.Patterns.CompileRefAssemblies,
+                                targetGraph.Conventions.Patterns.CompileLibAssemblies);
+
+                            projectLib.CompileTimeAssemblies = ConvertToProjectPaths(fileLookup, projectDir, compileGroup);
+
+                            // Runtime
+                            var runtimeGroup = GetLockFileItems(
+                                orderedCriteria,
+                                contentItems,
+                                targetGraph.Conventions.Patterns.RuntimeAssemblies);
+
+                            projectLib.RuntimeAssemblies = ConvertToProjectPaths(fileLookup, projectDir, runtimeGroup);
                         }
-
-                        contentItems.Load(fileLookup.Keys);
-
-                        // Compile
-                        // ref takes precedence over lib
-                        var compileGroup = GetLockFileItems(
-                            orderedCriteria,
-                            contentItems,
-                            targetGraph.Conventions.Patterns.CompileRefAssemblies,
-                            targetGraph.Conventions.Patterns.CompileLibAssemblies);
-
-                        projectLib.CompileTimeAssemblies = ConvertToProjectPaths(fileLookup, projectDir, compileGroup);
-
-                        // Runtime
-                        var runtimeGroup = GetLockFileItems(
-                            orderedCriteria,
-                            contentItems,
-                            targetGraph.Conventions.Patterns.RuntimeAssemblies);
-
-                        projectLib.RuntimeAssemblies = ConvertToProjectPaths(fileLookup, projectDir, runtimeGroup);
-                    }
-                    else
-                    {
-                        // If the project did not provide a list of assets, add in default ones.
-                        contentItems.Load([libAnyPath]);
-
-                        // When there's only lib assets, compile and runtime groups are always equivalent.
-                        var compileGroup = GetLockFileItems(
-                            orderedCriteria,
-                            contentItems,
-                            targetGraph.Conventions.Patterns.CompileLibAssemblies);
-
-                        if (compileGroup.Count > 0)
+                        else
                         {
-                            string relativePath = PathUtility.GetPathWithForwardSlashes(Path.Combine("bin", "placeholder", $"{localMatch.Library.Name}.dll"));
-                            List<LockFileItem> assemblies = [new LockFileItem(relativePath)];
-                            projectLib.CompileTimeAssemblies = assemblies;
-                            projectLib.RuntimeAssemblies = assemblies;
+                            // If the project did not provide a list of assets, add in default ones.
+                            contentItems.Load([libAnyPath]);
+
+                            // When there's only lib assets, compile and runtime groups are always equivalent.
+                            var compileGroup = GetLockFileItems(
+                                orderedCriteria,
+                                contentItems,
+                                targetGraph.Conventions.Patterns.CompileLibAssemblies);
+
+                            if (compileGroup.Count > 0)
+                            {
+                                string relativePath = PathUtility.GetPathWithForwardSlashes(Path.Combine("bin", "placeholder", $"{localMatch.Library.Name}.dll"));
+                                List<LockFileItem> assemblies = [new LockFileItem(relativePath)];
+                                projectLib.CompileTimeAssemblies = assemblies;
+                                projectLib.RuntimeAssemblies = assemblies;
+                            }
                         }
                     }
                 }
