@@ -19,6 +19,7 @@ namespace NuGet.Protocol.Core.Types
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
         private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
+
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
             private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
@@ -53,7 +54,6 @@ namespace NuGet.Protocol.Core.Types
 
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
-
             public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities { get; set; }
             public bool IsListed { get; set; }
             [Obsolete("PackagePath is recommended in place of PackageReader")]
