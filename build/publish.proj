@@ -38,6 +38,8 @@
     <Error Condition="'$(BUILD_SOURCEBRANCH)' == ''" Text="The BUILD_SOURCEBRANCH property is required." />
     <Error Condition="'$(BUILD_SOURCEVERSION)' == ''" Text="The BUILD_SOURCEVERSION property is required." />
     <Error Condition="'$(BUILD_REPOSITORY_URI)' == ''" Text="The BUILD_REPOSITORY_URI property is required." />
+    <Error Condition="'$(MaestroAccessToken)' == ''" Text="The MaestroAccessToken property is required." />
+    <Error Condition="'$(MaestroApiEndpoint)' == ''" Text="The MaestroApiEndpoint property is required." />
     <Error Condition="'$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)' == ''" Text="The SYSTEM_TEAMFOUNDATIONCOLLECTIONURI property is required." />
     <Error Condition="'$(SYSTEM_TEAMPROJECT)' == ''" Text="The SYSTEM_TEAMPROJECT property is required." />
     <Error Condition="'$(BUILD_BUILDID)' == ''" Text="The BUILD_BUILDID property is required." />
