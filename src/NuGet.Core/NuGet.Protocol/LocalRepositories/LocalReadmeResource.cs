@@ -74,7 +74,7 @@ namespace NuGet.Protocol
                     if (readMeFileInfo.Exists)
                     {
                         using var readMeStreamReader = readMeFileInfo.OpenText();
-                        readme = await readMeStreamReader.ReadToEndAsync();
+                        readme = File.ReadAllText(readMeFullpath);
                         foundReadme = true;
                     }
                 }
