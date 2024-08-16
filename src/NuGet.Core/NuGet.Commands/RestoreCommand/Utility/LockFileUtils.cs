@@ -634,9 +634,9 @@ namespace NuGet.Commands
                             if (compileGroup.Count > 0)
                             {
                                 string relativePath = PathUtility.GetPathWithForwardSlashes(Path.Combine("bin", "placeholder", $"{localMatch.Library.Name}.dll"));
-                                List<LockFileItem> assemblies = [new LockFileItem(relativePath)];
-                                projectLib.CompileTimeAssemblies = assemblies;
-                                projectLib.RuntimeAssemblies = assemblies;
+                                var lockFileItem = new LockFileItem(relativePath);
+                                projectLib.CompileTimeAssemblies = new List<LockFileItem>() { lockFileItem };
+                                projectLib.RuntimeAssemblies = new List<LockFileItem>() { lockFileItem };
                             }
                         }
                     }
