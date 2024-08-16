@@ -215,26 +215,54 @@
                         <Run
                           Text="{Binding Id}"
                           FontWeight="Bold" /> <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
-                        <LineBreak />
-                        <Run FontWeight="Bold">
+                        <LineBreak /><Run FontWeight="Bold">
                           <Run.Style>
                             <Style TargetType="Run">
-                              <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"/>
                               <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
-                                    <Setter Property="Text" Value=""/>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"/>
                                 </DataTrigger>
                               </Style.Triggers>
                             </Style>
                           </Run.Style>
-                        </Run>
-                        <Run>
+                        </Run><Run>
                           <Run.Style>
                             <Style TargetType="Run">
                               <Setter Property="Text" Value="{Binding TransitiveToolTipMessage}"/>
                               <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
                                   <Setter Property="Text" Value="{Binding Summary}"/>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Run.Style>
+                        </Run><Run>
+                          <Run.Style>
+                            <Style TargetType="Run">
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                                  <Setter Property="Text" Value="&#x0a;&#x0a;" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Run.Style>
+                        </Run><Run>
+                          <Run.Style>
+                            <Style TargetType="Run">
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_UseDotnetCommand}" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Run.Style>
+                        </Run><Run>
+                          <Run.Style>
+                            <Style TargetType="Run">
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_DotnetNuGetWhy}"/>
+                                  <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
                               </Style.Triggers>
                             </Style>
