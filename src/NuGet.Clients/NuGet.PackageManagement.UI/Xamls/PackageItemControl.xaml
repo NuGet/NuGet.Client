@@ -256,7 +256,8 @@
                               </Style.Triggers>
                             </Style>
                           </Run.Style>
-                        </Run><Run>
+                        </Run>
+                        <Run>
                           <Run.Style>
                             <Style TargetType="Run">
                               <Style.Triggers>
