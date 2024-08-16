@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.VCProjectEngine;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -30,8 +28,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private ReadMePreviewViewModel _readMePreviewViewModel;
-
         internal PackageMetadataTab SelectedTab { get => (PackageMetadataTab)SelectedTabItem?.Tag; }
 
 
@@ -41,7 +37,6 @@ namespace NuGet.PackageManagement.UI
             Visibility = Visibility.Collapsed;
 
             DataContextChanged += PackageMetadataControl_DataContextChanged;
-
         }
 
         internal void InitializedReadmePreviewViewModel(INuGetSearchService nuGetSearchService, INuGetSourcesService sourceService)
@@ -64,7 +59,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public ReadMePreviewViewModel ReadMePreviewViewModel { get => _readMePreviewViewModel; set => _readMePreviewViewModel = value; }
+        public ReadMePreviewViewModel ReadMePreviewViewModel { get; set; }
 
         public void SelectTab(PackageMetadataTab selectedTab)
         {
