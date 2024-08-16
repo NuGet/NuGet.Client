@@ -303,19 +303,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return vulnerabilityMetadatas.FirstOrDefault(v => v != null && v.Any());
         }
 
-        private static string MergePackagePath(IEnumerable<IPackageSearchMetadata> packages)
-        {
-            var cpPaths = packages
-                .OfType<ClonedPackageSearchMetadata>()
-                .Where(packageMetadata => !string.IsNullOrWhiteSpace(packageMetadata.PackagePath))
-                .Select(packageMetadata => packageMetadata.PackagePath);
-            var lpPaths = packages
-                .OfType<LocalPackageSearchMetadata>()
-                .Where(packageMetadata => !string.IsNullOrWhiteSpace(packageMetadata.PackagePath))
-                .Select(packageMetadata => packageMetadata.PackagePath);
-            return cpPaths.Concat(lpPaths).FirstOrDefault();
-        }
-
         private async Task<(IEnumerable<VersionInfo> versions,
             PackageDeprecationMetadata deprecationMetadata,
             IEnumerable<PackageVulnerabilityMetadata> vulnerabilityMetadata)> FetchAndMergeVersionsAndMetadataAsync(
