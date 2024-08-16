@@ -502,14 +502,12 @@ Function RunRestore(
             $NETFramework = "net472"
             $Configuration = "release"
             $packDllPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Pack\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Pack.dll"
-            $packTargetsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.targets"
-            $restoreDllPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.dll"
-            $nugetRestoreTargetsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets"
-            $nugetPropsPath = Join-Path $NuGetClientRoot "src\NuGet.Core\NuGet.Build.Tasks\NuGet.props"
-            $consoleExePath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Console\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Console.exe"
+            $packTargetsPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Pack\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Pack.targets"
+            $nugetRestoreTargetsPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks\bin\$Configuration\$NETFramework\NuGet.targets"
+            $nugetPropsPath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks\bin\$Configuration\$NETFramework\NuGet.props"
+            $consoleExePath = Join-Path $NuGetClientRoot "artifacts\NuGet.Build.Tasks.Console\bin\$Configuration\$NETFramework\NuGet.Build.Tasks.Console.exe"            
             $arguments.Add("/p:NuGetRestoreTargets=$nugetRestoreTargetsPath");
             $arguments.Add("/p:NuGetPropsFile=$nugetPropsPath");
-            $arguments.Add("/p:RestoreTaskAssemblyFile=$restoreDllPath");
             $arguments.Add("/p:NuGetBuildTasksPackTargets=$packTargetsPath");
             $arguments.Add("/p:NuGetConsoleProcessFileName=$consoleExePath");
             $arguments.Add("/p:ImportNuGetBuildTasksPackTargetsFromSdk=true");
@@ -522,9 +520,6 @@ Function RunRestore(
     }
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    
-    # What if I invoke nuget custom here.
-
     $logs = . $nugetClientFilePath $arguments | Out-String
 
     if($LASTEXITCODE -ne 0)
