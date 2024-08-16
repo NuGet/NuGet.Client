@@ -575,8 +575,6 @@ namespace NuGet.Commands
                     string libAnyPath = $"lib/{targetGraph.Framework.GetShortFolderName()}/any.dll";
                     var contentItems = new ContentItemCollection();
 
-                    // Read files from the project if they were provided.
-
                     if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.ProjectRestoreMetadataFiles, out object filesObject))
                     {
                         List<ProjectRestoreMetadataFile> files = (List<ProjectRestoreMetadataFile>)filesObject;
