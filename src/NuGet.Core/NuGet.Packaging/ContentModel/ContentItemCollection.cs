@@ -293,14 +293,14 @@ namespace NuGet.ContentModel
                     var extension = GetExtension(asset);
 
                     if (extension.Length > 0 &&
-                        //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
-                        !ReadOnlyMemoryEquals(extension, Dll) &&
+                        !ReadOnlyMemoryEquals(extension, Dll) &&                                                //Assembly properties are files with extensions ".dll", ".winmd", ".exe", see ManagedCodeConventions.
                         !ReadOnlyMemoryEquals(extension, Exe) &&
                         !ReadOnlyMemoryEquals(extension, Winmd) &&
                         !asset.Path.Equals(assemblyPath, StringComparison.OrdinalIgnoreCase) &&
-                        //The prefix should match exactly (case sensitive), as file names are case sensitive on certain OSes.
-                        //E.g. for lib/net472/A.B.C.dll and lib/net472/a.b.c.xml, if we generate related property '.xml', the related file path is not predictable on case sensitive OSes.
-                        asset.Path.AsMemory().Span.StartsWith(assemblyPrefix.Span, StringComparison.Ordinal))
+
+
+                        asset.Path.AsMemory().Span.StartsWith(assemblyPrefix.Span, StringComparison.Ordinal))   /* The prefix should match exactly (case sensitive), as file names are case sensitive on certain OSes.
+                                                                                                                 *  E.g. for lib/net472/A.B.C.dll and lib/net472/a.b.c.xml, if we generate related property '.xml', the related file path is not predictable on case sensitive OSes. */
                     {
                         if (relatedFileExtensionList is null)
                         {

@@ -386,8 +386,7 @@ namespace NuGet.Packaging
                               let elementVersion = element.GetOptionalAttributeValue("version")
                               select new PackageDependency(
                                   idElement.Value?.Trim(),
-                                  // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
-                                  elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),
+                                  elementVersion == null ? null : VersionRange.Parse(elementVersion.Trim()),                        // REVIEW: There isn't a PackageDependency constructor that allows me to pass in an invalid version
                                   element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
                                   element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
                               )).ToList();

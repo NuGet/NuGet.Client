@@ -378,8 +378,7 @@ namespace NuGet.Client
                 if (!string.IsNullOrEmpty(runtimeIdentifier))
                 {
                     builder = builder
-                        // Take runtime-specific matches first!
-                        .Add[PropertyNames.TargetFrameworkMoniker, framework][PropertyNames.RuntimeIdentifier, runtimeIdentifier];
+                        .Add[PropertyNames.TargetFrameworkMoniker, framework][PropertyNames.RuntimeIdentifier, runtimeIdentifier];   // Take runtime-specific matches first!
                 }
 
                 // Then try runtime-agnostic

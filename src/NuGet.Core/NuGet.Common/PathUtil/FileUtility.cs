@@ -44,8 +44,7 @@ namespace NuGet.Common
 
                     return TaskResult.Zero;
                 },
-                // Do not allow this to be cancelled
-                CancellationToken.None);
+                CancellationToken.None);  // Do not allow this to be cancelled
         }
 
         /// <summary>
@@ -72,8 +71,7 @@ namespace NuGet.Common
 
                     return TaskResult.Zero;
                 },
-                // Do not allow this to be cancelled
-                CancellationToken.None);
+                CancellationToken.None);  // Do not allow this to be cancelled
         }
 
         /// <summary>

@@ -118,8 +118,7 @@ namespace NuGet.RuntimeModel
 
             return new RuntimeDescription(
                 left.RuntimeIdentifier,
-                // If collections are empty, pass null to avoid allocations.
-                inheritedRuntimes.Count == 0 ? null : inheritedRuntimes,
+                inheritedRuntimes.Count == 0 ? null : inheritedRuntimes, // If collections are empty, pass null to avoid allocations.
                 newSets.Count == 0 ? null : newSets);
         }
 

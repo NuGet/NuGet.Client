@@ -484,18 +484,16 @@ namespace NuGet.Versioning
             var highest = versionRanges.Where(range => range.HasUpperBound).Min((range => range.MaxVersion));
 
             // exclude this lowest if any range has this lowest as excluded, else include
-            var excludeLowest = versionRanges.Any(range => range.HasLowerBound &&
 #pragma warning disable CS8604 // Possible null reference argument.
-                                                    // The BCL is missing nullable annotations in IComparer<T> before net5.0
-                                                    comparer.Compare(range.MinVersion, lowest) == 0 &&
+            var excludeLowest = versionRanges.Any(range => range.HasLowerBound &&
+                                                    comparer.Compare(range.MinVersion, lowest) == 0 &&   // The BCL is missing nullable annotations in IComparer<T> before net5.0
 #pragma warning restore CS8604 // Possible null reference argument.
                                                     !range.IsMinInclusive);
 
             // exclude this highest if any range has this highest excluded, else include
-            var excludeHighest = versionRanges.Any(range => range.HasUpperBound &&
 #pragma warning disable CS8604 // Possible null reference argument.
-                                                    // The BCL is missing nullable annotations in IComparer<T> before net5.0
-                                                    comparer.Compare(range.MaxVersion, highest) == 0 &&
+            var excludeHighest = versionRanges.Any(range => range.HasUpperBound &&
+                                                    comparer.Compare(range.MaxVersion, highest) == 0 &&   // The BCL is missing nullable annotations in IComparer<T> before net5.0
 #pragma warning restore CS8604 // Possible null reference argument.
                                                     !range.IsMaxInclusive);
 

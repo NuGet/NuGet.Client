@@ -438,9 +438,9 @@ namespace NuGet.Versioning
         /// </summary>
         public bool Equals(FloatRange? other)
         {
-            return FloatBehavior == other?.FloatBehavior
 #pragma warning disable CS8604 // Possible null reference argument.
-                   // BCL is missing nullable annotations on IComparer<T> before net5.0
+            // BCL is missing nullable annotations on IComparer<T> before net5.0
+            return FloatBehavior == other?.FloatBehavior
                    && VersionComparer.Default.Equals(MinVersion, other?.MinVersion);
 #pragma warning restore CS8604 // Possible null reference argument.
         }

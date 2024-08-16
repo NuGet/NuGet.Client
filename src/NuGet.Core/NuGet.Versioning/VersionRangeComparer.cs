@@ -85,11 +85,10 @@ namespace NuGet.Versioning
                 return false;
             }
 
+#pragma warning disable CS8604 // Possible null reference argument.
             return x.IsMinInclusive == y.IsMinInclusive
                 && y.IsMaxInclusive == x.IsMaxInclusive
-#pragma warning disable CS8604 // Possible null reference argument.
-                // BCL missing nullable annotations on IEqualityComparer<T> before .NET 5
-                && _versionComparer.Equals(y.MinVersion, x.MinVersion)
+                && _versionComparer.Equals(y.MinVersion, x.MinVersion)      // BCL missing nullable annotations on IEqualityComparer<T> before .NET 5
                 && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
 #pragma warning restore CS8604 // Possible null reference argument.
         }
