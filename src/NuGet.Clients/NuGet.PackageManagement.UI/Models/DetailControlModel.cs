@@ -148,6 +148,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(IconUrl));
             OnPropertyChanged(nameof(IconBitmap));
             OnPropertyChanged(nameof(PrefixReserved));
+
             Task<IReadOnlyCollection<VersionInfoContextInfo>> getVersionsTask = searchResultPackage.GetVersionsAsync(_nugetProjects);
 
             _projectVersionConstraints = new List<ProjectVersionConstraint>();
