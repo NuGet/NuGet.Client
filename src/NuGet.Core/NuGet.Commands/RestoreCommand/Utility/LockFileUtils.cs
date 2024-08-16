@@ -672,6 +672,9 @@ namespace NuGet.Commands
             return projectLib;
         }
 
+        /// <summary>
+        /// Convert from the expected nupkg path to the on disk path.
+        /// </summary>
         private static List<LockFileItem> ConvertToProjectPaths(
             Dictionary<string, ProjectRestoreMetadataFile> fileLookup,
             string projectDir,
@@ -716,7 +719,7 @@ namespace NuGet.Commands
                         object locale;
                         if (item.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.Locale, out locale))
                         {
-                            newItem.Properties["locale"] = (string)locale;
+                            newItem.Properties[ManagedCodeConventions.PropertyNames.Locale] = (string)locale;
                         }
                         object related;
                         if (item.Properties.TryGetValue("related", out related))
