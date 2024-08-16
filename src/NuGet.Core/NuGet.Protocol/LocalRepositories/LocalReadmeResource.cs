@@ -58,7 +58,7 @@ namespace NuGet.Protocol
             return readme;
         }
 
-        private static async Task<(bool?, string)> GetReadmeAsync(LocalPackageInfo package)
+        private static Task<(bool?, string)> GetReadmeAsync(LocalPackageInfo package)
         {
             bool? foundReadme = null;
             string readme = null;
@@ -74,7 +74,7 @@ namespace NuGet.Protocol
                     if (readMeFileInfo.Exists)
                     {
                         using var readMeStreamReader = readMeFileInfo.OpenText();
-                        readme = File.ReadAllText(readMeFullpath);
+                        readme = File.ReadAllText(readMeFullPath);
                         foundReadme = true;
                     }
                 }
@@ -83,7 +83,7 @@ namespace NuGet.Protocol
                     foundReadme = false;
                 }
             }
-            return (foundReadme, readme);
+            return Task.FromResult((foundReadme, readme));
         }
 
     }
