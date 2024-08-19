@@ -212,13 +212,13 @@ namespace NuGet.Commands
         {
             telemetryActivity.StartIntervalMeasure();
 
-            var downloadDependencyResolutionTasks = new List<Task<DownloadDependencyResolutionResult>>();
-            foreach (var targetFrameworkInformation in packageSpec.TargetFrameworks)
+            List<Task<DownloadDependencyResolutionResult>> downloadDependencyResolutionTasks = new();
+
+            foreach (TargetFrameworkInformation targetFrameworkInformation in packageSpec.TargetFrameworks)
             {
-                downloadDependencyResolutionTasks.Add(ResolveDownloadDependenciesAsync(
-                context,
-                    targetFrameworkInformation,
-                    cancellationToken));
+                Task<DownloadDependencyResolutionResult> task = ResolveDownloadDependenciesAsync(context, targetFrameworkInformation, cancellationToken);
+
+                downloadDependencyResolutionTasks.Add(task);
             }
 
             DownloadDependencyResolutionResult[] downloadDependencyResolutionResults = await Task.WhenAll(downloadDependencyResolutionTasks);
@@ -229,10 +229,9 @@ namespace NuGet.Commands
 
             async Task<DownloadDependencyResolutionResult> ResolveDownloadDependenciesAsync(RemoteWalkContext context, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
             {
-                var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency =>
-                ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
+                IEnumerable<Task<Tuple<LibraryRange, RemoteMatch>>> packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
 
-                var packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
+                Tuple<LibraryRange, RemoteMatch>[] packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
 
                 return DownloadDependencyResolutionResult.Create(targetFrameworkInformation.FrameworkName, packageDownloadMatches, context.RemoteLibraryProviders);
             }
