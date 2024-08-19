@@ -90,7 +90,7 @@ namespace NuGet.Commands
                     hasInstallBeenCalledAlready = true;
                 }
 
-                TargetFrameworkInformation? projectTargetFramework = _request.Project.TargetFrameworks.FirstOrDefault(i => NuGetFramework.Comparer.Equals(i.FrameworkName, pair.Framework));
+                TargetFrameworkInformation? projectTargetFramework = _request.Project.GetTargetFramework(pair.Framework);
 
                 var packagesToInstall = new HashSet<RemoteMatch>();
 
