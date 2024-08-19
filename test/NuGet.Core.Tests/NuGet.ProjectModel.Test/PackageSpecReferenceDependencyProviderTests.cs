@@ -47,7 +47,9 @@ namespace NuGet.ProjectModel.Test
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(cpvmEnabled, CentralPackageTransitivePinningEnabled, tfi);
             var packSpec = dependencyGraphSpec.Projects[0];
 
-            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance, useLegacyDependencyGraphResolution);
+            packSpec.RestoreMetadata.UseLegacyDependencyResolver = useLegacyDependencyGraphResolution;
+
+            var dependencyProvider = new PackageSpecReferenceDependencyProvider(new List<ExternalProjectReference>(), NullLogger.Instance);
             // Act
             var dependencies = dependencyProvider.GetSpecDependencies(packSpec, tfi.FrameworkName);
 

@@ -117,7 +117,7 @@ namespace NuGet.Commands
         private const string AuditDurationOutput = "Audit.Duration.Output";
         private const string AuditDurationTotal = "Audit.Duration.Total";
 
-        private readonly bool _enableNewDependencyResolver;
+        private readonly bool _enableNewDependencyResolver = true;
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -146,7 +146,14 @@ namespace NuGet.Commands
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
             // Enable the new dependency resolver if the project is using PackageReference, transitive pinning is disabled, and the user has not explicitly opted out of using it
-            _enableNewDependencyResolver = request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference && !_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+
+            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference
+                || _request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled
+                || _request.Project.RestoreMetadata.UseLegacyDependencyResolver)
+            {
+                _enableNewDependencyResolver = false;
+                _request.Project.RestoreMetadata.UseLegacyDependencyResolver = true;
+            }
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -1174,7 +1181,7 @@ namespace NuGet.Commands
             // Load repositories
             // the external project provider is specific to the current restore project
             context.ProjectLibraryProviders.Add(
-                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger, useLegacyDependencyGraphResolution: true));
+                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
 
             var remoteWalker = new RemoteDependencyWalker(context);
 
