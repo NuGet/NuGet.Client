@@ -1482,20 +1482,25 @@ namespace NuGet.Commands
             return updatedExternalProjects;
         }
 
-        internal static IEnumerable<FrameworkRuntimePair> CreateFrameworkRuntimePairs(
-            PackageSpec packageSpec,
-            ISet<string> runtimeIds)
+        /// <summary>
+        /// Gets the list of framework/runtime pairs to restore for the project.  The list is sorted by frameworks first, then frameworks with runtimes.
+        /// </summary>
+        /// <param name="packageSpec">The <see cref="PackageSpec" /> with information about the project.</param>
+        /// <param name="runtimeIds">An <see cref="ISet{T}" /> containing the list of runtime identifiers.</param>
+        /// <returns>An <see cref="IEnumerable{T}" /> containing <see cref="FrameworkRuntimePair" /> objects with the frameworks with empty runtime identifiers followed by frameworks with the specified runtime identifiers.</returns>
+        internal static IEnumerable<FrameworkRuntimePair> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
         {
-            var projectFrameworkRuntimePairs = new List<FrameworkRuntimePair>();
-            foreach (var framework in packageSpec.TargetFrameworks)
+            List<FrameworkRuntimePair> projectFrameworkRuntimePairs = new();
+
+            foreach (TargetFrameworkInformation framework in packageSpec.TargetFrameworks.NoAllocEnumerate())
             {
                 // We care about TFM only and null RID for compilation purposes
                 projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
             }
 
-            foreach (var framework in packageSpec.TargetFrameworks)
+            foreach (TargetFrameworkInformation framework in packageSpec.TargetFrameworks.NoAllocEnumerate())
             {
-                foreach (var runtimeId in runtimeIds)
+                foreach (string runtimeId in runtimeIds.NoAllocEnumerate())
                 {
                     projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
                 }
