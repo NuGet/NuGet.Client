@@ -1191,11 +1191,7 @@ namespace NuGet.Commands
             var projectFrameworkRuntimePairs = CreateFrameworkRuntimePairs(_request.Project, runtimeIds);
             var hasSupports = _request.Project.RuntimeGraph.Supports.Count > 0;
 
-            var projectRestoreRequest = new ProjectRestoreRequest(
-                _request,
-                _request.Project,
-                _request.ExistingLockFile,
-                _logger)
+            var projectRestoreRequest = new ProjectRestoreRequest(_request, _request.Project, _request.ExistingLockFile, _logger)
             {
                 ParentId = _operationId
             };
@@ -1337,11 +1333,7 @@ namespace NuGet.Commands
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
 
-            var projectRestoreRequest = new ProjectRestoreRequest(
-             _request,
-             _request.Project,
-             _request.ExistingLockFile,
-             _logger)
+            var projectRestoreRequest = new ProjectRestoreRequest(_request, _request.Project, _request.ExistingLockFile, _logger)
             {
                 ParentId = _operationId
             };
