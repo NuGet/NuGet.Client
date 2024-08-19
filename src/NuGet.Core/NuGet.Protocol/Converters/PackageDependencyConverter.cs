@@ -5,18 +5,16 @@ using System;
 using Newtonsoft.Json;
 using NuGet.Versioning;
 
-namespace NuGet.Protocol
+namespace NuGet.Protocol.Converters
 {
-    public class PackageDependencyConverter : JsonConverter
+    internal class PackageDependencyConverter : JsonConverter<Packaging.Core.PackageDependency>
     {
-        public override bool CanConvert(Type objectType) => objectType == typeof(Packaging.Core.PackageDependency);
-
         public override bool CanWrite => false;
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override Packaging.Core.PackageDependency ReadJson(JsonReader reader, Type objectType, Packaging.Core.PackageDependency existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             string id = null;
-            string version = null;
+            VersionRange version = null;
 
             while (reader.Read() && reader.TokenType != JsonToken.EndObject)
             {
@@ -28,18 +26,22 @@ namespace NuGet.Protocol
                     }
                     else if (reader.Value.Equals(JsonProperties.Range))
                     {
-                        version = id = reader.ReadAsString();
+                        var versionString = reader.ReadAsString();
+                        if (!string.IsNullOrEmpty(versionString))
+                        {
+                            version = serializer.Deserialize<VersionRange>(reader);
+                        }
                     }
                 }
             }
             if (id != null)
             {
-                return new Packaging.Core.PackageDependency(id, string.IsNullOrEmpty(version) ? null : VersionRange.Parse(version));
+                return new Packaging.Core.PackageDependency(id, version);
             }
             return null;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, Packaging.Core.PackageDependency value, JsonSerializer serializer)
         {
             throw new NotImplementedException();
         }

@@ -15,8 +15,6 @@ namespace NuGet.Protocol
 
         public override bool CanWrite => false;
 
-        private readonly PackageDependencyConverter _converter = new PackageDependencyConverter();
-
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             string fxName = null;
@@ -30,7 +28,7 @@ namespace NuGet.Protocol
                         // Dependencies are stored in an array
                         while (reader.Read() && reader.TokenType != JsonToken.EndArray)
                         {
-                            Packaging.Core.PackageDependency package = (Packaging.Core.PackageDependency)_converter.ReadJson(reader, typeof(Packaging.Core.PackageDependency), null, serializer);
+                            Packaging.Core.PackageDependency package = serializer.Deserialize<Packaging.Core.PackageDependency>(reader);
                             packages.Add(package);
                         }
                     }
@@ -38,6 +36,10 @@ namespace NuGet.Protocol
                     {
                         fxName = reader.ReadAsString();
                     }
+                }
+                else
+                {
+                    reader.Skip();
                 }
             }
 
