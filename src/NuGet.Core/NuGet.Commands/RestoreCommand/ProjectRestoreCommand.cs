@@ -183,7 +183,9 @@ namespace NuGet.Commands
                         return runtimeGraph;
                     }
                 }
+#pragma warning disable CA1031 // Do not catch general exception types. Any exception that occurs while reading the runtime graph is a fatal error.
                 catch (Exception e)
+#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     logger.Log(
                      RestoreLogMessage.CreateError(
