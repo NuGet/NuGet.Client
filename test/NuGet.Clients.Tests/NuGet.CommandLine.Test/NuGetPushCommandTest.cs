@@ -686,7 +686,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using basic authentication.
-        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/2965")]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13721")]
         public void PushCommand_PushToServerBasicAuth()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -932,7 +932,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server using Plugin credential provider
-        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/2929")]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13721")]
         public void PushCommand_PushToServer_GetCredentialFromPlugin()
         {
             var nugetexe = Util.GetNuGetExePath();
