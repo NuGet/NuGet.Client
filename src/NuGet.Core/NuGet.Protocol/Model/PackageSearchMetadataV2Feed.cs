@@ -81,6 +81,8 @@ namespace NuGet.Protocol
 
         public Uri IconUrl { get; private set; }
 
+        public Uri RawReadmeUrl { get; private set; }
+
         public PackageIdentity Identity => new PackageIdentity(PackageId, Version);
 
         public Uri LicenseUrl { get; private set; }

@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    await ReadMeViewModel.LoadReadme(newValue.Id, newValue.Version, _loadCts.Token);
+                    await ReadMeViewModel.LoadReadmeAsync(newValue.RawReadmeUrl, _loadCts.Token);
                 })
                 .PostOnFailure(nameof(PackageMetadataReadMeControl));
             }

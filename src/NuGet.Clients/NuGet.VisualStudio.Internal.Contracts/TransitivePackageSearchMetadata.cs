@@ -29,6 +29,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public Uri LicenseUrl => _packageSearchMetadata.LicenseUrl;
 
+        public Uri RawReadmeUrl => _packageSearchMetadata.LicenseUrl;
+
         public Uri ProjectUrl => _packageSearchMetadata.ProjectUrl;
 
         public Uri ReadmeUrl => _packageSearchMetadata.ReadmeUrl;

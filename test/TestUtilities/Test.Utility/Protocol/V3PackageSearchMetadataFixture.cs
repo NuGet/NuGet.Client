@@ -70,6 +70,8 @@ namespace NuGet.Test.Utility
 
             public Uri IconUrl => null;
 
+            public Uri RawReadmeUrl => null;
+
             public PackageIdentity Identity { get; set; }
 
             public Uri ReadmeUrl => null;

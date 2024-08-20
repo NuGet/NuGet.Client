@@ -67,12 +67,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
             bool isTransitive,
             CancellationToken cancellationToken);
 
-        Task<(bool?, string)> TryGetPackageReadMeAsync(
-            PackageIdentity identity,
-            IReadOnlyCollection<PackageSourceContextInfo> packageSources,
-            bool includePrerelease,
-            CancellationToken cancellationToken);
-
         ValueTask<IReadOnlyCollection<PackageSearchMetadataContextInfo>> GetPackageMetadataListAsync(
             string id,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,

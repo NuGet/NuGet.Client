@@ -26,6 +26,7 @@ namespace NuGet.PackageManagement.UI
             Owners = serverData.Owners;
             IconUrl = serverData.IconUrl;
             LicenseUrl = serverData.LicenseUrl;
+            RawReadmeUrl = serverData.RawReadmeUrl;
             ProjectUrl = serverData.ProjectUrl;
             ReadmeUrl = serverData.ReadmeUrl;
             ReportAbuseUrl = serverData.ReportAbuseUrl;
@@ -90,6 +91,8 @@ namespace NuGet.PackageManagement.UI
         public Uri ProjectUrl { get; set; }
 
         public Uri ReadmeUrl { get; set; }
+
+        public Uri RawReadmeUrl { get; set; }
 
         public Uri ReportAbuseUrl { get; set; }
 

@@ -33,6 +33,7 @@ namespace NuGet.Protocol.Core.Types
         string Summary { get; }
         string Tags { get; }
         string Title { get; }
+        Uri RawReadmeUrl { get; }
 
         bool IsListed { get; }
         bool PrefixReserved { get; }

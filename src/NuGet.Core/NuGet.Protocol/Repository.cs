@@ -94,7 +94,6 @@ namespace NuGet.Protocol.Core.Types
                 yield return new Lazy<INuGetResourceProvider>(() => new LocalMetadataResourceProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new LocalPackageMetadataResourceProvider());
                 yield return new Lazy<INuGetResourceProvider>(() => new LocalPackageSearchResourceProvider());
-                yield return new Lazy<INuGetResourceProvider>(() => new LocalReadmeResourceProvider());
             }
         }
 

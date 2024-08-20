@@ -1,11 +1,7 @@
 #nullable enable
-NuGet.Protocol.Core.Types.ReadmeResource
-NuGet.Protocol.Core.Types.ReadmeResource.ReadmeResource() -> void
-NuGet.Protocol.LocalReadmeResource
-NuGet.Protocol.LocalReadmeResourceProvider
-NuGet.Protocol.LocalReadmeResourceProvider.LocalReadmeResourceProvider() -> void
-~abstract NuGet.Protocol.Core.Types.ReadmeResource.GetReadmeAsync(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<string>
-~NuGet.Protocol.LocalReadmeResource.LocalReadmeResource(NuGet.Protocol.FindLocalPackagesResource localResource) -> void
-~NuGet.Protocol.LocalReadmeResource.TryGetReadmeAsync(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<(bool?, string)>
-~override NuGet.Protocol.LocalReadmeResource.GetReadmeAsync(NuGet.Packaging.Core.PackageIdentity identity, NuGet.Common.ILogger logger, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<string>
-~override NuGet.Protocol.LocalReadmeResourceProvider.TryCreate(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<System.Tuple<bool, NuGet.Protocol.Core.Types.INuGetResource>>
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.RawReadmeUrl.get -> System.Uri
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.RawReadmeUrl.get -> System.Uri
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.RawReadmeUrl.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.RawReadmeUrl.get -> System.Uri
+~NuGet.Protocol.PackageSearchMetadata.RawReadmeUrl.get -> System.Uri
+~NuGet.Protocol.PackageSearchMetadataV2Feed.RawReadmeUrl.get -> System.Uri

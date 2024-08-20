@@ -4,6 +4,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -39,9 +40,9 @@ namespace NuGet.PackageManagement.UI
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 
-        internal void InitializedReadmePreviewViewModel(INuGetSearchService nuGetSearchService, INuGetSourcesService sourceService)
+        internal void InitializedReadmePreviewViewModel(IServiceBroker serviceBroker)
         {
-            ReadMePreviewViewModel = new ReadMePreviewViewModel(nuGetSearchService, sourceService);
+            ReadMePreviewViewModel = new ReadMePreviewViewModel(serviceBroker);
             _packageMetadataReadMeControl.DataContext = ReadMePreviewViewModel;
             ReadMePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
         }
@@ -96,6 +97,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageMetadataReadMeControl?.Dispose();
                 ReadMePreviewViewModel.PropertyChanged -= ReadMePreviewViewModel_PropertyChanged;
+                ReadMePreviewViewModel.Dispose();
             }
             _disposed = true;
         }

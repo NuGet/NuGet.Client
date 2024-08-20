@@ -22,6 +22,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public string? Tags { get; internal set; }
         public Uri? LicenseUrl { get; internal set; }
         public Uri? ReadmeUrl { get; internal set; }
+        public Uri? RawReadmeUrl { get; internal set; }
         public Uri? ProjectUrl { get; internal set; }
         public DateTimeOffset? Published { get; internal set; }
         public IReadOnlyList<string>? OwnersList { get; internal set; }
@@ -74,6 +75,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 KnownOwners = knownOwners,
                 ReportAbuseUrl = packageSearchMetadata.ReportAbuseUrl,
                 PackageDetailsUrl = packageSearchMetadata.PackageDetailsUrl,
+                RawReadmeUrl = packageSearchMetadata.RawReadmeUrl,
                 PackagePath =
                     (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
                     (packageSearchMetadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackagePath,

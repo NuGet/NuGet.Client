@@ -560,12 +560,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task<(bool?, string)> TryGetReadmeAsync()
-        {
-            var identity = new PackageIdentity(Id, Version);
-            return await _searchService.TryGetPackageReadMeAsync(identity, Sources, IncludePrerelease, _cancellationTokenSource.Token);
-        }
-
         public async Task<IReadOnlyCollection<VersionInfoContextInfo>> GetVersionsAsync()
         {
             var identity = new PackageIdentity(Id, Version);

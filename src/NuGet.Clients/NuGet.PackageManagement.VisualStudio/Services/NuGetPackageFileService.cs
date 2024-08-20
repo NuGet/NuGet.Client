@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.Caching;
@@ -111,6 +110,23 @@ namespace NuGet.PackageManagement.VisualStudio
             else
             {
                 stream = await GetStream(uri);
+            }
+
+            return stream;
+        }
+
+        public async ValueTask<Stream?> GetReadmeAsync(Uri readmeUri, CancellationToken cancellationToken)
+        {
+            Assumes.NotNull(readmeUri);
+
+            Stream? stream;
+            if (IsEmbeddedUri(readmeUri))
+            {
+                stream = await GetEmbeddedFileAsync(readmeUri, cancellationToken);
+            }
+            else
+            {
+                stream = await GetStream(readmeUri);
             }
 
             return stream;

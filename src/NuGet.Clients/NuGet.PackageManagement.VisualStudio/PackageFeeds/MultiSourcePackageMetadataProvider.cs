@@ -272,8 +272,16 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var clonedResult = metadataBuilder
                 .WithVersions(AsyncLazy.New(() => MergeVersionsAsync(identity, completed)))
-                .Build();
+                .Build() as ClonedPackageSearchMetadata;
 
+            foreach (var package in completed)
+            {
+                if (package.RawReadmeUrl != null)
+                {
+                    clonedResult.RawReadmeUrl = package.RawReadmeUrl;
+                    break;
+                }
+            }
             return clonedResult;
         }
 

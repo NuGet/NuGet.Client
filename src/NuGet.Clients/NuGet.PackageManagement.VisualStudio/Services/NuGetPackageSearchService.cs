@@ -196,33 +196,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return await GetPackageVersionsAsync(identity, packageSources, includePrerelease, isTransitive, projects: null, cancellationToken);
         }
 
-        public async Task<(bool?, string)> TryGetPackageReadMeAsync(PackageIdentity identity, IReadOnlyCollection<PackageSourceContextInfo> packageSources, bool includePrerelease, CancellationToken cancellationToken)
-        {
-            Assumes.NotNull(identity);
-            Assumes.NotNullOrEmpty(packageSources);
-
-            IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            var globalPackage = await _globalPackageFolderRepositoriesLazy.GetValueAsync(cancellationToken);
-            var localPackageFolder = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
-
-            var localReadmeResources = sourceRepositories
-                .Concat(globalPackage)
-                .Concat(new List<SourceRepository> { localPackageFolder })
-                .Select(x => x.GetResource<ReadmeResource>(cancellationToken))
-                .Where(x => x is LocalReadmeResource);
-
-            foreach (var localReadmeResource in localReadmeResources)
-            {
-                (var foundReadme, var readme) = await ((LocalReadmeResource)localReadmeResource).TryGetReadmeAsync(identity, new VisualStudioActivityLogger(), cancellationToken);
-                if (foundReadme.HasValue)
-                {
-                    return (foundReadme, readme);
-                }
-            }
-
-            return (null, string.Empty);
-        }
-
         public async ValueTask<IReadOnlyCollection<VersionInfoContextInfo>> GetPackageVersionsAsync(
             PackageIdentity identity,
             IReadOnlyCollection<PackageSourceContextInfo> packageSources,
