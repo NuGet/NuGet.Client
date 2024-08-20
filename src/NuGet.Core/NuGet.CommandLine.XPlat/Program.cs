@@ -36,7 +36,6 @@ namespace NuGet.CommandLine.XPlat
         public static int MainInternal(string[] args, CommandOutputLogger log)
         {
 #if USEMSBUILDLOCATOR
-            // Uncomment the following when debugging. Also uncomment the PackageReference for Microsoft.Build.Locator.
             try
             {
                 // .NET JIT compiles one method at a time. If this method calls `MSBuildLocator` directly, the
