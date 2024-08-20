@@ -26,7 +26,7 @@ namespace NuGet.Test.Utility
 
                 if (string.IsNullOrEmpty(skip))
                 {
-                    skip = XunitAttributeUtility.GetMonoMessage(OnlyOnMono, SkipMono);
+                    skip = XunitAttributeUtility.GetMonoMessage(OnlyOnMono, SkipMono, string.Empty);
                 }
 
                 if (string.IsNullOrEmpty(skip))

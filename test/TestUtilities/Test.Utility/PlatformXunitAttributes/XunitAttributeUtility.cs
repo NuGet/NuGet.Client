@@ -103,7 +103,7 @@ namespace NuGet.Test.Utility
             }
         }
 
-        public static string GetMonoMessage(bool onlyOnMono, bool skipMono)
+        public static string GetMonoMessage(bool onlyOnMono, bool skipMono, string platformSkipMessage)
         {
             if (onlyOnMono && !RuntimeEnvironmentHelper.IsMono)
             {
@@ -112,7 +112,11 @@ namespace NuGet.Test.Utility
 
             if (skipMono && RuntimeEnvironmentHelper.IsMono)
             {
-                return "This test does not run on mono.";
+                if (string.IsNullOrWhiteSpace(platformSkipMessage))
+                {
+                    return "This test does not run on mono.";
+                }
+                return platformSkipMessage;
             }
 
             return null;

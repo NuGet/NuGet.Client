@@ -34,7 +34,7 @@ namespace NuGet.Test.Utility
 
                 if (string.IsNullOrEmpty(skip))
                 {
-                    skip = XunitAttributeUtility.GetMonoMessage(OnlyOnMono, SkipMono);
+                    skip = XunitAttributeUtility.GetMonoMessage(OnlyOnMono, SkipMono, PlatformSkipMessage);
                 }
 
                 // If this is null the test will run.
@@ -43,7 +43,7 @@ namespace NuGet.Test.Utility
 
             set
             {
-                _skip = value;
+                throw new InvalidOperationException("Setting Skip on a platform theory disables it for all platforms. This may be unintuitive so we disallow it.")
             }
         }
 
@@ -58,6 +58,8 @@ namespace NuGet.Test.Utility
         public bool OnlyOnMono { get; set; }
 
         public bool SkipMono { get; set; }
+
+        public string PlatformSkipMessage { get; set; } // If this is not null, but Skip is null, then this won't work.
 
         public bool CIOnly { get; set; }
 
