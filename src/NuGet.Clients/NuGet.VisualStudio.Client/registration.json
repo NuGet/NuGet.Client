@@ -14,6 +14,7 @@
       // service (i.e. with promote:false) instead of a public one.  In managed code, the GUID of a service is derived from the service type,
       // and is typically specified with an explicit [Guid] attribute on it.
       "callback": {
+        "packageId": "5fcc8577-4feb-4d04-ad72-d6c629b083cc",
         "serviceId": "6C09BBE2-4537-48B4-87D8-01BF5EB75901"
       },
 
