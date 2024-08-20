@@ -212,9 +212,9 @@ namespace NuGet.Commands
         {
             telemetryActivity.StartIntervalMeasure();
 
-            List<Task<DownloadDependencyResolutionResult>> downloadDependencyResolutionTasks = new();
+            List<Task<DownloadDependencyResolutionResult>> downloadDependencyResolutionTasks = new(capacity: packageSpec.TargetFrameworks.Count);
 
-            foreach (TargetFrameworkInformation targetFrameworkInformation in packageSpec.TargetFrameworks)
+            foreach (TargetFrameworkInformation targetFrameworkInformation in packageSpec.TargetFrameworks.NoAllocEnumerate())
             {
                 Task<DownloadDependencyResolutionResult> task = ResolveDownloadDependenciesAsync(context, targetFrameworkInformation, cancellationToken);
 
@@ -229,7 +229,17 @@ namespace NuGet.Commands
 
             async Task<DownloadDependencyResolutionResult> ResolveDownloadDependenciesAsync(RemoteWalkContext context, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
             {
-                IEnumerable<Task<Tuple<LibraryRange, RemoteMatch>>> packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
+                if (targetFrameworkInformation.DownloadDependencies.Count == 0)
+                {
+                    return DownloadDependencyResolutionResult.Create(targetFrameworkInformation.FrameworkName, Array.Empty<Tuple<LibraryRange, RemoteMatch>>(), context.RemoteLibraryProviders);
+                }
+
+                List<Task<Tuple<LibraryRange, RemoteMatch>>> packageDownloadTasks = new(capacity: targetFrameworkInformation.DownloadDependencies.Count);
+
+                foreach (var downloadDependency in targetFrameworkInformation.DownloadDependencies.NoAllocEnumerate())
+                {
+                    packageDownloadTasks.Add(ResolverUtility.FindPackageLibraryMatchCachedAsync(downloadDependency, context, token));
+                }
 
                 Tuple<LibraryRange, RemoteMatch>[] packageDownloadMatches = await Task.WhenAll(packageDownloadTasks);
 
