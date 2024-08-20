@@ -1490,10 +1490,11 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="packageSpec">The <see cref="PackageSpec" /> with information about the project.</param>
         /// <param name="runtimeIds">An <see cref="ISet{T}" /> containing the list of runtime identifiers.</param>
-        /// <returns>An <see cref="IEnumerable{T}" /> containing <see cref="FrameworkRuntimePair" /> objects with the frameworks with empty runtime identifiers followed by frameworks with the specified runtime identifiers.</returns>
-        internal static IEnumerable<FrameworkRuntimePair> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
+        /// <returns>A <see cref="List{T}" /> containing <see cref="FrameworkRuntimePair" /> objects with the frameworks with empty runtime identifiers followed by frameworks with the specified runtime identifiers.</returns>
+        internal static List<FrameworkRuntimePair> CreateFrameworkRuntimePairs(PackageSpec packageSpec, ISet<string> runtimeIds)
         {
-            List<FrameworkRuntimePair> projectFrameworkRuntimePairs = new();
+            // Create a list with capacity for each framework with no runtime and each framework/runtime
+            List<FrameworkRuntimePair> projectFrameworkRuntimePairs = new(capacity: packageSpec.TargetFrameworks.Count + (packageSpec.TargetFrameworks.Count * runtimeIds.Count));
 
             foreach (TargetFrameworkInformation framework in packageSpec.TargetFrameworks.NoAllocEnumerate())
             {
