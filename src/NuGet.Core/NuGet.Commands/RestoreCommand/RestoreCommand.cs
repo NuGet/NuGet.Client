@@ -117,7 +117,7 @@ namespace NuGet.Commands
         private const string AuditDurationOutput = "Audit.Duration.Output";
         private const string AuditDurationTotal = "Audit.Duration.Total";
 
-        private readonly bool _enableNewDependencyResolver = true;
+        private readonly bool _enableNewDependencyResolver;
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -147,9 +147,13 @@ namespace NuGet.Commands
 
             // Enable the new dependency resolver if the project is using PackageReference, transitive pinning is disabled, and the user has not explicitly opted out of using it
 
-            if (request.Project.RestoreMetadata.ProjectStyle != ProjectStyle.PackageReference
-                || _request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled
-                || _request.Project.RestoreMetadata.UseLegacyDependencyResolver)
+            if (request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
+                && !_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled
+                && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver)
+            {
+                _enableNewDependencyResolver = true;
+            }
+            else
             {
                 _enableNewDependencyResolver = false;
                 _request.Project.RestoreMetadata.UseLegacyDependencyResolver = true;
