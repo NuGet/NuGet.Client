@@ -147,7 +147,12 @@ namespace NuGet.PackageManagement.UI
 
                     if (a.TransitivePackages.Count > 0)
                     {
+                        //var version = a.TransitivePackages.FirstOrDefault(tp => tp.Identity.Id.Equals(Id))?.Identity.Version.ToString();
+                        //var reference = a.TransitivePackages.FirstOrDefault(tp => tp.Identity.Id.Equals(Id))?.TransitiveOrigins.FirstOrDefault().Identity.Id;
+                        //var d = PackageVulnerabilities;
+                        //project.TransitiveVersion = version + " " + reference;
                         project.TransitiveVersion = a.TransitivePackages.FirstOrDefault()?.Identity.Version.ToString();
+                        var isVulnerable = PackageMetadata;
                     }
                     else
                     {

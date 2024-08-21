@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
@@ -133,6 +134,34 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return ByOwner ?? ByAuthor;
+            }
+        }
+
+        private NuGetVersion[] _installedVersions;
+        public NuGetVersion[] InstalledVersions
+        {
+            get
+            {
+                return _installedVersions;
+            }
+            set
+            {
+                _installedVersions = value;
+                OnPropertyChanged(nameof(InstalledVersions));
+            }
+        }
+
+        private NuGetVersion[] _installedVulnerableVersions;
+        public NuGetVersion[] InstalledVulnerableVersions
+        {
+            get
+            {
+                return _installedVulnerableVersions;
+            }
+            set
+            {
+                _installedVulnerableVersions = value;
+                OnPropertyChanged(nameof(InstalledVulnerableVersions));
             }
         }
 
@@ -797,29 +826,38 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                var identity = new PackageIdentity(Id, Version);
-
-                if (PackageLevel == PackageLevel.TopLevel)
+                foreach (var version in InstalledVersions)
                 {
-                    (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
-                        await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+                    var identity = new PackageIdentity(Id, version);
 
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
+                    if (PackageLevel == PackageLevel.TopLevel)
+                    {
+                        (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
+                            await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
 
-                    DeprecationMetadata = deprecationMetadata;
-                    IsPackageDeprecated = deprecationMetadata != null;
-                    VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
-                }
-                else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
-                {
-                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
-                        await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    VulnerabilityMaxSeverity = vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1;
+                        DeprecationMetadata = deprecationMetadata;
+                        IsPackageDeprecated = deprecationMetadata != null;
+                        VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                    }
+                    else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
+                    {
+                        IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
+                            await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        VulnerabilityMaxSeverity = vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1;
+                    }
+
+                    if (VulnerabilityMaxSeverity > 0)
+                    {
+                        InstalledVulnerableVersions.Append(version);
+                    }
                 }
             }
+
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // UI requested cancellation.
@@ -848,6 +886,8 @@ namespace NuGet.PackageManagement.UI
 
             // Set auto referenced to true any reference for the given id contains the flag.
             AutoReferenced = installedPackages.IsAutoReferenced(Id);
+
+            InstalledVersions = installedPackages.GetPackageVersions(Id);
 
             NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(ReloadPackageVersionsAsync)
