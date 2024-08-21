@@ -3337,6 +3337,86 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             result.LockFile.PackageSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().BeTrue();
         }
 
+        [Fact]
+        public async Task ExecuteAsync_WithConditionalProjectAndPackageReferences_SelectsPackageWhereProjectIsNotAppropriate()
+        {
+            // Arrange
+            using var context = new SourceCacheContext();
+            using var pathContext = new SimpleTestPathContext();
+
+            var mainProject = "main";
+            var mainProjectPath = Path.Combine(pathContext.SolutionRoot, mainProject);
+
+            var systemNumericsVectorName = "System.Numerics.Vectors";
+            var childProjectPath = Path.Combine(pathContext.SolutionRoot, systemNumericsVectorName);
+
+            var mainProjectJson = @"
+            {
+              ""version"": ""1.0.0"",
+              ""frameworks"": {
+                ""netstandard2.0"": {
+                    ""dependencies"": {
+                        ""System.Memory"": {
+                                      ""target"": ""Package"",
+                                      ""version"": ""[4.5.5, )""
+                                    },
+                          ""NETStandard.Library"": {
+                                      ""suppressParent"": ""All"",
+                                      ""target"": ""Package"",
+                                      ""version"": ""[2.0.3, )"",
+                                      ""autoReferenced"": true
+                                    }
+                    }
+                },
+                ""net8.0"": {
+                    ""dependencies"": {
+                    }
+                }
+              }
+            }";
+            PackageSpec systemNumericsVectorPackageSpec = ProjectTestHelpers.GetPackageSpec(systemNumericsVectorName, pathContext.SolutionRoot, "net8.0");
+            PackageSpec mainPackageSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec(mainProject, pathContext.SolutionRoot, mainProjectJson);
+            var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
+            mainPackageSpec.RestoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
+            mainPackageSpec.RestoreMetadata.Sources = SettingsUtility.GetEnabledSources(settings).ToList();
+            mainPackageSpec.RestoreMetadata.FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList();
+            mainPackageSpec.RestoreMetadata.PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+            mainPackageSpec.RestoreMetadata.TargetFrameworks.Single(e => e.FrameworkName.Equals(NuGetFramework.Parse("net8.0"))).ProjectReferences.Add(new ProjectRestoreReference()
+            {
+                ProjectUniqueName = systemNumericsVectorPackageSpec.RestoreMetadata.ProjectUniqueName,
+                ProjectPath = systemNumericsVectorPackageSpec.RestoreMetadata.ProjectPath,
+            });
+
+            // create packages
+            var ns203 = new SimpleTestPackageContext("NETStandard.Library", "2.0.3");
+            var systemMemory = new SimpleTestPackageContext("System.Memory", "4.5.5");
+            var systemNumericsVector = new SimpleTestPackageContext(systemNumericsVectorName, "4.4.0");
+            systemMemory.Dependencies.Add(systemNumericsVector);
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource,
+                ns203,
+                systemMemory,
+                systemNumericsVector);
+
+            var logger = new TestLogger();
+            var request = ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, mainPackageSpec, systemNumericsVectorPackageSpec);
+
+            var restoreCommand = new RestoreCommand(request);
+            RestoreResult result = await restoreCommand.ExecuteAsync();
+
+            result.Success.Should().BeTrue(because: logger.ShowMessages());
+            result.LockFile.LogMessages.Should().BeEmpty();
+            var net80Target = result.LockFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("net8.0")));
+            var netstandard20 = result.LockFile.Targets.Single(e => e.TargetFramework.Equals(NuGetFramework.Parse("netstandard2.0")));
+            net80Target.Libraries.Should().HaveCount(1);
+            var net80Vectors = net80Target.Libraries.Single(e => e.Name.Equals(systemNumericsVectorName));
+            net80Vectors.Version.Should().Be(new NuGetVersion(1, 0, 0));
+            netstandard20.Libraries.Should().HaveCount(3);
+            var ns20Target = netstandard20.Libraries.Single(e => e.Name.Equals(systemNumericsVectorName));
+            ns20Target.Version.Should().Be(new NuGetVersion(4, 4, 0));
+        }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
         {
             NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");
