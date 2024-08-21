@@ -64,7 +64,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             var project = Project.FromFile(Path.Combine(testDirectory, "projectA.csproj"), projectOptions);
 
             // Act
-            var result = new MSBuildAPIUtility(logger: new TestLogger()).GetDirectoryBuildPropsRootElement(project);
+            var result = new MSBuildAPIUtility(logger: new TestLogger()).GetDirectoryPackagePropsRootElement(project);
 
             // Assert
             Assert.Equal(Path.Combine(testDirectory, "Directory.Packages.props"), result.FullPath);
@@ -226,7 +226,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Add item group to Directory.Packages.props
             var msObject = new MSBuildAPIUtility(logger: new TestLogger());
-            var directoryBuildPropsRootElement = msObject.GetDirectoryBuildPropsRootElement(project);
+            var directoryBuildPropsRootElement = msObject.GetDirectoryPackagePropsRootElement(project);
             var propsItemGroup = directoryBuildPropsRootElement.AddItemGroup();
 
             var libraryDependency = new LibraryDependency
@@ -297,7 +297,7 @@ namespace NuGet.CommandLine.Xplat.Tests
 
             // Get existing item group from Directory.Packages.props
             var msObject = new MSBuildAPIUtility(logger: new TestLogger());
-            var directoryBuildPropsRootElement = msObject.GetDirectoryBuildPropsRootElement(project);
+            var directoryBuildPropsRootElement = msObject.GetDirectoryPackagePropsRootElement(project);
             var propsItemGroup = msObject.GetItemGroup(directoryBuildPropsRootElement.ItemGroups, "PackageVersion");
 
             var libraryDependency = new LibraryDependency
