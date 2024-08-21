@@ -547,8 +547,10 @@ namespace NuGet.Commands
                         {
                             bool isTransitive = currentRefRangeIndex != rootProjectRefItem.LibraryRangeIndex && dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package;
                             bool isPinned = pinnedPackageVersions != null && pinnedPackageVersions.ContainsKey(depIndex);
-
-                            if (dep.VersionOverride != null && (!isTransitive || !isPinned))
+                            // LibraryDependencyIndex is one per id. 
+                            // LibrarynRangeIndex one per id/version and type constraint (Project vs Package)
+                            
+                            if (dep.VersionOverride != null && (!isTransitive || !isPinned)) // TODO NK - This could be one of the bugs. 
                             {
                                 if (newOverrides == null)
                                 {
@@ -609,7 +611,7 @@ namespace NuGet.Commands
 
                         bool isCentrallyPinnedTransitiveDependency = false;
                         bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
-
+                        /// this condition is used in a different place already.
                         LibraryRangeIndex rangeIndex = LibraryRangeIndex.Invalid;
 
                         LibraryDependency actualLibraryDependency = dep;
@@ -721,7 +723,7 @@ namespace NuGet.Commands
                 var versionConflicts = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
 
                 itemsToFlatten.Enqueue((initialProjectIndex, rootGraphNode));
-                while (itemsToFlatten.Count > 0)
+                while (itemsToFlatten.Count > 0) // User intent downgrades are handled here. // Conflict detection logic. By now everything has been resolved.
                 {
                     (LibraryDependencyIndex currentDependencyIndex, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
                     if (!chosenResolvedItems.TryGetValue(currentDependencyIndex, out var foundItem))

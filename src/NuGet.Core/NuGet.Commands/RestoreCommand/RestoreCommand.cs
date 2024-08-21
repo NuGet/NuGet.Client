@@ -147,6 +147,7 @@ namespace NuGet.Commands
 
             // Enable the new dependency resolver if the project is using PackageReference, transitive pinning is disabled, and the user has not explicitly opted out of using it
             _enableNewDependencyResolver = request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference && !_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+            /// TODO NK - remove the transitive pinning
         }
 
         public Task<RestoreResult> ExecuteAsync()
