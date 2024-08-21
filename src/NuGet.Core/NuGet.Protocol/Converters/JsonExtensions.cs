@@ -29,8 +29,7 @@ namespace NuGet.Protocol
                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
                 new FingerprintsConverter(),
                 new VersionRangeConverter(),
-                new PackageVulnerabilityInfoConverter(),
-                new PackageDependencyConverter()
+                new PackageVulnerabilityInfoConverter()
             },
         };
 

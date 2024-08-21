@@ -26,15 +26,20 @@ namespace NuGet.Protocol
                     if (reader.Value.Equals(JsonProperties.Dependencies))
                     {
                         // Dependencies are stored in an array
+                        reader.Read(); // move to the start of the array
                         while (reader.Read() && reader.TokenType != JsonToken.EndArray)
                         {
-                            Packaging.Core.PackageDependency package = serializer.Deserialize<Packaging.Core.PackageDependency>(reader);
+                            var package = serializer.Deserialize<Packaging.Core.PackageDependency>(reader);
                             packages.Add(package);
                         }
                     }
                     else if (reader.Value.Equals(JsonProperties.TargetFramework))
                     {
                         fxName = reader.ReadAsString();
+                    }
+                    else
+                    {
+                        reader.Skip();
                     }
                 }
                 else
