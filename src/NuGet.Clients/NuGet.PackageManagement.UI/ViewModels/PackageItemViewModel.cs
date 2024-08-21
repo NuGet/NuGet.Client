@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using Lucene.Net.Util;
 using Microsoft;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Threading;
@@ -151,7 +152,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private NuGetVersion[] _installedVulnerableVersions;
+        private NuGetVersion[] _installedVulnerableVersions = [];
         public NuGetVersion[] InstalledVulnerableVersions
         {
             get
@@ -826,12 +827,12 @@ namespace NuGet.PackageManagement.UI
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
             try
             {
-                foreach (var version in InstalledVersions)
+                if (InstalledVersions is not null)
                 {
-                    var identity = new PackageIdentity(Id, version);
-
-                    if (PackageLevel == PackageLevel.TopLevel)
+                    foreach (var version in InstalledVersions)
                     {
+                        var identity = new PackageIdentity(Id, version);
+
                         (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
                             await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
 
@@ -840,22 +841,53 @@ namespace NuGet.PackageManagement.UI
 
                         DeprecationMetadata = deprecationMetadata;
                         IsPackageDeprecated = deprecationMetadata != null;
-                        VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
-                    }
-                    else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
-                    {
-                        IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
-                            await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
-                        cancellationToken.ThrowIfCancellationRequested();
+                        var packageVulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
 
-                        VulnerabilityMaxSeverity = vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1;
+                        if (packageVulnerabilityMaxSeverity > 0)
+                        {
+                            InstalledVulnerableVersions.Append(Version);
+                        }
+
+                        VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, packageVulnerabilityMaxSeverity);
                     }
+                }
+                else if (PackageLevel == PackageLevel.TopLevel)
+                {
+                    var identity = new PackageIdentity(Id, Version);
+
+                    (PackageSearchMetadataContextInfo packageMetadata, PackageDeprecationMetadataContextInfo deprecationMetadata) =
+                        await _searchService.GetPackageMetadataAsync(identity, Sources, IncludePrerelease, cancellationToken);
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    DeprecationMetadata = deprecationMetadata;
+                    IsPackageDeprecated = deprecationMetadata != null;
+                    var packageVulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+
+                    if (packageVulnerabilityMaxSeverity > 0)
+                    {
+                        InstalledVulnerableVersions.Append(Version);
+                    }
+
+                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, packageVulnerabilityMaxSeverity);
+                }
+                else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
+                {
+                    var identity = new PackageIdentity(Id, Version);
+
+                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
+                        await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    VulnerabilityMaxSeverity = vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1;
 
                     if (VulnerabilityMaxSeverity > 0)
                     {
-                        InstalledVulnerableVersions.Append(version);
+                        InstalledVulnerableVersions.Append(Version);
                     }
                 }
+
             }
 
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
