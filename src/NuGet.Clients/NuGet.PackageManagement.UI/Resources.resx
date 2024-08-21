@@ -1060,10 +1060,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Hyperlink_Owner" xml:space="preserve">
     <value>Owner</value>
   </data>
-  <data name="ToolTip_UseDotnetCommand" xml:space="preserve">
-    <value>To know this package transitive origin path use command</value>
-  </data>
-  <data name="ToolTip_DotnetNuGetWhy" xml:space="preserve">
-    <value>dotnet nuget why</value>
+  <data name="ToolTip_SeeDotnetNuGetWhy" xml:space="preserve">
+    <value>To learn more about transitive paths, see</value>
   </data>
 </root>

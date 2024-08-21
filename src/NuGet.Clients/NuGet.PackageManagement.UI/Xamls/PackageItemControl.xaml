@@ -251,7 +251,7 @@
                             <Style TargetType="Run">
                               <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
-                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_UseDotnetCommand}" />
+                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_SeeDotnetNuGetWhy}" />
                                 </DataTrigger>
                               </Style.Triggers>
                             </Style>
@@ -262,7 +262,7 @@
                             <Style TargetType="Run">
                               <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
-                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_DotnetNuGetWhy}"/>
+                                  <Setter Property="Text" Value="aka.ms/dotnet/nuget/why"/>
                                   <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
                               </Style.Triggers>

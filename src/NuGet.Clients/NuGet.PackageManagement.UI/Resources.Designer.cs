@@ -2259,15 +2259,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to dotnet nuget why.
-        /// </summary>
-        public static string ToolTip_DotnetNuGetWhy {
-            get {
-                return ResourceManager.GetString("ToolTip_DotnetNuGetWhy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Install {0} version {1}..
         /// </summary>
         public static string ToolTip_InstallButton {
@@ -2331,6 +2322,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to To learn more about transitive paths, see.
+        /// </summary>
+        public static string ToolTip_SeeDotnetNuGetWhy {
+            get {
+                return ResourceManager.GetString("ToolTip_SeeDotnetNuGetWhy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string ToolTip_Settings {
@@ -2381,15 +2381,6 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_UpdateButton {
             get {
                 return ResourceManager.GetString("ToolTip_UpdateButton", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to To know this package transitive origin path use command.
-        /// </summary>
-        public static string ToolTip_UseDotnetCommand {
-            get {
-                return ResourceManager.GetString("ToolTip_UseDotnetCommand", resourceCulture);
             }
         }
         
