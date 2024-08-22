@@ -125,13 +125,9 @@ If you want to test dotnet.exe explicitly, so you don't have to worry about whet
 
 ### Debugging NuGet Command Xplat Functionality (add-package/remove-package/list package)
 
-Functionality such as `dotnet.exe add package` or `dotnet list package`, is implemented in [NuGet.CommandLine.XPlat](../src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj).
-
-To debug with `MSBuildLocator`, you need to un-comment the `PackageReference` for `Microsoft.Build.Locator` in `NuGet.CommandLine.XPlat.csproj`. Additionally, un-comment the code utilizing `MSBuildLocator` in that project's `Program.cs`.
-
 There are 2 ways to debug this project:
 
-* Given that [NuGet.CommandLine.XPlat](../src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj) is an exe, you can set it as the startup project and run it as you would any other command line project in Visual Studio. Note that some commands list arguments in a different order to the dotnet cli.
+* Given that [NuGet.CommandLine.XPlat](../src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj) is an exe, you can set it as the startup project and run it as you would any other command line project in Visual Studio. However, if that is not working, please make sure `UseMSBuildLocator` is set to true. **Note**: some commands list arguments in a different order to the dotnet cli.
 
 * Patch the SDK by referring to [Patching dotnet.exe to test the NuGet functionality](#patching-dotnetexe-to-test-the-nuget-functionality).
 
