@@ -215,7 +215,18 @@
                         <Run
                           Text="{Binding Id}"
                           FontWeight="Bold" /> <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
-                        <LineBreak /><Run FontWeight="Bold">
+                        <LineBreak />
+                        <Run>
+                          <Run.Style>
+                            <Style TargetType="Run">
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
+                                  <Setter Property="Text" Value="{Binding Summary}"/>
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Run.Style>
+                        </Run><Run FontWeight="Bold">
                           <Run.Style>
                             <Style TargetType="Run">
                               <Style.Triggers>
@@ -225,13 +236,13 @@
                               </Style.Triggers>
                             </Style>
                           </Run.Style>
-                        </Run><Run>
+                        </Run>
+                        <Run>
                           <Run.Style>
                             <Style TargetType="Run">
-                              <Setter Property="Text" Value="{Binding TransitiveToolTipMessage}"/>
                               <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
-                                  <Setter Property="Text" Value="{Binding Summary}"/>
+                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
+                                  <Setter Property="Text" Value="{Binding TransitiveToolTipMessage}"/>
                                 </DataTrigger>
                               </Style.Triggers>
                             </Style>
