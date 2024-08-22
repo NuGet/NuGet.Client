@@ -124,6 +124,7 @@ The easiest way to test the pack functionality with dotnet.exe is to install the
 If you want to test dotnet.exe explicitly, so you don't have to worry about whether you installed the correct package in the project, refer to [Patching dotnet.exe to test the NuGet functionality](#patching-dotnetexe-to-test-the-nuget-functionality).
 
 ### Debugging NuGet's integrated `dotnet` CLI commands
+All of the `dotnet nuget` commands, in addition to some others, such as `dotnet add package`, dotnet list package`, and `dotnet search`, are implemented in [NuGet.CommandLine.XPlat](../src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj).
 
 There are 2 ways to debug this project:
 
