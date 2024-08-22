@@ -2,21 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Newtonsoft.Json;
-using NuGet.Protocol.Converters;
+using NuGet.Packaging;
 using NuGet.Versioning;
 using NuGet.Protocol.Plugins;
 using Xunit;
+using System.Collections.Generic;
+using System.IO;
 
 namespace NuGet.Protocol.Tests
 {
     public class PackageDependencyConverterTests
     {
-        private static readonly PackageDependencyConverter _converter = new PackageDependencyConverter();
+        private static readonly PackageDependencyGroupConverter _converter = new PackageDependencyGroupConverter();
 
         [Fact]
         public void CanConvert_ReturnsTrueForPackageDependencyType()
         {
-            var canConvert = _converter.CanConvert(typeof(Packaging.Core.PackageDependency));
+            var canConvert = _converter.CanConvert(typeof(PackageDependencyGroup));
 
             Assert.True(canConvert);
         }
@@ -27,80 +29,63 @@ namespace NuGet.Protocol.Tests
             const string id = "PackageA";
             var version = new VersionRange(new NuGetVersion(1, 4, 1));
             var expectedPackageDependency = new Packaging.Core.PackageDependency(id, version);
+            IEnumerable<Packaging.Core.PackageDependency> packages = new List<Packaging.Core.PackageDependency>() { expectedPackageDependency };
 
-            var actualPackageDependency = _converter.ReadJson(
-                new JsonTextReader(new System.IO.StringReader(PackageRegistrationDependencyGroupsJson)),
-                typeof(Packaging.Core.PackageDependency),
+            using var stringReader = new StringReader(PackageRegistrationDependencyGroupsJson);
+            using var jsonReader = new JsonTextReader(stringReader);
+
+            jsonReader.Read();
+
+            PackageDependencyGroup actualPackageDependencies = (PackageDependencyGroup)_converter.ReadJson(
+                jsonReader,
+                typeof(PackageDependencyGroup),
                 existingValue: null,
                 serializer: JsonSerializationUtilities.Serializer);
-            Assert.Equal(expectedPackageDependency, actualPackageDependency);
+
+            Assert.Equal(packages, actualPackageDependencies.Packages);
         }
 
-        [Theory]
-        [InlineData(PackageRegistrationDependencyGroupsNoRangeJson)]
-        [InlineData(PackageRegistrationDependencyGroupsEmptyRangeJson)]
-        public void ReadJson_ReturnsPackageDependencyWithNoRange(string json)
+        [Fact]
+        public void ReadJson_ReturnsPackageDependencyWithNoRange()
         {
             const string id = "PackageA";
             var version = VersionRange.All;
             var expectedPackageDependency = new Packaging.Core.PackageDependency(id, version);
 
-            var actualPackageDependency = _converter.ReadJson(
-                new JsonTextReader(new System.IO.StringReader(json)),
-                typeof(Packaging.Core.PackageDependency),
+            IEnumerable<Packaging.Core.PackageDependency> packages = new List<Packaging.Core.PackageDependency>() { expectedPackageDependency };
+            using var stringReader = new StringReader(PackageRegistrationDependencyGroupsNoRangeJson);
+            using var jsonReader = new JsonTextReader(stringReader);
+
+            jsonReader.Read();
+
+            PackageDependencyGroup actualPackageDependencies = (PackageDependencyGroup)_converter.ReadJson(
+                jsonReader,
+                typeof(PackageDependencyGroup),
                 existingValue: null,
                 serializer: JsonSerializationUtilities.Serializer);
-            Assert.Equal(expectedPackageDependency, actualPackageDependency);
+            Assert.Equal(packages, actualPackageDependencies.Packages);
         }
 
-        private const string PackageRegistrationDependencyGroupsJson = @"{""dependencyGroups"": [
-              {
-                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup"",
-                ""@type"": ""PackageDependencyGroup"",
-                ""dependencies"": [
-                  {
-                    ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup/jquery"",
-                    ""@type"": ""PackageDependency"",
-                    ""id"": ""PackageA"",
-                    ""range"": ""[1.4.1, )"",
-                    ""registration"": ""https://api.nuget.org/v3/registration0/PackageA/index.json""
-                  }
-                ]
-              }
-            ],
+        private const string PackageRegistrationDependencyGroupsJson = @"{
+    ""dependencies"": [
+            {
+             ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup/jquery"",
+             ""@type"": ""PackageDependency"",
+             ""id"": ""PackageA"",
+             ""range"": ""[1.4.1, )"",
+             ""registration"": ""https://api.nuget.org/v3/registration0/PackageA/index.json""
+            }
+           ]
         }";
 
-        private const string PackageRegistrationDependencyGroupsNoRangeJson = @"{""dependencyGroups"": [
-              {
-                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup"",
-                ""@type"": ""PackageDependencyGroup"",
-                ""dependencies"": [
-                  {
-                    ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup/jquery"",
-                    ""@type"": ""PackageDependency"",
-                    ""id"": ""PackageA"",
-                    ""registration"": ""https://api.nuget.org/v3/registration0/PackageA/index.json""
-                  }
-                ]
-              }
-            ],
-        }";
-
-        private const string PackageRegistrationDependencyGroupsEmptyRangeJson = @"{""dependencyGroups"": [
-              {
-                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup"",
-                ""@type"": ""PackageDependencyGroup"",
-                ""dependencies"": [
-                  {
-                    ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup/jquery"",
-                    ""@type"": ""PackageDependency"",
-                    ""id"": ""PackageA"",
-                    ""range"": """",
-                    ""registration"": ""https://api.nuget.org/v3/registration0/PackageA/index.json""
-                  }
-                ]
-              }
-            ],
+        private const string PackageRegistrationDependencyGroupsNoRangeJson = @"{""dependencies"": [
+                {
+                ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup/jquery"",
+                ""@type"": ""PackageDependency"",
+                ""id"": ""PackageA"",
+                ""registration"": ""https://api.nuget.org/v3/registration0/PackageA/index.json""
+                }
+            ]
         }";
     }
 }

@@ -35,6 +35,7 @@ namespace NuGet.Packaging.Core
         /// <summary>
         /// Range of versions allowed for the depenency
         /// </summary>
+        [JsonProperty(PropertyName = "range")]
         public VersionRange VersionRange
         {
             get { return _versionRange; }
