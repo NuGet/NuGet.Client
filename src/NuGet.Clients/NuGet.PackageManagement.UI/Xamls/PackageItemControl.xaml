@@ -262,7 +262,7 @@
                             <Style TargetType="Run">
                               <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=PackageLevel}" Value="Transitive">
-                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_SeeDotnetNuGetWhy}" />
+                                  <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_TransitivePathHelp}" />
                                 </DataTrigger>
                               </Style.Triggers>
                             </Style>

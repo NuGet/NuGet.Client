@@ -2322,15 +2322,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To learn more about transitive paths, see.
-        /// </summary>
-        public static string ToolTip_SeeDotnetNuGetWhy {
-            get {
-                return ResourceManager.GetString("ToolTip_SeeDotnetNuGetWhy", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
         public static string ToolTip_Settings {
@@ -2354,6 +2345,15 @@ namespace NuGet.PackageManagement.UI {
         public static string ToolTip_TransitiveDependencyVersion {
             get {
                 return ResourceManager.GetString("ToolTip_TransitiveDependencyVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To learn more about transitive paths, see.
+        /// </summary>
+        public static string ToolTip_TransitivePathHelp {
+            get {
+                return ResourceManager.GetString("ToolTip_TransitivePathHelp", resourceCulture);
             }
         }
         
