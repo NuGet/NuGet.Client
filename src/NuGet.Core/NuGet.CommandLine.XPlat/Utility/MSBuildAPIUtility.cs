@@ -393,19 +393,6 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Get the Directory build props root element for projects onboarded to CPM.
-        /// </summary>
-        /// <param name="project">Project that needs to be modified.</param>
-        /// <returns>The directory build props root element.</returns>
-        internal ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
-        {
-            // Get the Directory.Build.props path.
-            string directoryBuildPropsPath = project.GetPropertyValue(DirectoryBuildPropsPathPropertyName);
-            ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryBuildPropsPath, PathUtility.GetStringComparisonBasedOnOS())).ImportedProject;
-            return directoryBuildPropsRootElement;
-        }
-
-        /// <summary>
         /// Add package name and version into the props file.
         /// </summary>
         /// <param name="itemGroup">Item group that needs to be modified in the props file.</param>
