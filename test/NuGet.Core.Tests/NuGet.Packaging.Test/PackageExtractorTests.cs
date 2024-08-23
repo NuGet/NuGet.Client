@@ -5129,8 +5129,8 @@ namespace NuGet.Packaging.Test
                    identity.Id,
                    identity.Version.ToString(),
                    entryModifiedTime: DateTimeOffset.Now,
-                   "path\\1",
-                   "path/2");
+                   "path\\one\\1",
+                   "path/two/2");
 
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 {
@@ -5146,21 +5146,21 @@ namespace NuGet.Packaging.Test
                         identity,
                         NullLogger.Instance))
                     {
+                        // Act
                         var installed = await PackageExtractor.InstallFromSourceAsync(
                             identity,
                             packageDownloader,
                             resolver,
                             packageExtractionContext,
                             CancellationToken.None);
-
                     }
                 }
 
                 // Assert
                 var packagePath = resolver.GetInstallPath(identity.Id, identity.Version);
                 Directory.Exists(packagePath).Should().BeTrue();
-                File.Exists(Path.Combine(packagePath, "path", "1")).Should().BeTrue();
-                File.Exists(Path.Combine(packagePath, "path", "2")).Should().BeTrue();
+                File.Exists(Path.Combine(packagePath, "path", "one", "1")).Should().BeTrue();
+                File.Exists(Path.Combine(packagePath, "path", "two", "2")).Should().BeTrue();
             }
         }
 
