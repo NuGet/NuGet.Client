@@ -390,11 +390,16 @@ namespace NuGet.Packaging.Test
                         clientPolicyContext: null,
                         logger: NullLogger.Instance),
                     CancellationToken.None);
+                var normalizedFiles = new List<string>();
+                foreach (var file in files)
+                {
+                    normalizedFiles.Add(Path.GetFullPath(file));
+                }
 
                 // Assert
                 var packagePath = resolver.GetInstallPath(identity);
-                Assert.DoesNotContain(Path.Combine(packagePath, "[Content_Types].xml"), files);
-                Assert.Contains(Path.Combine(packagePath, "content", "[Content_Types].xml"), files);
+                Assert.DoesNotContain(Path.Combine(packagePath, "[Content_Types].xml"), normalizedFiles);
+                Assert.Contains(Path.Combine(packagePath, "content", "[Content_Types].xml"), normalizedFiles);
             }
         }
 
@@ -1479,6 +1484,11 @@ namespace NuGet.Packaging.Test
                     test.Resolver,
                     test.Context,
                     CancellationToken.None);
+                var normalizedFiles = new List<string>(files.Count());
+                foreach (var file in files)
+                {
+                    normalizedFiles.Add(Path.GetFullPath(file));
+                }
 
                 var packageId = test.PackageIdentity.Id;
                 var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
@@ -1493,9 +1503,9 @@ namespace NuGet.Packaging.Test
 
                 var comparer = PathUtility.GetStringComparerBasedOnOS();
 
-                Assert.DoesNotContain(nupkgFilePath, files, comparer);
-                Assert.DoesNotContain(nuspecFilePath, files, comparer);
-                Assert.Contains(libFilePath, files, comparer);
+                Assert.DoesNotContain(nupkgFilePath, normalizedFiles, comparer);
+                Assert.DoesNotContain(nuspecFilePath, normalizedFiles, comparer);
+                Assert.Contains(libFilePath, normalizedFiles, comparer);
                 Assert.False(File.Exists(nupkgFilePath));
                 Assert.False(File.Exists(nuspecFilePath));
                 Assert.True(File.Exists(libFilePath));
@@ -1593,6 +1603,11 @@ namespace NuGet.Packaging.Test
                     test.Resolver,
                     test.Context,
                     CancellationToken.None);
+                var normalizedFiles = new List<string>(files.Count());
+                foreach (var file in files)
+                {
+                    normalizedFiles.Add(Path.GetFullPath(file));
+                }
 
                 var packageId = test.PackageIdentity.Id;
                 var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
@@ -1607,9 +1622,9 @@ namespace NuGet.Packaging.Test
 
                 var comparer = PathUtility.GetStringComparerBasedOnOS();
 
-                Assert.Contains(nupkgFilePath, files, comparer);
-                Assert.DoesNotContain(nuspecFilePath, files, comparer);
-                Assert.Contains(libFilePath, files, comparer);
+                Assert.Contains(nupkgFilePath, normalizedFiles, comparer);
+                Assert.DoesNotContain(nuspecFilePath, normalizedFiles, comparer);
+                Assert.Contains(libFilePath, normalizedFiles, comparer);
                 Assert.True(File.Exists(nupkgFilePath));
                 Assert.False(File.Exists(nuspecFilePath));
                 Assert.True(File.Exists(libFilePath));
@@ -1631,6 +1646,11 @@ namespace NuGet.Packaging.Test
                     test.Resolver,
                     test.Context,
                     CancellationToken.None);
+                var normalizedPath = new List<string>(files.Count());
+                foreach (var file in files)
+                {
+                    normalizedPath.Add(Path.GetFullPath(file));
+                }
 
                 var packageId = test.PackageIdentity.Id;
                 var packageVersion = test.PackageIdentity.Version.ToNormalizedString();
@@ -1645,9 +1665,9 @@ namespace NuGet.Packaging.Test
 
                 var comparer = PathUtility.GetStringComparerBasedOnOS();
 
-                Assert.Contains(nupkgFilePath, files, comparer);
-                Assert.Contains(nuspecFilePath, files, comparer);
-                Assert.Contains(libFilePath, files, comparer);
+                Assert.Contains(nupkgFilePath, normalizedPath, comparer);
+                Assert.Contains(nuspecFilePath, normalizedPath, comparer);
+                Assert.Contains(libFilePath, normalizedPath, comparer);
                 Assert.True(File.Exists(nupkgFilePath));
                 Assert.True(File.Exists(nuspecFilePath));
                 Assert.True(File.Exists(libFilePath));
@@ -1680,7 +1700,7 @@ namespace NuGet.Packaging.Test
 
                 var comparer = PathUtility.GetStringComparerBasedOnOS();
 
-                Assert.Contains(xmlFilePath, files, comparer);
+                Assert.Contains(xmlFilePath, files.Select(Path.GetFullPath), comparer);
                 Assert.True(File.Exists(xmlFilePath));
             }
         }
@@ -1742,7 +1762,7 @@ namespace NuGet.Packaging.Test
 
                 var comparer = PathUtility.GetStringComparerBasedOnOS();
 
-                Assert.Contains(xmlZipFilePath, files, comparer);
+                Assert.Contains(xmlZipFilePath, files.Select(Path.GetFullPath), comparer);
                 Assert.True(File.Exists(xmlZipFilePath));
             }
         }
@@ -4915,7 +4935,7 @@ namespace NuGet.Packaging.Test
                     CancellationToken.None)).ToArray();
 
                 Assert.Equal(1, files.Length);
-                Assert.Equal(Path.Combine(testDirectory.Path, "lib", "net45", "fr", "A.resources.dll"), files[0]);
+                Assert.Equal(Path.Combine(testDirectory.Path, "lib", "net45", "fr", "A.resources.dll"), Path.GetFullPath(files[0]));
             }
         }
 
