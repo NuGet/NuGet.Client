@@ -105,9 +105,8 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 case MonikerAllowRestoreDownload: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsGrantedInSettings);
                 case MonikerPackageRestoreAutomatic: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsAutomatic);
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
-                case MonikerDefaultPackageManagementFormat: return ConvertValueOrThrow<T>(PackageManagementFormat.PackageFormatSelectorLabel);
+                case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(PackageManagementFormat.SelectedPackageManagementFormat);
                 default: break;
-                    //return Task.FromResult(new ExternalSettingOperationResult.Failure("Error reading setting!", ExternalSettingsErrorScope.SingleSettingOnly, isTransient: true));
             }
 
             throw new ApplicationException("Unknown setting!");
@@ -146,7 +145,12 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             {
                 case MonikerAllowRestoreDownload:
                     {
-                        return SetValueOrThrow(value, () => PackageRestoreConsent.IsGrantedInSettings);
+                        if (value is bool boolValue)
+                        {
+                            PackageRestoreConsent.IsGrantedInSettings = boolValue;
+                            return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                        }
+                        break;
                     }
                 case MonikerPackageRestoreAutomatic:
                     {
@@ -157,10 +161,25 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                         }
                         break;
                     }
-                case MonikerSkipBindingRedirects: return SetValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
-                case MonikerDefaultPackageManagementFormat: return SetValueOrThrow<T>(PackageManagementFormat.PackageFormatSelectorLabel);
+                case MonikerSkipBindingRedirects:
+                    {
+                        if (value is bool boolValue)
+                        {
+                            BindingRedirectBehavior.IsSkipped = boolValue;
+                            return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                        }
+                        break;
+                    }
+                case MonikerDefaultPackageManagementFormat:
+                    {
+                        if (value is int intValue)
+                        {
+                            PackageManagementFormat.SelectedPackageManagementFormat = intValue;
+                            return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                        }
+                        break;
+                    }
                 default: break;
-                    //return Task.FromResult(new ExternalSettingOperationResult.Failure("Error reading setting!", ExternalSettingsErrorScope.SingleSettingOnly, isTransient: true));
             }
 
             throw new ApplicationException("Unknown setting!");
@@ -177,12 +196,31 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             throw new ApplicationException("Error reading setting!");
         }
 
-        private static ExternalSettingOperationResult SetValueOrThrow<T, TValue>(T originValue, ref T2 destination) where T : notnull
+        private static Task<ExternalSettingOperationResult<T>> ConvertDefaultPackageManagementFormatKeyOrThrow<T>(int input)
         {
-            if (originValue is T2 destinationValue)
+            if (typeof(T) != typeof(string))
             {
-                destination = destinationValue;
-                return (ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance;
+                throw new ApplicationException("Error reading setting!");
+            }
+
+            T strValue = input switch
+            {
+                0 => (T)(object)"packages-config",
+                1 => (T)(object)"package-reference",
+                _ => throw new ApplicationException("Error reading setting!"),
+            };
+
+            return Task.FromResult(ExternalSettingOperationResult.SuccessResult(strValue));
+        }
+
+        private static Task<ExternalSettingOperationResult> SetValueOrThrow<T, TValue>(T originValue, Action<TValue> destination)
+            where T : notnull
+            where TValue : notnull
+        {
+            if (originValue is TValue destinationValue)
+            {
+                destination(destinationValue);
+                return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
             }
 
             throw new ApplicationException("Error saving setting!");
