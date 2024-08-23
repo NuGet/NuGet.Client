@@ -194,7 +194,8 @@ namespace NuGetVSExtension
                 options,
                 serviceBroker,
                 authorizationServiceClient,
-                telemetryProvider);
+                telemetryProvider,
+                _sharedServiceState);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             return service;

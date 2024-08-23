@@ -279,7 +279,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (package.RawReadmeUrl != null)
                 {
                     clonedResult.RawReadmeUrl = package.RawReadmeUrl;
-                    break;
+                    if (!package.RawReadmeUrl.IsFile)
+                    {
+                        break;
+                    }
                 }
             }
             return clonedResult;
@@ -355,6 +358,41 @@ namespace NuGet.PackageManagement.VisualStudio
         private void LogError(Exception exception)
         {
             _logger.LogError(ExceptionUtilities.DisplayMessage(exception));
+        }
+
+        public async Task<(SourceRepository, Uri)> GetPackageReadmeUrlAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        {
+            foreach (var sourceRepository in _sourceRepositories)
+            {
+                var package = await sourceRepository.GetPackageMetadataForIdentityAsync(identity, cancellationToken, false);
+                if (package?.RawReadmeUrl != null)
+                {
+                    return (sourceRepository, package.RawReadmeUrl);
+                }
+            }
+
+            if (_localRepository != null)
+            {
+                var package = await _localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+                if (package?.RawReadmeUrl != null)
+                {
+                    return (_localRepository, package.RawReadmeUrl);
+                }
+            }
+
+            if (_globalLocalRepositories != null)
+            {
+                foreach (var sourceRepository in _globalLocalRepositories)
+                {
+                    var package = await sourceRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+                    if (package?.RawReadmeUrl != null)
+                    {
+                        return (sourceRepository, package.RawReadmeUrl);
+                    }
+                }
+            }
+
+            return (null, null);
         }
     }
 }

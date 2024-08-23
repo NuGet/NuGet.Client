@@ -27,13 +27,16 @@ namespace NuGet.Protocol
                 var packageDetailsUriResource = await source.GetResourceAsync<PackageDetailsUriResourceV3>(token);
 
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+                var downloadResource = await source.GetResourceAsync<DownloadResource>(token) as DownloadResourceV3;
+
 
                 // construct a new resource
                 curResource = new PackageMetadataResourceV3(
                     httpSourceResource.HttpSource,
                     regResource,
                     reportAbuseResource,
-                    packageDetailsUriResource);
+                    packageDetailsUriResource,
+                    downloadResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

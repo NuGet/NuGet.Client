@@ -35,9 +35,16 @@ namespace NuGet.Protocol
                 // construct package download urls.
                 var packageBaseAddress = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress)?.AbsoluteUri;
 
-                if (packageBaseAddress != null)
+                //Determine if this source can download the readme
+                var packageBaseAddress6120 = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress6120)?.AbsoluteUri;
+
+                if (packageBaseAddress6120 != null)
                 {
-                    curResource = new DownloadResourceV3(source.PackageSource.Source, client, packageBaseAddress);
+                    curResource = new DownloadResourceV3(source.PackageSource.Source, client, packageBaseAddress6120, true);
+                }
+                else if (packageBaseAddress != null)
+                {
+                    curResource = new DownloadResourceV3(source.PackageSource.Source, client, packageBaseAddress, false);
                 }
                 else
                 {

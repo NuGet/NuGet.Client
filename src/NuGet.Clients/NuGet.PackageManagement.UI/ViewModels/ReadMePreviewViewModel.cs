@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -58,30 +62,25 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        public async Task LoadReadmeAsync(Uri rawReadmeUrl, CancellationToken cancellationToken)
+        public async Task LoadReadmeAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
             bool canDetermineReadMeDefined = false;
 
-            if (rawReadmeUrl is not null)
+            if (packageIdentity is not null)
             {
                 await TaskScheduler.Default;
 #pragma warning disable ISB001 // Dispose of proxies
                 _packageFileService = _packageFileService ?? await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, cancellationToken);
 #pragma warning restore ISB001 // Dispose of proxies
 
-                var readmeStream = await _packageFileService.GetReadmeAsync(rawReadmeUrl, cancellationToken);
-                if (readmeStream is not null)
+                var readme = await _packageFileService.GetReadmeAsync(packageIdentity, cancellationToken);
+                if (!string.IsNullOrWhiteSpace(readme))
                 {
-                    using StreamReader streamReader = new StreamReader(readmeStream);
-                    var readme = await streamReader.ReadToEndAsync();
-                    if (!string.IsNullOrWhiteSpace(readme))
-                    {
-                        isErrorWithReadMe = false;
-                        canDetermineReadMeDefined = true;
-                        newReadMeValue = readme;
-                    }
+                    isErrorWithReadMe = false;
+                    canDetermineReadMeDefined = true;
+                    newReadMeValue = readme;
                 }
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             }

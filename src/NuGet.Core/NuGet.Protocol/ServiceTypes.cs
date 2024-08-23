@@ -18,6 +18,8 @@ namespace NuGet.Protocol
         public static readonly string Version510 = "/5.1.0";
         internal const string Version670 = "/6.7.0";
         internal const string Version6110 = "/6.11.0";
+        internal const string Version6120 = "/6.12.0";
+        internal const string PackageBaseAddress6120 = "PackageBaseAddress" + Version6120;
 
         public static readonly string[] SearchQueryService = { "SearchQueryService" + Versioned, "SearchQueryService" + Version340, "SearchQueryService" + Version300beta };
         public static readonly string[] RegistrationsBaseUrl = { $"RegistrationsBaseUrl{Versioned}", $"RegistrationsBaseUrl{Version360}", $"RegistrationsBaseUrl{Version340}", $"RegistrationsBaseUrl{Version300rc}", $"RegistrationsBaseUrl{Version300beta}", "RegistrationsBaseUrl" };
@@ -26,10 +28,11 @@ namespace NuGet.Protocol
         public static readonly string[] PackageDetailsUriTemplate = { "PackageDetailsUriTemplate" + Version510 };
         public static readonly string[] LegacyGallery = { "LegacyGallery" + Versioned, "LegacyGallery" + Version200 };
         public static readonly string[] PackagePublish = { "PackagePublish" + Versioned, "PackagePublish" + Version200 };
-        public static readonly string[] PackageBaseAddress = { "PackageBaseAddress" + Versioned, "PackageBaseAddress" + Version300 };
+        public static readonly string[] PackageBaseAddress = { "PackageBaseAddress" + Versioned, PackageBaseAddress6120, "PackageBaseAddress" + Version300 };
         public static readonly string[] RepositorySignatures = { "RepositorySignatures" + Version500, "RepositorySignatures" + Version490, "RepositorySignatures" + Version470 };
         public static readonly string[] SymbolPackagePublish = { "SymbolPackagePublish" + Version490 };
         internal static readonly string[] VulnerabilityInfo = { "VulnerabilityInfo" + Version670 };
         internal static readonly string[] OwnerDetailsUriTemplate = { "OwnerDetailsUriTemplate" + Version6110 };
     }
+
 }

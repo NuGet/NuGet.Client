@@ -107,7 +107,7 @@ namespace NuGet.Protocol
         public Uri ReadmeUrl { get; private set; }
 
         [JsonIgnore]
-        public Uri RawReadmeUrl { get; private set; }
+        public Uri RawReadmeUrl { get; internal set; }
 
         [JsonIgnore]
         public Uri ReportAbuseUrl { get; set; }

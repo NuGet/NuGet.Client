@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
 using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.Packaging.Core;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 
@@ -103,7 +104,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    await ReadMeViewModel.LoadReadmeAsync(newValue.RawReadmeUrl, _loadCts.Token);
+                    await ReadMeViewModel.LoadReadmeAsync(new PackageIdentity(newValue.Id, newValue.Version), _loadCts.Token);
                 })
                 .PostOnFailure(nameof(PackageMetadataReadMeControl));
             }

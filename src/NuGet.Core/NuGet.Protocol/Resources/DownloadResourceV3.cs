@@ -3,12 +3,14 @@
 
 using System;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Events;
+using NuGet.Versioning;
 
 namespace NuGet.Protocol
 {
@@ -21,6 +23,7 @@ namespace NuGet.Protocol
         private readonly RegistrationResourceV3 _regResource;
         private readonly HttpSource _client;
         private readonly string _packageBaseAddressUrl;
+        private readonly bool _canDownloadReadme;
 
         /// <summary>
         /// Download packages using the download url found in the registration resource.
@@ -41,7 +44,7 @@ namespace NuGet.Protocol
             {
                 throw new ArgumentNullException(nameof(regResource));
             }
-
+            _canDownloadReadme = false;
             _source = source;
             _regResource = regResource;
         }
@@ -51,7 +54,7 @@ namespace NuGet.Protocol
         /// </summary>
         [Obsolete("Use constructor with source parameter")]
         public DownloadResourceV3(HttpSource client, string packageBaseAddress)
-            : this(source: null, client, packageBaseAddress)
+            : this(source: null, client, packageBaseAddress, false)
         {
         }
 
@@ -69,6 +72,13 @@ namespace NuGet.Protocol
             _source = source;
             _packageBaseAddressUrl = packageBaseAddress.TrimEnd('/');
         }
+
+        internal DownloadResourceV3(string source, HttpSource client, string packageBaseAddress, bool canDownloadReadme)
+            : this(source, client, packageBaseAddress)
+        {
+            _canDownloadReadme = canDownloadReadme;
+        }
+
 
         private DownloadResourceV3(HttpSource client)
         {
@@ -173,6 +183,16 @@ namespace NuGet.Protocol
                     method: nameof(GetDownloadResourceResultAsync),
                     duration: stopwatch.Elapsed));
             }
+        }
+
+        internal Uri GetReadmeUrl(string id, NuGetVersion version)
+        {
+            if (_canDownloadReadme)
+            {
+                // Construct the url
+                return new Uri($"{_packageBaseAddressUrl}/{id.ToLowerInvariant()}/{version.ToNormalizedString().ToLowerInvariant()}/readme");
+            }
+            return null;
         }
     }
 }
