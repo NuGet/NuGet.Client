@@ -20,11 +20,12 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         private const string MonikerPackageRestoreAutomatic = "packageRestore.packageRestoreAutomatic";
         private const string MonikerSkipBindingRedirects = "bindingRedirects.skipBindingRedirects";
         private const string MonikerDefaultPackageManagementFormat = "packageManagement.defaultPackageManagementFormat";
-        //package-reference
-        //packages-config
+        private const string MonikerPackageReference = "package-reference";
+        private const string MonikerPackagesConfig = "packages-config";
         private const string MonikerShowPackageManagementChooser = "packageManagement.showPackageManagementChooser";
 
         private readonly ISettings _settings;
+        private readonly VSSettings _vsSettings;
         //private readonly INuGetUILogger _outputConsoleLogger;
         //private readonly LocalsCommandRunner _localsCommandRunner;
 
@@ -36,10 +37,22 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         {
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
             _settings = componentModel.GetService<ISettings>();
-            //_outputConsoleLogger = componentModel.GetService<INuGetUILogger>();
-            //_localsCommandRunner = new LocalsCommandRunner();
+            _vsSettings = _settings as VSSettings;
+            if (_vsSettings != null)
+            {
+                _vsSettings.SettingsChanged += VsSettings_SettingsChanged;
+            }
             Debug.Assert(_settings != null);
         }
+
+        private void VsSettings_SettingsChanged(object sender, EventArgs e)
+        {
+            _packageRestoreConsent = null;
+            _bindingRedirectBehavior = null;
+            _packageManagementFormat = null;
+            SettingValuesChanged.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
+        }
+
         private BindingRedirectBehavior BindingRedirectBehavior
         {
             get
@@ -79,13 +92,17 @@ namespace NuGet.PackageManagement.VisualStudio.Services
             }
         }
 
-        public event EventHandler<ExternalSettingsChangedEventArgs> SettingValuesChanged { add { } remove { } }
+        public event EventHandler<ExternalSettingsChangedEventArgs> SettingValuesChanged;
         public event EventHandler<EnumSettingChoicesChangedEventArgs> EnumSettingChoicesChanged { add { } remove { } }
         public event EventHandler<DynamicMessageTextChangedEventArgs> DynamicMessageTextChanged { add { } remove { } }
         public event EventHandler ErrorConditionResolved { add { } remove { } }
 
         public void Dispose()
         {
+            if (_vsSettings != null)
+            {
+                _vsSettings.SettingsChanged -= VsSettings_SettingsChanged;
+            }
         }
 
         public Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
@@ -172,9 +189,15 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                     }
                 case MonikerDefaultPackageManagementFormat:
                     {
-                        if (value is int intValue)
+                        if (value is string strValue)
                         {
-                            PackageManagementFormat.SelectedPackageManagementFormat = intValue;
+                            PackageManagementFormat.SelectedPackageManagementFormat = strValue switch
+                            {
+                                MonikerPackagesConfig => 0,
+                                MonikerPackageReference => 1,
+                                _ => throw new ApplicationException("Error saving setting!"),
+                            };
+
                             return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
                         }
                         break;
@@ -205,8 +228,8 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 
             T strValue = input switch
             {
-                0 => (T)(object)"packages-config",
-                1 => (T)(object)"package-reference",
+                0 => (T)(object)MonikerPackagesConfig,
+                1 => (T)(object)MonikerPackageReference,
                 _ => throw new ApplicationException("Error reading setting!"),
             };
 
