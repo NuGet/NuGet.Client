@@ -5111,12 +5111,62 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public async Task InstallFromSourceAsync_NupkgWithNonNormalizedPaths_FixesPathsToExtract()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var source = Path.Combine(testDirectory, "source");
+                Directory.CreateDirectory(source);
+                var resolver = new VersionFolderPathResolver(Path.Combine(testDirectory, "gpf"));
+                var identity = new PackageIdentity("A", new NuGetVersion("1.2.3"));
+
+                var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                   source,
+                   identity.Id,
+                   identity.Version.ToString(),
+                   entryModifiedTime: DateTimeOffset.Now,
+                   "path\\1",
+                   "path/2");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv3,
+                        XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        NullLogger.Instance);
+
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        source,
+                        Path.Combine(source, $"{identity.Id}.{identity.Version}.nupkg"),
+                        identity,
+                        NullLogger.Instance))
+                    {
+                        var installed = await PackageExtractor.InstallFromSourceAsync(
+                            identity,
+                            packageDownloader,
+                            resolver,
+                            packageExtractionContext,
+                            CancellationToken.None);
+
+                    }
+                }
+
+                // Assert
+                var packagePath = resolver.GetInstallPath(identity.Id, identity.Version);
+                Directory.Exists(packagePath).Should().BeTrue();
+                File.Exists(Path.Combine(packagePath, "path", "1")).Should().BeTrue();
+                File.Exists(Path.Combine(packagePath, "path", "2")).Should().BeTrue();
+            }
+        }
+
         private static bool FileExistsCaseSensitively(string expectedFilePath)
         {
             var directoryPath = Path.GetDirectoryName(expectedFilePath);
-
             return Directory
-                .GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly)
+            .GetFiles(directoryPath, "*", SearchOption.TopDirectoryOnly)
                 .Any(filePath => string.Equals(filePath, expectedFilePath, StringComparison.Ordinal));
         }
 
