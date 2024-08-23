@@ -5111,6 +5111,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        // This test is likely to only catch bugs on Linux/Mac, but there's little harm in running the test
+        // on Windows as well.
         [Fact]
         public async Task InstallFromSourceAsync_NupkgWithNonNormalizedPaths_FixesPathsToExtract()
         {

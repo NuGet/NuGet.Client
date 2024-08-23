@@ -312,9 +312,21 @@ namespace NuGet.Packaging
                     packageFileName = packageFileName.Substring(1);
                 }
 
-                // ZipArchive always has forward slashes in them. By replacing them with DirectorySeparatorChar;
-                // in windows, we get the windows-style path
-                var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
+                // While NuGet creates packages with forward slashes for directory separators, tools created by other people
+                // often do not normalize to forward slash when creating the zip on Windows. But Linux and Mac do not use
+                // back slashes as directory separators. In fact, back slash is a valid character in a file entry name.
+                // Therefore, normalize the path to ensure that packages created by unofficial tools are not broken
+                // on these platforms.
+                // Windows allows forward slashes as an alternate directory separator, so no normalization is needed there.
+                string normalizedPath;
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    normalizedPath = Uri.UnescapeDataString(packageFileName);
+                }
+                else
+                {
+                    normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('\\', Path.DirectorySeparatorChar));
+                }
 
                 destination = NormalizeDirectoryPath(destination);
                 ValidatePackageEntry(destination, normalizedPath, packageIdentity);
