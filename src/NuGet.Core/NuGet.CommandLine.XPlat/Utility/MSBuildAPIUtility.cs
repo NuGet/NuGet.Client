@@ -40,7 +40,6 @@ namespace NuGet.CommandLine.XPlat
         /// The name of the MSBuild property that represents the path to the central package management file, usually Directory.Packages.props.
         /// </summary>
         private const string DirectoryPackagesPropsPathPropertyName = "DirectoryPackagesPropsPath";
-        private const string DirectoryBuildPropsPathPropertyName = "DirectoryBuildPropsPath";
 
         public ILogger Logger { get; }
 
@@ -369,7 +368,7 @@ namespace NuGet.CommandLine.XPlat
         private void AddPackageVersionIntoItemGroupCPM(Project project, LibraryDependency libraryDependency)
         {
             // If onboarded to CPM get the directoryBuildPropsRootElement.
-            ProjectRootElement directoryBuildPropsRootElement = GetDirectoryPackagePropsRootElement(project);
+            ProjectRootElement directoryBuildPropsRootElement = GetDirectoryBuildPropsRootElement(project);
 
             // Get the ItemGroup to add a PackageVersion to or create a new one.
             var propsItemGroup = GetItemGroup(directoryBuildPropsRootElement.ItemGroups, PACKAGE_VERSION_TYPE_TAG) ?? directoryBuildPropsRootElement.AddItemGroup();
@@ -380,16 +379,16 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Get the Directory package props root element for projects onboarded to CPM.
+        /// Get the Directory build props root element for projects onboarded to CPM.
         /// </summary>
         /// <param name="project">Project that needs to be modified.</param>
-        /// <returns>The directory package props root element.</returns>
-        internal ProjectRootElement GetDirectoryPackagePropsRootElement(Project project)
+        /// <returns>The directory build props root element.</returns>
+        internal ProjectRootElement GetDirectoryBuildPropsRootElement(Project project)
         {
             // Get the Directory.Packages.props path.
             string directoryPackagesPropsPath = project.GetPropertyValue(DirectoryPackagesPropsPathPropertyName);
-            ProjectRootElement directoryPackagePropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath, PathUtility.GetStringComparisonBasedOnOS())).ImportedProject;
-            return directoryPackagePropsRootElement;
+            ProjectRootElement directoryBuildPropsRootElement = project.Imports.FirstOrDefault(i => i.ImportedProject.FullPath.Equals(directoryPackagesPropsPath, PathUtility.GetStringComparisonBasedOnOS())).ImportedProject;
+            return directoryBuildPropsRootElement;
         }
 
         /// <summary>
