@@ -141,7 +141,9 @@ namespace NuGet.CommandLine.XPlat
                         .Max();
                     if (centralVersion != null)
                     {
-                        packageDependency = new PackageDependency(packageReferenceArgs.PackageId, centralVersion.VersionRange);
+                        // Clone the VersionRange to set `OriginalString` to null
+                        var centralVersionRange = new VersionRange(centralVersion.VersionRange, centralVersion.VersionRange.Float);
+                        packageDependency = new PackageDependency(packageReferenceArgs.PackageId, centralVersionRange);
                     }
                 }
                 if (packageDependency == null)
