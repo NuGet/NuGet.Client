@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -85,6 +87,9 @@ namespace NuGet.Protocol.Plugins
                 }
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
+
+                // Get plugins added using .Net Tools
+                _pluginFiles.AddRange(GetNetToolsPluginFiles(cancellationToken));
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
@@ -139,6 +144,57 @@ namespace NuGet.Protocol.Plugins
 
             return files;
         }
+
+        private List<PluginFile> GetNetToolsPluginFiles(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var pluginFiles = new List<PluginFile>();
+            var paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+
+            foreach (var path in paths)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (Directory.Exists(path))
+                {
+                    var directoryInfo = new DirectoryInfo(path);
+                    var files = directoryInfo.GetFiles("nuget-plugin-*");
+
+                    foreach (var file in files)
+                    {
+                        if (IsValidPluginFile(file))
+                        {
+                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(file.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
+                            pluginFiles.Add(new PluginFile(file.FullName, state));
+                        }
+                    }
+                }
+            }
+
+            return pluginFiles;
+        }
+
+        private static bool IsValidPluginFile(FileInfo fileInfo)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return fileInfo.Extension.Equals(".exe", StringComparison.OrdinalIgnoreCase) ||
+                       fileInfo.Extension.Equals(".bat", StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                return fileInfo.Exists && (fileInfo.Attributes & FileAttributes.ReparsePoint) == 0 && IsExecutable(fileInfo);
+            }
+        }
+
+        private static bool IsExecutable(FileInfo fileInfo)
+        {
+            // TODO
+            // check if the files executable bit is set
+            return true;
+        }
+
 
         private IEnumerable<string> GetPluginFilePaths()
         {
