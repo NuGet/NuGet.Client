@@ -134,14 +134,15 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                 {
+                    Thread.Sleep(TimeSpan.FromSeconds(10));
                     var centralVersion = originalPackageSpec
                         .TargetFrameworks
+                        .Where(tf => tf.CentralPackageVersions.ContainsKey(packageReferenceArgs.PackageId))
                         .Select(tf => tf.CentralPackageVersions[packageReferenceArgs.PackageId])
-                        .Where(cpv => cpv != null)
                         .Max();
                     if (centralVersion != null)
                     {
-                        // Clone the VersionRange to set `OriginalString` to null
+                        // Clone VersionRange to set `OriginalString` to null
                         var centralVersionRange = new VersionRange(centralVersion.VersionRange, centralVersion.VersionRange.Float);
                         packageDependency = new PackageDependency(packageReferenceArgs.PackageId, centralVersionRange);
                     }
