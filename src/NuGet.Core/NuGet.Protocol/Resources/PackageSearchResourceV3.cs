@@ -142,7 +142,7 @@ namespace NuGet.Protocol
                 {
                     var types = string.Join("&",
                         filters.PackageTypes.Select(
-                            s => "packageTypeFilter=" + s));
+                            s => "packageType=" + s));
                     queryString += "&" + types;
                 }
 
