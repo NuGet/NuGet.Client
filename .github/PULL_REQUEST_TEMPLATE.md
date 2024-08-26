@@ -14,3 +14,10 @@ Fixes:
 - [ ] Meaningful title, helpful description and a linked NuGet/Home issue
 - [ ] Added tests
 - [ ] Link to an issue or pull request to update docs if this PR changes settings, environment variables, new feature, etc.
+
+<!--
+Note please make sure you follow the following guidlines.
+https://github.com/NuGet/NuGet.Client/blob/dev/docs/feature-guide.md
+https://github.com/NuGet/NuGet.Client/blob/dev/docs/coding-guidelines.md
+https://github.com/NuGet/NuGet.Client/blob/dev/docs/localizability.md
+-->
