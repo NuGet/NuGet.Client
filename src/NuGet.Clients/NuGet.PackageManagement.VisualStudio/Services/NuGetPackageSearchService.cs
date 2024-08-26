@@ -440,22 +440,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (itemFilter == ItemFilter.Installed)
             {
-                if (isSolution)
-                {
-                    // Installed Tab, Solution View: only needs installed packages.
-                    IReadOnlyCollection<IPackageReferenceContextInfo> installedSolutionTabPackages = await GetAllInstalledPackagesAsync(projectContextInfos, cancellationToken);
-                    PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedSolutionTabPackages);
-                    packageFeeds.mainFeed = new InstalledPackageFeed(installedPackageCollection, metadataProvider);
-                }
-                else // is Project
-                {
-                    // Installed Tab, Project View, Experiment On: needs installed, transitive packages and transitive origins data
-                    IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await PackageCollection.GetInstalledAndTransitivePackagesAsync(_serviceBroker, projectContextInfos, includeTransitiveOrigins: true, cancellationToken);
-                    PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
-                    PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
+                // Installed Tab: needs installed, transitive packages and transitive origins data
+                IInstalledAndTransitivePackages installedTabWithTransitiveOrigins = await PackageCollection.GetInstalledAndTransitivePackagesAsync(_serviceBroker, projectContextInfos, includeTransitiveOrigins: true, cancellationToken);
+                PackageCollection installedPackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.InstalledPackages);
+                PackageCollection transitivePackageCollection = PackageCollection.FromPackageReferences(installedTabWithTransitiveOrigins.TransitivePackages);
 
-                    packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
-                }
+                packageFeeds.mainFeed = new InstalledAndTransitivePackageFeed(installedPackageCollection, transitivePackageCollection, metadataProvider);
 
                 return packageFeeds;
             }
