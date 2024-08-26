@@ -672,11 +672,10 @@ namespace NuGet.Commands
         {
             if (!_ignoreWarning)
             {
-                var unWrapped = ExceptionUtilities.Unwrap(e) as ILogMessageException;
-
-                if (unWrapped != null)
+                var unwrappedLogMessage = UnwrapToLogMessage(e);
+                if (unwrappedLogMessage != null)
                 {
-                    ExceptionUtilities.LogException(e, logger);
+                    await logger.LogAsync(unwrappedLogMessage);
                 }
                 else
                 {
@@ -685,10 +684,22 @@ namespace NuGet.Commands
 
                     while (exception.InnerException != null)
                     {
-                        await logger.LogAsync(level: LogLevel.Error, e.InnerException.Message);
+                        await logger.LogAsync(level: LogLevel.Verbose, e.InnerException.Message);
                         exception = exception.InnerException;
                     }
                 }
+            }
+
+            static ILogMessage UnwrapToLogMessage(Exception e)
+            {
+                var currentException = ExceptionUtilities.Unwrap(e);
+                while ((currentException is FatalProtocolException || currentException is not ILogMessageException) && currentException != null)
+                {
+                    currentException = currentException.InnerException;
+                }
+                var logMessageException = currentException as ILogMessageException;
+
+                return logMessageException?.AsLogMessage();
             }
         }
     }
