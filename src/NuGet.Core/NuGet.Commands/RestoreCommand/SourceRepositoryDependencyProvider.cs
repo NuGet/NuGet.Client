@@ -672,29 +672,21 @@ namespace NuGet.Commands
         {
             if (!_ignoreWarning)
             {
-                // Sometimes, there's a better root cause for a source failures we log that instead of NU1301.
-                // We only do this for errors, and not warnings.
-                var unwrappedLogMessage = UnwrapToLogMessage(e);
-                if (unwrappedLogMessage != null)
+                var unWrapped = ExceptionUtilities.Unwrap(e) as ILogMessageException;
+
+                if (unWrapped != null)
                 {
-                    await logger.LogAsync(unwrappedLogMessage);
+                    ExceptionUtilities.LogException(e, logger);
                 }
                 else
                 {
                     await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, e.Message, id));
-                }
-            }
 
-            static ILogMessage UnwrapToLogMessage(Exception e)
-            {
-                var currentException = ExceptionUtilities.Unwrap(e);
-                while ((currentException is FatalProtocolException || currentException is not ILogMessageException) && currentException != null)
-                {
-                    currentException = currentException.InnerException;
+                    if (e.InnerException != null)
+                    {
+                        await logger.LogAsync(level: LogLevel.Error, e.InnerException.Message);
+                    }
                 }
-                var logMessageException = currentException as ILogMessageException;
-
-                return logMessageException?.AsLogMessage();
             }
         }
     }
