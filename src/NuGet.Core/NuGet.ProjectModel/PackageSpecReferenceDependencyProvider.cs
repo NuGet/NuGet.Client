@@ -344,8 +344,7 @@ namespace NuGet.ProjectModel
 
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
-                if (packageSpec.RestoreMetadata.UseLegacyDependencyResolver && packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true &&
-                    packageSpec.RestoreMetadata?.CentralPackageTransitivePinningEnabled == true)
+                if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true && packageSpec.RestoreMetadata?.CentralPackageTransitivePinningEnabled == true)
                 {
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
                     dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions
