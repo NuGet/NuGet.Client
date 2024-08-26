@@ -682,9 +682,11 @@ namespace NuGet.Commands
                 {
                     await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, e.Message, id));
 
-                    if (e.InnerException != null)
+                    while (e.InnerException != null)
                     {
                         await logger.LogAsync(level: LogLevel.Error, e.InnerException.Message);
+
+                        e = e.InnerException;
                     }
                 }
             }
