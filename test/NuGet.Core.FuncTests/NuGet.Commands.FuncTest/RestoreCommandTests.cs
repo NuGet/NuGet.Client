@@ -1298,7 +1298,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 // There will be compatibility errors, but we don't care
-                Assert.Equal(useLegacyResolver ? 25 : 26, installed.Count);
+                Assert.Equal(25, installed.Count);
                 Assert.Equal(0, unresolved.Count);
                 Assert.Equal(24, result.LockFile.Targets[0].Libraries.Count);
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());

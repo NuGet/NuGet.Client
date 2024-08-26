@@ -211,7 +211,7 @@ namespace NuGet.Commands
                     }
 
                     //else if we've seen this ref (but maybe not version) before check to see if we need to upgrade
-                    if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out ResolvedDependencyGraphItem chosenResolvedItem))
+                    if (chosenResolvedItems.TryGetValue(currentRefDependencyIndex, out ResolvedDependencyGraphItem? chosenResolvedItem))
                     {
                         LibraryDependency chosenRef = chosenResolvedItem.LibraryDependency;
                         LibraryRangeIndex chosenRefRangeIndex = chosenResolvedItem.LibraryRangeIndex;
@@ -242,11 +242,42 @@ namespace NuGet.Commands
                         VersionRange ovr = chosenRef.LibraryRange.VersionRange ?? VersionRange.All;
 
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
-
                         {
                             // What is this supposed to be?
                             if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                             {
+                                if (chosenResolvedItem.Parents != null)
+                                {
+                                    bool atLeastOneCommonAncestor = false;
+
+                                    foreach (var parentRangeIndex in chosenResolvedItem.Parents)
+                                    {
+                                        if (findLibraryEntryCache.TryGetValue(parentRangeIndex, out var parentCacheResult) && chosenResolvedItems.TryGetValue(parentCacheResult.DependencyIndex, out var parentResolvedItem))
+                                        {
+                                            bool commonParentAncestor = true;
+                                            for (int i = 0; i < importRefItem.Path.Length && i < parentResolvedItem.Path.Length; i++)
+                                            {
+                                                if (importRefItem.Path[i] != parentResolvedItem.Path[i])
+                                                {
+                                                    commonParentAncestor = false;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (commonParentAncestor)
+                                            {
+                                                atLeastOneCommonAncestor = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (atLeastOneCommonAncestor)
+                                    {
+                                        continue;
+                                    }
+                                }
+
                                 bool commonAncestry = true;
 
                                 for (int i = 0; i < importRefItem.Path.Length && i < chosenResolvedItem.Path.Length; i++)
@@ -360,6 +391,11 @@ namespace NuGet.Commands
                         else
                         //we are looking at same.  consider if its an upgrade.
                         {
+                            if (chosenResolvedItem.Parents == null)
+                            {
+                                chosenResolvedItem.Parents = new HashSet<LibraryRangeIndex>();
+                            }
+
                             chosenResolvedItem.Parents?.Add(pathToCurrentRef[pathToCurrentRef.Length - 1]);
 
                             //If the one we already have chosen is pure, then we can skip this one.  Processing it wont bring any new info
@@ -425,8 +461,6 @@ namespace NuGet.Commands
                                         isEqualOrSuperSetDisposition = true;
                                     }
                                 }
-
-                                chosenResolvedItem.Parents?.Add(pathToCurrentRef[pathToCurrentRef.Length - 1]);
 
                                 if (isEqualOrSuperSetDisposition)
                                 {
@@ -1069,21 +1103,27 @@ namespace NuGet.Commands
             return true;
         }
 
-        private struct ResolvedDependencyGraphItem
+        private class ResolvedDependencyGraphItem
         {
             public bool IsCentrallyPinnedTransitivePackage { get; set; }
 
             public bool IsDirectPackageReferenceFromRootProject { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
             public LibraryDependency LibraryDependency { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
             public LibraryRangeIndex LibraryRangeIndex { get; set; }
 
             public HashSet<LibraryRangeIndex>? Parents { get; set; }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
             public LibraryRangeIndex[] Path { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
             public List<SuppressionsAndVersionOverrides> SuppressionsAndVersionOverrides { get; set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         }
 
         private struct SuppressionsAndVersionOverrides
