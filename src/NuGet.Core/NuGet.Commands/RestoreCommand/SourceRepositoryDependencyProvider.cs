@@ -672,6 +672,8 @@ namespace NuGet.Commands
         {
             if (!_ignoreWarning)
             {
+                // Sometimes, there's a better root cause for a source failures we log that instead of NU1301.
+                // We only do this for errors, and not warnings.
                 var unwrappedLogMessage = UnwrapToLogMessage(e);
                 if (unwrappedLogMessage != null)
                 {
