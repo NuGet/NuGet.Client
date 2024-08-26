@@ -175,25 +175,26 @@ namespace NuGet.Commands
                 while (refImport.Count > 0)
                 {
                     DependencyGraphItem importRefItem = refImport.Dequeue();
-                    var currentRef = importRefItem.LibraryDependency!;
-                    var currentRefDependencyIndex = importRefItem.LibraryDependencyIndex;
-                    var currentRefRangeIndex = importRefItem.LibraryRangeIndex;
-                    var pathToCurrentRef = importRefItem.Path;
-                    var currentSuppressions = importRefItem.Suppressions;
-                    var currentOverrides = importRefItem.VersionOverrides!;
-                    var isCentrallyPinnedTransitivePackage = importRefItem.IsCentrallyPinnedTransitivePackage;
-                    var directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
+                    LibraryDependency currentRef = importRefItem.LibraryDependency!;
+                    LibraryDependencyIndex currentRefDependencyIndex = importRefItem.LibraryDependencyIndex;
+                    LibraryRangeIndex currentRefRangeIndex = importRefItem.LibraryRangeIndex;
+                    LibraryRangeIndex[] pathToCurrentRef = importRefItem.Path;
+                    HashSet<LibraryDependencyIndex>? currentSuppressions = importRefItem.Suppressions;
+                    IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides = importRefItem.VersionOverrides!;
+                    bool isCentrallyPinnedTransitivePackage = importRefItem.IsCentrallyPinnedTransitivePackage;
+                    bool directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
                     LibraryRangeIndex libraryRangeOfCurrentRef = importRefItem.LibraryRangeIndex;
 
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
-                    bool isProject = ((typeConstraint == LibraryDependencyTarget.Project) ||
-                                      (typeConstraint == (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)));
+
+                    bool isProject = (typeConstraint & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None; // TODO NK - This is incorrectly detecting project reference, check PackageSpecReferenceProvider
 
                     if (evictions.TryGetValue(libraryRangeOfCurrentRef, out var eviction))
                     {
                         (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
 
                         // If we evicted this same version previously, but the type constraint of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
+                        // This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
                         if (!((evictedTypeConstraint == LibraryDependencyTarget.PackageProjectExternal || evictedTypeConstraint == LibraryDependencyTarget.ExternalProject) &&
                             currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
                         {
@@ -221,11 +222,11 @@ namespace NuGet.Commands
 
                         if (packageReferenceFromRootProject)
                         {
-                            continue;
+                            continue; // This is literally Direct Dependency Wins....we could fix this probably
                         }
 
                         // We should evict on type constraint if the type constraint of the current ref is more stringent than the chosen ref.
-                        // This happens when a previous type constraint is broader (e.g. PackageProjectExternal) than the current type constraint (e.g. Package).
+                        // This happens when a previous type constraint is broader (e.g. PackageProjectExternal) than the current type constraint (e.g. Package). Prefer project over package
                         bool evictOnTypeConstraint = false;
                         if ((chosenRefRangeIndex == currentRefRangeIndex) && EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
                         {
@@ -243,7 +244,8 @@ namespace NuGet.Commands
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
 
                         {
-                            if (chosenRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal)
+                            // What is this supposed to be?
+                            if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                             {
                                 bool commonAncestry = true;
 
@@ -520,7 +522,7 @@ namespace NuGet.Commands
                     {
                         var dep = refItemResult.Item.Data.Dependencies[i];
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
-                        if ((dep.SuppressParent == LibraryIncludeFlags.All) && (isProject == false))
+                        if ((dep.SuppressParent == LibraryIncludeFlags.All) && (isProject == false)) // Why do we care whether this is a project? For suppressions, wouldn't it normally mean we suppress the package unless it's the current project.
                         {
                             if (suppressions == null)
                             {
@@ -531,7 +533,7 @@ namespace NuGet.Commands
 
                         if (isCentralPackageTransitivePinningEnabled)
                         {
-                            bool isTransitive = currentRefRangeIndex != rootProjectRefItem.LibraryRangeIndex && dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package;
+                            bool isTransitive = currentRefRangeIndex != rootProjectRefItem.LibraryRangeIndex && dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
                             bool isPinned = pinnedPackageVersions != null && pinnedPackageVersions.ContainsKey(depIndex);
 
                             if (dep.VersionOverride != null && (!isTransitive || !isPinned))
@@ -594,7 +596,7 @@ namespace NuGet.Commands
                         }
 
                         bool isCentrallyPinnedTransitiveDependency = false;
-                        bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && (dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
+                        bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
 
                         LibraryRangeIndex rangeIndex = LibraryRangeIndex.Invalid;
 

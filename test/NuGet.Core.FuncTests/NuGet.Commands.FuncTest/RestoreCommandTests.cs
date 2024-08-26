@@ -33,7 +33,7 @@ namespace NuGet.Commands.FuncTest
     using LocalPackageArchiveDownloader = Protocol.LocalPackageArchiveDownloader;
 
     [Collection(TestCollection.Name)]
-    public class RestoreCommandTests
+    public partial class RestoreCommandTests
     {
         private const string PrimarySourceName = "source";
 
@@ -1255,8 +1255,16 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
-        public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync()
+
+        // The new resolver handles downgrades through packages differently. The new resolver only allows downgrades at the project level.
+        // Detected package downgrade: System.Runtime from 4.0.20 to 4.0.0. Reference the package directly from the project to select a different version. 
+        // TestProject -> Moon.Owin.Localization 1.3.1 -> Moon.Localization 1.3.1 -> Moon.IO.FileSystem 1.1.2 -> System.IO.FileSystem 4.0.0 -> System.IO.FileSystem.Primitives 4.0.0 -> System.Runtime(>= 4.0.20) 
+        // TestProject -> Moon.Owin.Localization 1.3.1 -> Moon.Localization 1.3.1 -> Moon.IO.FileSystem 1.1.2 -> System.IO.FileSystem 4.0.0 -> System.Runtime(>= 4.0.0)
+        // https://www.nuget.org/packages/Moon.Owin.Localization/1.3.1#dependencies-body-tab -> https://www.nuget.org/packages/Moon.Localization/1.3.1 ->https://www.nuget.org/packages/Moon.IO.FileSystem/1.1.2 -> https://www.nuget.org/packages/System.IO.FileSystem/4.0.0#versions-body-tab -> https://www.nuget.org/packages/System.IO.FileSystem.Primitives/4.0.0
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync(bool useLegacyResolver)
         {
             // Arrange
             var sources = new List<PackageSource>
@@ -1269,6 +1277,7 @@ namespace NuGet.Commands.FuncTest
             {
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
+                spec.RestoreMetadata.UseLegacyDependencyResolver = useLegacyResolver;
 
                 AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
 
@@ -1289,12 +1298,13 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 // There will be compatibility errors, but we don't care
-                Assert.Equal(25, installed.Count);
+                Assert.Equal(useLegacyResolver ? 25 : 26, installed.Count);
                 Assert.Equal(0, unresolved.Count);
+                Assert.Equal(24, result.LockFile.Targets[0].Libraries.Count);
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
-
                 Assert.Equal(24, runtimeAssemblies.Count);
                 Assert.NotNull(jsonNetReference);
+                // TODO NK - Add equivalency test?
             }
         }
 
@@ -3982,6 +3992,14 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeTrue(because: logger.ShowMessages());
             result.LockFile.Libraries.Should().HaveCount(1);
             result.LockFile.LogMessages.Select(e => e.Code).Should().AllBeEquivalentTo(NuGetLogCode.NU1801);
+
+            static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
+            {
+                return new TestRestoreRequest(spec, sources, userPackagesFolder, new TestSourceCacheContext { IgnoreFailedSources = true }, logger)
+                {
+                    LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
+                };
+            }
         }
 
         [Fact]
@@ -4281,22 +4299,6 @@ namespace NuGet.Commands.FuncTest
             logger.Errors.Should().Be(0, because: logger.ShowErrors());
             logger.Warnings.Should().Be(1, because: logger.ShowWarnings());
         }
-
-        static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, string userPackagesFolder, List<PackageSource> sources, ILogger logger)
-        {
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(spec);
-            dgSpec.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
-
-            var testSourceCacheContext = new TestSourceCacheContext();
-            testSourceCacheContext.IgnoreFailedSources = true;
-            return new TestRestoreRequest(spec, sources, userPackagesFolder, testSourceCacheContext, logger)
-            {
-                LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
-                DependencyGraphSpec = dgSpec,
-            };
-        }
-
         private static void CreateFakeProjectFile(PackageSpec project2spec)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(project2spec.RestoreMetadata.ProjectUniqueName));
