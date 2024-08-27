@@ -681,9 +681,7 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, e.Message, id));
-
-                    logger.Log(LogLevel.Verbose, ExceptionUtilities.DisplayMessage(e));
+                    await logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1301, ExceptionUtilities.DisplayMessage(e), id));
                 }
             }
 
