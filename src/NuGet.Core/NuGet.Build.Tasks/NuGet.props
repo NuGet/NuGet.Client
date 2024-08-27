@@ -38,4 +38,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
   </PropertyGroup>
 
+  <!-- Extension point after Directory.Packages.props is imported. -->
+  <Import Project="$(CustomAfterDirectoryPackagesProps)" Condition="'$(CentralPackageVersionsFileImported)' == 'true' and '$(CustomAfterDirectoryPackagesProps)' != ''" />
+
 </Project>
