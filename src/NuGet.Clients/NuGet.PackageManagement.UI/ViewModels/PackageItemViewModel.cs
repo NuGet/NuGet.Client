@@ -843,7 +843,7 @@ namespace NuGet.PackageManagement.UI
 
                     DeprecationMetadata = deprecationMetadata;
                     IsPackageDeprecated = deprecationMetadata != null;
-                    VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
+                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1);
                 }
                 else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
                 {
@@ -851,7 +851,7 @@ namespace NuGet.PackageManagement.UI
                         await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    VulnerabilityMaxSeverity = vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1;
+                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
