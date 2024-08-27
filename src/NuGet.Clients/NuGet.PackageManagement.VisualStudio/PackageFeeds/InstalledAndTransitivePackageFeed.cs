@@ -32,9 +32,26 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<PackageCollectionItem> transitivePkgsWithOrigins = _transitivePackages
                 .Where(t => t.PackageReferences.All(x => x is ITransitivePackageReferenceContextInfo y && y.TransitiveOrigins.Any()));
 
-            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(_installedPackages.GetLatest(), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
-            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(transitivePkgsWithOrigins.GetLatest(), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
-            IPackageSearchMetadata[] items = installedItems.Concat(transitiveItems).ToArray();
+            // Get the metadata for the latest version of the installed packages and transitive packages
+            var installedPackagesGrouped = _installedPackages.GroupById();
+            var installedPackagesLatest = installedPackagesGrouped.Select(g => g.OrderByDescending(x => x.Version).First());
+
+            var latestTransitiveGrouped = transitivePkgsWithOrigins.GroupById();
+            var latestTransitivePackages = latestTransitiveGrouped.Select(g => g.OrderByDescending(x => x.Version).First());
+
+            IPackageSearchMetadata[] installedItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(installedPackagesLatest, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            IPackageSearchMetadata[] transitiveItems = await GetMetadataForPackagesAndSortAsync(PerformLookup(latestTransitivePackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+
+            // Get metedata from identity for the rest of the installed and transitive packages
+            var remainingInstalledItems = await GetMetadataFromIdentityForPackagesAndSortAsync(PerformLookup(installedPackagesGrouped.Select(g => g.OrderByDescending(x => x.Version).Skip(1)).SelectMany(s => s), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+            var remainingTransitiveItems = await GetMetadataFromIdentityForPackagesAndSortAsync(PerformLookup(latestTransitiveGrouped.Select(g => g.OrderByDescending(x => x.Version).Skip(1)).SelectMany(s => s), searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+
+            // Combine the installed and transitive packages
+            IPackageSearchMetadata[] items = installedItems
+                .Concat(remainingInstalledItems)
+                .Concat(transitiveItems)
+                .Concat(remainingTransitiveItems)
+                .ToArray();
 
             return CreateResult(items);
         }

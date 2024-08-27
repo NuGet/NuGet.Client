@@ -136,6 +136,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private IEnumerable<NuGetVersion> _installedVersions;
+        public IEnumerable<NuGetVersion> InstalledVersions
+        {
+            get
+            {
+                return _installedVersions;
+            }
+            set
+            {
+                _installedVersions = value;
+                OnPropertyChanged(nameof(InstalledVersions));
+            }
+        }
+
         /// <summary>
         /// The installed version of the package.
         /// </summary>
@@ -792,6 +806,26 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+
+        private async Task ReloadPackageVulnerabilitiesAsync()
+        {
+            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+
+            if (InstalledVersions is not null && _vulnerabilityService is not null)
+            {
+                foreach (var version in InstalledVersions)
+                {
+                    var identity = new PackageIdentity(Id, version);
+
+                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
+                    await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
+                }
+            }
+        }
+
         private async Task ReloadPackageMetadataAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
@@ -837,6 +871,15 @@ namespace NuGet.PackageManagement.UI
                     // if cancellationToken cancelled before the above is scheduled on UI thread, don't log fault telemetry
                 }
             }
+        }
+
+        public void UpdateInstalledPackagesVulnerabilities()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(ReloadPackageVulnerabilitiesAsync)
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVulnerabilitiesAsync));
+
+            OnPropertyChanged(nameof(Status));
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)

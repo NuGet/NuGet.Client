@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Services.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -54,6 +55,20 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, includePrerelease, t),
+                cancellationToken);
+
+            // The packages were originally sorted which is important because we skip based on that sort
+            // however, the asynchronous execution has randomly reordered the set. So, we need to resort.
+            return items.OrderBy(p => p.Identity.Id).ToArray();
+        }
+
+        internal static async Task<IPackageSearchMetadata[]> GetMetadataFromIdentityForPackagesAndSortAsync<T>(T[] packages, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) => Task.FromResult(PackageSearchMetadataBuilder.FromIdentity(p).Build()),
                 cancellationToken);
 
             // The packages were originally sorted which is important because we skip based on that sort
