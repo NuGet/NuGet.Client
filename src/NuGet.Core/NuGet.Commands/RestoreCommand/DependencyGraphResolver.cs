@@ -186,9 +186,6 @@ namespace NuGet.Commands
                     LibraryRangeIndex libraryRangeOfCurrentRef = importRefItem.LibraryRangeIndex;
 
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
-
-                    bool isProject = (typeConstraint & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None; // TODO NK - This is incorrectly detecting project reference, check PackageSpecReferenceProvider
-
                     if (evictions.TryGetValue(libraryRangeOfCurrentRef, out var eviction))
                     {
                         (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
@@ -556,7 +553,7 @@ namespace NuGet.Commands
                     {
                         var dep = refItemResult.Item.Data.Dependencies[i];
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
-                        if ((dep.SuppressParent == LibraryIncludeFlags.All) && (isProject == false)) // Why do we care whether this is a project? For suppressions, wouldn't it normally mean we suppress the package unless it's the current project.
+                        if ((dep.SuppressParent == LibraryIncludeFlags.All) && (importRefItem.LibraryDependencyIndex != rootProjectRefItem.LibraryDependencyIndex))
                         {
                             if (suppressions == null)
                             {

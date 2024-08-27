@@ -15,8 +15,6 @@ using Xunit;
 
 namespace NuGet.Commands.FuncTest
 {
-    // Tests that validate the equivalency of the old/new algorithm.
-    // The rule of thumb is everything that's a theory (ie providing new/old algo switch) is a difference, but everything that's a fact, instead calling ValidateRestoreAlgorithmEquivalency is a equivalent
     public partial class RestoreCommandTests
     {
         [Fact]
@@ -435,7 +433,6 @@ namespace NuGet.Commands.FuncTest
             var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
             var project2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0");
             var project3 = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
-            // todo NK - Add a better method
 
             var projectA = ProjectTestHelpers.GetPackageSpec("a", pathContext.SolutionRoot, framework: "net5.0");
             projectA.Version = new NuGetVersion("2.0.0");
