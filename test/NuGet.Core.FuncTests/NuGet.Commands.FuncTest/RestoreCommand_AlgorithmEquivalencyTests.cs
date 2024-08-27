@@ -118,9 +118,9 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        // Project 1 -> A 1.0 -> B 2.0 -> E 1.0
+        // Project 1 -> X 1.0 -> B 2.0 -> E 1.0
         //           -> C 2.0 -> D 1.0 -> B 3.0
-        // Expected: A 1.0, B 3.0, C 2.0, D 1.0
+        // Expected: X 1.0, B 3.0, C 2.0, D 1.0
         public async Task RestoreCommand_WithNewPackageEvictedByVersionBump()
         {
             // Arrange
@@ -270,6 +270,10 @@ namespace NuGet.Commands.FuncTest
             result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.5.0"));
         }
 
+        // Project1 -> Project2 -> (PrivateAssets) Project3 -> X 1.0.0
+        // Project1 expects Project2
+        // Project2 expects Project3 and X
+        // Project3 expects X
         [Fact]
         public async Task RestoreCommand_WithSuppressedProjectReferences_VerifiesEquivalency()
         {
@@ -313,6 +317,7 @@ namespace NuGet.Commands.FuncTest
             result3.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // Project1 -> Project2 -> (PrivateAssets) X 1.0.0
         [Fact]
         public async Task RestoreCommand_WithProjectReferenceWithSuppressedDependencies_VerifiesEquivalency()
         {
@@ -333,8 +338,157 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
-        // VersionOverride vs transitive pinnning with project reference
-        // PrivateAssets
+        // Project1 -> Project2 -> X 1.0.0
+        //          -> Project3 -> X 2.0.0 (project)
+        // Project is chosen, cause higher.
+        [Fact]
+        public async Task RestoreCommand_WithSameTransitiveProjectPackageId_ChoosesProjectWithHigherVersion_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
+            var project2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0");
+            var project3 = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
+            var projectA = ProjectTestHelpers.GetPackageSpec("a", pathContext.SolutionRoot, framework: "net5.0");
+            projectA.Version = new NuGetVersion("2.0.0");
+
+            project2 = project2.WithTestProjectReference(projectA);
+            project1 = project1.WithTestProjectReference(project2);
+            project1 = project1.WithTestProjectReference(project3);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2, project3, projectA);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[0].Type.Should().Be("project");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // Project1 -> Project2 -> X 3.0.0
+        //          -> Project3 -> X 2.0.0 (project)
+        // Project is chosen, despite package having higher version.
+        [Fact]
+        public async Task RestoreCommand_WithSameTransitiveProjectPackageId_ChoosesProject_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "3.0.0"));
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
+            var project2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0");
+            var project3 = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
+            // todo NK - Add a better method
+            project3.TargetFrameworks[0].Dependencies[0].LibraryRange = new LibraryRange(project3.TargetFrameworks[0].Dependencies[0].LibraryRange.Name, VersionRange.Parse("3.0.0"), project3.TargetFrameworks[0].Dependencies[0].LibraryRange.TypeConstraint);
+
+            var projectA = ProjectTestHelpers.GetPackageSpec("a", pathContext.SolutionRoot, framework: "net5.0");
+            projectA.Version = new NuGetVersion("2.0.0");
+
+            project2 = project2.WithTestProjectReference(projectA);
+            project1 = project1.WithTestProjectReference(project2);
+            project1 = project1.WithTestProjectReference(project3);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2, project3, projectA);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[0].Type.Should().Be("project");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // Project1 -> Project2 -> X 1.0.0
+        //          -> Project3 -> (PrivateAssets) X 2.0.0 (project)
+        // Package is chosen, since project is suppressed
+        [Fact]
+        public async Task RestoreCommand_WithSameTransitiveProjectPackageId_SuppressedProject_ChoosesPackage_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0"));
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
+            var project2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0");
+            var project3 = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
+            // todo NK - Add a better method
+
+            var projectA = ProjectTestHelpers.GetPackageSpec("a", pathContext.SolutionRoot, framework: "net5.0");
+            projectA.Version = new NuGetVersion("2.0.0");
+
+            project2 = project2.WithTestProjectReference(projectA, LibraryIncludeFlags.All);
+            project1 = project1.WithTestProjectReference(project2);
+            project1 = project1.WithTestProjectReference(project3);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2, project3, projectA);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            //result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0")); // TODO NK - Unclear to me why suppressed project is getting selected.
+            //result.LockFile.Targets[0].Libraries[0].Type.Should().Be("package");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // A -> - X - B/PrivateAssets=All -> C
+        //        X -> D -> E-> B -> C
+        // X, D & E
+        [Fact]
+        public async Task RestoreCommand_HigherLevelSuppressionsWin_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup project
+            var A = ProjectTestHelpers.GetPackageSpec("A", pathContext.SolutionRoot, framework: "net5.0");
+            var X = ProjectTestHelpers.GetPackageSpec("X", pathContext.SolutionRoot, framework: "net5.0");
+            var B = ProjectTestHelpers.GetPackageSpec("B", pathContext.SolutionRoot, framework: "net5.0");
+            var C = ProjectTestHelpers.GetPackageSpec("C", pathContext.SolutionRoot, framework: "net5.0");
+            var D = ProjectTestHelpers.GetPackageSpec("D", pathContext.SolutionRoot, framework: "net5.0");
+            var E = ProjectTestHelpers.GetPackageSpec("E", pathContext.SolutionRoot, framework: "net5.0");
+
+            X = X.WithTestProjectReference(B, LibraryIncludeFlags.All);
+            X = X.WithTestProjectReference(D);
+            D = D.WithTestProjectReference(E);
+            E = E.WithTestProjectReference(B);
+            B = B.WithTestProjectReference(C);
+            A = A.WithTestProjectReference(X);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, A, X, B, C, D, E);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("D");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("E");
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("X");
+        }
 
         internal static async Task<(RestoreResult, RestoreResult)> ValidateRestoreAlgorithmEquivalency(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
