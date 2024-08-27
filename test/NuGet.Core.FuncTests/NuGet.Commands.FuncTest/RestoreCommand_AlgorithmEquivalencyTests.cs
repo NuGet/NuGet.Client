@@ -313,6 +313,26 @@ namespace NuGet.Commands.FuncTest
             result3.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        [Fact]
+        public async Task RestoreCommand_WithProjectReferenceWithSuppressedDependencies_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
+            projectSpec2.TargetFrameworks[0].Dependencies[0].SuppressParent = LibraryIncludeFlags.All;
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
         // VersionOverride vs transitive pinnning with project reference
         // PrivateAssets
 
