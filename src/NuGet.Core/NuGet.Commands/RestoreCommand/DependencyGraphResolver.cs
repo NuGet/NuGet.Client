@@ -181,7 +181,6 @@ namespace NuGet.Commands
                     LibraryRangeIndex[] pathToCurrentRef = importRefItem.Path;
                     HashSet<LibraryDependencyIndex>? currentSuppressions = importRefItem.Suppressions;
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides = importRefItem.VersionOverrides!;
-                    bool isCentrallyPinnedTransitivePackage = importRefItem.IsCentrallyPinnedTransitivePackage;
                     bool directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
                     LibraryRangeIndex libraryRangeOfCurrentRef = importRefItem.LibraryRangeIndex;
 
@@ -214,7 +213,6 @@ namespace NuGet.Commands
                         LibraryRangeIndex chosenRefRangeIndex = chosenResolvedItem.LibraryRangeIndex;
                         LibraryRangeIndex[] pathChosenRef = chosenResolvedItem.Path;
                         bool packageReferenceFromRootProject = chosenResolvedItem.IsDirectPackageReferenceFromRootProject;
-                        bool isChosenItemCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
                         List<SuppressionsAndVersionOverrides> chosenSuppressions = chosenResolvedItem.SuppressionsAndVersionOverrides;
 
                         if (packageReferenceFromRootProject)
@@ -347,6 +345,9 @@ namespace NuGet.Commands
                             {
                                 goto ProcessDeepEviction;
                             }
+
+                            bool isCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
+
                             //Since this is a "new" choice, its gets a new import context list
                             chosenResolvedItems.Add(
                                 currentRefDependencyIndex,
@@ -354,9 +355,9 @@ namespace NuGet.Commands
                                 {
                                     LibraryDependency = currentRef,
                                     LibraryRangeIndex = currentRefRangeIndex,
-                                    Parents = isChosenItemCentrallyPinnedTransitivePackage ? new HashSet<LibraryRangeIndex>() { pathToCurrentRef[pathToCurrentRef.Length - 1] } : null,
+                                    Parents = isCentrallyPinnedTransitivePackage ? new HashSet<LibraryRangeIndex>() { pathToCurrentRef[pathToCurrentRef.Length - 1] } : null,
                                     Path = pathToCurrentRef,
-                                    IsCentrallyPinnedTransitivePackage = isChosenItemCentrallyPinnedTransitivePackage,
+                                    IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
                                     IsDirectPackageReferenceFromRootProject = directPackageReferenceFromRootProject,
                                     SuppressionsAndVersionOverrides = new List<SuppressionsAndVersionOverrides>
                                     {
@@ -406,6 +407,8 @@ namespace NuGet.Commands
                             {
                                 chosenResolvedItems.Remove(currentRefDependencyIndex);
 
+                                bool isCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
+
                                 //slightly evil, but works.. we should just shift to the current thing as ref?
                                 chosenResolvedItems.Add(
                                     currentRefDependencyIndex,
@@ -415,7 +418,7 @@ namespace NuGet.Commands
                                         LibraryRangeIndex = currentRefRangeIndex,
                                         Parents = chosenResolvedItem.Parents,
                                         Path = pathToCurrentRef,
-                                        IsCentrallyPinnedTransitivePackage = isChosenItemCentrallyPinnedTransitivePackage,
+                                        IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
                                         IsDirectPackageReferenceFromRootProject = packageReferenceFromRootProject,
                                         SuppressionsAndVersionOverrides = new List<SuppressionsAndVersionOverrides>
                                         {
@@ -465,6 +468,8 @@ namespace NuGet.Commands
                                 }
                                 else
                                 {
+                                    bool isCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
+
                                     //case of differently restrictive dispositions or less restrictive... we should technically be able to remove
                                     //a disposition if its less restrictive than another.  But we'll just add it to the list.
                                     chosenResolvedItems.Remove(currentRefDependencyIndex);
@@ -486,7 +491,7 @@ namespace NuGet.Commands
                                             LibraryRangeIndex = currentRefRangeIndex,
                                             Parents = chosenResolvedItem.Parents,
                                             Path = pathToCurrentRef,
-                                            IsCentrallyPinnedTransitivePackage = isChosenItemCentrallyPinnedTransitivePackage,
+                                            IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitivePackage,
                                             IsDirectPackageReferenceFromRootProject = packageReferenceFromRootProject,
                                             SuppressionsAndVersionOverrides = newImportDisposition
                                         });
@@ -496,6 +501,8 @@ namespace NuGet.Commands
                     }
                     else
                     {
+                        bool isCentrallyPinnedTransitivePackage = importRefItem.IsCentrallyPinnedTransitivePackage;
+
                         //This is now the thing we think is the highest version of this ref
                         chosenResolvedItems.Add(
                             currentRefDependencyIndex,
@@ -626,18 +633,25 @@ namespace NuGet.Commands
                             continue;
                         }
 
-                        bool isCentrallyPinnedTransitiveDependency = false;
-                        bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
+                        VersionRange? pinnedVersionRange = null;
+
+                        bool isPackage = dep.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package);
+                        bool isDirectPackageReferenceFromRootProject = (currentRefRangeIndex == rootProjectRefItem.LibraryRangeIndex) && isPackage;
+
+                        bool isCentrallyPinnedTransitiveDependency = isCentralPackageTransitivePinningEnabled
+                            && !isDirectPackageReferenceFromRootProject
+                            && isPackage
+                            && pinnedPackageVersions?.TryGetValue(depIndex, out pinnedVersionRange) == true;
 
                         LibraryRangeIndex rangeIndex = LibraryRangeIndex.Invalid;
 
                         LibraryDependency actualLibraryDependency = dep;
 
-                        if (!isDirectPackageReferenceFromRootProject && isCentralPackageTransitivePinningEnabled && pinnedPackageVersions?.TryGetValue(depIndex, out VersionRange? pinnedPackageVersion) == true)
+                        if (isCentrallyPinnedTransitiveDependency)
                         {
                             actualLibraryDependency = dep.Clone();
 
-                            actualLibraryDependency.LibraryRange.VersionRange = pinnedPackageVersion;
+                            actualLibraryDependency.LibraryRange.VersionRange = pinnedVersionRange;
 
                             isCentrallyPinnedTransitiveDependency = true;
 
