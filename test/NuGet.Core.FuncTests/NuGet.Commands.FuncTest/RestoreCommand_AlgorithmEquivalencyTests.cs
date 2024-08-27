@@ -19,14 +19,10 @@ namespace NuGet.Commands.FuncTest
     // The rule of thumb is everything that's a theory (ie providing new/old algo switch) is a difference, but everything that's a fact, instead calling ValidateRestoreAlgorithmEquivalency is a equivalent
     public partial class RestoreCommandTests
     {
-        [Theory]
-        //[InlineData(true)]
-        [InlineData(false)]
+        [Fact]
         // Project 1 -> a 1.0.0 -> b 1.0.0
         //                      -> c 1.0.0 -> b 2.0.0
-        // Old algorithm: When project 1 is restored, b 1.0.0 should be chosen since b 2.0.0 was explicitly downgraded to b 1.0.0 by a 1.0.0
-        // New algorithm: When project 1 is restored, B 2.0.0 is chosen since only project downgrades are supported
-        public async Task RestoreCommand_WithPackageDrivenDowngrade_RespectsDowngrade_AndRaisesWarning(bool useLegacyDependencyResolver)
+        public async Task RestoreCommand_WithPackageDrivenDowngrade_RespectsDowngrade_AndRaisesWarning()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -45,51 +41,30 @@ namespace NuGet.Commands.FuncTest
                 pathContext.SolutionRoot,
                 framework: "net472",
                 dependencyName: "a");
-            project1spec.RestoreMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolver;
 
-            var logger = new TestLogger();
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1spec));
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1spec);
 
-            // Act
-            RestoreResult result = await command.ExecuteAsync();
-
-            // Assert
+            // Additional assert
             result.Success.Should().BeTrue();
-            //if (useLegacyDependencyResolver)
-            //{
             result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1605]);
-            //}
-            //else
-            //{
-            //    result.LogMessages.Should().BeEmpty();
-            //}
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
-            //if (useLegacyDependencyResolver)
-            //{
             result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
-            //}
-            //else
-            //{
-            //    result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
-            //}
+
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [Fact]
         // Project 1 -> d 1.0.0 -> b 1.0.0
         // Project 1 -> a 1.0.0 -> b 1.0.0
         //                      -> c 1.0.0 -> b 2.0.0
-        // Old algorithm: When project 1 is restored, b 1.0.0 should be chosen since b 2.0.0 was explicitly downgraded to b 1.0.0 by a 1.0.0
-        // New algorithm: When project 1 is restored, B 2.0.0 is chosen since only project downgrades are supported
-        public async Task RestoreCommand_WithPackageDrivenDowngradeWithMultipleAncestors_RespectsDowngrade_AndRaisesWarning(bool useLegacyDependencyResolver)
+        public async Task RestoreCommand_WithPackageDrivenDowngradeWithMultipleAncestors_RespectsDowngrade_AndRaisesWarning()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -122,39 +97,19 @@ namespace NuGet.Commands.FuncTest
                   }
                 }";
 
-            var project1spec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, projectSpec);
-            project1spec.RestoreMetadata.UseLegacyDependencyResolver = useLegacyDependencyResolver;
-
-            var logger = new TestLogger();
-            var command = new RestoreCommand(ProjectTestHelpers.CreateRestoreRequest(pathContext, logger, project1spec));
-
-            // Act
-            RestoreResult result = await command.ExecuteAsync();
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, projectSpec));
 
             // Assert
             result.Success.Should().BeTrue();
-            //if (useLegacyDependencyResolver)
-            //{
             result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1605]);
-            //}
-            //else
-            //{
-            //    result.LogMessages.Should().BeEmpty();
-            //}
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
-            //if (useLegacyDependencyResolver)
-            //{
             result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
-            //}
-            //else
-            //{
-            //    result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
-            //}
+
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
 
@@ -391,19 +346,19 @@ namespace NuGet.Commands.FuncTest
             return result;
         }
 
-        internal static void ValidateRestoreResults(RestoreResult left, RestoreResult right)
+        internal static void ValidateRestoreResults(RestoreResult newAlgorithmResult, RestoreResult legacyResult)
         {
-            var leftPackageSpec = left.LockFile.PackageSpec;
-            var rightPackageSpec = right.LockFile.PackageSpec;
+            var leftPackageSpec = newAlgorithmResult.LockFile.PackageSpec;
+            var rightPackageSpec = legacyResult.LockFile.PackageSpec;
 
-            left.Success.Should().Be(right.Success);
-            left.LockFile.PackageSpec = null;
-            right.LockFile.PackageSpec = null;
-            left.LockFile.Should().Be(right.LockFile);
+            newAlgorithmResult.Success.Should().Be(legacyResult.Success);
+            newAlgorithmResult.LockFile.PackageSpec = null;
+            legacyResult.LockFile.PackageSpec = null;
+            newAlgorithmResult.LockFile.Should().Be(legacyResult.LockFile);
 
             //Reset package specs
-            left.LockFile.PackageSpec = leftPackageSpec;
-            right.LockFile.PackageSpec = rightPackageSpec;
+            newAlgorithmResult.LockFile.PackageSpec = leftPackageSpec;
+            legacyResult.LockFile.PackageSpec = rightPackageSpec;
         }
     }
 }
