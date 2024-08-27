@@ -42,17 +42,6 @@ namespace NuGet.Commands
             Errors = Array.Empty<IRestoreLogMessage>();
         }
 
-        public RestoreSummary(bool success, IEnumerable<RestoreLogMessage> errors)
-        {
-            Success = success;
-            NoOpRestore = false;
-            InputPath = null;
-            ConfigFiles = Array.Empty<string>();
-            FeedsUsed = Array.Empty<string>();
-            InstallCount = 0;
-            Errors = errors.ToArray();
-        }
-
         public RestoreSummary(
             RestoreResult result,
             string inputPath,

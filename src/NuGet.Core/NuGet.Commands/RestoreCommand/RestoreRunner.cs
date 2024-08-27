@@ -76,17 +76,8 @@ namespace NuGet.Commands
                 // Throttle and wait for a task to finish if we have hit the limit
                 if (restoreTasks.Count == maxTasks)
                 {
-#pragma warning disable CA1031 // Do not catch general exception types
-                    try
-                    {
-                        var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                        restoreSummaries.Add(restoreSummary);
-                    }
-                    catch (Exception ex)
-                    {
-                        HandleRestoreException(ex, restoreSummaries, log);
-                    }
-#pragma warning restore CA1031 // Do not catch general exception types
+                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                    restoreSummaries.Add(restoreSummary);
                 }
 
                 var request = requests.Dequeue();
@@ -98,33 +89,12 @@ namespace NuGet.Commands
             // Wait for all restores to finish
             while (restoreTasks.Count > 0)
             {
-#pragma warning disable CA1031 // Do not catch general exception types
-                try
-                {
-                    var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                    restoreSummaries.Add(restoreSummary);
-                }
-                catch (Exception ex)
-                {
-                    HandleRestoreException(ex, restoreSummaries, log);
-                }
-#pragma warning restore CA1031 // Do not catch general exception types
+                var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                restoreSummaries.Add(restoreSummary);
             }
 
             // Summary
             return restoreSummaries;
-        }
-
-        private static void HandleRestoreException(Exception ex, List<RestoreSummary> restoreSummaries, ILogger log)
-        {
-            var unWrapped = ExceptionUtilities.Unwrap(ex) as ILogMessageException;
-            if (unWrapped is null)
-            {
-                unWrapped = new RestoreCommandException(new RestoreLogMessage(LogLevel.Error, ex.Message));
-            }
-            RestoreSummary restoreSummary = new RestoreSummary(success: false, errors: new List<RestoreLogMessage>() { unWrapped.AsLogMessage() as RestoreLogMessage });
-            ExceptionUtilities.LogException(ex, log);
-            restoreSummaries.Add(restoreSummary);
         }
 
         /// <summary>
@@ -275,7 +245,7 @@ namespace NuGet.Commands
 
             // Run the restore
             var request = summaryRequest.Request;
-            if (request.Project.FilePath == "N:\\trash\\multiprojectWithOneErrors\\bad\\bad.csproj") { throw new Exception("Test error"); }
+
             var command = new RestoreCommand(request);
             if (NuGetEventSource.IsEnabled) TraceEvents.RestoreProjectStart(request.Project.FilePath);
             var result = await command.ExecuteAsync(token);
