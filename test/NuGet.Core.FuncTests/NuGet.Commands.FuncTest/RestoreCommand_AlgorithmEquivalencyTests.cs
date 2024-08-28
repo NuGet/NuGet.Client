@@ -119,7 +119,7 @@ namespace NuGet.Commands.FuncTest
         // Project 1 -> d 1.0.0 -> b 2.0.0
         // Project 1 -> a 1.0.0 -> b 1.0.0
         //                      -> c 1.0.0 -> b 3.0.0
-        public async Task RestoreCommand_WithPackageDrivenDowngradeWithMultipleAncestorsAndCousin_RespectsDowngrade_AndRaisesWarning()
+        public async Task RestoreCommand_WithPackageDrivenDowngradeWithMultipleAncestorsAndCousin_RespectsDowngrade_AndDoesNotRaiseWarning()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -156,14 +156,14 @@ namespace NuGet.Commands.FuncTest
 
             // Assert
             result.Success.Should().BeTrue();
-            result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1605]);
+            result.LogMessages.Should().BeEmpty();
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
-            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
 
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));

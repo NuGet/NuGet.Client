@@ -244,25 +244,12 @@ namespace NuGet.Commands
                                 {
                                     bool atLeastOneCommonAncestor = false;
 
-                                    foreach (var parentRangeIndex in chosenResolvedItem.Parents)
+                                    foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.Parents.NoAllocEnumerate())
                                     {
-                                        if (findLibraryEntryCache.TryGetValue(parentRangeIndex, out var parentCacheResult) && chosenResolvedItems.TryGetValue(parentCacheResult.DependencyIndex, out var parentResolvedItem))
+                                        if (importRefItem.Path.Contains(parentRangeIndex))
                                         {
-                                            bool commonParentAncestor = true;
-                                            for (int i = 0; i < importRefItem.Path.Length && i < parentResolvedItem.Path.Length; i++)
-                                            {
-                                                if (importRefItem.Path[i] != parentResolvedItem.Path[i])
-                                                {
-                                                    commonParentAncestor = false;
-                                                    break;
-                                                }
-                                            }
-
-                                            if (commonParentAncestor)
-                                            {
-                                                atLeastOneCommonAncestor = true;
-                                                break;
-                                            }
+                                            atLeastOneCommonAncestor = true;
+                                            break;
                                         }
                                     }
 
@@ -272,20 +259,28 @@ namespace NuGet.Commands
                                     }
                                 }
 
-                                bool commonAncestry = true;
-
-                                for (int i = 0; i < importRefItem.Path.Length && i < chosenResolvedItem.Path.Length; i++)
-                                {
-                                    if (importRefItem.Path[i] != chosenResolvedItem.Path[i])
-                                    {
-                                        commonAncestry = false;
-                                        break;
-                                    }
-                                }
-
-                                if (commonAncestry)
+                                if (HasCommonAncestor(importRefItem.Path, chosenResolvedItem.Path))
                                 {
                                     continue;
+                                }
+
+                                if (chosenResolvedItem.ParentPathsThatHaveBeenEclipsed != null)
+                                {
+                                    bool hasAlreadyBeenEclipsed = false;
+
+                                    foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.ParentPathsThatHaveBeenEclipsed)
+                                    {
+                                        if (importRefItem.Path.Contains(parentRangeIndex))
+                                        {
+                                            hasAlreadyBeenEclipsed = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (hasAlreadyBeenEclipsed)
+                                    {
+                                        continue;
+                                    }
                                 }
                             }
 
@@ -383,6 +378,16 @@ namespace NuGet.Commands
                         //if its lower we'll never do anything other than skip it.
                         else if (!VersionRangePreciseEquals(ovr, nvr))
                         {
+                            if (!HasCommonAncestor(chosenResolvedItem.Path, pathToCurrentRef))
+                            {
+                                if (chosenResolvedItem.ParentPathsThatHaveBeenEclipsed == null)
+                                {
+                                    chosenResolvedItem.ParentPathsThatHaveBeenEclipsed = new HashSet<LibraryRangeIndex>();
+                                }
+
+                                chosenResolvedItem.ParentPathsThatHaveBeenEclipsed.Add(pathToCurrentRef[pathToCurrentRef.Length - 1]);
+                            }
+
                             continue;
                         }
                         else
@@ -734,7 +739,7 @@ namespace NuGet.Commands
                 //Now that we've completed import, figure out the short real flattened list
                 var flattenedGraphItems = new HashSet<GraphItem<RemoteResolveResult>>();
                 HashSet<LibraryDependencyIndex> visitedItems = new HashSet<LibraryDependencyIndex>();
-                Queue<(LibraryDependencyIndex, GraphNode<RemoteResolveResult>)> itemsToFlatten = new Queue<(LibraryDependencyIndex, GraphNode<RemoteResolveResult>)>();
+                Queue<(LibraryDependencyIndex, LibraryRangeIndex, GraphNode<RemoteResolveResult>)> itemsToFlatten = new();
                 var graphNodes = new List<GraphNode<RemoteResolveResult>>();
 
                 LibraryDependencyIndex initialProjectIndex = rootProjectRefItem.LibraryDependencyIndex;
@@ -749,14 +754,14 @@ namespace NuGet.Commands
                 var analyzeResult = new AnalyzeResult<RemoteResolveResult>();
                 var nodesById = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
 
-                var downgrades = new Dictionary<LibraryRangeIndex, (GraphNode<RemoteResolveResult> OuterNode, LibraryDependency LibraryDependency)>();
+                var downgrades = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex FromParent, LibraryDependency FromLibraryDependency, LibraryRangeIndex ToParent, LibraryDependency ToLibraryDependency, bool IsCentralTransitive)>();
 
                 var versionConflicts = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
 
-                itemsToFlatten.Enqueue((initialProjectIndex, rootGraphNode));
+                itemsToFlatten.Enqueue((initialProjectIndex, cri.LibraryRangeIndex, rootGraphNode));
                 while (itemsToFlatten.Count > 0)
                 {
-                    (LibraryDependencyIndex currentDependencyIndex, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
+                    (LibraryDependencyIndex currentDependencyIndex, LibraryRangeIndex currentLibraryRangeIndex, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
                     if (!chosenResolvedItems.TryGetValue(currentDependencyIndex, out var foundItem))
                     {
                         continue;
@@ -828,7 +833,45 @@ namespace NuGet.Commands
                                     // Downgrade
                                     if (!downgrades.ContainsKey(chosenItemRangeIndex))
                                     {
-                                        downgrades.Add(chosenItemRangeIndex, (currentGraphNode, dep));
+                                        if (chosenItem.ParentPathsThatHaveBeenEclipsed != null)
+                                        {
+                                            bool hasBeenEclipsedByParent = false;
+
+                                            foreach (var parent in chosenItem.ParentPathsThatHaveBeenEclipsed)
+                                            {
+                                                if (foundItem.Path.Contains(parent))
+                                                {
+                                                    hasBeenEclipsedByParent = true;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (hasBeenEclipsedByParent)
+                                            {
+                                                continue;
+                                            }
+                                        }
+
+                                        bool foundParentDowngrade = false;
+
+                                        if (chosenItem.Parents != null)
+                                        {
+                                            foreach (var parent in chosenItem.Parents)
+                                            {
+                                                if (foundItem.Path.Contains(parent))
+                                                {
+                                                    downgrades.Add(chosenItemRangeIndex, (foundItem.LibraryRangeIndex, dep, parent, chosenItem.LibraryDependency, false));
+
+                                                    foundParentDowngrade = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (!foundParentDowngrade)
+                                        {
+                                            downgrades.Add(chosenItemRangeIndex, (foundItem.LibraryRangeIndex, dep, chosenItem.Path[chosenItem.Path.Length - 1], chosenItem.LibraryDependency, false));
+                                        }
                                     }
 
                                     continue;
@@ -871,7 +914,7 @@ namespace NuGet.Commands
 
                             if (dep.SuppressParent != LibraryIncludeFlags.All && isCentralPackageTransitivePinningEnabled && !downgrades.ContainsKey(chosenItemRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenItem.LibraryDependency.LibraryRange.VersionRange, dep.LibraryRange.VersionRange))
                             {
-                                downgrades.Add(chosenItem.LibraryRangeIndex, (currentGraphNode, dep));
+                                downgrades.Add(chosenItem.LibraryRangeIndex, (currentLibraryRangeIndex, dep, currentLibraryRangeIndex, chosenItem.LibraryDependency, true));
                             }
 
                             if (newGraphNode.Item.Key.Type != LibraryType.Project && newGraphNode.Item.Key.Type != LibraryType.ExternalProject && newGraphNode.Item.Key.Type != LibraryType.Unresolved && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && dep.LibraryRange.VersionRange != null && !dep.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version) && !downgrades.ContainsKey(chosenItemRangeIndex))
@@ -894,7 +937,7 @@ namespace NuGet.Commands
                             }
 
                             nodesById.Add(chosenItemRangeIndex, newGraphNode);
-                            itemsToFlatten.Enqueue((depIndex, newGraphNode));
+                            itemsToFlatten.Enqueue((depIndex, chosenItemRangeIndex, newGraphNode));
 
                             if (newGraphNode.Item.Key.Type == LibraryType.Unresolved)
                             {
@@ -932,21 +975,26 @@ namespace NuGet.Commands
                 {
                     foreach (var downgrade in downgrades)
                     {
-                        if (!nodesById.TryGetValue(downgrade.Key, out var downgradedTo))
+                        if (!nodesById.TryGetValue(downgrade.Value.FromParent, out GraphNode<RemoteResolveResult>? fromNode) || !nodesById.TryGetValue(downgrade.Value.ToParent, out GraphNode<RemoteResolveResult>? toNode))
                         {
                             continue;
                         }
 
-                        var downgradedFrom = new GraphNode<RemoteResolveResult>(downgrade.Value.LibraryDependency.LibraryRange)
-                        {
-                            Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(downgrade.Value.LibraryDependency.Name, downgrade.Value.LibraryDependency.LibraryRange.VersionRange?.MinVersion!, LibraryType.Package)),
-                            OuterNode = downgrade.Value.OuterNode
-                        };
-
                         analyzeResult.Downgrades.Add(new DowngradeResult<RemoteResolveResult>
                         {
-                            DowngradedFrom = downgradedFrom,
-                            DowngradedTo = downgradedTo
+                            DowngradedFrom = new GraphNode<RemoteResolveResult>(downgrade.Value.FromLibraryDependency.LibraryRange)
+                            {
+                                Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(downgrade.Value.FromLibraryDependency.Name, downgrade.Value.FromLibraryDependency.LibraryRange.VersionRange?.MinVersion!, LibraryType.Package)),
+                                OuterNode = fromNode
+                            },
+                            DowngradedTo = new GraphNode<RemoteResolveResult>(downgrade.Value.ToLibraryDependency.LibraryRange)
+                            {
+                                Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(downgrade.Value.ToLibraryDependency.Name, downgrade.Value.ToLibraryDependency.LibraryRange.VersionRange?.MinVersion!, LibraryType.Package))
+                                {
+                                    IsCentralTransitive = downgrade.Value.IsCentralTransitive
+                                },
+                                OuterNode = toNode,
+                            }
                         });
                     }
                 }
@@ -1071,6 +1119,19 @@ namespace NuGet.Commands
             return false;
         }
 
+        private static bool HasCommonAncestor(LibraryRangeIndex[] left, LibraryRangeIndex[] right)
+        {
+            for (int i = 0; i < left.Length && i < right.Length; i++)
+            {
+                if (left[i] != right[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private static bool VersionRangePreciseEquals(VersionRange a, VersionRange b)
         {
             if (ReferenceEquals(a, b))
@@ -1126,6 +1187,8 @@ namespace NuGet.Commands
             public LibraryRangeIndex LibraryRangeIndex { get; set; }
 
             public HashSet<LibraryRangeIndex>? Parents { get; set; }
+
+            public HashSet<LibraryRangeIndex>? ParentPathsThatHaveBeenEclipsed { get; set; }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
             public LibraryRangeIndex[] Path { get; set; }
