@@ -1304,7 +1304,6 @@ namespace NuGet.Commands.FuncTest
                 Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
                 Assert.Equal(24, runtimeAssemblies.Count);
                 Assert.NotNull(jsonNetReference);
-                // TODO NK - Add equivalency test?
             }
         }
 

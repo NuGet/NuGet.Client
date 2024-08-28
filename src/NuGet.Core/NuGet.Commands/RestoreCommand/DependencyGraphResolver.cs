@@ -215,13 +215,13 @@ namespace NuGet.Commands
                         bool packageReferenceFromRootProject = chosenResolvedItem.IsDirectPackageReferenceFromRootProject;
                         List<SuppressionsAndVersionOverrides> chosenSuppressions = chosenResolvedItem.SuppressionsAndVersionOverrides;
 
-                        if (packageReferenceFromRootProject)
+                        if (packageReferenceFromRootProject) // direct dependencies always win.
                         {
-                            continue; // This is literally Direct Dependency Wins....we could fix this probably
+                            continue;
                         }
 
                         // We should evict on type constraint if the type constraint of the current ref is more stringent than the chosen ref.
-                        // This happens when a previous type constraint is broader (e.g. PackageProjectExternal) than the current type constraint (e.g. Package). Prefer project over package
+                        // This happens when a previous type constraint is broader (e.g. PackageProjectExternal) than the current type constraint (e.g. Package).
                         bool evictOnTypeConstraint = false;
                         if ((chosenRefRangeIndex == currentRefRangeIndex) && EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
                         {
@@ -238,7 +238,6 @@ namespace NuGet.Commands
 
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
-                            // What is this supposed to be?
                             if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                             {
                                 if (chosenResolvedItem.Parents != null)

@@ -145,7 +145,6 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
-            // Use the new resolver unless transitive pinning is disabled or the user has not explicitly opted out of using it
             _enableNewDependencyResolver = !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
         }
 
