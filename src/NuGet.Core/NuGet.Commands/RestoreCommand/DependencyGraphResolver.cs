@@ -759,6 +759,9 @@ namespace NuGet.Commands
                 var versionConflicts = new Dictionary<LibraryRangeIndex, GraphNode<RemoteResolveResult>>();
 
                 itemsToFlatten.Enqueue((initialProjectIndex, cri.LibraryRangeIndex, rootGraphNode));
+
+                nodesById.Add(cri.LibraryRangeIndex, rootGraphNode);
+
                 while (itemsToFlatten.Count > 0)
                 {
                     (LibraryDependencyIndex currentDependencyIndex, LibraryRangeIndex currentLibraryRangeIndex, GraphNode<RemoteResolveResult> currentGraphNode) = itemsToFlatten.Dequeue();
@@ -1174,6 +1177,7 @@ namespace NuGet.Commands
             return true;
         }
 
+        [DebuggerDisplay("{LibraryDependency}, RangeIndex={LibraryRangeIndex}")]
         private class ResolvedDependencyGraphItem
         {
             public bool IsCentrallyPinnedTransitivePackage { get; set; }
@@ -1273,7 +1277,7 @@ namespace NuGet.Commands
             }
         }
 
-        [DebuggerDisplay("{LibraryDependency}")]
+        [DebuggerDisplay("{LibraryDependency}, DependencyIndex={LibraryDependencyIndex}, RangeIndex={LibraryRangeIndex}")]
         private class DependencyGraphItem
         {
             public bool IsCentrallyPinnedTransitivePackage { get; set; }
@@ -1284,6 +1288,7 @@ namespace NuGet.Commands
 
             public LibraryDependencyIndex LibraryDependencyIndex { get; set; } = LibraryDependencyIndex.Invalid;
 
+            [DebuggerDisplay("Hello")]
             public LibraryRangeIndex LibraryRangeIndex { get; set; } = LibraryRangeIndex.Invalid;
 
             public LibraryRangeIndex[] Path { get; set; } = Array.Empty<LibraryRangeIndex>();
@@ -1291,6 +1296,11 @@ namespace NuGet.Commands
             public HashSet<LibraryDependencyIndex>? Suppressions { get; set; }
 
             public IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? VersionOverrides { get; set; }
+
+            private string GetLibraryRange()
+            {
+                return LibraryDependency?.LibraryRange.ToString() ?? string.Empty;
+            }
         }
 
         private class FindLibraryEntryResult
