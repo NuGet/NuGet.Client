@@ -1255,56 +1255,37 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-
-        // The new resolver handles downgrades through packages differently. The new resolver only allows downgrades at the project level.
-        // Detected package downgrade: System.Runtime from 4.0.20 to 4.0.0. Reference the package directly from the project to select a different version. 
-        // TestProject -> Moon.Owin.Localization 1.3.1 -> Moon.Localization 1.3.1 -> Moon.IO.FileSystem 1.1.2 -> System.IO.FileSystem 4.0.0 -> System.IO.FileSystem.Primitives 4.0.0 -> System.Runtime(>= 4.0.20) 
-        // TestProject -> Moon.Owin.Localization 1.3.1 -> Moon.Localization 1.3.1 -> Moon.IO.FileSystem 1.1.2 -> System.IO.FileSystem 4.0.0 -> System.Runtime(>= 4.0.0)
-        // https://www.nuget.org/packages/Moon.Owin.Localization/1.3.1#dependencies-body-tab -> https://www.nuget.org/packages/Moon.Localization/1.3.1 ->https://www.nuget.org/packages/Moon.IO.FileSystem/1.1.2 -> https://www.nuget.org/packages/System.IO.FileSystem/4.0.0#versions-body-tab -> https://www.nuget.org/packages/System.IO.FileSystem.Primitives/4.0.0
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync(bool useLegacyResolver)
+        [Fact]
+        public async Task RestoreCommand_InstallPackageWithReferenceDependenciesAsync()
         {
             // Arrange
             var sources = new List<PackageSource>
             {
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
+            using var pathContext = new SimpleTestPathContext();
 
-            using (var packagesDir = TestDirectory.Create())
-            using (var projectDir = TestDirectory.Create())
-            {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
-                spec.RestoreMetadata.UseLegacyDependencyResolver = useLegacyResolver;
+            var specPath = Path.Combine(pathContext.SolutionRoot, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath).EnsureProjectJsonRestoreMetadata();
+            spec.RestoreMetadata.Sources = sources;
+            AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
 
-                AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
+            (RestoreResult result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, spec);
 
-                var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir, logger)
-                {
-                    LockFilePath = Path.Combine(projectDir, "project.lock.json")
-                };
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+            var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
+            var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/net45/Newtonsoft.Json.dll");
+            var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
 
-                // Act
-                var command = new RestoreCommand(request);
-                var result = await command.ExecuteAsync();
-                var installed = result.GetAllInstalled();
-                var unresolved = result.GetAllUnresolved();
-                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
-                var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/net45/Newtonsoft.Json.dll");
-                var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
-
-                // Assert
-                // There will be compatibility errors, but we don't care
-                Assert.Equal(25, installed.Count);
-                Assert.Equal(0, unresolved.Count);
-                Assert.Equal(24, result.LockFile.Targets[0].Libraries.Count);
-                Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
-                Assert.Equal(24, runtimeAssemblies.Count);
-                Assert.NotNull(jsonNetReference);
-            }
+            // Assert
+            // There will be compatibility errors, but we don't care
+            Assert.Equal(25, installed.Count);
+            Assert.Equal(0, unresolved.Count);
+            Assert.Equal(24, result.LockFile.Targets[0].Libraries.Count);
+            Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
+            Assert.Equal(24, runtimeAssemblies.Count);
+            Assert.NotNull(jsonNetReference);
         }
 
         [Fact]
