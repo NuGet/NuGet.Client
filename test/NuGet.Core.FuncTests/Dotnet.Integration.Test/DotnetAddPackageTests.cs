@@ -966,7 +966,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1028,7 +1028,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1087,7 +1087,6 @@ namespace Dotnet.Integration.Test
             solution.Create(pathContext.SolutionRoot);
 
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props"), propsFile);
-            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
 
             string projectContent =
 @$"<Project Sdk=""Microsoft.NET.Sdk"">
@@ -1096,6 +1095,8 @@ namespace Dotnet.Integration.Test
     </PropertyGroup>
 </Project>";
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "projectA", "projectA.csproj"), projectContent);
+
+            var projectADirectory = Path.Combine(pathContext.SolutionRoot, projectA.ProjectName);
 
             //Act
 
@@ -1159,7 +1160,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1224,7 +1225,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>                   
+    <PropertyGroup>
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1282,7 +1283,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1344,7 +1345,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1408,7 +1409,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1418,7 +1419,7 @@ namespace Dotnet.Integration.Test
             File.WriteAllText(Path.Combine(pathContext.SolutionRoot, "projectA", "projectA.csproj"), projectContent);
 
             //Act
-            var result = _fixture.RunDotnetExpectFailure(projectADirectory, $"add {projectA.ProjectPath} package {packageX}", testOutputHelper: _testOutputHelper);
+            var result = _fixture.RunDotnetExpectSuccess(projectADirectory, $"add {projectA.ProjectPath} package {packageX}", testOutputHelper: _testOutputHelper);
 
             // Assert
             Assert.DoesNotContain("error: Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: X", result.Output);
@@ -1426,7 +1427,7 @@ namespace Dotnet.Integration.Test
                                 <PackageVersion Include=""X"" Version=""1.0.0"" />
                                 </ItemGroup>", File.ReadAllText(Path.Combine(pathContext.SolutionRoot, "Directory.Packages.props")));
             Assert.Contains(@$"<ItemGroup>
-        <PackageReference Include=""X"" VersionOverride=""1.0.0""/>
+        <PackageReference Include=""X"" VersionOverride=""1.0.0"" />
     </ItemGroup>", File.ReadAllText(Path.Combine(projectADirectory, "projectA.csproj")));
         }
 
@@ -1473,7 +1474,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1537,7 +1538,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1602,7 +1603,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
     @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>                   
+    <PropertyGroup>
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
 	    </PropertyGroup>
     </Project>";
@@ -1659,7 +1660,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
     @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>                   
+    <PropertyGroup>
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
 	    </PropertyGroup>
         <ItemGroup>
@@ -1721,7 +1722,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
     @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>                   
+    <PropertyGroup>
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
         <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
 	    </PropertyGroup>
