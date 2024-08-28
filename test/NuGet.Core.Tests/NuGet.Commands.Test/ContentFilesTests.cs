@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -963,20 +962,11 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
 
                 // Act
-                Exception exception = null;
-
-                try
-                {
-                    var result = await command.ExecuteAsync();
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
+                var result = await command.ExecuteAsync();
 
                 // Assert
                 var expected = "Package 'packageA.1.0.0' specifies an invalid build action 'BAD!' for file 'contentFiles/any/any/a/file1.txt'.";
-                Assert.Equal(expected, exception.Message);
+                Assert.Equal(expected, result.LogMessages.First().Message);
             }
         }
 

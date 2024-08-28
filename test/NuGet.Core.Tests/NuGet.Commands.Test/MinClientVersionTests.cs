@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
@@ -75,22 +76,12 @@ namespace NuGet.Commands.Test
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(packageSource.FullName, packageAContext, packageBContext);
 
-                Exception ex = null;
-
                 // Act
                 var command = new RestoreCommand(request);
-
-                try
-                {
-                    var result = await command.ExecuteAsync();
-                }
-                catch (Exception exception)
-                {
-                    ex = exception;
-                }
+                var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.Contains("The 'packageB 1.0.0' package requires NuGet client version '9.0.0' or above, but the current NuGet version is", ex.Message);
+                Assert.Contains("The 'packageB 1.0.0' package requires NuGet client version '9.0.0' or above, but the current NuGet version is", result.LogMessages.First().Message);
             }
         }
     }

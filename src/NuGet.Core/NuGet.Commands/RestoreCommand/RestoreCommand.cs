@@ -159,7 +159,6 @@ namespace NuGet.Commands
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             Stopwatch restoreTime = null;
-            RemoteWalkContext contextForProject = null;
 
 #pragma warning disable CA1031 // Do not catch general exception types
             try
@@ -201,7 +200,7 @@ namespace NuGet.Commands
 
                     localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
 
-                    contextForProject = CreateRemoteWalkContext(_request, _logger);
+                    var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
                     CacheFile cacheFile = null;
 
@@ -526,13 +525,34 @@ namespace NuGet.Commands
             }
             catch (Exception ex)
             {
+                static ILogMessage UnwrapToLogMessage(Exception e)
+                {
+                    var currentException = ExceptionUtilities.Unwrap(e);
+                    while ((currentException is FatalProtocolException || currentException is not ILogMessageException) && currentException != null)
+                    {
+                        currentException = currentException.InnerException;
+                    }
+                    var logMessageException = currentException as ILogMessageException;
+                    return logMessageException?.AsLogMessage();
+                }
+
+                var unwrappedLogMessage = UnwrapToLogMessage(ex);
+
                 var assetsFile = new LockFile
                 {
-                    LogMessages = new List<IAssetsLogMessage>
-                    {
-                        new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, ex.Message, null)
-                    }
+                    LogMessages = new List<IAssetsLogMessage>()
                 };
+
+                if (unwrappedLogMessage != null)
+                {
+                    assetsFile.LogMessages.Add(new AssetsLogMessage(LogLevel.Error, unwrappedLogMessage.Code, unwrappedLogMessage.Message, null));
+                }
+                else
+                {
+                    assetsFile.LogMessages.Add(new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, ExceptionUtilities.DisplayMessage(ex), null));
+                }
+
+                var contextForProject = CreateRemoteWalkContext(_request, _logger);
 
                 // Local package folders (non-sources)
                 var localRepositories = new List<NuGetv3LocalRepository>
