@@ -295,22 +295,11 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                Exception ex = null;
-
                 // Act
                 var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
 
-                try
-                {
-                    await command.ExecuteAsync();
-                }
-                catch (Exception thrownEx)
-                {
-                    ex = thrownEx;
-                }
-
-                // Assert
-                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", ex.Message);
+                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", result.LogMessages.First().Message);
                 Assert.False(File.Exists(request.LockFilePath));
             }
         }
@@ -339,22 +328,12 @@ namespace NuGet.Commands.FuncTest
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
 
-                Exception ex = null;
-
                 // Act
                 var command = new RestoreCommand(request);
-
-                try
-                {
-                    await command.ExecuteAsync();
-                }
-                catch (Exception thrownEx)
-                {
-                    ex = thrownEx;
-                }
+                var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", ex.Message);
+                Assert.Contains("'TestPackage.MinClientVersion 1.0.0' package requires NuGet client version '9.9999.0' or above", result.LogMessages.First().Message);
                 Assert.False(File.Exists(request.LockFilePath));
             }
         }
@@ -391,22 +370,12 @@ namespace NuGet.Commands.FuncTest
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(sourceDir, packageContext);
 
-                Exception ex = null;
-
                 // Act
                 var command = new RestoreCommand(request);
-
-                try
-                {
-                    await command.ExecuteAsync();
-                }
-                catch (Exception thrownEx)
-                {
-                    ex = thrownEx;
-                }
+                var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", ex.Message);
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", result.LogMessages.First().Message);
                 Assert.False(File.Exists(request.LockFilePath));
             }
         }
@@ -467,22 +436,12 @@ namespace NuGet.Commands.FuncTest
                         CancellationToken.None);
                 }
 
-                Exception ex = null;
-
                 // Act
                 var command = new RestoreCommand(request);
-
-                try
-                {
-                    await command.ExecuteAsync();
-                }
-                catch (Exception thrownEx)
-                {
-                    ex = thrownEx;
-                }
+                var result = await command.ExecuteAsync();
 
                 // Assert
-                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", ex.Message);
+                Assert.Contains("'packageA 1.0.0' package requires NuGet client version '9.9.9' or above", result.LogMessages.First().Message);
                 Assert.False(File.Exists(request.LockFilePath));
             }
         }
