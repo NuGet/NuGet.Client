@@ -966,7 +966,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1028,7 +1028,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1160,7 +1160,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1225,7 +1225,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
+    <PropertyGroup>                   
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1283,7 +1283,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1345,7 +1345,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1409,7 +1409,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1474,7 +1474,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1538,7 +1538,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>
+<PropertyGroup>                   
 	<TargetFramework>{packageFrameworks}</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -1603,7 +1603,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
     @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
+    <PropertyGroup>                   
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
 	    </PropertyGroup>
     </Project>";
@@ -1660,7 +1660,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
     @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
+    <PropertyGroup>                   
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
 	    </PropertyGroup>
         <ItemGroup>
@@ -1722,7 +1722,7 @@ namespace Dotnet.Integration.Test
             // Arrange project file
             string projectContent =
     @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-    <PropertyGroup>
+    <PropertyGroup>                   
 	    <TargetFramework>{packageFrameworks}</TargetFramework>
         <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
 	    </PropertyGroup>
