@@ -5,6 +5,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:nugettel="clr-namespace:NuGet.PackageManagement.Telemetry;assembly=NuGet.PackageManagement.VisualStudio"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
@@ -24,6 +25,7 @@
                 <Hyperlink
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+                    CommandParameter="{x:Static nugettel:HyperlinkType.License}"
                     ToolTip="{Binding Link}"
                     NavigateUri="{Binding Link}"
                     AutomationProperties.Name="{x:Static nuget:Resources.Label_License}">
@@ -252,6 +254,7 @@
           NavigateUri="{Binding Path=ReadmeUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          CommandParameter="{x:Static nugettel:HyperlinkType.Readme}"
           ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=NavigateUri}"
           AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_Readme}">
           <Run Text="{x:Static nuget:Resources.Text_ViewReadme}" />
@@ -318,6 +321,7 @@
           NavigateUri="{Binding Path=ProjectUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          CommandParameter="{x:Static nugettel:HyperlinkType.ProjectUri}"
           AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_ProjectUrl}">
           <Run Text="{Binding Path=ProjectUrl}" />
         </Hyperlink>
@@ -343,6 +347,7 @@
           NavigateUri="{Binding Path=ReportAbuseUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          CommandParameter="{x:Static nugettel:HyperlinkType.ReportAbuse}"
           AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_ReportAbuse}">
           <Run Text="{Binding Path=ReportAbuseUrl}" />
         </Hyperlink>
