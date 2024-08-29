@@ -1895,7 +1895,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_PathTooLongExceptionAsync()
+        public async Task RestoreCommand_PathTooLong_LogsAnError()
         {
             // Arrange
             var sources = new List<PackageSource>
@@ -1940,7 +1940,10 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
 
                 // Act
-                await Assert.ThrowsAsync<PathTooLongException>(command.ExecuteAsync);
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.Contains("The specified path, file name, or both are too long.", result.LogMessages.First().Message);
             }
         }
 

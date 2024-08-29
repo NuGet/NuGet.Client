@@ -528,16 +528,17 @@ namespace NuGet.Commands
                 static ILogMessage UnwrapToLogMessage(Exception e)
                 {
                     var currentException = ExceptionUtilities.Unwrap(e);
+
                     while ((currentException is FatalProtocolException || currentException is not ILogMessageException) && currentException != null)
                     {
                         currentException = currentException.InnerException;
                     }
+
                     var logMessageException = currentException as ILogMessageException;
                     return logMessageException?.AsLogMessage();
                 }
 
                 var unwrappedLogMessage = UnwrapToLogMessage(ex);
-
                 var assetsFile = new LockFile
                 {
                     LogMessages = new List<IAssetsLogMessage>()
@@ -564,6 +565,7 @@ namespace NuGet.Commands
 
                 List<MSBuildOutputFile> msbuildOutputFiles = null;
                 var assetsFilePath = GetAssetsFilePath(assetsFile);
+
                 if (contextForProject.IsMsBuildBased)
                 {
                     msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
@@ -593,10 +595,10 @@ namespace NuGet.Commands
                     cacheFilePath: null,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
-                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
                     dependencyGraphSpec: _request.DependencyGraphSpec,
                     projectStyle: _request.ProjectStyle,
-                    elapsedTime: restoreTime.Elapsed);
+                    elapsedTime: restoreTime != null ? restoreTime.Elapsed : new TimeSpan(0));
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
