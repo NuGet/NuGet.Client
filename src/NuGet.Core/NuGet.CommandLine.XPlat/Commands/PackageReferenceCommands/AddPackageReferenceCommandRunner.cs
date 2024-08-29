@@ -134,7 +134,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (originalPackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                 {
-                    Thread.Sleep(TimeSpan.FromSeconds(10));
                     var centralVersion = originalPackageSpec
                         .TargetFrameworks
                         .Where(tf => tf.CentralPackageVersions.ContainsKey(packageReferenceArgs.PackageId))
