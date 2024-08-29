@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
@@ -806,26 +807,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-
-        private async Task ReloadPackageVulnerabilitiesAsync()
-        {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
-
-            if (InstalledVersions is not null && _vulnerabilityService is not null)
-            {
-                foreach (var version in InstalledVersions)
-                {
-                    var identity = new PackageIdentity(Id, version);
-
-                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
-                    await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
-                }
-            }
-        }
-
         private async Task ReloadPackageMetadataAsync()
         {
             CancellationToken cancellationToken = _cancellationTokenSource.Token;
@@ -847,11 +828,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
                 {
-                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
-                        await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
+                    await SetVulnerabilityMaxSeverityAsync(identity, cancellationToken);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -873,13 +850,22 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void UpdateInstalledPackagesVulnerabilities()
+        private async Task SetVulnerabilityMaxSeverityAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(ReloadPackageVulnerabilitiesAsync)
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(ReloadPackageVulnerabilitiesAsync));
+            IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
+                        await _vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            OnPropertyChanged(nameof(Status));
+            VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
+        }
+
+        public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
+        {
+            CancellationToken cancellationToken = _cancellationTokenSource.Token;
+
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(() => SetVulnerabilityMaxSeverityAsync(packageIdentity, cancellationToken))
+                .PostOnFailure(nameof(PackageItemViewModel), nameof(SetVulnerabilityMaxSeverityAsync));
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)

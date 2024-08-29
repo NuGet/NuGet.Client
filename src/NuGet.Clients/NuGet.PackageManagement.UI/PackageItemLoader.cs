@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -269,9 +270,10 @@ namespace NuGet.PackageManagement.UI
                 var packageId = metadataContextInfo.Identity.Id;
                 var packageVersion = metadataContextInfo.Identity.Version;
 
-                if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel exisitngListItem))
+                if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
-                    exisitngListItem.InstalledVersions = exisitngListItem.InstalledVersions.Append(packageVersion);
+                    existingListItem.InstalledVersions = existingListItem.InstalledVersions.Append(packageVersion);
+                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
                 }
                 else
                 {
@@ -282,18 +284,23 @@ namespace NuGet.PackageManagement.UI
                     if (_packageReferences != null)
                     {
                         IEnumerable<IPackageReferenceContextInfo> matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, metadataContextInfo.Identity.Id));
-                        VersionRange[] allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
-                        VersionRange[] versionOverrides = matchedPackageReferences.Select(r => r.VersionOverride).Where(v => v != null).ToArray();
+                        var allowedVersionsRange = new List<VersionRange>();
+                        var versionOverrides = new List<VersionRange>();
 
-                        if (allowedVersionsRange.Length > 0)
+                        foreach (var reference in matchedPackageReferences)
                         {
-                            allowedVersions = allowedVersionsRange[0];
+                            if (reference.AllowedVersions != null)
+                            {
+                                allowedVersionsRange.Add(reference.AllowedVersions);
+                            }
+                            if (reference.VersionOverride != null)
+                            {
+                                versionOverrides.Add(reference.VersionOverride);
+                            }
                         }
 
-                        if (versionOverrides.Length > 0)
-                        {
-                            versionOverride = versionOverrides[0];
-                        }
+                        allowedVersions = allowedVersionsRange.FirstOrDefault() ?? VersionRange.All;
+                        versionOverride = versionOverrides.FirstOrDefault();
                     }
 
                     var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
@@ -349,11 +356,6 @@ namespace NuGet.PackageManagement.UI
 
                     listItemViewModels[packageId] = listItem;
                 }
-            }
-
-            foreach (var item in listItemViewModels.Values)
-            {
-                item.UpdateInstalledPackagesVulnerabilities();
             }
 
             return listItemViewModels.Values.ToArray();
