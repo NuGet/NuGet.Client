@@ -235,6 +235,8 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // P1 -> P2 -> A -> B
+        // P1 -> P2 -> B (PrivateAssets) VersionOverride
         [Fact]
         public async Task RestoreCommand_WithVersionOverrideAndTransitivePinning_VerifiesEquivalency()
         {
@@ -242,18 +244,20 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
 
             // Setup packages
-            var packageA = new SimpleTestPackageContext("a", "1.0.0");
-            packageA.Dependencies.Add(new SimpleTestPackageContext("b", "1.0.0"));
-            var packageB150 = new SimpleTestPackageContext("b", "1.5.0");
-            var packageB200 = new SimpleTestPackageContext("b", "2.0.0");
-
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "1.0.0")]
+            };
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "2.0.0")]
+            };
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
                 PackageSaveMode.Defaultv3,
                 packageA,
-                packageB150,
-                packageB200);
+                packageA200);
 
             var project1 = @"
                 {
@@ -264,14 +268,9 @@ namespace NuGet.Commands.FuncTest
                   ""frameworks"": {
                     ""net472"": {
                         ""dependencies"": {
-                                ""a"": {
-                                    ""version"": ""[1.0.0,)"",
-                                    ""target"": ""Package"",
-                                    ""versionCentrallyManaged"": true
-                                }
                         },
                         ""centralPackageVersions"": {
-                            ""a"": ""[1.0.0,)"",
+                            ""a"": ""[2.0.0,)"",
                             ""b"": ""[2.0.0,)""
                         }
                     }
@@ -287,15 +286,22 @@ namespace NuGet.Commands.FuncTest
                   ""frameworks"": {
                     ""net472"": {
                         ""dependencies"": {
-                                ""b"": {
-                                    ""version"": ""[1.5.0,)"",
+                                ""a"": {
+                                    ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
-                                    ""versionOverride"": ""[1.5.0, )"",
+                                    ""versionOverride"": ""[1.0.0, )"",
                                     ""versionCentrallyManaged"": true
+                                },
+                                ""b"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true,
+                                    ""suppressParent"": ""All""
                                 }
                         },
                         ""centralPackageVersions"": {
-                            ""a"": ""[1.0.0,)"",
+                            ""a"": ""[2.0.0,)"",
                             ""b"": ""[2.0.0,)""
                         }
                     }
@@ -312,17 +318,19 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
-            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
             result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
-            result2.LockFile.Targets.Should().HaveCount(1);
-            result2.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+            result2.LockFile.Targets.Should().HaveCount(2);
+            result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
             result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("b");
-            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.5.0"));
+            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
         // Project1 -> Project2 -> (PrivateAssets) Project3 -> X 1.0.0
