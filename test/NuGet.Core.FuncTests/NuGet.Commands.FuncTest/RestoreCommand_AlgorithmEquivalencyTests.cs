@@ -235,8 +235,11 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
-        // P1 -> P2 -> A -> B
+        // P1 -> P2 -> A (VersionOverride) -> B
         // P1 -> P2 -> B (PrivateAssets) VersionOverride
+        // Pinning is enabled for both P1 and P2, and P1s versions are higher than those of P2 (otherwise it'd be a downgrade error).
+        // TODO - There's a chance the new behavior might be more appropriate in this case, since P2 suppressed it,
+        // explicitly not wanting the assets. it's very likely that the old algorithm has a bug, or potentially it's a consequence of how the behavior was implemented to begin with.
         [Fact]
         public async Task RestoreCommand_WithVersionOverrideAndTransitivePinning_VerifiesEquivalency()
         {
