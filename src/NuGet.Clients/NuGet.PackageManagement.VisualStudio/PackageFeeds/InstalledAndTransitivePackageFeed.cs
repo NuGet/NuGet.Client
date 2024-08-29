@@ -39,8 +39,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var transitiveItems = await GetMetadataForPackagesAsync(PerformLookup(latestTransitivePackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
 
             // Get metadata from identity for the rest of the installed and transitive packages
-            var remainingInstalledItems = await GetRemainingPackagesMetadataAsync(installedPackagesLatest, searchToken, cancellationToken);
-            var remainingTransitiveItems = await GetRemainingPackagesMetadataAsync(latestTransitivePackages, searchToken, cancellationToken);
+            var remainingInstalledItems = await GetRemainingPackagesMetadataAsync(_installedPackages, searchToken, cancellationToken);
+            var remainingTransitiveItems = await GetRemainingPackagesMetadataAsync(transitivePkgsWithOrigins, searchToken, cancellationToken);
 
             // Combine the installed and transitive packages
             IPackageSearchMetadata[] items = installedItems
