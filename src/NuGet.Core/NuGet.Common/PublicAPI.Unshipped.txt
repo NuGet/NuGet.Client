@@ -1,4 +1,15 @@
 #nullable enable
+Microsoft.VisualStudio.ProjectSystem.IVsBrowseObjectContext.VsBrowseObjectContext -> Microsoft.VisualStudio.ProjectSystem.IVsBrowseObjectContext?
+Microsoft.VisualStudio.ProjectSystem.UnconfiguredProject
+Microsoft.VisualStudio.ProjectSystem.UnconfiguredProject.UnconfiguredProject(Microsoft.VisualStudio.ProjectSystem.IVsBrowseObjectContext arg) -> void
+Microsoft.VisualStudio.ProjectSystem.ProjectCapabilities
+Microsoft.VisualStudio.ProjectSystem.ProjectCapabilities.ProjectCapabilities() -> void
+Microsoft.VisualStudio.ProjectSystem.ProjectService
+Microsoft.VisualStudio.ProjectSystem.ProjectService.ProjectService() -> void
+Microsoft.VisualStudio.ProjectSystem.IVsBrowseObjectContext
+Microsoft.VisualStudio.ProjectSystem.IVsBrowseObjectContext.IVsBrowseObjectContext() -> void
+Microsoft.VisualStudio.ProjectSystem.SharedAssetsProject
+Microsoft.VisualStudio.ProjectSystem.SharedAssetsProject.SharedAssetsProject() -> void
 NuGet.Common.NuGetLogCode.NU1302 = 1302 -> NuGet.Common.NuGetLogCode
 NuGet.Common.HashAlgorithmName.SHA1 = 4 -> NuGet.Common.HashAlgorithmName
 NuGet.Common.NuGetLogCode.NU3043 = 3043 -> NuGet.Common.NuGetLogCode
