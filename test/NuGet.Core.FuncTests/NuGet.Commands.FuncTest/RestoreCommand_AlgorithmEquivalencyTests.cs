@@ -236,12 +236,110 @@ namespace NuGet.Commands.FuncTest
         }
 
         // P1 -> P2 -> A (VersionOverride) -> B
-        // P1 -> P2 -> B (PrivateAssets) VersionOverride
-        // Pinning is enabled for both P1 and P2, and P1s versions are higher than those of P2 (otherwise it'd be a downgrade error).
-        // TODO - There's a chance the new behavior might be more appropriate in this case, since P2 suppressed it,
-        // explicitly not wanting the assets. it's very likely that the old algorithm has a bug, or potentially it's a consequence of how the behavior was implemented to begin with.
+        // P1 -> P2 -> B (VersionOverride)
         [Fact]
         public async Task RestoreCommand_WithVersionOverrideAndTransitivePinning_VerifiesEquivalency()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "1.0.0")]
+            };
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "2.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageA200);
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[2.0.0,)"",
+                            ""b"": ""[2.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+            var project2 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""a"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                                ""b"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true,
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[2.0.0,)"",
+                            ""b"": ""[2.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
+            result2.LockFile.Targets.Should().HaveCount(1);
+            result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result2.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result2.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // P1 -> P2 -> A (VersionOverride) -> B
+        // P1 -> P2 -> B (PrivateAssets) VersionOverride
+        // Pinning is enabled for both P1 and P2, and P1s versions are higher than those of P2 (otherwise it'd be a downgrade error).
+        // P1 gets P2, A & B in the old algorithm, but per RestoreCommand_WithPrivateAssetsOfTransitivePackage_VerifiesEquivalency, it likely shouldn't, since if you disable pinning, B is suppressed.
+        // It's very likely that the old algorithm has a bug, likely a consequence of how the behavior was implemented to begin with.
+        // Similar as RestoreCommand_WithPrivateAssetsAndTransitivePinningEnabled_VerifiesEquivalency, because of RestoreCommand_WithPrivateAssetsOfTransitivePackage_VerifiesEquivalency, the new algorithm is arguably more correct.
+        [Fact]
+        public async Task RestoreCommand_WithVersionOverridePrivateAssetsAndTransitivePinningEnabled_VerifiesEquivalency()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -319,21 +417,188 @@ namespace NuGet.Commands.FuncTest
             // Act & Assert
             (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2);
             result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
-            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
-            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
-            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
-            result2.LockFile.Targets.Should().HaveCount(2);
+            result2.LockFile.Targets.Should().HaveCount(1);
             result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
             result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
             result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("b");
             result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // P1 -> P2 -> A (VersionOverride) -> B
+        // P1 -> P2 -> B (PrivateAssets) VersionOverride
+        // P1 has 2.0.0 for both packages, P2 has 1.0.0 for both packages
+        // Similar as RestoreCommand_WithVersionOverridePrivateAssetsAndTransitivePinningEnabled_VerifiesEquivalency, because of RestoreCommand_WithPrivateAssetsOfTransitivePackage_VerifiesEquivalency, the new algorithm is arguably more correct.
+        [Fact]
+        public async Task RestoreCommand_WithPrivateAssetsAndTransitivePinningEnabled_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "1.0.0")]
+            };
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "2.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageA200);
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[2.0.0,)"",
+                            ""b"": ""[2.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+            var project2 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""a"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                                ""b"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true,
+                                    ""suppressParent"": ""All""
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[1.0.0,)"",
+                            ""b"": ""[1.0.0,)""
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
+            result2.LockFile.Targets.Should().HaveCount(1);
+            result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("b");
+            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // P1 -> P2 -> A 1.0.0 -> B 1.0.0
+        // P1 -> P2 -> B (PrivateAssets) 1.0.0
+        // P1 gets A and P2
+        // P2 gets A & B
+        [Fact]
+        public async Task RestoreCommand_WithPrivateAssetsOfTransitivePackage_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("a", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("b", "1.0.0")]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var project1 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                        }
+                    }
+                  }
+                }";
+
+            var project2 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""a"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                },
+                                ""b"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""suppressParent"": ""All""
+                                }
+                        },
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, project2);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
+            result2.LockFile.Targets.Should().HaveCount(1);
+            result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result2.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result2.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
         // Project1 -> Project2 -> (PrivateAssets) Project3 -> X 1.0.0
