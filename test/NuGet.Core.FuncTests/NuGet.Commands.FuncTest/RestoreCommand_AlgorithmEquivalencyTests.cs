@@ -820,6 +820,21 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("X");
         }
 
+        // Here's why package driven dependencies should flow.
+        // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
+        //                            -> B 1.5.0
+        // If downgrades didn't flow, the downgrade from project P3 would need to applied in P2 and P1. We should assume P3 did what they did intentionally.
+        // Idea: Say downgrades flowed for projects, but not for packages.
+        // Then, say you have a mono repo with the above structure. Say you split P1 in one repo and P2 and P3 in another repo.
+        // The restore behavior for P2 and P3 for package B would be different than the one for Package A.
+        // To promote package/project duality, downgrades must be equivalent for both.
+        // Note that all of this downgrade logic should apply CPM or no CPM, VersionOverride or no VersionOverride, the rules are independent of how the version was specified. 
+        // Some of these behaviors are captured within tests, like package driven downgrade, we need to tests for the project one and the mixed one, the 2 repo case.
+
+        // That leads to VersionOverride - VersionOverride as a concept is an input thing, not a resolver thing. When VersionOverride has a value, it's always translated to the Version property of the library dependency.
+        // I think that there should be no VersionOverride checks in the DependencyGraphResolver, since the only reason is exists is
+        // to raise a warning when you have VersionOverride but you have not enabled it, otherwise it would've never gone into the model.
+
         internal static async Task<(RestoreResult, RestoreResult)> ValidateRestoreAlgorithmEquivalency(SimpleTestPathContext pathContext, params PackageSpec[] projects)
         {
             var legacyResolverProjects = DuplicateAndEnableLegacyAlgorithm(projects);
