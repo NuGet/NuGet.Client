@@ -194,9 +194,9 @@ namespace NuGet.Commands
 
                     // Local package folders (non-sources)
                     var localRepositories = new List<NuGetv3LocalRepository>
-                {
-                    _request.DependencyProviders.GlobalPackages
-                };
+                    {
+                        _request.DependencyProviders.GlobalPackages
+                    };
 
                     localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
 
@@ -500,7 +500,6 @@ namespace NuGet.Commands
 
                         telemetry.TelemetryEvent[RestoreSuccess] = _success;
                     }
-                    if (_request.Project.FilePath == "C:\\n\\trash\\multiprojectWithOneErrors\\bad\\bad.csproj") { throw new Exception("Test error"); }
 
                     restoreTime.Stop();
 
@@ -538,11 +537,17 @@ namespace NuGet.Commands
                     return logMessageException?.AsLogMessage();
                 }
 
+                var contextForProject = CreateRemoteWalkContext(_request, _logger);
+
                 var unwrappedLogMessage = UnwrapToLogMessage(ex);
-                var assetsFile = new LockFile
-                {
-                    LogMessages = new List<IAssetsLogMessage>()
-                };
+
+                LockFile assetsFile = BuildAssetsFile(
+                        _request.ExistingLockFile,
+                        _request.Project,
+                        new List<RestoreTargetGraph>(),
+                        new List<NuGetv3LocalRepository>(),
+                        contextForProject);
+
 
                 if (unwrappedLogMessage != null)
                 {
@@ -553,31 +558,7 @@ namespace NuGet.Commands
                     assetsFile.LogMessages.Add(new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1000, ExceptionUtilities.DisplayMessage(ex), null));
                 }
 
-                var contextForProject = CreateRemoteWalkContext(_request, _logger);
-
-                // Local package folders (non-sources)
-                var localRepositories = new List<NuGetv3LocalRepository>
-                {
-                    _request.DependencyProviders.GlobalPackages
-                };
-
-                localRepositories.AddRange(_request.DependencyProviders.FallbackPackageFolders);
-
-                List<MSBuildOutputFile> msbuildOutputFiles = null;
                 var assetsFilePath = GetAssetsFilePath(assetsFile);
-
-                if (contextForProject.IsMsBuildBased)
-                {
-                    msbuildOutputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(
-                        _request.Project,
-                        assetsFile,
-                        new List<RestoreTargetGraph>(),
-                        localRepositories,
-                        _request,
-                        assetsFilePath,
-                        _success,
-                        _logger);
-                }
 
                 // Stop restore time if needed
                 restoreTime?.Stop();
@@ -587,7 +568,7 @@ namespace NuGet.Commands
                     success: false,
                     restoreGraphs: new List<RestoreTargetGraph>(), // No dependency graphs
                     compatibilityCheckResults: new List<CompatibilityCheckResult>(), // No check results
-                    msbuildOutputFiles,
+                    new List<MSBuildOutputFile>(),
                     assetsFile,
                     previousLockFile: _request.ExistingLockFile,
                     lockFilePath: _request.LockFilePath,
