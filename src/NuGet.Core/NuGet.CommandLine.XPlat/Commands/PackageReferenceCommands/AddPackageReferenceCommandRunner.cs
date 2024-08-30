@@ -138,7 +138,7 @@ namespace NuGet.CommandLine.XPlat
                         .TargetFrameworks
                         .Where(tf => tf.CentralPackageVersions.ContainsKey(packageReferenceArgs.PackageId))
                         .Select(tf => tf.CentralPackageVersions[packageReferenceArgs.PackageId])
-                        .Max();
+                        .FirstOrDefault();
                     if (centralVersion != null)
                     {
                         packageDependency = new PackageDependency(packageReferenceArgs.PackageId, centralVersion.VersionRange);
