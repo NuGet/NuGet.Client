@@ -27,6 +27,7 @@ namespace NuGet.PackageManagement.VisualStudio
     public sealed class NuGetPackageFileService : INuGetPackageFileService, IDisposable
     {
         public static readonly string IconPrefix = "icon:";
+        public static readonly string LocalIconPrefix = "localIcon:";
         public static readonly string LicensePrefix = "license:";
 
         private ServiceActivationOptions? _options;
@@ -53,6 +54,15 @@ namespace NuGet.PackageManagement.VisualStudio
         public static void AddIconToCache(PackageIdentity packageIdentity, Uri iconUri)
         {
             string key = NuGetPackageFileService.IconPrefix + packageIdentity.ToString();
+            if (iconUri != null)
+            {
+                IdentityToUriCache.Set(key, iconUri, CacheItemPolicy);
+            }
+        }
+
+        public static void AddLocalIconToCache(PackageIdentity packageIdentity, Uri iconUri)
+        {
+            string key = NuGetPackageFileService.LocalIconPrefix + packageIdentity.ToString();
             if (iconUri != null)
             {
                 IdentityToUriCache.Set(key, iconUri, CacheItemPolicy);
@@ -111,6 +121,18 @@ namespace NuGet.PackageManagement.VisualStudio
             else
             {
                 stream = await GetStream(uri);
+
+                // If the remote URI doesn't retrieve an icon, try to get the local icon.
+                if (stream == null)
+                {
+                    string localIconKey = NuGetPackageFileService.LocalIconPrefix + packageIdentity.ToString();
+                    Uri? localUri = IdentityToUriCache.Get(localIconKey) as Uri;
+                    if (localUri != null)
+                    {
+                        stream = await GetEmbeddedFileAsync(localUri, cancellationToken);
+                    }
+                }
+
             }
 
             return stream;

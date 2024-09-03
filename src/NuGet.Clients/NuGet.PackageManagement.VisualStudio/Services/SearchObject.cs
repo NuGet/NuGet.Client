@@ -111,7 +111,14 @@ namespace NuGet.PackageManagement.VisualStudio
             var packageSearchMetadataContextInfoCollection = new List<PackageSearchMetadataContextInfo>(mainFeedResult.Items.Count);
             foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
             {
-                CacheBackgroundData(packageSearchMetadata, filter.IncludePrerelease);
+                IPackageSearchMetadata? localPackageSearchMetadata = null;
+                // Do we have an icon? If not, try local metadata.
+                if (packageSearchMetadata.IconUrl == null)
+                {
+                    localPackageSearchMetadata = await _packageMetadataProvider.GetOnlyLocalPackageMetadataAsync(packageSearchMetadata.Identity, CancellationToken.None);
+                }
+
+                CacheBackgroundData(packageSearchMetadata, localPackageSearchMetadata, filter.IncludePrerelease);
                 var knownOwners = CreateKnownOwners(packageSearchMetadata);
                 packageSearchMetadataContextInfoCollection.Add(PackageSearchMetadataContextInfo.Create(packageSearchMetadata, knownOwners));
             }
@@ -227,6 +234,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void CacheBackgroundData(IPackageSearchMetadata packageSearchMetadata, bool includesPrerelease)
         {
+            CacheBackgroundData(packageSearchMetadata, localPackageSearchMetadata: null, includesPrerelease);
+        }
+
+        private void CacheBackgroundData(IPackageSearchMetadata packageSearchMetadata, IPackageSearchMetadata? localPackageSearchMetadata, bool includesPrerelease)
+        {
             if (_inMemoryObjectCache == null)
             {
                 return;
@@ -247,6 +259,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             NuGetPackageFileService.AddIconToCache(packageSearchMetadata.Identity, packageSearchMetadata.IconUrl);
+            if (localPackageSearchMetadata?.IconUrl != null)
+            {
+                NuGetPackageFileService.AddLocalIconToCache(packageSearchMetadata.Identity, localPackageSearchMetadata.IconUrl);
+            }
 
             string? packagePath = (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
                     (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath;

@@ -709,6 +709,9 @@ namespace NuGet.PackageManagement.UI
                     {
                         BitmapStatus = IconBitmapStatus.DefaultIconDueToNullStream;
                     }
+
+                    // Attempt
+
                 }
 
                 ErrorFloodGate.ReportAttempt();
