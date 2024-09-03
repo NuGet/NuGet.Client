@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -137,8 +138,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private IEnumerable<NuGetVersion> _installedVersions;
-        public IEnumerable<NuGetVersion> InstalledVersions
+        private ObservableCollection<NuGetVersion> _installedVersions;
+        public ObservableCollection<NuGetVersion> InstalledVersions
         {
             get
             {
@@ -148,6 +149,20 @@ namespace NuGet.PackageManagement.UI
             {
                 _installedVersions = value;
                 OnPropertyChanged(nameof(InstalledVersions));
+            }
+        }
+
+        private IEnumerable<NuGetVersion> _vulnerableVersions = [];
+        public IEnumerable<NuGetVersion> VulnerableVersions
+        {
+            get
+            {
+                return _vulnerableVersions;
+            }
+            set
+            {
+                _vulnerableVersions = value;
+                OnPropertyChanged(nameof(VulnerableVersions));
             }
         }
 
