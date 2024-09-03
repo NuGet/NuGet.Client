@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -262,85 +263,101 @@ namespace NuGet.PackageManagement.UI
                 return Enumerable.Empty<PackageItemViewModel>();
             }
 
-            var listItemViewModels = new List<PackageItemViewModel>(capacity: _state.ItemsCount);
+            var listItemViewModels = new Dictionary<string, PackageItemViewModel>();
 
             foreach (PackageSearchMetadataContextInfo metadataContextInfo in _state.Results.PackageSearchItems)
             {
-                VersionRange allowedVersions = VersionRange.All;
-                VersionRange versionOverride = null;
+                var packageId = metadataContextInfo.Identity.Id;
+                var packageVersion = metadataContextInfo.Identity.Version;
 
-                // get the allowed version range and pass it to package item view model to choose the latest version based on that
-                if (_packageReferences != null)
+                if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
-                    IEnumerable<IPackageReferenceContextInfo> matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, metadataContextInfo.Identity.Id));
-                    VersionRange[] allowedVersionsRange = matchedPackageReferences.Select(r => r.AllowedVersions).Where(v => v != null).ToArray();
-                    VersionRange[] versionOverrides = matchedPackageReferences.Select(r => r.VersionOverride).Where(v => v != null).ToArray();
-
-                    if (allowedVersionsRange.Length > 0)
-                    {
-                        allowedVersions = allowedVersionsRange[0];
-                    }
-
-                    if (versionOverrides.Length > 0)
-                    {
-                        versionOverride = versionOverrides[0];
-                    }
-                }
-
-                var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
-
-                var transitiveToolTipMessage = string.Empty;
-                if (packageLevel == PackageLevel.Transitive)
-                {
-                    transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
-                }
-
-                ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
-
-                // Only load KnownOwners for the Browse tab and not for any Recommended packages.
-                // Recommended packages won't have KnownOwners metadata as they are not part of the search results.
-                if (_itemFilter == ContractItemFilter.All && !metadataContextInfo.IsRecommended)
-                {
-                    knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
-                }
-
-                var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
-                {
-                    Id = metadataContextInfo.Identity.Id,
-                    Version = metadataContextInfo.Identity.Version,
-                    IconUrl = metadataContextInfo.IconUrl,
-                    Owner = metadataContextInfo.Owners,
-                    KnownOwnerViewModels = knownOwnerViewModels,
-                    Author = metadataContextInfo.Authors,
-                    DownloadCount = metadataContextInfo.DownloadCount,
-                    Summary = metadataContextInfo.Summary,
-                    AllowedVersions = allowedVersions,
-                    VersionOverride = versionOverride,
-                    PrefixReserved = metadataContextInfo.PrefixReserved && !IsMultiSource,
-                    Recommended = metadataContextInfo.IsRecommended,
-                    RecommenderVersion = metadataContextInfo.RecommenderVersion,
-                    Vulnerabilities = metadataContextInfo.Vulnerabilities,
-                    Sources = _packageSources,
-                    PackagePath = metadataContextInfo.PackagePath,
-                    PackageFileService = _packageFileService,
-                    IncludePrerelease = _includePrerelease,
-                    PackageLevel = packageLevel,
-                    TransitiveToolTipMessage = transitiveToolTipMessage,
-                };
-
-                if (packageLevel == PackageLevel.TopLevel)
-                {
-                    listItem.UpdatePackageStatus(_installedPackages);
+                    existingListItem.InstalledVersions.Add(packageVersion);
                 }
                 else
                 {
-                    listItem.UpdateTransitivePackageStatus(metadataContextInfo.Identity.Version);
-                }
+                    VersionRange allowedVersions = VersionRange.All;
+                    VersionRange versionOverride = null;
 
-                listItemViewModels.Add(listItem);
+                    // get the allowed version range and pass it to package item view model to choose the latest version based on that
+                    if (_packageReferences != null)
+                    {
+                        IEnumerable<IPackageReferenceContextInfo> matchedPackageReferences = _packageReferences.Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.Identity.Id, metadataContextInfo.Identity.Id));
+                        var allowedVersionsRange = new List<VersionRange>();
+                        var versionOverrides = new List<VersionRange>();
+
+                        foreach (var reference in matchedPackageReferences)
+                        {
+                            if (reference.AllowedVersions != null)
+                            {
+                                allowedVersionsRange.Add(reference.AllowedVersions);
+                            }
+                            if (reference.VersionOverride != null)
+                            {
+                                versionOverrides.Add(reference.VersionOverride);
+                            }
+                        }
+
+                        allowedVersions = allowedVersionsRange.FirstOrDefault() ?? VersionRange.All;
+                        versionOverride = versionOverrides.FirstOrDefault();
+                    }
+
+                    var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
+
+                    var transitiveToolTipMessage = string.Empty;
+                    if (packageLevel == PackageLevel.Transitive)
+                    {
+                        transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
+                    }
+
+                    ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
+
+                    // Only load KnownOwners for the Browse tab and not for any Recommended packages.
+                    // Recommended packages won't have KnownOwners metadata as they are not part of the search results.
+                    if (_itemFilter == ContractItemFilter.All && !metadataContextInfo.IsRecommended)
+                    {
+                        knownOwnerViewModels = LoadKnownOwnerViewModels(metadataContextInfo);
+                    }
+
+                    var listItem = new PackageItemViewModel(_searchService, _packageVulnerabilityService)
+                    {
+                        Id = metadataContextInfo.Identity.Id,
+                        Version = metadataContextInfo.Identity.Version,
+                        IconUrl = metadataContextInfo.IconUrl,
+                        Owner = metadataContextInfo.Owners,
+                        KnownOwnerViewModels = knownOwnerViewModels,
+                        Author = metadataContextInfo.Authors,
+                        DownloadCount = metadataContextInfo.DownloadCount,
+                        Summary = metadataContextInfo.Summary,
+                        AllowedVersions = allowedVersions,
+                        VersionOverride = versionOverride,
+                        PrefixReserved = metadataContextInfo.PrefixReserved && !IsMultiSource,
+                        Recommended = metadataContextInfo.IsRecommended,
+                        RecommenderVersion = metadataContextInfo.RecommenderVersion,
+                        Vulnerabilities = metadataContextInfo.Vulnerabilities,
+                        Sources = _packageSources,
+                        PackagePath = metadataContextInfo.PackagePath,
+                        PackageFileService = _packageFileService,
+                        IncludePrerelease = _includePrerelease,
+                        PackageLevel = packageLevel,
+                        TransitiveToolTipMessage = transitiveToolTipMessage,
+                        InstalledVersions = new ObservableCollection<NuGetVersion> { metadataContextInfo.Identity.Version },
+                    };
+
+                    if (listItem.PackageLevel == PackageLevel.TopLevel)
+                    {
+                        listItem.UpdatePackageStatus(_installedPackages);
+                    }
+                    else
+                    {
+                        listItem.UpdateTransitivePackageStatus(metadataContextInfo.Identity.Version);
+                    }
+
+                    listItemViewModels[packageId] = listItem;
+                }
             }
 
-            return listItemViewModels.ToArray();
+            return listItemViewModels.Values.ToArray();
         }
 
         private static ImmutableList<KnownOwnerViewModel> LoadKnownOwnerViewModels(PackageSearchMetadataContextInfo metadataContextInfo)
