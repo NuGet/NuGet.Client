@@ -112,11 +112,9 @@ namespace NuGet.PackageManagement.VisualStudio
             foreach (IPackageSearchMetadata packageSearchMetadata in mainFeedResult.Items)
             {
                 IPackageSearchMetadata? localPackageSearchMetadata = null;
-                // Do we have an icon? If not, try local metadata.
-                if (packageSearchMetadata.IconUrl == null)
-                {
-                    localPackageSearchMetadata = await _packageMetadataProvider.GetOnlyLocalPackageMetadataAsync(packageSearchMetadata.Identity, CancellationToken.None);
-                }
+
+                // Attach local metadata in case we do not have an icon remotely, can try local metadata.
+                localPackageSearchMetadata = await _packageMetadataProvider.GetOnlyLocalPackageMetadataAsync(packageSearchMetadata.Identity, CancellationToken.None);
 
                 CacheBackgroundData(packageSearchMetadata, localPackageSearchMetadata, filter.IncludePrerelease);
                 var knownOwners = CreateKnownOwners(packageSearchMetadata);
