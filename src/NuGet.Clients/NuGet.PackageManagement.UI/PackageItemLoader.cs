@@ -273,7 +273,6 @@ namespace NuGet.PackageManagement.UI
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
                     existingListItem.InstalledVersions = existingListItem.InstalledVersions.Append(packageVersion);
-                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
                 }
                 else
                 {

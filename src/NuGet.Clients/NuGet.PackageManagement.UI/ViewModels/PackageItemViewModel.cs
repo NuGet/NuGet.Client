@@ -824,11 +824,15 @@ namespace NuGet.PackageManagement.UI
 
                     DeprecationMetadata = deprecationMetadata;
                     IsPackageDeprecated = deprecationMetadata != null;
-                    VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1);
+                    VulnerabilityMaxSeverity = packageMetadata?.Vulnerabilities?.FirstOrDefault()?.Severity ?? -1;
                 }
                 else if (PackageLevel == PackageLevel.Transitive && _vulnerabilityService != null)
                 {
-                    await SetVulnerabilityMaxSeverityAsync(identity, cancellationToken);
+                    IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
+                        await _vulnerabilityService.GetVulnerabilityInfoAsync(identity, cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    VulnerabilityMaxSeverity = vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1;
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -848,24 +852,6 @@ namespace NuGet.PackageManagement.UI
                     // if cancellationToken cancelled before the above is scheduled on UI thread, don't log fault telemetry
                 }
             }
-        }
-
-        private async Task SetVulnerabilityMaxSeverityAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
-        {
-            IEnumerable<PackageVulnerabilityMetadataContextInfo> vulnerabilityInfoList =
-                        await _vulnerabilityService.GetVulnerabilityInfoAsync(packageIdentity, cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
-        }
-
-        public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
-        {
-            CancellationToken cancellationToken = _cancellationTokenSource.Token;
-
-            NuGetUIThreadHelper.JoinableTaskFactory
-                .RunAsync(() => SetVulnerabilityMaxSeverityAsync(packageIdentity, cancellationToken))
-                .PostOnFailure(nameof(PackageItemViewModel), nameof(SetVulnerabilityMaxSeverityAsync));
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
