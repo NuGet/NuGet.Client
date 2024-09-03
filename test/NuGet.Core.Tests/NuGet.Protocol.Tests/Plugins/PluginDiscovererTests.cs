@@ -247,6 +247,42 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
+        [Theory]
+        [InlineData("nuget-plugin-myPlugin.exe")]
+        [InlineData("nuget-plugin-myPlugin.bat")]
+        public async Task DiscoverAsync_withValidDotNetToolsPlugin_FindsThePlugin(string fileName)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var pluginPath = Path.Combine(testDirectory.Path, "myPlugin");
+                Directory.CreateDirectory(pluginPath);
+                var myPlugin = Path.Combine(pluginPath, fileName);
+
+                Environment.SetEnvironmentVariable("PATH", pluginPath);
+                File.WriteAllText(myPlugin, string.Empty);
+                var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
+                verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
+                    .Returns(true);
+
+                using (var discoverer = new PluginDiscoverer("", verifierSpy.Object))
+                {
+                    // Act
+                    var result = await discoverer.DiscoverAsync(CancellationToken.None);
+
+                    // Assert
+                    var discovered = false;
+
+                    foreach (PluginDiscoveryResult discoveryResult in result)
+                    {
+                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                    }
+
+                    Assert.True(discovered);
+                }
+            }
+        }
+
         private sealed class EmbeddedSignatureVerifierStub : EmbeddedSignatureVerifier
         {
             private readonly Dictionary<string, bool> _responses;

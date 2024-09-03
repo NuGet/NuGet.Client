@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,8 +89,6 @@ namespace NuGet.Protocol.Plugins
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
 
-                // Get plugins added using .Net Tools
-                _pluginFiles.AddRange(GetNetToolsPluginFiles(cancellationToken));
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
@@ -150,19 +149,14 @@ namespace NuGet.Protocol.Plugins
         /// `PATH` environment variable.
         /// The files are also expected to have a name that starts with `nuget-plugin-`
         /// </summary>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private List<PluginFile> GetNetToolsPluginFiles(CancellationToken cancellationToken)
+        private static List<string> GetNetToolsPluginFiles()
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var pluginFiles = new List<PluginFile>();
+            var pluginFiles = new List<string>();
             var paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             foreach (var path in paths)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 if (Directory.Exists(path))
                 {
                     var directoryInfo = new DirectoryInfo(path);
@@ -172,8 +166,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (IsValidPluginFile(file))
                         {
-                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(file.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
-                            pluginFiles.Add(new PluginFile(file.FullName, state));
+                            pluginFiles.Add(file.FullName);
                         }
                     }
                 }
@@ -252,7 +245,12 @@ namespace NuGet.Protocol.Plugins
                 // Internal plugins are only supported for .NET Framework scenarios, namely msbuild.exe
                 directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
 #endif
-                return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
+                var plugins = PluginDiscoveryUtility.GetConventionBasedPlugins(directories).ToList();
+
+                // Get plugins added using .Net Tools
+                plugins.AddRange(GetNetToolsPluginFiles());
+
+                return plugins;
             }
 
             return _rawPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
