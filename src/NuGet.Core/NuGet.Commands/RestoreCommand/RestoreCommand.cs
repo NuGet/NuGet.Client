@@ -147,7 +147,7 @@ namespace NuGet.Commands
 
             // Enable the new dependency resolver if the project is using PackageReference, transitive pinning is disabled, and the user has not explicitly opted out of using it
             _enableNewDependencyResolver = request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference
-                && !_request.Project.RestoreMetadata.CentralPackageTransitivePinningEnabled
+                && !(_request.Project.RestoreMetadata?.CentralPackageVersionsEnabled == true && _request.Project.RestoreMetadata?.CentralPackageTransitivePinningEnabled == true)
                 && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
         }
 
@@ -1176,7 +1176,7 @@ namespace NuGet.Commands
             // Load repositories
             // the external project provider is specific to the current restore project
             context.ProjectLibraryProviders.Add(
-                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger));
+                    new PackageSpecReferenceDependencyProvider(updatedExternalProjects, _logger, useLegacyDependencyGraphResolution: true));
 
             var remoteWalker = new RemoteDependencyWalker(context);
 
