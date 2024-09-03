@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
@@ -66,28 +67,31 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             var newReadMeValue = string.Empty;
             var isErrorWithReadMe = false;
-            bool canDetermineReadMeDefined = false;
+            bool? readmeAvailable = null;
 
-            if (packageIdentity is not null)
+            try
             {
-                await TaskScheduler.Default;
-#pragma warning disable ISB001 // Dispose of proxies
-                _packageFileService = _packageFileService ?? await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, cancellationToken);
-#pragma warning restore ISB001 // Dispose of proxies
 
-                var readme = await _packageFileService.GetReadmeAsync(packageIdentity, cancellationToken);
-                if (!string.IsNullOrWhiteSpace(readme))
+                if (packageIdentity is not null)
                 {
-                    isErrorWithReadMe = false;
-                    canDetermineReadMeDefined = true;
-                    newReadMeValue = readme;
+                    await TaskScheduler.Default;
+#pragma warning disable ISB001 // Dispose of proxies
+                    _packageFileService = _packageFileService ?? await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies
+                    (readmeAvailable, newReadMeValue) = await _packageFileService.TryGetReadmeAsync(packageIdentity, cancellationToken);
                 }
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             }
-
-            IsErrorWithReadMe = isErrorWithReadMe;
-            ReadMeMarkdown = newReadMeValue;
-            CanDetermineReadMeDefined = canDetermineReadMeDefined;
+            catch (HttpRequestException)
+            {
+                isErrorWithReadMe = true;
+            }
+            finally
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                IsErrorWithReadMe = isErrorWithReadMe;
+                ReadMeMarkdown = newReadMeValue;
+                CanDetermineReadMeDefined = readmeAvailable.HasValue;
+            }
         }
 
         private void Dispose(bool disposing)

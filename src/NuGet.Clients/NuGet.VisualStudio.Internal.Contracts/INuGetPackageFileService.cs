@@ -13,7 +13,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public interface INuGetPackageFileService : IDisposable
     {
-        ValueTask<string?> GetReadmeAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken);
+        ValueTask<(bool?, string?)> TryGetReadmeAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken);
         ValueTask<Stream?> GetPackageIconAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken);
         ValueTask<Stream?> GetEmbeddedLicenseAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken);
     }

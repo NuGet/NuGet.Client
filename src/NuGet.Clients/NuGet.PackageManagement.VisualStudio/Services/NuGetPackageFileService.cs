@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
-using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -160,25 +159,27 @@ namespace NuGet.PackageManagement.VisualStudio
             return stream;
         }
 
-        public async ValueTask<string?> GetReadmeAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
+        public async ValueTask<(bool?, string?)> TryGetReadmeAsync(PackageIdentity packageIdentity, CancellationToken cancellationToken)
         {
             Assumes.NotNull(packageIdentity);
-
+            bool? canDetermineReadme = null;
+            string? readme = null;
             var metaDataProvider = await GetPackageMetadataProviderAsync(cancellationToken);
             (var sourceRepository, var uri) = await metaDataProvider.GetPackageReadmeUrlAsync(packageIdentity, true, cancellationToken);
 
             if (uri is not null)
             {
+                canDetermineReadme = true;
                 if (IsEmbeddedUri(uri))
                 {
-                    return await GetStringFromStream(await GetEmbeddedFileAsync(uri, cancellationToken), cancellationToken);
+                    readme = await GetStringFromStream(await GetEmbeddedFileAsync(uri, cancellationToken), cancellationToken);
                 }
                 else
                 {
-                    return await GetStreamAsync(packageIdentity, sourceRepository, uri, new VisualStudioActivityLogger(), cancellationToken);
+                    readme = await GetStreamAsync(packageIdentity, sourceRepository, uri, new VisualStudioActivityLogger(), cancellationToken);
                 }
             }
-            return null;
+            return (canDetermineReadme, readme);
         }
 
         private static async ValueTask<string?> GetStringFromStream(Stream? stream, CancellationToken cancellationToken)
@@ -337,13 +338,18 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 try
                 {
-                    var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(cancellationToken);
                     using SourceCacheContext sourceCacheContext = new SourceCacheContext();
-                    return await httpSourceResource.HttpSource.GetAsync<string?>(
-                        new HttpSourceCachedRequest(
+                    var httpCacheContext = HttpSourceCacheContext.Create(sourceCacheContext, true);
+                    var sourceCacheRequest = new HttpSourceCachedRequest(
                             uri.AbsoluteUri,
                             $"{package.Id.ToLowerInvariant()}_{package.Version.ToNormalizedString().ToLowerInvariant()}_readme",
-                        HttpSourceCacheContext.Create(sourceCacheContext, 0)),
+                        httpCacheContext)
+                    {
+                        IgnoreNotFounds = true,
+                    };
+                    var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(cancellationToken);
+                    return await httpSourceResource.HttpSource.GetAsync<string?>(
+                        sourceCacheRequest,
                         GetStringFromStream,
                         logger,
                         cancellationToken
@@ -351,7 +357,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (HttpRequestException)
                 {
-                    return null;
+                    throw;
                 }
                 catch (TaskCanceledException)
                 {
