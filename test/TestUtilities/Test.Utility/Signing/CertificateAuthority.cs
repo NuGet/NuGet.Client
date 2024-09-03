@@ -202,10 +202,8 @@ namespace Test.Utility.Signing
 
             if (_dnHash == null)
             {
-                using (SHA1 sha1 = SHA1.Create())
-                {
-                    _dnHash = sha1.ComputeHash(Certificate.SubjectName.RawData);
-                }
+                using SHA256 sha256 = SHA256.Create();
+                _dnHash = sha256.ComputeHash(Certificate.SubjectName.RawData);
             }
 
             if (!certId.IssuerNameHash.Span.SequenceEqual(_dnHash))
