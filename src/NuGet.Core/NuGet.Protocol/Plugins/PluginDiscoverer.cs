@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -145,6 +145,13 @@ namespace NuGet.Protocol.Plugins
             return files;
         }
 
+        /// <summary>
+        /// Gets auth plugins installed using dotnet tools. This is done by iterating through each file in directories found int eh
+        /// `PATH` environment variable.
+        /// The files are also expected to have a name that starts with `nuget-plugin-`
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private List<PluginFile> GetNetToolsPluginFiles(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -175,6 +182,13 @@ namespace NuGet.Protocol.Plugins
             return pluginFiles;
         }
 
+        /// <summary>
+        /// Checks whether a file is a valid plugin file for windows/Unix.
+        /// Windows: It should be either .bat or  .exe
+        /// Unix: It should be executable
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
         private static bool IsValidPluginFile(FileInfo fileInfo)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -188,12 +202,45 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
+        /// <summary>
+        /// Checks whether a file is executable or not in Unix.
+        /// This is done by running bash code: `if [ -x {fileInfo.FullName} ]; then echo yes; else echo no; fi`
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
         private static bool IsExecutable(FileInfo fileInfo)
         {
-            // TODO
-            // check if the files executable bit is set
-            return true;
+#pragma warning disable CA1031 // Do not catch general exception types
+            try
+            {
+                string output;
+                using (var process = new Process())
+                {
+                    // Use a shell command to check if the file is executable
+                    process.StartInfo.FileName = "sh";
+                    process.StartInfo.Arguments = $"-c \"if [ -x {fileInfo.FullName} ]; then echo yes; else echo no; fi\"";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+
+                    process.Start();
+                    if (!process.WaitForExit(1000) || process.ExitCode != 0)
+                    {
+                        return false;
+                    }
+
+                    output = process.StandardOutput.ReadToEnd().Trim();
+                }
+
+                // Check if the output is "yes"
+                return output.Equals("yes", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
+
 
 
         private IEnumerable<string> GetPluginFilePaths()
