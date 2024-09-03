@@ -234,8 +234,6 @@ namespace NuGet.Protocol.Plugins
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 
-
-
         private IEnumerable<string> GetPluginFilePaths()
         {
             if (string.IsNullOrEmpty(_rawPluginPaths))
