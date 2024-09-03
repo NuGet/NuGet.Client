@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Services.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -55,18 +54,6 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, includePrerelease, t),
-                cancellationToken);
-
-            return SortPackagesMetadata(items);
-        }
-
-        internal static async Task<IPackageSearchMetadata[]> GetMetadataFromIdentityForPackagesAsync<T>(T[] packages, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
-                packages,
-                (p, t) => Task.FromResult(PackageSearchMetadataBuilder.FromIdentity(p).Build()),
                 cancellationToken);
 
             return SortPackagesMetadata(items);

@@ -65,14 +65,46 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Select(g => g.OrderByDescending(x => x.Version).First());
         }
 
-        private static async Task<IPackageSearchMetadata[]> GetRemainingPackagesMetadataAsync(IEnumerable<PackageCollectionItem> latestPackages, FeedSearchContinuationToken searchToken, CancellationToken cancellationToken)
+        private static async Task<IPackageSearchMetadata[]> GetRemainingPackagesMetadataAsync(IEnumerable<PackageCollectionItem> packages, FeedSearchContinuationToken searchToken, CancellationToken cancellationToken)
         {
-            var remainingPackages = latestPackages
+            var remainingPackages = packages
                 .GroupById()
-                .Select(g => g.OrderByDescending(x => x.Version).Skip(1))
+                .Select(g => g.OrderByDescending(x => x.Version).Skip(1)) // Skip 1 to get the remaining packages, latest package is already processed
                 .SelectMany(s => s);
 
             return await GetMetadataFromIdentityForPackagesAsync(PerformLookup(remainingPackages, searchToken), searchToken.SearchFilter.IncludePrerelease, cancellationToken);
+        }
+
+        internal static async Task<IPackageSearchMetadata[]> GetMetadataFromIdentityForPackagesAsync<T>(T[] packages, bool includePrerelease, CancellationToken cancellationToken) where T : PackageIdentity
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IEnumerable<IPackageSearchMetadata> items = await TaskCombinators.ThrottledAsync(
+                packages,
+                (p, t) => Task.FromResult(GetMetadataFromIdentityForPackage(p, t)),
+                cancellationToken);
+
+            return SortPackagesMetadata(items);
+        }
+
+        internal static IPackageSearchMetadata GetMetadataFromIdentityForPackage<T>(T identity, CancellationToken cancellationToken) where T : PackageIdentity
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (identity is PackageCollectionItem packageCollectionItem)
+            {
+                IEnumerable<ITransitivePackageReferenceContextInfo> transitivePRs = packageCollectionItem.PackageReferences.OfType<ITransitivePackageReferenceContextInfo>();
+                ITransitivePackageReferenceContextInfo transitivePR = transitivePRs.OrderByDescending(x => x.Identity.Version).FirstOrDefault();
+                IReadOnlyCollection<PackageIdentity> transitiveOrigins = transitivePR?.TransitiveOrigins?.Select(to => to.Identity).ToArray() ?? Array.Empty<PackageIdentity>();
+                if (transitiveOrigins.Any())
+                {
+                    var packageMetadata = PackageSearchMetadataBuilder.FromIdentity(packageCollectionItem).Build(); // create metadata object only with ID
+
+                    return new TransitivePackageSearchMetadata(packageMetadata, transitiveOrigins);
+                }
+            }
+
+            return PackageSearchMetadataBuilder.FromIdentity(identity).Build();
         }
 
         internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken)
