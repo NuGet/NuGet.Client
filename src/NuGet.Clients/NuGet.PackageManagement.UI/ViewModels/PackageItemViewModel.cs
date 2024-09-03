@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -15,6 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
@@ -133,6 +135,34 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return ByOwner ?? ByAuthor;
+            }
+        }
+
+        private ObservableCollection<NuGetVersion> _installedVersions;
+        public ObservableCollection<NuGetVersion> InstalledVersions
+        {
+            get
+            {
+                return _installedVersions;
+            }
+            set
+            {
+                _installedVersions = value;
+                OnPropertyChanged(nameof(InstalledVersions));
+            }
+        }
+
+        private IEnumerable<NuGetVersion> _vulnerableVersions = [];
+        public IEnumerable<NuGetVersion> VulnerableVersions
+        {
+            get
+            {
+                return _vulnerableVersions;
+            }
+            set
+            {
+                _vulnerableVersions = value;
+                OnPropertyChanged(nameof(VulnerableVersions));
             }
         }
 

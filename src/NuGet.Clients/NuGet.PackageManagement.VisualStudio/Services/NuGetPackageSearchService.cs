@@ -216,7 +216,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // If the item was cached with search API, PackageSearchMetadata could be null. If so, update it with registration api information
                 if (isTransitive
                     && !(backgroundDataCache.AllVersionsContextInfo.Result?.Count > 1)
-                    || backgroundDataCache.AllVersionsContextInfo.Result?.First().PackageSearchMetadata == null)
+                    || backgroundDataCache.AllVersionsContextInfo.Result?.FirstOrDefault()?.PackageSearchMetadata == null)
                 {
                     IPackageMetadataProvider newPackageMetadataProvider = await GetPackageMetadataProviderAsync(packageSources, projects?.ToList().AsReadOnly(), cancellationToken);
                     IPackageSearchMetadata newPackageMetadata = await newPackageMetadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
