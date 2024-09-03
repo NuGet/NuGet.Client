@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -15,7 +16,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -272,7 +272,7 @@ namespace NuGet.PackageManagement.UI
 
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
-                    existingListItem.InstalledVersions = existingListItem.InstalledVersions.Append(packageVersion);
+                    existingListItem.InstalledVersions.Add(packageVersion);
                 }
                 else
                 {
@@ -341,7 +341,7 @@ namespace NuGet.PackageManagement.UI
                         IncludePrerelease = _includePrerelease,
                         PackageLevel = packageLevel,
                         TransitiveToolTipMessage = transitiveToolTipMessage,
-                        InstalledVersions = new[] { metadataContextInfo.Identity.Version },
+                        InstalledVersions = new ObservableCollection<NuGetVersion> { metadataContextInfo.Identity.Version },
                     };
 
                     if (listItem.PackageLevel == PackageLevel.TopLevel)
