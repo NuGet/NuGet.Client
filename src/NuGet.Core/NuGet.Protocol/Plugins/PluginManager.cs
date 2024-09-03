@@ -118,7 +118,7 @@ namespace NuGet.Protocol.Plugins
             var pluginCreationResults = new List<PluginCreationResult>();
 
             // Fast path
-            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable())
+            if (source.PackageSource.IsHttp)
             {
                 var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
 
@@ -212,12 +212,26 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (result.PluginFile.State.Value == PluginFileState.Valid)
                     {
-                        var plugin = await _pluginFactory.GetOrCreateAsync(
+                        IPlugin plugin;
+
+                        if (result.PluginFile.IsDotnetToolsPlugin)
+                        {
+                            plugin = await _pluginFactory.GetOrCreateNetToolsPluginAsync(
                             result.PluginFile.Path,
                             PluginConstants.PluginArguments,
                             new RequestHandlers(),
                             _connectionOptions,
                             cancellationToken);
+                        }
+                        else
+                        {
+                            plugin = await _pluginFactory.GetOrCreateAsync(
+                            result.PluginFile.Path,
+                            PluginConstants.PluginArguments,
+                            new RequestHandlers(),
+                            _connectionOptions,
+                            cancellationToken);
+                        }
 
                         var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
@@ -311,7 +325,6 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ArgumentNullException(nameof(pluginFactoryCreator));
             }
-
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
             var idleTimeoutInSeconds = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.IdleTimeout);
