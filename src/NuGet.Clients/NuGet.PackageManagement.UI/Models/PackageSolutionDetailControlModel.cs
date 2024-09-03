@@ -125,7 +125,15 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                    var installedAndTransitivePackages = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                    var installedVersion = installedAndTransitivePackages.InstalledPackages;
+                    var transitiveVersion = installedAndTransitivePackages.TransitivePackages;
+
+                    project.RequestedVersion = null;
+                    project.InstalledVersion = null;
+                    project.TransitiveVersion = null;
+                    project.AutoReferenced = false;
+
                     if (installedVersion != null)
                     {
                         project.InstalledVersion = installedVersion.Identity.Version;
@@ -136,12 +144,33 @@ namespace NuGet.PackageManagement.UI
                         {
                             project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
                         }
+
+                        var isVulnerable = _searchResultPackage.VulnerableVersions.FirstOrDefault(v => v == installedVersion.Identity.Version);
+
+                        if (isVulnerable is not null)
+                        {
+                            project.IsInstalledVersionVulnerable = true;
+                        }
+                        else
+                        {
+                            project.IsInstalledVersionVulnerable = false;
+                        }
                     }
-                    else
+                    else if (transitiveVersion != null)
                     {
-                        project.RequestedVersion = null;
-                        project.InstalledVersion = null;
-                        project.AutoReferenced = false;
+                        hash.Add(transitiveVersion.Identity.Version);
+                        project.TransitiveVersion = transitiveVersion.Identity.Version.ToString();
+
+                        var isVulnerable = _searchResultPackage.VulnerableVersions.FirstOrDefault(v => v == transitiveVersion.Identity.Version);
+
+                        if (isVulnerable is not null)
+                        {
+                            project.IsTransitiveVersionVulnerable = true;
+                        }
+                        else
+                        {
+                            project.IsTransitiveVersionVulnerable = false;
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -181,18 +210,20 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action.
         /// </summary>
-        private async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(
-            IProjectContextInfo project,
-            string packageId,
-            CancellationToken cancellationToken)
+        private async Task<(IPackageReferenceContextInfo InstalledPackages, IPackageReferenceContextInfo TransitivePackages)> GetInstalledPackageAsync(
+    IProjectContextInfo project,
+    string packageId,
+    CancellationToken cancellationToken)
         {
-            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                ServiceBroker,
-                cancellationToken);
-            IPackageReferenceContextInfo installedPackage = installedPackages
+            IInstalledAndTransitivePackages installedAndTransitivePackages = await project.GetInstalledAndTransitivePackagesAsync(ServiceBroker, cancellationToken);
+            IPackageReferenceContextInfo installedPackages = installedAndTransitivePackages.InstalledPackages
                 .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
                 .FirstOrDefault();
-            return installedPackage;
+
+            ITransitivePackageReferenceContextInfo transitivePackages = installedAndTransitivePackages.TransitivePackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
+                .FirstOrDefault();
+            return (installedPackages, transitivePackages);
         }
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)

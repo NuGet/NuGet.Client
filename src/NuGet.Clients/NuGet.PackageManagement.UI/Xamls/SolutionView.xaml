@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              mc:Ignorable="d"
              DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
@@ -305,8 +307,7 @@
           <!-- the version column may be inserted here dynamically from code -->
 
           <!-- the installed column -->
-          <GridViewColumn
-            DisplayMemberBinding="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}">
+          <GridViewColumn>
             <GridViewColumn.Header>
               <GridViewColumnHeader
                 AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
@@ -321,6 +322,49 @@
                 IsTabStop="True"
                 FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
             </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock
+        Text="{Binding InstalledVersion}" />
+                  <imaging:CrispImage
+x:Name="_warningIndicator"
+Visibility="{Binding IsInstalledVersionVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
+VerticalAlignment="Center"
+Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
+                </StackPanel>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+
+          <GridViewColumn
+            DisplayMemberBinding="{Binding TransitiveVersion}">
+            <GridViewColumn.Header>
+              <GridViewColumnHeader
+                AutomationProperties.Name="Transitive"
+                x:Name="_referencedByColumnHeader"
+                Click="ColumnHeader_Clicked"
+                Content="Transitive"
+                HorizontalContentAlignment="Left"
+                SizeChanged="SortableColumnHeader_SizeChanged"
+                PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+                Focusable="True"
+                IsTabStop="True"
+                FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
+            </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock
+                    Text="{Binding TransitiveVersion}" />
+                  <imaging:CrispImage
+                    x:Name="_warningIndicator"
+                    Visibility="{Binding IsTransitiveVersionVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
+                    VerticalAlignment="Center"
+                    Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
+                </StackPanel>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
           </GridViewColumn>
         </GridView>
       </ListView.View>

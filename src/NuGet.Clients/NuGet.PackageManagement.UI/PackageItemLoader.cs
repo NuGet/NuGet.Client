@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -272,7 +273,8 @@ namespace NuGet.PackageManagement.UI
 
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
-                    existingListItem.InstalledVersions = existingListItem.InstalledVersions.Append(packageVersion);
+                    existingListItem.InstalledVersions.Add(packageVersion);
+                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
                 }
                 else
                 {
@@ -341,7 +343,7 @@ namespace NuGet.PackageManagement.UI
                         IncludePrerelease = _includePrerelease,
                         PackageLevel = packageLevel,
                         TransitiveToolTipMessage = transitiveToolTipMessage,
-                        InstalledVersions = new[] { metadataContextInfo.Identity.Version },
+                        InstalledVersions = new ObservableCollection<NuGetVersion> { metadataContextInfo.Identity.Version },
                     };
 
                     if (listItem.PackageLevel == PackageLevel.TopLevel)

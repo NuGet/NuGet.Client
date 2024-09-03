@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.UI
                 if (model.IsRequestedVisible)
                 {
                     GridViewColumn _versionColumn = CreateRequestedVersionColumn();
-                    _gridProjects.Columns.Insert(2, _versionColumn);
+                    _gridProjects.Columns.Insert(3, _versionColumn);
                 }
             }
         }

@@ -48,6 +48,29 @@ namespace NuGet.PackageManagement.UI
 
         private NuGetVersion _versionInstalled;
         private string _versionRequested;
+        private string _transitiveVersion;
+
+        private bool _isInstalledVersionVulnerable;
+        public bool IsInstalledVersionVulnerable
+        {
+            get => _isInstalledVersionVulnerable;
+            set
+            {
+                _isInstalledVersionVulnerable = value;
+                OnPropertyChanged(nameof(IsInstalledVersionVulnerable));
+            }
+        }
+
+        private bool _isTransitiveVersionVulnerable;
+        public bool IsTransitiveVersionVulnerable
+        {
+            get => _isTransitiveVersionVulnerable;
+            set
+            {
+                _isTransitiveVersionVulnerable = value;
+                OnPropertyChanged(nameof(IsTransitiveVersionVulnerable));
+            }
+        }
 
         public NuGetVersion InstalledVersion
         {
@@ -56,6 +79,16 @@ namespace NuGet.PackageManagement.UI
             {
                 _versionInstalled = value;
                 OnPropertyChanged(nameof(InstalledVersion));
+            }
+        }
+
+        public string TransitiveVersion
+        {
+            get => _transitiveVersion;
+            set
+            {
+                _transitiveVersion = value;
+                OnPropertyChanged(nameof(TransitiveVersion));
             }
         }
 
