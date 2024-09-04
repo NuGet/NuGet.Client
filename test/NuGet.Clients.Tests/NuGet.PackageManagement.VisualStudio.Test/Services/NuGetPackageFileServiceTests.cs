@@ -99,7 +99,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                 NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
 
-
                 // Act
                 Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
 
@@ -109,6 +108,47 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.False(iconStream.CanWrite);
 
                 Assert.Equal(fileContents.Length, iconStream.Length);
+            }
+        }
+
+        [Fact]
+        public async Task GetPackageIconAsync_RemoteUriInaccessible_FindsLocalIconFromCache()
+        {
+            // Arrange
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                string fileContents = "testFileContents";
+                string filePath = Path.Combine(testDirectory.Path, "testFile.txt");
+
+                File.WriteAllText(filePath, fileContents);
+
+                var packageFileService = new NuGetPackageFileService(
+                        default(ServiceActivationOptions),
+                        Mock.Of<IServiceBroker>(),
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
+
+                var packageIdentity = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
+                var remoteInaccessibleUri = new Uri("http://api.source/index.json");
+
+                // Add a fragment to consider this an embedded icon.
+                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                var localUri = new Uri("file://" + filePath + "#testFile.txt");
+
+                NuGetPackageFileService.AddIconToCache(packageIdentity, remoteInaccessibleUri);
+
+                // Act
+                Stream inaccessibleRemoteIconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+                NuGetPackageFileService.AddLocalIconToCache(packageIdentity, localUri);
+                Stream foundLocalIconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+
+                // Assert
+                Assert.Null(inaccessibleRemoteIconStream);
+                Assert.NotNull(foundLocalIconStream);
+                Assert.True(foundLocalIconStream.CanRead);
+                Assert.False(foundLocalIconStream.CanWrite);
+
+                Assert.Equal(fileContents.Length, foundLocalIconStream.Length);
             }
         }
 
@@ -154,6 +194,45 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
+        public async Task GetPackageIconAsync_NonEmbedded_GetStream_DoesNotLockFile()
+        {
+            // Arrange
+            using (TestDirectory testDirectory = TestDirectory.Create())
+            {
+                string fileContents = "testFileContents";
+                string filePath = Path.Combine(testDirectory.Path, "testFile.txt");
+
+                File.WriteAllText(filePath, fileContents);
+
+                var packageFileService = new NuGetPackageFileService(
+                        default(ServiceActivationOptions),
+                        Mock.Of<IServiceBroker>(),
+                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                        _telemetryProvider.Object);
+                var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_NonEmbedded_GetStream_DoesNotLockFile), NuGetVersion.Parse("1.0.0"));
+
+                // Do not add a fragment which is typically required for the embedded icon.
+                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                var uri = new Uri("file://" + filePath);
+                NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
+                FileStream fileNotLocked = File.Open(uri.LocalPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+
+                // Act
+                // System.IO.IOException would occur in the Act if we're locking the icon file.
+                Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+                fileNotLocked.Close();
+                FileStream fileNotLocked2 = File.Open(uri.LocalPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+
+                // Assert
+                Assert.NotNull(iconStream);
+                Assert.True(iconStream.CanRead);
+                Assert.False(iconStream.CanWrite);
+
+                Assert.Equal(fileContents.Length, iconStream.Length);
+            }
+        }
+
+        [Fact]
         public async Task GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile()
         {
             // Arrange
@@ -172,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Mock.Of<IServiceBroker>(),
                         new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
                         _telemetryProvider.Object);
-                var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_DoesNotLockFile), NuGetVersion.Parse("1.0.0"));
+                var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile), NuGetVersion.Parse("1.0.0"));
 
                 // Add a fragment to consider this an embedded icon.
                 // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
