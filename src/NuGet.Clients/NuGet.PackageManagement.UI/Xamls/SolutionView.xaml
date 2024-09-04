@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
              mc:Ignorable="d"
              DataContextChanged="SolutionView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="500">
@@ -14,10 +16,18 @@
       </ResourceDictionary.MergedDictionaries>
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
+      <local:InstalledVulnerabilitiesCountConverter
+        x:Key="InstalledVulnerabilitiesCountConverter" />
+      <local:IntToVisibilityConverter
+        x:Key="IntToVisibilityConverter" />
       <local:TooltipConverter
         x:Key="TooltipConverter" />
       <local:NotNullToBooleanConverter
         x:Key="NotNullToBooleanConverter" />
+      <local:IntToVulnerabilitySeverityConverter
+        x:Key="IntToVulnerabilitySeverityConverter" />
+      <local:StringFormatConverter
+        x:Key="StringFormatConverter" />
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
@@ -178,11 +188,47 @@
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
 
-    <TextBlock
-      x:Name="_installedVersionsCount"
-      Grid.Row="0"
-      Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
+    <!--Versions and vulnerabilities count-->
+    <Grid
+      Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock
+        x:Name="_installedVersionsCount"
+        Grid.Column="0"
+        Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
+      <StackPanel
+        Visibility="{Binding InstaledVulnerabilitiesCount, Converter={StaticResource IntToVisibilityConverter}}"
+        Orientation="Horizontal"
+        Grid.Column="1"
+        VerticalAlignment="Bottom">
+        <imaging:CrispImage
+          x:Name="_warningIndicator"
+          VerticalAlignment="Center"
+          Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
+          <imaging:CrispImage.ToolTip>
+            <StackPanel>
+              <TextBlock
+                Margin="0, 0, 0, 8">
+                <TextBlock.Text>
+                  <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                    <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
+                    <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                  </MultiBinding>
+                </TextBlock.Text>
+              </TextBlock>
+            </StackPanel>
+          </imaging:CrispImage.ToolTip>
+        </imaging:CrispImage>
+        <TextBlock
+          Text="{Binding InstaledVulnerabilitiesCount, Converter={StaticResource InstalledVulnerabilitiesCountConverter}}" />
+      </StackPanel>
+    </Grid>
+
+    <!--Projects list-->
     <local:ToggleableListView
       Grid.Row="1"
       x:Name="_projectList"
@@ -305,8 +351,7 @@
           <!-- the version column may be inserted here dynamically from code -->
 
           <!-- the installed column -->
-          <GridViewColumn
-            DisplayMemberBinding="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}">
+          <GridViewColumn>
             <GridViewColumn.Header>
               <GridViewColumnHeader
                 AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
@@ -321,6 +366,33 @@
                 IsTabStop="True"
                 FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}"/>
             </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <StackPanel
+                  VerticalAlignment="Bottom"
+                  Orientation="Horizontal">
+                  <imaging:CrispImage
+                    x:Name="_warningIndicator"
+                    Visibility="{Binding IsInstalledVersionVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
+                    <imaging:CrispImage.ToolTip>
+                      <TextBlock
+                        Margin="0, 0, 0, 8">
+                        <TextBlock.Text>
+                          <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                            <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
+                            <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                          </MultiBinding>
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </imaging:CrispImage.ToolTip>
+                  </imaging:CrispImage>
+                  <TextBlock
+                    Margin="4,0,0,0"
+                    Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}" />
+                </StackPanel>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
           </GridViewColumn>
         </GridView>
       </ListView.View>
