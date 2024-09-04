@@ -135,7 +135,7 @@
     <VsixPublishDestination>$(ArtifactRoot)$(VsixOutputDirName)\</VsixPublishDestination>
   </PropertyGroup>
 
-  <!-- Write out .XML files for projects that will be packed. -->
+  <!-- Write out .XML files for projects all projects, required to enforce IDE0005 on build. -->
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile Condition=" '$(DocumentationFile)' == '' AND '$(IsNetCoreProject)' != 'true' ">$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
