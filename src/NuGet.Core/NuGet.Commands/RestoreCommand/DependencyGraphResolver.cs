@@ -340,7 +340,7 @@ namespace NuGet.Commands
                                 goto ProcessDeepEviction;
                             }
 
-                            bool isCentrallyPinnedTransitivePackage = chosenResolvedItem.IsCentrallyPinnedTransitivePackage;
+                            bool isCentrallyPinnedTransitivePackage = importRefItem.IsCentrallyPinnedTransitivePackage;
 
                             //Since this is a "new" choice, its gets a new import context list
                             chosenResolvedItems.Add(
@@ -632,7 +632,7 @@ namespace NuGet.Commands
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
 
                         //Suppress this node
-                        if (suppressions!.Contains(depIndex))
+                        if (!importRefItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(depIndex))
                         {
                             continue;
                         }

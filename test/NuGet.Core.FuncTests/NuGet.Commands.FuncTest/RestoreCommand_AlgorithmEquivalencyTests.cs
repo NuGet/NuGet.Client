@@ -417,19 +417,21 @@ namespace NuGet.Commands.FuncTest
             // Act & Assert
             (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2);
             result.LockFile.Targets.Should().HaveCount(1);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
-            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
             result2.LockFile.Targets.Should().HaveCount(1);
             result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
             result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
-            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("b");
-            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result2.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result2.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
         // P1 -> P2 -> A (VersionOverride) -> B
@@ -516,16 +518,18 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
-            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
-            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
 
             (var result2, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec2);
             result2.LockFile.Targets.Should().HaveCount(1);
             result2.LockFile.Targets[0].Libraries.Should().HaveCount(2);
             result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
-            result2.LockFile.Targets[0].Libraries[0].Name.Should().Be("b");
-            result2.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result2.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result2.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
         // P1 -> P2 -> A 1.0.0 -> B 1.0.0
