@@ -175,7 +175,16 @@ namespace NuGet.Protocol.Plugins
             }
             else
             {
+#if NET8_0
+                var fileMode = File.GetUnixFileMode(fileInfo.FullName);
+
+                return fileInfo.Exists &&
+                    ((fileMode & UnixFileMode.UserExecute) != 0 ||
+                    (fileMode & UnixFileMode.GroupExecute) != 0 ||
+                    (fileMode & UnixFileMode.OtherExecute) != 0);
+#else
                 return fileInfo.Exists && (fileInfo.Attributes & FileAttributes.ReparsePoint) == 0 && IsExecutable(fileInfo);
+#endif
             }
         }
 
