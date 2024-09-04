@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_HasOnlyReadAccess), NuGetVersion.Parse("1.0.0"));
 
                 // Add a fragment to consider this an embedded icon.
-                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                // Note: file:// is required for Uri to parse the Fragment.
                 var uri = new Uri("file://" + filePath + "#testFile.txt");
 
                 NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
@@ -129,10 +129,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         _telemetryProvider.Object);
 
                 var packageIdentity = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                var remoteInaccessibleUri = new Uri("http://api.source/index.json");
+                var remoteInaccessibleUri = new Uri("http://source.test/index.json");
 
                 // Add a fragment to consider this an embedded icon.
-                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                // Note: file:// is required for Uri to parse the Fragment.
                 var localUri = new Uri("file://" + filePath + "#testFile.txt");
 
                 NuGetPackageFileService.AddIconToCache(packageIdentity, remoteInaccessibleUri);
@@ -171,7 +171,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_DoesNotLockFile), NuGetVersion.Parse("1.0.0"));
 
                 // Add a fragment to consider this an embedded icon.
-                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                // Note: file:// is required for Uri to parse the Fragment.
                 var uri = new Uri("file://" + filePath + "#testFile.txt");
 
                 NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_NonEmbedded_GetStream_DoesNotLockFile), NuGetVersion.Parse("1.0.0"));
 
                 // Do not add a fragment which is typically required for the embedded icon.
-                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                // Note: file:// is required for Uri to parse the Fragment.
                 var uri = new Uri("file://" + filePath);
                 NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
                 FileStream fileNotLocked = File.Open(uri.LocalPath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
@@ -254,7 +254,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile), NuGetVersion.Parse("1.0.0"));
 
                 // Add a fragment to consider this an embedded icon.
-                // Note: file:// is required for Uri to parse the Fragment (possibly a Uri bug).
+                // Note: file:// is required for Uri to parse the Fragment.
                 var uri = new Uri("file://" + pathAndFileReadOnly + "#testFile.txt");
 
                 NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
