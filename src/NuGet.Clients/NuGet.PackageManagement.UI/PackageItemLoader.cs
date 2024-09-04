@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -273,6 +274,7 @@ namespace NuGet.PackageManagement.UI
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
                     existingListItem.InstalledVersions.Add(packageVersion);
+                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
                 }
                 else
                 {
