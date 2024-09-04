@@ -274,28 +274,34 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 FileInfo fileInfo = new FileInfo(pathAndFileReadOnly);
                 fileInfo.IsReadOnly = true;
 
-                var packageFileService = new NuGetPackageFileService(
-                        default(ServiceActivationOptions),
-                        Mock.Of<IServiceBroker>(),
-                        new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
-                        _telemetryProvider.Object);
-                var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile), NuGetVersion.Parse("1.0.0"));
+                try
+                {
+                    var packageFileService = new NuGetPackageFileService(
+                            default(ServiceActivationOptions),
+                            Mock.Of<IServiceBroker>(),
+                            new AuthorizationServiceClient(Mock.Of<IAuthorizationService>()),
+                            _telemetryProvider.Object);
+                    var packageIdentity = new PackageIdentity(nameof(GetPackageIconAsync_EmbeddedFromFallbackFolder_CanOpenReadOnlyFile), NuGetVersion.Parse("1.0.0"));
 
-                // Add a fragment to consider this an embedded icon.
-                // Note: file:// is required for Uri to parse the Fragment.
-                var uri = new Uri("file://" + pathAndFileReadOnly + "#testFile.txt");
+                    // Add a fragment to consider this an embedded icon.
+                    // Note: file:// is required for Uri to parse the Fragment.
+                    var uri = new Uri("file://" + pathAndFileReadOnly + "#testFile.txt");
 
-                NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
+                    NuGetPackageFileService.AddIconToCache(packageIdentity, uri);
 
-                // Act
-                // System.UnauthorizedAccessException would occur in the Act if we're requiring Write access on the Read-Only file.
-                using Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
-                // Assert
-                Assert.NotNull(iconStream);
-                Assert.True(iconStream.CanRead);
-                Assert.False(iconStream.CanWrite);
-                Assert.Equal(fileContents.Length, iconStream.Length);
-                iconStream.Dispose();
+                    // Act
+                    // System.UnauthorizedAccessException would occur in the Act if we're requiring Write access on the Read-Only file.
+                    using Stream iconStream = await packageFileService.GetPackageIconAsync(packageIdentity, CancellationToken.None);
+                    // Assert
+                    Assert.NotNull(iconStream);
+                    Assert.True(iconStream.CanRead);
+                    Assert.False(iconStream.CanWrite);
+                    Assert.Equal(fileContents.Length, iconStream.Length);
+                }
+                finally
+                {
+                    fileInfo.IsReadOnly = false;
+                }
             }
         }
 
