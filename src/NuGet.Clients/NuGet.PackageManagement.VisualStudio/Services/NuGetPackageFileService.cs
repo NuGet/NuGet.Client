@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // use GetFullPath to normalize "..", so that zip slip attack cannot allow a user to walk up the file directory
                 if (Path.GetFullPath(extractedIconPath).StartsWith(dirPath, StringComparison.OrdinalIgnoreCase) && File.Exists(extractedIconPath))
                 {
-                    Stream fileStream = new FileStream(extractedIconPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    Stream fileStream = File.OpenRead(extractedIconPath);
                     return fileStream;
                 }
                 else
@@ -213,7 +213,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (File.Exists(uri.LocalPath))
                 {
-                    return new FileStream(uri.LocalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    return File.OpenRead(uri.LocalPath);
                 }
                 else
                 {
