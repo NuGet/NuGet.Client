@@ -8,7 +8,7 @@ The scenarios are sequential as follows:
 
 1. Clean restore - no http cache & other local caches, no files in the global package folder, absolutely everything gets downloaded and extracted.
 1. Cold restore - There is only an http cache. This tells us more about the installation/extraction time. Potentially we might see some extra http calls depending on the project graph.
-1. Force restore - The http cache & global packages folder are full. This usually means that there are no package downloads or installations happening. Since most tests are running 
+1. Force restore - The http cache & global packages folder are full. This usually means that there are no package downloads or installations happening. Since most tests are running
 1. NoOp restore
 
 .PARAMETER nugetClientFilePath
@@ -24,7 +24,7 @@ The results file path. This is an exact path to a file.
 The logs folder path. The default is a temp directory that gets cleaned up after the script has completed.
 
 .PARAMETER nugetFoldersPath
-The temp folder for all the nuget assets. This includes the location of the global packages folder, http, plugins cache & temp location 
+The temp folder for all the nuget assets. This includes the location of the global packages folder, http, plugins cache & temp location
 
 .PARAMETER iterationCount
 How many times to run each test. The default is 3
@@ -36,7 +36,7 @@ Specifies whether the solution is packages-config.
 When running the tests, a warmup run is performed. Use this parameter to skip it.
 
 .PARAMETER skipCleanRestores
-Skips clean restores. 
+Skips clean restores.
 
 .PARAMETER skipColdRestores
 Skips cold restores
@@ -137,7 +137,7 @@ Try
     $resultsFilePath = GetAbsolutePath $resultsFilePath
     $isClientDotnetExe = IsClientDotnetExe $nugetClientFilePath
 
-    
+
     If ($isPackagesConfig)
     {
         If ($isClientDotnetExe)
@@ -310,7 +310,7 @@ Try
     {
         Log "Running $($iterationCount)x no-op restores"
 
-        $enabledSwitches = @("")
+        $enabledSwitches = @()
         If ($staticGraphRestore)
         {
             $enabledSwitches += "staticGraphRestore"
@@ -325,7 +325,7 @@ Try
         }
 
         $arguments = CreateNugetClientArguments $solutionFilePath $nugetClientFilePath $resultsFilePath $logsFolderPath $solutionName $testRunId "noop" -enabledSwitches $enabledSwitches
-        
+
         1..$iterationCount | % { RunRestore @arguments }
     }
 
