@@ -114,7 +114,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            Stream? stream;
+            Stream? stream = null;
             if (IsEmbeddedUri(uri))
             {
                 stream = await GetEmbeddedFileAsync(uri, cancellationToken);
@@ -126,7 +126,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     stream = await GetEmbeddedFileAsync(localUri, cancellationToken);
                 }
-                else
+
+                if (stream == null)
                 {
                     stream = await GetStream(uri);
                 }
