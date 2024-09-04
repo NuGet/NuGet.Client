@@ -128,9 +128,6 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
-                    //var installedVersion = installedAndTransitivePackages.InstalledPackages;
-                    //var transitiveVersion = installedAndTransitivePackages.TransitivePackages;
-
                     if (installedVersion != null)
                     {
                         project.InstalledVersion = installedVersion.Identity.Version;
