@@ -201,7 +201,7 @@
         Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
       <StackPanel
-        Visibility="{Binding InstaledVulnerabilitiesCount, Converter={StaticResource IntToVisibilityConverter}}"
+        Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource IntToVisibilityConverter}}"
         Orientation="Horizontal"
         Grid.Column="1"
         VerticalAlignment="Bottom">
@@ -224,7 +224,7 @@
           </imaging:CrispImage.ToolTip>
         </imaging:CrispImage>
         <TextBlock
-          Text="{Binding InstaledVulnerabilitiesCount, Converter={StaticResource InstalledVulnerabilitiesCountConverter}}" />
+          Text="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource InstalledVulnerabilitiesCountConverter}}" />
       </StackPanel>
     </Grid>
 
