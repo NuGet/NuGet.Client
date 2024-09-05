@@ -78,7 +78,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 RawReadmeUrl = packageSearchMetadata.RawReadmeUrl,
                 PackagePath =
                     (packageSearchMetadata as LocalPackageSearchMetadata)?.PackagePath ??
-                    (packageSearchMetadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackagePath,
+                    (packageSearchMetadata as ClonedPackageSearchMetadata)?.PackagePath,
                 RequireLicenseAcceptance = packageSearchMetadata.RequireLicenseAcceptance,
                 Summary = packageSearchMetadata.Summary,
                 PrefixReserved = packageSearchMetadata.PrefixReserved,
