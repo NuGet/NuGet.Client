@@ -70,6 +70,7 @@ namespace NuGet.Protocol.Tests
     ""dependencies"": [
             {
              ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.01.06.24.00/PackageA.1.6.0.json#dependencygroup/jquery"",
+             //  comment to test that they are ignored
              ""@type"": ""PackageDependency"",
              ""id"": ""PackageA"",
              ""range"": ""[1.4.1, )"",
