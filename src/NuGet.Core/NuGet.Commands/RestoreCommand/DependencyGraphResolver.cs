@@ -993,6 +993,11 @@ namespace NuGet.Commands
                             continue;
                         }
 
+                        if (!findLibraryEntryCache.TryGetValue(downgrade.Key, out FindLibraryEntryResult? findLibraryEntryResult))
+                        {
+                            continue;
+                        }
+
                         analyzeResult.Downgrades.Add(new DowngradeResult<RemoteResolveResult>
                         {
                             DowngradedFrom = new GraphNode<RemoteResolveResult>(downgrade.Value.FromLibraryDependency.LibraryRange)
@@ -1002,7 +1007,7 @@ namespace NuGet.Commands
                             },
                             DowngradedTo = new GraphNode<RemoteResolveResult>(downgrade.Value.ToLibraryDependency.LibraryRange)
                             {
-                                Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity(downgrade.Value.ToLibraryDependency.Name, downgrade.Value.ToLibraryDependency.LibraryRange.VersionRange?.MinVersion!, LibraryType.Package))
+                                Item = new GraphItem<RemoteResolveResult>(findLibraryEntryResult.Item.Key)
                                 {
                                     IsCentralTransitive = downgrade.Value.IsCentralTransitive
                                 },
