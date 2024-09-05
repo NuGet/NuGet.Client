@@ -205,7 +205,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 {
                     // Use a shell command to make the file executable
                     process.StartInfo.FileName = "sh";
-                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin} ]\"";
+                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin}\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
 
