@@ -38,7 +38,4 @@ Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll
-System.Buffers.dll
-System.Memory.dll
 System.Numerics.Vectors.dll
-System.Runtime.CompilerServices.Unsafe.dll
