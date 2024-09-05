@@ -236,6 +236,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var pluginPath = Path.Combine(testDirectory.Path, "myPlugins");
                 Directory.CreateDirectory(pluginPath);
                 var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
+                File.WriteAllText(myPlugin, string.Empty);
 
                 using (var process = new Process())
                 {
@@ -246,10 +247,10 @@ namespace NuGet.Protocol.Plugins.Tests
                     process.StartInfo.RedirectStandardOutput = true;
 
                     process.Start();
-                    if (!process.WaitForExit(1000) || process.ExitCode != 0)
+                    process.WaitForExit();
+                    if (process.ExitCode == 0)
                     {
                         Environment.SetEnvironmentVariable("PATH", pluginPath);
-                        File.WriteAllText(myPlugin, string.Empty);
                         var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
                         verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                             .Returns(true);
@@ -283,6 +284,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var pluginPath = Path.Combine(testDirectory.Path, "myPlugins");
                 Directory.CreateDirectory(pluginPath);
                 var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
+                File.WriteAllText(myPlugin, string.Empty);
 
                 using (var process = new Process())
                 {
@@ -293,10 +295,10 @@ namespace NuGet.Protocol.Plugins.Tests
                     process.StartInfo.RedirectStandardOutput = true;
 
                     process.Start();
-                    if (!process.WaitForExit(1000) || process.ExitCode != 0)
+                    process.WaitForExit();
+                    if (process.ExitCode == 0)
                     {
                         Environment.SetEnvironmentVariable("PATH", pluginPath);
-                        File.WriteAllText(myPlugin, string.Empty);
                         var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
                         verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                             .Returns(true);
