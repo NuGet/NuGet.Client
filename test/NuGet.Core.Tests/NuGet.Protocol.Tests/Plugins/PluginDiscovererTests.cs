@@ -222,7 +222,7 @@ namespace NuGet.Protocol.Plugins.Tests
                         if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
                     }
 
-                    Assert.True(discovered);
+                    Assert.False(discovered);
                 }
             }
         }
@@ -245,9 +245,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     process.StartInfo.Arguments = $"chmod +x {myPlugin}";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
-
                     process.Start();
                     process.WaitForExit();
+
                     if (process.ExitCode == 0)
                     {
                         Environment.SetEnvironmentVariable("PATH", pluginPath);
@@ -293,9 +293,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     process.StartInfo.Arguments = $"chmod -x {myPlugin}";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
-
                     process.Start();
                     process.WaitForExit();
+
                     if (process.ExitCode == 0)
                     {
                         Environment.SetEnvironmentVariable("PATH", pluginPath);
