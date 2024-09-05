@@ -927,7 +927,7 @@ namespace NuGet.Commands
 
                             if (dep.SuppressParent != LibraryIncludeFlags.All && isCentralPackageTransitivePinningEnabled && !downgrades.ContainsKey(chosenItemRangeIndex) && !RemoteDependencyWalker.IsGreaterThanOrEqualTo(chosenItem.LibraryDependency.LibraryRange.VersionRange, dep.LibraryRange.VersionRange))
                             {
-                                downgrades.Add(chosenItem.LibraryRangeIndex, (currentLibraryRangeIndex, dep, currentLibraryRangeIndex, chosenItem.LibraryDependency, true));
+                                downgrades.Add(chosenItem.LibraryRangeIndex, (currentLibraryRangeIndex, dep, rootProjectRefItem.LibraryRangeIndex, chosenItem.LibraryDependency, true));
                             }
 
                             if (newGraphNode.Item.Key.Type != LibraryType.Project && newGraphNode.Item.Key.Type != LibraryType.ExternalProject && newGraphNode.Item.Key.Type != LibraryType.Unresolved && !versionConflicts.ContainsKey(chosenItemRangeIndex) && dep.SuppressParent != LibraryIncludeFlags.All && dep.LibraryRange.VersionRange != null && !dep.LibraryRange.VersionRange!.Satisfies(newGraphNode.Item.Key.Version) && !downgrades.ContainsKey(chosenItemRangeIndex))
