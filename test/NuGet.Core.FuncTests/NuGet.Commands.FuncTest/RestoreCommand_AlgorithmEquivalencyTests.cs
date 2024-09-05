@@ -182,7 +182,8 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
             var packageA = new SimpleTestPackageContext("a", "1.0.0")
             {
-                Dependencies = [new SimpleTestPackageContext("b", "2.0.0") {
+                Dependencies = [new SimpleTestPackageContext("b", "2.0.0")
+                {
                     Dependencies = [new SimpleTestPackageContext("e", "1.0")]
                 }]
             };
