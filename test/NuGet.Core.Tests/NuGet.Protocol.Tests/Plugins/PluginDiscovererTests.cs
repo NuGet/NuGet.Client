@@ -284,6 +284,42 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("nugetplugin-myPlugin.exe")]
+        [InlineData("nugetplugin-myPlugin.bat")]
+        public async Task DiscoverAsync_withInValidDotNetToolsPluginNameWindows_DoesNotFindThePlugin(string fileName)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var pluginPath = Path.Combine(testDirectory.Path, "myPlugin");
+                Directory.CreateDirectory(pluginPath);
+                var myPlugin = Path.Combine(pluginPath, fileName);
+
+                Environment.SetEnvironmentVariable("PATH", pluginPath);
+                File.WriteAllText(myPlugin, string.Empty);
+                var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
+                verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
+                    .Returns(true);
+
+                using (var discoverer = new PluginDiscoverer("", verifierSpy.Object))
+                {
+                    // Act
+                    var result = await discoverer.DiscoverAsync(CancellationToken.None);
+
+                    // Assert
+                    var discovered = false;
+
+                    foreach (PluginDiscoveryResult discoveryResult in result)
+                    {
+                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                    }
+
+                    Assert.True(discovered);
+                }
+            }
+        }
+
         [PlatformFact(Platform.Linux)]
         public async Task DiscoverAsync_withValidDotNetToolsPluginLinux_FindsThePlugin()
         {
@@ -292,7 +328,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 // Arrange
                 var pluginPath = Path.Combine(testDirectory.Path, "myPlugins");
                 Directory.CreateDirectory(pluginPath);
-                var myPlugin = Path.Combine(pluginPath, "MyPlugin");
+                var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
 
                 using (var process = new Process())
                 {
@@ -325,6 +361,53 @@ namespace NuGet.Protocol.Plugins.Tests
                             }
 
                             Assert.True(discovered);
+                        }
+                    }
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public async Task DiscoverAsync_withNoExecutableValidDotNetToolsPluginLinux_DoesNotFindThePlugin()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var pluginPath = Path.Combine(testDirectory.Path, "myPlugins");
+                Directory.CreateDirectory(pluginPath);
+                var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
+
+                using (var process = new Process())
+                {
+                    // Use a shell command to make the file executable
+                    process.StartInfo.FileName = "sh";
+                    process.StartInfo.Arguments = $"-c \"chmod -x {myPlugin}\"";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+
+                    process.Start();
+                    if (!process.WaitForExit(1000) || process.ExitCode != 0)
+                    {
+                        Environment.SetEnvironmentVariable("PATH", pluginPath);
+                        File.WriteAllText(myPlugin, string.Empty);
+                        var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
+                        verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
+                            .Returns(true);
+
+                        using (var discoverer = new PluginDiscoverer("", verifierSpy.Object))
+                        {
+                            // Act
+                            var result = await discoverer.DiscoverAsync(CancellationToken.None);
+
+                            // Assert
+                            var discovered = false;
+
+                            foreach (PluginDiscoveryResult discoveryResult in result)
+                            {
+                                if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                            }
+
+                            Assert.False(discovered);
                         }
                     }
                 }
