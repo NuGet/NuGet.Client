@@ -334,8 +334,8 @@ namespace NuGet.Protocol.Plugins.Tests
                 using (var process = new Process())
                 {
                     // Use a shell command to make the file executable
-                    process.StartInfo.FileName = "sh";
-                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin}\"";
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = $"chmod +x {myPlugin}";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
 
@@ -382,8 +382,8 @@ namespace NuGet.Protocol.Plugins.Tests
                 using (var process = new Process())
                 {
                     // Use a shell command to make the file not executable
-                    process.StartInfo.FileName = "sh";
-                    process.StartInfo.Arguments = $"-c \"chmod -x {myPlugin}\"";
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = $"chmod -x {myPlugin}";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
 
