@@ -79,7 +79,6 @@ namespace NuGet.Protocol.Plugins
                 }
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
-
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
