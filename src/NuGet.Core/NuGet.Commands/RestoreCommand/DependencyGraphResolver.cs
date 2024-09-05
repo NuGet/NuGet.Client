@@ -182,10 +182,9 @@ namespace NuGet.Commands
                     HashSet<LibraryDependencyIndex>? currentSuppressions = importRefItem.Suppressions;
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides = importRefItem.VersionOverrides!;
                     bool directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
-                    LibraryRangeIndex libraryRangeOfCurrentRef = importRefItem.LibraryRangeIndex;
 
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
-                    if (evictions.TryGetValue(libraryRangeOfCurrentRef, out var eviction))
+                    if (evictions.TryGetValue(currentRefRangeIndex, out var eviction))
                     {
                         (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
 
@@ -203,6 +202,24 @@ namespace NuGet.Commands
                         if (!ov.Equals(currentRef.LibraryRange.VersionRange))
                         {
                             continue;
+                        }
+                    }
+
+                    HashSet<LibraryDependency>? runtimeDependencies = null;
+
+                    if (runtimeGraph != null && !string.IsNullOrWhiteSpace(pair.RuntimeIdentifier))
+                    {
+                        runtimeDependencies = new HashSet<LibraryDependency>();
+
+                        LibraryRange libraryRange = currentRef.LibraryRange;
+
+                        if (RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, pair.RuntimeIdentifier, runtimeGraph, ref runtimeDependencies))
+                        {
+                            importRefItem.LibraryRangeIndex = currentRefRangeIndex = libraryRangeInterningTable.Intern(libraryRange);
+
+                            currentRef = currentRef.Clone();
+
+                            currentRef.LibraryRange = libraryRange;
                         }
                     }
 
@@ -333,7 +350,7 @@ namespace NuGet.Commands
                                     break;
                                 }
                             }
-                            evictions[evictedLR] = (LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, libraryRangeOfCurrentRef), currentRefDependencyIndex, chosenRef.LibraryRange.TypeConstraint);
+                            evictions[evictedLR] = (LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex), currentRefDependencyIndex, chosenRef.LibraryRange.TypeConstraint);
 
                             if (deepEvictions > 0)
                             {
@@ -529,7 +546,7 @@ namespace NuGet.Commands
                             });
                     }
 
-                    if (!findLibraryEntryCache.TryGetValue(libraryRangeOfCurrentRef, out FindLibraryEntryResult? refItemResult))
+                    if (!findLibraryEntryCache.TryGetValue(currentRefRangeIndex, out FindLibraryEntryResult? refItemResult))
                     {
                         GraphItem<RemoteResolveResult> refItem = ResolverUtility.FindLibraryEntryAsync(
                                 currentRef.LibraryRange,
@@ -546,7 +563,7 @@ namespace NuGet.Commands
                             libraryDependencyInterningTable,
                             libraryRangeInterningTable);
 
-                        findLibraryEntryCache.Add(libraryRangeOfCurrentRef, refItemResult);
+                        findLibraryEntryCache.Add(currentRefRangeIndex, refItemResult);
 
                         // If the package came from a remote library provider, it needs to be installed locally.
                         var isRemote = context.RemoteLibraryProviders.Contains(refItem.Data.Match.Provider);
@@ -671,7 +688,7 @@ namespace NuGet.Commands
                             LibraryDependency = actualLibraryDependency,
                             LibraryDependencyIndex = depIndex,
                             LibraryRangeIndex = rangeIndex,
-                            Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, libraryRangeOfCurrentRef),
+                            Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
                             Suppressions = suppressions,
                             VersionOverrides = finalVersionOverrides,
                             IsDirectPackageReferenceFromRootProject = isDirectPackageReferenceFromRootProject,
@@ -680,57 +697,50 @@ namespace NuGet.Commands
                     }
 
                     // Add runtime dependencies of the current node if a runtime identifier has been specified.
-                    if (!string.IsNullOrEmpty(pair.RuntimeIdentifier))
+                    if (!string.IsNullOrEmpty(pair.RuntimeIdentifier) && runtimeDependencies != null && runtimeDependencies.Count > 0)
                     {
                         // Check for runtime dependencies.
-                        HashSet<LibraryDependency> runtimeDependencies = new HashSet<LibraryDependency>();
-                        LibraryRange libraryRange = currentRef.LibraryRange;
-
                         FindLibraryEntryResult? findLibraryCachedAsyncResult = default;
-                        RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, pair.RuntimeIdentifier, runtimeGraph, ref runtimeDependencies);
 
-                        if (runtimeDependencies.Count > 0)
+                        // Runtime dependencies start after non-runtime dependencies.
+                        // Keep track of the first index for any runtime dependencies so that it can be used to enqueue later.
+                        int runtimeDependencyIndex = refItemResult.Item.Data.Dependencies.Count;
+
+                        // If there are runtime dependencies that need to be added, remove the currentRef from allResolvedItems,
+                        // and add the newly created version that contains the previously detected dependencies and newly detected runtime dependencies.
+                        findLibraryEntryCache.Remove(currentRefRangeIndex);
+                        bool rootHasInnerNodes = (refItemResult.Item.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
+                        GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(currentRef.LibraryRange, rootHasInnerNodes, false)
                         {
-                            // Runtime dependencies start after non-runtime dependencies.
-                            // Keep track of the first index for any runtime dependencies so that it can be used to enqueue later.
-                            int runtimeDependencyIndex = refItemResult.Item.Data.Dependencies.Count;
+                            Item = refItemResult.Item,
+                        };
+                        RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, rootNode);
+                        findLibraryCachedAsyncResult = new FindLibraryEntryResult(
+                            currentRef,
+                            rootNode.Item,
+                            currentRefDependencyIndex,
+                            currentRefRangeIndex,
+                            libraryDependencyInterningTable,
+                            libraryRangeInterningTable);
+                        findLibraryEntryCache.Add(currentRefRangeIndex, findLibraryCachedAsyncResult);
 
-                            // If there are runtime dependencies that need to be added, remove the currentRef from allResolvedItems,
-                            // and add the newly created version that contains the previously detected dependencies and newly detected runtime dependencies.
-                            findLibraryEntryCache.Remove(libraryRangeOfCurrentRef);
-                            bool rootHasInnerNodes = (refItemResult.Item.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
-                            GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(libraryRange, rootHasInnerNodes, false)
+                        // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
+                        if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies!.Count)
+                        {
+                            foreach (var dep in runtimeDependencies)
                             {
-                                Item = refItemResult.Item,
-                            };
-                            RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, rootNode);
-                            findLibraryCachedAsyncResult = new FindLibraryEntryResult(
-                                currentRef,
-                                rootNode.Item,
-                                currentRefDependencyIndex,
-                                currentRefRangeIndex,
-                                libraryDependencyInterningTable,
-                                libraryRangeInterningTable);
-                            findLibraryEntryCache.Add(libraryRangeOfCurrentRef, findLibraryCachedAsyncResult);
-
-                            // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
-                            if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies!.Count)
-                            {
-                                foreach (var dep in runtimeDependencies)
+                                refImport.Enqueue(new DependencyGraphItem()
                                 {
-                                    refImport.Enqueue(new DependencyGraphItem()
-                                    {
-                                        LibraryDependency = dep,
-                                        LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
-                                        LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(runtimeDependencyIndex),
-                                        Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, libraryRangeOfCurrentRef),
-                                        Suppressions = suppressions,
-                                        VersionOverrides = finalVersionOverrides,
-                                        IsDirectPackageReferenceFromRootProject = false,
-                                    });
+                                    LibraryDependency = dep,
+                                    LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
+                                    LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(runtimeDependencyIndex),
+                                    Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
+                                    Suppressions = suppressions,
+                                    VersionOverrides = finalVersionOverrides,
+                                    IsDirectPackageReferenceFromRootProject = false,
+                                });
 
-                                    runtimeDependencyIndex++;
-                                }
+                                runtimeDependencyIndex++;
                             }
                         }
                     }
