@@ -263,7 +263,7 @@ namespace NuGet.Commands
 
                                     foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.Parents.NoAllocEnumerate())
                                     {
-                                        if (importRefItem.Path.Contains(parentRangeIndex))
+                                        if (importRefItem.Path.Length > 2 && importRefItem.Path[importRefItem.Path.Length - 2] == parentRangeIndex)
                                         {
                                             atLeastOneCommonAncestor = true;
                                             break;
@@ -276,7 +276,7 @@ namespace NuGet.Commands
                                     }
                                 }
 
-                                if (HasCommonAncestor(importRefItem.Path, chosenResolvedItem.Path))
+                                if (chosenResolvedItem.Path.Length > 1 && importRefItem.Path.Length > 2 && chosenResolvedItem.Path[chosenResolvedItem.Path.Length - 1] == importRefItem.Path[importRefItem.Path.Length - 2])
                                 {
                                     continue;
                                 }
