@@ -29,9 +29,9 @@ namespace NuGet.PackageManagement.VisualStudio.Services
         //private readonly INuGetUILogger _outputConsoleLogger;
         //private readonly LocalsCommandRunner _localsCommandRunner;
 
-        private PackageRestoreConsent _packageRestoreConsent; //TODO: reset this when nuget.configs change
-        private BindingRedirectBehavior _bindingRedirectBehavior; //TODO: reset this when nuget.configs change
-        private PackageManagementFormat _packageManagementFormat; //TODO: reset this when nuget.configs change
+        private PackageRestoreConsent _packageRestoreConsent;
+        private BindingRedirectBehavior _bindingRedirectBehavior;
+        private PackageManagementFormat _packageManagementFormat;
 
         public ExternalSettingsProviderService()
         {
@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
 
         public Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(ExternalSettingOperationResult.SuccessResult((IReadOnlyList<EnumChoice>)new List<EnumChoice>().AsReadOnly()));
         }
 
         public Task<string> GetMessageTextAsync(string messageId, CancellationToken cancellationToken)
@@ -123,6 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                 case MonikerPackageRestoreAutomatic: return ConvertValueOrThrow<T>(PackageRestoreConsent.IsAutomatic);
                 case MonikerSkipBindingRedirects: return ConvertValueOrThrow<T>(BindingRedirectBehavior.IsSkipped);
                 case MonikerDefaultPackageManagementFormat: return ConvertDefaultPackageManagementFormatKeyOrThrow<T>(PackageManagementFormat.SelectedPackageManagementFormat);
+                case MonikerShowPackageManagementChooser: return ConvertValueOrThrow<T>(PackageManagementFormat.Enabled);
                 default: break;
             }
 
@@ -198,6 +199,18 @@ namespace NuGet.PackageManagement.VisualStudio.Services
                                 _ => throw new ApplicationException("Error saving setting!"),
                             };
 
+                            PackageManagementFormat.ApplyChanges();
+
+                            return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
+                        }
+                        break;
+                    }
+                case MonikerShowPackageManagementChooser:
+                    {
+                        if (value is bool boolValue)
+                        {
+                            PackageManagementFormat.Enabled = boolValue;
+                            PackageManagementFormat.ApplyChanges();
                             return Task.FromResult((ExternalSettingOperationResult)ExternalSettingOperationResult.Success.Instance);
                         }
                         break;
