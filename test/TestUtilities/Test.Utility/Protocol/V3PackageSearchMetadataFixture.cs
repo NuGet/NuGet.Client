@@ -74,6 +74,8 @@ namespace NuGet.Test.Utility
 
             public Uri ReadmeUrl => null;
 
+            public Uri ReadmeFileUrl => null;
+
             public Uri LicenseUrl => null;
 
             public Uri ProjectUrl => null;

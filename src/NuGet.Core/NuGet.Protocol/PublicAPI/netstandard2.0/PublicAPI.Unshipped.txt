@@ -1,1 +1,7 @@
 #nullable enable
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeFileUrl.get -> System.Uri
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.get -> System.Uri
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.ReadmeFileUrl.get -> System.Uri
+~NuGet.Protocol.PackageSearchMetadata.ReadmeFileUrl.get -> System.Uri
+~NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeFileUrl.get -> System.Uri

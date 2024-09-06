@@ -33,6 +33,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public Uri ReadmeUrl => _packageSearchMetadata.ReadmeUrl;
 
+        public Uri ReadmeFileUrl => _packageSearchMetadata.ReadmeFileUrl;
+
         public Uri ReportAbuseUrl => _packageSearchMetadata.ReportAbuseUrl;
 
         public Uri PackageDetailsUrl => _packageSearchMetadata.PackageDetailsUrl;
@@ -58,6 +60,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public LicenseMetadata LicenseMetadata => _packageSearchMetadata.LicenseMetadata;
 
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => _packageSearchMetadata.Vulnerabilities;
+
 
         private readonly IPackageSearchMetadata _packageSearchMetadata;
 
