@@ -9,7 +9,7 @@ namespace NuGet.Credentials
     public class PluginCredentialRequest
     {
         /// <summary>
-        /// Gets or sets the URI for the credential request.
+        /// Gets or sets the package source URI for the credential request.
         /// </summary>
         public string Uri { get; set; }
 
