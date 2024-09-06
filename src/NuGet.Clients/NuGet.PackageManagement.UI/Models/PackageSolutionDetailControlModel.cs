@@ -165,7 +165,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             InstalledVersionsCount = hash.Count;
-            InstaledVulnerabilitiesCount = vulnerabilitiesHash.Count;
+            InstalledVulnerabilitiesCount = vulnerabilitiesHash.Count;
 
             if (hash.Count == 0)
             {
@@ -286,13 +286,13 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public int InstaledVulnerabilitiesCount
+        public int InstalledVulnerabilitiesCount
         {
             get => _installedVulnerabilitiesCount;
             set
             {
                 _installedVulnerabilitiesCount = value;
-                OnPropertyChanged(nameof(InstaledVulnerabilitiesCount));
+                OnPropertyChanged(nameof(InstalledVulnerabilitiesCount));
             }
         }
 
