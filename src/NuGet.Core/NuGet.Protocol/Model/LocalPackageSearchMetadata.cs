@@ -225,7 +225,7 @@ namespace NuGet.Protocol
                 Fragment = embeddedReadme
             };
 
-            // get the special icon url
+            // get the readme url
             return builder.Uri;
         }
     }
