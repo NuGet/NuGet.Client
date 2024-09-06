@@ -224,8 +224,32 @@
           </imaging:CrispImage.ToolTip>
         </imaging:CrispImage>
         <TextBlock
-          x:Name="_vulnerableVersionsCount"
-          Text="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource InstalledVulnerabilitiesCountConverter}}" />
+          x:Name="_vulnerableVersionsCount">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock">
+              <Setter Property="Text">
+                <Setter.Value>
+                  <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                    <Binding Source="{x:Static local:Resources.Label_InstalledVulnerabilitiesCount}" />
+                    <Binding Path="InstalledVulnerabilitiesCount" />
+                  </MultiBinding>
+                </Setter.Value>
+              </Setter>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding InstalledVulnerabilitiesCount}" Value="1">
+                  <Setter Property="Text">
+                    <Setter.Value>
+                      <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                        <Binding Source="{x:Static local:Resources.Label_InstalledVulnerabilitiesCountSingle}" />
+                        <Binding Path="InstalledVulnerabilitiesCount" />
+                      </MultiBinding>
+                    </Setter.Value>
+                  </Setter>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
       </StackPanel>
     </Grid>
 
