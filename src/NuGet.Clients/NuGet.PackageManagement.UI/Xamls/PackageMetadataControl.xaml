@@ -260,7 +260,7 @@
 
       <!-- downloads -->
       <TextBlock
-        Visibility="{Binding Path=DownloadCount,Converter={StaticResource  DownloadCountToVisibilityConverter}}"
+        Visibility="{Binding Path=DownloadCount,Converter={StaticResource IsGreaterThanToVisibilityConverter},ConverterParameter=-1}"
         Grid.Row="5"
         Grid.Column="0"
         FontWeight="Bold"
@@ -269,7 +269,7 @@
         Text="{x:Static nuget:Resources.Label_Downloads}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
-        Visibility="{Binding Path=DownloadCount,Converter={StaticResource DownloadCountToVisibilityConverter}}"
+        Visibility="{Binding Path=DownloadCount,Converter={StaticResource IsGreaterThanToVisibilityConverter},ConverterParameter=-1}"
         AutomationProperties.LabeledBy="{Binding ElementName=_downloadsLabel}"
         Text="{Binding Path=DownloadCount,StringFormat={}{0:N0}}"
         Margin="8,8,0,0"

@@ -18,8 +18,8 @@
         x:Key="InstalledVersionsCountConverter" />
       <local:InstalledVulnerabilitiesCountConverter
         x:Key="InstalledVulnerabilitiesCountConverter" />
-      <local:IntToVisibilityConverter
-        x:Key="IntToVisibilityConverter" />
+      <local:IsGreaterThanToVisibilityConverter
+        x:Key="IsGreaterThanToVisibilityConverter" />
       <local:TooltipConverter
         x:Key="TooltipConverter" />
       <local:NotNullToBooleanConverter
@@ -201,7 +201,7 @@
         Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
       <StackPanel
-        Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource IntToVisibilityConverter}}"
+        Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource IsGreaterThanToVisibilityConverter}, ConverterParameter=0}"
         Orientation="Horizontal"
         Grid.Column="1"
         VerticalAlignment="Bottom">
@@ -224,6 +224,7 @@
           </imaging:CrispImage.ToolTip>
         </imaging:CrispImage>
         <TextBlock
+          x:Name="_vulnerableVersionsCount"
           Text="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource InstalledVulnerabilitiesCountConverter}}" />
       </StackPanel>
     </Grid>

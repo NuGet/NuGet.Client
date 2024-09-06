@@ -7,7 +7,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Converters
 {
-    public class DownloadCountToVisibilityConverterTests
+    public class IsGreaterThanToVisibilityConverterTests
     {
         [Theory]
         [InlineData(0L)]
@@ -15,12 +15,29 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData(2147483657L)]
         public void Convert_ValidLongValue_Return_VisibilityVisible(long? downloadCount)
         {
-            var converter = new DownloadCountToVisibilityConverter();
+            var converter = new IsGreaterThanToVisibilityConverter();
 
             object converted = converter.Convert(
                 downloadCount,
                 typeof(Visibility),
-                null,
+                "-1",
+                Thread.CurrentThread.CurrentCulture);
+
+            Assert.Equal(Visibility.Visible, converted);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(5000)]
+        public void Convert_ValidInt_Return_VisibilityVisible(int? downloadCount)
+        {
+            var converter = new IsGreaterThanToVisibilityConverter();
+
+            object converted = converter.Convert(
+                downloadCount,
+                typeof(Visibility),
+                "0",
                 Thread.CurrentThread.CurrentCulture);
 
             Assert.Equal(Visibility.Visible, converted);
@@ -31,12 +48,12 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData(-1L)]
         public void Convert_ValidLongValue_Return_VisibilityCollapsed(long? downloadCount)
         {
-            var converter = new DownloadCountToVisibilityConverter();
+            var converter = new IsGreaterThanToVisibilityConverter();
 
             object converted = converter.Convert(
                 downloadCount,
                 typeof(Visibility),
-                null,
+                "-1",
                 Thread.CurrentThread.CurrentCulture);
 
             Assert.Equal(Visibility.Collapsed, converted);
