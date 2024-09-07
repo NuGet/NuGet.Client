@@ -100,7 +100,7 @@ namespace NuGet.Build.Tasks
         {
             var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
             if (!string.IsNullOrEmpty(debugRestoreTask) &&
-                (debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase) || debugRestoreTask == "1")
+                (debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase) || debugRestoreTask == "1"))
             {
                 Debugger.Launch();
             }
