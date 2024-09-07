@@ -18,7 +18,7 @@ namespace NuGet.VisualStudio
         // keep track of current value for selected package format
         private int _selectedPackageFormat = -1;
 
-        // keep track of current value for shwo dialog checkbox
+        // keep track of current value for show dialog checkbox
         private bool? _showDialogValue;
 
         public PackageManagementFormat(Configuration.ISettings settings)
