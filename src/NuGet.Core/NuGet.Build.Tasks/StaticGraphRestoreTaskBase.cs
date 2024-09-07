@@ -95,9 +95,9 @@ namespace NuGet.Build.Tasks
         {
             try
             {
-                string debugEnvironmentVariableName = Environment.GetEnvironmentVariable(DebugEnvironmentVariableName);
-                if (string.Equals(debugEnvironmentVariableName, bool.TrueString, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(debugEnvironmentVariableName, "1", StringComparison.OrdinalIgnoreCase))
+                string debugEnvironmentVariable = Environment.GetEnvironmentVariable(DebugEnvironmentVariableName);
+                if (string.Equals(debugEnvironmentVariable, bool.TrueString, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(debugEnvironmentVariable, "1", StringComparison.OrdinalIgnoreCase))
                 {
                     Debugger.Launch();
                 }
