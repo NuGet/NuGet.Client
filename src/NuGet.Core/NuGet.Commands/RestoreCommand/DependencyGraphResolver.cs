@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -133,13 +134,11 @@ namespace NuGet.Commands
                 Queue<DependencyGraphItem> refImport =
                   new Queue<DependencyGraphItem>(DependencyGraphItemQueueSize);
 
-                Dictionary<LibraryRangeIndex, FindLibraryEntryResult> findLibraryEntryCache =
-                    new Dictionary<LibraryRangeIndex, FindLibraryEntryResult>(FindLibraryEntryResultCacheSize);
+                TaskResultCache<LibraryRangeIndex, FindLibraryEntryResult> findLibraryEntryCache = new(FindLibraryEntryResultCacheSize);
 
                 Dictionary<LibraryDependencyIndex, ResolvedDependencyGraphItem> chosenResolvedItems = new(ResolvedDependencyGraphItemQueueSize);
 
                 Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)> evictions = new Dictionary<LibraryRangeIndex, (LibraryRangeIndex[], LibraryDependencyIndex, LibraryDependencyTarget)>(EvictionsDictionarySize);
-
 
                 Dictionary<LibraryDependencyIndex, VersionRange>? pinnedPackageVersions = null;
 
@@ -155,7 +154,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                DependencyGraphItem rootProjectRefItem = new DependencyGraphItem()
+                DependencyGraphItem rootProjectRefItem = new()
                 {
                     LibraryDependency = initialProject,
                     LibraryDependencyIndex = libraryDependencyInterningTable.Intern(initialProject),
@@ -164,6 +163,28 @@ namespace NuGet.Commands
                     VersionOverrides = new Dictionary<LibraryDependencyIndex, VersionRange>(),
                     IsDirectPackageReferenceFromRootProject = false,
                 };
+
+                _ = findLibraryEntryCache.GetOrAddAsync(
+                    rootProjectRefItem.LibraryRangeIndex,
+                    async static (state) =>
+                    {
+                        GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
+                            state.rootProjectRefItem.LibraryDependency!.LibraryRange,
+                            state.Framework,
+                            runtimeIdentifier: null,
+                            state.context,
+                            state.token);
+
+                        return new FindLibraryEntryResult(
+                            state.rootProjectRefItem.LibraryDependency!,
+                                refItem,
+                                state.rootProjectRefItem.LibraryDependencyIndex,
+                                state.rootProjectRefItem.LibraryRangeIndex,
+                                state.libraryDependencyInterningTable,
+                                state.libraryRangeInterningTable);
+                    },
+                    (rootProjectRefItem, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                    token);
 
             ProcessDeepEviction:
 
@@ -182,6 +203,14 @@ namespace NuGet.Commands
                     HashSet<LibraryDependencyIndex>? currentSuppressions = importRefItem.Suppressions;
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides = importRefItem.VersionOverrides!;
                     bool directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
+
+                    if (!findLibraryEntryCache.TryGetValue(currentRefRangeIndex, out Task<FindLibraryEntryResult>? refItemTask))
+                    {
+                        Debug.Fail("This should not happen");
+                        continue;
+                    }
+
+                    FindLibraryEntryResult refItemResult = await refItemTask;
 
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
                     if (evictions.TryGetValue(currentRefRangeIndex, out var eviction))
@@ -220,6 +249,25 @@ namespace NuGet.Commands
                             currentRef = currentRef.Clone();
 
                             currentRef.LibraryRange = libraryRange;
+
+                            importRefItem.LibraryDependency = currentRef;
+
+                            refItemResult = await findLibraryEntryCache.GetOrAddAsync(
+                                currentRefRangeIndex,
+                                async static state =>
+                                {
+                                    return await FindLibraryEntryResult.CreateAsync(
+                                        state.libraryDependency,
+                                        state.dependencyIndex,
+                                        state.rangeIndex,
+                                        state.Framework,
+                                        state.context,
+                                        state.libraryDependencyInterningTable,
+                                        state.libraryRangeInterningTable,
+                                        state.token);
+                                },
+                                (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                token);
                         }
                     }
 
@@ -242,10 +290,12 @@ namespace NuGet.Commands
                         bool evictOnTypeConstraint = false;
                         if ((chosenRefRangeIndex == currentRefRangeIndex) && EvictOnTypeConstraint(currentRef.LibraryRange.TypeConstraint, chosenRef.LibraryRange.TypeConstraint))
                         {
-                            if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out FindLibraryEntryResult? resolvedItem) && resolvedItem.Item.Key.Type == LibraryType.Project)
+                            if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out Task<FindLibraryEntryResult>? resolvedItemTask))
                             {
+                                FindLibraryEntryResult resolvedItem = await resolvedItemTask;
+
                                 // We need to evict the chosen item because this one has a more stringent type constraint.
-                                evictOnTypeConstraint = true;
+                                evictOnTypeConstraint = resolvedItem.Item.Key.Type == LibraryType.Project;
                             }
                         }
 
@@ -311,7 +361,7 @@ namespace NuGet.Commands
                             // We must remove it, otherwise we won't call FindLibraryCachedAsync again to load the correct item and save it into allResolvedItems.
                             if (evictOnTypeConstraint)
                             {
-                                findLibraryEntryCache.Remove(evictedLR);
+                                findLibraryEntryCache.TryRemove(evictedLR);
                             }
 
                             int deepEvictions = 0;
@@ -546,31 +596,11 @@ namespace NuGet.Commands
                             });
                     }
 
-                    if (!findLibraryEntryCache.TryGetValue(currentRefRangeIndex, out FindLibraryEntryResult? refItemResult))
+                    // If the package came from a remote library provider, it needs to be installed locally.
+                    var isRemote = context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider);
+                    if (isRemote)
                     {
-                        GraphItem<RemoteResolveResult> refItem = ResolverUtility.FindLibraryEntryAsync(
-                                currentRef.LibraryRange,
-                                pair.Framework,
-                                runtimeIdentifier: null,
-                                context,
-                                CancellationToken.None).GetAwaiter().GetResult();
-
-                        refItemResult = new FindLibraryEntryResult(
-                            currentRef,
-                            refItem,
-                            currentRefDependencyIndex,
-                            currentRefRangeIndex,
-                            libraryDependencyInterningTable,
-                            libraryRangeInterningTable);
-
-                        findLibraryEntryCache.Add(currentRefRangeIndex, refItemResult);
-
-                        // If the package came from a remote library provider, it needs to be installed locally.
-                        var isRemote = context.RemoteLibraryProviders.Contains(refItem.Data.Match.Provider);
-                        if (isRemote)
-                        {
-                            packagesToInstall.Add(refItem.Data.Match);
-                        }
+                        packagesToInstall.Add(refItemResult.Item.Data.Match);
                     }
 
                     HashSet<LibraryDependencyIndex>? suppressions = default;
@@ -645,7 +675,7 @@ namespace NuGet.Commands
 
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
-                        var dep = refItemResult.Item.Data.Dependencies[i];
+                        LibraryDependency dep = refItemResult.Item.Data.Dependencies[i];
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
 
                         //Suppress this node
@@ -683,7 +713,7 @@ namespace NuGet.Commands
                             rangeIndex = refItemResult.GetRangeIndexForDependency(i);
                         }
 
-                        refImport.Enqueue(new DependencyGraphItem()
+                        DependencyGraphItem dependencyGraphItem = new()
                         {
                             LibraryDependency = actualLibraryDependency,
                             LibraryDependencyIndex = depIndex,
@@ -693,7 +723,26 @@ namespace NuGet.Commands
                             VersionOverrides = finalVersionOverrides,
                             IsDirectPackageReferenceFromRootProject = isDirectPackageReferenceFromRootProject,
                             IsCentrallyPinnedTransitivePackage = isCentrallyPinnedTransitiveDependency
-                        });
+                        };
+
+                        refImport.Enqueue(dependencyGraphItem);
+
+                        _ = findLibraryEntryCache.GetOrAddAsync(
+                            rangeIndex,
+                            async static state =>
+                            {
+                                return await FindLibraryEntryResult.CreateAsync(
+                                    state.libraryDependency,
+                                    state.dependencyIndex,
+                                    state.rangeIndex,
+                                    state.Framework,
+                                    state.context,
+                                    state.libraryDependencyInterningTable,
+                                    state.libraryRangeInterningTable,
+                                    state.token);
+                            },
+                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                            token);
                     }
 
                     // Add runtime dependencies of the current node if a runtime identifier has been specified.
@@ -708,28 +757,35 @@ namespace NuGet.Commands
 
                         // If there are runtime dependencies that need to be added, remove the currentRef from allResolvedItems,
                         // and add the newly created version that contains the previously detected dependencies and newly detected runtime dependencies.
-                        findLibraryEntryCache.Remove(currentRefRangeIndex);
                         bool rootHasInnerNodes = (refItemResult.Item.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
                         GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(currentRef.LibraryRange, rootHasInnerNodes, false)
                         {
                             Item = refItemResult.Item,
                         };
                         RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, rootNode);
-                        findLibraryCachedAsyncResult = new FindLibraryEntryResult(
-                            currentRef,
-                            rootNode.Item,
-                            currentRefDependencyIndex,
+
+                        findLibraryCachedAsyncResult = await findLibraryEntryCache.GetOrAddAsync(
                             currentRefRangeIndex,
-                            libraryDependencyInterningTable,
-                            libraryRangeInterningTable);
-                        findLibraryEntryCache.Add(currentRefRangeIndex, findLibraryCachedAsyncResult);
+                            refresh: true,
+                            static state =>
+                            {
+                                return Task.FromResult(new FindLibraryEntryResult(
+                                    state.currentRef,
+                                    state.rootNode.Item,
+                                    state.currentRefDependencyIndex,
+                                    state.currentRefRangeIndex,
+                                    state.libraryDependencyInterningTable,
+                                    state.libraryRangeInterningTable));
+                            },
+                            (currentRef, rootNode, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
+                            token);
 
                         // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
                         if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies!.Count)
                         {
                             foreach (var dep in runtimeDependencies)
                             {
-                                refImport.Enqueue(new DependencyGraphItem()
+                                DependencyGraphItem runtimeDependencyGraphItem = new()
                                 {
                                     LibraryDependency = dep,
                                     LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
@@ -738,7 +794,26 @@ namespace NuGet.Commands
                                     Suppressions = suppressions,
                                     VersionOverrides = finalVersionOverrides,
                                     IsDirectPackageReferenceFromRootProject = false,
-                                });
+                                };
+
+                                refImport.Enqueue(runtimeDependencyGraphItem);
+
+                                _ = findLibraryEntryCache.GetOrAddAsync(
+                                    runtimeDependencyGraphItem.LibraryRangeIndex,
+                                    async static state =>
+                                    {
+                                        return await FindLibraryEntryResult.CreateAsync(
+                                            state.libraryDependency,
+                                            state.dependencyIndex,
+                                            state.rangeIndex,
+                                            state.Framework,
+                                            state.context,
+                                            state.libraryDependencyInterningTable,
+                                            state.libraryRangeInterningTable,
+                                            state.token);
+                                    },
+                                    (libraryDependency: dep, dependencyIndex: runtimeDependencyGraphItem.LibraryDependencyIndex, rangeIndex: runtimeDependencyGraphItem.LibraryRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                    token);
 
                                 runtimeDependencyIndex++;
                             }
@@ -758,7 +833,10 @@ namespace NuGet.Commands
 
                 var rootGraphNode = new GraphNode<RemoteResolveResult>(startRef.LibraryRange);
                 LibraryRangeIndex startRefLibraryRangeIndex = cri.LibraryRangeIndex;
-                rootGraphNode.Item = findLibraryEntryCache[startRefLibraryRangeIndex].Item;
+
+                FindLibraryEntryResult startRefNode = await findLibraryEntryCache.GetValueAsync(startRefLibraryRangeIndex);
+
+                rootGraphNode.Item = startRefNode.Item;
                 graphNodes.Add(rootGraphNode);
 
                 var analyzeResult = new AnalyzeResult<RemoteResolveResult>();
@@ -785,8 +863,10 @@ namespace NuGet.Commands
                     bool directPackageReferenceFromRootProject = foundItem.IsDirectPackageReferenceFromRootProject;
                     List<SuppressionsAndVersionOverrides> chosenSuppressions = foundItem.SuppressionsAndVersionOverrides;
 
-                    if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out var node))
+                    if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out Task<FindLibraryEntryResult>? nodeTask))
                     {
+                        FindLibraryEntryResult node = await nodeTask;
+
                         flattenedGraphItems.Add(node.Item);
 
                         for (int i = 0; i < node.Item.Data.Dependencies.Count; i++)
@@ -890,12 +970,14 @@ namespace NuGet.Commands
                                     continue;
                                 }
 
-                                if (versionConflicts.ContainsKey(chosenItemRangeIndex) && !nodesById.ContainsKey(currentRangeIndex))
+                                if (versionConflicts.ContainsKey(chosenItemRangeIndex) && !nodesById.ContainsKey(currentRangeIndex) && findLibraryEntryCache.TryGetValue(chosenItemRangeIndex, out Task<FindLibraryEntryResult>? itemTask))
                                 {
+                                    FindLibraryEntryResult conflictingNode = await itemTask;
+
                                     // Version conflict
                                     var selectedConflictingNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange)
                                     {
-                                        Item = findLibraryEntryCache[chosenItemRangeIndex].Item,
+                                        Item = conflictingNode.Item,
                                         Disposition = Disposition.Acceptable,
                                         OuterNode = currentGraphNode,
                                     };
@@ -909,8 +991,10 @@ namespace NuGet.Commands
                                 continue;
                             }
 
+                            FindLibraryEntryResult findLibraryEntryResult = await findLibraryEntryCache.GetValueAsync(chosenItemRangeIndex);
+
                             var newGraphNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange);
-                            newGraphNode.Item = findLibraryEntryCache[chosenItemRangeIndex].Item;
+                            newGraphNode.Item = findLibraryEntryResult.Item;
 
                             if (chosenItem.IsCentrallyPinnedTransitivePackage)
                             {
@@ -993,10 +1077,12 @@ namespace NuGet.Commands
                             continue;
                         }
 
-                        if (!findLibraryEntryCache.TryGetValue(downgrade.Key, out FindLibraryEntryResult? findLibraryEntryResult))
+                        if (!findLibraryEntryCache.TryGetValue(downgrade.Key, out Task<FindLibraryEntryResult>? findLibraryEntryResultTask))
                         {
                             continue;
                         }
+
+                        FindLibraryEntryResult findLibraryEntryResult = await findLibraryEntryResultTask;
 
                         analyzeResult.Downgrades.Add(new DowngradeResult<RemoteResolveResult>
                         {
@@ -1199,9 +1285,7 @@ namespace NuGet.Commands
 
             public bool IsDirectPackageReferenceFromRootProject { get; set; }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-            public LibraryDependency LibraryDependency { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            public required LibraryDependency LibraryDependency { get; set; }
 
             public LibraryRangeIndex LibraryRangeIndex { get; set; }
 
@@ -1209,13 +1293,9 @@ namespace NuGet.Commands
 
             public HashSet<LibraryRangeIndex>? ParentPathsThatHaveBeenEclipsed { get; set; }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-            public LibraryRangeIndex[] Path { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            public required LibraryRangeIndex[] Path { get; set; }
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-            public List<SuppressionsAndVersionOverrides> SuppressionsAndVersionOverrides { get; set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+            public required List<SuppressionsAndVersionOverrides> SuppressionsAndVersionOverrides { get; set; }
         }
 
         private struct SuppressionsAndVersionOverrides
@@ -1227,7 +1307,8 @@ namespace NuGet.Commands
 
         internal sealed class LibraryDependencyInterningTable
         {
-            private readonly Dictionary<string, LibraryDependencyIndex> _table = new Dictionary<string, LibraryDependencyIndex>(StringComparer.OrdinalIgnoreCase);
+            private readonly object _lockObject = new();
+            private readonly ConcurrentDictionary<string, LibraryDependencyIndex> _table = new ConcurrentDictionary<string, LibraryDependencyIndex>(StringComparer.OrdinalIgnoreCase);
             private int _nextIndex = 0;
 
             public enum LibraryDependencyIndex : int
@@ -1237,14 +1318,17 @@ namespace NuGet.Commands
 
             public LibraryDependencyIndex Intern(LibraryDependency libraryDependency)
             {
-                string key = libraryDependency.Name;
-                if (!_table.TryGetValue(key, out LibraryDependencyIndex index))
+                lock (_lockObject)
                 {
-                    index = (LibraryDependencyIndex)_nextIndex++;
-                    _table.Add(key, index);
-                }
+                    string key = libraryDependency.Name;
+                    if (!_table.TryGetValue(key, out LibraryDependencyIndex index))
+                    {
+                        index = (LibraryDependencyIndex)_nextIndex++;
+                        _table.TryAdd(key, index);
+                    }
 
-                return index;
+                    return index;
+                }
             }
 
             public LibraryDependencyIndex Intern(CentralPackageVersion centralPackageVersion)
@@ -1253,7 +1337,7 @@ namespace NuGet.Commands
                 if (!_table.TryGetValue(key, out LibraryDependencyIndex index))
                 {
                     index = (LibraryDependencyIndex)_nextIndex++;
-                    _table.Add(key, index);
+                    _table.TryAdd(key, index);
                 }
 
                 return index;
@@ -1262,7 +1346,8 @@ namespace NuGet.Commands
 
         internal sealed class LibraryRangeInterningTable
         {
-            private readonly Dictionary<string, LibraryRangeIndex> _table = new Dictionary<string, LibraryRangeIndex>(StringComparer.OrdinalIgnoreCase);
+            private readonly object _lockObject = new();
+            private readonly ConcurrentDictionary<string, LibraryRangeIndex> _table = new ConcurrentDictionary<string, LibraryRangeIndex>(StringComparer.OrdinalIgnoreCase);
             private int _nextIndex = 0;
 
             public enum LibraryRangeIndex : int
@@ -1272,14 +1357,17 @@ namespace NuGet.Commands
 
             public LibraryRangeIndex Intern(LibraryRange libraryRange)
             {
-                string key = libraryRange.ToString();
-                if (!_table.TryGetValue(key, out LibraryRangeIndex index))
+                lock (_lockObject)
                 {
-                    index = (LibraryRangeIndex)_nextIndex++;
-                    _table.Add(key, index);
-                }
+                    string key = libraryRange.ToString();
+                    if (!_table.TryGetValue(key, out LibraryRangeIndex index))
+                    {
+                        index = (LibraryRangeIndex)_nextIndex++;
+                        _table.TryAdd(key, index);
+                    }
 
-                return index;
+                    return index;
+                }
             }
 
             internal static LibraryRangeIndex[] CreatePathToRef(LibraryRangeIndex[] existingPath, LibraryRangeIndex currentRef)
@@ -1303,7 +1391,6 @@ namespace NuGet.Commands
 
             public LibraryDependencyIndex LibraryDependencyIndex { get; set; } = LibraryDependencyIndex.Invalid;
 
-            [DebuggerDisplay("Hello")]
             public LibraryRangeIndex LibraryRangeIndex { get; set; } = LibraryRangeIndex.Invalid;
 
             public LibraryRangeIndex[] Path { get; set; } = Array.Empty<LibraryRangeIndex>();
@@ -1311,11 +1398,6 @@ namespace NuGet.Commands
             public HashSet<LibraryDependencyIndex>? Suppressions { get; set; }
 
             public IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? VersionOverrides { get; set; }
-
-            private string GetLibraryRange()
-            {
-                return LibraryDependency?.LibraryRange.ToString() ?? string.Empty;
-            }
         }
 
         private class FindLibraryEntryResult
@@ -1335,13 +1417,23 @@ namespace NuGet.Commands
                 DependencyIndex = itemDependencyIndex;
                 RangeIndex = itemRangeIndex;
                 int dependencyCount = resolvedItem.Data.Dependencies.Count;
-                _dependencyIndices = new LibraryDependencyIndex[dependencyCount];
-                _rangeIndices = new LibraryRangeIndex[dependencyCount];
-                for (int i = 0; i < dependencyCount; i++)
+
+                if (dependencyCount == 0)
                 {
-                    LibraryDependency dependency = resolvedItem.Data.Dependencies[i];
-                    _dependencyIndices[i] = libraryDependencyInterningTable.Intern(dependency);
-                    _rangeIndices[i] = libraryRangeInterningTable.Intern(dependency.LibraryRange);
+                    _dependencyIndices = Array.Empty<LibraryDependencyIndex>();
+                    _rangeIndices = Array.Empty<LibraryRangeIndex>();
+                }
+                else
+                {
+                    _dependencyIndices = new LibraryDependencyIndex[dependencyCount];
+                    _rangeIndices = new LibraryRangeIndex[dependencyCount];
+
+                    for (int i = 0; i < dependencyCount; i++)
+                    {
+                        LibraryDependency dependency = resolvedItem.Data.Dependencies[i];
+                        _dependencyIndices[i] = libraryDependencyInterningTable.Intern(dependency);
+                        _rangeIndices[i] = libraryRangeInterningTable.Intern(dependency.LibraryRange);
+                    }
                 }
             }
 
@@ -1359,6 +1451,24 @@ namespace NuGet.Commands
             public LibraryRangeIndex GetRangeIndexForDependency(int dependencyIndex)
             {
                 return _rangeIndices[dependencyIndex];
+            }
+
+            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
+            {
+                GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
+                    libraryDependency.LibraryRange,
+                    framework,
+                    runtimeIdentifier: null,
+                    context,
+                    cancellationToken);
+
+                return new FindLibraryEntryResult(
+                    libraryDependency,
+                    refItem,
+                    dependencyIndex,
+                    rangeIndex,
+                    libraryDependencyInterningTable,
+                    libraryRangeInterningTable);
             }
         }
     }
