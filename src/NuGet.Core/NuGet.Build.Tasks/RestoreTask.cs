@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -12,10 +13,6 @@ using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.ProjectModel;
-
-#if DEBUG
-using System.Diagnostics;
-#endif
 
 namespace NuGet.Build.Tasks
 {
