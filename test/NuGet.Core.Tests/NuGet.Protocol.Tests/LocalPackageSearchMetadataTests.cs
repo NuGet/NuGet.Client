@@ -66,5 +66,14 @@ namespace NuGet.Protocol.Tests
             Assert.True(_testData.TestData.IconUrl.IsAbsoluteUri);
             Assert.NotNull(_testData.TestData.IconUrl.Fragment);
         }
+
+        [Fact]
+        public void ReadmeFileUrl_ReturnsEmbeddedReadmeUri()
+        {
+            Assert.NotNull(_testData.TestData.ReadmeFileUrl);
+            Assert.True(_testData.TestData.ReadmeFileUrl.IsFile);
+            Assert.True(_testData.TestData.ReadmeFileUrl.IsAbsoluteUri);
+            Assert.NotNull(_testData.TestData.ReadmeFileUrl.Fragment);
+        }
     }
 }
