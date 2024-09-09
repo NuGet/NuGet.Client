@@ -11,11 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -273,6 +275,11 @@ namespace NuGet.PackageManagement.UI
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
                     existingListItem.InstalledVersions.Add(packageVersion);
+                    if (existingListItem.PackageLevel == PackageLevel.Transitive)
+                    {
+                        existingListItem.TransitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
+                        existingListItem.TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", existingListItem.InstalledVersions), string.Join(", ", existingListItem.TransitiveOrigins));
+                    }
                 }
                 else
                 {
@@ -303,11 +310,12 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
-
                     var transitiveToolTipMessage = string.Empty;
+                    var transitiveOrigins = Enumerable.Empty<PackageIdentity>();
                     if (packageLevel == PackageLevel.Transitive)
                     {
                         transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
+                        transitiveOrigins = metadataContextInfo.TransitiveOrigins;
                     }
 
                     ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
@@ -342,6 +350,7 @@ namespace NuGet.PackageManagement.UI
                         PackageLevel = packageLevel,
                         TransitiveToolTipMessage = transitiveToolTipMessage,
                         InstalledVersions = new ObservableCollection<NuGetVersion> { metadataContextInfo.Identity.Version },
+                        TransitiveOrigins = new ObservableCollection<PackageIdentity>(transitiveOrigins),
                     };
 
                     if (listItem.PackageLevel == PackageLevel.TopLevel)
