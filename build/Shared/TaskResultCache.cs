@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +37,16 @@ namespace NuGet
         {
             _cache = new(comparer);
             _perTaskLock = new(comparer);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskResultCache{TKey, TValue}" /> class with the specified initial capacity.
+        /// </summary>
+        /// <param name="capacity">The default capacity for the cache.</param>
+        public TaskResultCache(int capacity)
+        {
+            _cache = new(concurrencyLevel: Environment.ProcessorCount, capacity);
+            _perTaskLock = new(concurrencyLevel: Environment.ProcessorCount, capacity);
         }
 
         /// <summary>
@@ -100,6 +111,28 @@ namespace NuGet
                         TaskContinuationOptions.RunContinuationsAsynchronously,
                         TaskScheduler.Default);
             }
+        }
+
+        /// <summary>
+        /// Gets the async operation associated with the specified key if one exists, otherwise throws a <see cref="KeyNotFoundException" />.
+        /// </summary>
+        /// <param name="key">The key for the async operation to get the value of.</param>
+        /// <returns></returns>
+        /// <exception cref="KeyNotFoundException">The specified key does not exist in the cache.</exception>
+        public Task<TValue> GetValueAsync(TKey key)
+        {
+            if (TryGetValue(key, out Task<TValue>? value))
+            {
+                return value;
+            }
+
+            throw new KeyNotFoundException();
+        }
+
+        /// <inheritdoc cref="Dictionary{TKey, TValue}.TryGetValue(TKey, out TValue)" />
+        public bool TryGetValue(TKey key, [NotNullWhen(true)] out Task<TValue>? value)
+        {
+            return _cache.TryGetValue(key, out value);
         }
     }
 }
