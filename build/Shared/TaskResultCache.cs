@@ -134,16 +134,5 @@ namespace NuGet
         {
             return _cache.TryGetValue(key, out value);
         }
-
-        /// <inheritdoc cref="ConcurrentDictionary{TKey, TValue}.TryRemove(TKey, out TValue)" />
-        public bool TryRemove(TKey key)
-        {
-            object lockObject = _perTaskLock.GetOrAdd(key, static (TKey _) => new object());
-
-            lock (lockObject)
-            {
-                return _cache.TryRemove(key, out _);
-            }
-        }
     }
 }

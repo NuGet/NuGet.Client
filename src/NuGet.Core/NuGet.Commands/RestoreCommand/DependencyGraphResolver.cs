@@ -361,7 +361,23 @@ namespace NuGet.Commands
                             // We must remove it, otherwise we won't call FindLibraryCachedAsync again to load the correct item and save it into allResolvedItems.
                             if (evictOnTypeConstraint)
                             {
-                                findLibraryEntryCache.TryRemove(evictedLR);
+                                refItemResult = await findLibraryEntryCache.GetOrAddAsync(
+                                    currentRefRangeIndex,
+                                    refresh: true,
+                                    async static state =>
+                                    {
+                                        return await FindLibraryEntryResult.CreateAsync(
+                                            state.libraryDependency,
+                                            state.dependencyIndex,
+                                            state.rangeIndex,
+                                            state.Framework,
+                                            state.context,
+                                            state.libraryDependencyInterningTable,
+                                            state.libraryRangeInterningTable,
+                                            state.token);
+                                    },
+                                    (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                    token);
                             }
 
                             int deepEvictions = 0;
