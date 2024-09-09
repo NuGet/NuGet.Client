@@ -21,8 +21,17 @@ namespace NuGet.Packaging
 
         [JsonConstructor]
         private PackageDependencyGroup(NuGetFramework targetFramework)
-            : this(targetFramework, new List<PackageDependency>())
         {
+            if (targetFramework == null)
+            {
+                _targetFramework = NuGetFramework.AnyFramework;
+            }
+            else
+            {
+                _targetFramework = targetFramework;
+            }
+
+            _packages = new List<PackageDependency>();
         }
 
         /// <summary>
