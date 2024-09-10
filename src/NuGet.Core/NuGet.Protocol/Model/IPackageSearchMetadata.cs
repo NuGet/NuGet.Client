@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Core.Types
         Uri LicenseUrl { get; }
         Uri ProjectUrl { get; }
         Uri ReadmeUrl { get; }
-        Uri ReadmeFileUrl { get; }
+        string ReadmeFileUrl { get; }
         Uri ReportAbuseUrl { get; }
         Uri PackageDetailsUrl { get; }
         DateTimeOffset? Published { get; }
