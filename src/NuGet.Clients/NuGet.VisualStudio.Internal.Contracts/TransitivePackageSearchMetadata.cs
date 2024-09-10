@@ -33,7 +33,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public Uri ReadmeUrl => _packageSearchMetadata.ReadmeUrl;
 
-        public Uri ReadmeFileUrl => _packageSearchMetadata.ReadmeFileUrl;
+        public string ReadmeFileUrl => _packageSearchMetadata.ReadmeFileUrl;
 
         public Uri ReportAbuseUrl => _packageSearchMetadata.ReportAbuseUrl;
 

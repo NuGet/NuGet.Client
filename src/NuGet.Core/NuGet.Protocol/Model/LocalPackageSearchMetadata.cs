@@ -38,7 +38,7 @@ namespace NuGet.Protocol
 
         public Uri IconUrl => GetIconUri();
 
-        public Uri ReadmeFileUrl => GetReadmeUri();
+        public string ReadmeFileUrl => GetReadmeUri();
 
         public PackageIdentity Identity => _nuspec.GetIdentity();
 
@@ -209,7 +209,7 @@ namespace NuGet.Protocol
             return builder.Uri;
         }
 
-        private Uri GetReadmeUri()
+        private string GetReadmeUri()
         {
             string embeddedReadme = _nuspec.GetReadme();
 
@@ -226,7 +226,7 @@ namespace NuGet.Protocol
             };
 
             // get the readme url
-            return builder.Uri;
+            return builder.Uri.AbsolutePath;
         }
     }
 }

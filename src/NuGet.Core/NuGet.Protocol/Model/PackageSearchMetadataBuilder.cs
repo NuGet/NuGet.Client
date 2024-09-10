@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.Types
             public Uri ProjectUrl { get; set; }
             public DateTimeOffset? Published { get; set; }
             public Uri ReadmeUrl { get; set; }
-            public Uri ReadmeFileUrl { get; set; }
+            public string ReadmeFileUrl { get; set; }
             public Uri ReportAbuseUrl { get; set; }
             public Uri PackageDetailsUrl { get; set; }
             public bool RequireLicenseAcceptance { get; set; }
