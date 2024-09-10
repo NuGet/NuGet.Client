@@ -1062,8 +1062,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Label_InstalledVulnerabilitiesCount" xml:space="preserve">
     <value>{0} vulnerable versions installed</value>
+    <comment>{0} is the number of installed vulnerable versions</comment>
   </data>
   <data name="Label_InstalledVulnerabilitiesCountSingle" xml:space="preserve">
     <value>{0} vulnerable version installed</value>
+    <comment>{0} is the number of installed vulnerable versions</comment>
   </data>
 </root>

@@ -274,7 +274,7 @@ namespace NuGet.PackageManagement.UI
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
                     existingListItem.InstalledVersions.Add(packageVersion);
-                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
+                    existingListItem.UpdateInstalledPackagesVulnerabilities(metadataContextInfo.Identity);
                 }
                 else
                 {
