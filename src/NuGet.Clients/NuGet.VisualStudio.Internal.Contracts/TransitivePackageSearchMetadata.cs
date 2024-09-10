@@ -61,7 +61,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public IEnumerable<PackageVulnerabilityMetadata> Vulnerabilities => _packageSearchMetadata.Vulnerabilities;
 
-
         private readonly IPackageSearchMetadata _packageSearchMetadata;
 
         public TransitivePackageSearchMetadata(IPackageSearchMetadata package, IReadOnlyCollection<PackageIdentity> transitiveOrigins)
