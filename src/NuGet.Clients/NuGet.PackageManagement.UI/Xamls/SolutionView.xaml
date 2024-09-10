@@ -16,8 +16,6 @@
       </ResourceDictionary.MergedDictionaries>
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
-      <local:InstalledVulnerabilitiesCountConverter
-        x:Key="InstalledVulnerabilitiesCountConverter" />
       <local:IsGreaterThanToVisibilityConverter
         x:Key="IsGreaterThanToVisibilityConverter" />
       <local:TooltipConverter
