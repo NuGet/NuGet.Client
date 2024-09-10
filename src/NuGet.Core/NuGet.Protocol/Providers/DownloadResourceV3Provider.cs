@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -32,7 +33,16 @@ namespace NuGet.Protocol
 
                 // If index.json contains a flat container resource use that to directly
                 // construct package download urls.
-                var packageBaseAddress = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress)?.AbsoluteUri;
+                var uri = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageBaseAddress);
+                var packageBaseAddress = uri?.AbsoluteUri;
+
+                // Telemetry for HTTPS sources that have an HTTP resource
+                var telemetry = new ServiceIndexEntryTelemetry(
+                    source.PackageSource.IsHttps &&
+                    uri?.Scheme == Uri.UriSchemeHttp &&
+                    uri?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
+                    "RestorePackageSourceSummary");
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
 
                 if (packageBaseAddress != null)
                 {
@@ -48,6 +58,14 @@ namespace NuGet.Protocol
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
+        }
+
+        private class ServiceIndexEntryTelemetry : TelemetryEvent
+        {
+            public ServiceIndexEntryTelemetry(int NumSourceWithHttpResource, string eventName) : base(eventName)
+            {
+                this["NumHTTPDownloadResourceWithHTTPSSource"] = NumSourceWithHttpResource;
+            }
         }
     }
 }

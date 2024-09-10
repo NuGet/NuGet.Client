@@ -30,6 +30,15 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.LegacyGallery);
+
+                // Telemetry for HTTPS sources that have an HTTP resource
+                var telemetry = new ServiceIndexEntryTelemetry(
+                    source.PackageSource.IsHttps &&
+                    baseUrl?.Scheme == Uri.UriSchemeHttp &&
+                    baseUrl?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
+                    "RestorePackageSourceSummary");
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
+
                 if (baseUrl != null)
                 {
                     var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
@@ -44,6 +53,14 @@ namespace NuGet.Protocol
 
             var result = new Tuple<bool, INuGetResource>(resource != null, resource);
             return result;
+        }
+
+        private class ServiceIndexEntryTelemetry : TelemetryEvent
+        {
+            public ServiceIndexEntryTelemetry(int NumSourceWithHttpResource, string eventName) : base(eventName)
+            {
+                this["NumHTTPV3FeedListResourceWithHTTPSSource"] = NumSourceWithHttpResource;
+            }
         }
     }
 }

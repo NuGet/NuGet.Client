@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -23,13 +24,30 @@ namespace NuGet.Protocol
             var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                var uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.ReportAbuse)?.AbsoluteUri;
+                var uri = serviceIndex.GetServiceEntryUri(ServiceTypes.ReportAbuse);
+                var uriTemplate = uri?.AbsoluteUri;
+
+                // Telemetry for HTTPS sources that have an HTTP resource
+                var telemetry = new ServiceIndexEntryTelemetry(
+                    source.PackageSource.IsHttps &&
+                    uri?.Scheme == Uri.UriSchemeHttp &&
+                    uri?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
+                    "RestorePackageSourceSummary");
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
 
                 // construct a new resource
                 resource = new ReportAbuseResourceV3(uriTemplate);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);
+        }
+
+        private class ServiceIndexEntryTelemetry : TelemetryEvent
+        {
+            public ServiceIndexEntryTelemetry(int NumSourceWithHttpResource, string eventName) : base(eventName)
+            {
+                this["NumHTTPReportAbuseResourceWithHTTPSSource"] = NumSourceWithHttpResource;
+            }
         }
     }
 }

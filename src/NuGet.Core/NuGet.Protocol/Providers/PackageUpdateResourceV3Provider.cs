@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
@@ -30,6 +31,14 @@ namespace NuGet.Protocol
             {
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.PackagePublish);
 
+                // Telemetry for HTTPS sources that have an HTTP resource
+                var telemetry = new ServiceIndexEntryTelemetry(
+                    source.PackageSource.IsHttps &&
+                    baseUrl?.Scheme == Uri.UriSchemeHttp &&
+                    baseUrl?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
+                    "RestorePackageSourceSummary");
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
+
                 HttpSource httpSource = null;
                 var sourceUri = baseUrl?.AbsoluteUri;
                 if (!string.IsNullOrEmpty(sourceUri))
@@ -51,6 +60,14 @@ namespace NuGet.Protocol
 
             var result = new Tuple<bool, INuGetResource>(packageUpdateResource != null, packageUpdateResource);
             return result;
+        }
+
+        private class ServiceIndexEntryTelemetry : TelemetryEvent
+        {
+            public ServiceIndexEntryTelemetry(int NumSourceWithHttpResource, string eventName) : base(eventName)
+            {
+                this["NumPackageUpdateResourceWithHTTPSSource"] = NumSourceWithHttpResource;
+            }
         }
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Resources;
 
@@ -31,6 +32,14 @@ namespace NuGet.Protocol.Providers
             {
                 Uri? uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.OwnerDetailsUriTemplate);
 
+                // Telemetry for HTTPS sources that have an HTTP resource
+                var telemetry = new ServiceIndexEntryTelemetry(
+                    source.PackageSource.IsHttps &&
+                    uriTemplate?.Scheme == Uri.UriSchemeHttp &&
+                    uriTemplate?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
+                    "RestorePackageSourceSummary");
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
+
                 if (uriTemplate != null)
                 {
                     resource = OwnerDetailsUriTemplateResourceV3.CreateOrNull(uriTemplate);
@@ -38,6 +47,14 @@ namespace NuGet.Protocol.Providers
             }
 
             return new Tuple<bool, INuGetResource?>(resource != null, resource);
+        }
+
+        private class ServiceIndexEntryTelemetry : TelemetryEvent
+        {
+            public ServiceIndexEntryTelemetry(int NumSourceWithHttpResource, string eventName) : base(eventName)
+            {
+                this["NumHTTPOwnerDetailsUriResourceWithHTTPSSource"] = NumSourceWithHttpResource;
+            }
         }
     }
 }
