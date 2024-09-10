@@ -226,7 +226,7 @@ namespace NuGet.Protocol
             };
 
             // get the readme url
-            return builder.Uri.AbsolutePath;
+            return builder.Uri.AbsoluteUri;
         }
     }
 }

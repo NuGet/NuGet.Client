@@ -71,9 +71,11 @@ namespace NuGet.Protocol.Tests
         public void ReadmeFileUrl_ReturnsEmbeddedReadmeUri()
         {
             Assert.NotNull(_testData.TestData.ReadmeFileUrl);
-            Assert.True(_testData.TestData.ReadmeFileUrl.IsFile);
-            Assert.True(_testData.TestData.ReadmeFileUrl.IsAbsoluteUri);
-            Assert.NotNull(_testData.TestData.ReadmeFileUrl.Fragment);
+
+            var readmeFileUri = new Uri(_testData.TestData.ReadmeFileUrl);
+            Assert.True(readmeFileUri.IsFile);
+            Assert.True(readmeFileUri.IsAbsoluteUri);
+            Assert.NotNull(readmeFileUri.Fragment);
         }
     }
 }
