@@ -19,6 +19,7 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 using LibraryDependencyIndex = NuGet.Commands.DependencyGraphResolver.LibraryDependencyInterningTable.LibraryDependencyIndex;
 using LibraryRangeIndex = NuGet.Commands.DependencyGraphResolver.LibraryRangeInterningTable.LibraryRangeIndex;
@@ -1363,7 +1364,7 @@ namespace NuGet.Commands
         internal sealed class LibraryRangeInterningTable
         {
             private readonly object _lockObject = new();
-            private readonly ConcurrentDictionary<string, LibraryRangeIndex> _table = new ConcurrentDictionary<string, LibraryRangeIndex>(StringComparer.OrdinalIgnoreCase);
+            private readonly ConcurrentDictionary<LibraryRange, LibraryRangeIndex> _table = new ConcurrentDictionary<LibraryRange, LibraryRangeIndex>(LibraryRangeComparer.Instance);
             private int _nextIndex = 0;
 
             public enum LibraryRangeIndex : int
@@ -1375,12 +1376,13 @@ namespace NuGet.Commands
             {
                 lock (_lockObject)
                 {
-                    string key = libraryRange.ToString();
-                    if (!_table.TryGetValue(key, out LibraryRangeIndex index))
+                    if (_table.TryGetValue(libraryRange, out LibraryRangeIndex index))
                     {
-                        index = (LibraryRangeIndex)_nextIndex++;
-                        _table.TryAdd(key, index);
+                        return index;
                     }
+
+                    index = (LibraryRangeIndex)_nextIndex++;
+                    _table.TryAdd(libraryRange, index);
 
                     return index;
                 }
@@ -1396,7 +1398,100 @@ namespace NuGet.Commands
             }
         }
 
-        [DebuggerDisplay("{LibraryDependency}, DependencyIndex={LibraryDependencyIndex}, RangeIndex={LibraryRangeIndex}")]
+        internal sealed class LibraryRangeComparer : IEqualityComparer<LibraryRange>
+        {
+            public static LibraryRangeComparer Instance { get; } = new LibraryRangeComparer();
+
+            private LibraryRangeComparer()
+            {
+            }
+
+            public bool Equals(LibraryRange? x, LibraryRange? y)
+            {
+                if (x == null || y == null || x.VersionRange == null || y.VersionRange == null)
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                LibraryDependencyTarget typeConstraint1 = LibraryDependencyTarget.None;
+                LibraryDependencyTarget typeConstraint2 = LibraryDependencyTarget.None;
+
+                switch (x.TypeConstraint)
+                {
+                    case LibraryDependencyTarget.Reference:
+                        typeConstraint1 = LibraryDependencyTarget.Reference;
+                        break;
+
+                    case LibraryDependencyTarget.ExternalProject:
+                        typeConstraint1 = LibraryDependencyTarget.ExternalProject;
+                        break;
+
+                    case LibraryDependencyTarget.Project:
+                    case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
+                        typeConstraint1 = LibraryDependencyTarget.Project;
+                        break;
+                }
+
+                switch (y.TypeConstraint)
+                {
+                    case LibraryDependencyTarget.Reference:
+                        typeConstraint2 = LibraryDependencyTarget.Reference;
+                        break;
+
+                    case LibraryDependencyTarget.ExternalProject:
+                        typeConstraint2 = LibraryDependencyTarget.ExternalProject;
+                        break;
+
+                    case LibraryDependencyTarget.Project:
+                    case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
+                        typeConstraint2 = LibraryDependencyTarget.Project;
+                        break;
+                }
+
+                return typeConstraint1 == typeConstraint2 &&
+                       VersionRangeComparer.Default.Equals(x.VersionRange, y.VersionRange) &&
+                       x.Name.Equals(y.Name, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public int GetHashCode(LibraryRange obj)
+            {
+                LibraryDependencyTarget typeConstraint = LibraryDependencyTarget.None;
+
+                switch (obj.TypeConstraint)
+                {
+                    case LibraryDependencyTarget.Reference:
+                        typeConstraint = LibraryDependencyTarget.Reference;
+                        break;
+
+                    case LibraryDependencyTarget.ExternalProject:
+                        typeConstraint = LibraryDependencyTarget.ExternalProject;
+                        break;
+
+                    case LibraryDependencyTarget.Project:
+                    case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
+                        typeConstraint = LibraryDependencyTarget.Project;
+                        break;
+                }
+
+                VersionRange versionRange = obj.VersionRange ?? VersionRange.None;
+
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddObject((int)typeConstraint);
+                combiner.AddStringIgnoreCase(obj.Name);
+                combiner.AddObject(versionRange);
+
+                return combiner.CombinedHash;
+            }
+        }
+
+
+        [DebuggerDisplay("{LibraryDependency}")]
         private class DependencyGraphItem
         {
             public bool IsCentrallyPinnedTransitivePackage { get; set; }
