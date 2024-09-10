@@ -911,7 +911,7 @@ namespace NuGet.PackageManagement.UI
                 VulnerableVersions.Add(packageIdentity.Version, maxSeverity);
             }
 
-            VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, vulnerabilityInfoList?.FirstOrDefault()?.Severity ?? -1);
+            VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, maxSeverity);
 
             OnPropertyChanged(nameof(Status));
         }
