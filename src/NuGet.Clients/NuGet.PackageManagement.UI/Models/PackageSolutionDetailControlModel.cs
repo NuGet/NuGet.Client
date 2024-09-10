@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
         private INuGetSolutionManagerService _solutionManager;
         private string _installedVersions; // The text describing the installed versions information, such as "not installed", "multiple versions installed" etc.
         private int _installedVersionsCount; // the count of different installed versions
-        private int _installedVulnerabilitiesCount; // the count of different vulnerable installed versions
+        private int _installedVulnerabilitiesCount; // the count of distinct vulnerable installed versions
         private bool _canUninstall;
         private bool _canInstall;
         // Indicates whether the SelectCheckBoxState is being updated in code. True means the state is being updated by code, while false means the state is changed by user clicking the checkbox.
@@ -120,8 +120,8 @@ namespace NuGet.PackageManagement.UI
 
         private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
-            var hash = new HashSet<NuGetVersion>();
-            var vulnerabilitiesHash = new HashSet<NuGetVersion>();
+            var installedVersionsSet = new HashSet<NuGetVersion>();
+            var vulnerabilitiesSet = new HashSet<NuGetVersion>();
 
             foreach (var project in _projects)
             {
@@ -131,7 +131,7 @@ namespace NuGet.PackageManagement.UI
                     if (installedVersion != null)
                     {
                         project.InstalledVersion = installedVersion.Identity.Version;
-                        hash.Add(installedVersion.Identity.Version);
+                        installedVersionsSet.Add(installedVersion.Identity.Version);
                         project.AutoReferenced = installedVersion.IsAutoReferenced;
 
                         if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement.UI
                         if (_searchResultPackage.VulnerableVersions.TryGetValue(installedVersion.Identity.Version, out int vulnerable))
                         {
                             project.InstalledVersionMaxVulnerability = vulnerable;
-                            vulnerabilitiesHash.Add(installedVersion.Identity.Version);
+                            vulnerabilitiesSet.Add(installedVersion.Identity.Version);
                         }
                     }
                     else
@@ -164,17 +164,17 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            InstalledVersionsCount = hash.Count;
-            InstalledVulnerabilitiesCount = vulnerabilitiesHash.Count;
+            InstalledVersionsCount = installedVersionsSet.Count;
+            InstalledVulnerabilitiesCount = vulnerabilitiesSet.Count;
 
-            if (hash.Count == 0)
+            if (installedVersionsSet.Count == 0)
             {
                 InstalledVersions = Resources.Text_NotInstalled;
             }
-            else if (hash.Count == 1)
+            else if (installedVersionsSet.Count == 1)
             {
                 var displayVersion = new DisplayVersion(
-                    hash.First(),
+                    installedVersionsSet.First(),
                     string.Empty);
                 InstalledVersions = displayVersion.ToString();
             }

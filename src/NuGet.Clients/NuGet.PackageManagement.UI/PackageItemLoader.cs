@@ -275,15 +275,12 @@ namespace NuGet.PackageManagement.UI
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
                     existingListItem.InstalledVersions.Add(packageVersion);
-<<<<<<< HEAD
                     if (existingListItem.PackageLevel == PackageLevel.Transitive)
                     {
                         existingListItem.TransitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
                         existingListItem.TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", existingListItem.InstalledVersions), string.Join(", ", existingListItem.TransitiveOrigins));
                     }
-=======
                     existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
->>>>>>> 2ce562115 (Vulnerability indicators for top level in solution)
                 }
                 else
                 {
