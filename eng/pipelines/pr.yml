@@ -68,12 +68,12 @@ stages:
 
 - ${{ if eq(parameters.RunUnitTestsOnWindows, true) }}:
   - stage:
-    displayName: Unit Tests on Windows (.NET 8.0)
+    displayName: Unit Tests on Windows (.NET 9.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Unit Tests on Windows (.NET 8.0)
+        displayName: Unit Tests on Windows (.NET 9.0)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -81,7 +81,7 @@ stages:
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Unit
-        testTargetFramework: net8.0
+        testTargetFramework: net9.0
 
 - ${{ if eq(parameters.RunUnitTestsOnWindows, true) }}:
   - stage:
@@ -120,12 +120,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET 8.0)
+    displayName: Functional Tests on Windows (.NET 9.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET 8.0)
+        displayName: Functional Tests on Windows (.NET 9.0)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -133,7 +133,7 @@ stages:
         ${{ else }}:
           agentPool: VSEngSS-MicroBuild2022-1ES
         testType: Functional
-        testTargetFramework: net8.0
+        testTargetFramework: net9.0
         timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
@@ -156,16 +156,16 @@ stages:
 
 - ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
   - stage:
-    displayName: Unit Tests on Linux (.NET 8.0)
+    displayName: Unit Tests on Linux (.NET 9.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Unit Tests on Linux (.NET 8.0)
+        displayName: Unit Tests on Linux (.NET 9.0)
         osName: Linux
         vmImage: ubuntu-latest
         testType: Unit
-        testTargetFramework: net8.0
+        testTargetFramework: net9.0
 
 - ${{ if eq(parameters.RunUnitTestsOnLinux, true) }}:
   - stage:
@@ -182,16 +182,16 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
   - stage:
-    displayName: Functional Tests on Linux (.NET 8.0)
+    displayName: Functional Tests on Linux (.NET 9.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Linux (.NET 8.0)
+        displayName: Functional Tests on Linux (.NET 9.0)
         osName: Linux
         vmImage: ubuntu-latest
         testType: Functional
-        testTargetFramework: net8.0
+        testTargetFramework: net9.0
         timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnLinux, true) }}:
@@ -209,16 +209,16 @@ stages:
 
 - ${{ if eq(parameters.RunUnitTestsOnMacOS, true) }}:
   - stage:
-    displayName: Unit Tests on MacOS (.NET 8.0)
+    displayName: Unit Tests on MacOS (.NET 9.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Unit Tests on MacOS (.NET 8.0)
+        displayName: Unit Tests on MacOS (.NET 9.0)
         osName: MacOS
         vmImage: macos-latest
         testType: Unit
-        testTargetFramework: net8.0
+        testTargetFramework: net9.0
 
 - ${{ if eq(parameters.RunUnitTestsOnMacOS, true) }}:
   - stage:
@@ -235,16 +235,16 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnMacOS, true) }}:
   - stage:
-    displayName: Functional Tests on MacOS (.NET 8.0)
+    displayName: Functional Tests on MacOS (.NET 9.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on MacOS (.NET 8.0)
+        displayName: Functional Tests on MacOS (.NET 9.0)
         osName: MacOS
         vmImage: macos-latest
         testType: Functional
-        testTargetFramework: net8.0
+        testTargetFramework: net9.0
         timeoutInMinutes: 60
 
 - ${{ if eq(parameters.RunFunctionalTestsOnMacOS, true) }}:

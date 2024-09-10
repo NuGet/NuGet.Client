@@ -29,7 +29,11 @@ namespace NuGet.Packaging.FuncTest
         [CIOnlyFact]
         public void Verify_WithValidInput_DoesNotThrow()
         {
+#if NET9_0
+            using (var certificate = X509CertificateLoader.LoadPkcs12(_testFixture.TrustedTestCertificate.Source.PublicCert.RawData, ReadOnlySpan<char>.Empty))
+#else
             using (var certificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.PublicCert.RawData))
+#endif
             using (var request = new AuthorSignPackageRequest(certificate, HashAlgorithmName.SHA256, HashAlgorithmName.SHA256))
             {
                 SigningUtility.Verify(request, NullLogger.Instance);

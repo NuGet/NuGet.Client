@@ -61,7 +61,11 @@ namespace Test.Utility.Signing
                 while (certsSequenceReader.HasData)
                 {
                     ReadOnlyMemory<byte> data = certsSequenceReader.ReadEncodedValue();
+#if NET9_0_OR_GREATER
+                    X509Certificate2 certificate = X509CertificateLoader.LoadPkcs12(data.Span, ReadOnlySpan<char>.Empty);
+#else
                     X509Certificate2 certificate = new(data.Span.ToArray());
+#endif
 
                     certs.Add(certificate);
                 }
