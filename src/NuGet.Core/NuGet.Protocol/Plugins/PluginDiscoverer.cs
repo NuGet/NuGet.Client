@@ -23,6 +23,13 @@ namespace NuGet.Protocol.Plugins
         private readonly string _rawPluginPaths;
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
+        private readonly EmbeddedSignatureVerifier _verifier;
+        private IEnvironmentVariableReader _environmentVariableReader;
+
+        internal PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader) : this(rawPluginPaths, verifier)
+        {
+            _environmentVariableReader = environmentVariableReader;
+        }
 
         /// <summary>
         /// Instantiates a new <see cref="PluginDiscoverer" /> class.
@@ -79,6 +86,7 @@ namespace NuGet.Protocol.Plugins
                 }
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
+                _pluginFiles.AddRange(GetNetToolsPluginFiles());
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
@@ -133,10 +141,16 @@ namespace NuGet.Protocol.Plugins
         /// The files are also expected to have a name that starts with `nuget-plugin-`
         /// </summary>
         /// <returns></returns>
-        private static List<string> GetNetToolsPluginFiles()
+        private List<PluginFile> GetNetToolsPluginFiles()
         {
-            var pluginFiles = new List<string>();
-            var paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            var pluginFiles = new List<PluginFile>();
+
+            if (_environmentVariableReader is null)
+            {
+                _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+            }
+
+            var paths = _environmentVariableReader.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             foreach (var path in paths)
             {
@@ -149,7 +163,9 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (IsValidPluginFile(file))
                         {
-                            pluginFiles.Add(file.FullName);
+                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(file.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
+                            PluginFile pluginFile = new PluginFile(file.FullName, state, isDotnetToolsPlugin: true);
+                            pluginFiles.Add(pluginFile);
                         }
                     }
                 }
@@ -174,7 +190,7 @@ namespace NuGet.Protocol.Plugins
             }
             else
             {
-#if NET8_0
+#if NET8_0_OR_GREATER
                 var fileMode = File.GetUnixFileMode(fileInfo.FullName);
 
                 return fileInfo.Exists &&
@@ -187,6 +203,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
+#if !NET8_0_OR_GREATER
         /// <summary>
         /// Checks whether a file is executable or not in Unix.
         /// This is done by running bash code: `if [ -x {fileInfo.FullName} ]; then echo yes; else echo no; fi`
@@ -225,6 +242,7 @@ namespace NuGet.Protocol.Plugins
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
+#endif
 
         private IEnumerable<string> GetPluginFilePaths()
         {
@@ -235,12 +253,7 @@ namespace NuGet.Protocol.Plugins
                 // Internal plugins are only supported for .NET Framework scenarios, namely msbuild.exe
                 directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
 #endif
-                var plugins = PluginDiscoveryUtility.GetConventionBasedPlugins(directories).ToList();
-
-                // Get plugins added using .Net Tools
-                plugins.AddRange(GetNetToolsPluginFiles());
-
-                return plugins;
+                return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
             }
 
             return _rawPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
