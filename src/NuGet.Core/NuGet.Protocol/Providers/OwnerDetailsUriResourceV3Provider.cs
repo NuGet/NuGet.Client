@@ -32,13 +32,14 @@ namespace NuGet.Protocol.Providers
             {
                 Uri? uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.OwnerDetailsUriTemplate);
 
-                // Telemetry for HTTPS sources that have an HTTP resource
-                var telemetry = new ServiceIndexEntryTelemetry(
-                    source.PackageSource.IsHttps &&
+                if (source.PackageSource.IsHttps &&
                     uriTemplate?.Scheme == Uri.UriSchemeHttp &&
-                    uriTemplate?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
-                    "RestorePackageSourceSummary");
-                TelemetryActivity.EmitTelemetryEvent(telemetry);
+                    uriTemplate?.Scheme != Uri.UriSchemeHttps)
+                {
+                    // Telemetry for HTTPS sources that have an HTTP resource
+                    var telemetry = new ServiceIndexEntryTelemetry(1, "RestorePackageSourceSummary");
+                    TelemetryActivity.EmitTelemetryEvent(telemetry);
+                }
 
                 if (uriTemplate != null)
                 {

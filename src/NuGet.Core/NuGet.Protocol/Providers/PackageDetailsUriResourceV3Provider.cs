@@ -26,13 +26,14 @@ namespace NuGet.Protocol
             {
                 var uri = serviceIndex.GetServiceEntryUri(ServiceTypes.PackageDetailsUriTemplate);
 
-                // Telemetry for HTTPS sources that have an HTTP resource
-                var telemetry = new ServiceIndexEntryTelemetry(
-                    source.PackageSource.IsHttps &&
+                if (source.PackageSource.IsHttps &&
                     uri?.Scheme == Uri.UriSchemeHttp &&
-                    uri?.Scheme != Uri.UriSchemeHttps ? 1 : 0,
-                    "RestorePackageSourceSummary");
-                TelemetryActivity.EmitTelemetryEvent(telemetry);
+                    uri?.Scheme != Uri.UriSchemeHttps)
+                {
+                    // Telemetry for HTTPS sources that have an HTTP resource
+                    var telemetry = new ServiceIndexEntryTelemetry(1, "RestorePackageSourceSummary");
+                    TelemetryActivity.EmitTelemetryEvent(telemetry);
+                }
 
                 resource = PackageDetailsUriResourceV3.CreateOrNull(uri?.OriginalString);
             }
