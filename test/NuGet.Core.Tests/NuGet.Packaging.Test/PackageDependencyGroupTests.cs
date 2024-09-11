@@ -228,9 +228,9 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             const string id = "PackageA";
-            var version = new VersionRange(new NuGetVersion(1, 4, 1));
-            var expectedPackageDependency = new PackageDependency(id, version);
-            IEnumerable<PackageDependency> packages = new List<PackageDependency>() { expectedPackageDependency };
+            var range = new VersionRange(new NuGetVersion(1, 4, 1));
+            var expectedPackageDependency = new PackageDependency(id, range);
+            IEnumerable<PackageDependency> expectedTargetFramework = new List<PackageDependency>() { expectedPackageDependency };
 
             var targetFramework = NuGetFramework.Parse(".NETStandard1.0");
 
@@ -243,7 +243,7 @@ namespace NuGet.Packaging.Test
             PackageDependencyGroup actualPackageDependencies = serializer.Deserialize<PackageDependencyGroup>(jsonReader);
 
             // Assert
-            Assert.Equal(packages, actualPackageDependencies.Packages);
+            Assert.Equal(expectedTargetFramework, actualPackageDependencies.Packages);
             Assert.Equal(targetFramework, actualPackageDependencies.TargetFramework);
         }
 
@@ -252,11 +252,11 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             const string id = "PackageA";
-            var version = new VersionRange(new NuGetVersion(1, 4, 1));
-            var expectedPackageDependency = new PackageDependency(id, version);
-            IEnumerable<PackageDependency> packages = new List<PackageDependency>() { expectedPackageDependency };
+            var range = new VersionRange(new NuGetVersion(1, 4, 1));
+            var expectedPackageDependency = new PackageDependency(id, range);
+            IEnumerable<PackageDependency> expectedPackages = new List<PackageDependency>() { expectedPackageDependency };
 
-            var targetFramework = NuGetFramework.AnyFramework;
+            var expectedTargetFramework = NuGetFramework.AnyFramework;
 
             // Act
             using var stringReader = new StringReader(PackageRegistrationDependencyGroupsJson_NoTargetFramework);
@@ -267,8 +267,8 @@ namespace NuGet.Packaging.Test
             PackageDependencyGroup actualPackageDependencies = serializer.Deserialize<PackageDependencyGroup>(jsonReader);
 
             // Assert
-            Assert.Equal(packages, actualPackageDependencies.Packages);
-            Assert.Equal(targetFramework, actualPackageDependencies.TargetFramework);
+            Assert.Equal(expectedPackages, actualPackageDependencies.Packages);
+            Assert.Equal(expectedTargetFramework, actualPackageDependencies.TargetFramework);
         }
 
         [Fact]

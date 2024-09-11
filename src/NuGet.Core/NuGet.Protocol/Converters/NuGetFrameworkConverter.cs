@@ -7,14 +7,14 @@ using NuGet.Frameworks;
 
 namespace NuGet.Protocol.Converters
 {
-    internal class NuGetFrameworkConverter : JsonConverter
+    internal class NuGetFrameworkConverter : JsonConverter<NuGetFramework>
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, NuGetFramework value, JsonSerializer serializer)
         {
-            serializer.Serialize(writer, value.ToString());
+            throw new NotImplementedException();
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override NuGetFramework ReadJson(JsonReader reader, Type objectType, NuGetFramework existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             var value = reader.Value.ToString();
             var framework = NuGetFramework.AnyFramework;
@@ -26,7 +26,5 @@ namespace NuGet.Protocol.Converters
 
             return framework;
         }
-
-        public override bool CanConvert(Type objectType) => objectType == typeof(NuGetFramework);
     }
 }
