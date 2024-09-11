@@ -106,7 +106,7 @@ namespace NuGet.Protocol
         [JsonConverter(typeof(SafeUriConverter))]
         public Uri ReadmeUrl { get; private set; }
 
-        [JsonIgnore]
+        [JsonProperty(PropertyName = JsonProperties.ReadmeFileUrl)]
         public string ReadmeFileUrl { get; private set; }
 
         [JsonIgnore]
