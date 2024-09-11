@@ -31,7 +31,8 @@ namespace NuGet.Protocol
             {
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.PackagePublish);
 
-                if (source.PackageSource.IsHttps &&
+                if (baseUrl != null &&
+                    source.PackageSource.IsHttps &&
                     baseUrl?.Scheme == Uri.UriSchemeHttp &&
                     baseUrl?.Scheme != Uri.UriSchemeHttps)
                 {

@@ -32,7 +32,8 @@ namespace NuGet.Protocol.Providers
             {
                 Uri? uriTemplate = serviceIndex.GetServiceEntryUri(ServiceTypes.OwnerDetailsUriTemplate);
 
-                if (source.PackageSource.IsHttps &&
+                if (uriTemplate != null &&
+                    source.PackageSource.IsHttps &&
                     uriTemplate?.Scheme == Uri.UriSchemeHttp &&
                     uriTemplate?.Scheme != Uri.UriSchemeHttps)
                 {

@@ -27,7 +27,8 @@ namespace NuGet.Protocol
                 var uri = serviceIndex.GetServiceEntryUri(ServiceTypes.ReportAbuse);
                 var uriTemplate = uri?.AbsoluteUri;
 
-                if (source.PackageSource.IsHttps &&
+                if (uri != null &&
+                    source.PackageSource.IsHttps &&
                     uri?.Scheme == Uri.UriSchemeHttp &&
                     uri?.Scheme != Uri.UriSchemeHttps)
                 {
