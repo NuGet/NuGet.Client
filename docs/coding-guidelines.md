@@ -360,8 +360,24 @@ When writing extension methods for an interface the sponsor type name must not s
 
 ### Code comments
 
-The person writing the code will write the doc comments. Public APIs only. No need for doc comments on non-public types.
+#### **1. General Principles**
 
+- **Write for Peers**: Assume the reader understands the language and project context but may not be familiar with your specific code or its purpose.
+- **Update with Code Changes**: Keep documentation up-to-date with code changes.
+
+#### **2. Documentation Requirements**
+
+- **Public Methods**: Must have comprehensive documentation, including:
+  - **Summary**: Briefly describe the purpose and functionality of the method or class.
+  - **Parameters**: Explain each parameter's role and any constraints.
+  - **Return Values**: Describe what the method returns and under what conditions.
+  - **Exceptions**: List any exceptions that may be thrown and the conditions under which they occur.
+
+- **Non-Public Methods**:
+  - **Document if Over 15 Lines**: Methods longer than 15 lines should include documentation explaining the method’s purpose, key logic, and any important details.
+  - **Document if Complex**: For methods shorter than 15 lines, provide documentation if the method contains complex logic, non-trivial decision-making, or special cases that are not immediately obvious.
+  - **Avoid Over-Documenting**: Do not document methods excessively if they are straightforward and self-explanatory, even if they exceed the line length threshold.
+    
 Note: Public means callable by a customer, so it includes protected APIs. However, some public APIs might still be "for internal use only" but need to be public for technical reasons. We will still have doc comments for these APIs but they will be documented as appropriate.
 
 - Do not include empty XML comments.
