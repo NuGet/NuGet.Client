@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -30,8 +29,8 @@ namespace NuGet.Protocol
                 var baseUrl = serviceIndex.GetServiceEntryUri(ServiceTypes.RegistrationsBaseUrl);
 
                 if (source.PackageSource.IsHttps &&
-                    uri?.Scheme == Uri.UriSchemeHttp &&
-                    uri?.Scheme != Uri.UriSchemeHttps)
+                    baseUrl?.Scheme == Uri.UriSchemeHttp &&
+                    baseUrl?.Scheme != Uri.UriSchemeHttps)
                 {
                     // Telemetry for HTTPS sources that have an HTTP resource
                     var telemetry = new ServiceIndexEntryTelemetry(1, "RestorePackageSourceSummary");
