@@ -24,11 +24,11 @@ namespace NuGet.Protocol.Plugins
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
         private readonly EmbeddedSignatureVerifier _verifier;
-        private readonly IEnvironmentVariableReader _environmentVariableReader = EnvironmentVariableWrapper.Instance;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
-        internal PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader) : this(rawPluginPaths, verifier)
+        public PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier)
+            : this(rawPluginPaths, verifier, EnvironmentVariableWrapper.Instance)
         {
-            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
@@ -36,9 +36,14 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="rawPluginPaths">The raw semicolon-delimited list of supposed plugin file paths.</param>
         public PluginDiscoverer(string rawPluginPaths)
+        /// <param name="verifier">An embedded signature verifier.</param>
+        /// <param name="environmentVariableReader"> A reader for environmental varibales. </param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="verifier" /> is <see langword="null" />.</exception>
+        internal PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader)
         {
             _rawPluginPaths = rawPluginPaths;
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
+            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
