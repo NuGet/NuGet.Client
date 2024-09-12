@@ -195,6 +195,43 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [PlatformTheory(Platform.Windows)]
+        [InlineData("nuget-plugin-myPlugin.exe")]
+        [InlineData("nuget-plugin-myPlugin.bat")]
+        public async Task DiscoverAsync_WithPluginPathSpecifiedInNuGetPluginPathsEnvVariableWindows_FindsThePlugin(string fileName)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var pluginPath = Path.Combine(testDirectory.Path, "myPlugin");
+                Directory.CreateDirectory(pluginPath);
+                var myPlugin = Path.Combine(pluginPath, fileName);
+                Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATHS")).Returns("");
+                File.WriteAllText(myPlugin, string.Empty);
+                var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
+                verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
+                    .Returns(true);
+
+                using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                {
+                    // Act
+                    var result = await discoverer.DiscoverAsync(CancellationToken.None);
+
+                    // Assert
+                    var discovered = false;
+
+                    foreach (PluginDiscoveryResult discoveryResult in result)
+                    {
+                        if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                    }
+
+                    Assert.True(discovered);
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
         [InlineData("nugetplugin-myPlugin.exe")]
         [InlineData("nugetplugin-myPlugin.bat")]
         public async Task DiscoverAsync_withInValidDotNetToolsPluginNameWindows_DoesNotFindThePlugin(string fileName)
@@ -243,6 +280,56 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(myPlugin, string.Empty);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(It.IsAny<string>())).Returns(pluginPath);
+
+                using (var process = new Process())
+                {
+                    // Use a shell command to make the file executable
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = $"chmod +x {myPlugin}";
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.Start();
+                    process.WaitForExit();
+
+                    if (process.ExitCode == 0)
+                    {
+                        var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
+                        verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
+                            .Returns(true);
+
+                        using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                        {
+                            // Act
+                            var result = await discoverer.DiscoverAsync(CancellationToken.None);
+
+                            // Assert
+                            var discovered = false;
+
+                            foreach (PluginDiscoveryResult discoveryResult in result)
+                            {
+                                if (myPlugin == discoveryResult.PluginFile.Path) discovered = true;
+                            }
+
+                            Assert.True(discovered);
+                        }
+                    }
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public async Task DiscoverAsync_WithPluginPathSpecifiedInNuGetPluginPathsEnvVariableLinux_FindsThePlugin()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var pluginPath = Path.Combine(testDirectory.Path, "myPlugins");
+                Directory.CreateDirectory(pluginPath);
+                var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
+                File.WriteAllText(myPlugin, string.Empty);
+                Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATHS")).Returns("");
 
                 using (var process = new Process())
                 {

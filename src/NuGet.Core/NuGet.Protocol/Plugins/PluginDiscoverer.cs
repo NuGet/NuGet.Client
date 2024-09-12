@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Plugins
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
         private readonly EmbeddedSignatureVerifier _verifier;
-        private IEnvironmentVariableReader _environmentVariableReader;
+        private readonly IEnvironmentVariableReader _environmentVariableReader = EnvironmentVariableWrapper.Instance;
 
         internal PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader) : this(rawPluginPaths, verifier)
         {
@@ -145,12 +145,16 @@ namespace NuGet.Protocol.Plugins
         {
             var pluginFiles = new List<PluginFile>();
 
-            if (_environmentVariableReader is null)
-            {
-                _environmentVariableReader = EnvironmentVariableWrapper.Instance;
-            }
+            string[] paths = Array.Empty<string>();
 
-            var paths = _environmentVariableReader.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            // The path to the plugins installed using dotnet tools, should be specified in the NUGET_PLUGIN_PATHS environment variable.
+            var envNuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+
+            if (envNuGetPluginPaths.Length == 0)
+            {
+                // If NUGET_PLUGIN_PATHS is not specified, read all the paths in PATH
+                paths = _environmentVariableReader.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            }
 
             foreach (var path in paths)
             {
