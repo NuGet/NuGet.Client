@@ -148,9 +148,9 @@ namespace NuGet.Protocol.Plugins
             string[] paths = Array.Empty<string>();
 
             // The path to the plugins installed using dotnet tools, should be specified in the NUGET_PLUGIN_PATHS environment variable.
-            var envNuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            paths = _environmentVariableReader.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
-            if (envNuGetPluginPaths.Length == 0)
+            if (paths.Length == 0)
             {
                 // If NUGET_PLUGIN_PATHS is not specified, read all the paths in PATH
                 paths = _environmentVariableReader.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
