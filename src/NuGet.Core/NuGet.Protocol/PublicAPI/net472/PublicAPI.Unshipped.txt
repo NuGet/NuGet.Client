@@ -1,2 +1,9 @@
 #nullable enable
+~const NuGet.Protocol.JsonProperties.ReadmeFileUrl = "readmeFileUrl" -> string
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.PackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeFileUrl.get -> string
 ~NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer(string rawPluginPaths) -> void
