@@ -91,7 +91,13 @@ namespace NuGet.Protocol.Plugins
                 }
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
-                _pluginFiles.AddRange(GetNetToolsPluginFiles());
+
+                if (string.IsNullOrEmpty(_rawPluginPaths))
+                {
+                    // Nuget plugin configuration environmental variables were not used to discover the configuration files
+                    _pluginFiles.AddRange(GetNetToolsPluginFiles());
+                }
+
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
@@ -149,11 +155,10 @@ namespace NuGet.Protocol.Plugins
         private List<PluginFile> GetNetToolsPluginFiles()
         {
             var pluginFiles = new List<PluginFile>();
-
             string[] paths = Array.Empty<string>();
 
             // The path to the plugins installed using dotnet tools, should be specified in the NUGET_PLUGIN_PATHS environment variable.
-            paths = _environmentVariableReader.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            paths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             if (paths.Length == 0)
             {

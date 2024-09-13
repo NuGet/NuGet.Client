@@ -317,11 +317,6 @@ namespace NuGet.Protocol.Plugins
 #else
             _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
 #endif
-            if (string.IsNullOrEmpty(_rawPluginPaths))
-            {
-                _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
-            }
-
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
             var idleTimeoutInSeconds = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.IdleTimeout);
