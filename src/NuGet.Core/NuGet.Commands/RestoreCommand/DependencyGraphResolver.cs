@@ -205,6 +205,12 @@ namespace NuGet.Commands
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange> currentOverrides = importRefItem.VersionOverrides!;
                     bool directPackageReferenceFromRootProject = importRefItem.IsDirectPackageReferenceFromRootProject;
 
+                    // Packages with missing versions should not be added to the graph
+                    if (currentRef.LibraryRange.VersionRange == null)
+                    {
+                        continue;
+                    }
+
                     if (!findLibraryEntryCache.TryGetValue(currentRefRangeIndex, out Task<FindLibraryEntryResult>? refItemTask))
                     {
                         Debug.Fail("This should not happen");
