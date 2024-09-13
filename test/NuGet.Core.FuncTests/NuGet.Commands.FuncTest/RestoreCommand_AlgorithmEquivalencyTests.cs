@@ -884,6 +884,69 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Name.Should().Be("X");
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        // Project 1 -> Project 2 -> a (null)
+        public async Task RestoreCommand_WithNullPackageVersion_AndRaisesErrorForOneProjectAndNotTheOther(bool isCPMEnabled)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageA = new SimpleTestPackageContext("a", "1.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA);
+
+            var project2spec = ProjectTestHelpers.GetPackageSpec("Project2",
+                pathContext.SolutionRoot,
+                framework: "net472");
+
+            project2spec.TargetFrameworks[0].Dependencies.Add(new LibraryDependency(
+                new LibraryRange(
+                    "a",
+                    versionRange: isCPMEnabled ? null : VersionRange.All,
+                    LibraryDependencyTarget.PackageProjectExternal)));
+
+            var project1spec = ProjectTestHelpers.GetPackageSpec("Project1",
+                pathContext.SolutionRoot,
+                framework: "net472")
+                .WithTestProjectReference(project2spec);
+
+            project1spec.RestoreMetadata.CentralPackageVersionsEnabled = isCPMEnabled;
+            project2spec.RestoreMetadata.CentralPackageVersionsEnabled = isCPMEnabled;
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1spec, project2spec);
+
+            if (isCPMEnabled)
+            {
+                // Additional assert
+                result.Success.Should().BeTrue();
+                result.LogMessages.Should().BeEmpty();
+
+                result.LockFile.Targets.Should().HaveCount(1);
+                result.LockFile.Targets[0].Libraries.Should().HaveCount(1);
+                result.LockFile.Targets[0].Libraries[0].Name.Should().Be("Project2");
+                result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            }
+            else
+            {
+
+                result.Success.Should().BeTrue();
+                result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1602]);
+
+                result.LockFile.Targets.Should().HaveCount(1);
+                result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+                result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+                result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+                result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
+                result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+            }
+        }
+
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
