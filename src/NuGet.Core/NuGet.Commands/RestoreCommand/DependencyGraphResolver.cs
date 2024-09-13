@@ -96,8 +96,6 @@ namespace NuGet.Commands
 
                 TargetFrameworkInformation? projectTargetFramework = _request.Project.GetTargetFramework(pair.Framework);
 
-                var packagesToInstall = new HashSet<RemoteMatch>();
-
                 var unresolvedPackages = new HashSet<LibraryRange>();
 
                 var resolvedDependencies = new HashSet<ResolvedDependencyKey>();
@@ -215,11 +213,6 @@ namespace NuGet.Commands
 
                     FindLibraryEntryResult refItemResult = await refItemTask;
 
-                    if (context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider))
-                    {
-                        packagesToInstall.Add(refItemResult.Item.Data.Match);
-                    }
-
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
                     if (evictions.TryGetValue(currentRefRangeIndex, out var eviction))
                     {
@@ -276,11 +269,6 @@ namespace NuGet.Commands
                                 },
                                 (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                                 token);
-
-                            if (context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider))
-                            {
-                                packagesToInstall.Add(refItemResult.Item.Data.Match);
-                            }
                         }
                     }
 
@@ -419,12 +407,6 @@ namespace NuGet.Commands
                                     },
                                     (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                                     token);
-
-                                // If the package came from a remote library provider, it needs to be installed locally.
-                                if (context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider))
-                                {
-                                    packagesToInstall.Add(refItemResult.Item.Data.Match);
-                                }
                             }
 
                             int deepEvictions = 0;
@@ -661,11 +643,6 @@ namespace NuGet.Commands
                             });
                     }
 
-                    if (context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider))
-                    {
-                        packagesToInstall.Add(refItemResult.Item.Data.Match);
-                    }
-
                     HashSet<LibraryDependencyIndex>? suppressions = default;
                     IReadOnlyDictionary<LibraryDependencyIndex, VersionRange>? finalVersionOverrides = default;
                     Dictionary<LibraryDependencyIndex, VersionRange>? newOverrides = default;
@@ -827,11 +804,6 @@ namespace NuGet.Commands
                         };
                         RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, rootNode);
 
-                        if (context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider))
-                        {
-                            packagesToInstall.Remove(refItemResult.Item.Data.Match);
-                        }
-
                         findLibraryCachedAsyncResult = await findLibraryEntryCache.GetOrAddAsync(
                             currentRefRangeIndex,
                             refresh: true,
@@ -847,11 +819,6 @@ namespace NuGet.Commands
                             },
                             (currentRef, rootNode, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
                             token);
-
-                        if (context.RemoteLibraryProviders.Contains(refItemResult.Item.Data.Match.Provider))
-                        {
-                            packagesToInstall.Add(refItemResult.Item.Data.Match);
-                        }
 
                         // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
                         if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies!.Count)
@@ -1196,6 +1163,21 @@ namespace NuGet.Commands
                                     currentNode.ParentNodes.Add(parentNode);
                                 }
                             }
+                        }
+                    }
+                }
+
+                HashSet<RemoteMatch> packagesToInstall = new();
+
+                foreach (var cacheKey in findLibraryEntryCache.Keys)
+                {
+                    if (findLibraryEntryCache.TryGetValue(cacheKey, out var task))
+                    {
+                        var result = await task;
+
+                        if (result.Item.Key.Type != LibraryType.Unresolved && context.RemoteLibraryProviders.Contains(result.Item.Data.Match.Provider))
+                        {
+                            packagesToInstall.Add(result.Item.Data.Match);
                         }
                     }
                 }

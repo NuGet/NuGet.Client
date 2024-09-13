@@ -145,7 +145,6 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
 
-            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("DEBUGIT"))) System.Diagnostics.Debugger.Launch();
             _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
         }
 
