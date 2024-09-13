@@ -258,6 +258,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private ObservableCollection<PackageIdentity> _transitiveOrigins;
+        public ObservableCollection<PackageIdentity> TransitiveOrigins
+        {
+            get
+            {
+                return _transitiveOrigins;
+            }
+            set
+            {
+                _transitiveOrigins = value;
+                OnPropertyChanged(nameof(TransitiveOrigins));
+            }
+        }
+
         private string _installedVersionToolTip;
 
         public string InstalledVersionToolTip
