@@ -1,1 +1,2 @@
 #nullable enable
+NuGet.Commands.RestoreSummary.AuditRan.get -> bool

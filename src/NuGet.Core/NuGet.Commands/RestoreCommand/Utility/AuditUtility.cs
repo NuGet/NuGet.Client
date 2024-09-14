@@ -51,6 +51,9 @@ namespace NuGet.Commands.Restore.Utility
         internal int DistinctAdvisoriesSuppressedCount { get; private set; }
         internal int TotalWarningsSuppressedCount { get; private set; }
 
+        /// <inheritdoc cref="RestoreSummary.AuditRan"/>
+        internal bool AuditRan { get; private set; }
+
         public AuditUtility(
             ProjectModel.RestoreAuditProperties? restoreAuditProperties,
             string projectFullPath,
@@ -83,6 +86,8 @@ namespace NuGet.Commands.Restore.Utility
             // Performance: Early exit if restore graph does not contain any packages.
             if (!HasPackages())
             {
+                // No packages means we've validated there are none with known vulnerabilities.
+                AuditRan = true;
                 return;
             }
 
@@ -94,10 +99,13 @@ namespace NuGet.Commands.Restore.Utility
             // Performance: Early exit if there's no vulnerability data to check packages against.
             if (allVulnerabilityData is null || !AnyVulnerabilityDataFound(allVulnerabilityData))
             {
+                AuditRan = false;
                 return;
             }
 
             CheckPackageVulnerabilities(allVulnerabilityData);
+            AuditRan = true;
+            return;
 
             bool HasPackages()
             {

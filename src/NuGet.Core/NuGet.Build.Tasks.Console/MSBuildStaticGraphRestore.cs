@@ -138,7 +138,8 @@ namespace NuGet.Build.Tasks.Console
 
             try
             {
-                bool result = await BuildTasksUtility.RestoreAsync(
+                // todo: need to return Restore task output properties, like in NuGet.targets
+                List<RestoreSummary> restoreSummaries = await BuildTasksUtility.RestoreAsync(
                     dependencyGraphSpec: dependencyGraphSpec,
                     interactive,
                     recursive: IsOptionTrue(nameof(RestoreTaskEx.Recursive), options),
@@ -152,6 +153,7 @@ namespace NuGet.Build.Tasks.Console
                     cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
                     log: MSBuildLogger,
                 cancellationToken: CancellationToken.None);
+                bool result = restoreSummaries.All(rs => rs.Success);
 
                 LogFilesToEmbedInBinlog(dependencyGraphSpec, options);
 
