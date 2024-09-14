@@ -220,7 +220,9 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
 
                         // If the project has project references, we need to compute transitive origins for their packages
-                        List<LockFileTargetLibrary> projectReferences = targetsList.SelectMany(t => t.Libraries).Where(l => l.Type == LibraryType.Project).ToList();
+                        List<LockFileTargetLibrary> projectReferences = targetsList
+                            .SelectMany(t => t.Libraries)
+                            .Where(l => l.Type == LibraryType.Project && l.Framework is not null).ToList();
                         List<PackageReference> calculatedLibraryReferences = new List<PackageReference>(projectReferences.Count + calculatedInstalledPackages.Count);
                         if (projectReferences.Count > 0)
                         {
