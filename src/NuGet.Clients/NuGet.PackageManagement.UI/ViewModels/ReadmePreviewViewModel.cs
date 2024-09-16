@@ -17,12 +17,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public ReadmePreviewViewModel(INuGetPackageFileService packageFileService)
         {
+            _packageFileService = packageFileService ?? throw new ArgumentNullException(nameof(packageFileService));
             _errorLoadingReadme = false;
+            _canDetermineReadmeDefined = true;
             _rawReadme = string.Empty;
-            _packageFileService = packageFileService;
         }
 
-        private bool _errorLoadingReadme = false;
+        private bool _errorLoadingReadme;
 
         public bool ErrorLoadingReadme
         {
@@ -33,7 +34,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        private string _rawReadme = string.Empty;
+        private string _rawReadme;
 
         public string ReadmeMarkdown
         {
@@ -44,7 +45,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        private bool _canDetermineReadmeDefined = true;
+        private bool _canDetermineReadmeDefined;
 
         public bool CanDetermineReadmeDefined
         {
