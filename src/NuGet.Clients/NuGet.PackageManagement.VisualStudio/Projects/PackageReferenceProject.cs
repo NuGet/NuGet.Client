@@ -220,29 +220,12 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
 
                         // If the project has project references, we need to compute transitive origins for their packages
-                        List<LockFileTargetLibrary> projectReferences = targetsList
-                            .SelectMany(t => t.Libraries)
-                            .Where(l => l.Type == LibraryType.Project && l.Framework is not null).ToList();
-                        List<PackageReference> calculatedLibraryReferences = new List<PackageReference>(projectReferences.Count + calculatedInstalledPackages.Count);
-                        if (projectReferences.Count > 0)
-                        {
-                            foreach (var projectReference in projectReferences)
-                            {
-                                var packageReference = new PackageReference(
-                                    identity: new PackageIdentity(projectReference.Name, projectReference.Version),
-                                    targetFramework: new NuGetFramework(projectReference.Framework),
-                                    userInstalled: false,
-                                    developmentDependency: false,
-                                    requireReinstallation: false,
-                                    allowedVersions: new VersionRange(projectReference.Version));
-                                calculatedLibraryReferences.Add(packageReference);
-                            }
-                        }
+                        List<PackageReference> projectReferences = GetProjectPackageReferences(targetsList);
 
-                        calculatedLibraryReferences.AddRange(calculatedInstalledPackages);
+                        projectReferences.AddRange(calculatedInstalledPackages);
 
                         // Compute Transitive Origins
-                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedLibraryReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>();
+                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(projectReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>();
                     }
                     else
                     {
@@ -298,6 +281,34 @@ namespace NuGet.PackageManagement.VisualStudio
             IsInstalledAndTransitiveComputationNeeded = false;
 
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
+        }
+
+        private static List<PackageReference> GetProjectPackageReferences(IList<LockFileTarget> targetsList)
+        {
+            var packageReferences = new List<PackageReference>();
+
+            foreach (var target in targetsList)
+            {
+                var framework = target.TargetFramework;
+                var projectLibraries = target.Libraries.Where(library => library.Type == "project");
+
+                foreach (var library in projectLibraries)
+                {
+                    var packageReference = new PackageReference(
+                                    identity: new PackageIdentity(library.Name, library.Version),
+                                    targetFramework: new NuGetFramework(framework),
+                                    userInstalled: false,
+                                    developmentDependency: false,
+                                    requireReinstallation: false,
+                                    allowedVersions: new VersionRange(library.Version));
+                    packageReferences.Add(packageReference);
+                }
+            }
+
+            return packageReferences
+                .GroupBy(p => p.PackageIdentity)
+                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
+                .ToList();
         }
 
         protected abstract IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets, T installedPackages);
