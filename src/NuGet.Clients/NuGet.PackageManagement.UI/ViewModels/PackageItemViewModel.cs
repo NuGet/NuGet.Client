@@ -919,11 +919,10 @@ namespace NuGet.PackageManagement.UI
             if (maxSeverity > -1)
             {
                 VulnerableVersions.Add(version, maxSeverity);
+                VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, maxSeverity);
+
+                OnPropertyChanged(nameof(Status));
             }
-
-            VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, maxSeverity);
-
-            OnPropertyChanged(nameof(Status));
         }
 
         public void UpdateInstalledPackagesVulnerabilities(PackageIdentity packageIdentity)
