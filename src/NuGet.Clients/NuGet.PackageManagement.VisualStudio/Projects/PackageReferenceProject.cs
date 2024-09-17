@@ -220,12 +220,18 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
 
                         // If the project has project references, we need to compute transitive origins for their packages
-                        List<PackageReference> projectReferences = GetProjectPackageReferences(targetsList);
+                        List<PackageReference> projectReferences = packageSpec
+                            .TargetFrameworks
+                            .SelectMany(f => GetProjectPackageReferences(f.FrameworkName, targetsList))
+                            .GroupBy(p => p.PackageIdentity)
+                            .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
+                            .ToList();
 
-                        projectReferences.AddRange(calculatedInstalledPackages);
+                        List<PackageReference> calculatedLibraryReferences = new List<PackageReference>(projectReferences);
+                        calculatedLibraryReferences.AddRange(calculatedInstalledPackages);
 
                         // Compute Transitive Origins
-                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(projectReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>();
+                        transitiveOrigins = calculatedTransitivePackages.Any() ? ComputeTransitivePackageOrigins(calculatedLibraryReferences, targetsList, token) : new Dictionary<string, TransitiveEntry>();
                     }
                     else
                     {
@@ -283,32 +289,22 @@ namespace NuGet.PackageManagement.VisualStudio
             return new ProjectPackages(calculatedInstalledPackages, transitivePkgsResult);
         }
 
-        private static List<PackageReference> GetProjectPackageReferences(IList<LockFileTarget> targetsList)
+
+        private static IEnumerable<PackageReference> GetProjectPackageReferences(NuGetFramework nuGetFramework, IList<LockFileTarget> targetsList)
         {
-            var packageReferences = new List<PackageReference>();
+            var packageReferences = targetsList
+                .Where(t => t.TargetFramework.Equals(nuGetFramework))
+                .SelectMany(lib => lib.Libraries)
+                .Where(l => l.Type == "project")
+                .Select(package => new PackageReference(
+                    new PackageIdentity(package.Name, package.Version),
+                    targetFramework: nuGetFramework,
+                    userInstalled: false,
+                    developmentDependency: false,
+                    requireReinstallation: false,
+                    allowedVersions: new VersionRange(package.Version)));
 
-            foreach (var target in targetsList)
-            {
-                var framework = target.TargetFramework;
-                var projectLibraries = target.Libraries.Where(library => library.Type == "project");
-
-                foreach (var library in projectLibraries)
-                {
-                    var packageReference = new PackageReference(
-                                    identity: new PackageIdentity(library.Name, library.Version),
-                                    targetFramework: new NuGetFramework(framework),
-                                    userInstalled: false,
-                                    developmentDependency: false,
-                                    requireReinstallation: false,
-                                    allowedVersions: new VersionRange(library.Version));
-                    packageReferences.Add(packageReference);
-                }
-            }
-
-            return packageReferences
-                .GroupBy(p => p.PackageIdentity)
-                .Select(g => g.OrderBy(p => p.TargetFramework, FrameworkSorter).First())
-                .ToList();
+            return packageReferences;
         }
 
         protected abstract IEnumerable<PackageReference> ResolvedInstalledPackagesList(IEnumerable<LibraryDependency> libraries, NuGetFramework targetFramework, IList<LockFileTarget> targets, T installedPackages);
