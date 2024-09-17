@@ -349,13 +349,11 @@ namespace NuGet.Commands.FuncTest
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
-                                    ""versionCentrallyManaged"": true
                                 },
                                 ""b"": {
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
-                                    ""versionCentrallyManaged"": true,
                                 }
                         },
                         ""centralPackageVersions"": {
@@ -451,13 +449,11 @@ namespace NuGet.Commands.FuncTest
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
-                                    ""versionCentrallyManaged"": true
                                 },
                                 ""b"": {
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
-                                    ""versionCentrallyManaged"": true,
                                     ""suppressParent"": ""All""
                                 }
                         },
