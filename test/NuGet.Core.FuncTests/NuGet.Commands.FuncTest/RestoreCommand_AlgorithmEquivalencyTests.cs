@@ -61,7 +61,7 @@ namespace NuGet.Commands.FuncTest
         [Fact]
         // Project 1 -> a 1.0.0 -> b 1.0.0
         //                      -> c 1.0.0 -> -> d 1.0.0 -> b 2.0.0
-        public async Task RestoreCommand_WithPackageDrivenDowngrade_RespectsDowngrade_AndRaisesWarningAgain()
+        public async Task RestoreCommand_WithPackageDrivenDowngradeAndDepthDifferenceMoreThanOne_RespectsDowngrade_AndRaisesWarning()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -1131,6 +1131,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
+        // TODO NK - This needs removed.
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
