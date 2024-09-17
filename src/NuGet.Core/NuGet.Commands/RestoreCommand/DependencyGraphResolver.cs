@@ -209,7 +209,7 @@ namespace NuGet.Commands
                         (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
 
                         // If we evicted this same version previously, but the type constraint of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
-                        // This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
+                        // TODO: This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
                         if (!((evictedTypeConstraint == LibraryDependencyTarget.PackageProjectExternal || evictedTypeConstraint == LibraryDependencyTarget.ExternalProject) &&
                             currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
                         {
@@ -288,6 +288,7 @@ namespace NuGet.Commands
 
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
+                            // TODO: I don't really get this whole thing.
                             if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                             {
                                 bool isParentCentrallyPinned = false;
