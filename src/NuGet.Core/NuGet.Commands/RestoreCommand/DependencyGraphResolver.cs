@@ -650,6 +650,12 @@ namespace NuGet.Commands
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
                     {
                         var dep = refItemResult.Item.Data.Dependencies[i];
+                        // Packages with missing versions should not be added to the graph
+                        if (dep.LibraryRange.VersionRange == null)
+                        {
+                            continue;
+                        }
+
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
                         if ((dep.SuppressParent == LibraryIncludeFlags.All) && (importRefItem.LibraryDependencyIndex != rootProjectRefItem.LibraryDependencyIndex))
                         {
@@ -718,8 +724,8 @@ namespace NuGet.Commands
                         LibraryDependency dep = refItemResult.Item.Data.Dependencies[i];
                         LibraryDependencyIndex depIndex = refItemResult.GetDependencyIndexForDependency(i);
 
-                        //Suppress this node
-                        if (!importRefItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(depIndex))
+                        // Skip this node if the VersionRange is null or if its not transitively pinned and PrivateAssets=All
+                        if (dep.LibraryRange.VersionRange == null || (!importRefItem.IsCentrallyPinnedTransitivePackage && suppressions!.Contains(depIndex)))
                         {
                             continue;
                         }
@@ -912,6 +918,12 @@ namespace NuGet.Commands
                         for (int i = 0; i < node.Item.Data.Dependencies.Count; i++)
                         {
                             var dep = node.Item.Data.Dependencies[i];
+
+                            if (dep.LibraryRange.VersionRange == null)
+                            {
+                                continue;
+                            }
+
                             if (StringComparer.OrdinalIgnoreCase.Equals(dep.Name, node.Item.Key.Name) || StringComparer.OrdinalIgnoreCase.Equals(dep.Name, rootGraphNode.Key.Name))
                             {
                                 // Cycle
