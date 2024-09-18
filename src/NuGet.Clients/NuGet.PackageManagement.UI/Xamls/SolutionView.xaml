@@ -209,48 +209,13 @@
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
 
-    <!--Versions and vulnerabilities count-->
-    <Grid
-      Grid.Row="0">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="auto" />
-      </Grid.ColumnDefinitions>
-      <TextBlock
-        x:Name="_installedVersionsCount"
-        Grid.Column="0"
-        Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
+    <!--Versions count-->
+    <TextBlock
+      x:Name="_installedVersionsCount"
+      Grid.Column="0"
+      Text="{Binding InstalledVersionsCount, Converter={StaticResource InstalledVersionsCountConverter}}" />
 
-      <StackPanel
-        Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource IsGreaterThanToVisibilityConverter}, ConverterParameter=0}"
-        Orientation="Horizontal"
-        Grid.Column="1"
-        VerticalAlignment="Bottom">
-        <imaging:CrispImage
-          x:Name="_warningIndicator"
-          VerticalAlignment="Center"
-          Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
-          <imaging:CrispImage.ToolTip>
-            <StackPanel>
-              <TextBlock
-                Margin="0, 0, 0, 8">
-                <TextBlock.Text>
-                  <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                    <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
-                    <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
-                  </MultiBinding>
-                </TextBlock.Text>
-              </TextBlock>
-            </StackPanel>
-          </imaging:CrispImage.ToolTip>
-        </imaging:CrispImage>
-        <TextBlock
-          Style="{StaticResource VulnerabilitiesCountText}"
-          x:Name="_vulnerableVersionsCount" />
-      </StackPanel>
-    </Grid>
-
-    <!--Projects list-->
+      <!--Projects list-->
     <local:ToggleableListView
       Grid.Row="1"
       x:Name="_projectList"
@@ -379,8 +344,77 @@
                 AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
                 x:Name="_installedVersionColumnHeader"
                 Click="ColumnHeader_Clicked"
-                Content="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
                 local:SortableColumnHeaderAttachedProperties.SortPropertyName="InstalledVersion"
+                HorizontalContentAlignment="Left"
+                SizeChanged="SortableColumnHeader_SizeChanged"
+                PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
+                Focusable="True"
+                IsTabStop="True"
+                FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
+                <StackPanel
+                  Orientation="Horizontal">
+                  <TextBlock
+                    Margin="2,0,0,0"
+                    VerticalAlignment="Bottom"
+                    Text="{x:Static local:Resources.ColumnHeader_InstalledVersion}" />
+                  <imaging:CrispImage
+                    Margin="2,0,0,0"
+                    x:Name="_warningIndicatorInstalledHeader"
+                    IsVisibleChanged="WarningIndicatorInstalledHeader_IsVisibleChanged"
+                    Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource IsGreaterThanToVisibilityConverter}, ConverterParameter=0}"
+                    Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
+                    <imaging:CrispImage.ToolTip>
+                      <TextBlock>
+                        <TextBlock.Text>
+                          <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                            <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
+                            <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                          </MultiBinding>
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </imaging:CrispImage.ToolTip>
+                  </imaging:CrispImage>
+                </StackPanel>
+              </GridViewColumnHeader>
+            </GridViewColumn.Header>
+            <GridViewColumn.CellTemplate>
+              <DataTemplate>
+                <StackPanel
+                  VerticalAlignment="Bottom"
+                  Orientation="Horizontal">
+                  <TextBlock
+                    VerticalAlignment="Bottom"
+                    Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}" />
+                  <imaging:CrispImage
+                    Margin="2,0,0,0"
+                    x:Name="_warningIndicator"
+                    Visibility="{Binding IsInstalledVersionVulnerable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
+                    <imaging:CrispImage.ToolTip>
+                      <TextBlock>
+                        <TextBlock.Text>
+                          <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                            <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
+                            <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                          </MultiBinding>
+                        </TextBlock.Text>
+                      </TextBlock>
+                    </imaging:CrispImage.ToolTip>
+                  </imaging:CrispImage>
+                </StackPanel>
+              </DataTemplate>
+            </GridViewColumn.CellTemplate>
+          </GridViewColumn>
+
+          <!-- the package level column -->
+          <GridViewColumn>
+            <GridViewColumn.Header>
+              <GridViewColumnHeader
+                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
+                x:Name="_packageLevelColumnHeader"
+                Click="ColumnHeader_Clicked"
+                Content="Package Level"
+                local:SortableColumnHeaderAttachedProperties.SortPropertyName="PackageLevel"
                 HorizontalContentAlignment="Left"
                 SizeChanged="SortableColumnHeader_SizeChanged"
                 PreviewKeyUp="SortableColumnHeader_PreviewKeyUp"
@@ -391,31 +425,14 @@
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <StackPanel
-                  VerticalAlignment="Bottom"
                   Orientation="Horizontal">
-                  <imaging:CrispImage
-                    x:Name="_warningIndicator"
-                    Visibility="{Binding IsInstalledVersionVulnerable,Converter={StaticResource BooleanToVisibilityConverter}}"
-                    Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
-                    <imaging:CrispImage.ToolTip>
-                      <TextBlock
-                        Margin="0, 0, 0, 8">
-                        <TextBlock.Text>
-                          <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                            <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
-                            <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
-                          </MultiBinding>
-                        </TextBlock.Text>
-                      </TextBlock>
-                    </imaging:CrispImage.ToolTip>
-                  </imaging:CrispImage>
                   <TextBlock
-                    Margin="4,0,0,0"
-                    Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}" />
+                    Text="{Binding PackageLevel}" />
                 </StackPanel>
               </DataTemplate>
             </GridViewColumn.CellTemplate>
           </GridViewColumn>
+          
         </GridView>
       </ListView.View>
     </local:ToggleableListView>
