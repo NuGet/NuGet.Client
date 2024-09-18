@@ -280,6 +280,7 @@ namespace NuGet.PackageManagement.UI
                         existingListItem.TransitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
                         existingListItem.TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", existingListItem.InstalledVersions), string.Join(", ", existingListItem.TransitiveOrigins));
                     }
+                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
                 }
                 else
                 {
