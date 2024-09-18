@@ -79,6 +79,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public string _packageLevel;
+        public string PackageLevel
+        {
+            get => _packageLevel;
+            set
+            {
+                _packageLevel = value;
+                OnPropertyChanged(nameof(PackageLevel));
+            }
+        }
+
         public string RequestedVersion
         {
             get { return _versionRequested; }
