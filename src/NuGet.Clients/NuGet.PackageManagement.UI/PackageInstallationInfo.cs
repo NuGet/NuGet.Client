@@ -49,6 +49,26 @@ namespace NuGet.PackageManagement.UI
         private NuGetVersion _versionInstalled;
         private string _versionRequested;
 
+        private int _installedVersionMaxVulnerability = -1;
+        public int InstalledVersionMaxVulnerability
+        {
+            get => _installedVersionMaxVulnerability;
+            set
+            {
+                if (_installedVersionMaxVulnerability != value)
+                {
+                    _installedVersionMaxVulnerability = value;
+                    OnPropertyChanged(nameof(InstalledVersionMaxVulnerability));
+                    OnPropertyChanged(nameof(IsInstalledVersionVulnerable));
+                }
+            }
+        }
+
+        public bool IsInstalledVersionVulnerable
+        {
+            get => InstalledVersionMaxVulnerability > -1;
+        }
+
         public NuGetVersion InstalledVersion
         {
             get { return _versionInstalled; }

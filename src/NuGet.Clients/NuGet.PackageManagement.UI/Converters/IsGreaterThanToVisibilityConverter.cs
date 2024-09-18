@@ -9,16 +9,20 @@ using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class DownloadCountToVisibilityConverter : IValueConverter
+    public class IsGreaterThanToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (targetType == typeof(Visibility))
             {
-                long? downloadCount = value as long?;
-                if (downloadCount >= 0)
+                if (value is not null)
                 {
-                    return Visibility.Visible;
+                    long intValue = System.Convert.ToInt64(value, culture);
+                    long parameterValue = System.Convert.ToInt64(parameter, culture);
+                    if (intValue > parameterValue)
+                    {
+                        return Visibility.Visible;
+                    }
                 }
 
                 return Visibility.Collapsed;
