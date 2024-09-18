@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,6 +87,7 @@ namespace NuGet.Protocol.Plugins
                 }
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
+                _pluginFiles.AddRange(GetNetToolsPluginFiles());
                 var results = new List<PluginDiscoveryResult>();
 
                 for (var i = 0; i < _pluginFiles.Count; ++i)
@@ -149,9 +149,9 @@ namespace NuGet.Protocol.Plugins
         /// The files are also expected to have a name that starts with `nuget-plugin-`
         /// </summary>
         /// <returns></returns>
-        private static List<string> GetNetToolsPluginFiles()
+        private List<PluginFile> GetNetToolsPluginFiles()
         {
-            var pluginFiles = new List<string>();
+            var pluginFiles = new List<PluginFile>();
             var paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             foreach (var path in paths)
@@ -165,7 +165,9 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (IsValidPluginFile(file))
                         {
-                            pluginFiles.Add(file.FullName);
+                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(file.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
+                            PluginFile pluginFile = new PluginFile(file.FullName, state, isDotnetToolsPlugin: true);
+                            pluginFiles.Add(pluginFile);
                         }
                     }
                 }
@@ -251,12 +253,7 @@ namespace NuGet.Protocol.Plugins
                 // Internal plugins are only supported for .NET Framework scenarios, namely msbuild.exe
                 directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
 #endif
-                var plugins = PluginDiscoveryUtility.GetConventionBasedPlugins(directories).ToList();
-
-                // Get plugins added using .Net Tools
-                plugins.AddRange(GetNetToolsPluginFiles());
-
-                return plugins;
+                return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
             }
 
             return _rawPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);

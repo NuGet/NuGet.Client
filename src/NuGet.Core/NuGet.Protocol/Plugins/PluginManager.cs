@@ -213,12 +213,26 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (result.PluginFile.State.Value == PluginFileState.Valid)
                     {
-                        var plugin = await _pluginFactory.GetOrCreateAsync(
+                        IPlugin plugin;
+
+                        if (result.PluginFile.IsDotnetToolsPlugin)
+                        {
+                            plugin = await _pluginFactory.GetOrCreateNetToolsAsync(
                             result.PluginFile.Path,
                             PluginConstants.PluginArguments,
                             new RequestHandlers(),
                             _connectionOptions,
                             cancellationToken);
+                        }
+                        else
+                        {
+                            plugin = await _pluginFactory.GetOrCreateAsync(
+                            result.PluginFile.Path,
+                            PluginConstants.PluginArguments,
+                            new RequestHandlers(),
+                            _connectionOptions,
+                            cancellationToken);
+                        }
 
                         var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 

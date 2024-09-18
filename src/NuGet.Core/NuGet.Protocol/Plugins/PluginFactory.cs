@@ -136,7 +136,77 @@ namespace NuGet.Protocol.Plugins
             var lazyTask = _plugins.GetOrAdd(
                 filePath,
                 (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken)));
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isDotnetTools: false, sessionCancellationToken)));
+
+            await lazyTask.Value;
+
+            // Manage plugin lifetime by its idleness.  Thus, don't allow callers to prematurely dispose of a plugin.
+            return new NoOpDisposePlugin(lazyTask.Value.Result);
+        }
+
+        /// <summary>
+        /// Asynchronously gets an existing plugin instance or creates a new instance and connects to it.
+        /// </summary>
+        /// <param name="filePath">The file path of the plugin.</param>
+        /// <param name="arguments">Command-line arguments to be supplied to the plugin.</param>
+        /// <param name="requestHandlers">Request handlers.</param>
+        /// <param name="options">Connection options.</param>
+        /// <param name="sessionCancellationToken">A cancellation token for the plugin's lifetime.</param>
+        /// <returns>A task that represents the asynchronous operation.
+        /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="Plugin" />
+        /// instance.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="filePath" />
+        /// is either <see langword="null" /> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="arguments" />
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="requestHandlers" />
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options" />
+        /// is <see langword="null" />.</exception>
+        /// <exception cref="OperationCanceledException">Thrown if <paramref name="sessionCancellationToken" />
+        /// is cancelled.</exception>
+        /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
+        /// <exception cref="ProtocolException">Thrown if a plugin protocol error occurs.</exception>
+        /// <exception cref="PluginException">Thrown for a plugin failure during creation.</exception>
+        /// <remarks>This is intended to be called by NuGet client tools.</remarks>
+        public async Task<IPlugin> GetOrCreateNetToolsAsync(
+            string filePath,
+            IEnumerable<string> arguments,
+            IRequestHandlers requestHandlers,
+            ConnectionOptions options,
+            CancellationToken sessionCancellationToken)
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(PluginFactory));
+            }
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
+            }
+
+            if (arguments == null)
+            {
+                throw new ArgumentNullException(nameof(arguments));
+            }
+
+            if (requestHandlers == null)
+            {
+                throw new ArgumentNullException(nameof(requestHandlers));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            sessionCancellationToken.ThrowIfCancellationRequested();
+
+            var lazyTask = _plugins.GetOrAdd(
+                filePath,
+                (path) => new Lazy<Task<IPlugin>>(
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isDotnetTools: true, sessionCancellationToken)));
 
             await lazyTask.Value;
 
@@ -149,36 +219,57 @@ namespace NuGet.Protocol.Plugins
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
+            bool isDotnetTools,
             CancellationToken sessionCancellationToken)
         {
             var args = string.Join(" ", arguments);
+
+            ProcessStartInfo startInfo;
+
+            if (!isDotnetTools)
+            {
 #if IS_DESKTOP
-            var startInfo = new ProcessStartInfo(filePath)
-            {
-                Arguments = args,
-                UseShellExecute = false,
-                RedirectStandardError = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                WindowStyle = ProcessWindowStyle.Hidden,
-            };
+                startInfo = new ProcessStartInfo(filePath)
+                {
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
 #else
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
-                           (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
-                                "dotnet.exe" :
-                                "dotnet"),
-                Arguments = $"\"{filePath}\" " + args,
-                UseShellExecute = false,
-                RedirectStandardError = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                WindowStyle = ProcessWindowStyle.Hidden,
-            };
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
+                    (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
+                    "dotnet.exe" :
+                    "dotnet"),
+                    Arguments = $"\"{filePath}\" " + args,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
 #endif
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo(filePath)
+                {
+                    FileName = filePath,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
+            }
             var pluginProcess = new PluginProcess(startInfo);
             string pluginId = Plugin.CreateNewId();
 
