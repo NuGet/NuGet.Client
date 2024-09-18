@@ -227,14 +227,6 @@ namespace NuGet.Commands
                         }
                     }
 
-                    if (currentOverrides.TryGetValue(currentRefDependencyIndex, out var ov))
-                    {
-                        if (!ov.Equals(currentRef.LibraryRange.VersionRange))
-                        {
-                            continue;
-                        }
-                    }
-
                     HashSet<LibraryDependency>? runtimeDependencies = null;
 
                     if (runtimeGraph != null && !string.IsNullOrWhiteSpace(pair.RuntimeIdentifier))
