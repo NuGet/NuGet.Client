@@ -4126,17 +4126,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetInstalledAndTransitivePackagesAsync_ProjectReferenceWithNullFramework_EmptyInstalledAndTransitivePackagesAsync()
+        public async Task GetInstalledAndTransitivePackagesAsync_WithPackagesConfigProjectReference_EmptyInstalledAndTransitivePackagesAsync()
         {
-            // Project2 -> Project1 ->  PackageA (1.0.0) -> PackageB (1.0.0)
+            // Project2 (PR) -> Project1 (PC)
 
             // Arrange
             using var rootDir = new SimpleTestPathContext();
 
             await CreatePackagesAsync(rootDir, packageAVersion: "1.0.0");
 
-            PackageSpec prj1Spec = ProjectTestHelpers.GetPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0", dependencyName: "PackageA");
-            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj1Spec, null);
+            PackageSpec prj1Spec = ProjectTestHelpers.GetPackagesConfigPackageSpec("Project1", rootDir.SolutionRoot, framework: "netstandard2.0");
+            PackageSpec prj2Spec = ProjectTestHelpers.GetPackageSpec("Project2", rootDir.SolutionRoot, framework: "netstandard2.0").WithTestProjectReference(prj1Spec);
+
+            prj1Spec.Dependencies.Add(target);
 
             await RestorePackageSpecsAsync(rootDir, output: null, prj1Spec, prj2Spec);
 
