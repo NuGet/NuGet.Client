@@ -92,11 +92,7 @@ namespace NuGet.Commands.Test
         {
             var spec = parent.Clone();
 
-            if (frameworks is null)
-            {
-                frameworks = Array.Empty<NuGetFramework>();
-            }
-            else if (frameworks.Length == 0)
+            if (frameworks.Length == 0)
             {
                 // Use all frameworks if none were given
                 frameworks = spec.TargetFrameworks.Select(e => e.FrameworkName).ToArray();
