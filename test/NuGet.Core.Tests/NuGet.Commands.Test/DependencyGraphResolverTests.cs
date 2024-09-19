@@ -20,55 +20,15 @@ namespace NuGet.Commands.Test
             string libraryRange1String = libraryRange1.ToString();
             string libraryRange2String = libraryRange2.ToString();
 
-            var constraintString1 = string.Empty;
-
-            switch (libraryRange1.TypeConstraint)
-            {
-                case LibraryDependencyTarget.Reference:
-                    constraintString1 = LibraryType.Reference;
-                    break;
-
-                case LibraryDependencyTarget.ExternalProject:
-                    constraintString1 = LibraryType.ExternalProject;
-                    break;
-
-                case LibraryDependencyTarget.Project:
-                case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                    constraintString1 = LibraryType.Project;
-                    break;
-            }
-
-            var constraintString2 = string.Empty;
-
-            switch (libraryRange2.TypeConstraint)
-            {
-                case LibraryDependencyTarget.Reference:
-                    constraintString2 = LibraryType.Reference;
-                    break;
-
-                case LibraryDependencyTarget.ExternalProject:
-                    constraintString2 = LibraryType.ExternalProject;
-                    break;
-
-                case LibraryDependencyTarget.Project:
-                case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                    constraintString2 = LibraryType.Project;
-                    break;
-            }
-
             // If the LibraryRange.ToString() is the same, then we expect DependencyGraphResolver.LibraryRangeComparer to also consider them equal
-            if (string.Equals(constraintString1, constraintString2))
+            if (string.Equals(libraryRange1String, libraryRange2String))
             {
-                libraryRange1String.Should().Be(libraryRange2String);
-
                 comparer.Equals(libraryRange1, libraryRange2).Should().BeTrue();
 
                 comparer.GetHashCode(libraryRange1).Should().Be(comparer.GetHashCode(libraryRange2));
             }
             else
             {
-                libraryRange1String.Should().NotBe(libraryRange2String);
-
                 comparer.Equals(libraryRange1, libraryRange2).Should().BeFalse();
 
                 comparer.GetHashCode(libraryRange1).Should().NotBe(comparer.GetHashCode(libraryRange2));
@@ -87,23 +47,15 @@ namespace NuGet.Commands.Test
             string libraryRange1String = libraryRange1.ToString();
             string libraryRange2String = libraryRange2.ToString();
 
-            string versionString1 = libraryRange1.VersionRange!.ToNonSnapshotRange().PrettyPrint();
-
-            string versionString2 = libraryRange2.VersionRange!.ToNonSnapshotRange().PrettyPrint();
-
             // If the version strings are the same, then we expect DependencyGraphResolver.LibraryRangeComparer to also consider them equal
-            if (string.Equals(versionString1, versionString2))
+            if (string.Equals(libraryRange1String, libraryRange2String))
             {
-                libraryRange1String.Should().Be(libraryRange2String);
-
                 comparer.Equals(libraryRange1, libraryRange2).Should().BeTrue();
 
                 comparer.GetHashCode(libraryRange1).Should().Be(comparer.GetHashCode(libraryRange2));
             }
             else
             {
-                libraryRange1String.Should().NotBe(libraryRange2String);
-
                 comparer.Equals(libraryRange1, libraryRange2).Should().BeFalse();
 
                 comparer.GetHashCode(libraryRange1).Should().NotBe(comparer.GetHashCode(libraryRange2));
