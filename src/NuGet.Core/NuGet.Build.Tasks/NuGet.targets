@@ -1551,4 +1551,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Import Project="NuGet.RestoreEx.targets" Condition="'$(RestoreUseStaticGraphEvaluation)' == 'true' And Exists('NuGet.RestoreEx.targets')" />
 
+  <PropertyGroup>
+    <!-- By default, use the legacy dependency resolver -->
+    <RestoreUseLegacyDependencyResolver Condition="'$(RestoreUseLegacyDependencyResolver)' == ''">true</RestoreUseLegacyDependencyResolver>
+  </PropertyGroup>
+
 </Project>
