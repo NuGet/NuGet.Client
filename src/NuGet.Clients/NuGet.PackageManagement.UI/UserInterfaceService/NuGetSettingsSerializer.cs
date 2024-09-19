@@ -2,43 +2,35 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.UI
 {
     internal sealed class NuGetSettingsSerializer
     {
-        private const int _bufferSize = 4096;
-
-        private readonly JsonSerializer _serializer;
+        private const int BufferSize = 4096;
+        private readonly JsonSerializerOptions _options;
 
         internal NuGetSettingsSerializer()
         {
-            _serializer = new JsonSerializer();
-
-            _serializer.Converters.Add(new StringEnumConverter());
+            _options = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() },
+                PropertyNameCaseInsensitive = true,
+                DefaultBufferSize = BufferSize,
+            };
         }
 
-        internal NuGetSettings Deserialize(Stream stream)
+        internal async Task<NuGetSettings> DeserializeAsync(Stream stream)
         {
-            using (var streamReader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: _bufferSize, leaveOpen: true))
-            using (var jsonReader = new JsonTextReader(streamReader))
-            {
-                jsonReader.CloseInput = false;
-
-                return _serializer.Deserialize<NuGetSettings>(jsonReader);
-            }
+            return await JsonSerializer.DeserializeAsync<NuGetSettings>(stream, _options);
         }
 
-        internal void Serialize(Stream stream, NuGetSettings settings)
+        internal async Task SerializeAsync(Stream stream, NuGetSettings settings)
         {
-            using (var streamWriter = new StreamWriter(stream, Encoding.UTF8, bufferSize: _bufferSize, leaveOpen: true))
-            using (var jsonWriter = new JsonTextWriter(streamWriter))
-            {
-                _serializer.Serialize(jsonWriter, settings);
-            }
+            await JsonSerializer.SerializeAsync(stream, settings, _options);
         }
     }
 }

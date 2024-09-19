@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -45,7 +47,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public void Serialization_WhenDeserializing_Succeeds()
+        public async Task Serialization_WhenDeserializing_Succeeds()
         {
             NuGetSettings expectedSettings = CreateNuGetSettings();
 
@@ -53,13 +55,21 @@ namespace NuGet.PackageManagement.UI.Test
 
             using (var stream = new MemoryStream())
             {
-                serializer.Serialize(stream, expectedSettings);
+                await serializer.SerializeAsync(stream, expectedSettings);
 
                 Assert.NotEqual(0, stream.Length);
+                string s;
 
                 stream.Seek(offset: 0, loc: SeekOrigin.Begin);
 
-                NuGetSettings actualSettings = serializer.Deserialize(stream);
+                using (var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 4096, leaveOpen: true))
+                {
+                    s = await reader.ReadToEndAsync();
+                }
+
+                stream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+                NuGetSettings actualSettings = await serializer.DeserializeAsync(stream);
 
                 Assert.NotSame(expectedSettings, actualSettings);
                 AssertAreEquivalent(expectedSettings, actualSettings);
