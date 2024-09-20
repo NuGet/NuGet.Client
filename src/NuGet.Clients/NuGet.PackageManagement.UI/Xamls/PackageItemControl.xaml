@@ -64,6 +64,24 @@
           </Trigger>
         </Style.Triggers>
       </Style>
+
+      <Style x:Key="PackageDescriptionToolTipStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TooltipStyle}">
+        <Setter Property="Visibility" Value="Collapsed" />
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
+            <Setter Property="Visibility" Value="Visible" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
+
+      <Style x:Key="TransitiveInfoToolTipStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TooltipStyle}">
+        <Setter Property="Visibility" Value="Visible" />
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding Path=TransitiveToolTipMessage}" Value="">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
     </ResourceDictionary>
   </UserControl.Resources>
 
@@ -210,37 +228,23 @@
         </Grid>
 
         <Grid.ToolTip>
-          <TextBlock
-                        Style="{StaticResource TooltipStyle}">
-                        <Run
-                          Text="{Binding Id}"
-                          FontWeight="Bold" /> <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
-                        <LineBreak />
-                        <Run FontWeight="Bold">
-                          <Run.Style>
-                            <Style TargetType="Run">
-                              <Setter Property="Text" Value="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"/>
-                              <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
-                                    <Setter Property="Text" Value=""/>
-                                </DataTrigger>
-                              </Style.Triggers>
-                            </Style>
-                          </Run.Style>
-                        </Run>
-                        <Run>
-                          <Run.Style>
-                            <Style TargetType="Run">
-                              <Setter Property="Text" Value="{Binding TransitiveToolTipMessage}"/>
-                              <Style.Triggers>
-                                <DataTrigger Binding="{Binding Path=PackageLevel}" Value="TopLevel">
-                                  <Setter Property="Text" Value="{Binding Summary}"/>
-                                </DataTrigger>
-                              </Style.Triggers>
-                            </Style>
-                          </Run.Style>
-                        </Run>
-          </TextBlock>
+          <StackPanel>
+            <TextBlock
+              Style="{StaticResource TooltipStyle}">
+              <Run
+                Text="{Binding Id}"
+                FontWeight="Bold" /> <Run Text="{Binding ByOwnerOrAuthor, Mode=OneTime}"/>
+            </TextBlock>
+            <TextBlock Style="{StaticResource PackageDescriptionToolTipStyle}">
+              <Run Text="{Binding Summary}" />
+            </TextBlock>
+            <TextBlock Style="{StaticResource TransitiveInfoToolTipStyle}">
+              <Run
+                FontWeight="Bold"
+                Text="{x:Static nuget:Resources.ToolTip_TransitiveDependency}" />
+              <Run Text="{Binding TransitiveToolTipMessage}" />
+            </TextBlock>
+          </StackPanel>
         </Grid.ToolTip>
       </Grid>
 
