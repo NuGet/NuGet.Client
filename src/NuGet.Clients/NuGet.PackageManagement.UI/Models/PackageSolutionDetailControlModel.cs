@@ -118,12 +118,12 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsRequestedVisible { get; private set; }
 
-        private static void UpdateProjectInstallationInfo(PackageInstallationInfo project, PackageLevel packageLevel, IPackageReferenceContextInfo installedVersion, HashSet<NuGetVersion> installedVersionsSet)
+        private static void UpdateProjectInstallationInfo(PackageInstallationInfo project, IPackageReferenceContextInfo installedVersion, HashSet<NuGetVersion> installedVersionsSet)
         {
             project.InstalledVersion = installedVersion.Identity.Version;
             installedVersionsSet.Add(installedVersion.Identity.Version);
 
-            if (packageLevel == PackageLevel.TopLevel)
+            if (project.PackageLevel == PackageLevel.TopLevel)
             {
                 project.AutoReferenced = installedVersion.IsAutoReferenced;
 
@@ -143,29 +143,28 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    (IPackageReferenceContextInfo TopLevelPackage, IPackageReferenceContextInfo TransitivePackage) installedPackage = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
+                    (IPackageReferenceContextInfo TopLevelPackage, IPackageReferenceContextInfo TransitivePackage) installedPackage = await GetInstalledAndTransitivePackagesAsync(project.NuGetProject, Id, cancellationToken);
                     var topLevelPackageVersion = installedPackage.TopLevelPackage;
                     var transitivePackageVersion = installedPackage.TransitivePackage;
 
-                    project.RequestedVersion = null;
-                    project.InstalledVersion = null;
-                    project.PackageLevel = null;
-                    project.AutoReferenced = false;
                     project.InstalledVersionMaxVulnerability = -1;
+                    project.RequestedVersion = null;
+                    project.AutoReferenced = false;
 
                     if (transitivePackageVersion != null)
                     {
-                        project.PackageLevel = "Transitive";
-                        UpdateProjectInstallationInfo(project, PackageLevel.Transitive, transitivePackageVersion, installedVersionsSet);
+                        project.PackageLevel = PackageLevel.Transitive;
+                        UpdateProjectInstallationInfo(project, transitivePackageVersion, installedVersionsSet);
                     }
                     else if (topLevelPackageVersion != null)
                     {
-                        project.PackageLevel = "Top-level";
-                        UpdateProjectInstallationInfo(project, PackageLevel.TopLevel, topLevelPackageVersion, installedVersionsSet);
+                        project.PackageLevel = PackageLevel.TopLevel;
+                        UpdateProjectInstallationInfo(project, topLevelPackageVersion, installedVersionsSet);
                     }
                     else
                     {
-                        continue;
+                        project.InstalledVersion = null;
+                        project.PackageLevel = null;
                     }
 
                     if (_searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
@@ -212,7 +211,7 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action.
         /// </summary>
-        private async Task<(IPackageReferenceContextInfo TopLevelPackage, IPackageReferenceContextInfo TransitivePackage)> GetInstalledPackageAsync(
+        private async Task<(IPackageReferenceContextInfo TopLevelPackage, IPackageReferenceContextInfo TransitivePackage)> GetInstalledAndTransitivePackagesAsync(
             IProjectContextInfo project,
             string packageId,
             CancellationToken cancellationToken)

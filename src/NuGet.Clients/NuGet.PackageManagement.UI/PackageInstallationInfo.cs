@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -79,8 +80,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public string _packageLevel;
-        public string PackageLevel
+        public PackageLevel? _packageLevel;
+        public PackageLevel? PackageLevel
         {
             get => _packageLevel;
             set
