@@ -77,7 +77,7 @@
       <Style x:Key="TransitiveInfoToolTipStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource TooltipStyle}">
         <Setter Property="Visibility" Value="Visible" />
         <Style.Triggers>
-          <DataTrigger Binding="{Binding Path=TransitiveToolTipMessage}" Value="">
+          <DataTrigger Binding="{Binding Path=TransitiveToolTipMessage, Converter={StaticResource NullToBooleanConverter}}" Value="True">
             <Setter Property="Visibility" Value="Collapsed" />
           </DataTrigger>
         </Style.Triggers>
@@ -240,8 +240,8 @@
             </TextBlock>
             <TextBlock Style="{StaticResource TransitiveInfoToolTipStyle}">
               <Run
-                FontWeight="Bold"
-                Text="{x:Static nuget:Resources.ToolTip_TransitiveDependency}" />
+                Text="{x:Static nuget:Resources.ToolTip_TransitiveDependency}"
+                FontWeight="Bold" />
               <Run Text="{Binding TransitiveToolTipMessage}" />
             </TextBlock>
           </StackPanel>
