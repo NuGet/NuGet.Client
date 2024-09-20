@@ -877,11 +877,15 @@ namespace NuGet.Commands
                                         continue;
                                     }
 
-
-                                    var resolvedVersion = node.Item.Data.Match?.Library?.Version;
-                                    if (resolvedVersion != null && dep.LibraryRange.VersionRange.Satisfies(resolvedVersion))
+                                    if (findLibraryEntryCache.TryGetValue(chosenItemRangeIndex, out Task<FindLibraryEntryResult>? chosenResolvedItemTask))
                                     {
-                                        continue;
+                                        FindLibraryEntryResult chosenResolvedItem = await chosenResolvedItemTask;
+
+                                        var resolvedVersion = chosenResolvedItem.Item.Data.Match?.Library?.Version;
+                                        if (resolvedVersion != null && dep.LibraryRange.VersionRange.Satisfies(resolvedVersion))
+                                        {
+                                            continue;
+                                        }
                                     }
 
                                     // Downgrade
