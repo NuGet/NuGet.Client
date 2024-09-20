@@ -165,22 +165,17 @@ namespace NuGet.Commands
                     rootProjectRefItem.LibraryRangeIndex,
                     async static (state) =>
                     {
-                        GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
-                            state.rootProjectRefItem.LibraryDependency!.LibraryRange,
+                        return await FindLibraryEntryResult.CreateAsync(
+                            state.libraryDependency,
+                            state.dependencyIndex,
+                            state.rangeIndex,
                             state.Framework,
-                            runtimeIdentifier: null,
                             state.context,
+                            state.libraryDependencyInterningTable,
+                            state.libraryRangeInterningTable,
                             state.token);
-
-                        return new FindLibraryEntryResult(
-                            state.rootProjectRefItem.LibraryDependency!,
-                                refItem,
-                                state.rootProjectRefItem.LibraryDependencyIndex,
-                                state.rootProjectRefItem.LibraryRangeIndex,
-                                state.libraryDependencyInterningTable,
-                                state.libraryRangeInterningTable);
                     },
-                    (rootProjectRefItem, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                    (libraryDependency: initialProject, dependencyIndex: rootProjectRefItem.LibraryDependencyIndex, rangeIndex: rootProjectRefItem.LibraryRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                     token);
 
             ProcessDeepEviction:
@@ -759,12 +754,13 @@ namespace NuGet.Commands
                                             state.dependencyIndex,
                                             state.rangeIndex,
                                             state.Framework,
+                                            state.RuntimeIdentifier,
                                             state.context,
                                             state.libraryDependencyInterningTable,
                                             state.libraryRangeInterningTable,
                                             state.token);
                                     },
-                                    (libraryDependency: dep, dependencyIndex: runtimeDependencyGraphItem.LibraryDependencyIndex, rangeIndex: runtimeDependencyGraphItem.LibraryRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                    (libraryDependency: dep, dependencyIndex: runtimeDependencyGraphItem.LibraryDependencyIndex, rangeIndex: runtimeDependencyGraphItem.LibraryRangeIndex, pair.Framework, pair.RuntimeIdentifier, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                                     token);
 
                                 runtimeDependencyIndex++;
@@ -1427,12 +1423,17 @@ namespace NuGet.Commands
                 return _rangeIndices[dependencyIndex];
             }
 
-            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
+            public static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
+            {
+                return CreateAsync(libraryDependency, dependencyIndex, rangeIndex, framework, runtimeIdentifier: null, context, libraryDependencyInterningTable, libraryRangeInterningTable, cancellationToken);
+            }
+
+            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, string? runtimeIdentifier, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
             {
                 GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
                     libraryDependency.LibraryRange,
                     framework,
-                    runtimeIdentifier: null,
+                    runtimeIdentifier,
                     context,
                     cancellationToken);
 
