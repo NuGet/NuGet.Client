@@ -1246,6 +1246,55 @@ namespace NuGet.Commands.FuncTest
             (var resultWithLockFile, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
         }
 
+        [Fact]
+        public async Task RestoreCommand_WithPackageWithAMissingDependencyVersion_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                [new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", null)],
+                },
+                new SimpleTestPackageContext("b", "2.0.0")],
+                pathContext.PackageSource,
+                skipDependencies: true);
+
+            // Setup project
+            var spec1 = @"
+                {
+                  ""runtimes"": {
+                        ""win"": {}
+                  },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            },
+                            ""b"": {
+                                ""version"": ""[2.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+        }
+
         // TODO NK - This needs removed.
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0

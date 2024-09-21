@@ -342,7 +342,7 @@ namespace NuGet.Test.Utility
             return packages.Select(e =>
                 new PackageDependency(
                     e.Id,
-                    VersionRange.Parse(e.Version),
+                    e.Version != null ? VersionRange.Parse(e.Version) : null,
                     string.IsNullOrEmpty(e.Include)
                         ? new List<string>()
                         : e.Include.Split(',').ToList(),
@@ -415,7 +415,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Create all packages in the list, including dependencies.
         /// </summary>
-        public static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath)
+        public static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath, bool skipDependencies = false)
         {
             var done = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var toCreate = new Stack<SimpleTestPackageContext>(packages);
@@ -429,10 +429,12 @@ namespace NuGet.Test.Utility
                     await CreateFullPackageAsync(
                         repositoryPath,
                         package);
-
-                    foreach (var dep in package.Dependencies)
+                    if (!skipDependencies)
                     {
-                        toCreate.Push(dep);
+                        foreach (var dep in package.Dependencies)
+                        {
+                            toCreate.Push(dep);
+                        }
                     }
                 }
             }
