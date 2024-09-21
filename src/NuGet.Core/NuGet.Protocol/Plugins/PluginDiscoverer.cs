@@ -20,23 +20,14 @@ namespace NuGet.Protocol.Plugins
         private readonly string _rawPluginPaths;
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
-        private readonly EmbeddedSignatureVerifier _verifier;
 
         /// <summary>
         /// Instantiates a new <see cref="PluginDiscoverer" /> class.
         /// </summary>
         /// <param name="rawPluginPaths">The raw semicolon-delimited list of supposed plugin file paths.</param>
-        /// <param name="verifier">An embedded signature verifier.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="verifier" /> is <see langword="null" />.</exception>
-        public PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier)
+        public PluginDiscoverer(string rawPluginPaths)
         {
-            if (verifier == null)
-            {
-                throw new ArgumentNullException(nameof(verifier));
-            }
-
             _rawPluginPaths = rawPluginPaths;
-            _verifier = verifier;
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         }
 
@@ -116,25 +107,18 @@ namespace NuGet.Protocol.Plugins
 
             foreach (var filePath in filePaths)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (PathValidator.IsValidLocalPath(filePath) || PathValidator.IsValidUncPath(filePath))
+                var pluginFile = new PluginFile(filePath, new Lazy<PluginFileState>(() =>
                 {
-                    if (File.Exists(filePath))
+                    if (PathValidator.IsValidLocalPath(filePath) || PathValidator.IsValidUncPath(filePath))
                     {
-                        var state = new Lazy<PluginFileState>(() => _verifier.IsValid(filePath) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
-
-                        files.Add(new PluginFile(filePath, state));
+                        return File.Exists(filePath) ? PluginFileState.Valid : PluginFileState.NotFound;
                     }
                     else
                     {
-                        files.Add(new PluginFile(filePath, new Lazy<PluginFileState>(() => PluginFileState.NotFound)));
+                        return PluginFileState.InvalidFilePath;
                     }
-                }
-                else
-                {
-                    files.Add(new PluginFile(filePath, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
-                }
+                }));
+                files.Add(pluginFile);
             }
 
             return files;
