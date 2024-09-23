@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.Protocol.ServiceIndexEntry.ServiceIndexEntry(System.Uri uri, string type, NuGet.Versioning.SemanticVersion clientVersion, NuGet.Configuration.PackageSource packageSource) -> void
+~NuGet.Protocol.ServiceIndexResourceV3.ServiceIndexResourceV3(Newtonsoft.Json.Linq.JObject index, System.DateTime requestTime, NuGet.Configuration.PackageSource packageSource) -> void

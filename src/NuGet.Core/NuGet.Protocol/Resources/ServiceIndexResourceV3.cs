@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -21,11 +22,20 @@ namespace NuGet.Protocol
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
+        private PackageSource _packageSource;
+
+        public ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
+        {
+            _packageSource = packageSource;
+            _json = index.ToString();
+            _index = MakeLookup(index, _packageSource);
+            _requestTime = requestTime;
+        }
 
         public ServiceIndexResourceV3(JObject index, DateTime requestTime)
         {
             _json = index.ToString();
-            _index = MakeLookup(index);
+            _index = MakeLookup(index, _packageSource);
             _requestTime = requestTime;
         }
 
@@ -142,7 +152,7 @@ namespace NuGet.Protocol
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
         }
 
-        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index)
+        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
         {
             var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
 
@@ -195,7 +205,7 @@ namespace NuGet.Protocol
                                 result.Add(type, entries);
                             }
 
-                            entries.Add(new ServiceIndexEntry(uri, type, version));
+                            entries.Add(new ServiceIndexEntry(uri, type, version, packageSource));
                         }
                     }
                 }
