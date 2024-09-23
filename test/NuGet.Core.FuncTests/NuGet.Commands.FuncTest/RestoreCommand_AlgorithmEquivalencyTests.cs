@@ -1289,7 +1289,7 @@ namespace NuGet.Commands.FuncTest
             // Act & Assert
             (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
             result.Success.Should().BeTrue();
-            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets.Should().HaveCount(2);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
             result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
