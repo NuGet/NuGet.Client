@@ -436,7 +436,7 @@ namespace NuGet.Commands
                         // clear out the existing lock file so that we don't over-write the same file
                         packagesLockFile = null;
                     }
-                    else if (isLockFileEnabled)
+                    else if (_isLockFileEnabled)
                     {
                         if (regenerateLockFile)
                         {
