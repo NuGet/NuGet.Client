@@ -881,6 +881,17 @@ namespace NuGet.Commands
                                         continue;
                                     }
 
+                                    if (findLibraryEntryCache.TryGetValue(chosenItemRangeIndex, out Task<FindLibraryEntryResult>? chosenResolvedItemTask))
+                                    {
+                                        FindLibraryEntryResult chosenResolvedItem = await chosenResolvedItemTask;
+
+                                        var resolvedVersion = chosenResolvedItem.Item.Data.Match?.Library?.Version;
+                                        if (resolvedVersion != null && dep.LibraryRange.VersionRange.Satisfies(resolvedVersion))
+                                        {
+                                            continue;
+                                        }
+                                    }
+
                                     // Downgrade
                                     if (!downgrades.ContainsKey(chosenItemRangeIndex))
                                     {
