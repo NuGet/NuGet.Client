@@ -415,7 +415,23 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Create all packages in the list, including dependencies.
         /// </summary>
-        public static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath, bool skipDependencies = false)
+        public static Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath)
+        {
+            return CreatePackagesAsync(packages, repositoryPath, skipDependencies: false);
+        }
+
+        /// <summary>
+        /// Create packages, but skip creating the dependencies. This makes it easier to test missing versions/missing dependencies scenarios
+        /// </summary>
+        public static async Task CreatePackagesWithoutDependenciesAsync(string repositoryPath, params SimpleTestPackageContext[] package)
+        {
+            await CreatePackagesAsync([.. package], repositoryPath, skipDependencies: true);
+        }
+
+        /// <summary>
+        /// Create all packages in the list, including dependencies.
+        /// </summary>
+        internal static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath, bool skipDependencies = false)
         {
             var done = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var toCreate = new Stack<SimpleTestPackageContext>(packages);

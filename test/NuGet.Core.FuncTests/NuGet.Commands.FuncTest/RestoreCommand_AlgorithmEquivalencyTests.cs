@@ -1252,14 +1252,14 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             using var pathContext = new SimpleTestPathContext();
 
-            await SimpleTestPackageUtility.CreatePackagesAsync(
-                [new SimpleTestPackageContext("a", "1.0.0")
+            await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0")
                 {
                     Dependencies = [new SimpleTestPackageContext("b", null)],
                 },
-                new SimpleTestPackageContext("b", "2.0.0")],
-                pathContext.PackageSource,
-                skipDependencies: true);
+                new SimpleTestPackageContext("b", "2.0.0")
+                );
 
             // Setup project
             var spec1 = @"
