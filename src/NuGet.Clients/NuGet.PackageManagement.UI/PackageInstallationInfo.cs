@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
@@ -76,6 +77,17 @@ namespace NuGet.PackageManagement.UI
             {
                 _versionInstalled = value;
                 OnPropertyChanged(nameof(InstalledVersion));
+            }
+        }
+
+        public PackageLevel? _packageLevel;
+        public PackageLevel? PackageLevel
+        {
+            get => _packageLevel;
+            set
+            {
+                _packageLevel = value;
+                OnPropertyChanged(nameof(PackageLevel));
             }
         }
 

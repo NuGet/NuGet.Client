@@ -2106,6 +2106,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Top-level.
+        /// </summary>
+        public static string Text_PackageLevelTopLevel {
+            get {
+                return ResourceManager.GetString("Text_PackageLevelTopLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Transitive.
+        /// </summary>
+        public static string Text_PackageLevelTransitive {
+            get {
+                return ResourceManager.GetString("Text_PackageLevelTransitive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A package source mapping will be created..
         /// </summary>
         public static string Text_PackageMappingsAutoCreate {

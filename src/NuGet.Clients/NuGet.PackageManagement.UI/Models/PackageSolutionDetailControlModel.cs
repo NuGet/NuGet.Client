@@ -118,6 +118,22 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsRequestedVisible { get; private set; }
 
+        private static void UpdateProjectInstallationInfo(PackageInstallationInfo project, IPackageReferenceContextInfo installedVersion, HashSet<NuGetVersion> installedVersionsSet)
+        {
+            project.InstalledVersion = installedVersion.Identity.Version;
+            installedVersionsSet.Add(installedVersion.Identity.Version);
+
+            if (project.PackageLevel == PackageLevel.TopLevel)
+            {
+                project.AutoReferenced = installedVersion.IsAutoReferenced;
+
+                if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
+                {
+                    project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
+                }
+            }
+        }
+
         private async Task UpdateInstalledVersionsAsync(CancellationToken cancellationToken)
         {
             var installedVersionsSet = new HashSet<NuGetVersion>();
@@ -127,30 +143,34 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    IPackageReferenceContextInfo installedVersion = await GetInstalledPackageAsync(project.NuGetProject, Id, cancellationToken);
-                    if (installedVersion != null)
+                    (IPackageReferenceContextInfo TopLevelPackage, IPackageReferenceContextInfo TransitivePackage) installedPackage = await GetInstalledAndTransitivePackagesAsync(project.NuGetProject, Id, cancellationToken);
+                    var topLevelPackageVersion = installedPackage.TopLevelPackage;
+                    var transitivePackageVersion = installedPackage.TransitivePackage;
+
+                    project.InstalledVersionMaxVulnerability = -1;
+                    project.RequestedVersion = null;
+                    project.AutoReferenced = false;
+
+                    if (transitivePackageVersion != null)
                     {
-                        project.InstalledVersion = installedVersion.Identity.Version;
-                        installedVersionsSet.Add(installedVersion.Identity.Version);
-                        project.AutoReferenced = installedVersion.IsAutoReferenced;
-
-                        if (project.NuGetProject.ProjectStyle.Equals(ProjectStyle.PackageReference))
-                        {
-                            project.RequestedVersion = installedVersion?.AllowedVersions?.OriginalString;
-                        }
-
-                        if (_searchResultPackage.VulnerableVersions.TryGetValue(installedVersion.Identity.Version, out int vulnerable))
-                        {
-                            project.InstalledVersionMaxVulnerability = vulnerable;
-                            vulnerabilitiesSet.Add(installedVersion.Identity.Version);
-                        }
+                        project.PackageLevel = PackageLevel.Transitive;
+                        UpdateProjectInstallationInfo(project, transitivePackageVersion, installedVersionsSet);
+                    }
+                    else if (topLevelPackageVersion != null)
+                    {
+                        project.PackageLevel = PackageLevel.TopLevel;
+                        UpdateProjectInstallationInfo(project, topLevelPackageVersion, installedVersionsSet);
                     }
                     else
                     {
-                        project.RequestedVersion = null;
                         project.InstalledVersion = null;
-                        project.AutoReferenced = false;
-                        project.InstalledVersionMaxVulnerability = -1;
+                        project.PackageLevel = null;
+                    }
+
+                    if (_searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
+                    {
+                        project.InstalledVersionMaxVulnerability = vulnerable;
+                        vulnerabilitiesSet.Add(project.InstalledVersion);
                     }
                 }
                 catch (Exception ex)
@@ -191,18 +211,20 @@ namespace NuGet.PackageManagement.UI
         /// This method is called from several methods that are called from properties and LINQ queries
         /// It is likely not called more than once in an action.
         /// </summary>
-        private async Task<IPackageReferenceContextInfo> GetInstalledPackageAsync(
+        private async Task<(IPackageReferenceContextInfo TopLevelPackage, IPackageReferenceContextInfo TransitivePackage)> GetInstalledAndTransitivePackagesAsync(
             IProjectContextInfo project,
             string packageId,
             CancellationToken cancellationToken)
         {
-            IEnumerable<IPackageReferenceContextInfo> installedPackages = await project.GetInstalledPackagesAsync(
-                ServiceBroker,
-                cancellationToken);
-            IPackageReferenceContextInfo installedPackage = installedPackages
+            IInstalledAndTransitivePackages installedAndTransitivePackages = await project.GetInstalledAndTransitivePackagesAsync(ServiceBroker, cancellationToken);
+            IPackageReferenceContextInfo installedPackages = installedAndTransitivePackages.InstalledPackages
                 .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
                 .FirstOrDefault();
-            return installedPackage;
+
+            ITransitivePackageReferenceContextInfo transitivePackages = installedAndTransitivePackages.TransitivePackages
+                .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Identity.Id, packageId))
+                .FirstOrDefault();
+            return (installedPackages, transitivePackages);
         }
 
         protected override async Task CreateVersionsAsync(CancellationToken cancellationToken)
