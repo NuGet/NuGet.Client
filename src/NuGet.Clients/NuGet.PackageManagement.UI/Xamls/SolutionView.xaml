@@ -343,8 +343,8 @@
                       <TextBlock>
                         <TextBlock.Text>
                           <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                            <Binding Source="{x:Static local:Resources.Label_PackageVulnerableToolTip}" />
-                            <Binding Path="InstalledVersionMaxVulnerability" Converter="{StaticResource IntToVulnerabilitySeverityConverter}" />
+                            <Binding Source="{x:Static local:Resources.Label_Installed_VulnerableWarning}" />
+                            <Binding Path="InstalledVulnerabilitiesCount" />
                           </MultiBinding>
                         </TextBlock.Text>
                       </TextBlock>

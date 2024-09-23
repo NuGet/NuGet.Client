@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI
                         project.PackageLevel = null;
                     }
 
-                    if (_searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
+                    if (project?.InstalledVersion is not null && _searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
                     {
                         project.InstalledVersionMaxVulnerability = vulnerable;
                         vulnerabilitiesSet.Add(project.InstalledVersion);

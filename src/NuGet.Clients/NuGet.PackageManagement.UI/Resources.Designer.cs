@@ -1159,29 +1159,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} vulnerable versions installed.
-        /// </summary>
-        public static string Label_InstalledVulnerabilitiesCount {
-            get {
-                return ResourceManager.GetString("Label_InstalledVulnerabilitiesCount", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} vulnerable version installed.
-        /// </summary>
-        public static string Label_InstalledVulnerabilitiesCountSingle {
-            get {
-                return ResourceManager.GetString("Label_InstalledVulnerabilitiesCountSingle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to License:.
         /// </summary>
         public static string Label_License {
             get {
                 return ResourceManager.GetString("Label_License", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to These installed package versions contain vulnerabilities: {0}.
+        /// </summary>
+        public static string Label_MultiplePackageVulnerableVersionToolTip {
+            get {
+                return ResourceManager.GetString("Label_MultiplePackageVulnerableVersionToolTip", resourceCulture);
             }
         }
         

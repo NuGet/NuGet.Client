@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -135,6 +134,14 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return ByOwner ?? ByAuthor;
+            }
+        }
+
+        public string VulnerableVersionsString
+        {
+            get
+            {
+                return string.Join(", ", VulnerableVersions.Keys);
             }
         }
 
