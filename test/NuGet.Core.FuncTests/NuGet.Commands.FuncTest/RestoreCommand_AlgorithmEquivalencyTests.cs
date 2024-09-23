@@ -63,7 +63,7 @@ namespace NuGet.Commands.FuncTest
         [Fact]
         // Project 1 -> a 1.0.0 -> b 1.0.0
         //                      -> c 1.0.0 -> -> d 1.0.0 -> b 2.0.0
-        public async Task RestoreCommand_WithPackageDrivenDowngradeAndDepthDifferenceMoreThanOne_RespectsDowngrade_AndRaisesWarning()
+        public async Task RestoreCommand_WithPackageDrivenDowngrade_RespectsDowngrade_AndRaisesWarningAgain()
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
@@ -351,11 +351,13 @@ namespace NuGet.Commands.FuncTest
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true
                                 },
                                 ""b"": {
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true,
                                 }
                         },
                         ""centralPackageVersions"": {
@@ -451,11 +453,13 @@ namespace NuGet.Commands.FuncTest
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true
                                 },
                                 ""b"": {
                                     ""version"": ""[1.0.0,)"",
                                     ""target"": ""Package"",
                                     ""versionOverride"": ""[1.0.0, )"",
+                                    ""versionCentrallyManaged"": true,
                                     ""suppressParent"": ""All""
                                 }
                         },
@@ -1127,61 +1131,6 @@ namespace NuGet.Commands.FuncTest
                 result.LockFile.Targets[0].Libraries[1].Name.Should().Be("Project2");
                 result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
             }
-        }
-
-        [Fact]
-        public async Task RestoreCommand_WithRuntimeSpecificPackage_VerifiesEquivalency()
-        {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                new SimpleTestPackageContext("a", "1.0.0")
-                {
-                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0")],
-                    RuntimeJson = @"{
-                  ""runtimes"": {
-                    ""win"": {
-                            ""a"": {
-                                ""runtime.a"": ""1.0.0""
-                            }
-                          }
-                        }
-                  }"
-                },
-                new SimpleTestPackageContext("runtime.a", "1.0.0"));
-
-            var spec1 = @"
-                {
-                  ""runtimes"": {
-                        ""win"": {}
-                  },
-                  ""frameworks"": {
-                    ""net472"": {
-                        ""dependencies"": {
-                            ""a"": {
-                                ""version"": ""[1.0.0,)"",
-                                ""target"": ""Package"",
-                            }
-                        }
-                    }
-                  }
-                }";
-
-            // Setup project
-            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
-
-            // Act & Assert
-            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
-            result.Success.Should().BeTrue();
-            result.LockFile.Targets.Should().HaveCount(2);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
-            result.LockFile.Targets[1].Libraries.Should().HaveCount(3);
-            result.LockFile.Targets[1].Libraries[0].Name.Should().Be("a");
-            result.LockFile.Targets[1].Libraries[1].Name.Should().Be("b");
-            result.LockFile.Targets[1].Libraries[2].Name.Should().Be("runtime.a");
         }
 
         [Fact]

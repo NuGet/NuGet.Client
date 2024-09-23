@@ -342,7 +342,7 @@ namespace NuGet.Test.Utility
             return packages.Select(e =>
                 new PackageDependency(
                     e.Id,
-                    e.Version != null ? VersionRange.Parse(e.Version) : null,
+                    VersionRange.Parse(e.Version),
                     string.IsNullOrEmpty(e.Include)
                         ? new List<string>()
                         : e.Include.Split(',').ToList(),
@@ -415,23 +415,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Create all packages in the list, including dependencies.
         /// </summary>
-        public static Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath)
-        {
-            return CreatePackagesAsync(packages, repositoryPath, skipDependencies: false);
-        }
-
-        /// <summary>
-        /// Create packages, but skip creating the dependencies. This makes it easier to test missing versions/missing dependencies scenarios
-        /// </summary>
-        public static async Task CreatePackagesWithoutDependenciesAsync(string repositoryPath, params SimpleTestPackageContext[] package)
-        {
-            await CreatePackagesAsync([.. package], repositoryPath, skipDependencies: true);
-        }
-
-        /// <summary>
-        /// Create all packages in the list, including dependencies.
-        /// </summary>
-        internal static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath, bool skipDependencies = false)
+        public static async Task CreatePackagesAsync(List<SimpleTestPackageContext> packages, string repositoryPath)
         {
             var done = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var toCreate = new Stack<SimpleTestPackageContext>(packages);
@@ -445,12 +429,10 @@ namespace NuGet.Test.Utility
                     await CreateFullPackageAsync(
                         repositoryPath,
                         package);
-                    if (!skipDependencies)
+
+                    foreach (var dep in package.Dependencies)
                     {
-                        foreach (var dep in package.Dependencies)
-                        {
-                            toCreate.Push(dep);
-                        }
+                        toCreate.Push(dep);
                     }
                 }
             }

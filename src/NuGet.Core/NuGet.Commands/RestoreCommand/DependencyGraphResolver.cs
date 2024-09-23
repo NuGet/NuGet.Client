@@ -165,17 +165,22 @@ namespace NuGet.Commands
                     rootProjectRefItem.LibraryRangeIndex,
                     async static (state) =>
                     {
-                        return await FindLibraryEntryResult.CreateAsync(
-                            state.libraryDependency,
-                            state.dependencyIndex,
-                            state.rangeIndex,
+                        GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
+                            state.rootProjectRefItem.LibraryDependency!.LibraryRange,
                             state.Framework,
+                            runtimeIdentifier: null,
                             state.context,
-                            state.libraryDependencyInterningTable,
-                            state.libraryRangeInterningTable,
                             state.token);
+
+                        return new FindLibraryEntryResult(
+                            state.rootProjectRefItem.LibraryDependency!,
+                                refItem,
+                                state.rootProjectRefItem.LibraryDependencyIndex,
+                                state.rootProjectRefItem.LibraryRangeIndex,
+                                state.libraryDependencyInterningTable,
+                                state.libraryRangeInterningTable);
                     },
-                    (libraryDependency: initialProject, dependencyIndex: rootProjectRefItem.LibraryDependencyIndex, rangeIndex: rootProjectRefItem.LibraryRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                    (rootProjectRefItem, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                     token);
 
             ProcessDeepEviction:
@@ -209,7 +214,7 @@ namespace NuGet.Commands
                         (LibraryRangeIndex[] evictedPath, LibraryDependencyIndex evictedDepIndex, LibraryDependencyTarget evictedTypeConstraint) = eviction;
 
                         // If we evicted this same version previously, but the type constraint of currentRef is more stringent (package), then do not skip the current item - this is the one we want.
-                        // TODO: This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
+                        // This is tricky. I don't really know what this means. Normally we'd key off of versions instead.
                         if (!((evictedTypeConstraint == LibraryDependencyTarget.PackageProjectExternal || evictedTypeConstraint == LibraryDependencyTarget.ExternalProject) &&
                             currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package))
                         {
@@ -288,7 +293,6 @@ namespace NuGet.Commands
 
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
-                            // TODO: I don't really get this whole thing.
                             if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
                             {
                                 bool isParentCentrallyPinned = false;
@@ -685,13 +689,12 @@ namespace NuGet.Commands
                                     state.dependencyIndex,
                                     state.rangeIndex,
                                     state.Framework,
-                                    state.RuntimeIdentifier,
                                     state.context,
                                     state.libraryDependencyInterningTable,
                                     state.libraryRangeInterningTable,
                                     state.token);
                             },
-                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair.Framework, refItemResult.RuntimeIdentifier, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                             token);
                     }
 
@@ -722,13 +725,12 @@ namespace NuGet.Commands
                                 return Task.FromResult(new FindLibraryEntryResult(
                                     state.currentRef,
                                     state.rootNode.Item,
-                                    state.RuntimeIdentifier,
                                     state.currentRefDependencyIndex,
                                     state.currentRefRangeIndex,
                                     state.libraryDependencyInterningTable,
                                     state.libraryRangeInterningTable));
                             },
-                            (currentRef, rootNode, refItemResult.RuntimeIdentifier, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
+                            (currentRef, rootNode, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
                             token);
 
                         // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
@@ -757,13 +759,12 @@ namespace NuGet.Commands
                                             state.dependencyIndex,
                                             state.rangeIndex,
                                             state.Framework,
-                                            state.RuntimeIdentifier,
                                             state.context,
                                             state.libraryDependencyInterningTable,
                                             state.libraryRangeInterningTable,
                                             state.token);
                                     },
-                                    (libraryDependency: dep, dependencyIndex: runtimeDependencyGraphItem.LibraryDependencyIndex, rangeIndex: runtimeDependencyGraphItem.LibraryRangeIndex, pair.Framework, pair.RuntimeIdentifier, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                    (libraryDependency: dep, dependencyIndex: runtimeDependencyGraphItem.LibraryDependencyIndex, rangeIndex: runtimeDependencyGraphItem.LibraryRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                                     token);
 
                                 runtimeDependencyIndex++;
@@ -878,17 +879,6 @@ namespace NuGet.Commands
                                     if (chosenSuppressions.Count > 0 && chosenSuppressions[0].Contains(depIndex))
                                     {
                                         continue;
-                                    }
-
-                                    if (findLibraryEntryCache.TryGetValue(chosenItemRangeIndex, out Task<FindLibraryEntryResult>? chosenResolvedItemTask))
-                                    {
-                                        FindLibraryEntryResult chosenResolvedItem = await chosenResolvedItemTask;
-
-                                        var resolvedVersion = chosenResolvedItem.Item.Data.Match?.Library?.Version;
-                                        if (resolvedVersion != null && dep.LibraryRange.VersionRange.Satisfies(resolvedVersion))
-                                        {
-                                            continue;
-                                        }
                                     }
 
                                     // Downgrade
@@ -1381,7 +1371,6 @@ namespace NuGet.Commands
             public FindLibraryEntryResult(
                 LibraryDependency libraryDependency,
                 GraphItem<RemoteResolveResult> resolvedItem,
-                string? runtimeIdentifier,
                 LibraryDependencyIndex itemDependencyIndex,
                 LibraryRangeIndex itemRangeIndex,
                 LibraryDependencyInterningTable libraryDependencyInterningTable,
@@ -1390,7 +1379,6 @@ namespace NuGet.Commands
                 Item = resolvedItem;
                 DependencyIndex = itemDependencyIndex;
                 RangeIndex = itemRangeIndex;
-                RuntimeIdentifier = runtimeIdentifier;
                 int dependencyCount = resolvedItem.Data.Dependencies.Count;
 
                 if (dependencyCount == 0)
@@ -1418,8 +1406,6 @@ namespace NuGet.Commands
 
             public LibraryRangeIndex RangeIndex { get; }
 
-            public string? RuntimeIdentifier { get; set; }
-
             public LibraryDependencyIndex GetDependencyIndexForDependency(int dependencyIndex)
             {
                 return _dependencyIndices[dependencyIndex];
@@ -1430,24 +1416,18 @@ namespace NuGet.Commands
                 return _rangeIndices[dependencyIndex];
             }
 
-            public static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
-            {
-                return CreateAsync(libraryDependency, dependencyIndex, rangeIndex, framework, runtimeIdentifier: null, context, libraryDependencyInterningTable, libraryRangeInterningTable, cancellationToken);
-            }
-
-            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, string? runtimeIdentifier, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
+            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
             {
                 GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
                     libraryDependency.LibraryRange,
                     framework,
-                    runtimeIdentifier,
+                    runtimeIdentifier: null,
                     context,
                     cancellationToken);
 
                 return new FindLibraryEntryResult(
                     libraryDependency,
                     refItem,
-                    runtimeIdentifier,
                     dependencyIndex,
                     rangeIndex,
                     libraryDependencyInterningTable,
