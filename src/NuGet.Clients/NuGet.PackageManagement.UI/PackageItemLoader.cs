@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
-using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -271,15 +269,15 @@ namespace NuGet.PackageManagement.UI
             {
                 var packageId = metadataContextInfo.Identity.Id;
                 var packageVersion = metadataContextInfo.Identity.Version;
+                var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
 
                 if (listItemViewModels.TryGetValue(packageId, out PackageItemViewModel existingListItem))
                 {
-                    existingListItem.InstalledVersions.Add(packageVersion);
-                    if (existingListItem.PackageLevel == PackageLevel.Transitive)
+                    if (packageLevel == PackageLevel.Transitive)
                     {
-                        existingListItem.TransitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
-                        existingListItem.TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", existingListItem.InstalledVersions), string.Join(", ", existingListItem.TransitiveOrigins));
+                        UpdateTransitiveInfo(existingListItem, metadataContextInfo);
                     }
+
                     existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
                 }
                 else
@@ -308,15 +306,6 @@ namespace NuGet.PackageManagement.UI
 
                         allowedVersions = allowedVersionsRange.FirstOrDefault() ?? VersionRange.All;
                         versionOverride = versionOverrides.FirstOrDefault();
-                    }
-
-                    var packageLevel = metadataContextInfo.TransitiveOrigins != null ? PackageLevel.Transitive : PackageLevel.TopLevel;
-                    var transitiveToolTipMessage = string.Empty;
-                    var transitiveOrigins = Enumerable.Empty<PackageIdentity>();
-                    if (packageLevel == PackageLevel.Transitive)
-                    {
-                        transitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, metadataContextInfo.Identity.Version, string.Join(", ", metadataContextInfo.TransitiveOrigins));
-                        transitiveOrigins = metadataContextInfo.TransitiveOrigins;
                     }
 
                     ImmutableList<KnownOwnerViewModel> knownOwnerViewModels = null;
@@ -349,9 +338,6 @@ namespace NuGet.PackageManagement.UI
                         PackageFileService = _packageFileService,
                         IncludePrerelease = _includePrerelease,
                         PackageLevel = packageLevel,
-                        TransitiveToolTipMessage = transitiveToolTipMessage,
-                        InstalledVersions = new ObservableCollection<NuGetVersion> { metadataContextInfo.Identity.Version },
-                        TransitiveOrigins = new ObservableCollection<PackageIdentity>(transitiveOrigins),
                     };
 
                     if (listItem.PackageLevel == PackageLevel.TopLevel)
@@ -360,6 +346,7 @@ namespace NuGet.PackageManagement.UI
                     }
                     else
                     {
+                        UpdateTransitiveInfo(listItem, metadataContextInfo);
                         listItem.UpdateTransitivePackageStatus(metadataContextInfo.Identity.Version);
                     }
 
@@ -368,6 +355,13 @@ namespace NuGet.PackageManagement.UI
             }
 
             return listItemViewModels.Values.ToArray();
+        }
+
+        private static void UpdateTransitiveInfo(PackageItemViewModel listItem, PackageSearchMetadataContextInfo metadataContextInfo)
+        {
+            listItem.TransitiveInstalledVersions.Add(metadataContextInfo.Identity.Version);
+            listItem.TransitiveOrigins.AddRange(metadataContextInfo.TransitiveOrigins);
+            listItem.TransitiveToolTipMessage = string.Format(CultureInfo.CurrentCulture, Resources.PackageVersionWithTransitiveOrigins, string.Join(", ", listItem.TransitiveInstalledVersions), string.Join(", ", listItem.TransitiveOrigins));
         }
 
         private static ImmutableList<KnownOwnerViewModel> LoadKnownOwnerViewModels(PackageSearchMetadataContextInfo metadataContextInfo)
