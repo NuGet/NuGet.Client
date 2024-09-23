@@ -56,7 +56,7 @@ namespace NuGet.Protocol
                     source = _packageSource.Source;
                 }
 
-                var telemetry = new ServiceIndexEntryTelemetry(source, _packageSource.IsHttp, _packageSource.IsHttps, isResourceHTTP, isResourceHTTPs, "ServiceIndexEntrySummary");
+                var telemetry = new ServiceIndexEntryTelemetry(source, _packageSource.IsHttp, _packageSource.IsHttps, isResourceHTTP, isResourceHTTPs, type, "ServiceIndexEntrySummary");
                 TelemetryActivity.EmitTelemetryEvent(telemetry);
             }
         }
@@ -85,13 +85,14 @@ namespace NuGet.Protocol
 
         private class ServiceIndexEntryTelemetry : TelemetryEvent
         {
-            public ServiceIndexEntryTelemetry(string sourceUri, bool isHTTP, bool isHTTPS, bool HasAnHttpResource, bool HasAnHttpsResource, string eventName) : base(eventName)
+            public ServiceIndexEntryTelemetry(string sourceUri, bool isHTTP, bool isHTTPS, bool HasAnHttpResource, bool HasAnHttpsResource, string type, string eventName) : base(eventName)
             {
                 this["SourceHash"] = HashPackageName(sourceUri);
-                this["IsHTTP"] = HasAnHttpResource;
-                this["IsHTTPS"] = HasAnHttpResource;
+                this["IsHTTP"] = isHTTP;
+                this["IsHTTPS"] = isHTTPS;
                 this["HasAnHTTPResource"] = HasAnHttpResource;
-                this["HasAnHTTPSResource"] = HasAnHttpResource;
+                this["HasAnHTTPSResource"] = HasAnHttpsResource;
+                this["ResourceType"] = type;
             }
         }
 
