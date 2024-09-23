@@ -1060,14 +1060,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Hyperlink_Owner" xml:space="preserve">
     <value>Owner</value>
   </data>
-  <data name="Label_InstalledVulnerabilitiesCount" xml:space="preserve">
-    <value>{0} vulnerable versions installed.</value>
-    <comment>{0} is the number of installed vulnerable versions</comment>
-  </data>
-  <data name="Label_InstalledVulnerabilitiesCountSingle" xml:space="preserve">
-    <value>{0} vulnerable version installed.</value>
-    <comment>{0} is the number of installed vulnerable versions</comment>
-  </data>
   <data name="Text_PackageLevelTransitive" xml:space="preserve">
     <value>Transitive</value>
   </data>
@@ -1075,7 +1067,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Top-level</value>
   </data>
   <data name="Label_MultiplePackageVulnerableVersionToolTip" xml:space="preserve">
-    <value>This package installed versions: {0} contain vulnerabilities.</value>
+    <value>These installed package versions contain vulnerabilities: {0}</value>
     <comment>{0} are package versions</comment>
   </data>
 </root>
