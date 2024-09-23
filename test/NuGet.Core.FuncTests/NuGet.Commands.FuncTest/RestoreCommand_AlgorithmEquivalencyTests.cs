@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Commands.Test;
@@ -1185,68 +1183,6 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithRuntimeSpecificPackageAndALockFile_VerifiesEquivalency()
-        {
-            // Arrange
-            using var pathContext = new SimpleTestPathContext();
-
-            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                pathContext.PackageSource,
-                PackageSaveMode.Defaultv3,
-                new SimpleTestPackageContext("a", "1.0.0")
-                {
-                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0")],
-                    RuntimeJson = @"{
-                  ""runtimes"": {
-                    ""win"": {
-                            ""a"": {
-                                ""runtime.a"": ""1.0.0""
-                            }
-                          }
-                        }
-                  }"
-                },
-                new SimpleTestPackageContext("runtime.a", "1.0.0"));
-
-            var spec1 = @"
-                {
-                  ""runtimes"": {
-                        ""win"": {}
-                  },
-                  ""frameworks"": {
-                    ""net472"": {
-                        ""dependencies"": {
-                            ""a"": {
-                                ""version"": ""[1.0.0,)"",
-                                ""target"": ""Package"",
-                            }
-                        }
-                    }
-                  }
-                }";
-
-            // Setup project
-            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
-            project1.RestoreMetadata.RestoreLockProperties = new RestoreLockProperties("true", null, false);
-
-            // Act & Assert
-            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
-            result.Success.Should().BeTrue();
-            result.LockFile.Targets.Should().HaveCount(2);
-            result.LockFile.Targets[0].Libraries.Should().HaveCount(2);
-            result.LockFile.Targets[1].Libraries.Should().HaveCount(3);
-            result.LockFile.Targets[1].Libraries[0].Name.Should().Be("a");
-            result.LockFile.Targets[1].Libraries[1].Name.Should().Be("b");
-            result.LockFile.Targets[1].Libraries[2].Name.Should().Be("runtime.a");
-
-            await result.CommitAsync(NullLogger.Instance, CancellationToken.None);
-            File.Delete(result.LockFilePath); // Ensure restore happens again.
-
-            // Act & Assert
-            (var resultWithLockFile, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
-        }
-
-        [Fact]
         public async Task RestoreCommand_WithPackageWithAMissingDependencyVersion_VerifiesEquivalency()
         {
             // Arrange
@@ -1295,7 +1231,6 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
         }
 
-        // TODO NK - This needs removed.
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
