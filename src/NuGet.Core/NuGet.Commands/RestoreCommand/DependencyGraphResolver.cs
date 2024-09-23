@@ -684,12 +684,13 @@ namespace NuGet.Commands
                                     state.dependencyIndex,
                                     state.rangeIndex,
                                     state.Framework,
+                                    state.RuntimeIdentifier,
                                     state.context,
                                     state.libraryDependencyInterningTable,
                                     state.libraryRangeInterningTable,
                                     state.token);
                             },
-                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair.Framework, refItemResult.RuntimeIdentifier, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                             token);
                     }
 
@@ -720,12 +721,13 @@ namespace NuGet.Commands
                                 return Task.FromResult(new FindLibraryEntryResult(
                                     state.currentRef,
                                     state.rootNode.Item,
+                                    state.RuntimeIdentifier,
                                     state.currentRefDependencyIndex,
                                     state.currentRefRangeIndex,
                                     state.libraryDependencyInterningTable,
                                     state.libraryRangeInterningTable));
                             },
-                            (currentRef, rootNode, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
+                            (currentRef, rootNode, refItemResult.RuntimeIdentifier, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
                             token);
 
                         // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
@@ -1378,6 +1380,7 @@ namespace NuGet.Commands
             public FindLibraryEntryResult(
                 LibraryDependency libraryDependency,
                 GraphItem<RemoteResolveResult> resolvedItem,
+                string? runtimeIdentifier,
                 LibraryDependencyIndex itemDependencyIndex,
                 LibraryRangeIndex itemRangeIndex,
                 LibraryDependencyInterningTable libraryDependencyInterningTable,
@@ -1386,6 +1389,7 @@ namespace NuGet.Commands
                 Item = resolvedItem;
                 DependencyIndex = itemDependencyIndex;
                 RangeIndex = itemRangeIndex;
+                RuntimeIdentifier = runtimeIdentifier;
                 int dependencyCount = resolvedItem.Data.Dependencies.Count;
 
                 if (dependencyCount == 0)
@@ -1412,6 +1416,8 @@ namespace NuGet.Commands
             public GraphItem<RemoteResolveResult> Item { get; }
 
             public LibraryRangeIndex RangeIndex { get; }
+
+            public string? RuntimeIdentifier { get; set; }
 
             public LibraryDependencyIndex GetDependencyIndexForDependency(int dependencyIndex)
             {
@@ -1440,6 +1446,7 @@ namespace NuGet.Commands
                 return new FindLibraryEntryResult(
                     libraryDependency,
                     refItem,
+                    runtimeIdentifier,
                     dependencyIndex,
                     rangeIndex,
                     libraryDependencyInterningTable,
