@@ -1159,7 +1159,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} vulnerable versions installed.
+        ///   Looks up a localized string similar to {0} vulnerable versions installed..
         /// </summary>
         public static string Label_InstalledVulnerabilitiesCount {
             get {
@@ -1168,7 +1168,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} vulnerable version installed.
+        ///   Looks up a localized string similar to {0} vulnerable version installed..
         /// </summary>
         public static string Label_InstalledVulnerabilitiesCountSingle {
             get {
