@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 
 namespace NuGet.Tests.Apex.Daily
@@ -25,7 +26,36 @@ namespace NuGet.Tests.Apex.Daily
         {
         }
 
-        [Ignore("https://github.com/NuGet/Client.Engineering/issues/2829")]
+        [TestMethod]
+        [DataRow(ProjectTemplate.WebSite, ProjectTargetFramework.V48)]
+        [DataRow(ProjectTemplate.WebSiteRazorV3, ProjectTargetFramework.V48)]
+        [DataRow(ProjectTemplate.WebSiteDynamicDataEntityFramework, ProjectTargetFramework.V48)]
+        [DataRow(ProjectTemplate.WebApplicationDynamicDataLinqToSql, ProjectTargetFramework.V451)]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageToNonSDKBasedProjectFromUI(ProjectTemplate projectTemplate, ProjectTargetFramework projectTargetFramework)
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+            _pathContext.Settings.AddSource(NuGetConstants.NuGetHostName, NuGetConstants.V3FeedUrl);
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            SolutionService solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            ProjectTestExtension project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, projectTargetFramework, "TestProject");
+
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            // Act
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+
+            // Assert
+            CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+        }
+
+        //[Ignore("https://github.com/NuGet/Client.Engineering/issues/2829")]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void InstallPackageToWebSiteProjectFromUI()
@@ -35,7 +65,7 @@ namespace NuGet.Tests.Apex.Daily
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
-            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteEmpty, ProjectTargetFramework.V48, "WebSiteEmpty");
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.WebSiteRazorV3, ProjectTargetFramework.V48, "WebSiteEmpty");
             VisualStudio.ClearOutputWindow();
             solutionService.SaveAll();
 
@@ -410,6 +440,35 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
+        public async Task InstallTopLevelPackageHasTransitivePackageFromUI()
+        {
+            // Arrange
+            var transitivePackageName = "Contoso.B";
+            await CommonUtility.CreateDependenciesPackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1, transitivePackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreConsoleApp, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
         public async Task InstallTransitivePackageFromUI()
         {
             // Arrange
@@ -483,6 +542,41 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, transitivePackageName, Logger);
             uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
             uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallTopLevelPackageHasTransitivePackage()
+        {
+            // Arrange
+            var transitivePackageName = "Contoso.B";
+            await CommonUtility.CreateDependenciesPackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1, transitivePackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.NetCoreClassLib, "Testproject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            uiwindow.AssertPackageNameAndType(TestPackageName, NuGet.VisualStudio.PackageLevel.TopLevel);
+            uiwindow.AssertPackageNameAndType(transitivePackageName, NuGet.VisualStudio.PackageLevel.Transitive);
+            CommonUtility.AssertPackageReferenceExists(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+
+            // Act
+            uiwindow.UninstallPackageFromUI(TestPackageName);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageReferenceDoesNotExist(VisualStudio, project, TestPackageName, Logger);
         }
 
         [TestMethod]
@@ -632,6 +726,104 @@ namespace NuGet.Tests.Apex.Daily
             // Assert
             VisualStudio.AssertNuGetOutputDoesNotHaveErrors();
             CommonUtility.WaitForDirectoryNotExists(installedPackageFolderPath);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageToFSharpFromUI()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.FSharp, ProjectTemplate.ConsoleApplication, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageToFSharpFromUI()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV2);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.FSharp, ProjectTemplate.ConsoleApplication, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+
+            // Act
+            uiwindow.UpdatePackageFromUI(TestPackageName, TestPackageVersionV2);
+            solutionService.Build();
+
+            //// Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV2, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallPackageToFSharpFromUI()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.FSharp, ProjectTemplate.ConsoleApplication, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+
+            // Act
+            uiwindow.UninstallPackageFromUI(TestPackageName);
+            solutionService.Build();
+
+            //// Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
         }
 
         public override void Dispose()
