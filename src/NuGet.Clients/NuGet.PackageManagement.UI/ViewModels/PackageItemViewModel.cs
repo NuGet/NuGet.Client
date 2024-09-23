@@ -138,6 +138,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public string VulnerableVersionsString
+        {
+            get
+            {
+                return string.Join(", ", VulnerableVersions.Keys);
+            }
+        }
+
         private Dictionary<NuGetVersion, int> _vulnerableVersions = [];
         public Dictionary<NuGetVersion, int> VulnerableVersions
         {

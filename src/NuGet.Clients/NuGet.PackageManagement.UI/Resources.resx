@@ -1074,4 +1074,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Text_PackageLevelTopLevel" xml:space="preserve">
     <value>Top-level</value>
   </data>
+  <data name="Label_MultiplePackageVulnerableVersionToolTip" xml:space="preserve">
+    <value>This package installed versions: {0} contain vulnerabilities.</value>
+    <comment>{0} are package versions</comment>
+  </data>
 </root>

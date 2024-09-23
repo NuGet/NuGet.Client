@@ -1186,6 +1186,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This package installed versions: {0} contain vulnerabilities..
+        /// </summary>
+        public static string Label_MultiplePackageVulnerableVersionToolTip {
+            get {
+                return ResourceManager.GetString("Label_MultiplePackageVulnerableVersionToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An error occurred while fetching additional information about the package. Refresh to try again..
         /// </summary>
         public static string Label_NetworkError {
