@@ -1435,8 +1435,14 @@ namespace NuGet.Commands
             }
         }
 
+        /// <summary>
+        /// Represents an <see cref="IEqualityComparer{T}" /> of <see cref="LibraryRange" /> that considers them to be equal based on the same functionality of <see cref="LibraryRange.ToString" />.
+        /// </summary>
         internal sealed class LibraryRangeComparer : IEqualityComparer<LibraryRange>
         {
+            /// <summary>
+            /// Gets an instance of <see cref="LibraryRangeComparer" />.
+            /// </summary>
             public static LibraryRangeComparer Instance { get; } = new LibraryRangeComparer();
 
             private LibraryRangeComparer()
@@ -1455,6 +1461,8 @@ namespace NuGet.Commands
                     return true;
                 }
 
+
+                // All of this logic is copied from LibraryRange.ToString()
                 LibraryDependencyTarget typeConstraint1 = LibraryDependencyTarget.None;
                 LibraryDependencyTarget typeConstraint2 = LibraryDependencyTarget.None;
 
