@@ -138,20 +138,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private ObservableCollection<NuGetVersion> _installedVersions;
-        public ObservableCollection<NuGetVersion> InstalledVersions
-        {
-            get
-            {
-                return _installedVersions;
-            }
-            set
-            {
-                _installedVersions = value;
-                OnPropertyChanged(nameof(InstalledVersions));
-            }
-        }
-
         private Dictionary<NuGetVersion, int> _vulnerableVersions = [];
         public Dictionary<NuGetVersion, int> VulnerableVersions
         {
@@ -258,17 +244,31 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private ObservableCollection<PackageIdentity> _transitiveOrigins;
-        public ObservableCollection<PackageIdentity> TransitiveOrigins
+        private List<NuGetVersion> _transitiveInstalledVersions;
+        public List<NuGetVersion> TransitiveInstalledVersions
         {
             get
             {
-                return _transitiveOrigins;
+                if (_transitiveInstalledVersions == null)
+                {
+                    _transitiveInstalledVersions = new();
+                }
+
+                return _transitiveInstalledVersions;
             }
-            set
+        }
+
+        private List<PackageIdentity> _transitiveOrigins;
+        public List<PackageIdentity> TransitiveOrigins
+        {
+            get
             {
-                _transitiveOrigins = value;
-                OnPropertyChanged(nameof(TransitiveOrigins));
+                if (_transitiveOrigins == null)
+                {
+                    _transitiveOrigins = new();
+                }
+
+                return _transitiveOrigins;
             }
         }
 
