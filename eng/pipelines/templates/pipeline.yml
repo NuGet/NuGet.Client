@@ -104,6 +104,7 @@ stages:
       isOfficialBuild: ${{ parameters.isOfficialBuild }}
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
+      RunMonoTestsOnMac: ${{ variables['RunMonoTestsOnMac'] }}
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     templateContext:
@@ -130,7 +131,7 @@ stages:
 
       - output: pipelineArtifact
         displayName: 'Publish NuGet.CommandLine.Test as artifact'
-        condition: "succeeded()"
+        condition: "and(succeeded(),ne(variables['RunMonoTestsOnMac'], 'false'))"
         targetPath: "$(Build.Repository.LocalPath)\\test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\bin\\$(BuildConfiguration)\\net472"
         artifactName: "NuGet.CommandLine.Test"
 
