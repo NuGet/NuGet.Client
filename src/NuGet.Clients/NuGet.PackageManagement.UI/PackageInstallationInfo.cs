@@ -3,10 +3,12 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -156,7 +158,13 @@ namespace NuGet.PackageManagement.UI
 
         public override string ToString()
         {
-            return $"{ProjectName} {InstalledVersion?.Version.ToString() ?? Resources.Text_NotInstalled}";
+            var vulnerabilityString = string.Empty;
+            if (InstalledVersionMaxVulnerability != -1)
+            {
+                vulnerabilityString = string.Format(CultureInfo.CurrentCulture, Resources.Label_PackageVulnerableToolTip, (PackageVulnerabilitySeverity)InstalledVersionMaxVulnerability);
+            }
+
+            return $"{ProjectName} {InstalledVersion?.Version.ToString() ?? Resources.Text_NotInstalled} {vulnerabilityString} {PackageLevel}";
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
