@@ -88,10 +88,10 @@ namespace NuGet.Protocol
             public ServiceIndexEntryTelemetry(string sourceUri, bool isHTTP, bool isHTTPS, bool HasAnHttpResource, bool HasAnHttpsResource, string type, string eventName) : base(eventName)
             {
                 this["SourceHash"] = HashPackageName(sourceUri);
-                this["IsHTTP"] = isHTTP;
-                this["IsHTTPS"] = isHTTPS;
-                this["HasAnHTTPResource"] = HasAnHttpResource;
-                this["HasAnHTTPSResource"] = HasAnHttpsResource;
+                this["SourceIsHTTP"] = isHTTP;
+                this["SourceIsHTTPS"] = isHTTPS;
+                this["ResourceIsHTTP"] = HasAnHttpResource;
+                this["ResourceIsHTTPS"] = HasAnHttpsResource;
                 this["ResourceType"] = type;
             }
         }

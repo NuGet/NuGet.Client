@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                 CancellationToken.None);
 
             // Assert
-            Assert.Equal(3, telemetryEvents.Count);
+            Assert.Equal(3, telemetryEvents.Count(entry => entry.Name != "ServiceIndexEntrySummary"));
             Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
             Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
 
@@ -378,7 +378,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(7, telemetryEvents.Count);
+                Assert.Equal(7, telemetryEvents.Count(entry => entry.Name != "ServiceIndexEntrySummary"));
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
 
@@ -507,7 +507,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     CancellationToken.None);
 
                 // Assert
-                Assert.Equal(5, telemetryEvents.Count);
+                Assert.Equal(5, telemetryEvents.Count(entry => entry.Name != "ServiceIndexEntrySummary"));
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == "PackagePreFetcherInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "PackageExtractionInformation").Count());
                 Assert.Equal(1, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
@@ -520,7 +520,6 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-
             // set up telemetry service
             var telemetrySession = new Mock<ITelemetrySession>();
 
@@ -573,7 +572,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests
                     token);
 
                 // Assert
-                Assert.Equal(24, telemetryEvents.Count);
+                Assert.Equal(24, telemetryEvents.Count(entry => entry.Name != "ServiceIndexEntrySummary"));
 
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == "ProjectRestoreInformation").Count());
                 Assert.Equal(2, telemetryEvents.Where(p => p.Name == ActionTelemetryStepEvent.NugetActionStepsEventName).Count());
