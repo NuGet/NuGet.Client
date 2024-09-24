@@ -479,12 +479,13 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdateCanInstallAndCanUninstall()
         {
-            CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null && !project.AutoReferenced);
+            CanUninstall = Projects.Any(project => project.IsSelected && project.PackageLevel.Equals(PackageLevel.TopLevel) && project.InstalledVersion != null && !project.AutoReferenced);
 
             CanInstall = SelectedVersion != null
                 && CanInstallWithPackageSourceMapping
                 && Projects.Any(project => project.IsSelected
-                    && VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
+                    && (project.PackageLevel.Equals(PackageLevel.Transitive)
+                    || VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0));
         }
 
         private async ValueTask<IEnumerable<ProjectVersionConstraint>> GetConstraintsForSelectedProjectsAsync(
@@ -573,17 +574,18 @@ namespace NuGet.PackageManagement.UI
                     // for install, the installed version can't be the same as the version to be installed.
                     // AutoReferenced packages should be ignored
                     if (!project.AutoReferenced &&
+                        (project.PackageLevel.Equals(PackageLevel.Transitive) ||
                         VersionComparer.Default.Compare(
                         project.InstalledVersion,
-                        action.Version) != 0)
+                        action.Version) != 0))
                     {
                         selectedProjects.Add(project.NuGetProject);
                     }
                 }
                 else
                 {
-                    // for uninstall, the package must be already installed
-                    if (project.InstalledVersion != null && !project.AutoReferenced)
+                    // for uninstall, the package must be already installed and be top level
+                    if (project.PackageLevel.Equals(PackageLevel.TopLevel) && project.InstalledVersion != null && !project.AutoReferenced)
                     {
                         selectedProjects.Add(project.NuGetProject);
                     }
