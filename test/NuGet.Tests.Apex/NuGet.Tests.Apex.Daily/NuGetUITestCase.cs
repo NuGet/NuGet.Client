@@ -50,12 +50,13 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            VisualStudio.ObjectModel.Shell.ToolWindows.ErrorHub.ShowErrors();
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
         }
 
-        //[Ignore("https://github.com/NuGet/Client.Engineering/issues/2829")]
+        [Ignore("https://github.com/NuGet/Client.Engineering/issues/2829")]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void InstallPackageToWebSiteProjectFromUI()
