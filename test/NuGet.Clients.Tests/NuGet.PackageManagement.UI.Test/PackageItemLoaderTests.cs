@@ -244,6 +244,71 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(inputIds, result);
         }
 
+        [Theory]
+        [InlineData(new object[] { new string[] { } })]
+        [InlineData(new object[] { new[] { "A", "B", "C" } })]
+        [InlineData(new object[] { new[] { "A", "C", "B", "D" } })]
+        [InlineData(new object[] { new[] { "A" } })]
+        public async Task GetCurrent_WithMultiplePackageVersions_InstalledVersionsIsGroupedCorrectly(string[] inputIds)
+        {
+            // Arrange
+            var psmContextInfos = new List<PackageSearchMetadataContextInfo>();
+            foreach (var id in inputIds)
+            {
+                var packageSearchMetadata = new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
+                {
+                    Identity = new PackageIdentity(id, new NuGetVersion("1.0")),
+                };
+                var transitive = new TransitivePackageSearchMetadata(packageSearchMetadata, new List<PackageIdentity>() { new PackageIdentity("X", new NuGetVersion("2.0")) });
+                psmContextInfos.Add(PackageSearchMetadataContextInfo.Create(transitive));
+
+                //psmContextInfos.Add(PackageSearchMetadataContextInfo.Create(new PackageSearchMetadataBuilder.ClonedPackageSearchMetadata()
+                //{
+                //    Identity = new PackageIdentity(id, new NuGetVersion("2.0")),
+                //}));
+            }
+            var searchResult = new SearchResultContextInfo(psmContextInfos, new Dictionary<string, LoadingStatus> { { "Search", LoadingStatus.Loading } }, hasMoreItems: false);
+
+            var serviceBroker = Mock.Of<IServiceBroker>();
+            var packageFileService = new Mock<INuGetPackageFileService>();
+            var searchService = new Mock<INuGetSearchService>(MockBehavior.Strict);
+            searchService.Setup(s => s.SearchAsync(It.IsAny<IReadOnlyCollection<IProjectContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<PackageSourceContextInfo>>(),
+                    It.IsAny<IReadOnlyCollection<string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<SearchFilter>(),
+                    It.IsAny<NuGet.VisualStudio.Internal.Contracts.ItemFilter>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(new ValueTask<SearchResultContextInfo>(searchResult));
+            var uiContext = new Mock<INuGetUIContext>();
+            uiContext.Setup(ui => ui.ServiceBroker).Returns(serviceBroker);
+            var context = new PackageLoadContext(isSolution: false, uiContext.Object);
+            var mockProgress = Mock.Of<IProgress<IItemLoaderState>>();
+
+            using var localFeedDir = TestDirectory.Create(); // local feed
+            var localSource = new PackageSource(localFeedDir);
+            var loader = await PackageItemLoader.CreateAsync(
+                serviceBroker,
+                context,
+                new List<PackageSourceContextInfo>() { PackageSourceContextInfo.Create(localSource) },
+                NuGet.VisualStudio.Internal.Contracts.ItemFilter.All,
+                searchService.Object,
+                packageFileService.Object,
+                TestSearchTerm);
+
+            // Act
+            await loader.LoadNextAsync(progress: mockProgress, CancellationToken.None);
+            IEnumerable<PackageItemViewModel> items = loader.GetCurrent();
+
+            // Assert
+            foreach (var item in items)
+            {
+                Assert.Equal(1, item.TransitiveInstalledVersions.Count);
+            }
+        }
+
         [Fact]
         public async Task GetCurrent_HasKnownOwners_CreatesKnownOwnerViewModelsAsync()
         {

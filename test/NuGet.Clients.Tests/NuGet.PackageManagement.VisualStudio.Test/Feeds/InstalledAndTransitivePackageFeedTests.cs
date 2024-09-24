@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -200,6 +201,67 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             lastItems.Should().HaveCount(expectedTransitiveCount);
             lastItems.Should().BeInAscendingOrder(idComparer);
             lastItems.Should().AllBeOfType<TransitivePackageSearchMetadata>();
+        }
+
+
+        [Theory]
+        [MemberData(nameof(EmbeddedTestData))]
+        public async Task SearchAsync_WithMultpleInstalledAndTransitivePackages_AlwaysInstalledPackagesFirstThenTransitivePackagesAsync(List<(string, string)> installedPkgs, List<(string, string)> transitivePkgs, string transitiveOriginId, string query, int expectedInstalledCount, int expectedTransitiveCount)
+        {
+            // Arrange
+            var installedCollection = installedPkgs
+                .Select(p => GeneratePackageCollectionItem(p.Item1, p.Item2, framework: null));
+            var transitiveCollection = transitivePkgs
+                .Select(p => GenerateTransitivePackageCollectionItem(p.Item1, p.Item2, transitiveOriginId, "0.0.1", framework: null));
+
+            var _target = new InstalledAndTransitivePackageFeed(installedCollection, transitiveCollection, _packageMetadataProvider);
+
+            // Act
+            SearchResult<IPackageSearchMetadata> results = await _target.SearchAsync(query, new SearchFilter(includePrerelease: false), CancellationToken.None);
+
+            // Assert
+            Assert.Equal(results.Items.Count, results.RawItemsCount);
+            Assert.Equal(expectedInstalledCount + expectedTransitiveCount, results.Items.Count);
+
+            var idComparer = Comparer<IPackageSearchMetadata>.Create((a, b) => a.Identity.Id.CompareTo(b.Identity.Id));
+            var expectedTopLevelPackages = installedCollection.GroupBy(p => p.Id).Count();
+
+            // First elements should be Installed/Top-level packaages
+            IEnumerable<IPackageSearchMetadata> installedItems = results.Take(expectedInstalledCount);
+            installedItems.Should().HaveCount(expectedInstalledCount);
+
+            IEnumerable<IPackageSearchMetadata> firstItems = installedItems.Take(expectedTopLevelPackages);
+            firstItems.Should().BeInAscendingOrder(idComparer);
+            firstItems.Should().NotBeAssignableTo<TransitivePackageSearchMetadata>();
+
+            // Then, last elements should be Transitive packages
+            IEnumerable<IPackageSearchMetadata> lastItems = results.Skip(expectedInstalledCount);
+            lastItems.Should().HaveCount(expectedTransitiveCount);
+            lastItems.Should().BeInAscendingOrder(idComparer);
+            lastItems.Should().AllBeOfType<TransitivePackageSearchMetadata>();
+        }
+
+        public static IEnumerable<object[]> EmbeddedTestData()
+        {
+            var installedPackages = new List<(string, string)>
+            {
+                ("PackageA", "0.0.1"),
+                ("PackageA", "0.0.2"),
+                ("PackageA", "0.0.3"),
+                ("PackageB", "0.0.1"),
+                ("PackageC", "0.0.1"),
+                ("PackageC", "0.0.2"),
+                ("PackageB", "0.0.2"),
+            };
+
+            var transitivePackages = new List<(string, string)>
+            {
+                ("PackageB", "0.0.1"),
+            };
+
+            return new List<object[]> {
+                new object[] { installedPackages, transitivePackages, "PackageA", "", 7, 1 },
+            };
         }
 
         [Fact]
