@@ -386,10 +386,10 @@
           <GridViewColumn>
             <GridViewColumn.Header>
               <GridViewColumnHeader
-                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_InstalledVersion}"
+                AutomationProperties.Name="{x:Static local:Resources.ColumnHeader_PackageLevel}"
                 x:Name="_packageLevelColumnHeader"
                 Click="ColumnHeader_Clicked"
-                Content="Package Level"
+                Content="{x:Static local:Resources.ColumnHeader_PackageLevel}"
                 local:SortableColumnHeaderAttachedProperties.SortPropertyName="PackageLevel"
                 HorizontalContentAlignment="Left"
                 SizeChanged="SortableColumnHeader_SizeChanged"
