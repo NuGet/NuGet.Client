@@ -139,7 +139,7 @@ steps:
     solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
     configuration: "$(BuildConfiguration)"
     msbuildArguments: "/restore:false /target:CopyFinalNuGetExeToOutputPath /binarylogger:$(Build.StagingDirectory)\\binlog\\06.CopyFinalNuGetExeToOutputPath.binlog"
-  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'))"
+  condition: "and(succeeded(),eq(variables['BuildRTM'], 'false'), ne(variables['RunMonoTestsOnMac'], 'false'))"
 
 - ${{ if eq(parameters.RunUnitTests, true) }}:
   - task: MSBuild@1
