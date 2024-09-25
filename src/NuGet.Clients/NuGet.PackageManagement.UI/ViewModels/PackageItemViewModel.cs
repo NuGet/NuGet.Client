@@ -145,19 +145,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private Dictionary<NuGetVersion, int> _vulnerableVersions = [];
-        public Dictionary<NuGetVersion, int> VulnerableVersions
-        {
-            get
-            {
-                return _vulnerableVersions;
-            }
-            set
-            {
-                _vulnerableVersions = value;
-                OnPropertyChanged(nameof(VulnerableVersions));
-            }
-        }
+        private readonly Dictionary<NuGetVersion, int> _vulnerableVersions = [];
+        public Dictionary<NuGetVersion, int> VulnerableVersions => _vulnerableVersions;
 
         /// <summary>
         /// The installed version of the package.
@@ -929,6 +918,8 @@ namespace NuGet.PackageManagement.UI
                 VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, maxSeverity);
 
                 OnPropertyChanged(nameof(Status));
+                OnPropertyChanged(nameof(VulnerableVersions));
+                OnPropertyChanged(nameof(VulnerableVersionsString));
             }
         }
 

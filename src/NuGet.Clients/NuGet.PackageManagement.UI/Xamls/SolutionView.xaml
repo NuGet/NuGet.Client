@@ -16,8 +16,6 @@
       </ResourceDictionary.MergedDictionaries>
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
-      <local:IsGreaterThanToVisibilityConverter
-        x:Key="IsGreaterThanToVisibilityConverter" />
       <local:TooltipConverter
         x:Key="TooltipConverter" />
       <local:NotNullToBooleanConverter
@@ -337,7 +335,7 @@
                     Margin="2,0,0,0"
                     x:Name="_warningIndicatorInstalledHeader"
                     IsVisibleChanged="WarningIndicatorInstalledHeader_IsVisibleChanged"
-                    Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource IsGreaterThanToVisibilityConverter}, ConverterParameter=0}"
+                    Visibility="{Binding InstalledVulnerabilitiesCount, Converter={StaticResource GreaterThanThresholdToVisibilityConverter}, ConverterParameter=0}"
                     Moniker="{x:Static catalog:KnownMonikers.StatusWarning}">
                     <imaging:CrispImage.ToolTip>
                       <TextBlock>

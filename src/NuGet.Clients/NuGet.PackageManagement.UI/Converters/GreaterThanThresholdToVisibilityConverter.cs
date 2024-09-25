@@ -9,7 +9,7 @@ using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class IsGreaterThanToVisibilityConverter : IValueConverter
+    public class GreaterThanThresholdToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

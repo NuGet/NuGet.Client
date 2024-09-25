@@ -15,7 +15,6 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
@@ -278,7 +277,7 @@ namespace NuGet.PackageManagement.UI
                         UpdateTransitiveInfo(existingListItem, metadataContextInfo);
                     }
 
-                    existingListItem.UpdateInstalledPackagesVulnerabilities(new PackageIdentity(packageId, packageVersion));
+                    existingListItem.UpdateInstalledPackagesVulnerabilities(metadataContextInfo.Identity);
                 }
                 else
                 {

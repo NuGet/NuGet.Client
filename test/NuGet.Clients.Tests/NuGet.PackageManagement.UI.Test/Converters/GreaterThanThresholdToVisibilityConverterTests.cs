@@ -7,7 +7,7 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test.Converters
 {
-    public class IsGreaterThanToVisibilityConverterTests
+    public class GreaterThanThresholdToVisibilityConverterTests
     {
         [Theory]
         [InlineData(0L)]
@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData(2147483657L)]
         public void Convert_ValidLongValue_Return_VisibilityVisible(long? downloadCount)
         {
-            var converter = new IsGreaterThanToVisibilityConverter();
+            var converter = new GreaterThanThresholdToVisibilityConverter();
 
             object converted = converter.Convert(
                 downloadCount,
@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData(5000)]
         public void Convert_ValidInt_Return_VisibilityVisible(int? downloadCount)
         {
-            var converter = new IsGreaterThanToVisibilityConverter();
+            var converter = new GreaterThanThresholdToVisibilityConverter();
 
             object converted = converter.Convert(
                 downloadCount,
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Test.Converters
         [InlineData(-1L)]
         public void Convert_ValidLongValue_Return_VisibilityCollapsed(long? downloadCount)
         {
-            var converter = new IsGreaterThanToVisibilityConverter();
+            var converter = new GreaterThanThresholdToVisibilityConverter();
 
             object converted = converter.Convert(
                 downloadCount,
