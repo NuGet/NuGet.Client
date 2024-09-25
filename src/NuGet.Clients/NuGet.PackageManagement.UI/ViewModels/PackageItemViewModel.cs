@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
+using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -914,12 +915,15 @@ namespace NuGet.PackageManagement.UI
         {
             if (maxSeverity > -1)
             {
-                VulnerableVersions.Add(version, maxSeverity);
+                if (VulnerableVersions.TryAdd(version, maxSeverity))
+                {
+                    OnPropertyChanged(nameof(VulnerableVersions));
+                    OnPropertyChanged(nameof(VulnerableVersionsString));
+                }
+
                 VulnerabilityMaxSeverity = Math.Max(VulnerabilityMaxSeverity, maxSeverity);
 
                 OnPropertyChanged(nameof(Status));
-                OnPropertyChanged(nameof(VulnerableVersions));
-                OnPropertyChanged(nameof(VulnerableVersionsString));
             }
         }
 

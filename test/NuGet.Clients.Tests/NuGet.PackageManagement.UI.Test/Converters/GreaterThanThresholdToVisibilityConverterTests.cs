@@ -58,5 +58,25 @@ namespace NuGet.PackageManagement.UI.Test.Converters
 
             Assert.Equal(Visibility.Collapsed, converted);
         }
+
+        [Theory]
+        [InlineData(1, null)]
+        [InlineData(null, 1)]
+        [InlineData(null, null)]
+        [InlineData("non-numeric", 1)]
+        [InlineData(1, "non-numeric")]
+        [InlineData("9223372036854775808", 1)] // test overflowed Int64 number as string value
+        public void Convert_InvalidLongValue_Return_VisibilityCollapsed(object value, object param)
+        {
+            var converter = new GreaterThanThresholdToVisibilityConverter();
+
+            object converted = converter.Convert(
+                value,
+                typeof(Visibility),
+                param,
+                Thread.CurrentThread.CurrentCulture);
+
+            Assert.Equal(Visibility.Collapsed, converted);
+        }
     }
 }

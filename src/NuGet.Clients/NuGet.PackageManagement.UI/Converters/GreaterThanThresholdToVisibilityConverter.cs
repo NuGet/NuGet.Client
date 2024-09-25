@@ -15,11 +15,14 @@ namespace NuGet.PackageManagement.UI
         {
             if (targetType == typeof(Visibility))
             {
-                if (value is not null)
+                if (value is not null && parameter is not null)
                 {
-                    long intValue = System.Convert.ToInt64(value, culture);
-                    long parameterValue = System.Convert.ToInt64(parameter, culture);
-                    if (intValue > parameterValue)
+                    bool valueConverted = TryConvertToInt64(value, culture, out long? initialValue);
+                    bool paramConverted = TryConvertToInt64(parameter, culture, out long? thresholdValue);
+
+                    if (valueConverted && paramConverted
+                        && initialValue is not null && thresholdValue is not null
+                        && initialValue > thresholdValue)
                     {
                         return Visibility.Visible;
                     }
@@ -36,6 +39,26 @@ namespace NuGet.PackageManagement.UI
             // no op
             Debug.Fail("Not Implemented");
             return null;
+        }
+
+        private static bool TryConvertToInt64(object value, CultureInfo culture, out long? convertedValue)
+        {
+            if (value is null)
+            {
+                convertedValue = null;
+                return false;
+            }
+
+            try
+            {
+                convertedValue = System.Convert.ToInt64(value, culture);
+                return true;
+            }
+            catch (Exception e) when (e is FormatException or InvalidCastException or OverflowException)
+            {
+                convertedValue = null;
+                return false;
+            }
         }
     }
 }
