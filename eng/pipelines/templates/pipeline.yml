@@ -104,7 +104,6 @@ stages:
       isOfficialBuild: ${{ parameters.isOfficialBuild }}
       BuildRTM: "false"
       SemanticVersion: $[stageDependencies.Initialize.GetSemanticVersion.outputs['setsemanticversion.SemanticVersion']]
-      RunMonoTestsOnMac: ${{ variables['RunMonoTestsOnMac'] }}
     pool:
       name: VSEngSS-MicroBuild2022-1ES
     templateContext:
