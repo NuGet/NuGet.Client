@@ -161,7 +161,9 @@ namespace NuGet.PackageManagement.UI
             var vulnerabilityString = string.Empty;
             if (InstalledVersionMaxVulnerability != -1)
             {
-                vulnerabilityString = string.Format(CultureInfo.CurrentCulture, Resources.Label_PackageVulnerableToolTip, (PackageVulnerabilitySeverity)InstalledVersionMaxVulnerability);
+                var converter = new IntToVulnerabilitySeverityConverter();
+                var severityString = converter.Convert(InstalledVersionMaxVulnerability, typeof(PackageVulnerabilitySeverity), null, CultureInfo.CurrentCulture) as string;
+                vulnerabilityString = string.Format(CultureInfo.CurrentCulture, Resources.Label_PackageVulnerableToolTip, severityString);
             }
 
             return $"{ProjectName} {InstalledVersion?.Version.ToString() ?? Resources.Text_NotInstalled} {vulnerabilityString} {PackageLevel}";
