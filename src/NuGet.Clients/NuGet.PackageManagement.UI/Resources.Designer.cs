@@ -619,6 +619,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package Level.
+        /// </summary>
+        public static string ColumnHeader_PackageLevel {
+            get {
+                return ResourceManager.GetString("ColumnHeader_PackageLevel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project.
         /// </summary>
         public static string ColumnHeader_Project {
