@@ -25,7 +25,6 @@ namespace NuGet.Tests.Apex.Daily
         {
         }
 
-        [Ignore("https://github.com/NuGet/Client.Engineering/issues/2829")]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void InstallPackageToWebSiteProjectFromUI()
@@ -48,7 +47,6 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "log4net", "2.0.12", Logger);
         }
 
-        [Ignore("https://github.com/NuGet/Client.Engineering/issues/2829")]
         [TestMethod]
         [Timeout(DefaultTimeout)]
         public void UpdateWebSitePackageFromUI()
