@@ -317,7 +317,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         [Fact]
         public async Task ContinueSearchAsync_WhenSearchIsContinuable_Continues()
         {
-            int numberOfResources = 32;
             var telemetryService = new Mock<INuGetTelemetryService>();
             var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
             telemetryService
@@ -344,7 +343,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(continueSearchResult.PackageSearchItems.First().Title, "NuGet.Core27", ignoreCase: true);
 
                 TelemetryEvent[] events = eventsQueue.ToArray();
-                Assert.True(4 + numberOfResources == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
+                Assert.True(4 == events.Count(entry => entry.Name != "ServiceIndexEntrySummary"), string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
                 TelemetryEvent search = Assert.Single(events, e => e.Name == "Search");
                 Assert.Equal(true, search["IncludePrerelease"]);
