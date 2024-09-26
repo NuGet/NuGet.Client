@@ -37,7 +37,7 @@
           </Setter.Value>
         </Setter>
         <Style.Triggers>
-          <DataTrigger Binding="{Binding VulnerableVersionsCount}" Value="1">
+          <DataTrigger Binding="{Binding VulnerableVersions.Count}" Value="1">
             <Setter Property="Text">
               <Setter.Value>
                 <MultiBinding Converter="{StaticResource StringFormatConverter}">
