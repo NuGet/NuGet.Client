@@ -23,12 +23,6 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class PackCommandTests
     {
-        // Specifies a target framework for projects used during testing.  This should match the framework that the SDK being tested has.
-#if NET8_0 || NET9_0
-        private const string ProjectTargetFramework = "net9.0";
-#else
-#error Update the logic for which target framework to use for tests projects!!!
-#endif
         private DotnetIntegrationTestFixture _dotnetFixture;
         private readonly ITestOutputHelper _testOutputHelper;
 
@@ -62,7 +56,7 @@ namespace Dotnet.Integration.Test
                     <None Include=""abc.dll"" Pack=""True""  PackagePath=""lib"" />
                     <Content Include=""abc.txt"" Pack=""True"" />
 </ItemGroup>";
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", ProjectTargetFramework);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", Constants.ProjectTargetFramework);
                     ProjectFileUtils.AddCustomXmlToProjectRoot(xml, itemGroup);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -983,8 +977,8 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-        [InlineData("TargetFramework", ProjectTargetFramework)]
-        [InlineData("TargetFrameworks", $"netstandard1.4;{ProjectTargetFramework}")]
+        [InlineData("TargetFramework", Constants.ProjectTargetFramework)]
+        [InlineData("TargetFrameworks", $"netstandard1.4;{Constants.ProjectTargetFramework}")]
         public void PackCommand_PackProject_ExactVersionOverrideProjectRefVersionInMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange
@@ -1073,8 +1067,8 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-        [InlineData("TargetFramework", ProjectTargetFramework)]
-        [InlineData("TargetFrameworks", $"netstandard1.4;{ProjectTargetFramework}")]
+        [InlineData("TargetFramework", Constants.ProjectTargetFramework)]
+        [InlineData("TargetFrameworks", $"netstandard1.4;{Constants.ProjectTargetFramework}")]
         public void PackCommand_PackProject_GetsProjectRefVersionFromMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange
@@ -1150,8 +1144,8 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-        [InlineData("TargetFramework", ProjectTargetFramework)]
-        [InlineData("TargetFrameworks", $"netstandard1.4;{ProjectTargetFramework}")]
+        [InlineData("TargetFramework", Constants.ProjectTargetFramework)]
+        [InlineData("TargetFrameworks", $"netstandard1.4;{Constants.ProjectTargetFramework}")]
         public void PackCommand_PackProject_GetPackageVersionDependsOnWorks(string tfmProperty, string tfmValue)
         {
             // Arrange
@@ -2028,7 +2022,7 @@ namespace Dotnet.Integration.Test
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", ProjectTargetFramework);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", Constants.ProjectTargetFramework);
                     ProjectFileUtils.AddProperty(xml, "GeneratePackageOnBuild", "true");
                     ProjectFileUtils.AddProperty(xml, "NuspecOutputPath", "obj\\Debug");
 
@@ -2068,7 +2062,7 @@ namespace Dotnet.Integration.Test
 
                     var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
                     Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(ProjectTargetFramework, dependencyGroups[0].TargetFramework.GetShortFolderName());
+                    Assert.Equal(Constants.ProjectTargetFramework, dependencyGroups[0].TargetFramework.GetShortFolderName());
                     var packages = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("Newtonsoft.json", packages[0].Id);
@@ -2079,8 +2073,8 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(ProjectTargetFramework, libItems[0].TargetFramework.GetShortFolderName());
-                    Assert.Equal(new[] { $"lib/{ProjectTargetFramework}/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(Constants.ProjectTargetFramework, libItems[0].TargetFramework.GetShortFolderName());
+                    Assert.Equal(new[] { $"lib/{Constants.ProjectTargetFramework}/ClassLibrary1.dll" }, libItems[0].Items);
                 }
 
             }
@@ -3380,8 +3374,8 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-        [InlineData("TargetFramework", ProjectTargetFramework)]
-        [InlineData("TargetFrameworks", $"netstandard1.4;{ProjectTargetFramework}")]
+        [InlineData("TargetFramework", Constants.ProjectTargetFramework)]
+        [InlineData("TargetFrameworks", $"netstandard1.4;{Constants.ProjectTargetFramework}")]
         public void PackCommand_PackTargetHook_ExecutesBeforePack(string tfmProperty,
     string tfmValue)
         {
@@ -3423,8 +3417,8 @@ namespace ClassLibrary
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
-        [InlineData("TargetFramework", ProjectTargetFramework)]
-        [InlineData("TargetFrameworks", $"netstandard1.4;{ProjectTargetFramework}")]
+        [InlineData("TargetFramework", Constants.ProjectTargetFramework)]
+        [InlineData("TargetFrameworks", $"netstandard1.4;{Constants.ProjectTargetFramework}")]
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
         {
             using (var testDirectory = _dotnetFixture.CreateTestDirectory())
@@ -4076,7 +4070,7 @@ namespace ClassLibrary
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", ProjectTargetFramework);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", Constants.ProjectTargetFramework);
                     ProjectFileUtils.AddProperty(xml, "DefaultAllowedOutputExtensionsInPackageBuildOutputFolder", ".dll");
                     ProjectFileUtils.AddProperty(xml, "GenerateDocumentationFile", "true");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
@@ -4096,8 +4090,8 @@ namespace ClassLibrary
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
                     var allFiles = nupkgReader.GetFiles().ToList();
-                    Assert.Contains($"lib/{ProjectTargetFramework}/{projectName}.dll", allFiles);
-                    Assert.DoesNotContain($"lib/{ProjectTargetFramework}/{projectName}.xml", allFiles);
+                    Assert.Contains($"lib/{Constants.ProjectTargetFramework}/{projectName}.dll", allFiles);
+                    Assert.DoesNotContain($"lib/{Constants.ProjectTargetFramework}/{projectName}.xml", allFiles);
                     Assert.DoesNotContain(allFiles, f => f.EndsWith(".exe"));
                     Assert.DoesNotContain(allFiles, f => f.EndsWith(".winmd"));
                     Assert.DoesNotContain(allFiles, f => f.EndsWith(".json"));
@@ -5971,7 +5965,7 @@ namespace ClassLibrary
                 _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>{ProjectTargetFramework};net45</TargetFrameworks>
+    <TargetFrameworks>{Constants.ProjectTargetFramework};net45</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
@@ -6030,7 +6024,7 @@ namespace ClassLibrary
                 _dotnetFixture.CreateDotnetNewProject(testDirectory, projectName, args: "classlib", testOutputHelper: _testOutputHelper);
                 string projectXml = $@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>{ProjectTargetFramework};net45</TargetFrameworks>
+    <TargetFrameworks>{Constants.ProjectTargetFramework};net45</TargetFrameworks>
     <Version>1.2.3</Version>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
