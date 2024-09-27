@@ -155,11 +155,12 @@ namespace NuGet.Packaging.Signing
         public static bool IsCertificatePublicKeyValid(X509Certificate2 certificate)
         {
             // Check if the public key is RSA with a valid keysize
-            System.Security.Cryptography.RSA RSAPublicKey = RSACertificateExtensions.GetRSAPublicKey(certificate);
-
-            if (RSAPublicKey != null)
+            using (System.Security.Cryptography.RSA publicKey = RSACertificateExtensions.GetRSAPublicKey(certificate))
             {
-                return RSAPublicKey.KeySize >= SigningSpecifications.V1.RSAPublicKeyMinLength;
+                if (publicKey != null)
+                {
+                    return publicKey.KeySize >= SigningSpecifications.V1.RSAPublicKeyMinLength;
+                }
             }
 
             return false;
