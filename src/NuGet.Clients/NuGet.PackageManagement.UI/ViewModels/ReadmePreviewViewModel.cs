@@ -46,32 +46,31 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public async Task LoadReadmeAsync(string rawReadmeUrl, CancellationToken cancellationToken)
         {
-            var newReadmeValue = string.Empty;
-            var isErrorWithReadme = false;
-            bool canDetermineReadmeDefined = false;
+            ReadmeMarkdown = string.Empty;
+            ErrorLoadingReadme = false;
+            CanDetermineReadmeDefined = false;
 
-            if (!string.IsNullOrWhiteSpace(rawReadmeUrl))
+            if (string.IsNullOrWhiteSpace(rawReadmeUrl))
             {
-                await TaskScheduler.Default;
-
-                var readmeStream = await _packageFileService.GetReadmeAsync(new Uri(rawReadmeUrl), cancellationToken);
-                if (readmeStream is not null)
-                {
-                    using StreamReader streamReader = new StreamReader(readmeStream);
-                    var readme = await streamReader.ReadToEndAsync();
-                    if (!string.IsNullOrWhiteSpace(readme))
-                    {
-                        isErrorWithReadme = false;
-                        canDetermineReadmeDefined = true;
-                        newReadmeValue = readme;
-                    }
-                }
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+                return;
             }
 
-            ErrorLoadingReadme = isErrorWithReadme;
-            ReadmeMarkdown = newReadmeValue;
-            CanDetermineReadmeDefined = canDetermineReadmeDefined;
+            await TaskScheduler.Default;
+
+            var readmeStream = await _packageFileService.GetReadmeAsync(new Uri(rawReadmeUrl), cancellationToken);
+            if (readmeStream is null)
+            {
+                return;
+            }
+
+            using StreamReader streamReader = new StreamReader(readmeStream);
+            var readme = await streamReader.ReadToEndAsync();
+            if (!string.IsNullOrWhiteSpace(readme))
+            {
+                ReadmeMarkdown = readme;
+                ErrorLoadingReadme = false;
+                CanDetermineReadmeDefined = true;
+            }
         }
     }
 }
