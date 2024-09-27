@@ -294,35 +294,42 @@ namespace NuGet.DependencyResolver
 
         public static void MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphNode<RemoteResolveResult> node)
         {
+            node.Item = MergeRuntimeDependencies(runtimeDependencies, node.Item);
+        }
+
+        public static GraphItem<RemoteResolveResult> MergeRuntimeDependencies(HashSet<LibraryDependency> runtimeDependencies, GraphItem<RemoteResolveResult> item)
+        {
             // Merge in runtime dependencies
-            if (runtimeDependencies?.Count > 0)
+            if (runtimeDependencies == null || runtimeDependencies.Count == 0)
             {
-                var newDependencies = new List<LibraryDependency>(runtimeDependencies.Count + node.Item.Data.Dependencies.Count);
-                foreach (var nodeDep in node.Item.Data.Dependencies)
-                {
-                    if (!runtimeDependencies.Contains(nodeDep))
-                    {
-                        newDependencies.Add(nodeDep);
-                    }
-                }
-
-                foreach (var runtimeDependency in runtimeDependencies)
-                {
-                    newDependencies.Add(runtimeDependency);
-                }
-
-                // Create a new item on this node so that we can update it with the new dependencies from
-                // runtime.json files
-                // We need to clone the item since they can be shared across multiple nodes
-                node.Item = new GraphItem<RemoteResolveResult>(node.Item.Key)
-                {
-                    Data = new RemoteResolveResult()
-                    {
-                        Dependencies = newDependencies,
-                        Match = node.Item.Data.Match
-                    }
-                };
+                return item;
             }
+
+            var newDependencies = new List<LibraryDependency>(runtimeDependencies.Count + item.Data.Dependencies.Count);
+            foreach (var nodeDep in item.Data.Dependencies)
+            {
+                if (!runtimeDependencies.Contains(nodeDep))
+                {
+                    newDependencies.Add(nodeDep);
+                }
+            }
+
+            foreach (var runtimeDependency in runtimeDependencies)
+            {
+                newDependencies.Add(runtimeDependency);
+            }
+
+            // Create a new item on this node so that we can update it with the new dependencies from
+            // runtime.json files
+            // We need to clone the item since they can be shared across multiple nodes
+            return new GraphItem<RemoteResolveResult>(item.Key)
+            {
+                Data = new RemoteResolveResult()
+                {
+                    Dependencies = newDependencies,
+                    Match = item.Data.Match
+                }
+            };
         }
 
         /// <summary>

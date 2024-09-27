@@ -1185,6 +1185,122 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        public async Task RestoreCommand_WithRuntimeSpecificPackagesOfDifferingVersions_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0")],
+                    RuntimeJson = @"{
+                  ""runtimes"": {
+                    ""win"": {
+                            ""a"": {
+                                ""c"": ""2.0.0""
+                            }
+                          }
+                        }
+                  }"
+                },
+                new SimpleTestPackageContext("a", "2.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "2.0.0")],
+                    RuntimeJson = @"{
+                  ""runtimes"": {
+                    ""win"": {
+                            ""a"": {
+                                ""c"": ""1.0.0""
+                            }
+                          }
+                        }
+                  }"
+                },
+                new SimpleTestPackageContext("b", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("c", "1.0.0")],
+                },
+                new SimpleTestPackageContext("b", "2.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("c", "2.0.0")],
+                },
+                new SimpleTestPackageContext("c", "1.0.0"),
+                new SimpleTestPackageContext("c", "2.0.0"));
+
+            var spec1 = @"
+                {
+                  ""runtimes"": {
+                        ""win"": {}
+                  },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                        }
+                    },
+                    ""net8.0"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[2.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(4);
+
+            // net472
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.ToNormalizedString().Should().Be("1.0.0");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.ToNormalizedString().Should().Be("1.0.0");
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[0].Libraries[2].Version.ToNormalizedString().Should().Be("1.0.0");
+
+            // net472/win
+            result.LockFile.Targets[1].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[1].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[1].Libraries[0].Version.ToNormalizedString().Should().Be("1.0.0");
+            result.LockFile.Targets[1].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[1].Libraries[1].Version.ToNormalizedString().Should().Be("1.0.0");
+            result.LockFile.Targets[1].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[1].Libraries[2].Version.ToNormalizedString().Should().Be("2.0.0");
+
+            // net8.0
+            result.LockFile.Targets[2].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[2].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[2].Libraries[0].Version.ToNormalizedString().Should().Be("2.0.0");
+            result.LockFile.Targets[2].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[2].Libraries[1].Version.ToNormalizedString().Should().Be("2.0.0");
+            result.LockFile.Targets[2].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[2].Libraries[2].Version.ToNormalizedString().Should().Be("2.0.0");
+
+            // net8.0/win
+            result.LockFile.Targets[3].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[3].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[3].Libraries[0].Version.ToNormalizedString().Should().Be("2.0.0");
+            result.LockFile.Targets[3].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[3].Libraries[1].Version.ToNormalizedString().Should().Be("2.0.0");
+            result.LockFile.Targets[3].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[3].Libraries[2].Version.ToNormalizedString().Should().Be("1.0.0");
+        }
+
+        [Fact]
         public async Task RestoreCommand_WithRuntimeSpecificPackageAndALockFile_VerifiesEquivalency()
         {
             // Arrange

@@ -146,7 +146,7 @@ namespace NuGet.Commands
 
             _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
             _isLockFileEnabled = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
-            _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && !_isLockFileEnabled && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
+            _enableNewDependencyResolver = _request.Project.RuntimeGraph.Supports.Count == 0 && !_request.Project.RestoreMetadata.UseLegacyDependencyResolver;
         }
 
         public Task<RestoreResult> ExecuteAsync()

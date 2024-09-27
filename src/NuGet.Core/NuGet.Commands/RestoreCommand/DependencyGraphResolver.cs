@@ -80,8 +80,17 @@ namespace NuGet.Commands
 
             Dictionary<NuGetFramework, RuntimeGraph> resolvedRuntimeGraphs = new();
 
+            Dictionary<NuGetFramework, TaskResultCache<LibraryRangeIndex, FindLibraryEntryResult>> findLibraryEntryCaches = new();
+
             foreach (FrameworkRuntimePair pair in projectFrameworkRuntimePairs.NoAllocEnumerate())
             {
+                if (!findLibraryEntryCaches.TryGetValue(pair.Framework, out TaskResultCache<LibraryRangeIndex, FindLibraryEntryResult>? findLibraryEntryCache))
+                {
+                    findLibraryEntryCache = new TaskResultCache<LibraryRangeIndex, FindLibraryEntryResult>(FindLibraryEntryResultCacheSize);
+
+                    findLibraryEntryCaches.Add(pair.Framework, findLibraryEntryCache);
+                }
+
                 if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) && !hasInstallBeenCalledAlready)
                 {
                     downloadDependencyResolutionResults = await ProjectRestoreCommand.DownloadDependenciesAsync(_request.Project, context, _telemetryActivity, telemetryPrefix: string.Empty, token);
@@ -114,6 +123,7 @@ namespace NuGet.Commands
 
                     runtimeGraph = ProjectRestoreCommand.GetRuntimeGraph(tfmNonRidGraph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph, _logger);
                     allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
+                    resolvedRuntimeGraphs.Add(pair.Framework, runtimeGraph);
                 }
 
                 //Now build up our new flattened graph
@@ -131,8 +141,6 @@ namespace NuGet.Commands
                 //added to the eviction list that contains the evictee on their path to root.
                 Queue<DependencyGraphItem> refImport =
                   new Queue<DependencyGraphItem>(DependencyGraphItemQueueSize);
-
-                TaskResultCache<LibraryRangeIndex, FindLibraryEntryResult> findLibraryEntryCache = new(FindLibraryEntryResultCacheSize);
 
                 Dictionary<LibraryDependencyIndex, ResolvedDependencyGraphItem> chosenResolvedItems = new(ResolvedDependencyGraphItemQueueSize);
 
@@ -165,22 +173,17 @@ namespace NuGet.Commands
                     rootProjectRefItem.LibraryRangeIndex,
                     async static (state) =>
                     {
-                        GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
-                            state.rootProjectRefItem.LibraryDependency!.LibraryRange,
-                            state.Framework,
-                            runtimeIdentifier: null,
+                        return await FindLibraryEntryResult.CreateAsync(
+                            state.libraryDependency,
+                            state.LibraryDependencyIndex,
+                            state.LibraryRangeIndex,
+                            state.pair,
                             state.context,
+                            state.libraryDependencyInterningTable,
+                            state.libraryRangeInterningTable,
                             state.token);
-
-                        return new FindLibraryEntryResult(
-                            state.rootProjectRefItem.LibraryDependency!,
-                                refItem,
-                                state.rootProjectRefItem.LibraryDependencyIndex,
-                                state.rootProjectRefItem.LibraryRangeIndex,
-                                state.libraryDependencyInterningTable,
-                                state.libraryRangeInterningTable);
                     },
-                    (rootProjectRefItem, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                    (libraryDependency: rootProjectRefItem.LibraryDependency, rootProjectRefItem.LibraryDependencyIndex, rootProjectRefItem.LibraryRangeIndex, pair, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                     token);
 
             ProcessDeepEviction:
@@ -232,30 +235,35 @@ namespace NuGet.Commands
 
                         if (RemoteDependencyWalker.EvaluateRuntimeDependencies(ref libraryRange, pair.RuntimeIdentifier, runtimeGraph, ref runtimeDependencies))
                         {
-                            importRefItem.LibraryRangeIndex = currentRefRangeIndex = libraryRangeInterningTable.Intern(libraryRange);
+                            LibraryRangeIndex newLibraryRangeIndex = libraryRangeInterningTable.Intern(libraryRange);
 
-                            currentRef = currentRef.Clone();
+                            if (newLibraryRangeIndex != currentRefRangeIndex)
+                            {
+                                importRefItem.LibraryRangeIndex = currentRefRangeIndex = libraryRangeInterningTable.Intern(libraryRange);
 
-                            currentRef.LibraryRange = libraryRange;
+                                currentRef = currentRef.Clone();
 
-                            importRefItem.LibraryDependency = currentRef;
+                                currentRef.LibraryRange = libraryRange;
 
-                            refItemResult = await findLibraryEntryCache.GetOrAddAsync(
-                                currentRefRangeIndex,
-                                async static state =>
-                                {
-                                    return await FindLibraryEntryResult.CreateAsync(
-                                        state.libraryDependency,
-                                        state.dependencyIndex,
-                                        state.rangeIndex,
-                                        state.Framework,
-                                        state.context,
-                                        state.libraryDependencyInterningTable,
-                                        state.libraryRangeInterningTable,
-                                        state.token);
-                                },
-                                (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
-                                token);
+                                importRefItem.LibraryDependency = currentRef;
+
+                                refItemResult = await findLibraryEntryCache.GetOrAddAsync(
+                                    currentRefRangeIndex,
+                                    async static state =>
+                                    {
+                                        return await FindLibraryEntryResult.CreateAsync(
+                                            state.libraryDependency,
+                                            state.dependencyIndex,
+                                            state.rangeIndex,
+                                            state.pair,
+                                            state.context,
+                                            state.libraryDependencyInterningTable,
+                                            state.libraryRangeInterningTable,
+                                            state.token);
+                                    },
+                                    (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                    token);
+                            }
                         }
                     }
 
@@ -386,13 +394,13 @@ namespace NuGet.Commands
                                             state.libraryDependency,
                                             state.dependencyIndex,
                                             state.rangeIndex,
-                                            state.Framework,
+                                            state.pair,
                                             state.context,
                                             state.libraryDependencyInterningTable,
                                             state.libraryRangeInterningTable,
                                             state.token);
                                     },
-                                    (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                                    (libraryDependency: currentRef, dependencyIndex: currentRefDependencyIndex, rangeIndex: currentRefRangeIndex, pair, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                                     token);
                             }
 
@@ -594,6 +602,31 @@ namespace NuGet.Commands
                             });
                     }
 
+                    if (!string.IsNullOrEmpty(pair.RuntimeIdentifier) && runtimeDependencies != null && runtimeDependencies.Count > 0)
+                    {
+                        if (refItemResult.ResultByRuntimeIdentifier == null)
+                        {
+                            refItemResult.ResultByRuntimeIdentifier = new Dictionary<string, FindLibraryEntryResult>();
+                        }
+
+                        if (!refItemResult.ResultByRuntimeIdentifier.TryGetValue(pair.RuntimeIdentifier, out FindLibraryEntryResult? refItemForRuntime))
+                        {
+                            var newItem = RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, refItemResult.Item);
+
+                            refItemForRuntime = new FindLibraryEntryResult(
+                                refItemResult.LibraryDependency,
+                                newItem,
+                                refItemResult.DependencyIndex,
+                                refItemResult.RangeIndex,
+                                libraryDependencyInterningTable,
+                                libraryRangeInterningTable);
+
+                            refItemResult.ResultByRuntimeIdentifier[pair.RuntimeIdentifier] = refItemForRuntime;
+
+                            refItemResult = refItemForRuntime;
+                        }
+                    }
+
                     HashSet<LibraryDependencyIndex>? suppressions = default;
                     //Scan for suppressions
                     for (int i = 0; i < refItemResult.Item.Data.Dependencies.Count; i++)
@@ -688,88 +721,14 @@ namespace NuGet.Commands
                                     state.libraryDependency,
                                     state.dependencyIndex,
                                     state.rangeIndex,
-                                    state.Framework,
+                                    state.pair,
                                     state.context,
                                     state.libraryDependencyInterningTable,
                                     state.libraryRangeInterningTable,
                                     state.token);
                             },
-                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
+                            (libraryDependency: actualLibraryDependency, dependencyIndex: depIndex, rangeIndex, pair, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
                             token);
-                    }
-
-                    // Add runtime dependencies of the current node if a runtime identifier has been specified.
-                    if (!string.IsNullOrEmpty(pair.RuntimeIdentifier) && runtimeDependencies != null && runtimeDependencies.Count > 0)
-                    {
-                        // Check for runtime dependencies.
-                        FindLibraryEntryResult? findLibraryCachedAsyncResult = default;
-
-                        // Runtime dependencies start after non-runtime dependencies.
-                        // Keep track of the first index for any runtime dependencies so that it can be used to enqueue later.
-                        int runtimeDependencyIndex = refItemResult.Item.Data.Dependencies.Count;
-
-                        // If there are runtime dependencies that need to be added, remove the currentRef from allResolvedItems,
-                        // and add the newly created version that contains the previously detected dependencies and newly detected runtime dependencies.
-                        bool rootHasInnerNodes = (refItemResult.Item.Data.Dependencies.Count + (runtimeDependencies == null ? 0 : runtimeDependencies.Count)) > 0;
-                        GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(currentRef.LibraryRange, rootHasInnerNodes, false)
-                        {
-                            Item = refItemResult.Item,
-                        };
-                        RemoteDependencyWalker.MergeRuntimeDependencies(runtimeDependencies, rootNode);
-
-                        findLibraryCachedAsyncResult = await findLibraryEntryCache.GetOrAddAsync(
-                            currentRefRangeIndex,
-                            refresh: true,
-                            static state =>
-                            {
-                                return Task.FromResult(new FindLibraryEntryResult(
-                                    state.currentRef,
-                                    state.rootNode.Item,
-                                    state.currentRefDependencyIndex,
-                                    state.currentRefRangeIndex,
-                                    state.libraryDependencyInterningTable,
-                                    state.libraryRangeInterningTable));
-                            },
-                            (currentRef, rootNode, currentRefDependencyIndex, currentRefRangeIndex, libraryDependencyInterningTable, libraryRangeInterningTable),
-                            token);
-
-                        // Enqueue each of the runtime dependencies, but only if they weren't already present in refItemResult before merging the runtime dependencies above.
-                        if ((rootNode.Item.Data.Dependencies.Count - runtimeDependencyIndex) == runtimeDependencies!.Count)
-                        {
-                            foreach (var dep in runtimeDependencies)
-                            {
-                                DependencyGraphItem runtimeDependencyGraphItem = new()
-                                {
-                                    LibraryDependency = dep,
-                                    LibraryDependencyIndex = findLibraryCachedAsyncResult.GetDependencyIndexForDependency(runtimeDependencyIndex),
-                                    LibraryRangeIndex = findLibraryCachedAsyncResult.GetRangeIndexForDependency(runtimeDependencyIndex),
-                                    Path = LibraryRangeInterningTable.CreatePathToRef(pathToCurrentRef, currentRefRangeIndex),
-                                    Suppressions = suppressions,
-                                    IsDirectPackageReferenceFromRootProject = false,
-                                };
-
-                                refImport.Enqueue(runtimeDependencyGraphItem);
-
-                                _ = findLibraryEntryCache.GetOrAddAsync(
-                                    runtimeDependencyGraphItem.LibraryRangeIndex,
-                                    async static state =>
-                                    {
-                                        return await FindLibraryEntryResult.CreateAsync(
-                                            state.libraryDependency,
-                                            state.dependencyIndex,
-                                            state.rangeIndex,
-                                            state.Framework,
-                                            state.context,
-                                            state.libraryDependencyInterningTable,
-                                            state.libraryRangeInterningTable,
-                                            state.token);
-                                    },
-                                    (libraryDependency: dep, dependencyIndex: runtimeDependencyGraphItem.LibraryDependencyIndex, rangeIndex: runtimeDependencyGraphItem.LibraryRangeIndex, pair.Framework, context, libraryDependencyInterningTable, libraryRangeInterningTable, token),
-                                    token);
-
-                                runtimeDependencyIndex++;
-                            }
-                        }
                     }
                 }
 
@@ -818,6 +777,13 @@ namespace NuGet.Commands
                     if (findLibraryEntryCache.TryGetValue(chosenRefRangeIndex, out Task<FindLibraryEntryResult>? nodeTask))
                     {
                         FindLibraryEntryResult node = await nodeTask;
+
+                        GraphItem<RemoteResolveResult> graphItem = node.Item;
+
+                        if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) && node.ResultByRuntimeIdentifier != null && node.ResultByRuntimeIdentifier.TryGetValue(pair.RuntimeIdentifier, out FindLibraryEntryResult? resultForRuntime))
+                        {
+                            node = resultForRuntime;
+                        }
 
                         flattenedGraphItems.Add(node.Item);
 
@@ -963,7 +929,14 @@ namespace NuGet.Commands
                             FindLibraryEntryResult findLibraryEntryResult = await findLibraryEntryCache.GetValueAsync(chosenItemRangeIndex);
 
                             var newGraphNode = new GraphNode<RemoteResolveResult>(actualDep.LibraryRange);
-                            newGraphNode.Item = findLibraryEntryResult.Item;
+                            if (!string.IsNullOrWhiteSpace(pair.RuntimeIdentifier) && findLibraryEntryResult.ResultByRuntimeIdentifier != null && findLibraryEntryResult.ResultByRuntimeIdentifier.TryGetValue(pair.RuntimeIdentifier, out FindLibraryEntryResult? findLibraryEntryResultForRuntime))
+                            {
+                                newGraphNode.Item = findLibraryEntryResultForRuntime.Item;
+                            }
+                            else
+                            {
+                                newGraphNode.Item = findLibraryEntryResult.Item;
+                            }
 
                             if (chosenItem.IsCentrallyPinnedTransitivePackage)
                             {
@@ -1387,6 +1360,7 @@ namespace NuGet.Commands
                 LibraryDependencyInterningTable libraryDependencyInterningTable,
                 LibraryRangeInterningTable libraryRangeInterningTable)
             {
+                LibraryDependency = libraryDependency;
                 Item = resolvedItem;
                 DependencyIndex = itemDependencyIndex;
                 RangeIndex = itemRangeIndex;
@@ -1411,11 +1385,15 @@ namespace NuGet.Commands
                 }
             }
 
+            public LibraryDependency LibraryDependency { get; set; }
+
             public LibraryDependencyIndex DependencyIndex { get; }
 
             public GraphItem<RemoteResolveResult> Item { get; }
 
             public LibraryRangeIndex RangeIndex { get; }
+
+            public Dictionary<string, FindLibraryEntryResult>? ResultByRuntimeIdentifier { get; set; }
 
             public LibraryDependencyIndex GetDependencyIndexForDependency(int dependencyIndex)
             {
@@ -1427,12 +1405,12 @@ namespace NuGet.Commands
                 return _rangeIndices[dependencyIndex];
             }
 
-            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, NuGetFramework framework, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
+            public async static Task<FindLibraryEntryResult> CreateAsync(LibraryDependency libraryDependency, LibraryDependencyIndex dependencyIndex, LibraryRangeIndex rangeIndex, FrameworkRuntimePair frameworkRuntimePair, RemoteWalkContext context, LibraryDependencyInterningTable libraryDependencyInterningTable, LibraryRangeInterningTable libraryRangeInterningTable, CancellationToken cancellationToken)
             {
                 GraphItem<RemoteResolveResult> refItem = await ResolverUtility.FindLibraryEntryAsync(
                     libraryDependency.LibraryRange,
-                    framework,
-                    runtimeIdentifier: null,
+                    frameworkRuntimePair.Framework,
+                    string.IsNullOrWhiteSpace(frameworkRuntimePair.RuntimeIdentifier) ? null : frameworkRuntimePair.RuntimeIdentifier,
                     context,
                     cancellationToken);
 
