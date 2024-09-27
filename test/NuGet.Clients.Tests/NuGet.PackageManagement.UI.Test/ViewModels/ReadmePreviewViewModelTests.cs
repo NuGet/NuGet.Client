@@ -45,7 +45,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public async Task ReadmePreviewViewModel_LoadReadmeAsync_WithoutReadmeUrl_NoReadmeReturned(string readmeUrl)
+        public async Task LoadReadmeAsync_WithoutReadmeUrl_NoReadmeReturned(string readmeUrl)
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
