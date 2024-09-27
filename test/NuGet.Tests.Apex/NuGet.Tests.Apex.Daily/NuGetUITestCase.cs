@@ -31,7 +31,6 @@ namespace NuGet.Tests.Apex.Daily
         public void InstallPackageToWebSiteProjectFromUI()
         {
             // Arrange
-            EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
@@ -55,7 +54,6 @@ namespace NuGet.Tests.Apex.Daily
         public void UpdateWebSitePackageFromUI()
         {
             // Arrange
-            EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
@@ -80,7 +78,6 @@ namespace NuGet.Tests.Apex.Daily
         public void UninstallWebSitePackageFromUI()
         {
             // Arrange
-            EnsureVisualStudioHost();
             var dte = VisualStudio.Dte;
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
@@ -197,7 +194,6 @@ namespace NuGet.Tests.Apex.Daily
         public void InstallVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
-            EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
@@ -223,7 +219,6 @@ namespace NuGet.Tests.Apex.Daily
         public void UpdateVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {
             // Arrange
-            EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
@@ -256,7 +251,6 @@ namespace NuGet.Tests.Apex.Daily
         public void UninstallVulnerablePackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
-            EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "Testproject");
@@ -289,7 +283,6 @@ namespace NuGet.Tests.Apex.Daily
         public void InstallDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
-            EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
@@ -315,7 +308,6 @@ namespace NuGet.Tests.Apex.Daily
         public void UpdateDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion1, string packageVersion2)
         {
             // Arrange
-            EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "TestProject");
@@ -348,7 +340,6 @@ namespace NuGet.Tests.Apex.Daily
         public void UninstallDeprecatedPackageFromUI(ProjectTemplate projectTemplate, string packageName, string packageVersion)
         {
             // Arrange
-            EnsureVisualStudioHost();
             var solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, "Testproject");
@@ -584,8 +575,6 @@ namespace NuGet.Tests.Apex.Daily
         public void VerifyPackageNotRestoredAfterDisablingPackageRestore()
         {
             // Arrange
-            EnsureVisualStudioHost();
-
             SolutionService solutionService = VisualStudio.Get<SolutionService>();
             solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
             solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.MauiClassLibrary, "TestProject");
