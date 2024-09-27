@@ -6,14 +6,16 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
-using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
     public sealed class ReadmePreviewViewModel : ViewModelBase
     {
+        private bool _canDetermineReadmeDefined;
+        private bool _errorLoadingReadme;
         private INuGetPackageFileService _packageFileService;
+        private string _rawReadme;
 
         public ReadmePreviewViewModel(INuGetPackageFileService packageFileService)
         {
@@ -23,21 +25,18 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _rawReadme = string.Empty;
         }
 
-        private bool _errorLoadingReadme;
         public bool ErrorLoadingReadme
         {
             get => _errorLoadingReadme;
             set => SetAndRaisePropertyChanged(ref _errorLoadingReadme, value);
         }
 
-        private string _rawReadme;
         public string ReadmeMarkdown
         {
             get => _rawReadme;
             set => SetAndRaisePropertyChanged(ref _rawReadme, value);
         }
 
-        private bool _canDetermineReadmeDefined;
         public bool CanDetermineReadmeDefined
         {
             get => _canDetermineReadmeDefined;

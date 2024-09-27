@@ -481,7 +481,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         /// <summary>
-        /// Creates a NuGet package with .nupkg extension and with a PNG image named "icon.png"
+        /// Creates a NuGet package with .nupkg extension and with a PNG image named "icon.png" and a MD readme named "readme.md"
         /// </summary>
         /// <param name="path">Path to NuGet package</param>
         /// <param name="iconName">Icon filename with .png extension</param>
@@ -515,7 +515,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             File.WriteAllText(iconPath, readmeContent);
 
-            // create png image
+            // create md readme
             var readmePath = Path.Combine(folderPath, readmeName);
             var readmeDir = Path.GetDirectoryName(readmePath);
             Directory.CreateDirectory(readmeDir);
