@@ -166,6 +166,25 @@ namespace NuGet.Protocol.Core.Types
         }
 
         /// <summary>
+        /// Attempts to retrieve a cached <see cref="ServiceIndexResourceV3"/> object from the provider cache.
+        /// </summary>
+        public bool GetServiceIndexV3FromCache(out ServiceIndexResourceV3 result)
+        {
+            if (_providerCache.TryGetValue(typeof(ServiceIndexResourceV3), out INuGetResourceProvider[] providers))
+            {
+                if (providers.FirstOrDefault() is ServiceIndexResourceV3Provider provider)
+                {
+                    result = provider.GetIndexFromCache(PackageSource.Source);
+                    return result != null;
+                }
+            }
+
+            result = null;
+            return false;
+        }
+
+
+        /// <summary>
         /// Initialize provider cache
         /// </summary>
         /// <param name="providers"></param>

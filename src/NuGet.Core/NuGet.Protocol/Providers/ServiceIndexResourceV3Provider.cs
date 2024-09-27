@@ -227,6 +227,16 @@ namespace NuGet.Protocol
             }
         }
 
+        internal ServiceIndexResourceV3 GetIndexFromCache(string sourceUri)
+        {
+            if (_cache.TryGetValue(sourceUri, out ServiceIndexCacheInfo cacheInfo))
+            {
+                return cacheInfo.Index;
+            }
+
+            return null;
+        }
+
         protected class ServiceIndexCacheInfo
         {
             public ServiceIndexResourceV3 Index { get; set; }

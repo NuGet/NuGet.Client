@@ -67,7 +67,20 @@ namespace NuGet.Protocol
 
         public void AddSourceRepository(SourceRepository source)
         {
-            _cachedSources.TryAdd(source.PackageSource.Source, source);
+            // Update or add to the dictionary
+            _cachedSources[source.PackageSource.Source] = source;
+
+            // Find the existing source in the list
+            var existingSource = _repositories.FirstOrDefault(r => r.PackageSource.Source == source.PackageSource.Source);
+
+            if (existingSource != null)
+            {
+                _repositories[_repositories.IndexOf(existingSource)] = source;
+            }
+            else
+            {
+                _repositories.Add(source);
+            }
         }
 
         public IPackageSourceProvider PackageSourceProvider
