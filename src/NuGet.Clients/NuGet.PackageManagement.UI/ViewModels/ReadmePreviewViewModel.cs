@@ -24,36 +24,24 @@ namespace NuGet.PackageManagement.UI.ViewModels
         }
 
         private bool _errorLoadingReadme;
-
         public bool ErrorLoadingReadme
         {
             get => _errorLoadingReadme;
-            set
-            {
-                SetAndRaisePropertyChanged(ref _errorLoadingReadme, value);
-            }
+            set => SetAndRaisePropertyChanged(ref _errorLoadingReadme, value);
         }
 
         private string _rawReadme;
-
         public string ReadmeMarkdown
         {
             get => _rawReadme;
-            set
-            {
-                SetAndRaisePropertyChanged(ref _rawReadme, value);
-            }
+            set => SetAndRaisePropertyChanged(ref _rawReadme, value);
         }
 
         private bool _canDetermineReadmeDefined;
-
         public bool CanDetermineReadmeDefined
         {
             get => _canDetermineReadmeDefined;
-            set
-            {
-                SetAndRaisePropertyChanged(ref _canDetermineReadmeDefined, value);
-            }
+            set => SetAndRaisePropertyChanged(ref _canDetermineReadmeDefined, value);
         }
 
         public async Task LoadReadmeAsync(string rawReadmeUrl, CancellationToken cancellationToken)
