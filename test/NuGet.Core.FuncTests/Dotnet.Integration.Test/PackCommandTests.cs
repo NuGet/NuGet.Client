@@ -23,10 +23,8 @@ namespace Dotnet.Integration.Test
     [Collection(DotnetIntegrationCollection.Name)]
     public class PackCommandTests
     {
-        // Specifies a target framework for projects used during testing.  This should match the framework that this project was built against.
-#if NET8_0
-        private const string ProjectTargetFramework = "net9.0";
-#elif NET9_0
+        // Specifies a target framework for projects used during testing.  This should match the framework that the SDK being tested has.
+#if NET8_0 || NET9_0
         private const string ProjectTargetFramework = "net9.0";
 #else
 #error Update the logic for which target framework to use for tests projects!!!
