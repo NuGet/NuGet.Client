@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
     public class ReadmePreviewViewModelTests
     {
         [Fact]
-        public void ReadmePreviewViewModel_WithNullPackageFileService_ThrowsArgumentNullException()
+        public void Constructor_WithNullPackageFileService_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
