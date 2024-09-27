@@ -1,4 +1,2 @@
 #nullable enable
 ~NuGet.Protocol.Core.Types.SourceRepository.GetServiceIndexV3FromCache(out NuGet.Protocol.ServiceIndexResourceV3 result) -> bool
-~NuGet.Protocol.ServiceIndexEntry.ServiceIndexEntry(System.Uri uri, string type, NuGet.Versioning.SemanticVersion clientVersion, NuGet.Configuration.PackageSource packageSource) -> void
-~NuGet.Protocol.ServiceIndexResourceV3.ServiceIndexResourceV3(Newtonsoft.Json.Linq.JObject index, System.DateTime requestTime, NuGet.Configuration.PackageSource packageSource) -> void
