@@ -86,9 +86,8 @@ if [ "$DOTNET_SDK_TEST_VERSIONS" != "" ]; then
 else 
     echo "Installing .NET SDKs for functional tests..."
     # Get CLI Branches for testing
-    cat build/DotNetSdkTestVersions.txt | while IFS=$'\n' read -r CliArgs || [[ -n $line ]];
+    cat build/DotNetSdkTestVersions.txt | while IFS=$'\n' read -r CliArgs;
     echo $CliArgs
-    echo $line
     echo "done"
     do
         if [ "${CliArgs:0:1}" != "#" ] || [ "$CliArgs" == "" ]; then
