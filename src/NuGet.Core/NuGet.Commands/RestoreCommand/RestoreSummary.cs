@@ -29,8 +29,13 @@ namespace NuGet.Commands
         /// <summary>
         /// A boolean that specifies if NuGetAudit verified packages for known vulnerabilities
         /// </summary>
-        /// <remarks>This could be false either is NuGetAudit is disabled, but also if
-        /// no sources provided NuGetAudit with a vulnerability database.</remarks>
+        /// <remarks>This could be false if NuGetAudit is disabled, if
+        /// <list type="bullet">
+        /// <item>NuGetAudit is disabled</item>
+        /// <item>Project is already up to date (no-op restore)</item>
+        /// <item>No sources provided a vulnerability database</item>
+        /// </list>
+        /// </remarks>
         public bool AuditRan { get; }
 
         /// <summary>

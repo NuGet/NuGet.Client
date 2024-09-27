@@ -533,7 +533,7 @@ namespace NuGet.Commands
                 graphs,
                 _request.DependencyProviders.VulnerabilityInfoProviders,
                 _logger);
-            await audit.CheckPackageVulnerabilitiesAsync(token);
+            bool auditRan = await audit.CheckPackageVulnerabilitiesAsync(token);
 
             telemetry.TelemetryEvent[AuditLevel] = (int)audit.MinSeverity;
             telemetry.TelemetryEvent[AuditMode] = AuditUtility.GetString(audit.AuditMode);
@@ -563,7 +563,7 @@ namespace NuGet.Commands
             if (audit.GenerateOutputDurationSeconds.HasValue) { telemetry.TelemetryEvent[AuditDurationOutput] = audit.GenerateOutputDurationSeconds.Value; }
             telemetry.EndIntervalMeasure(AuditDurationTotal);
 
-            return audit.AuditRan;
+            return auditRan;
 
             void AddPackagesList(TelemetryActivity telemetry, string eventName, List<string> packages)
             {
