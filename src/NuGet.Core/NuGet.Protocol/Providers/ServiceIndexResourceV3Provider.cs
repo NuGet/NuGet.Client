@@ -210,7 +210,7 @@ namespace NuGet.Protocol
                 if (SemanticVersion.TryParse((string)versionToken, out version) &&
                     version.Major == 3)
                 {
-                    return new ServiceIndexResourceV3(json, utcNow, source);
+                    return new ServiceIndexResourceV3(json, utcNow);
                 }
                 else
                 {

@@ -201,6 +201,7 @@ namespace NuGet.VisualStudio.Telemetry
             var parentId = _parentId.ToString();
             int NumberOfHTTPSSourcesWithHTTPResource = 0;
             int NumberOfHTTPSSources = 0;
+            bool sendResourceTelemetry = false;
 
             foreach (var kvp in _data)
             {
@@ -241,6 +242,7 @@ namespace NuGet.VisualStudio.Telemetry
 
                 if (sourceRepository.GetServiceIndexV3FromCache(out ServiceIndexResourceV3 resource))
                 {
+                    sendResourceTelemetry |= true;
                     var entries = resource.Entries;
 
                     foreach (var entry in entries)
@@ -264,8 +266,11 @@ namespace NuGet.VisualStudio.Telemetry
                 }
             }
 
-            var resourceTelemetry = new ServiceIndexHttpResourcesTelemetry(NumberOfHTTPSSources, NumberOfHTTPSSourcesWithHTTPResource, "ServiceIndexHttpResourcesSummary");
-            TelemetryActivity.EmitTelemetryEvent(resourceTelemetry);
+            if (sendResourceTelemetry)
+            {
+                var resourceTelemetry = new ServiceIndexHttpResourcesTelemetry(NumberOfHTTPSSources, NumberOfHTTPSSourcesWithHTTPResource, "ServiceIndexHttpResourcesSummary");
+                TelemetryActivity.EmitTelemetryEvent(resourceTelemetry);
+            }
         }
 
         internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName, PackageSourceMapping packageSourceMappingConfiguration)
