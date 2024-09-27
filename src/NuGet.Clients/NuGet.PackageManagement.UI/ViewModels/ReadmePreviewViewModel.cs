@@ -64,7 +64,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
             if (!string.IsNullOrWhiteSpace(rawReadmeUrl))
             {
-
                 await TaskScheduler.Default;
 
                 var readmeStream = await _packageFileService.GetReadmeAsync(new Uri(rawReadmeUrl), cancellationToken);
