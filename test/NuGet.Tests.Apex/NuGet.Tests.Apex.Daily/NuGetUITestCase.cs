@@ -634,6 +634,104 @@ namespace NuGet.Tests.Apex.Daily
             CommonUtility.WaitForDirectoryNotExists(installedPackageFolderPath);
         }
 
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task InstallPackageToFSharpFromUI()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.FSharp, ProjectTemplate.ConsoleApplication, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UpdatePackageToFSharpFromUI()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV2);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.FSharp, ProjectTemplate.ConsoleApplication, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+
+            // Act
+            uiwindow.UpdatePackageFromUI(TestPackageName, TestPackageVersionV2);
+            solutionService.Build();
+
+            //// Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV2, Logger);
+        }
+
+        [TestMethod]
+        [Timeout(DefaultTimeout)]
+        public async Task UninstallPackageFromFSharpFromUI()
+        {
+            // Arrange
+            await CommonUtility.CreatePackageInSourceAsync(_pathContext.PackageSource, TestPackageName, TestPackageVersionV1);
+
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
+
+            var solutionService = VisualStudio.Get<SolutionService>();
+            solutionService.CreateEmptySolution("TestSolution", _pathContext.SolutionRoot);
+            var project = solutionService.AddProject(ProjectLanguage.FSharp, ProjectTemplate.ConsoleApplication, "TestProject");
+            VisualStudio.ClearOutputWindow();
+            solutionService.SaveAll();
+
+            CommonUtility.OpenNuGetPackageManagerWithDte(VisualStudio, Logger);
+
+            // Act
+            var uiwindow = nugetTestService.GetUIWindowfromProject(project);
+            uiwindow.InstallPackageFromUI(TestPackageName, TestPackageVersionV1);
+            solutionService.Build();
+
+            // Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+
+            // Act
+            uiwindow.UninstallPackageFromUI(TestPackageName);
+            solutionService.Build();
+
+            //// Assert
+            VisualStudio.AssertNoErrors();
+            CommonUtility.AssertPackageNotInAssetsFile(VisualStudio, project, TestPackageName, TestPackageVersionV1, Logger);
+        }
+
         public override void Dispose()
         {
             _pathContext.Dispose();
