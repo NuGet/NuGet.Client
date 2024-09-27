@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public void ReadmePreviewViewModel_Defaults()
+        public void Constructor_Defaults()
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public async Task ReadmePreviewViewModel_LoadReadmeAsync_WithReadmeUrl_ReadmeReturned()
+        public async Task LoadReadmeAsync_WithReadmeUrl_ReadmeReturned()
         {
             //Arrange
             var readmeContents = "readme contents";
