@@ -8,10 +8,8 @@ namespace Dotnet.Integration.Test
 {
     internal static class Constants
     {
-#if NET8_0
-        internal static readonly NuGetFramework DefaultTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(8, 0, 0, 0));
-#elif NET7_0
-        internal static readonly NuGetFramework DefaultTargetFramework = FrameworkConstants.CommonFrameworks.Net70;
+#if NET8_0 || NET9_0
+        internal static readonly NuGetFramework DefaultTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(9, 0, 0, 0));
 #else
         // Unknown target framework, update this list to support it
 #endif

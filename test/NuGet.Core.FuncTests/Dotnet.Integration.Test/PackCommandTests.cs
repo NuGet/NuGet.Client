@@ -25,7 +25,7 @@ namespace Dotnet.Integration.Test
     {
         // Specifies a target framework for projects used during testing.  This should match the framework that this project was built against.
 #if NET8_0
-        private const string ProjectTargetFramework = "net8.0";
+        private const string ProjectTargetFramework = "net9.0";
 #elif NET9_0
         private const string ProjectTargetFramework = "net9.0";
 #else
@@ -5696,7 +5696,7 @@ namespace ClassLibrary
         [InlineData("winforms")]
         [InlineData("winformscontrollib")]
         [InlineData("winformslib")]
-        [InlineData("razorclasslib")]
+        //[InlineData("razorclasslib")] Starting in .NET 9, this template requires Microsoft.AspNetCore.Components.Web which is only available via nuget.org and we don't want our tests to use that feed so that tests are fast
         public void Dotnet_New_Template_Restore_Pack_Success(string template)
         {
             // Arrange
