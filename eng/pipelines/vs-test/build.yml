@@ -14,8 +14,7 @@ steps:
 - task: MicroBuildSwixPlugin@4
   displayName: "Install Swix Plugin"
   inputs:
-    dropName: "Tests/$(System.TeamProject)/$(Build.Repository.Name)/$(Build.SourceBranchName)/$(Build.BuildNumber)"
-
+    dropName: "Tests/$(System.TeamProject)/$(Build.DefinitionName)/$(Build.SourceBranchName)/$(Build.BuildId)"
 - task: PowerShell@1
   displayName: "Run Configure.ps1"
   inputs:
