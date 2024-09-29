@@ -193,17 +193,18 @@ namespace Test.Utility.Signing
 
         internal CertStatus GetCertStatus(CertId certId, out X509Certificate2 certificate)
         {
+
             certificate = null;
 
-            if (certId.AlgorithmIdentifier.Algorithm.Value != Oids.Sha1)
+            if (certId.AlgorithmIdentifier.Algorithm.Value == Oids.Sha1)
             {
                 return CertStatus.FromUnknown();
             }
 
             if (_dnHash == null)
             {
-                using SHA256 sha256 = SHA256.Create();
-                _dnHash = sha256.ComputeHash(Certificate.SubjectName.RawData);
+                HashAlgorithm algorithm = certId.CreateHashAlgorithm();
+                _dnHash = algorithm.ComputeHash(Certificate.SubjectName.RawData);
             }
 
             if (!certId.IssuerNameHash.Span.SequenceEqual(_dnHash))

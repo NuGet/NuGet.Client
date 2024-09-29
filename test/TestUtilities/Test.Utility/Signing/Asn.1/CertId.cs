@@ -8,6 +8,7 @@ using System.Formats.Asn1;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Packaging.Signing;
 
 namespace Test.Utility.Signing
 {
@@ -94,6 +95,17 @@ namespace Test.Utility.Signing
                 writer.WriteOctetString(IssuerKeyHash.Span);
                 writer.WriteInteger(SerialNumber);
             }
+        }
+
+        internal HashAlgorithm CreateHashAlgorithm()
+        {
+            return AlgorithmIdentifier.Algorithm.Value switch
+            {
+                Oids.Sha256 => SHA256.Create(),
+                Oids.Sha384 => SHA384.Create(),
+                Oids.Sha512 => SHA512.Create(),
+                _ => throw new NotSupportedException("Unsupported hash algorithm."),
+            };
         }
     }
 }
