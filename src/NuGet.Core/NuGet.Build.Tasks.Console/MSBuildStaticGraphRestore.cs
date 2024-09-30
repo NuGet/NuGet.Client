@@ -139,6 +139,7 @@ namespace NuGet.Build.Tasks.Console
             try
             {
                 // todo: need to return Restore task output properties, like in NuGet.targets
+                // https://github.com/NuGet/Home/issues/13828
                 List<RestoreSummary> restoreSummaries = await BuildTasksUtility.RestoreAsync(
                     dependencyGraphSpec: dependencyGraphSpec,
                     interactive,
