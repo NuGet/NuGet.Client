@@ -290,7 +290,8 @@ namespace NuGet.Common
             }
             else
             {
-                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home), Home, DotNetHome);
+                return GetValueOrThrowMissingEnvVarsDotnet(() =>
+                    GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Home, DotNetHome);
             }
 #else
             if (RuntimeEnvironmentHelper.IsWindows)
@@ -313,7 +314,8 @@ namespace NuGet.Common
             }
             else
             {
-                return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
+                return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ??
+                    Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
             }
         }
 
