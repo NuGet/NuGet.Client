@@ -2696,7 +2696,8 @@ EndGlobal";
             allTargets.Should().Contain(condition);
         }
 
-        [Fact]
+        // https://github.com/NuGet/Home/issues/13829
+        [PlatformFact(SkipPlatform = Platform.Linux)]
         public async Task DotnetRestore_WithServerProvidingAuditData_RestoreTaskReturnsCountProperties()
         {
             // Arrange
