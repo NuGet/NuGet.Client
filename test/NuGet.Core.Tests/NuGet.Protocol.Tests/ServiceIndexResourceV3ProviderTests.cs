@@ -2,14 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -429,6 +432,96 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 // Assert
                 await Assert.ThrowsAsync<OperationCanceledException>(task);
             }
+        }
+
+        [Fact]
+        public async Task Query_LogsTelemetryForSourceResources()
+        {
+            // Arrange
+            var typeOccurrences = new Dictionary<string, int>
+            {
+                { "A", 1 },
+                { "B", 1 },
+                { "C", 1 },
+                { "D", 1 },
+            };
+
+            //The number of resources in the test INDEX.JSON
+            int numberOfResources = 4;
+            var telemetryService = new Mock<INuGetTelemetryService>();
+            var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
+            telemetryService
+                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
+
+            TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
+
+            var source = $"https://test/index.json";
+            var content = CreateServiceIndexWithFourResourceTypesTwoHTTP();
+
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
+            var provider = new ServiceIndexResourceV3Provider();
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                new INuGetResourceProvider[] { httpProvider, provider });
+
+            // Act
+            var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+
+            TelemetryEvent[] events = eventsQueue.ToArray();
+            var serviceIndexEntryEvents = events.Where(e => e.Name == "ServiceIndexEntrySummary");
+
+            // Assert
+            Assert.Equal(numberOfResources, serviceIndexEntryEvents.Count());
+
+            foreach (KeyValuePair<string, int> resourcesCount in typeOccurrences)
+            {
+                string type = resourcesCount.Key;
+                int count = resourcesCount.Value;
+
+                Assert.True(count == serviceIndexEntryEvents.Count(e => { var resourceType = Assert.IsType<string>(e["ResourceType"]); return resourceType == type; }), type);
+            }
+
+            Assert.True(2 == serviceIndexEntryEvents.Count(e => { var resourceType = Assert.IsType<bool>(e["ResourceIsHTTP"]); return resourceType == true; }));
+
+            Assert.True(2 == serviceIndexEntryEvents.Count(e => { var resourceType = Assert.IsType<bool>(e["ResourceIsHTTPS"]); return resourceType == true; }));
+        }
+
+        private static string CreateServiceIndexWithFourResourceTypesTwoHTTP()
+        {
+            var obj = new JObject
+            {
+                { "version", "3.1.0-beta" },
+                { "resources", new JArray
+                    {
+                        new JObject
+                        {
+                            { "@type", "A" },
+                            { "@id", "http://tempuri.org/A/5.0.0/2" },
+                            { "clientVersion", "5.0.0" },
+                        },
+                        new JObject
+                        {
+                            { "@type", "B" },
+                            { "@id", "http://tempuri.org/A/5.0.0/1" },
+                            { "clientVersion", "5.0.0" },
+                        },
+                        new JObject
+                        {
+                            { "@type", "C" },
+                            { "@id", "https://test" },
+                            { "clientVersion", "4.0.0" },
+                        },
+                        new JObject
+                        {
+                            { "@type", "D" },
+                            { "@id", "https://test" },
+                            { "clientVersion", "5.0.0" },
+                        },
+                    }
+                }
+            };
+
+            return obj.ToString();
         }
 
         private static string CreateTestIndex()
