@@ -122,6 +122,7 @@ namespace NuGet.PackageManagement.UI
         {
             project.InstalledVersion = installedVersion.Identity.Version;
             installedVersionsSet.Add(installedVersion.Identity.Version);
+            project.PackageLevel = installedVersion is ITransitivePackageReferenceContextInfo ? PackageLevel.Transitive : PackageLevel.TopLevel;
 
             if (project.PackageLevel == PackageLevel.TopLevel)
             {
@@ -156,11 +157,10 @@ namespace NuGet.PackageManagement.UI
                     }
                     else
                     {
-                        project.PackageLevel = packageContext is ITransitivePackageReferenceContextInfo ? PackageLevel.Transitive : PackageLevel.TopLevel;
                         UpdateProjectInstallationInfo(project, packageContext, installedVersionsSet);
                     }
 
-                    if (project?.InstalledVersion is not null && _searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
+                    if (project.InstalledVersion is not null && _searchResultPackage.VulnerableVersions.TryGetValue(project.InstalledVersion, out int vulnerable))
                     {
                         project.InstalledVersionMaxVulnerability = vulnerable;
                         vulnerabilitiesSet.Add(project.InstalledVersion);
