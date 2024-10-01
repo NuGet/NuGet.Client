@@ -206,6 +206,11 @@ namespace NuGet.Commands
                         continue;
                     }
 
+                    if (directPackageReferenceFromRootProject && importRefItem.LibraryDependency!.LibraryRange?.VersionRange?.IsFloating == true)
+                    {
+                        throw new InvalidOperationException("A transitive floating version was detected. This is not resolvable by the current algorithm. Please set RestoreUseLegacyDependencyResolver to true for this project. ");
+                    }
+
                     FindLibraryEntryResult refItemResult = await refItemTask;
 
                     LibraryDependencyTarget typeConstraint = currentRef.LibraryRange.TypeConstraint;
