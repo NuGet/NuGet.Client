@@ -1295,6 +1295,127 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
         }
 
+        // P1 -> P2 -> B *
+        // P1 -> A -> B 1.0.0
+        [Fact]
+        public async Task RestoreCommand_WithTransitiveFloatingVersion_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0")],
+                },
+                new SimpleTestPackageContext("b", "2.0.0")
+                );
+
+            // Setup project
+            var spec1 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            var spec2 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""b"": {
+                                ""version"": ""[*,)"",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // P1 -> P2 -> B [2.0.0, 3.0.0)
+        // P1 -> A -> B [2.5.0, )
+        // Packages available: A 1.0.0, B 3.0.0
+        // Failure with NU1107 - new algorithm logs an NU1603. That's more correct.
+        [Fact]
+        public async Task RestoreCommand_WithMissingVersions_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            await SimpleTestPackageUtility.CreatePackagesWithoutDependenciesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "[2.0.0, 3.0.0)")],
+                },
+                new SimpleTestPackageContext("b", "3.0.0")
+                );
+
+            // Setup project
+            var spec1 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            var spec2 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""b"": {
+                                ""version"": ""[2.5.0,)"",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2);
+        }
+
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
@@ -1318,7 +1439,7 @@ namespace NuGet.Commands.FuncTest
             RestoreResult legacyResult = await RunRestoreAsync(pathContext, legacyResolverProjects);
 
             // Assert
-            ValidateRestoreResults(result, legacyResult);
+            ValidateRestoreResults(legacyResult, result);
             return (result, legacyResult);
         }
 
