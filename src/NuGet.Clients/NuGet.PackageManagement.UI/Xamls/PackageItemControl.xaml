@@ -151,6 +151,12 @@
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
         <imaging:CrispImage
+                      Grid.Row="0"
+                      Width="16"
+                      Height="16"
+                      VerticalAlignment="Top"
+                      Moniker="{Binding BitmapStatusKnownMoniker}" />
+        <imaging:CrispImage
                       x:Name="_latestInstalledMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"

@@ -15,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Microsoft;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -531,6 +533,26 @@ namespace NuGet.PackageManagement.UI
                 {
                     _bitmapStatus = value;
                     OnPropertyChanged(nameof(BitmapStatus));
+                    OnPropertyChanged(nameof(BitmapStatusKnownMoniker));
+                }
+            }
+        }
+
+        public ImageMoniker BitmapStatusKnownMoniker
+        {
+            get
+            {
+                switch (BitmapStatus)
+                {
+                    case IconBitmapStatus.DefaultIcon:
+                    case IconBitmapStatus.DefaultIconDueToDecodingError:
+                    case IconBitmapStatus.DefaultIconDueToNullStream:
+                    case IconBitmapStatus.DefaultIconDueToRelativeUri:
+                        return KnownMonikers.StatusInformation;
+                    case IconBitmapStatus.Fetching:
+                        return KnownMonikers.Loading;
+                    default:
+                        return KnownMonikers.StatusInformation;
                 }
             }
         }
