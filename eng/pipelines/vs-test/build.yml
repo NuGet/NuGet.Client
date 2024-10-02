@@ -6,7 +6,7 @@ parameters:
   default: []
 
 steps:
-- ${{ each check in parameters.GitHubChecksToInitialize }}
+- ${{ each check in parameters.GitHubChecksToInitialize }}:
   - task: PowerShell@1
     displayName: "Set GitHub Check ${{ check.Name }} to pending"
     condition: ${{ checks.Enabled }}
