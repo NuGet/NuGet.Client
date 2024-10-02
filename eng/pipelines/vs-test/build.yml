@@ -13,7 +13,7 @@ steps:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
         Update-GitCommitStatus -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "${{ check.Name }}" -Status "pending" -TargetUrl $env:BUILDURL -Description "in progress"
 
 - task: MicroBuildLocalizationPlugin@4
