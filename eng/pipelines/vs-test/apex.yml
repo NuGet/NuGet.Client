@@ -150,6 +150,12 @@ stages:
 ## postDeployAndRunTestsStepList
 ##############################
       postDeployAndRunTestsStepList:
+        - task: PowerShell@1
+          displayName: "Test"
+          inputs:
+            scriptType: "inlineScript"
+            inlineScript: |
+              "This is a test"
         - ${{ if ne(parameters.GitHubStatusName, '') }}:
           - task: PowerShell@1
             displayName: "Set result status on GitHub Checks"
