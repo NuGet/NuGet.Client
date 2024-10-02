@@ -28,6 +28,7 @@ parameters:
     type: string
   - name: GitHubStatusName
     type: string
+    default: ''
 
 stages:
   - template: stages\visual-studio\build-to-build-upgrade\single-runsettings.yml@DartLabTemplates
