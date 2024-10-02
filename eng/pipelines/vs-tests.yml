@@ -85,11 +85,11 @@ stages:
       parameters:
         NuGetLocalizationType: ${{ parameters.NuGetLocalizationType }}
         GitHubChecksToInitialize:
-        - name:     GitHubStatusName: "VS tests - E2E part 1"
+        - name: "VS tests - E2E part 1"
           enabled: "ne(variables['RunEndToEndTests'], 'false')"
-        - name:     GitHubStatusName: "VS tests - E2E part 2"
+        - name: "VS tests - E2E part 2"
           enabled: "ne(variables['RunEndToEndTests'], 'false')"
-        - name:     GitHubStatusName: "VS tests - Apex"
+        - name: "VS tests - Apex"
           enabled: "ne(variables['RunApexTests'], 'false')"
 
 # Dartlab's template defines this in its own stage

@@ -3,6 +3,7 @@ parameters:
   type: string
 - name: GitHubChecksToInitialize
   type: object
+  default: []
 
 steps:
 - ${{ each check in parameters.GitHubChecksToInitialize }}
