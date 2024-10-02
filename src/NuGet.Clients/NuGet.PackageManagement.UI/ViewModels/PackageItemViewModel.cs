@@ -534,25 +534,46 @@ namespace NuGet.PackageManagement.UI
                     _bitmapStatus = value;
                     OnPropertyChanged(nameof(BitmapStatus));
                     OnPropertyChanged(nameof(BitmapStatusKnownMoniker));
+                    OnPropertyChanged(nameof(BitmapStatusToolTip));
                 }
             }
         }
 
-        public ImageMoniker BitmapStatusKnownMoniker
+        public ImageMoniker? BitmapStatusKnownMoniker
+        {
+            get
+            {
+                //ConnectionOffline
+                //Disconnect
+
+                switch (BitmapStatus)
+                {
+                    case IconBitmapStatus.DefaultIconDueToDecodingError:
+                    case IconBitmapStatus.DefaultIconDueToNullStream:
+                    case IconBitmapStatus.DefaultIconDueToRelativeUri:
+                        return KnownMonikers.CloudError;
+                    //case IconBitmapStatus.Fetching:
+                    //  return KnownMonikers.Loading;
+                    default:
+                        return null;
+                }
+            }
+        }
+
+        public string BitmapStatusToolTip
         {
             get
             {
                 switch (BitmapStatus)
                 {
-                    case IconBitmapStatus.DefaultIcon:
                     case IconBitmapStatus.DefaultIconDueToDecodingError:
                     case IconBitmapStatus.DefaultIconDueToNullStream:
                     case IconBitmapStatus.DefaultIconDueToRelativeUri:
-                        return KnownMonikers.StatusInformation;
-                    case IconBitmapStatus.Fetching:
-                        return KnownMonikers.Loading;
+                        return "The icon couldn't be retrieved. Showing default package icon.";
+                    //case IconBitmapStatus.Fetching:
+                    //  return KnownMonikers.Loading;
                     default:
-                        return KnownMonikers.StatusInformation;
+                        return null;
                 }
             }
         }

@@ -154,8 +154,12 @@
                       Grid.Row="0"
                       Width="16"
                       Height="16"
+                      Margin="-5,-5,0,0"
+                      HorizontalAlignment="Left"
                       VerticalAlignment="Top"
-                      Moniker="{Binding BitmapStatusKnownMoniker}" />
+                      Moniker="{Binding BitmapStatusKnownMoniker}"
+                      ToolTip="{Binding BitmapStatusToolTip}"
+                      Visibility="{Binding Path=BitmapStatusKnownMoniker, Converter={StaticResource NullToVisibilityConverter}}" />
         <imaging:CrispImage
                       x:Name="_latestInstalledMark"
                       Grid.Row="0"
