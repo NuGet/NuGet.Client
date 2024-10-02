@@ -200,22 +200,12 @@ stages:
         testRunTitle: "NuGet.Client EndToEnd Tests On Windows"
       condition: "succeededOrFailed()"
 
-##############################
-## postDeployAndRunTestsStepList
-##############################
-      postDeployAndRunTestsStepList:
-        - task: PowerShell@1
-          displayName: "Test"
-          inputs:
-            scriptType: "inlineScript"
-            inlineScript: |
-              "This is a test"
-        - ${{ if ne(parameters.GitHubStatusName, '') }}:
-          - task: PowerShell@1
-            displayName: "Set result status on GitHub Checks"
-            inputs:
-              scriptType: "inlineScript"
-              inlineScript: |
-                . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
-                SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "${{ parameters.GitHubStatusName }}"
-            condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
+    - ${{ if ne(parameters.GitHubStatusName, '') }}:
+      - task: PowerShell@1
+        displayName: "Set result status on GitHub Checks"
+        inputs:
+          scriptType: "inlineScript"
+          inlineScript: |
+            . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
+            SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "${{ parameters.GitHubStatusName }}"
+        condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
