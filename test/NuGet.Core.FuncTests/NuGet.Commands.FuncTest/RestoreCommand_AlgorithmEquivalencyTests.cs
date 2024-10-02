@@ -1342,12 +1342,19 @@ namespace NuGet.Commands.FuncTest
 
         // P1 -> P2 -> B *
         // P1 -> A -> B 1.0.0
-        // TODO: *-*
-        [Fact]
-        public async Task RestoreCommand_WithTransitiveFloatingVersion_VerifiesEquivalency()
+        [Theory]
+        [InlineData("*")]
+        [InlineData("*-*")]
+        [InlineData("2.*")]
+        [InlineData("2.*-*")]
+        [InlineData("2.0.*")]
+        [InlineData("2.0.*-*")]
+        public async Task RestoreCommand_WithTransitiveFloatingVersion_VerifiesEquivalency(string floatingVersion)
         {
             // Arrange
             using var pathContext = new SimpleTestPathContext();
+
+            var versionRange = VersionRange.Parse(floatingVersion);
 
             await SimpleTestPackageUtility.CreatePackagesAsync(
                 pathContext.PackageSource,
@@ -1379,7 +1386,7 @@ namespace NuGet.Commands.FuncTest
                     ""net472"": {
                         ""dependencies"": {
                             ""b"": {
-                                ""version"": ""[*,)"",
+                                ""version"": """ + versionRange.ToString() + @""",
                                 ""target"": ""Package"",
                             },
                         }
