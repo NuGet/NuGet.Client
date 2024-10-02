@@ -53,11 +53,11 @@ namespace NuGet.Packaging
             }
             catch (Exception ex)
             {
-                log.LogWarning(string.Format(CultureInfo.CurrentCulture,
+                var message = string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_LoadingHashFile,
-                    path, ex.Message));
+                    path, ex.Message);
 
-                throw;
+                throw new Exception(message);
             }
         }
 

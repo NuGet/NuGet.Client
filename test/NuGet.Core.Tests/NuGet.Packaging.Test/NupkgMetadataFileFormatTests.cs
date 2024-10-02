@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -97,11 +97,11 @@ namespace NuGet.Packaging.Test
             // Act
             using (var stringReader = new StringReader(contents))
             {
-                Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
-            }
+                var ex = Assert.Throws<Exception>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
 
-            // Assert
-            Assert.Equal(1, logger.Messages.Count);
+                // Assert
+                Assert.Contains("Error parsing nupkg metadata file", ex.Message);
+            }
         }
 
         [Fact]
@@ -113,11 +113,11 @@ namespace NuGet.Packaging.Test
             // Act
             using (var stringReader = new StringReader(@"{""version"":"))
             {
-                Assert.Throws<JsonReaderException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
-            }
+                var ex = Assert.Throws<Exception>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
 
-            // Assert
-            Assert.Equal(1, logger.Messages.Count);
+                // Assert
+                Assert.Contains("Error parsing nupkg metadata file", ex.Message);
+            }
         }
 
         [Fact]
