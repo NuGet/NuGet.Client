@@ -1412,6 +1412,133 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
         }
 
+        // P1 -> P2 -> A [1.0.0] -> B 1.0.0
+        // P1 -> C 1.0.0 -> B 2.0.0
+        // P1 -> B 2.0.0
+        [Fact]
+        public async Task RestoreCommand_WithTransitiveExactVersionConflict_OverridenByDirectDependency_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var versionRange = VersionRange.Parse("2.0.0");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "[1.0.0]")],
+                },
+                new SimpleTestPackageContext("c", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "2.0.0")],
+                }
+                );
+
+            // Setup project
+            var spec1 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""c"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            },
+                            ""c"": {
+                                ""version"": ""[2.0.0,)"",
+                                ""target"": ""Package"",
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            var spec2 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": """ + versionRange.ToString() + @""",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2);
+            result.Success.Should().BeFalse();
+        }
+
+        // P1 -> P2 -> A [1.0.0] -> B 1.0.0
+        // P1 -> C 1.0.0 -> B 2.0.0
+        [Fact]
+        public async Task RestoreCommand_WithTransitiveExactVersionCausingVersionConflict_VerifiesEquivalency()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var versionRange = VersionRange.Parse("2.0.0");
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "[1.0.0]")],
+                },
+                new SimpleTestPackageContext("c", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "2.0.0")],
+                }
+                );
+
+            // Setup project
+            var spec1 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""c"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            var spec2 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": """ + versionRange.ToString() + @""",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2);
+            result.Success.Should().BeFalse();
+        }
+
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
