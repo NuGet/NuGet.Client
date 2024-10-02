@@ -511,6 +511,7 @@ namespace NuGet.DependencyResolver
                     versionRange.MinVersion.Patch,
                     int.MaxValue);
             }
+            // TODO: This is definitely a bug.
             else
             {
                 return new NuGetVersion(
