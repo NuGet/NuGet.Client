@@ -1,8 +1,20 @@
 parameters:
 - name: NuGetLocalizationType
   type: string
+- name: GitHubChecksToInitialize
+  type: object
 
 steps:
+- ${{ each check in parameters.GitHubChecksToInitialize }}
+  - task: PowerShell@1
+    displayName: "Set GitHub Check ${{ check.Name }} to pending"
+    condition: ${{ checks.Enabled }}
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        . $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\scripts\\PostGitCommitStatus.ps1
+        Update-GitCommitStatus -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "${{ check.Name }}" -Status "pending" -TargetUrl $env:BUILDURL -Description "in progress"
+
 - task: MicroBuildLocalizationPlugin@4
   displayName: "Install Localization Plugin"
 
