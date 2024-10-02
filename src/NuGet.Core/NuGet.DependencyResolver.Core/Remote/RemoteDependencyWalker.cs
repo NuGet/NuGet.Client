@@ -511,6 +511,10 @@ namespace NuGet.DependencyResolver
                     versionRange.MinVersion.Patch,
                     int.MaxValue);
             }
+            else if (versionRange.Float.FloatBehavior == NuGetVersionFloatBehavior.AbsoluteLatest)
+            {
+                return new NuGetVersion(int.MaxValue, int.MaxValue, int.MaxValue, int.MaxValue);
+            }
             else
             {
                 return new NuGetVersion(
