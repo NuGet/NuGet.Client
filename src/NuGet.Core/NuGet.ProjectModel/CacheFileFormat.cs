@@ -5,8 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using NuGet.Common;
 
 namespace NuGet.ProjectModel
@@ -35,8 +34,9 @@ namespace NuGet.ProjectModel
         {
             try
             {
-                var json = JsonUtility.LoadJson(reader);
-                var cacheFile = ReadCacheFile(json);
+                string jsonString = reader.ReadToEnd();
+                var json = JsonDocument.Parse(jsonString);
+                var cacheFile = ReadCacheFile(json.RootElement);
                 return cacheFile;
             }
             catch (Exception ex)
@@ -76,30 +76,29 @@ namespace NuGet.ProjectModel
 
         private static void Write(TextWriter textWriter, CacheFile cacheFile)
         {
-            using (var jsonWriter = new JsonTextWriter(textWriter))
-            {
-                jsonWriter.Formatting = Formatting.Indented;
-                var json = GetCacheFile(cacheFile);
-                json.WriteTo(jsonWriter);
-            }
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            string jsonString = JsonSerializer.Serialize(GetCacheFile(cacheFile), options);
+            textWriter.Write(jsonString);
         }
 
-        private static CacheFile ReadCacheFile(JObject cursor)
+        private static CacheFile ReadCacheFile(JsonElement cursor)
         {
-            var version = ReadInt(cursor[VersionProperty]);
-            var hash = ReadString(cursor[DGSpecHashProperty]);
-            var success = ReadBool(cursor[SuccessProperty]);
-            var cacheFile = new CacheFile(hash);
-            cacheFile.Version = version;
-            cacheFile.Success = success;
+            var version = cursor.GetProperty(VersionProperty).GetInt32();
+            var hash = cursor.GetProperty(DGSpecHashProperty).GetString();
+            var success = cursor.GetProperty(SuccessProperty).GetBoolean();
+            var cacheFile = new CacheFile(hash)
+            {
+                Version = version,
+                Success = success
+            };
 
             if (version >= 2)
             {
-                cacheFile.ProjectFilePath = ReadString(cursor[ProjectFilePathProperty]);
+                cacheFile.ProjectFilePath = cursor.GetProperty(ProjectFilePathProperty).GetString();
                 cacheFile.ExpectedPackageFilePaths = new List<string>();
-                foreach (JToken expectedFile in cursor[ExpectedPackageFilesProperty])
+                foreach (JsonElement expectedFile in cursor.GetProperty(ExpectedPackageFilesProperty).EnumerateArray())
                 {
-                    string path = ReadString(expectedFile);
+                    string path = expectedFile.GetString();
 
                     if (!string.IsNullOrWhiteSpace(path))
                     {
@@ -107,57 +106,29 @@ namespace NuGet.ProjectModel
                     }
                 }
 
-                cacheFile.LogMessages = LockFileFormat.ReadLogMessageArray(cursor[LockFileFormat.LogsProperty] as JArray, cacheFile.ProjectFilePath);
+                cacheFile.LogMessages = LockFileFormat.ReadLogMessageArray(cursor.GetProperty(LockFileFormat.LogsProperty), cacheFile.ProjectFilePath);
             }
 
             return cacheFile;
         }
 
-        private static JObject GetCacheFile(CacheFile cacheFile)
+        private static object GetCacheFile(CacheFile cacheFile)
         {
-            var json = new JObject();
-            json[VersionProperty] = WriteInt(cacheFile.Version);
-            json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
-            json[SuccessProperty] = WriteBool(cacheFile.Success);
+            var json = new Dictionary<string, object>
+            {
+                [VersionProperty] = cacheFile.Version,
+                [DGSpecHashProperty] = cacheFile.DgSpecHash,
+                [SuccessProperty] = cacheFile.Success
+            };
 
             if (cacheFile.Version >= 2)
             {
                 json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
-                json[ExpectedPackageFilesProperty] = new JArray(cacheFile.ExpectedPackageFilePaths);
-                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new JArray() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFilePath);
+                json[ExpectedPackageFilesProperty] = cacheFile.ExpectedPackageFilePaths;
+                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new List<object>() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFilePath);
             }
 
             return json;
-        }
-
-        private static string ReadString(JToken json)
-        {
-            return json.Value<string>();
-        }
-
-        private static JToken WriteString(string item)
-        {
-            return item != null ? new JValue(item) : JValue.CreateNull();
-        }
-
-        private static int ReadInt(JToken json)
-        {
-            return json.Value<int>();
-        }
-
-        private static JToken WriteInt(int item)
-        {
-            return new JValue(item);
-        }
-
-        private static bool ReadBool(JToken json)
-        {
-            return json.Value<bool>();
-        }
-
-        private static JToken WriteBool(bool item)
-        {
-            return new JValue(item);
         }
     }
 }
