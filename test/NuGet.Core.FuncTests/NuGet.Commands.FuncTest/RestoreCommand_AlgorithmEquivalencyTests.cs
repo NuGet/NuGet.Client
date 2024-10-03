@@ -1345,6 +1345,7 @@ namespace NuGet.Commands.FuncTest
         [Theory]
         [InlineData("*")]
         [InlineData("*-*")]
+        [InlineData("*-rc.*")]
         [InlineData("2.*")]
         [InlineData("2.*-*")]
         [InlineData("2.0.*")]
@@ -1361,6 +1362,76 @@ namespace NuGet.Commands.FuncTest
                 new SimpleTestPackageContext("a", "1.0.0")
                 {
                     Dependencies = [new SimpleTestPackageContext("b", "1.0.0")],
+                },
+                new SimpleTestPackageContext("b", "2.0.0")
+                );
+
+            // Setup project
+            var spec1 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0,)"",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            var spec2 = @"
+                {
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                            ""b"": {
+                                ""version"": """ + versionRange.ToString() + @""",
+                                ""target"": ""Package"",
+                            },
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var project1 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, spec1);
+            var project2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, spec2);
+            project1 = project1.WithTestProjectReference(project2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, project1, project2);
+            result.Success.Should().BeTrue();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(3);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        // P1 -> P2 -> B 2.*-preview.*
+        // P1 -> A -> B 2.0.0-preview.1
+        [Theory]
+        [InlineData("*-rc.*")]
+        [InlineData("2.*-preview.*")]
+        [InlineData("2.0.*-preview.*")]
+        [InlineData("2.0.0.*-preview.*")]
+        public async Task RestoreCommand_WithPrereleaseTransitiveVersion_VerifiesEquivalency(string floatingVersion)
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+
+            var versionRange = VersionRange.Parse(floatingVersion);
+
+            await SimpleTestPackageUtility.CreatePackagesAsync(
+                pathContext.PackageSource,
+                new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "2.0.0-preview.1")],
                 },
                 new SimpleTestPackageContext("b", "2.0.0")
                 );
