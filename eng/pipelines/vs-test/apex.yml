@@ -163,6 +163,6 @@ stages:
             inputs:
               scriptType: "inlineScript"
               inlineScript: |
-            . $(Build.StagingDirectory)\\scripts\\utils\\PostGitCommitStatus.ps1
+                . $(Build.StagingDirectory)\\scripts\\utils\\PostGitCommitStatus.ps1
                 SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(System.AccessToken) -CommitSha $(Build.SourceVersion) -TestName "${{ parameters.GitHubStatusName }}"
             condition: "not(eq(variables['ManualGitHubChecks'], 'false'))"
