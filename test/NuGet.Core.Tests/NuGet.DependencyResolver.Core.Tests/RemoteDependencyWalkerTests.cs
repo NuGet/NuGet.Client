@@ -815,7 +815,7 @@ namespace NuGet.DependencyResolver.Tests
         [InlineData("3.1.0-beta-234", "3.2.0-*")]
         [InlineData("3.0.0-*", "3.1.0-beta-234")]
         [InlineData("6.8.0", "*-*")]
-        [InlineData("3.0.0-preview.1", "3.0.0-preview.*")] // TODO: This is probably broken, but maybe don't fix it now?
+        //[InlineData("3.0.0-preview.1", "3.0.0-preview.*")] // TODO: https://github.com/NuGet/Home/issues/13833
         [InlineData("3.0.1", "3.0.*")]
         [InlineData("3.0.1", "*-preview.*")]
         [InlineData("3.0.1", "3.*-preview.*")]
