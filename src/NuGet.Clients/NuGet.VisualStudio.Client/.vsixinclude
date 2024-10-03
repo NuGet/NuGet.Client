@@ -1,64 +1,35 @@
 # NuGet delay signed assemblies
 NuGet.Console.dll
-NuGet.Console.resources.dlls
 NuGet.Credentials.dll
-NuGet.Credentials.resources.dlls
 NuGet.PackageManagement.PowerShellCmdlets.dll
-NuGet.PackageManagement.PowerShellCmdlets.resources.dlls
 NuGet.PackageManagement.VisualStudio.dll
-NuGet.PackageManagement.VisualStudio.resources.dlls
 NuGet.SolutionRestoreManager.dll
-NuGet.SolutionRestoreManager.resources.dlls
 NuGet.Tools.dll
-NuGet.Tools.resources.dlls
 NuGet.VisualStudio.dll
-NuGet.VisualStudio.resources.dlls
 NuGet.VisualStudio.Common.dll
-NuGet.VisualStudio.Common.resources.dlls
 NuGet.VisualStudio.Contracts.dll
-NuGet.VisualStudio.Contracts.resources.dlls
 NuGet.VisualStudio.Interop.dll
-NuGet.VisualStudio.Interop.resources.dlls
 NuGet.VisualStudio.Implementation.dll
-NuGet.VisualStudio.Implementation.resources.dlls
 NuGet.VisualStudio.Internal.Contracts.dll
-NuGet.VisualStudio.Internal.Contracts.resources.dlls
 NuGet.VisualStudio.OnlineEnvironment.Client.dll
-NuGet.VisualStudio.OnlineEnvironment.Client.resources.dlls
 
 # MS delay signed assemblies
 Microsoft.Build.NuGetSdkResolver.dll
-Microsoft.Build.NuGetSdkResolver.resources.dlls
 NuGet.Build.Tasks.dll
-NuGet.Build.Tasks.resources.dlls
 NuGet.Commands.dll
-NuGet.Commands.resources.dlls
 NuGet.Common.dll
-NuGet.Common.resources.dlls
 NuGet.Configuration.dll
-NuGet.Configuration.resources.dlls
 NuGet.DependencyResolver.Core.dll
-NuGet.DependencyResolver.Core.resources.dlls
 NuGet.Frameworks.dll
-NuGet.Frameworks.resources.dlls
 NuGet.Indexing.dll
-NuGet.Indexing.resources.dlls
 NuGet.LibraryModel.dll
-NuGet.LibraryModel.resources.dlls
 NuGet.PackageManagement.dll
-NuGet.PackageManagement.resources.dlls
 NuGet.PackageManagement.UI.dll
-NuGet.PackageManagement.UI.resources.dlls
 NuGet.Packaging.dll
-NuGet.Packaging.resources.dlls
 NuGet.ProjectModel.dll
-NuGet.ProjectModel.resources.dlls
 NuGet.Protocol.dll
-NuGet.Protocol.resources.dlls
 NuGet.Resolver.dll
-NuGet.Resolver.resources.dlls
 NuGet.Versioning.dll
-NuGet.Versioning.resources.dlls
 
 # 3rd party dlls to keep
 Lucene.Net.dll
@@ -67,5 +38,3 @@ Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
 Newtonsoft.Json.dll
-
-
