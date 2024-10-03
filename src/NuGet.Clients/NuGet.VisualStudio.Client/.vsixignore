@@ -92,33 +92,3 @@ System.Resources.Extensions.dll
 System.Text.Encodings.Web.dll
 System.Text.Json.dll
 System.Web.Http.dll
-
- NuGet.Console.resources.dlls
- NuGet.Credentials.resources.dlls
- NuGet.PackageManagement.PowerShellCmdlets.resources.dlls
- NuGet.PackageManagement.VisualStudio.resources.dlls
- NuGet.SolutionRestoreManager.resources.dlls
- NuGet.Tools.resources.dlls
- NuGet.VisualStudio.resources.dlls
- NuGet.VisualStudio.Common.resources.dlls
- NuGet.VisualStudio.Contracts.resources.dlls
- NuGet.VisualStudio.Interop.resources.dlls
- NuGet.VisualStudio.Implementation.resources.dlls
- NuGet.VisualStudio.Internal.Contracts.resources.dlls
- NuGet.VisualStudio.OnlineEnvironment.Client.resources.dlls
- Microsoft.Build.NuGetSdkResolver.resources.dlls
- NuGet.Build.Tasks.resources.dlls
- NuGet.Commands.resources.dlls
- NuGet.Common.resources.dlls
- NuGet.Configuration.resources.dlls
- NuGet.DependencyResolver.Core.resources.dlls
- NuGet.Frameworks.resources.dlls
- NuGet.Indexing.resources.dlls
- NuGet.LibraryModel.resources.dlls
- NuGet.PackageManagement.resources.dlls
- NuGet.PackageManagement.UI.resources.dlls
- NuGet.Packaging.resources.dlls
- NuGet.ProjectModel.resources.dlls
- NuGet.Protocol.resources.dlls
- NuGet.Resolver.resources.dlls
- NuGet.Versioning.resources.dlls
