@@ -19,9 +19,9 @@ namespace NuGet.ProjectModel.Test
             var logger = new TestLogger();
 
             var contents = $@"{{
-  ""version"": ""1"",
+  ""version"": 1,
   ""dgSpecHash"": ""LhkXQGGI+FQMy9dhLYjG5sWcHX3z/copzi4hjjBiY3Fotv0i7zQCikMZQ+rOKJ03gtx0hoHwIx5oKkM7sVHu7g=="",
-  ""success"": true,
+  ""success"": true
 }}";
             CacheFile cacheFile = null;
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(contents)))
@@ -144,6 +144,95 @@ namespace NuGet.ProjectModel.Test
 
                     Assert.Equal(expected, actual);
                 }
+            }
+        }
+
+        [Fact]
+        public void Read_WhenJsonIsInvalid_LogsWarning()
+        {
+            var logger = new TestLogger();
+            var contents = "{invalid json}";
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(contents)))
+            {
+                var cacheFile = CacheFileFormat.Read(stream, logger, "invalidPath");
+                Assert.False(cacheFile.IsValid);
+                Assert.Equal(1, logger.Warnings);
+            }
+        }
+
+        [Fact]
+        public void Read_WhenProjectFilePathIsMissing_ReturnsNullForProjectFilePath()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var contents = $@"{{
+""version"": 2,
+""dgSpecHash"": ""hash"",
+""success"": true
+}}";
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(contents)))
+            {
+                //Act
+                var cacheFile = CacheFileFormat.Read(stream, logger, "path");
+
+                // Assert
+                Assert.Null(cacheFile.ProjectFilePath);
+            }
+        }
+
+        [Fact]
+        public void Write_WhenLogMessagesAreEmpty_DoesNotWriteLogsProperty()
+        {
+            // Arrange
+            var cacheFile = new CacheFile("hash")
+            {
+                Version = 2,
+                Success = true,
+                ProjectFilePath = "somePath",
+                ExpectedPackageFilePaths = new List<string>()
+            };
+
+            using (var stream = new MemoryStream())
+            {
+                //Act
+                CacheFileFormat.Write(stream, cacheFile);
+                var actual = Encoding.UTF8.GetString(stream.ToArray());
+
+                // Assert
+                Assert.DoesNotContain("\"logs\"", actual);
+            }
+        }
+
+        [Fact]
+        public void Write_WhenLogsAndExpectedPackageFilePathsPresent_WritesLogsAndExpectedPackageFilePaths()
+        {
+            var cacheFile = new CacheFile("hash")
+            {
+                Version = 2,
+                Success = true,
+                ProjectFilePath = "somePath",
+                ExpectedPackageFilePaths = new List<string> { "file1", "file2" },
+                LogMessages = new List<IAssetsLogMessage>
+                {
+                    new AssetsLogMessage(LogLevel.Warning, NuGetLogCode.NU1001, "Warning message")
+                }
+            };
+
+            using (var stream = new MemoryStream())
+            {
+                CacheFileFormat.Write(stream, cacheFile);
+                var actual = Encoding.UTF8.GetString(stream.ToArray());
+
+                Assert.Contains("\"version\": 2", actual);
+                Assert.Contains("\"dgSpecHash\": \"hash\"", actual);
+                Assert.Contains("\"projectFilePath\": \"somePath\"", actual);
+                Assert.Contains("\"expectedPackageFiles\": [", actual);
+                Assert.Contains("file2", actual);
+                Assert.Contains("file1", actual);
+                Assert.Contains("\"logs\": [", actual);
+                Assert.Contains("Warning message", actual);
             }
         }
     }

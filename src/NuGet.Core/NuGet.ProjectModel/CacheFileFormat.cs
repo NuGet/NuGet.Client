@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using NuGet.Common;
 
@@ -76,7 +78,12 @@ namespace NuGet.ProjectModel
 
         private static void Write(TextWriter textWriter, CacheFile cacheFile)
         {
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
+            //options.Converters.Add(new LogMessageJsonConverter());
             string jsonString = JsonSerializer.Serialize(GetCacheFile(cacheFile), options);
             textWriter.Write(jsonString);
         }
@@ -114,18 +121,86 @@ namespace NuGet.ProjectModel
 
         private static object GetCacheFile(CacheFile cacheFile)
         {
-            var json = new Dictionary<string, object>
+            var json = new Dictionary<string, object>();
+
+            json[VersionProperty] = cacheFile.Version;
+
+            if (!string.IsNullOrEmpty(cacheFile.DgSpecHash))
             {
-                [VersionProperty] = cacheFile.Version,
-                [DGSpecHashProperty] = cacheFile.DgSpecHash,
-                [SuccessProperty] = cacheFile.Success
-            };
+                json[DGSpecHashProperty] = cacheFile.DgSpecHash;
+            }
+
+            json[SuccessProperty] = cacheFile.Success;
 
             if (cacheFile.Version >= 2)
             {
-                json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
-                json[ExpectedPackageFilesProperty] = cacheFile.ExpectedPackageFilePaths;
-                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new List<object>() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFilePath);
+                if (!string.IsNullOrEmpty(cacheFile.ProjectFilePath))
+                {
+                    json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
+                }
+
+                if (cacheFile.ExpectedPackageFilePaths != null && cacheFile.ExpectedPackageFilePaths.Count > 0)
+                {
+                    json[ExpectedPackageFilesProperty] = cacheFile.ExpectedPackageFilePaths;
+                }
+
+                if (cacheFile.LogMessages != null && cacheFile.LogMessages.Count > 0)
+                {
+                    json[LockFileFormat.LogsProperty] = cacheFile.LogMessages.Select(log =>
+                    {
+                        var logJson = new Dictionary<string, object>();
+                        logJson[LogMessageProperties.CODE] = log.Code.ToString();
+                        logJson[LogMessageProperties.LEVEL] = log.Level.ToString();
+
+                        if (log.Level == LogLevel.Warning)
+                        {
+                            logJson[LogMessageProperties.WARNING_LEVEL] = (int)log.WarningLevel;
+                        }
+
+                        if (!string.IsNullOrEmpty(log.FilePath) &&
+                            (log.ProjectPath == null || !PathUtility.GetStringComparerBasedOnOS().Equals(log.FilePath, log.ProjectPath)))
+                        {
+                            logJson[LogMessageProperties.FILE_PATH] = log.FilePath;
+                        }
+
+                        if (log.StartLineNumber > 0)
+                        {
+                            logJson[LogMessageProperties.START_LINE_NUMBER] = log.StartLineNumber;
+                        }
+
+                        if (log.StartColumnNumber > 0)
+                        {
+                            logJson[LogMessageProperties.START_COLUMN_NUMBER] = log.StartColumnNumber;
+                        }
+
+                        if (log.EndLineNumber > 0)
+                        {
+                            logJson[LogMessageProperties.END_LINE_NUMBER] = log.EndLineNumber;
+                        }
+
+                        if (log.EndColumnNumber > 0)
+                        {
+                            logJson[LogMessageProperties.END_COLUMN_NUMBER] = log.EndColumnNumber;
+                        }
+
+                        if (!string.IsNullOrEmpty(log.Message))
+                        {
+                            logJson[LogMessageProperties.MESSAGE] = log.Message;
+                        }
+
+                        if (!string.IsNullOrEmpty(log.LibraryId))
+                        {
+                            logJson[LogMessageProperties.LIBRARY_ID] = log.LibraryId;
+                        }
+
+                        if (log.TargetGraphs != null && log.TargetGraphs.Any() && log.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
+                        {
+                            logJson[LogMessageProperties.TARGET_GRAPHS] = log.TargetGraphs;
+                        }
+
+                        return logJson;
+                    }).ToList();
+                }
             }
 
             return json;
