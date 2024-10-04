@@ -284,7 +284,7 @@ namespace NuGet.Common
         private static string GetHome()
         {
 #if IS_CORECLR
-            return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return GetDotNetHome() ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
             if (RuntimeEnvironmentHelper.IsWindows)
             {
