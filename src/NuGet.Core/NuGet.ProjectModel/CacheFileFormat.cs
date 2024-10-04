@@ -122,27 +122,14 @@ namespace NuGet.ProjectModel
         private static object GetCacheFile(CacheFile cacheFile)
         {
             var json = new Dictionary<string, object>();
-
             json[VersionProperty] = cacheFile.Version;
-
-            if (!string.IsNullOrEmpty(cacheFile.DgSpecHash))
-            {
-                json[DGSpecHashProperty] = cacheFile.DgSpecHash;
-            }
-
+            json[DGSpecHashProperty] = cacheFile.DgSpecHash;
             json[SuccessProperty] = cacheFile.Success;
 
             if (cacheFile.Version >= 2)
             {
-                if (!string.IsNullOrEmpty(cacheFile.ProjectFilePath))
-                {
-                    json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
-                }
-
-                if (cacheFile.ExpectedPackageFilePaths != null && cacheFile.ExpectedPackageFilePaths.Count > 0)
-                {
-                    json[ExpectedPackageFilesProperty] = cacheFile.ExpectedPackageFilePaths;
-                }
+                json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
+                json[ExpectedPackageFilesProperty] = cacheFile.ExpectedPackageFilePaths;
 
                 if (cacheFile.LogMessages != null && cacheFile.LogMessages.Count > 0)
                 {
