@@ -284,15 +284,7 @@ namespace NuGet.Common
         private static string GetHome()
         {
 #if IS_CORECLR
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? GetHomeWindows(), UserProfile, DotNetHome);
-            }
-            else
-            {
-                return GetValueOrThrowMissingEnvVarsDotnet(() =>
-                    GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Home, DotNetHome);
-            }
+            return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
             if (RuntimeEnvironmentHelper.IsWindows)
             {
@@ -314,8 +306,7 @@ namespace NuGet.Common
             }
             else
             {
-                return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) ??
-                    Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
+                return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
             }
         }
 
