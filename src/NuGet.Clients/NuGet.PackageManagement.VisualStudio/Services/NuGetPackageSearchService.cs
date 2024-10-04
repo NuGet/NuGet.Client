@@ -16,7 +16,6 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio.PackageFeeds;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
@@ -422,14 +421,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 try
                 {
                     // Recommender needs installed and transitive package lists, but it does not need transitive origins data.
-                    IPackageFeed recommenderFeed = new RecommenderPackageFeed(
+                    return new RecommenderPackageFeed(
+                        packageFeed,
                         sourceRepositories,
                         installedPackageCollection,
                         transitivePackageCollection,
                         targetFrameworks,
                         metadataProvider,
                         logger);
-                    return new CombinedPackageFeed(packageFeed, recommenderFeed);
                 }
                 catch (System.IO.FileNotFoundException)
                 {

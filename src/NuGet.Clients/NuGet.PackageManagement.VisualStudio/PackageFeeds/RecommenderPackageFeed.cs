@@ -19,11 +19,13 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
     /// Represents a package feed which recommends packages based on currently loaded project info
+    /// Decorates any other feed and adds recommendations to the top of the list
     /// </summary>
     public class RecommenderPackageFeed : IPackageFeed
     {
-        public bool IsMultiSource => false;
+        public bool IsMultiSource => _decoratedPackageFeed.IsMultiSource;
 
+        private readonly IPackageFeed _decoratedPackageFeed;
         private readonly SourceRepository _sourceRepository;
         private readonly List<string> _installedPackages;
         private readonly List<string> _transitivePackages;
@@ -40,6 +42,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const int MaxRecommended = 5;
 
         public RecommenderPackageFeed(
+            IPackageFeed decoratedFeed,
             IEnumerable<SourceRepository> sourceRepositories,
             PackageCollection installedPackages,
             PackageCollection transitivePackages,
@@ -59,6 +62,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentNullException(nameof(transitivePackages));
             }
+            _decoratedPackageFeed = decoratedFeed ?? throw new ArgumentNullException(nameof(decoratedFeed));
             _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
             _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -86,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio
             public SearchFilter SearchFilter { get; set; }
         }
 
-        public Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)
+        public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)
         {
             var searchToken = new RecommendSearchToken
             {
@@ -94,7 +98,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 SearchFilter = searchFilter,
             };
 
-            return RecommendPackagesAsync(searchToken, cancellationToken);
+            SearchResult<IPackageSearchMetadata> recommenderResults = await RecommendPackagesAsync(searchToken, cancellationToken);
+            SearchResult<IPackageSearchMetadata> decoratedResults = await _decoratedPackageFeed.SearchAsync(searchText, searchFilter, cancellationToken);
+
+            // Add the recommended results to the top of the decorated feed's results, deduplicating any packages in the decorated feed.
+            IReadOnlyList<IPackageSearchMetadata> combinedResults = recommenderResults.Items.Union(decoratedResults.Items, new IdentityIdEqualityComparer()).ToList();
+            SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(combinedResults);
+            // We want to make sure we can continue searching the decorated feed and its sources' search statuses are accurately represented.
+            result.NextToken = decoratedResults.NextToken;
+            result.SourceSearchStatus = decoratedResults.SourceSearchStatus;
+            return result;
         }
 
         private async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
@@ -178,11 +191,13 @@ namespace NuGet.PackageManagement.VisualStudio
             return result;
         }
 
+        // Recommender has no ContinueSearch functionality, so delegate to the decorated feed
         public Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
-            => System.Threading.Tasks.Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
+            => _decoratedPackageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
 
+        // Recommender has no RefreshSearch functionality, so delegate to the decorated feed
         public Task<SearchResult<IPackageSearchMetadata>> RefreshSearchAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
-            => System.Threading.Tasks.Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
+            => _decoratedPackageFeed.RefreshSearchAsync(refreshToken, cancellationToken);
 
         private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
@@ -196,5 +211,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return new RecommendedPackageSearchMetadata(packageMetadata, VersionInfo);
         }
 
+        private class IdentityIdEqualityComparer : IEqualityComparer<IPackageSearchMetadata>
+        {
+            public bool Equals(IPackageSearchMetadata x, IPackageSearchMetadata y)
+            {
+                return x.Identity.Id.Equals(y.Identity.Id);
+            }
+
+            public int GetHashCode(IPackageSearchMetadata obj)
+            {
+                return obj.Identity.Id.GetHashCode();
+            }
+        }
     }
 }
