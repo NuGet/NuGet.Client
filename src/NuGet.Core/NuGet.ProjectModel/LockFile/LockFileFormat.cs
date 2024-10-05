@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -50,7 +49,6 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
-        internal const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
         private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
@@ -246,7 +244,7 @@ namespace NuGet.ProjectModel
                 : new List<CentralTransitiveDependencyGroup>();
 
             var logMessage = (flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages
-                ? ReadLogMessageArray(cursor[LogsProperty] as JArray, packagesSpec?.RestoreMetadata?.ProjectPath)
+                ? ReadLogMessageArray(cursor[CacheFileProperties.LogsProperty] as JArray, packagesSpec?.RestoreMetadata?.ProjectPath)
                 : Array.Empty<IAssetsLogMessage>();
 
             var lockFile = new LockFile()
@@ -306,7 +304,7 @@ namespace NuGet.ProjectModel
                 if (lockFile.LogMessages.Count > 0)
                 {
                     var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
-                    writer.WritePropertyName(LogsProperty);
+                    writer.WritePropertyName(CacheFileProperties.LogsProperty);
                     WriteLogMessages(writer, lockFile.LogMessages, projectPath);
                 }
             }
@@ -1027,85 +1025,6 @@ namespace NuGet.ProjectModel
                 });
             }
             return results;
-        }
-
-        internal static IList<IAssetsLogMessage> ReadLogMessageArray(JsonElement json, string projectPath)
-        {
-            var items = new List<IAssetsLogMessage>();
-            foreach (var child in json.EnumerateArray())
-            {
-                var logMessage = ReadLogMessage(child, projectPath);
-                if (logMessage != null)
-                {
-                    items.Add(logMessage);
-                }
-            }
-            return items;
-        }
-
-        private static IAssetsLogMessage ReadLogMessage(JsonElement json, string projectPath)
-        {
-            AssetsLogMessage assetsLogMessage = null;
-
-            if (json.ValueKind == JsonValueKind.Object)
-            {
-                var level = json.GetProperty(LogMessageProperties.LEVEL).GetString();
-                var code = json.GetProperty(LogMessageProperties.CODE).GetString();
-                var message = json.GetProperty(LogMessageProperties.MESSAGE).GetString();
-
-                if (Enum.TryParse(level, out LogLevel logLevel) && Enum.TryParse(code, out NuGetLogCode logCode))
-                {
-                    assetsLogMessage = new AssetsLogMessage(logLevel, logCode, message)
-                    {
-                        TargetGraphs = json.TryGetProperty(LogMessageProperties.TARGET_GRAPHS, out var targetGraphs)
-                            ? targetGraphs.EnumerateArray().Select(x => x.GetString()).ToList()
-                            : new List<string>()
-                    };
-
-                    if (logLevel == LogLevel.Warning && json.TryGetProperty(LogMessageProperties.WARNING_LEVEL, out var warningLevel))
-                    {
-                        assetsLogMessage.WarningLevel = (WarningLevel)Enum.ToObject(typeof(WarningLevel), warningLevel.GetInt32());
-                    }
-
-                    assetsLogMessage.ProjectPath = projectPath;
-
-                    if (json.TryGetProperty(LogMessageProperties.FILE_PATH, out var filePath))
-                    {
-                        assetsLogMessage.FilePath = filePath.GetString();
-                    }
-                    else
-                    {
-                        assetsLogMessage.FilePath = projectPath;
-                    }
-
-                    if (json.TryGetProperty(LogMessageProperties.START_LINE_NUMBER, out var startLineNumber))
-                    {
-                        assetsLogMessage.StartLineNumber = startLineNumber.GetInt32();
-                    }
-
-                    if (json.TryGetProperty(LogMessageProperties.START_COLUMN_NUMBER, out var startColumnNumber))
-                    {
-                        assetsLogMessage.StartColumnNumber = startColumnNumber.GetInt32();
-                    }
-
-                    if (json.TryGetProperty(LogMessageProperties.END_LINE_NUMBER, out var endLineNumber))
-                    {
-                        assetsLogMessage.EndLineNumber = endLineNumber.GetInt32();
-                    }
-
-                    if (json.TryGetProperty(LogMessageProperties.END_COLUMN_NUMBER, out var endColumnNumber))
-                    {
-                        assetsLogMessage.EndColumnNumber = endColumnNumber.GetInt32();
-                    }
-
-                    if (json.TryGetProperty(LogMessageProperties.LIBRARY_ID, out var libraryId))
-                    {
-                        assetsLogMessage.LibraryId = libraryId.GetString();
-                    }
-                }
-            }
-
-            return assetsLogMessage;
         }
     }
 }
