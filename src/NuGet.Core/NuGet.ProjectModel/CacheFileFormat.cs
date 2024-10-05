@@ -160,7 +160,7 @@ namespace NuGet.ProjectModel
 
             try
             {
-                var cacheFile = JsonSerializer.DeserializeAsync<CacheFile>(utf8Json: stream, SerializerOptions).GetAwaiter().GetResult();
+                var cacheFile = JsonSerializer.Deserialize<CacheFile>(utf8Json: stream, SerializerOptions);
                 return cacheFile;
             }
             catch (Exception ex) when (ex is ArgumentNullException || ex is JsonException || ex is NotSupportedException)

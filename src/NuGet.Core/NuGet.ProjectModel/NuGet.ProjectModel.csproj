@@ -45,4 +45,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="NuGet.ProjectModel.Test" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
 </Project>
