@@ -1,1 +1,3 @@
 #nullable enable
+~NuGet.Protocol.Plugins.IPluginFactory.GetOrCreateNetToolsPluginAsync(string filePath, System.Collections.Generic.IEnumerable<string> arguments, NuGet.Protocol.Plugins.IRequestHandlers requestHandlers, NuGet.Protocol.Plugins.ConnectionOptions options, System.Threading.CancellationToken sessionCancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Plugins.IPlugin>
+~NuGet.Protocol.Plugins.PluginFactory.GetOrCreateNetToolsPluginAsync(string filePath, System.Collections.Generic.IEnumerable<string> arguments, NuGet.Protocol.Plugins.IRequestHandlers requestHandlers, NuGet.Protocol.Plugins.ConnectionOptions options, System.Threading.CancellationToken sessionCancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Plugins.IPlugin>
