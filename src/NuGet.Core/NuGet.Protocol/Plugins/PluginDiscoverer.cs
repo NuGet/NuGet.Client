@@ -152,7 +152,7 @@ namespace NuGet.Protocol.Plugins
         /// The files are also expected to have a name that starts with `nuget-plugin-`
         /// </summary>
         /// <returns></returns>
-        private List<PluginFile> GetNetToolsPluginFiles()
+        internal List<PluginFile> GetNetToolsPluginFiles()
         {
             var pluginFiles = new List<PluginFile>();
             string[] paths = Array.Empty<string>();
@@ -177,8 +177,8 @@ namespace NuGet.Protocol.Plugins
                     {
                         if (IsValidPluginFile(file))
                         {
-                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(file.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
-                            PluginFile pluginFile = new PluginFile(file.FullName, state, isDotnetToolsPlugin: true);
+                            // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
+                            PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
                             pluginFiles.Add(pluginFile);
                         }
                     }
@@ -195,7 +195,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="fileInfo"></param>
         /// <returns></returns>
-        private static bool IsValidPluginFile(FileInfo fileInfo)
+        internal static bool IsValidPluginFile(FileInfo fileInfo)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -224,7 +224,7 @@ namespace NuGet.Protocol.Plugins
         /// </summary>
         /// <param name="fileInfo"></param>
         /// <returns></returns>
-        private static bool IsExecutable(FileInfo fileInfo)
+        internal static bool IsExecutable(FileInfo fileInfo)
         {
 #pragma warning disable CA1031 // Do not catch general exception types
             try
