@@ -416,7 +416,7 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void GetNetToolsPluginFiles_WithNuGetPluginPaths_ReturnsPluginsInNuGetPluginPathOnly()
         {
             // Arrange
@@ -439,7 +439,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal(pluginInNuGetPluginPathDirectoryFilePath, plugins[0].Path);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void GetNetToolsPluginFiles_NoNuGetPluginPaths_UsesPathEnvironment()
         {
             // Arrange
