@@ -523,8 +523,13 @@ namespace NuGet.Protocol.Plugins.Tests
             File.SetUnixFileMode(pluginFilePath, UnixFileMode.UserExecute | UnixFileMode.UserRead);
 #else
             // Use chmod to set execute permissions
-            var chmodProcess = Process.Start("chmod", $"+x {pluginFilePath}");
-            chmodProcess.WaitForExit();
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"chmod +x {pluginFilePath}";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 #endif
 
             var fileInfo = new FileInfo(pluginFilePath);
@@ -547,8 +552,13 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(pluginFilePath);
 
             // Set execute permissions
-            var chmodProcess = Process.Start("chmod", $"+x {pluginFilePath}");
-            chmodProcess.WaitForExit();
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"chmod +x {pluginFilePath}";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 
             var fileInfo = new FileInfo(pluginFilePath);
 
@@ -569,8 +579,13 @@ namespace NuGet.Protocol.Plugins.Tests
             File.Create(pluginFilePath);
 
             // Remove execute permissions
-            var chmodProcess = Process.Start("chmod", $"-x {pluginFilePath}");
-            chmodProcess.WaitForExit();
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"chmod -x {pluginFilePath}";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
 
             var fileInfo = new FileInfo(pluginFilePath);
 
