@@ -94,13 +94,10 @@ namespace NuGet.Packaging.Test
             // Arrange
             var logger = new TestLogger();
 
-            // Act
             using (var stringReader = new StringReader(contents))
             {
-                var ex = Assert.Throws<Exception>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
-
-                // Assert
-                Assert.Contains("Error parsing nupkg metadata file", ex.Message);
+                // Act & Assert
+                var ex = Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
             }
         }
 
@@ -110,13 +107,10 @@ namespace NuGet.Packaging.Test
             // Arrange
             var logger = new TestLogger();
 
-            // Act
             using (var stringReader = new StringReader(@"{""version"":"))
             {
-                var ex = Assert.Throws<Exception>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
-
-                // Assert
-                Assert.Contains("Error parsing nupkg metadata file", ex.Message);
+                // Act & Assert
+                var ex = Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
             }
         }
 

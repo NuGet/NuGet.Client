@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
@@ -39,25 +40,35 @@ namespace NuGet.Packaging
 
         public static NupkgMetadataFile Read(TextReader reader, ILogger log, string path)
         {
-            try
-            {
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    var nupkgMetadata = JsonSerializer.Deserialize<NupkgMetadataFile>(jsonReader);
-                    if (nupkgMetadata == null)
-                    {
-                        throw new InvalidDataException();
-                    }
-                    return nupkgMetadata;
-                }
-            }
-            catch (Exception ex)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture,
-                    Strings.Error_LoadingHashFile,
-                    path, ex.Message);
+            List<string> errors = new List<string>();
 
-                throw new Exception(message);
+            var serializerSettings = new JsonSerializerSettings
+            {
+                Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+                {
+                    // Log the error
+                    log.LogWarning(string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_LoadingHashFile,
+                        path, args.ErrorContext.Error.Message));
+
+                    // Add the error message to the list
+                    errors.Add(args.ErrorContext.Error.Message);
+                    args.ErrorContext.Handled = true;
+                }
+            };
+
+            using (var jsonReader = new JsonTextReader(reader))
+            {
+                var serializer = JsonSerializer.Create(serializerSettings);
+                var nupkgMetadata = serializer.Deserialize<NupkgMetadataFile>(jsonReader);
+
+                if (nupkgMetadata == null || errors.Count > 0)
+                {
+                    string errorMessage = $"Error: {string.Join("; ", errors)}";
+                    throw new InvalidDataException(errorMessage);
+                }
+
+                return nupkgMetadata;
             }
         }
 
