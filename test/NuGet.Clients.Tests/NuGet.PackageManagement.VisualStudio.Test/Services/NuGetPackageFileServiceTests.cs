@@ -455,11 +455,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             using (TestDirectory testDir = TestDirectory.Create())
             {
                 // Create decoy nuget package
+                var readmeContent = "Hello this is README";
                 var readmeName = "readme.md";
                 var zipPath = Path.Combine(testDir.Path, "file.nupkg");
                 CreateDummyPackage(
                     zipPath: zipPath,
-                    readmeName: readmeName);
+                    readmeName: readmeName,
+                    readmeContent: readmeContent);
 
                 // prepare test
                 var builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
@@ -476,7 +478,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Stream readmeStream = await packageFileService.GetReadmeAsync(builder.Uri, CancellationToken.None);
 
                 Assert.NotNull(readmeStream);
-                Assert.Equal(StreamContents.Length, readmeStream.Length);
+                Assert.Equal(readmeContent.Length, readmeStream.Length);
             }
         }
 
@@ -513,14 +515,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var iconDir = Path.GetDirectoryName(iconPath);
             Directory.CreateDirectory(iconDir);
 
-            File.WriteAllText(iconPath, readmeContent);
+            File.WriteAllText(iconPath, StreamContents);
 
             // create md readme
             var readmePath = Path.Combine(folderPath, readmeName);
             var readmeDir = Path.GetDirectoryName(readmePath);
             Directory.CreateDirectory(readmeDir);
 
-            File.WriteAllText(readmePath, StreamContents);
+            File.WriteAllText(readmePath, readmeContent);
 
             // Create nuget package
             using (var nuspecStream = new MemoryStream())
