@@ -1,0 +1,75 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio.Internal.Contracts;
+
+namespace NuGet.PackageManagement.UI.ViewModels
+{
+    public sealed class ReadmePreviewViewModel : ViewModelBase
+    {
+        private bool _canDetermineReadmeDefined;
+        private bool _errorLoadingReadme;
+        private INuGetPackageFileService _packageFileService;
+        private string _rawReadme;
+
+        public ReadmePreviewViewModel(INuGetPackageFileService packageFileService)
+        {
+            _packageFileService = packageFileService ?? throw new ArgumentNullException(nameof(packageFileService));
+            _errorLoadingReadme = false;
+            _canDetermineReadmeDefined = true;
+            _rawReadme = string.Empty;
+        }
+
+        public bool ErrorLoadingReadme
+        {
+            get => _errorLoadingReadme;
+            set => SetAndRaisePropertyChanged(ref _errorLoadingReadme, value);
+        }
+
+        public string ReadmeMarkdown
+        {
+            get => _rawReadme;
+            set => SetAndRaisePropertyChanged(ref _rawReadme, value);
+        }
+
+        public bool CanDetermineReadmeDefined
+        {
+            get => _canDetermineReadmeDefined;
+            set => SetAndRaisePropertyChanged(ref _canDetermineReadmeDefined, value);
+        }
+
+        public async Task LoadReadmeAsync(string rawReadmeUrl, CancellationToken cancellationToken)
+        {
+            ReadmeMarkdown = string.Empty;
+            ErrorLoadingReadme = false;
+            CanDetermineReadmeDefined = false;
+
+            if (string.IsNullOrWhiteSpace(rawReadmeUrl))
+            {
+                return;
+            }
+
+            await TaskScheduler.Default;
+
+            var readmeStream = await _packageFileService.GetReadmeAsync(new Uri(rawReadmeUrl), cancellationToken);
+            if (readmeStream is null)
+            {
+                return;
+            }
+
+            using StreamReader streamReader = new StreamReader(readmeStream);
+            var readme = await streamReader.ReadToEndAsync();
+            if (!string.IsNullOrWhiteSpace(readme))
+            {
+                ReadmeMarkdown = readme;
+                ErrorLoadingReadme = false;
+                CanDetermineReadmeDefined = true;
+            }
+        }
+    }
+}
