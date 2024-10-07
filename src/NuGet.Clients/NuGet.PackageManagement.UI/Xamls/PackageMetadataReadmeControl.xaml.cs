@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore CS0618 // Type or member is obsolete
         private bool _disposed = false;
 
-        private ReadMePreviewViewModel ReadMeViewModel { get => (ReadMePreviewViewModel)DataContext; }
+        private ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
 
         public PackageMetadataReadMeControl()
         {
@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
                 _loadCts.Cancel();
                 _loadCts.Dispose();
                 _markdownPreview?.Dispose();
-                var viewModel = (ReadMePreviewViewModel)DataContext;
+                var viewModel = (ReadmePreviewViewModel)DataContext;
                 viewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
             }
 
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    await ReadMeViewModel.LoadReadmeAsync(newValue.ReadmeFileUrl, _loadCts.Token);
+                    await ReadmeViewModel.LoadReadmeAsync(newValue.ReadmeFileUrl, _loadCts.Token);
                 })
                 .PostOnFailure(nameof(PackageMetadataReadMeControl));
             }
@@ -111,11 +111,11 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageMetadataReadMeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.OldValue is ReadMePreviewViewModel oldViewModel && oldViewModel is not null)
+            if (e.OldValue is ReadmePreviewViewModel oldViewModel && oldViewModel is not null)
             {
                 oldViewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
             }
-            ReadMeViewModel.PropertyChanged += ViewModel_PropertyChangedAsync;
+            ReadmeViewModel.PropertyChanged += ViewModel_PropertyChangedAsync;
         }
 
 #pragma warning disable VSTHRD100 // Avoid async void methods
@@ -123,13 +123,13 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore VSTHRD100 // Avoid async void methods
         {
             var markdown = string.Empty;
-            if (ReadMeViewModel is not null)
+            if (ReadmeViewModel is not null)
             {
-                if (ReadMeViewModel.CanDetermineReadMeDefined)
+                if (ReadmeViewModel.CanDetermineReadmeDefined)
                 {
-                    markdown = string.IsNullOrWhiteSpace(ReadMeViewModel.ReadMeMarkdown)
+                    markdown = string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown)
                         ? UI.Resources.Text_NoReadme
-                        : ReadMeViewModel.ReadMeMarkdown;
+                        : ReadmeViewModel.ReadmeMarkdown;
                 }
             }
 
@@ -140,9 +140,9 @@ namespace NuGet.PackageManagement.UI
             }
             catch (Exception ex)
             {
-                ReadMeViewModel.IsErrorWithReadMe = true;
+                ReadmeViewModel.ErrorLoadingReadme = true;
                 descriptionMarkdownPreview.Visibility = Visibility.Collapsed;
-                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadMePreviewViewModel));
+                await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
             }
 #pragma warning restore CA1031 // Do not catch general exception types
         }
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.UI
                 descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
 #pragma warning restore CS0618 // Type or member is obsolete
             }
-            if (DataContext is ReadMePreviewViewModel viewModel)
+            if (DataContext is ReadmePreviewViewModel viewModel)
             {
                 if (markDown is not null)
                 {
