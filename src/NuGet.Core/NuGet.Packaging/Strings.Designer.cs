@@ -367,6 +367,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to load nupkg metadata `{0}`..
+        /// </summary>
+        internal static string Error_UnableToLoadNupkgMetadata {
+            get {
+                return ResourceManager.GetString("Error_UnableToLoadNupkgMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot target author signatures that are countersignatures..
         /// </summary>
         internal static string ErrorAuthorTargetCannotBeACountersignature {

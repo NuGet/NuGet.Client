@@ -62,10 +62,17 @@ namespace NuGet.Packaging
                 var serializer = JsonSerializer.Create(serializerSettings);
                 var nupkgMetadata = serializer.Deserialize<NupkgMetadataFile>(jsonReader);
 
-                if (nupkgMetadata == null || errors.Count > 0)
+                if (errors.Count > 0)
                 {
                     string errorMessage = $"Error: {string.Join("; ", errors)}";
                     throw new InvalidDataException(errorMessage);
+                }
+                else if (errors.Count == 0 && nupkgMetadata == null)
+                {
+                    var error = string.Format(CultureInfo.CurrentCulture,
+                        Strings.Error_UnableToLoadNupkgMetadata,
+                        path);
+                    throw new InvalidDataException($"Error: {error}");
                 }
 
                 return nupkgMetadata;
