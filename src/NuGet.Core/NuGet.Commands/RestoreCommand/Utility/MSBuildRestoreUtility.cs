@@ -454,6 +454,11 @@ namespace NuGet.Commands
             foreach (var item in GetItemByType(items, "TargetFrameworkInformation"))
             {
                 var frameworkString = item.GetProperty("TargetFramework");
+                if (frameworkString.Contains(';'))
+                {
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, frameworkString));
+                }
+
                 var targetFrameworkMoniker = item.GetProperty("TargetFrameworkMoniker");
                 var targetPlatforMoniker = item.GetProperty("TargetPlatformMoniker");
                 var targetPlatformMinVersion = item.GetProperty("TargetPlatformMinVersion");

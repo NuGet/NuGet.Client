@@ -698,6 +698,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_TargetFrameworkToBeUsed Condition=" '$(_TargetFrameworkOverride)' == '' ">$(TargetFrameworks)</_TargetFrameworkToBeUsed>
     </PropertyGroup>
 
+    <NETSdkError Condition="$(TargetFramework.Contains(';'))"
+                 ResourceName="TargetFrameworkWithSemicolon"
+                 FormatArguments="$([MSBuild]::Escape('$(TargetFramework)'))" />
+
     <!-- For project.json projects target frameworks will be read from project.json. -->
     <GetProjectTargetFrameworksTask
       Condition=" '$(RestoreProjectStyle)' != 'ProjectJson'"
