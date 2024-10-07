@@ -15,7 +15,7 @@
     <NETCoreTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">net9.0</NETCoreTargetFramework>
     <NETCoreLegacyTargetFramework>netcoreapp3.1</NETCoreLegacyTargetFramework>
     <NETCoreLegacyTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">net9.0</NETCoreLegacyTargetFramework>
-    <NETCoreLegacyTargetFrameworkForSigning>netcoreapp5.0</NETCoreLegacyTargetFrameworkForSigning>
+    <NETCoreLegacyTargetFrameworkForSigning>net8.0</NETCoreLegacyTargetFrameworkForSigning>
 
     <!-- Target frameworks for class libraries-->
     <TargetFrameworksLibrary>$(NetStandardVersion)</TargetFrameworksLibrary>
