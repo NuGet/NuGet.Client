@@ -259,7 +259,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     // Use a shell command to check if the file is executable
                     process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"if [ -x {fileInfo.FullName} ]; then echo yes; else echo no; fi";
+                    process.StartInfo.Arguments = $" -c \"if [ -x {fileInfo.FullName} ]; then echo yes; else echo no; fi\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
 
