@@ -237,7 +237,7 @@ namespace NuGet.Protocol.Plugins
                     (fileMode & UnixFileMode.GroupExecute) != 0 ||
                     (fileMode & UnixFileMode.OtherExecute) != 0);
 #else
-                return fileInfo.Exists && (fileInfo.Attributes & FileAttributes.ReparsePoint) == 0 && IsExecutable(fileInfo);
+                return fileInfo.Exists && IsExecutable(fileInfo);
 #endif
             }
         }
