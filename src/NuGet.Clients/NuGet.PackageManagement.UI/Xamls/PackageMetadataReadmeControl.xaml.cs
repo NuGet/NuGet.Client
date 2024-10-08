@@ -21,6 +21,8 @@ namespace NuGet.PackageManagement.UI
     {
         internal CancellationTokenSource _loadCts;
 
+        private bool _renderLocalReadme = false;
+
         public static readonly DependencyProperty PackageMetadataProperty =
             DependencyProperty.Register(
                 nameof(PackageMetadata),
@@ -58,6 +60,11 @@ namespace NuGet.PackageManagement.UI
                 UpdateControl(PackageMetadata, value);
                 SetValue(PackageMetadataProperty, value);
             }
+        }
+
+        public void OnTabFilterChange(ItemFilter filter)
+        {
+            _renderLocalReadme = filter != ItemFilter.All;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -100,10 +107,16 @@ namespace NuGet.PackageManagement.UI
                 oldCts?.Cancel();
                 oldCts?.Dispose();
 
+
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    await ReadmeViewModel.LoadReadmeAsync(newValue.ReadmeFileUrl, _loadCts.Token);
+                    var readmUrlToRender = newValue.ReadmeFileUrl;
+                    if (string.IsNullOrEmpty(newValue.ReadmeFileUrl) || (!_renderLocalReadme && new Uri(newValue.ReadmeFileUrl).IsFile))
+                    {
+                        readmUrlToRender = null;
+                    }
+                    await ReadmeViewModel.LoadReadmeAsync(readmUrlToRender, _loadCts.Token);
                 })
                 .PostOnFailure(nameof(PackageMetadataReadmeControl));
             }
