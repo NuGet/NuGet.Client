@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Is the plugin file, a dotnet tools plugin file?
         /// </summary>
-        public bool IsDotnetToolsPlugin { get; }
+        internal bool IsDotnetToolsPlugin { get; }
 
         /// <summary>
         /// Instantiates a new <see cref="PluginFile" /> class.
@@ -31,7 +31,7 @@ namespace NuGet.Protocol.Plugins
         /// <param name="filePath">The plugin's file path.</param>
         /// <param name="state">A lazy that evaluates the plugin file state.</param>
         /// <param name="isDotnetToolsPlugin">Is the plugin file, a dotnet tools plugin file?</param>
-        public PluginFile(string filePath, Lazy<PluginFileState> state, bool isDotnetToolsPlugin) : this(filePath, state)
+        internal PluginFile(string filePath, Lazy<PluginFileState> state, bool isDotnetToolsPlugin) : this(filePath, state)
         {
             IsDotnetToolsPlugin = isDotnetToolsPlugin;
         }
