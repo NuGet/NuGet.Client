@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Services.Common;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -255,15 +256,32 @@ namespace NuGet.PackageManagement.VisualStudio
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
+            if (_globalLocalRepositories != null)
+            {
+                _globalLocalRepositories.ForEach(x =>
+                    tasks.Add(x.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken)));
+            }
+
             IEnumerable<IPackageSearchMetadata> completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            IPackageSearchMetadata master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
-                ?? completed.FirstOrDefault()
-                ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
+            PackageSearchMetadataBuilder metadataBuilder = completed.Where(m => !string.IsNullOrEmpty(m.Summary)).Select(PackageSearchMetadataBuilder.FromMetadata).FirstOrDefault()
+                ?? completed.Select(PackageSearchMetadataBuilder.FromMetadata).FirstOrDefault()
+                ?? PackageSearchMetadataBuilder.FromIdentity(identity);
 
-            return master.WithVersions(
-                asyncValueFactory: () => MergeVersionsAsync(identity, completed));
+            var clonedResult = metadataBuilder
+                  .WithVersions(AsyncLazy.New(() => MergeVersionsAsync(identity, completed)))
+                  .Build() as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
+
+            foreach (var package in completed)
+            {
+                if (package.ReadmeFileUrl != null)
+                {
+                    clonedResult.ReadmeFileUrl = package.ReadmeFileUrl;
+                    break;
+                }
+            }
+            return clonedResult;
         }
 
         private static async Task<IEnumerable<VersionInfo>> MergeVersionsAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)
