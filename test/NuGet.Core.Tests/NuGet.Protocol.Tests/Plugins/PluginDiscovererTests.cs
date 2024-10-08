@@ -285,7 +285,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 {
                     // Use a shell command to make the file executable
                     process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"chmod +x {myPlugin}";
+                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin}\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
                     process.Start();
@@ -335,7 +335,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 {
                     // Use a shell command to make the file executable
                     process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"chmod +x {myPlugin}";
+                    process.StartInfo.Arguments = $"-c \"chmod +x {myPlugin}\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
                     process.Start();
@@ -384,7 +384,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 {
                     // Use a shell command to make the file not executable
                     process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $"chmod -x {myPlugin}";
+                    process.StartInfo.Arguments = $"-c \"chmod -x {myPlugin}\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
                     process.Start();
@@ -654,7 +654,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Use chmod to set execute permissions
             var process = new Process();
             process.StartInfo.FileName = "/bin/bash";
-            process.StartInfo.Arguments = $"chmod +x {pluginFilePath}";
+            process.StartInfo.Arguments = $"-c \"chmod +x {pluginFilePath}\"";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.Start();
@@ -683,7 +683,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Set execute permissions
             var process = new Process();
             process.StartInfo.FileName = "/bin/bash";
-            process.StartInfo.Arguments = $"chmod +x {pluginFilePath}";
+            process.StartInfo.Arguments = $"-c \"chmod +x {pluginFilePath}\"";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.Start();
@@ -710,7 +710,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Remove execute permissions
             var process = new Process();
             process.StartInfo.FileName = "/bin/bash";
-            process.StartInfo.Arguments = $"chmod -x {pluginFilePath}";
+            process.StartInfo.Arguments = $"-c \"chmod -x {pluginFilePath}\"";
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
             process.Start();
