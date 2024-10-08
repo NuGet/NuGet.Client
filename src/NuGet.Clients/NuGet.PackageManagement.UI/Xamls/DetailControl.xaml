@@ -40,7 +40,7 @@
         <RowDefinition
           Height="Auto" />
         <RowDefinition
-          Height="Auto" />
+          Height="*" />
       </Grid.RowDefinitions>
 
       <!-- Icon and Id -->
