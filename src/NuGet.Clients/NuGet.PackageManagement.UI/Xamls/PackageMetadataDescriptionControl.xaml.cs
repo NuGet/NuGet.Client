@@ -11,6 +11,7 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
+
     /// <summary>
     /// Interaction logic for PackageMetadataDescriptionControl.xaml
     /// </summary>
@@ -40,11 +41,12 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
                     string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(new Packaging.Core.PackageIdentity(metadata.Id, metadata.Version), CancellationToken.None);
+
                     var flowDoc = new FlowDocument();
                     flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     (window.DataContext as LicenseFileData).LicenseText = flowDoc;
-                }).PostOnFailure(nameof(PackageMetadataDescriptionControl), nameof(ViewLicense_Click));
+                }).PostOnFailure(nameof(PackageMetadataControl), nameof(ViewLicense_Click));
 
                 window.ShowModal();
             }

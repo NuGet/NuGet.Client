@@ -15,9 +15,9 @@ namespace NuGet.PackageManagement.UI
 {
 
     /// <summary>
-    /// Interaction logic for PackageMetadataReadMeControl.xaml
+    /// Interaction logic for PackageMetadataReadmeControl.xaml
     /// </summary>
-    public partial class PackageMetadataReadMeControl : UserControl, IDisposable
+    public partial class PackageMetadataReadmeControl : UserControl, IDisposable
     {
         internal CancellationTokenSource _loadCts;
 
@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
             DependencyProperty.Register(
                 nameof(PackageMetadata),
                 typeof(DetailedPackageMetadata),
-                typeof(PackageMetadataReadMeControl),
+                typeof(PackageMetadataReadmeControl),
                 new PropertyMetadata(OnPropertyChanged));
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
 
         private ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
 
-        public PackageMetadataReadMeControl()
+        public PackageMetadataReadmeControl()
         {
             InitializeComponent();
             _loadCts = new CancellationTokenSource();
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.UI
            DependencyObject dependencyObject,
            DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property == PackageMetadataProperty && dependencyObject is PackageMetadataReadMeControl control)
+            if (e.Property == PackageMetadataProperty && dependencyObject is PackageMetadataReadmeControl control)
             {
                 control?.UpdateControl((DetailedPackageMetadata)e.OldValue, (DetailedPackageMetadata)e.NewValue);
             }
@@ -105,11 +105,11 @@ namespace NuGet.PackageManagement.UI
                 {
                     await ReadmeViewModel.LoadReadmeAsync(newValue.ReadmeFileUrl, _loadCts.Token);
                 })
-                .PostOnFailure(nameof(PackageMetadataReadMeControl));
+                .PostOnFailure(nameof(PackageMetadataReadmeControl));
             }
         }
 
-        private void PackageMetadataReadMeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void PackageMetadataReadmeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.OldValue is ReadmePreviewViewModel oldViewModel && oldViewModel is not null)
             {
