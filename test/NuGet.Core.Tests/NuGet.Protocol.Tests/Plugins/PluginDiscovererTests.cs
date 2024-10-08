@@ -531,7 +531,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Assert.Equal(pluginInNuGetPluginPathDirectoryFilePath, plugins[0].Path);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void GetPluginsInNuGetPluginPathsAndPath_WithoutNuGetPluginPaths_FallsBackToPath()
         {
             // Arrange

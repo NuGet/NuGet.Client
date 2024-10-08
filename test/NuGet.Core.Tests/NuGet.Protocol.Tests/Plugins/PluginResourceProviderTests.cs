@@ -267,6 +267,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(pluginDiscoveryResults);
+                _pluginDiscoverer.Setup(x => x.Dispose());
 
                 _testDirectory = TestDirectory.Create();
 
