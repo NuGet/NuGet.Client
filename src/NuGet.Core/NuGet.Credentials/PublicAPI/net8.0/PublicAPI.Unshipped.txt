@@ -1,3 +1,1 @@
 #nullable enable
-NuGet.Protocol.Plugins.PluginFile.IsDotnetToolsPlugin.get -> bool
-~NuGet.Protocol.Plugins.PluginFile.PluginFile(string filePath, System.Lazy<NuGet.Protocol.Plugins.PluginFileState> state, bool isDotnetToolsPlugin) -> void
