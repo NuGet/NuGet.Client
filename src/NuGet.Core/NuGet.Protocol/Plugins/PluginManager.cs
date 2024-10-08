@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Plugins
         private IPluginFactory _pluginFactory;
         private ConcurrentDictionary<PluginRequestKey, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
         private ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>> _pluginUtilities;
-        private string _rawPluginPaths;
+        private string _envVariablePluginPaths;
 
         private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
         private Lazy<string> _pluginsCacheDirectoryPath;
@@ -119,7 +119,7 @@ namespace NuGet.Protocol.Plugins
             var pluginCreationResults = new List<PluginCreationResult>();
 
             // Fast path
-            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable())
+            if (source.PackageSource.IsHttp)
             {
                 var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
 
@@ -313,9 +313,9 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(pluginFactoryCreator));
             }
 #if IS_DESKTOP
-            _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
+            _envVariablePluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
 #else
-            _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
+            _envVariablePluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
 #endif
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
@@ -355,12 +355,14 @@ namespace NuGet.Protocol.Plugins
 
         private PluginDiscoverer InitializeDiscoverer()
         {
-            return new PluginDiscoverer(_rawPluginPaths);
+            var verifier = EmbeddedSignatureVerifier.Create();
+
+            return new PluginDiscoverer(_envVariablePluginPaths, verifier);
         }
 
         private bool IsPluginPossiblyAvailable()
         {
-            return !string.IsNullOrEmpty(_rawPluginPaths);
+            return !string.IsNullOrEmpty(_envVariablePluginPaths);
         }
 
         private void OnPluginClosed(object sender, EventArgs e)

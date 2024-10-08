@@ -417,7 +417,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [PlatformFact(Platform.Windows)]
-        public void GetNetToolsPluginFiles_WithNuGetPluginPaths_ReturnsPluginsInNuGetPluginPathOnly()
+        public void GetPluginsInNuGetPluginPathsAndPath_WithNuGetPluginPaths_ReturnsPluginsInNuGetPluginPathOnly()
         {
             // Arrange
             TestDirectory pluginPathDirectory = TestDirectory.Create();
@@ -432,15 +432,144 @@ namespace NuGet.Protocol.Plugins.Tests
             PluginDiscoverer pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
-            var plugins = pluginDiscoverer.GetNetToolsPluginFiles();
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
 
             // Assert
             Assert.Single(plugins);
             Assert.Equal(pluginInNuGetPluginPathDirectoryFilePath, plugins[0].Path);
         }
 
+        [Fact]
+        public void GetPluginsInNuGetPluginPathsAndPath_WithoutNuGetPluginPaths_FallsBackToPath()
+        {
+            // Arrange
+            var pathDirectory = TestDirectory.Create();
+            var pluginFilePath = Path.Combine(pathDirectory.Path, "nuget-plugin-fallback.exe");
+            File.Create(pluginFilePath);
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(string.Empty);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(pathDirectory.Path);
+
+            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.Equal(pluginFilePath, plugins[0].Path);
+        }
+
         [PlatformFact(Platform.Windows)]
-        public void GetNetToolsPluginFiles_NoNuGetPluginPaths_UsesPathEnvironment()
+        public void GetPluginsInNuGetPluginPathsAndPath_NuGetPluginPathsPointsToAFile_TreatsAsPlugin()
+        {
+            // Arrange
+            var pluginFilePath = Path.Combine(TestDirectory.Create().Path, "nuget-plugin-auth.exe");
+            File.Create(pluginFilePath);
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginFilePath);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(string.Empty);
+
+            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.Equal(pluginFilePath, plugins[0].Path);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void GetPluginsInNuGetPluginPathsAndPath_NuGetPluginPathsPointsToAFileThatDoesNotStartWithNugetPlugin_ReturnsNonDotnetPlugin()
+        {
+            // Arrange
+            var pluginFilePath = Path.Combine(TestDirectory.Create().Path, "other-plugin.exe");
+            File.Create(pluginFilePath);
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginFilePath);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(string.Empty);
+
+            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.False(plugins[0].IsDotnetToolsPlugin);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void GetPluginsInNuGetPluginPathsAndPath_NuGetPluginPathsPointsToADirectory_ContainsValidPluginFiles()
+        {
+            // Arrange
+            var pluginPathDirectory = TestDirectory.Create();
+            var validPluginFile = Path.Combine(pluginPathDirectory.Path, "nuget-plugin-auth.exe");
+            var invalidPluginFile = Path.Combine(pluginPathDirectory.Path, "not-a-nuget-plugin.exe");
+            File.Create(validPluginFile);
+            File.Create(invalidPluginFile);
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPathDirectory.Path);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(string.Empty);
+
+            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.Equal(validPluginFile, plugins[0].Path);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void GetPluginsInNuGetPluginPathsAndPath_NoEnvironmentVariables_ReturnsNoPlugins()
+        {
+            // Arrange
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(string.Empty);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(string.Empty);
+
+            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
+
+            // Assert
+            Assert.Empty(plugins);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void GetPluginsInNuGetPluginPathsAndPath_PathContainsDirectoriesWithValidAndInvalidPlugins_ReturnsOnlyValidPlugins()
+        {
+            // Arrange
+            var pathDirectory = TestDirectory.Create();
+            var validPluginFile = Path.Combine(pathDirectory.Path, "nuget-plugin-valid.exe");
+            var invalidPluginFile = Path.Combine(pathDirectory.Path, "random-file.exe");
+            File.Create(validPluginFile);
+            File.Create(invalidPluginFile);
+
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(string.Empty);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(pathDirectory.Path);
+
+            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+
+            // Act
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
+
+            // Assert
+            Assert.Single(plugins);
+            Assert.Equal(validPluginFile, plugins[0].Path);
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void GetPluginsInNuGetPluginPathsAndPath_NoNuGetPluginPaths_UsesPathEnvironment()
         {
             // Arrange
             TestDirectory testDirectory = TestDirectory.Create();
@@ -452,7 +581,7 @@ namespace NuGet.Protocol.Plugins.Tests
             PluginDiscoverer pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
-            var plugins = pluginDiscoverer.GetNetToolsPluginFiles();
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
 
             // Assert
             Assert.Single(plugins);
@@ -460,7 +589,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void GetNetToolsPluginFiles_NoPluginsFound_ReturnsEmptyList()
+        public void GetPluginsInNuGetPluginPathsAndPath_NoPluginsFound_ReturnsEmptyList()
         {
             // Arrange
             TestDirectory testDirectory = TestDirectory.Create();
@@ -469,7 +598,7 @@ namespace NuGet.Protocol.Plugins.Tests
             PluginDiscoverer pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
-            var plugins = pluginDiscoverer.GetNetToolsPluginFiles();
+            var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPathsAndPath();
 
             // Assert
             Assert.Empty(plugins);
