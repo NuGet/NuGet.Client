@@ -60,7 +60,7 @@ namespace NuGet.Test.Utility
             // Use specified sdkTfm
             SdkTfm = NuGetFramework.Parse(sdkTfm);
 
-            using var cliDirDestination = TestDirectory.Create();
+            var cliDirDestination = TestDirectory.Create();
             CopyLatestCliToTestDirectory(cliDirDestination);
             UpdateCliWithLatestNuGetAssemblies(cliDirDestination);
 

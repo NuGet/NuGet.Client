@@ -242,7 +242,7 @@ namespace NuGet.Test
                     // Create projects
                     for (var i = 0; i < 4; i++)
                     {
-                        using var directory = TestDirectory.Create();
+                        var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
 
                         var config = Path.Combine(directory, "project.json");
@@ -273,7 +273,7 @@ namespace NuGet.Test
                     var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
                     var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
 
-                    using var myProjDirectory = TestDirectory.Create();
+                    var myProjDirectory = TestDirectory.Create();
                     projectDirectories.Add(myProjDirectory);
 
                     var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
