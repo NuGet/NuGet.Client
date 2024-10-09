@@ -40,7 +40,7 @@ namespace NuGet.Test.Utility
             // Dynamically determine the TFM of the dotnet.dll
             SdkTfm = AssemblyReader.GetTargetFramework(Path.Combine(SdkDirSource, SdkVersion, "dotnet.dll"));
 
-            var cliDirDestination = TestDirectory.Create();
+            using var cliDirDestination = TestDirectory.Create();
             CopyLatestCliToTestDirectory(cliDirDestination);
             UpdateCliWithLatestNuGetAssemblies(cliDirDestination);
 
@@ -60,7 +60,7 @@ namespace NuGet.Test.Utility
             // Use specified sdkTfm
             SdkTfm = NuGetFramework.Parse(sdkTfm);
 
-            var cliDirDestination = TestDirectory.Create();
+            using var cliDirDestination = TestDirectory.Create();
             CopyLatestCliToTestDirectory(cliDirDestination);
             UpdateCliWithLatestNuGetAssemblies(cliDirDestination);
 

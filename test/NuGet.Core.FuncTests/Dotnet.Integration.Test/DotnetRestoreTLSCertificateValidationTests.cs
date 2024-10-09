@@ -29,7 +29,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            TestDirectory packageSourceDirectory = TestDirectory.Create();
+            using TestDirectory packageSourceDirectory = TestDirectory.Create();
             var packageA100 = new SimpleTestPackageContext("A", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSourceDirectory,
@@ -51,7 +51,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            TestDirectory packageSourceDirectory = TestDirectory.Create();
+            using TestDirectory packageSourceDirectory = TestDirectory.Create();
             var packageB100 = new SimpleTestPackageContext("myPackg", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSourceDirectory,
@@ -73,7 +73,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            TestDirectory packageSourceDirectory = TestDirectory.Create();
+            using TestDirectory packageSourceDirectory = TestDirectory.Create();
             var packageB100 = new SimpleTestPackageContext("myPackg", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                    packageSourceDirectory,
@@ -99,7 +99,7 @@ namespace Dotnet.Integration.Test
         {
             // Arrange
             using var pathContext = _dotnetFixture.CreateSimpleTestPathContext();
-            TestDirectory packageSourceDirectory = TestDirectory.Create();
+            using TestDirectory packageSourceDirectory = TestDirectory.Create();
             var packageB100 = new SimpleTestPackageContext("myPackg", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     packageSourceDirectory,

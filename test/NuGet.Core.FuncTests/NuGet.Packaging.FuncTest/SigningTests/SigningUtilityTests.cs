@@ -242,7 +242,7 @@ namespace NuGet.Packaging.FuncTest
 
             internal static async Task<Test> CreateAsync(X509Certificate2 certificate)
             {
-                var dir = TestDirectory.Create();
+                using var dir = TestDirectory.Create();
                 var packageContext = new SimpleTestPackageContext();
 
                 var packageFileName = Guid.NewGuid().ToString();

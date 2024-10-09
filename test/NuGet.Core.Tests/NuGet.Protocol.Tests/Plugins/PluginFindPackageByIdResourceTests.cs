@@ -490,7 +490,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 MessageResponseCode responseCode = MessageResponseCode.Error)
             {
                 var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
-                var testDirectory = TestDirectory.Create();
+                using var testDirectory = TestDirectory.Create();
                 var packageSource = new PackageSource("http://unit.test");
                 var package = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     testDirectory.Path,

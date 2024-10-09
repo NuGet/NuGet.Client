@@ -385,7 +385,7 @@ namespace NuGet.Protocol.Tests
 
             internal static async Task<LocalPackageArchiveDownloaderTest> CreateAsync()
             {
-                var testDirectory = TestDirectory.Create();
+                using var testDirectory = TestDirectory.Create();
                 var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
                 var packageContext = new SimpleTestPackageContext()
                 {

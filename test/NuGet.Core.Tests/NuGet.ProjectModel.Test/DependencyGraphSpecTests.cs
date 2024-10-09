@@ -807,7 +807,7 @@ namespace NuGet.ProjectModel.Test
 
             internal static Test Create(string json = null)
             {
-                TestDirectory directory = TestDirectory.Create();
+                using TestDirectory directory = TestDirectory.Create();
                 string filePath = Path.Combine(directory.Path, DefaultFileName);
 
                 File.WriteAllText(filePath, json ?? string.Empty);
