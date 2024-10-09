@@ -100,7 +100,7 @@ namespace NuGet.Test
                     // Create projects
                     for (var i = 0; i < 4; i++)
                     {
-                        using var directory = TestDirectory.Create();
+                        var directory = TestDirectory.Create();
                         projectDirectories.Add(directory);
 
                         var config = Path.Combine(directory, "project.json");

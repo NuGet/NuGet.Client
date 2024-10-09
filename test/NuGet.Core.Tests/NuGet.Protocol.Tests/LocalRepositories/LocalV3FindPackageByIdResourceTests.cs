@@ -510,7 +510,7 @@ namespace NuGet.Protocol.Tests
             internal static async Task<LocalV3FindPackageByIdResourceTest> CreateAsync(bool createFiles = false)
             {
                 var packageIdentity = new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0"));
-                using var testDirectory = TestDirectory.Create();
+                var testDirectory = TestDirectory.Create();
                 var packageDirectory = Directory.CreateDirectory(
                     Path.Combine(
                         testDirectory.Path,

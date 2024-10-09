@@ -412,7 +412,7 @@ namespace Dotnet.Integration.Test
 
         internal TestDirectory CreateTestDirectory()
         {
-            using var testDirectory = TestDirectory.Create();
+            var testDirectory = TestDirectory.Create();
 
             TestDotnetCLiUtility.WriteGlobalJson(testDirectory);
 

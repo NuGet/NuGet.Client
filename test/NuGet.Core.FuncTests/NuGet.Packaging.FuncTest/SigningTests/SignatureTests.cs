@@ -221,7 +221,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 using (var certificateClone = new X509Certificate2(certificate))
                 {
-                    using var directory = TestDirectory.Create();
+                    var directory = TestDirectory.Create();
                     var packageContext = new SimpleTestPackageContext();
                     var unsignedPackageFile = await packageContext.CreateAsFileAsync(directory, "package.nupkg");
                     var signedPackageFile = await SignedArchiveTestUtility.SignPackageFileWithBasicSignedCmsAsync(

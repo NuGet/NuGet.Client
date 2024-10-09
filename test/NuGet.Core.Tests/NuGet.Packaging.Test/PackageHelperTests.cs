@@ -485,7 +485,7 @@ namespace NuGet.Packaging.Test
 
             internal static PackageHelperTest Create(TestPackagesCore.TempFile tempFile)
             {
-                using var testDirectory = TestDirectory.Create();
+                var testDirectory = TestDirectory.Create();
                 var zip = TestPackagesCore.GetZip(tempFile);
                 var reader = new PackageArchiveReader(zip);
 

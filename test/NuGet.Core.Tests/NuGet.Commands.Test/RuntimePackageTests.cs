@@ -221,7 +221,7 @@ namespace NuGet.Commands.Test
 
         private TestDirectory CreateTestFolders()
         {
-            using var workingDir = TestDirectory.Create();
+            var workingDir = TestDirectory.Create();
 
             var repository = Path.Combine(workingDir, "repository");
             Directory.CreateDirectory(repository);

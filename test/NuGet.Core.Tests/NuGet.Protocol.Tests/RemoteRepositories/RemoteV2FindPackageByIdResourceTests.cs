@@ -732,7 +732,7 @@ namespace NuGet.Protocol.Tests
                 var packageIdentity = new PackageIdentity(
                     id: "xunit",
                     version: NuGetVersion.Parse("2.2.0-beta1-build3239"));
-                using var testDirectory = TestDirectory.Create();
+                var testDirectory = TestDirectory.Create();
                 var packageSource = new PackageSource(serviceAddress);
                 var package = await SimpleTestPackageUtility.CreateFullPackageAsync(
                     testDirectory.Path,

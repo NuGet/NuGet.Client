@@ -310,7 +310,7 @@ namespace NuGet.Commands.Test
 
             internal static async Task<TestContext> CreateAsync(X509Certificate2 certificate)
             {
-                using var directory = TestDirectory.Create();
+                var directory = TestDirectory.Create();
                 var packageFilePath = await CreatePackageAsync(directory, "package.nupkg");
                 var logger = new TestLogger();
 

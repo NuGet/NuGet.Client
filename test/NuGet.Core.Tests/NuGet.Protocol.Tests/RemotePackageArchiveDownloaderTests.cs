@@ -504,7 +504,7 @@ namespace NuGet.Protocol.Tests
 
             internal static async Task<RemotePackageArchiveDownloaderTest> CreateAsync()
             {
-                using var testDirectory = TestDirectory.Create();
+                var testDirectory = TestDirectory.Create();
                 var sourceCacheContext = new SourceCacheContext();
                 var packageContext = new SimpleTestPackageContext()
                 {
