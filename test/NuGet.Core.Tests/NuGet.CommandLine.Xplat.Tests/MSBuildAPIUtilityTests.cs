@@ -620,13 +620,13 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new TargetFrameworkInformation
                     {
                         FrameworkName = net8,
-                        Dependencies = new[]
-                        {
+                        Dependencies =
+                        [
                             new LibraryDependency
                             {
                                 LibraryRange = new LibraryRange("myPackage")
                             }
-                        }
+                        ]
                     }
                 })
                 {
@@ -695,13 +695,13 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new TargetFrameworkInformation
                     {
                         FrameworkName = net8,
-                        Dependencies = new[]
-                        {
+                        Dependencies =
+                        [
                             new LibraryDependency
                             {
                                 LibraryRange = new LibraryRange("myPackage")
                             }
-                        }
+                        ]
                     }
                 })
                 {

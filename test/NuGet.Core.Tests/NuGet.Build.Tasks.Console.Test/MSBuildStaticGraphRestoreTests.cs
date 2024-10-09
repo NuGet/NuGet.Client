@@ -182,7 +182,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     }
                 };
 
-                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project, false);
+                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project, false, centralPackageVersions: null);
 
                 actual.Should().BeEquivalentTo(new List<LibraryDependency>
                 {
@@ -223,7 +223,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     new LibraryDependency
                     {
                         LibraryRange = new LibraryRange("PackageH", VersionRange.Parse("1.2.3"), LibraryDependencyTarget.Package),
-                        NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1001, NuGetLogCode.NU1006, NuGetLogCode.NU3017 }
+                        NoWarn = [NuGetLogCode.NU1001, NuGetLogCode.NU1006, NuGetLogCode.NU3017]
                     },
                     new LibraryDependency
                     {
@@ -828,7 +828,10 @@ namespace NuGet.Build.Tasks.Console.Test
             var innerNodes = new Dictionary<string, IMSBuildProject>
             {
                 [netstandard20] = new MockMSBuildProject("Project-netstandard2.0",
-                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>
+                    {
+                        { "ManagePackageVersionsCentrally", "true"}
+                    },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
                         ["PackageReference"] = new List<IMSBuildItem>
@@ -842,7 +845,10 @@ namespace NuGet.Build.Tasks.Console.Test
                         },
                     }),
                 [netstandard22] = new MockMSBuildProject("Project-netstandard2.2",
-                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>
+                    {
+                        { "ManagePackageVersionsCentrally", "true"}
+                    },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
                         ["PackageReference"] = new List<IMSBuildItem>
@@ -856,7 +862,11 @@ namespace NuGet.Build.Tasks.Console.Test
                         },
                     }),
                 [netstandard23] = new MockMSBuildProject("Project-netstandard2.3",
-                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>
+                    {
+                        { "ManagePackageVersionsCentrally", "true"}
+                    },
+
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
                         ["PackageReference"] = new List<IMSBuildItem>
@@ -870,7 +880,10 @@ namespace NuGet.Build.Tasks.Console.Test
                         },
                     }),
                 [netstandard24] = new MockMSBuildProject("Project-netstandard2.4",
-                    new Dictionary<string, string>(),
+                    new Dictionary<string, string>
+                    {
+                        { "ManagePackageVersionsCentrally", "true"}
+                    },
                     new Dictionary<string, IList<IMSBuildItem>>
                     {
                         ["PackageVersion"] = new List<IMSBuildItem>
@@ -890,7 +903,7 @@ namespace NuGet.Build.Tasks.Console.Test
             var framework23 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard23);
             var framework24 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard24);
 
-            Assert.Equal(1, framework20.Dependencies.Count);
+            Assert.Equal(1, framework20.Dependencies.Length);
             Assert.Equal("PackageA", framework20.Dependencies.First().Name);
             Assert.Null(framework20.Dependencies.First().LibraryRange.VersionRange);
 
@@ -898,7 +911,7 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal("2.0.0", framework20.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
             Assert.Equal("3.0.0", framework20.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
 
-            Assert.Equal(1, framework22.Dependencies.Count);
+            Assert.Equal(1, framework22.Dependencies.Length);
             Assert.Equal("PackageA", framework22.Dependencies.First().Name);
             Assert.Equal("11.0.0", framework22.Dependencies.First().LibraryRange.VersionRange.OriginalString);
 
@@ -906,13 +919,13 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal("2.2.2", framework22.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
             Assert.Equal("3.2.0", framework22.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
 
-            Assert.Equal(1, framework23.Dependencies.Count);
+            Assert.Equal(1, framework23.Dependencies.Length);
             Assert.Equal("PackageA", framework23.Dependencies.First().Name);
             Assert.Equal("2.0.0", framework23.Dependencies.First().LibraryRange.VersionRange.OriginalString);
 
             // Information about central package versions is necessary for implementation of "transitive dependency pinning".
             // thus even, when there are no explicit dependencies, information about central package versions still should be included.
-            Assert.Equal(0, framework24.Dependencies.Count);
+            Assert.Equal(0, framework24.Dependencies.Length);
             Assert.Equal(2, framework24.CentralPackageVersions.Count);
             Assert.Equal("2.0.0", framework24.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
             Assert.Equal("3.0.0", framework24.CentralPackageVersions["PackageB"].VersionRange.OriginalString);

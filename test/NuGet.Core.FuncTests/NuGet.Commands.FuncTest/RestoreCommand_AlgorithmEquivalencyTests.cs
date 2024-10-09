@@ -949,7 +949,10 @@ namespace NuGet.Commands.FuncTest
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
             var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
-            projectSpec2.TargetFrameworks[0].Dependencies[0].SuppressParent = LibraryIncludeFlags.All;
+            projectSpec2.TargetFrameworks[0] = new TargetFrameworkInformation(projectSpec2.TargetFrameworks[0])
+            {
+                Dependencies = [new LibraryDependency(projectSpec2.TargetFrameworks[0].Dependencies[0]) { SuppressParent = LibraryIncludeFlags.All }]
+            };
             projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
 
             // Act & Assert
@@ -1015,9 +1018,7 @@ namespace NuGet.Commands.FuncTest
             // Setup project
             var project1 = ProjectTestHelpers.GetPackageSpec("Project1", pathContext.SolutionRoot, framework: "net5.0");
             var project2 = ProjectTestHelpers.GetPackageSpec("Project2", pathContext.SolutionRoot, framework: "net5.0");
-            var project3 = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a");
-            // todo NK - Add a better method
-            project3.TargetFrameworks[0].Dependencies[0].LibraryRange = new LibraryRange(project3.TargetFrameworks[0].Dependencies[0].LibraryRange.Name, VersionRange.Parse("3.0.0"), project3.TargetFrameworks[0].Dependencies[0].LibraryRange.TypeConstraint);
+            var project3 = ProjectTestHelpers.GetPackageSpec("Project3", pathContext.SolutionRoot, framework: "net5.0", dependencyName: "a", dependencyVersion: "3.0.0");
 
             var projectA = ProjectTestHelpers.GetPackageSpec("a", pathContext.SolutionRoot, framework: "net5.0");
             projectA.Version = new NuGetVersion("2.0.0");
@@ -1130,11 +1131,15 @@ namespace NuGet.Commands.FuncTest
                 pathContext.SolutionRoot,
                 framework: "net472");
 
-            project2spec.TargetFrameworks[0].Dependencies.Add(new LibraryDependency(
-                new LibraryRange(
-                    "a",
-                    versionRange: isCPMEnabled ? null : VersionRange.All,
-                    LibraryDependencyTarget.PackageProjectExternal)));
+            project2spec.TargetFrameworks[0] = new TargetFrameworkInformation(project2spec.TargetFrameworks[0])
+            {
+                Dependencies = [
+                    new LibraryDependency(new LibraryRange(
+                        "a",
+                        versionRange: isCPMEnabled ? null : VersionRange.All,
+                        LibraryDependencyTarget.PackageProjectExternal))
+                    ]
+            };
 
             var project1spec = ProjectTestHelpers.GetPackageSpec("Project1",
                 pathContext.SolutionRoot,

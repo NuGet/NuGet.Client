@@ -857,14 +857,14 @@ namespace NuGet.ProjectModel.Test
             {
                 IncludeType = LibraryIncludeFlags.Build,
                 LibraryRange = libraryRangeWithNoWarn,
-                NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1601 }
+                NoWarn = [NuGetLogCode.NU1500, NuGetLogCode.NU1601]
             };
 
             var libraryDependencyWithNoWarnGlobal = new LibraryDependency()
             {
                 IncludeType = LibraryIncludeFlags.Build,
                 LibraryRange = libraryRangeWithNoWarnGlobal,
-                NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1500, NuGetLogCode.NU1608 }
+                NoWarn = [NuGetLogCode.NU1500, NuGetLogCode.NU1608]
             };
 
             var nugetFramework = new NuGetFramework("frameworkIdentifier", new Version("1.2.3"), "frameworkProfile");
@@ -969,16 +969,16 @@ namespace NuGet.ProjectModel.Test
 
             packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation()
             {
-                Dependencies = new List<LibraryDependency>(),
+                Dependencies = [],
                 FrameworkName = nugetFramework,
-                Imports = new List<NuGetFramework>() { nugetFramework },
+                Imports = [nugetFramework],
             });
 
             packageSpec.TargetFrameworks.Add(new TargetFrameworkInformation()
             {
-                Dependencies = new List<LibraryDependency>() { libraryDependencyWithNoWarn },
+                Dependencies = [libraryDependencyWithNoWarn],
                 FrameworkName = nugetFrameworkWithNoWarn,
-                Imports = new List<NuGetFramework>() { nugetFrameworkWithNoWarn },
+                Imports = [nugetFrameworkWithNoWarn],
                 Warn = true
             });
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -1479,7 +1480,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                         LibraryIncludeFlags.All,
                         LibraryIncludeFlags.All,
-                        new List<NuGetLogCode>(),
+                        noWarn: [],
                         autoReferenced: false,
                         generatePathProperty: true,
                         versionCentrallyManaged: false,
@@ -1490,7 +1491,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
                 var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
-                var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+                var tfi = CreateTargetFrameworkInformation([dependencyBar], new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
                 packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
                 {
@@ -1543,7 +1544,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
-                    new List<NuGetLogCode>(),
+                    noWarn: [],
                     autoReferenced: true,
                     generatePathProperty: true,
                     versionCentrallyManaged: false,
@@ -1554,7 +1555,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
                 var centralVersionBar = new CentralPackageVersion(autoreferencedpackageId.ToLowerInvariant(), VersionRange.Parse("2.0.0"));
 
-                var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+                var tfi = CreateTargetFrameworkInformation([dependencyBar], new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
                 packageSpec.RestoreMetadata = new ProjectRestoreMetadata()
                 {
@@ -1618,7 +1619,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
-                    new List<NuGetLogCode>(),
+                    noWarn: [],
                     autoReferenced: false,
                     generatePathProperty: false,
                     versionCentrallyManaged: false,
@@ -1628,7 +1629,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
 
-                var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo });
+                var tfi = CreateTargetFrameworkInformation([dependencyBar], new List<CentralPackageVersion>() { centralVersionFoo });
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi })
                 {
                     FilePath = projectPath,
@@ -1700,7 +1701,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         LibraryDependencyTarget.All),
                     LibraryIncludeFlags.All,
                     LibraryIncludeFlags.All,
-                    new List<NuGetLogCode>(),
+                    noWarn: [],
                     autoReferenced: false,
                     generatePathProperty: false,
                     versionCentrallyManaged: false,
@@ -1710,7 +1711,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
 
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
 
-                var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo });
+                var tfi = CreateTargetFrameworkInformation([dependencyBar], new List<CentralPackageVersion>() { centralVersionFoo });
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi })
                 {
                     FilePath = projectPath,
@@ -2013,7 +2014,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.*", allowFloating: true));
 
                 var tfi = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>() { packageRefDependecyFoo },
+                    [packageRefDependecyFoo],
                     new List<CentralPackageVersion>() { centralVersionFoo });
 
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi })
@@ -2081,7 +2082,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
 
                 var tfi = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>() { packageRefDependecyBar },
+                    [packageRefDependecyBar],
                     new List<CentralPackageVersion>() { centralVersionFoo });
 
                 var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
@@ -2236,7 +2237,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageDummyontext);
 
                 var tfi = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>() { dependencyFoo },
+                    [dependencyFoo],
                     new List<CentralPackageVersion>() { centralVersionFoo, centralVersionDummy },
                     framework);
 
@@ -2325,8 +2326,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageAContext);
 
                 var tfi = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>
-                    {
+                    [
                         new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange()
@@ -2347,7 +2347,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                             VersionCentrallyManaged = true,
                             SuppressParent = LibraryIncludeFlags.Build
                         }
-                    },
+                    ],
                     new List<CentralPackageVersion>
                     {
                         new CentralPackageVersion(packageA.Id, new VersionRange(packageA.Version)),
@@ -2443,8 +2443,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageAContext);
 
                 var tfi = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>
-                    {
+                    [
                         new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange()
@@ -2455,7 +2454,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                             VersionCentrallyManaged = true,
                             SuppressParent = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile
                         },
-                    },
+                    ],
                     new List<CentralPackageVersion>
                     {
                         new CentralPackageVersion(packageA.Id, new VersionRange(packageA.Version)),
@@ -2529,15 +2528,15 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         new TargetFrameworkInformation
                         {
                             FrameworkName = NuGetFramework.Parse("net46"),
-                            Dependencies = new List<LibraryDependency>(new[]
-                            {
+                            Dependencies =
+                            [
                                 new LibraryDependency
                                 {
                                     LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
                                     VersionCentrallyManaged = true,
                                 },
-                            }),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                            ],
+                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))])
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -2551,8 +2550,8 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         new TargetFrameworkInformation
                         {
                             FrameworkName = NuGetFramework.Parse("net46"),
-                            Dependencies = new List<LibraryDependency>(),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                            Dependencies = [],
+                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -2637,8 +2636,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, packageAContext);
 
                 var tfi = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>
-                    {
+                    [
                         new LibraryDependency()
                         {
                             LibraryRange = new LibraryRange()
@@ -2659,7 +2657,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                             VersionCentrallyManaged = true,
                             SuppressParent = suppressParent2,
                         },
-                    },
+                    ],
                     new List<CentralPackageVersion>
                     {
                         new CentralPackageVersion(packageA.Id, new VersionRange(packageA.Version)),
@@ -2737,19 +2735,13 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 var packageRefDependencyFoo = new LibraryDependency()
                 {
                     LibraryRange = new LibraryRange(packageName, versionRange: null, typeConstraint: LibraryDependencyTarget.Package),
+                    VersionOverride = isVersionOverrideUsed ? new VersionRange(NuGetVersion.Parse("2.0.0")) : null
                 };
-                if (isVersionOverrideUsed)
-                {
-                    packageRefDependencyFoo.VersionOverride = new VersionRange(NuGetVersion.Parse("2.0.0"));
-                }
 
                 var packageVersion = new CentralPackageVersion(packageName, VersionRange.Parse("1.0.0"));
 
                 TargetFrameworkInformation targetFrameworkInformation = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>
-                    {
-                        packageRefDependencyFoo
-                    },
+                    [packageRefDependencyFoo],
                     new List<CentralPackageVersion>
                     {
                         packageVersion
@@ -3168,17 +3160,17 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                 await SimpleTestPackageUtility.CreateFullPackageAsync(pathContext.PackageSource, package3Context);
 
                 var tfiA = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>(), // no direct dependencies
+                    [], // no direct dependencies
                     new List<CentralPackageVersion>() { centralVersion1 },
                     framework);
 
                 var tfiB = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>(), // no direct dependencies
+                    [], // no direct dependencies
                     new List<CentralPackageVersion>() { centralVersion3 },
                     framework);
 
                 var tfiC = CreateTargetFrameworkInformation(
-                    new List<LibraryDependency>() { dependencyD }, // direct dependency
+                    [dependencyD], // direct dependency
                     new List<CentralPackageVersion>() { centralVersion2 },
                     framework);
 
@@ -3339,22 +3331,20 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             result.LockFile.PackageSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().BeTrue();
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
         {
             NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");
+            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
+            var newDependencies = LibraryDependency.ApplyCentralVersionInformation(dependencies, centralPackageVersions);
+
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
-                Warn = false,
+                CentralPackageVersions = centralPackageVersions,
+                Dependencies = newDependencies,
                 FrameworkName = nugetFramework,
-                Dependencies = dependencies,
+                Warn = false,
             };
-
-            foreach (var cvd in centralVersionsDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
-            }
-            LibraryDependency.ApplyCentralVersionInformation(tfi.Dependencies, tfi.CentralPackageVersions);
 
             return tfi;
         }

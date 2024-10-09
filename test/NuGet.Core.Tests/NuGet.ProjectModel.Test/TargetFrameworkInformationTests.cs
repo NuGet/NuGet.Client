@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -52,16 +52,16 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var tfi = CreateTargetFrameworkInformation();
-            var tfiClone = tfi.Clone();
+            var tfiClone = new TargetFrameworkInformation(tfi);
 
             // Act & Assert
             tfi.Equals(tfiClone).Should().BeTrue();
             Assert.NotSame(tfi, tfiClone);
-            Assert.NotSame(tfi.CentralPackageVersions, tfiClone.CentralPackageVersions);
-            Assert.NotSame(tfi.Dependencies, tfiClone.Dependencies);
-            Assert.NotSame(tfi.Imports, tfiClone.Imports);
-            Assert.NotSame(tfi.DownloadDependencies, tfiClone.DownloadDependencies);
-            Assert.NotSame(tfi.FrameworkReferences, tfiClone.FrameworkReferences);
+            Assert.Same(tfi.CentralPackageVersions, tfiClone.CentralPackageVersions);
+            Assert.True(tfi.Dependencies.Equals(tfiClone.Dependencies));
+            Assert.True(tfi.Imports.Equals(tfiClone.Imports));
+            Assert.True(tfi.DownloadDependencies.Equals(tfiClone.DownloadDependencies));
+            Assert.Same(tfi.FrameworkReferences, tfiClone.FrameworkReferences);
         }
 
         [Theory]
@@ -115,13 +115,13 @@ namespace NuGet.ProjectModel.Test
             var leftSide = new TargetFrameworkInformation()
             {
                 FrameworkName = NuGetFramework.AnyFramework,
-                Imports = left.Split(';').Select(e => NuGetFramework.Parse(e)).ToList()
+                Imports = left.Split(';').Select(e => NuGetFramework.Parse(e)).ToImmutableArray()
             };
 
             var rightSide = new TargetFrameworkInformation()
             {
                 FrameworkName = NuGetFramework.AnyFramework,
-                Imports = right.Split(';').Select(e => NuGetFramework.Parse(e)).ToList()
+                Imports = right.Split(';').Select(e => NuGetFramework.Parse(e)).ToImmutableArray()
             };
 
             AssertEquality(expected, leftSide, rightSide);
@@ -233,7 +233,7 @@ namespace NuGet.ProjectModel.Test
                             Name = e,
                             VersionRange = VersionRange.Parse("1.0.0")
                         }
-                    }).ToList()
+                    }).ToImmutableArray()
             };
 
             var rightSide = new TargetFrameworkInformation()
@@ -246,7 +246,7 @@ namespace NuGet.ProjectModel.Test
                             Name = e,
                             VersionRange = VersionRange.Parse("1.0.0")
                         }
-                    }).ToList()
+                    }).ToImmutableArray()
             };
 
             AssertEquality(expected, leftSide, rightSide);
@@ -260,11 +260,15 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void Equals_WithDownloadDependencies(string left, string right, bool expected)
         {
-            var leftSide = new TargetFrameworkInformation();
-            leftSide.DownloadDependencies.AddRange(left.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))));
+            var leftSide = new TargetFrameworkInformation()
+            {
+                DownloadDependencies = left.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))).ToImmutableArray()
+            };
 
-            var rightSide = new TargetFrameworkInformation();
-            rightSide.DownloadDependencies.AddRange(right.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))));
+            var rightSide = new TargetFrameworkInformation()
+            {
+                DownloadDependencies = right.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))).ToImmutableArray()
+            };
 
             AssertEquality(expected, leftSide, rightSide);
         }
@@ -277,13 +281,19 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void Equals_WithFrameworkReferences(string left, string right, bool expected)
         {
-            var leftSide = new TargetFrameworkInformation();
-            leftSide.FrameworkReferences.AddRange(left.Split(';')
-                .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All)));
+            var leftSide = new TargetFrameworkInformation()
+            {
+                FrameworkReferences = left.Split(';')
+                    .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All))
+                    .ToHashSet()
+            };
 
-            var rightSide = new TargetFrameworkInformation();
-            rightSide.FrameworkReferences.AddRange(right.Split(';')
-                .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All)));
+            var rightSide = new TargetFrameworkInformation()
+            {
+                FrameworkReferences = right.Split(';')
+                    .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All))
+                    .ToHashSet()
+            };
 
             AssertEquality(expected, leftSide, rightSide);
         }
@@ -296,23 +306,19 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void Equals_WithCentralDependencies(string left, string right, bool expected)
         {
+            var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var leftSide = new TargetFrameworkInformation()
             {
+                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(leftVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in left.Split(';'))
-            {
-                leftSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
 
+            var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var rightSide = new TargetFrameworkInformation()
             {
+                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(rightVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in right.Split(';'))
-            {
-                rightSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
 
             AssertEquality(expected, leftSide, rightSide);
         }
@@ -368,13 +374,13 @@ namespace NuGet.ProjectModel.Test
             var leftSide = new TargetFrameworkInformation()
             {
                 FrameworkName = NuGetFramework.AnyFramework,
-                Imports = left.Split(';').Select(e => NuGetFramework.Parse(e)).ToList()
+                Imports = left.Split(';').Select(e => NuGetFramework.Parse(e)).ToImmutableArray()
             };
 
             var rightSide = new TargetFrameworkInformation()
             {
                 FrameworkName = NuGetFramework.AnyFramework,
-                Imports = right.Split(';').Select(e => NuGetFramework.Parse(e)).ToList()
+                Imports = right.Split(';').Select(e => NuGetFramework.Parse(e)).ToImmutableArray()
             };
 
             AssertHashCode(expected, leftSide, rightSide);
@@ -484,7 +490,7 @@ namespace NuGet.ProjectModel.Test
                             Name = e,
                             VersionRange = VersionRange.Parse("1.0.0")
                         }
-                    }).ToList()
+                    }).ToImmutableArray()
             };
 
             var rightSide = new TargetFrameworkInformation()
@@ -497,7 +503,7 @@ namespace NuGet.ProjectModel.Test
                             Name = e,
                             VersionRange = VersionRange.Parse("1.0.0")
                         }
-                    }).ToList()
+                    }).ToImmutableArray()
             };
 
             AssertHashCode(expected, leftSide, rightSide);
@@ -511,11 +517,15 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void HashCode_WithDownloadDependencies(string left, string right, bool expected)
         {
-            var leftSide = new TargetFrameworkInformation();
-            leftSide.DownloadDependencies.AddRange(left.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))));
+            var leftSide = new TargetFrameworkInformation()
+            {
+                DownloadDependencies = left.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))).ToImmutableArray()
+            };
 
-            var rightSide = new TargetFrameworkInformation();
-            rightSide.DownloadDependencies.AddRange(right.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))));
+            var rightSide = new TargetFrameworkInformation()
+            {
+                DownloadDependencies = right.Split(';').Select(e => new DownloadDependency(e, VersionRange.Parse("1.0.0"))).ToImmutableArray()
+            };
 
             AssertHashCode(expected, leftSide, rightSide);
         }
@@ -528,13 +538,19 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void HashCode_WithFrameworkReferences(string left, string right, bool expected)
         {
-            var leftSide = new TargetFrameworkInformation();
-            leftSide.FrameworkReferences.AddRange(left.Split(';')
-                .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All)));
+            var leftSide = new TargetFrameworkInformation()
+            {
+                FrameworkReferences = left.Split(';')
+                    .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All))
+                    .ToHashSet()
+            };
 
-            var rightSide = new TargetFrameworkInformation();
-            rightSide.FrameworkReferences.AddRange(right.Split(';')
-                .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All)));
+            var rightSide = new TargetFrameworkInformation()
+            {
+                FrameworkReferences = right.Split(';')
+                    .Select(e => new FrameworkDependency(e, FrameworkDependencyFlags.All))
+                    .ToHashSet()
+            };
 
             AssertHashCode(expected, leftSide, rightSide);
         }
@@ -547,23 +563,19 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void HashCode_WithCentralDependencies(string left, string right, bool expected)
         {
+            var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var leftSide = new TargetFrameworkInformation()
             {
+                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(leftVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in left.Split(';'))
-            {
-                leftSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
 
+            var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
             var rightSide = new TargetFrameworkInformation()
             {
+                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(rightVersions),
                 FrameworkName = NuGetFramework.AnyFramework
             };
-            foreach (var entry in right.Split(';'))
-            {
-                rightSide.CentralPackageVersions.Add(entry, new CentralPackageVersion(entry, VersionRange.All));
-            }
 
             AssertHashCode(expected, leftSide, rightSide);
         }
@@ -579,7 +591,7 @@ namespace NuGet.ProjectModel.Test
             var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.All, LibraryDependencyTarget.All),
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
-                new List<Common.NuGetLogCode>(),
+                noWarn: [],
                 autoReferenced: true,
                 generatePathProperty: true,
                 versionCentrallyManaged: false,
@@ -590,25 +602,20 @@ namespace NuGet.ProjectModel.Test
             var downloadDependency = new DownloadDependency("foo", VersionRange.All);
             var frameworkDependency = new FrameworkDependency("framework", FrameworkDependencyFlags.All);
 
-            var dependencies = new List<LibraryDependency>() { dependencyFoo };
             var assetTargetFallback = true;
             var warn = false;
 
+            var versions = centralVersionDependencies.Select(cdep => new KeyValuePair<string, CentralPackageVersion>(cdep.Name, cdep));
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = assetTargetFallback,
-                Dependencies = dependencies,
-                Warn = warn,
+                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(versions),
+                Dependencies = [dependencyFoo],
+                DownloadDependencies = [downloadDependency],
                 FrameworkName = nugetFramework,
+                FrameworkReferences = [frameworkDependency],
+                Warn = warn,
             };
-
-            foreach (var cdep in centralVersionDependencies)
-            {
-                tfi.CentralPackageVersions.Add(cdep.Name, cdep);
-            }
-
-            tfi.DownloadDependencies.Add(downloadDependency);
-            tfi.FrameworkReferences.Add(frameworkDependency);
 
             return tfi;
         }
@@ -643,8 +650,8 @@ namespace NuGet.ProjectModel.Test
 
         private static void AssertClone(bool expected, TargetFrameworkInformation leftSide, TargetFrameworkInformation rightSide)
         {
-            var leftClone = leftSide.Clone();
-            var rightClone = rightSide.Clone();
+            var leftClone = new TargetFrameworkInformation(leftSide);
+            var rightClone = new TargetFrameworkInformation(rightSide);
 
             if (expected)
             {

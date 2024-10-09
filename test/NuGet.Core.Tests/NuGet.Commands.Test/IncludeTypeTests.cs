@@ -1782,16 +1782,15 @@ namespace NuGet.Commands.Test
                         new TargetFrameworkInformation
                         {
                             FrameworkName = NuGetFramework.Parse("net471"),
-                            Dependencies = new List<LibraryDependency>(
-                                new[]
-                                {
+                            Dependencies =
+                                [
                                     new LibraryDependency
                                     {
                                         LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.All),
                                         VersionCentrallyManaged = true,
                                     },
-                                }),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                                ],
+                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -1805,8 +1804,8 @@ namespace NuGet.Commands.Test
                         new TargetFrameworkInformation
                         {
                             FrameworkName = NuGetFramework.Parse("net471"),
-                            Dependencies = new List<LibraryDependency>(),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                            Dependencies = [],
+                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -1822,8 +1821,8 @@ namespace NuGet.Commands.Test
                         new TargetFrameworkInformation
                         {
                             FrameworkName = NuGetFramework.Parse("net471"),
-                            Dependencies = new List<LibraryDependency>(),
-                            CentralPackageVersions = { new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0"))) },
+                            Dependencies = [],
+                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))])
                         }
                     })
                     .WithCentralPackageVersionsEnabled()

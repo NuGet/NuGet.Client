@@ -3,8 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Runtime.InteropServices;
 using NuGet.Common;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -13,53 +14,54 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependency : IEquatable<LibraryDependency>
     {
-        public required LibraryRange LibraryRange { get; set; }
+        // private fields to allow for validating initialization values
+        private ImmutableArray<NuGetLogCode> _noWarn = [];
 
-        public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
+        public required LibraryRange LibraryRange { get; init; }
 
-        public LibraryIncludeFlags SuppressParent { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
+        public LibraryIncludeFlags IncludeType { get; init; } = LibraryIncludeFlags.All;
 
-        public IList<NuGetLogCode> NoWarn { get; set; }
+        public LibraryIncludeFlags SuppressParent { get; init; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
+
+        public ImmutableArray<NuGetLogCode> NoWarn
+        {
+            get => _noWarn;
+            init
+            {
+                _noWarn = value.IsDefault ? ImmutableArray<NuGetLogCode>.Empty : value;
+            }
+        }
 
         public string Name => LibraryRange.Name;
 
         /// <summary>
         /// True if the PackageReference is added by the SDK and not the user.
         /// </summary>
-        public bool AutoReferenced { get; set; }
+        public bool AutoReferenced { get; init; }
 
         /// <summary>
         /// True if the dependency has the version set through CentralPackageVersionManagement file.
         /// </summary>
-        public bool VersionCentrallyManaged { get; set; }
+        public bool VersionCentrallyManaged { get; init; }
 
         /// <summary>
         /// Information regarding if the dependency is direct or transitive.
         /// </summary>
-        public LibraryDependencyReferenceType ReferenceType { get; set; } = LibraryDependencyReferenceType.Direct;
+        public LibraryDependencyReferenceType ReferenceType { get; init; } = LibraryDependencyReferenceType.Direct;
 
-        public bool GeneratePathProperty { get; set; }
+        public bool GeneratePathProperty { get; init; }
 
-        public string? Aliases { get; set; }
+        public string? Aliases { get; init; }
 
         /// <summary>
         /// Gets or sets a value indicating a version override for any centrally defined version.
         /// </summary>
-        public VersionRange? VersionOverride { get; set; }
+        public VersionRange? VersionOverride { get; init; }
 
         /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
         /// <remarks>Required properties must be set when using this constructor.</remarks>
         public LibraryDependency()
-            : this(new List<NuGetLogCode>())
         {
-        }
-
-        /// <summary>Initializes a new instance of the LibraryDependency class with the specified NoWarn codes.</summary>
-        /// <param name="noWarn">Specifies a <see cref="List{T}" /> containing <see cref="NuGetLogCode" /> values.</param>
-        /// <remarks>Required properties must be set when using this constructor.</remarks>
-        public LibraryDependency(IList<NuGetLogCode> noWarn)
-        {
-            NoWarn = noWarn;
         }
 
         /// <summary>Initializes a new instance of the LibraryDependency class.</summary>
@@ -76,7 +78,7 @@ namespace NuGet.LibraryModel
             LibraryRange libraryRange,
             LibraryIncludeFlags includeType,
             LibraryIncludeFlags suppressParent,
-            IList<NuGetLogCode> noWarn,
+            ImmutableArray<NuGetLogCode> noWarn,
             bool autoReferenced,
             bool generatePathProperty,
             bool versionCentrallyManaged,
@@ -96,6 +98,21 @@ namespace NuGet.LibraryModel
             VersionOverride = versionOverride;
         }
 
+        [SetsRequiredMembers]
+        public LibraryDependency(LibraryDependency other)
+        {
+            LibraryRange = other.LibraryRange;
+            IncludeType = other.IncludeType;
+            SuppressParent = other.SuppressParent;
+            NoWarn = other.NoWarn;
+            AutoReferenced = other.AutoReferenced;
+            GeneratePathProperty = other.GeneratePathProperty;
+            VersionCentrallyManaged = other.VersionCentrallyManaged;
+            ReferenceType = other.ReferenceType;
+            Aliases = other.Aliases;
+            VersionOverride = other.VersionOverride;
+        }
+
         public override string ToString()
         {
             // Explicitly call .ToString() to ensure string.Concat(string, string, string) overload is called.
@@ -110,7 +127,12 @@ namespace NuGet.LibraryModel
             hashCode.AddStruct(IncludeType);
             hashCode.AddStruct(SuppressParent);
             hashCode.AddObject(AutoReferenced);
-            hashCode.AddSequence(NoWarn);
+
+            foreach (var item in NoWarn)
+            {
+                hashCode.AddStruct(item);
+            }
+
             hashCode.AddObject(GeneratePathProperty);
             hashCode.AddObject(VersionCentrallyManaged);
             hashCode.AddObject(Aliases);
@@ -148,20 +170,13 @@ namespace NuGet.LibraryModel
                    ReferenceType == other.ReferenceType;
         }
 
-        public LibraryDependency Clone()
-        {
-            var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
-            var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
-
-            return new LibraryDependency(clonedLibraryRange, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType, Aliases, VersionOverride);
-        }
-
         /// <summary>
         /// Merge the CentralVersion information to the package reference information.
         /// </summary>
-        public static void ApplyCentralVersionInformation(IList<LibraryDependency> packageReferences, IDictionary<string, CentralPackageVersion> centralPackageVersions)
+        /// TODO NK - This probably could be removed completely by inverting the loigc.
+        public static ImmutableArray<LibraryDependency> ApplyCentralVersionInformation(ImmutableArray<LibraryDependency> packageReferences, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
         {
-            if (packageReferences == null)
+            if (packageReferences.IsDefault)
             {
                 throw new ArgumentNullException(nameof(packageReferences));
             }
@@ -169,25 +184,45 @@ namespace NuGet.LibraryModel
             {
                 throw new ArgumentNullException(nameof(centralPackageVersions));
             }
-            if (centralPackageVersions.Count > 0)
+            if (centralPackageVersions.Count == 0)
             {
-                foreach (LibraryDependency d in packageReferences.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                return packageReferences;
+            }
+
+            LibraryDependency[] result = new LibraryDependency[packageReferences.Length];
+            for (int i = 0; i < packageReferences.Length; i++)
+            {
+                LibraryDependency d = packageReferences[i];
+                if (!d.AutoReferenced && d.LibraryRange.VersionRange == null)
                 {
+                    var libraryRange = d.LibraryRange;
+                    var versionCentrallyManaged = d.VersionCentrallyManaged;
+
                     if (d.VersionOverride != null)
                     {
-                        d.LibraryRange.VersionRange = d.VersionOverride;
-
-                        continue;
+                        libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = d.VersionOverride };
                     }
-
-                    if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion? centralPackageVersion))
+                    else
                     {
-                        d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
+                        if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion? centralPackageVersion))
+                        {
+                            libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = centralPackageVersion.VersionRange };
+                        }
+
+                        versionCentrallyManaged = true;
                     }
 
-                    d.VersionCentrallyManaged = true;
+                    d = new LibraryDependency(d)
+                    {
+                        LibraryRange = libraryRange,
+                        VersionCentrallyManaged = versionCentrallyManaged
+                    };
                 }
+
+                result[i] = d;
             }
+
+            return ImmutableCollectionsMarshal.AsImmutableArray(result);
         }
     }
 }

@@ -2093,7 +2093,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var tfm = result.TargetFrameworks.First();
             var expectedPackageReferenceVersion = packRefVersion == null ? "(, )" : "[1.0.0, )";
             Assert.Equal(0, tfm.CentralPackageVersions.Count);
-            Assert.Equal(1, tfm.Dependencies.Count);
+            Assert.Equal(1, tfm.Dependencies.Length);
             Assert.Equal(expectedPackageReferenceVersion, tfm.Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
             Assert.False(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
