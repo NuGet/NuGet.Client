@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using NuGet.Common;
 
@@ -27,6 +28,7 @@ namespace NuGet.Packaging
             // This file is not intended to be parsed in javascript, and the contentHash property contains a Base64 encoded string that
             // can contain characters such as + that has not been encoded in the past.
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         public static NupkgMetadataFile Read(string filePath)
@@ -45,27 +47,29 @@ namespace NuGet.Packaging
 
             try
             {
-                try
+                NupkgMetadataFile nupkgMetadata = System.Text.Json.JsonSerializer.Deserialize<NupkgMetadataFile>(stream, JsonSerializerOptions);
+                if (nupkgMetadata == null)
                 {
-                    NupkgMetadataFile nupkgMetadata = System.Text.Json.JsonSerializer.Deserialize<NupkgMetadataFile>(stream, JsonSerializerOptions);
-                    if (nupkgMetadata == null)
-                    {
-                        throw new InvalidDataException();
-                    }
-                    return nupkgMetadata;
+                    throw new InvalidDataException();
                 }
-                catch (System.Text.Json.JsonException jsonException)
-                {
-                    throw new InvalidDataException(jsonException.Message, jsonException);
-                }
+                return nupkgMetadata;
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                LogMessage(log, path, ex);
+                throw new InvalidDataException(ex.Message, ex);
             }
             catch (Exception ex)
+            {
+                LogMessage(log, path, ex);
+                throw;
+            }
+
+            static void LogMessage(ILogger log, string path, Exception ex)
             {
                 log.LogWarning(string.Format(CultureInfo.CurrentCulture,
                     Strings.Error_LoadingHashFile,
                     path, ex.Message));
-
-                throw;
             }
         }
 
@@ -134,7 +138,7 @@ namespace NuGet.Packaging
             return settings;
         }
 
-        private class NupkgMetadataConverter : JsonConverter
+        private class NupkgMetadataConverter : Newtonsoft.Json.JsonConverter
         {
             internal static NupkgMetadataConverter Default { get; } = new NupkgMetadataConverter();
 
