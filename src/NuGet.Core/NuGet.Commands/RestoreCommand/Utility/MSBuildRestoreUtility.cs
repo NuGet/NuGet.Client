@@ -675,7 +675,7 @@ namespace NuGet.Commands
                 (var includeType, var suppressParent) = GetLibraryDependencyIncludeFlags(item);
                 IEnumerable<string> frameworks = GetFrameworks(item);
                 string name = item.GetProperty("Id");
-                bool autoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"); // TODO NK - Add an AutoReferenced test for this method.
+                bool autoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined");
 
                 VersionRange versionRange = GetVersionRange(item, defaultValue: isCpvmEnabled ? null : VersionRange.All);
                 bool versionDefined = versionRange != null;

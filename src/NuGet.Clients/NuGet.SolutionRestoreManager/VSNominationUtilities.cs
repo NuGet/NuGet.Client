@@ -537,7 +537,7 @@ namespace NuGet.SolutionRestoreManager
             }
 
             CentralPackageVersion? centralPackageVersion = null;
-            bool isCentrallyManaged = !versionDefined && !autoReferenced && cpvmEnabled && centralPackageVersions != null && centralPackageVersions.TryGetValue(item.Name, out centralPackageVersion); // TODO NK - Add an auto referenced test
+            bool isCentrallyManaged = !versionDefined && !autoReferenced && cpvmEnabled && centralPackageVersions != null && centralPackageVersions.TryGetValue(item.Name, out centralPackageVersion);
 
             if (centralPackageVersion != null)
             {

@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 using NuGet.Common;
 using NuGet.Shared;
 using NuGet.Versioning;
@@ -168,61 +166,6 @@ namespace NuGet.LibraryModel
                    Aliases == other.Aliases &&
                    EqualityUtility.EqualsWithNullCheck(VersionOverride, other.VersionOverride) &&
                    ReferenceType == other.ReferenceType;
-        }
-
-        /// <summary>
-        /// Merge the CentralVersion information to the package reference information.
-        /// </summary>
-        /// TODO NK - This probably could be removed completely by inverting the loigc.
-        public static ImmutableArray<LibraryDependency> ApplyCentralVersionInformation(ImmutableArray<LibraryDependency> packageReferences, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
-        {
-            if (packageReferences.IsDefault)
-            {
-                throw new ArgumentNullException(nameof(packageReferences));
-            }
-            if (centralPackageVersions == null)
-            {
-                throw new ArgumentNullException(nameof(centralPackageVersions));
-            }
-            if (centralPackageVersions.Count == 0)
-            {
-                return packageReferences;
-            }
-
-            LibraryDependency[] result = new LibraryDependency[packageReferences.Length];
-            for (int i = 0; i < packageReferences.Length; i++)
-            {
-                LibraryDependency d = packageReferences[i];
-                if (!d.AutoReferenced && d.LibraryRange.VersionRange == null)
-                {
-                    var libraryRange = d.LibraryRange;
-                    var versionCentrallyManaged = d.VersionCentrallyManaged;
-
-                    if (d.VersionOverride != null)
-                    {
-                        libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = d.VersionOverride };
-                    }
-                    else
-                    {
-                        if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion? centralPackageVersion))
-                        {
-                            libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = centralPackageVersion.VersionRange };
-                        }
-
-                        versionCentrallyManaged = true;
-                    }
-
-                    d = new LibraryDependency(d)
-                    {
-                        LibraryRange = libraryRange,
-                        VersionCentrallyManaged = versionCentrallyManaged
-                    };
-                }
-
-                result[i] = d;
-            }
-
-            return ImmutableCollectionsMarshal.AsImmutableArray(result);
         }
     }
 }

@@ -15,4 +15,3 @@ NuGet.LibraryModel.LibraryRange.LibraryRange(NuGet.LibraryModel.LibraryRange! ot
 NuGet.LibraryModel.LibraryRange.Name.init -> void
 NuGet.LibraryModel.LibraryRange.TypeConstraint.init -> void
 NuGet.LibraryModel.LibraryRange.VersionRange.init -> void
-static NuGet.LibraryModel.LibraryDependency.ApplyCentralVersionInformation(System.Collections.Immutable.ImmutableArray<NuGet.LibraryModel.LibraryDependency!> packageReferences, System.Collections.Generic.IReadOnlyDictionary<string!, NuGet.LibraryModel.CentralPackageVersion!>! centralPackageVersions) -> System.Collections.Immutable.ImmutableArray<NuGet.LibraryModel.LibraryDependency!>

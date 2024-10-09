@@ -175,7 +175,7 @@ namespace NuGet.ProjectModel
                    StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
         }
 
-        // TODO NK - Do we want this?
+        // TODO NK - We don't need this.
         public static IReadOnlyDictionary<string, CentralPackageVersion> CreateCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions = null)
         {
             if (versions == null)

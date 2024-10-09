@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -3335,7 +3336,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         {
             NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");
             var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
-            var newDependencies = LibraryDependency.ApplyCentralVersionInformation(dependencies, centralPackageVersions);
+            var newDependencies = ApplyCentralVersionInformation(dependencies, centralPackageVersions);
 
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
@@ -3347,6 +3348,44 @@ namespace NuGet.Commands.Test.RestoreCommandTests
             };
 
             return tfi;
+
+            static ImmutableArray<LibraryDependency> ApplyCentralVersionInformation(ImmutableArray<LibraryDependency> packageReferences, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
+            {
+                LibraryDependency[] result = new LibraryDependency[packageReferences.Length];
+                for (int i = 0; i < packageReferences.Length; i++)
+                {
+                    LibraryDependency d = packageReferences[i];
+                    if (!d.AutoReferenced && d.LibraryRange.VersionRange == null)
+                    {
+                        var libraryRange = d.LibraryRange;
+                        var versionCentrallyManaged = d.VersionCentrallyManaged;
+
+                        if (d.VersionOverride != null)
+                        {
+                            libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = d.VersionOverride };
+                        }
+                        else
+                        {
+                            if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                            {
+                                libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = centralPackageVersion.VersionRange };
+                            }
+
+                            versionCentrallyManaged = true;
+                        }
+
+                        d = new LibraryDependency(d)
+                        {
+                            LibraryRange = libraryRange,
+                            VersionCentrallyManaged = versionCentrallyManaged
+                        };
+                    }
+
+                    result[i] = d;
+                }
+
+                return ImmutableCollectionsMarshal.AsImmutableArray(result);
+            }
         }
 
         private static PackageSpec CreatePackageSpec(List<TargetFrameworkInformation> tfis, NuGetFramework framework, string projectName, string projectPath, bool centralPackageManagementEnabled, bool centralPackageTransitivePinningEnabled = false)

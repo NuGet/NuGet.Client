@@ -837,11 +837,13 @@ namespace NuGet.Build.Tasks.Console.Test
                         ["PackageReference"] = new List<IMSBuildItem>
                         {
                             new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.TrueString }),
+                            new MSBuildItem("PackageC", new Dictionary<string, string> { ["VersionOVerride"] = "4.0.0" }),
                         },
                         ["PackageVersion"] = new List<IMSBuildItem>
                         {
                             new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
                             new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
+                            new MSBuildItem("PackageC", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
                         },
                     }),
                 [netstandard22] = new MockMSBuildProject("Project-netstandard2.2",
@@ -903,25 +905,33 @@ namespace NuGet.Build.Tasks.Console.Test
             var framework23 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard23);
             var framework24 = targetFrameworkInfos.Single(f => f.TargetAlias == netstandard24);
 
-            Assert.Equal(1, framework20.Dependencies.Length);
-            Assert.Equal("PackageA", framework20.Dependencies.First().Name);
-            Assert.Null(framework20.Dependencies.First().LibraryRange.VersionRange);
+            Assert.Equal(2, framework20.Dependencies.Length);
+            Assert.Equal("PackageA", framework20.Dependencies[0].Name);
+            Assert.Null(framework20.Dependencies[0].LibraryRange.VersionRange);
+            Assert.False(framework20.Dependencies[0].VersionCentrallyManaged);
+            Assert.Equal("PackageC", framework20.Dependencies[1].Name);
+            Assert.Equal("4.0.0", framework20.Dependencies[1].LibraryRange.VersionRange.OriginalString);
+            Assert.Equal("4.0.0", framework20.Dependencies[1].VersionOverride.OriginalString);
+            Assert.False(framework20.Dependencies[1].VersionCentrallyManaged);
 
-            Assert.Equal(2, framework20.CentralPackageVersions.Count);
+            Assert.Equal(3, framework20.CentralPackageVersions.Count);
             Assert.Equal("2.0.0", framework20.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
             Assert.Equal("3.0.0", framework20.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
+            Assert.Equal("3.0.0", framework20.CentralPackageVersions["PackageC"].VersionRange.OriginalString);
 
             Assert.Equal(1, framework22.Dependencies.Length);
-            Assert.Equal("PackageA", framework22.Dependencies.First().Name);
-            Assert.Equal("11.0.0", framework22.Dependencies.First().LibraryRange.VersionRange.OriginalString);
+            Assert.Equal("PackageA", framework22.Dependencies[0].Name);
+            Assert.Equal("11.0.0", framework22.Dependencies[0].LibraryRange.VersionRange.OriginalString);
+            Assert.False(framework22.Dependencies[0].VersionCentrallyManaged);
 
             Assert.Equal(2, framework22.CentralPackageVersions.Count);
             Assert.Equal("2.2.2", framework22.CentralPackageVersions["PackageA"].VersionRange.OriginalString);
             Assert.Equal("3.2.0", framework22.CentralPackageVersions["PackageB"].VersionRange.OriginalString);
 
             Assert.Equal(1, framework23.Dependencies.Length);
-            Assert.Equal("PackageA", framework23.Dependencies.First().Name);
-            Assert.Equal("2.0.0", framework23.Dependencies.First().LibraryRange.VersionRange.OriginalString);
+            Assert.Equal("PackageA", framework23.Dependencies[0].Name);
+            Assert.Equal("2.0.0", framework23.Dependencies[0].LibraryRange.VersionRange.OriginalString);
+            Assert.True(framework23.Dependencies[0].VersionCentrallyManaged);
 
             // Information about central package versions is necessary for implementation of "transitive dependency pinning".
             // thus even, when there are no explicit dependencies, information about central package versions still should be included.

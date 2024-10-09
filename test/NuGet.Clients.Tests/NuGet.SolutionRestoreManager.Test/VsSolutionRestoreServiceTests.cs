@@ -21,6 +21,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using Test.Utility.ProjectManagement;
@@ -2589,6 +2590,108 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
             actualProjectSpec.RestoreMetadata.UseLegacyDependencyResolver.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ToPackageSpec_WithCPMAndAutoReferencedPackages_SkipsAddingVersion()
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
+            projectProperties["ManagePackageVersionsCentrally"] = "true";
+
+            var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
+                items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>()
+                {
+                    [ProjectItems.PackageReference] = [new VsReferenceItem2("foo", EmptyProperties),
+                                                       new VsReferenceItem2("bar", new Dictionary<string, string> { { "IsImplicitlyDefined", "true" }, { "Version", "10.0.1" } })],
+                    [ProjectItems.PackageVersion] =
+                    [
+                        new VsReferenceItem2("foo", new Dictionary<string,string>() { ["Version"] = "2.0.0"}),
+                    ]
+                },
+                properties: projectProperties)
+            };
+
+            var pri = new VsProjectRestoreInfo3
+            {
+                MSBuildProjectExtensionsPath = string.Empty,
+                TargetFrameworks = targetFrameworks,
+                OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
+            };
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, pri);
+
+            // Assert
+            var tfm = result.TargetFrameworks.First();
+
+            tfm.CentralPackageVersions.Should().HaveCount(1);
+            tfm.CentralPackageVersions.Single().Value.Name.Should().Be("foo");
+            result.RestoreMetadata.CentralPackageVersionsEnabled.Should().BeTrue();
+            tfm.Dependencies.Should().HaveCount(2);
+            tfm.Dependencies[0].Name.Should().Be("foo");
+            tfm.Dependencies[0].VersionCentrallyManaged.Should().BeTrue();
+            tfm.Dependencies[0].LibraryRange.VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
+            tfm.Dependencies[0].AutoReferenced.Should().BeFalse();
+
+            tfm.Dependencies[1].Name.Should().Be("bar");
+            tfm.Dependencies[1].VersionCentrallyManaged.Should().BeFalse();
+            tfm.Dependencies[1].LibraryRange.VersionRange.Should().Be(VersionRange.Parse("10.0.1"));
+            tfm.Dependencies[1].AutoReferenced.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ToPackageSpec_WithCPMAndVersionOverride_SetsVersionToVersionOverride()
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectProperties = ProjectRestoreInfoBuilder.GetTargetFrameworkProperties(CommonFrameworks.NetStandard20);
+            projectProperties[ProjectBuildProperties.ManagePackageVersionsCentrally] = "true";
+            projectProperties[ProjectBuildProperties.CentralPackageVersionOverrideEnabled] = "true";
+
+            var targetFrameworks = new VsTargetFrameworkInfo4[] { new VsTargetFrameworkInfo4(
+                items: new Dictionary<string, IReadOnlyList<IVsReferenceItem2>>()
+                {
+                    [ProjectItems.PackageReference] = [new VsReferenceItem2("foo", EmptyProperties),
+                                                       new VsReferenceItem2("bar", new Dictionary<string, string> { { "VersionOverride", "10.0.1" } })],
+                    [ProjectItems.PackageVersion] =
+                    [
+                        new VsReferenceItem2("foo", new Dictionary<string,string>() { ["Version"] = "2.0.0"}),
+                        new VsReferenceItem2("bar", new Dictionary<string,string>() { ["Version"] = "3.0.0"}),
+                    ]
+                },
+                properties: projectProperties)
+            };
+
+            var pri = new VsProjectRestoreInfo3
+            {
+                MSBuildProjectExtensionsPath = string.Empty,
+                TargetFrameworks = targetFrameworks,
+                OriginalTargetFrameworks = CommonFrameworks.NetStandard20.ToString(),
+            };
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, pri);
+
+            // Assert
+            var tfm = result.TargetFrameworks.First();
+
+            tfm.CentralPackageVersions.Should().HaveCount(2);
+            result.RestoreMetadata.CentralPackageVersionsEnabled.Should().BeTrue();
+            tfm.Dependencies.Should().HaveCount(2);
+            tfm.Dependencies[0].Name.Should().Be("foo");
+            tfm.Dependencies[0].VersionCentrallyManaged.Should().BeTrue();
+            tfm.Dependencies[0].LibraryRange.VersionRange.Should().Be(VersionRange.Parse("2.0.0"));
+            tfm.Dependencies[0].AutoReferenced.Should().BeFalse();
+
+            tfm.Dependencies[1].Name.Should().Be("bar");
+            tfm.Dependencies[1].VersionCentrallyManaged.Should().BeFalse();
+            tfm.Dependencies[1].LibraryRange.VersionRange.Should().Be(VersionRange.Parse("10.0.1"));
+            tfm.Dependencies[1].VersionOverride.Should().Be(VersionRange.Parse("10.0.1"));
+            tfm.Dependencies[1].AutoReferenced.Should().BeFalse();
         }
 
         private static IVsTargetFrameworkInfo FrameworkWithProperty(bool isV2Nominate, string propertyName, string propertyValue)

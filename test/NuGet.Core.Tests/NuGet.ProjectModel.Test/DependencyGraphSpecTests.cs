@@ -445,118 +445,6 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void AddProject_WhenDependencyVersionIsNull_CentralPackageVersionAppliesOnlyWhenAutoReferencedIsFalse()
-        {
-            // Arrange
-            var dependencyFoo = new LibraryDependency(
-                new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryIncludeFlags.All,
-                LibraryIncludeFlags.All,
-                noWarn: [],
-                autoReferenced: false,
-                generatePathProperty: true,
-                versionCentrallyManaged: false,
-                LibraryDependencyReferenceType.Direct,
-                aliases: null,
-                versionOverride: null);
-            var dependencyBar = new LibraryDependency(
-                new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
-                LibraryIncludeFlags.All,
-                LibraryIncludeFlags.All,
-                noWarn: [],
-                autoReferenced: true,
-                generatePathProperty: true,
-                versionCentrallyManaged: false,
-                LibraryDependencyReferenceType.Direct,
-                aliases: null,
-                versionOverride: null);
-            var dependencyBoom = new LibraryDependency(
-                new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryIncludeFlags.All,
-                LibraryIncludeFlags.All,
-                noWarn: [],
-                autoReferenced: true,
-                generatePathProperty: true,
-                versionCentrallyManaged: false,
-                LibraryDependencyReferenceType.Direct,
-                aliases: null,
-                versionOverride: null);
-            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
-            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
-            var centralVersionBoom = new CentralPackageVersion("boom", VersionRange.Parse("4.0.0"));
-
-            var tfi = CreateTargetFrameworkInformation(
-                [dependencyFoo, dependencyBar, dependencyBoom],
-                new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar, centralVersionBoom });
-
-            // Act
-            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
-
-            // Assert
-            Assert.Equal(1, dependencyGraphSpec.Projects.Count);
-            PackageSpec packSpec = dependencyGraphSpec.Projects[0];
-            IList<TargetFrameworkInformation> tfms = packSpec.TargetFrameworks;
-            var dependencies = tfms[0].Dependencies;
-
-            Assert.Equal(1, tfms.Count);
-            Assert.Equal(3, dependencies.Length);
-            Assert.Equal("[1.0.0, )", dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.True(dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
-            Assert.Equal("[3.0.0, )", dependencies.Where(d => d.Name == "bar").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.False(dependencies.Where(d => d.Name == "bar").First().VersionCentrallyManaged);
-            Assert.Null(dependencies.Where(d => d.Name == "boom").First().LibraryRange.VersionRange);
-        }
-
-        [Fact]
-        public void AddProject_WhenDependencyIsNotInCentralPackageVersions_DependencyVersionIsAllVersions()
-        {
-            // Arrange
-            var dependencyFoo = new LibraryDependency(
-                new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-                LibraryIncludeFlags.All,
-                LibraryIncludeFlags.All,
-                noWarn: [],
-                autoReferenced: false,
-                generatePathProperty: true,
-                versionCentrallyManaged: false,
-                LibraryDependencyReferenceType.Direct,
-                aliases: null,
-                versionOverride: null);
-            var dependencyBar = new LibraryDependency(
-                new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
-                LibraryIncludeFlags.All,
-                LibraryIncludeFlags.All,
-                noWarn: [],
-                autoReferenced: false,
-                generatePathProperty: true,
-                versionCentrallyManaged: false,
-                LibraryDependencyReferenceType.Direct,
-                aliases: null,
-                versionOverride: null);
-
-            // only a central dependency for bar not for foo
-            // foo will have null VersionRange
-            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
-
-            TargetFrameworkInformation tfi = CreateTargetFrameworkInformation(
-                [dependencyFoo, dependencyBar],
-                new List<CentralPackageVersion>() { centralVersionBar });
-
-            // Act
-            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
-
-            // Assert
-            PackageSpec packSpec = dependencyGraphSpec.Projects[0];
-            IList<TargetFrameworkInformation> tfms = packSpec.TargetFrameworks;
-            var dependencies = tfms[0].Dependencies;
-
-            Assert.Equal(1, tfms.Count);
-            Assert.Equal(2, dependencies.Length);
-            Assert.Null(dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange);
-            Assert.True(dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
-        }
-
-        [Fact]
         public void AddProject_WhenRestoreMetadataIsNull_AddsProject()
         {
             var expectedResult = new PackageSpec();
@@ -578,6 +466,7 @@ namespace NuGet.ProjectModel.Test
             var dependencyFoo = new LibraryDependency()
             {
                 LibraryRange = new LibraryRange("foo", versionRange: cpvmEnabled ? null : VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+                VersionCentrallyManaged = cpvmEnabled
             };
 
             var centralVersions = cpvmEnabled
@@ -762,7 +651,6 @@ namespace NuGet.ProjectModel.Test
             var nugetFramework = new NuGetFramework("net40");
 
             var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
-            dependencies = LibraryDependency.ApplyCentralVersionInformation(dependencies, centralPackageVersions);
 
             var tfi = new TargetFrameworkInformation()
             {

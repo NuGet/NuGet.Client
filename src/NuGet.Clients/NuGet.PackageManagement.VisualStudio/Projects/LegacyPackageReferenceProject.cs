@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
@@ -446,7 +447,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // Add the central version information and merge the information to the package reference dependencies
                 centralPackageVersions = GetCentralPackageVersions();
-                packageReferences = LibraryDependency.ApplyCentralVersionInformation(packageReferences, centralPackageVersions);
+                packageReferences = ApplyCentralVersionInformation(packageReferences, centralPackageVersions);
             }
 
             // Get fallback settings
@@ -568,6 +569,57 @@ namespace NuGet.PackageManagement.VisualStudio
                     UseLegacyDependencyResolver = MSBuildStringUtility.IsTrue(_vsProjectAdapter.BuildProperties.GetPropertyValue(ProjectBuildProperties.RestoreUseLegacyDependencyResolver)),
                 }
             };
+        }
+
+        internal static ImmutableArray<LibraryDependency> ApplyCentralVersionInformation(ImmutableArray<LibraryDependency> packageReferences, IReadOnlyDictionary<string, CentralPackageVersion> centralPackageVersions)
+        {
+            if (packageReferences.IsDefault)
+            {
+                throw new ArgumentNullException(nameof(packageReferences));
+            }
+            if (centralPackageVersions == null)
+            {
+                throw new ArgumentNullException(nameof(centralPackageVersions));
+            }
+            if (centralPackageVersions.Count == 0)
+            {
+                return packageReferences;
+            }
+
+            LibraryDependency[] result = new LibraryDependency[packageReferences.Length];
+            for (int i = 0; i < packageReferences.Length; i++)
+            {
+                LibraryDependency d = packageReferences[i];
+                if (!d.AutoReferenced && d.LibraryRange.VersionRange == null)
+                {
+                    var libraryRange = d.LibraryRange;
+                    var versionCentrallyManaged = d.VersionCentrallyManaged;
+
+                    if (d.VersionOverride != null)
+                    {
+                        libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = d.VersionOverride };
+                    }
+                    else
+                    {
+                        if (centralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                        {
+                            libraryRange = new LibraryRange(d.LibraryRange) { VersionRange = centralPackageVersion.VersionRange };
+                        }
+
+                        versionCentrallyManaged = true;
+                    }
+
+                    d = new LibraryDependency(d)
+                    {
+                        LibraryRange = libraryRange,
+                        VersionCentrallyManaged = versionCentrallyManaged
+                    };
+                }
+
+                result[i] = d;
+            }
+
+            return ImmutableCollectionsMarshal.AsImmutableArray(result);
         }
 
         internal static IEnumerable<RuntimeDescription> GetRuntimeIdentifiers(string unparsedRuntimeIdentifer, string unparsedRuntimeIdentifers)
