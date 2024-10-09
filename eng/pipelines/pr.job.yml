@@ -81,9 +81,16 @@ jobs:
       arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
       testRunTitle: ${{ parameters.osName }} $(TestType) Tests ($(TestTargetFramework))
 
+  - ${{ if eq(parameters.osName, 'Windows') }}:
+    - script: taskkill /im dotnet.exe /f
+      displayName: Terminate dotnet.exe processes on cancellation or failure
+      continueOnError: true
+      condition: or(failed(), canceled(), eq(variables['System.Debug'], 'true'))
+
   - task: PublishPipelineArtifact@1
     displayName: Publish MSBuild Binary Logs
-    condition: or(failed(), eq(variables['System.Debug'], 'true'))
+    condition: or(failed(), canceled(), eq(variables['System.Debug'], 'true'))
     inputs:
       targetPath: $(BinlogDirectory)
       artifact: binlog - $(System.JobDisplayName) - Attempt $(System.JobAttempt)
+
