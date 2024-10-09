@@ -36,7 +36,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         /// 100 seconds is significant because that is the default timeout on <see cref="HttpClient"/>.
         /// Related to https://github.com/NuGet/Home/issues/2785.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13843")]
         public void PushCommand_AllowsTimeoutToBeSpecifiedHigherThan100Seconds()
         {
             // Arrange
@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13843")]
         public void PushCommand_AllowsTimeoutToBeSpecifiedLowerThan100Seconds()
         {
             // Arrange
