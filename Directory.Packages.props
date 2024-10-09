@@ -5,7 +5,7 @@
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemFormatsAsn1PackageVersion Condition="'$(SystemFormatsAsn1PackageVersion)' == ''">8.0.1</SystemFormatsAsn1PackageVersion>
-    <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.4</SystemTextJsonVersion>
+    <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.5</SystemTextJsonVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
