@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -254,7 +253,7 @@ namespace NuGet.Protocol.Plugins
             try
             {
                 string output;
-                using (var process = new Process())
+                using (var process = new System.Diagnostics.Process())
                 {
                     // Use a shell command to check if the file is executable
                     process.StartInfo.FileName = "/bin/bash";
