@@ -887,4 +887,8 @@ Valid from:</comment>
 {2}</value>
     <comment>0 is a certificate subject, 1 is a certificate fingerprint, and 2 is a PEM-encoded certificate.</comment>
   </data>
+  <data name="Error_UnableToLoadNupkgMetadata" xml:space="preserve">
+    <value>Unable to load nupkg metadata `{0}`.</value>
+    <comment>0 - nupkg metadata file.</comment>
+  </data>
 </root>

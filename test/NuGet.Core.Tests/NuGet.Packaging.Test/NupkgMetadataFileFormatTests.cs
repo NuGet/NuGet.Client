@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -94,14 +93,11 @@ namespace NuGet.Packaging.Test
             // Arrange
             var logger = new TestLogger();
 
-            // Act
             using (var stringReader = new StringReader(contents))
             {
-                Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
+                // Act & Assert
+                var ex = Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
             }
-
-            // Assert
-            Assert.Equal(1, logger.Messages.Count);
         }
 
         [Fact]
@@ -110,14 +106,11 @@ namespace NuGet.Packaging.Test
             // Arrange
             var logger = new TestLogger();
 
-            // Act
             using (var stringReader = new StringReader(@"{""version"":"))
             {
-                Assert.Throws<JsonReaderException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
+                // Act & Assert
+                var ex = Assert.Throws<InvalidDataException>(() => NupkgMetadataFileFormat.Read(stringReader, logger, "from memory"));
             }
-
-            // Assert
-            Assert.Equal(1, logger.Messages.Count);
         }
 
         [Fact]
