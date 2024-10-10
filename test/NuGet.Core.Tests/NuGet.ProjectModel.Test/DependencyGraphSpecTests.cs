@@ -437,7 +437,7 @@ namespace NuGet.ProjectModel.Test
             string expectedJson = GetResourceAsJson(DgSpecWithCentralDependencies);
 
             // Act
-            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies();
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation());
             string actualJson = GetJson(dependencyGraphSpec);
 
             // Assert
@@ -579,11 +579,6 @@ namespace NuGet.ProjectModel.Test
             dgSpec.AddProject(new PackageSpec() { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "c" } });
 
             return dgSpec;
-        }
-
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies()
-        {
-            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation()); // TODO NK
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(params TargetFrameworkInformation[] tfis)
