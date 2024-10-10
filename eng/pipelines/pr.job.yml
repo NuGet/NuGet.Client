@@ -15,16 +15,21 @@ parameters:
 - name: timeoutInMinutes
   type: number
   default: 15
+- name: testProjectName
+  displayName: Optional name of an individual test project to run tests from.  The default is to run tests from all applicable projects.
+  type: string
+  default: ''
 
 jobs:
 - job:
   displayName: ${{ parameters.displayName }}
-  timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
   variables:
     - name: TestType
       value: ${{ parameters.testType }}
     - name: TestTargetFramework
       value: ${{ parameters.testTargetFramework }}
+    - name: TestProjectName
+      value: ${{ parameters.testProjectName }}
     - name: BinlogDirectory
       ${{ if eq(parameters.osName, 'Windows') }}:
         value: $(Agent.TempDirectory)\binlogs\
@@ -76,10 +81,14 @@ jobs:
   - task: DotNetCoreCLI@2
     displayName: Run $(TestType) Tests 
     condition: succeeded()
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     inputs:
       command: test
       arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"
-      testRunTitle: ${{ parameters.osName }} $(TestType) Tests ($(TestTargetFramework))
+      ${{ if ne(parameters.testProjectName, '') }}:
+        testRunTitle: ${{ parameters.osName }} $(TestType) Tests for $(TestProjectName) ($(TestTargetFramework))
+      ${{ else }}:
+        testRunTitle: ${{ parameters.osName }} $(TestType) Tests ($(TestTargetFramework))
 
   - ${{ if eq(parameters.osName, 'Windows') }}:
     - script: taskkill /im dotnet.exe /f
