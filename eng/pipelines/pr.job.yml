@@ -19,6 +19,10 @@ parameters:
   displayName: Optional name of an individual test project to run tests from.  The default is to run tests from all applicable projects.
   type: string
   default: ''
+- name: testVerbosity
+  displayName: Optional verbosity to use when running tests.
+  type: string
+  default: 'minimal'
 
 jobs:
 - job:
@@ -35,6 +39,8 @@ jobs:
         value: $(Agent.TempDirectory)\binlogs\
       ${{ else }}:
         value: $(Agent.TempDirectory)/binlogs/
+    - name: VSTestVerbosity
+      value: ${{ parameters.testVerbosity }}
 
   pool:
     name: ${{ parameters.agentPool }}

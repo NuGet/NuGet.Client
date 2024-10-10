@@ -153,6 +153,7 @@ stages:
         testType: Functional
         testTargetFramework: net472
         testProjectName: NuGet.CommandLine.Test
+        testVerbosity: normal
         timeoutInMinutes: 45
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
