@@ -581,9 +581,9 @@ namespace NuGet.ProjectModel.Test
             return dgSpec;
         }
 
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(int centralVersionsDummyLoadCount = 0)
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies()
         {
-            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation(centralVersionsDummyLoadCount));
+            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation()); // TODO NK
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(params TargetFrameworkInformation[] tfis)
@@ -597,7 +597,7 @@ namespace NuGet.ProjectModel.Test
             return dgSpec;
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(int centralVersionsDummyLoadCount = 0)
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation()
         {
             var nugetFramework = new NuGetFramework("net40");
 
@@ -619,18 +619,11 @@ namespace NuGet.ProjectModel.Test
             var assetTargetFallback = true;
             var warn = false;
 
-            var dummyVersions = new List<KeyValuePair<string, CentralPackageVersion>>();
-            for (int i = 0; i < centralVersionsDummyLoadCount; i++)
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
             {
-                var dummy = new CentralPackageVersion($"Dummy{i}", VersionRange.Parse("1.0.0"));
-                dummyVersions.Add(new KeyValuePair<string, CentralPackageVersion>(dummy.Name, dummy));
-            }
-
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>(centralVersionFoo.Name, centralVersionFoo),
-                new KeyValuePair<string, CentralPackageVersion>(centralVersionBar.Name, centralVersionBar),
-                .. dummyVersions
-            ]);
+                {centralVersionFoo.Name, centralVersionFoo },
+                { centralVersionBar.Name, centralVersionBar },
+            };
 
             ImmutableArray<LibraryDependency> dependencies = [dependencyFoo];
 
@@ -649,8 +642,7 @@ namespace NuGet.ProjectModel.Test
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             var nugetFramework = new NuGetFramework("net40");
-
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
+            var centralPackageVersions = centralVersionsDependencies.ToDictionary(cvd => cvd.Name, StringComparer.OrdinalIgnoreCase);
 
             var tfi = new TargetFrameworkInformation()
             {

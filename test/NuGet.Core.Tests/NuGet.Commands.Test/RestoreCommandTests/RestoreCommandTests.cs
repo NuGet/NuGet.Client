@@ -2537,7 +2537,10 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                                     VersionCentrallyManaged = true,
                                 },
                             ],
-                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))])
+                            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                { "PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")) },
+                            }
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -2552,7 +2555,10 @@ namespace NuGet.Commands.Test.RestoreCommandTests
                         {
                             FrameworkName = NuGetFramework.Parse("net46"),
                             Dependencies = [],
-                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
+                            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                { "PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")) },
+                            }
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -3335,7 +3341,7 @@ namespace NuGet.Commands.Test.RestoreCommandTests
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies, NuGetFramework framework = null)
         {
             NuGetFramework nugetFramework = framework ?? new NuGetFramework("net40");
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
+            var centralPackageVersions = centralVersionsDependencies.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase);
             var newDependencies = ApplyCentralVersionInformation(dependencies, centralPackageVersions);
 
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()

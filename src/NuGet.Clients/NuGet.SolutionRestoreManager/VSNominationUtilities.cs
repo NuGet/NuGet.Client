@@ -536,15 +536,16 @@ namespace NuGet.SolutionRestoreManager
                 versionRange = VersionRange.All;
             }
 
+            VersionRange? versionOverrideRange = ParseVersionRange(item, "VersionOverride");
+
             CentralPackageVersion? centralPackageVersion = null;
-            bool isCentrallyManaged = !versionDefined && !autoReferenced && cpvmEnabled && centralPackageVersions != null && centralPackageVersions.TryGetValue(item.Name, out centralPackageVersion);
+            bool isCentrallyManaged = !versionDefined && !autoReferenced && cpvmEnabled && versionOverrideRange == null && centralPackageVersions != null && centralPackageVersions.TryGetValue(item.Name, out centralPackageVersion);
 
             if (centralPackageVersion != null)
             {
                 versionRange = centralPackageVersion.VersionRange;
             }
-
-            VersionRange? versionOverrideRange = ParseVersionRange(item, "VersionOverride");
+            versionRange = versionOverrideRange ?? versionRange;
 
             // Get warning suppressions
             string? noWarnString = GetPropertyValueOrNull(item, ProjectBuildProperties.NoWarn);

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -112,7 +113,7 @@ namespace NuGet.ProjectModel.Test
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(ImmutableArray<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(centralVersionsDependencies.Select(cvd => new KeyValuePair<string, CentralPackageVersion>(cvd.Name, cvd)));
+            var centralPackageVersions = centralVersionsDependencies.ToDictionary(cvd => cvd.Name, StringComparer.OrdinalIgnoreCase);
 
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {

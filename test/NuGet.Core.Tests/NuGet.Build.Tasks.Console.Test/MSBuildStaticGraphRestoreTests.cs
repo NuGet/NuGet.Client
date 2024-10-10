@@ -837,7 +837,7 @@ namespace NuGet.Build.Tasks.Console.Test
                         ["PackageReference"] = new List<IMSBuildItem>
                         {
                             new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.TrueString }),
-                            new MSBuildItem("PackageC", new Dictionary<string, string> { ["VersionOVerride"] = "4.0.0" }),
+                            new MSBuildItem("PackageC", new Dictionary<string, string> { ["VersionOverride"] = "4.0.0" }),
                         },
                         ["PackageVersion"] = new List<IMSBuildItem>
                         {

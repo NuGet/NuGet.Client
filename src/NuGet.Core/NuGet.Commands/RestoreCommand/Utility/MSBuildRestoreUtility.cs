@@ -676,6 +676,7 @@ namespace NuGet.Commands
                 IEnumerable<string> frameworks = GetFrameworks(item);
                 string name = item.GetProperty("Id");
                 bool autoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined");
+                VersionRange versionOverrideRange = GetVersionRange(item, defaultValue: null, "VersionOverride");
 
                 VersionRange versionRange = GetVersionRange(item, defaultValue: isCpvmEnabled ? null : VersionRange.All);
                 bool versionDefined = versionRange != null;
@@ -693,11 +694,13 @@ namespace NuGet.Commands
                 {
                     dict.TryGetValue(framework, out TargetFrameworkInformation frameworkInfo);
                     CentralPackageVersion centralPackageVersion = null;
-                    bool isCentrallyManaged = !versionDefined && !autoReferenced && isCpvmEnabled && frameworkInfo.CentralPackageVersions != null && frameworkInfo.CentralPackageVersions.TryGetValue(name, out centralPackageVersion);
+                    bool isCentrallyManaged = !versionDefined && !autoReferenced && isCpvmEnabled && versionOverrideRange == null && frameworkInfo.CentralPackageVersions != null && frameworkInfo.CentralPackageVersions.TryGetValue(name, out centralPackageVersion);
+
                     if (centralPackageVersion != null)
                     {
                         versionRange = centralPackageVersion.VersionRange;
                     }
+                    versionRange = versionOverrideRange ?? versionRange;
 
                     var dependency = new LibraryDependency()
                     {
@@ -709,7 +712,7 @@ namespace NuGet.Commands
                         AutoReferenced = autoReferenced,
                         GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty"),
                         Aliases = item.GetProperty("Aliases"),
-                        VersionOverride = GetVersionRange(item, defaultValue: null, "VersionOverride"),
+                        VersionOverride = versionOverrideRange,
                         NoWarn = noWarn,
                         IncludeType = includeType,
                         SuppressParent = suppressParent,

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using FluentAssertions;
 using NuGet.Frameworks;
@@ -423,7 +424,10 @@ namespace NuGet.ProjectModel.Test
 
             var frameworkB = new TargetFrameworkInformation
             {
-                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>(ld.Name, new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange))]),
+                CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { ld.Name, new CentralPackageVersion(ld.Name, ld.LibraryRange.VersionRange) },
+                },
                 FrameworkName = FrameworkConstants.CommonFrameworks.NetStandard16,
                 Dependencies = [ld],
             };

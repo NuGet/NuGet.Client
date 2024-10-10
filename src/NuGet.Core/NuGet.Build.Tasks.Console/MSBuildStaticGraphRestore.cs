@@ -320,14 +320,16 @@ namespace NuGet.Build.Tasks.Console
                     versionRange = VersionRange.All;
                 }
 
+                string versionOverrideString = packageReferenceItem.GetProperty("VersionOverride");
+                var versionOverrideRange = string.IsNullOrWhiteSpace(versionOverrideString) ? null : VersionRange.Parse(versionOverrideString);
+
                 CentralPackageVersion centralPackageVersion = null;
-                bool isCentrallyManaged = !versionDefined && !autoReferenced && isCentralPackageVersionManagementEnabled && centralPackageVersions != null && centralPackageVersions.TryGetValue(packageReferenceItem.Identity, out centralPackageVersion);
+                bool isCentrallyManaged = !versionDefined && !autoReferenced && isCentralPackageVersionManagementEnabled && versionOverrideRange == null && centralPackageVersions != null && centralPackageVersions.TryGetValue(packageReferenceItem.Identity, out centralPackageVersion);
                 if (isCentrallyManaged)
                 {
                     versionRange = centralPackageVersion.VersionRange;
                 }
-
-                string versionOverride = packageReferenceItem.GetProperty("VersionOverride");
+                versionRange = versionOverrideRange ?? versionRange;
 
                 ImmutableArray<NuGetLogCode> noWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn"));
 
@@ -342,7 +344,7 @@ namespace NuGet.Build.Tasks.Console
                         versionRange,
                         LibraryDependencyTarget.Package),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
-                    VersionOverride = string.IsNullOrWhiteSpace(versionOverride) ? null : VersionRange.Parse(versionOverride),
+                    VersionOverride = versionOverrideRange,
                     NoWarn = noWarn,
                     VersionCentrallyManaged = isCentrallyManaged,
                 };

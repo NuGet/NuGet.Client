@@ -171,12 +171,23 @@ namespace NuGet.ProjectModel
                         var newCentralPackageVersionsEnum = targetFramework.CentralPackageVersions
                             .Where(kvp => !string.Equals(kvp.Key, dependency.Id, StringComparison.OrdinalIgnoreCase))
                             .Append(newCentralPackageVersion);
-                        var newCentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(newCentralPackageVersionsEnum);
+                        var newCentralPackageVersions = CreateCentralPackageVersions(newCentralPackageVersionsEnum);
 
                         spec.TargetFrameworks[i] = new TargetFrameworkInformation(targetFramework) { CentralPackageVersions = newCentralPackageVersions };
                     }
                 }
             }
+        }
+
+        static IReadOnlyDictionary<string, CentralPackageVersion> CreateCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions)
+        {
+            Dictionary<string, CentralPackageVersion> result = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in versions)
+            {
+                result.Add(kvp.Key, kvp.Value);
+            }
+
+            return result;
         }
 
         /// <summary>

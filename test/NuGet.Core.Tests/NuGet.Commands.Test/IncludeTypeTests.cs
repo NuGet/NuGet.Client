@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1790,7 +1791,10 @@ namespace NuGet.Commands.Test
                                         VersionCentrallyManaged = true,
                                     },
                                 ],
-                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
+                            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                { "PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")) }
+                            }
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -1805,7 +1809,10 @@ namespace NuGet.Commands.Test
                         {
                             FrameworkName = NuGetFramework.Parse("net471"),
                             Dependencies = [],
-                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))]),
+                            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                { "PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")) }
+                            }
                         }
                     })
                     .WithCentralPackageVersionsEnabled()
@@ -1822,8 +1829,10 @@ namespace NuGet.Commands.Test
                         {
                             FrameworkName = NuGetFramework.Parse("net471"),
                             Dependencies = [],
-                            CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([new KeyValuePair<string, CentralPackageVersion>("PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")))])
-                        }
+                            CentralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+                            {
+                                { "PackageA", new CentralPackageVersion("PackageA", VersionRange.Parse("1.0.0")) }
+                            }                        }
                     })
                     .WithCentralPackageVersionsEnabled()
                     .WithCentralPackageTransitivePinningEnabled()

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -286,10 +287,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
-                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
-            ]);
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cpvm1", cpvm1 },
+                { "cpvm2", cpvm2 },
+            };
             ImmutableArray<LibraryDependency> dependencies = [dependency1];
 
             var tfm = new TargetFrameworkInformation()
@@ -350,10 +352,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
-                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
-            ]);
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cpvm1", cpvm1 },
+                { "cpvm2", cpvm2 },
+            };
             ImmutableArray<LibraryDependency> dependencies = [dependency1];
 
             var tfm = new TargetFrameworkInformation()
@@ -410,10 +413,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
-                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
-            ]);
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cpvm1", cpvm1 },
+                { "cpvm2", cpvm2 },
+            };
             ImmutableArray<LibraryDependency> dependencies = [dependency1];
 
             var tfm = new TargetFrameworkInformation()
@@ -469,10 +473,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
-                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
-            ]);
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cpvm1", cpvm1 },
+                { "cpvm2", cpvm2 },
+            };
             ImmutableArray<LibraryDependency> dependencies = [dependency1];
 
             var tfm = new TargetFrameworkInformation()
@@ -528,10 +533,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
-                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
-            ]);
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cpvm1", cpvm1 },
+                { "cpvm2", cpvm2 },
+            };
             ImmutableArray<LibraryDependency> dependencies = [dependency1];
 
             var tfm = new TargetFrameworkInformation()
@@ -591,10 +597,11 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 aliases: "stuff",
                 versionOverride: null);
 
-            var centralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions([
-                new KeyValuePair<string, CentralPackageVersion>("cpvm1", cpvm1),
-                new KeyValuePair<string, CentralPackageVersion>("cpvm2", cpvm2)
-            ]);
+            var centralPackageVersions = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cpvm1", cpvm1 },
+                { "cpvm2", cpvm2 },
+            };
             ImmutableArray<LibraryDependency> dependencies = [dependency1];
 
             var tfm = new TargetFrameworkInformation()

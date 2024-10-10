@@ -174,23 +174,5 @@ namespace NuGet.ProjectModel
                    PathUtility.GetStringComparerBasedOnOS().Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath) &&
                    StringComparer.OrdinalIgnoreCase.Equals(TargetAlias, other.TargetAlias);
         }
-
-        // TODO NK - We don't need this.
-        public static IReadOnlyDictionary<string, CentralPackageVersion> CreateCentralPackageVersions(IEnumerable<KeyValuePair<string, CentralPackageVersion>> versions = null)
-        {
-            if (versions == null)
-            {
-                return ImmutableDictionary<string, CentralPackageVersion>.Empty;
-            }
-
-            Dictionary<string, CentralPackageVersion> result = null;
-            foreach (var kvp in versions)
-            {
-                result ??= new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
-                result.Add(kvp.Key, kvp.Value);
-            }
-
-            return result ?? (IReadOnlyDictionary<string, CentralPackageVersion>)ImmutableDictionary<string, CentralPackageVersion>.Empty;
-        }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -306,17 +307,18 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void Equals_WithCentralDependencies(string left, string right, bool expected)
         {
-            var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            var leftVersions = left.Split(';').ToDictionary(entry => entry, entry => new CentralPackageVersion(entry, VersionRange.All), StringComparer.OrdinalIgnoreCase);
+
             var leftSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(leftVersions),
+                CentralPackageVersions = leftVersions,
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
-            var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            var rightVersions = right.Split(';').ToDictionary(entry => entry, entry => new CentralPackageVersion(entry, VersionRange.All), StringComparer.OrdinalIgnoreCase);
             var rightSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(rightVersions),
+                CentralPackageVersions = rightVersions,
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
@@ -563,17 +565,17 @@ namespace NuGet.ProjectModel.Test
         [InlineData("B;a", "A;b;c", false)]
         public void HashCode_WithCentralDependencies(string left, string right, bool expected)
         {
-            var leftVersions = left.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            var leftVersions = left.Split(';').ToDictionary(entry => entry, entry => new CentralPackageVersion(entry, VersionRange.All), StringComparer.OrdinalIgnoreCase);
             var leftSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(leftVersions),
+                CentralPackageVersions = leftVersions,
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
-            var rightVersions = right.Split(';').Select(entry => new KeyValuePair<string, CentralPackageVersion>(entry, new CentralPackageVersion(entry, VersionRange.All)));
+            var rightVersions = right.Split(';').ToDictionary(entry => entry, entry => new CentralPackageVersion(entry, VersionRange.All), StringComparer.OrdinalIgnoreCase);
             var rightSide = new TargetFrameworkInformation()
             {
-                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(rightVersions),
+                CentralPackageVersions = rightVersions,
                 FrameworkName = NuGetFramework.AnyFramework
             };
 
@@ -605,11 +607,11 @@ namespace NuGet.ProjectModel.Test
             var assetTargetFallback = true;
             var warn = false;
 
-            var versions = centralVersionDependencies.Select(cdep => new KeyValuePair<string, CentralPackageVersion>(cdep.Name, cdep));
+            var versions = centralVersionDependencies.ToDictionary(cdep => cdep.Name, StringComparer.OrdinalIgnoreCase);
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = assetTargetFallback,
-                CentralPackageVersions = TargetFrameworkInformation.CreateCentralPackageVersions(versions),
+                CentralPackageVersions = versions,
                 Dependencies = [dependencyFoo],
                 DownloadDependencies = [downloadDependency],
                 FrameworkName = nugetFramework,
