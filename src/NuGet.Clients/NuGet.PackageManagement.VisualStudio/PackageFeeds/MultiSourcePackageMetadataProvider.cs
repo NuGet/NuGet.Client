@@ -273,14 +273,16 @@ namespace NuGet.PackageManagement.VisualStudio
                   .WithVersions(AsyncLazy.New(() => MergeVersionsAsync(identity, completed)))
                   .Build() as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
 
-            foreach (var package in completed)
+            if (string.IsNullOrWhiteSpace(clonedResult.ReadmeFileUrl))
             {
-                if (package.ReadmeFileUrl != null)
-                {
-                    clonedResult.ReadmeFileUrl = package.ReadmeFileUrl;
-                    break;
-                }
+                clonedResult.ReadmeFileUrl = completed.Select(m => m.ReadmeFileUrl).FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
             }
+
+            if (string.IsNullOrWhiteSpace(clonedResult.PackagePath))
+            {
+                clonedResult.PackagePath = completed.Select(m => (m as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackagePath).FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+            }
+
             return clonedResult;
         }
 

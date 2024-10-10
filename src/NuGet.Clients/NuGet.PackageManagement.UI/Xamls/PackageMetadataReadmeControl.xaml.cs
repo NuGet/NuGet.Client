@@ -111,12 +111,7 @@ namespace NuGet.PackageManagement.UI
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
-                    var readmUrlToRender = newValue.ReadmeFileUrl;
-                    if (string.IsNullOrEmpty(newValue.ReadmeFileUrl) || (!_renderLocalReadme && new Uri(newValue.ReadmeFileUrl).IsFile))
-                    {
-                        readmUrlToRender = null;
-                    }
-                    await ReadmeViewModel.LoadReadmeAsync(readmUrlToRender, _loadCts.Token);
+                    await ReadmeViewModel.LoadReadmeAsync(newValue, _renderLocalReadme, _loadCts.Token);
                 })
                 .PostOnFailure(nameof(PackageMetadataReadmeControl));
             }

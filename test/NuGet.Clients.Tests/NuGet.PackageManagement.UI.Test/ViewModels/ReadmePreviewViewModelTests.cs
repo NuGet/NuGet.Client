@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockFileService = new Mock<INuGetPackageFileService>();
             var mockServiceBroker = new Mock<IServiceBroker>();
 #pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<CancellationToken>()))
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockFileService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
             //Act
@@ -56,13 +56,14 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockFileService = new Mock<INuGetPackageFileService>();
             var mockServiceBroker = new Mock<IServiceBroker>();
 #pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<CancellationToken>()))
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockFileService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
             var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
-
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = readmeUrl;
             //Act
-            await target.LoadReadmeAsync(readmeUrl, CancellationToken.None);
+            await target.LoadReadmeAsync(package, false, CancellationToken.None);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
@@ -71,7 +72,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public async Task LoadReadmeAsync_WithReadmeUrl_ReadmeReturned()
+        public async Task LoadReadmeAsync_WithLocalReadmeUrl_RenderLocalReadmeTrue_ReadmeReturned()
         {
             //Arrange
             var readmeContents = "readme contents";
@@ -80,18 +81,72 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
             var mockServiceBroker = new Mock<IServiceBroker>();
 #pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<CancellationToken>()))
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(mockFileService.Object);
 #pragma warning restore ISB001 // Dispose of proxies
             var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
 
             //Act
-            await target.LoadReadmeAsync("C://path/to/readme.md", CancellationToken.None);
+            await target.LoadReadmeAsync(package, true, CancellationToken.None);
+
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
             Assert.Equal(readmeContents, target.ReadmeMarkdown);
             Assert.True(target.CanDetermineReadmeDefined);
+        }
+
+        [Fact]
+        public async Task LoadReadmeAsync_WithLocalReadmeUrl_RenderLocalReadmeFalse_ReadmeReturned()
+        {
+            //Arrange
+            var readmeContents = "readme contents";
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
+            var mockFileService = new Mock<INuGetPackageFileService>();
+            mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
+            var mockServiceBroker = new Mock<IServiceBroker>();
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockFileService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+
+            //Act
+            await target.LoadReadmeAsync(package, false, CancellationToken.None);
+
+
+            //Assert
+            Assert.False(target.ErrorLoadingReadme);
+            Assert.Equal(string.Empty, target.ReadmeMarkdown);
+            Assert.False(target.CanDetermineReadmeDefined);
+        }
+
+        [Fact]
+        public async Task LoadReadmeAsync_WithLocalReadmeUrl_FileNotFound_Null()
+        {
+            //Arrange
+            var mockFileService = new Mock<INuGetPackageFileService>();
+            mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).Returns(null);
+            var mockServiceBroker = new Mock<IServiceBroker>();
+#pragma warning disable ISB001 // Dispose of proxies
+            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mockFileService.Object);
+#pragma warning restore ISB001 // Dispose of proxies
+            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+
+            //Act
+            await target.LoadReadmeAsync(package, false, CancellationToken.None);
+
+            //Assert
+            Assert.False(target.ErrorLoadingReadme);
+            Assert.Equal(string.Empty, target.ReadmeMarkdown);
+            Assert.False(target.CanDetermineReadmeDefined);
         }
     }
 }
