@@ -456,7 +456,8 @@ namespace NuGet.Commands
                 var frameworkString = item.GetProperty("TargetFramework");
                 if (frameworkString.Contains(';'))
                 {
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, frameworkString));
+                    var error = RestoreLogMessage.CreateError(NuGetLogCode.NU1001, string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidTargetFramework, frameworkString));
+                    throw new RestoreCommandException(error);
                 }
 
                 var targetFrameworkMoniker = item.GetProperty("TargetFrameworkMoniker");
