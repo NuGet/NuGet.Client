@@ -160,8 +160,8 @@ namespace NuGet.CommandLine.Xplat.Tests
 </Project>";
             File.WriteAllText(Path.Combine(testDirectory, "projectA.csproj"), projectContent);
             var project = Project.FromFile(Path.Combine(testDirectory, "projectA.csproj"), projectOptions);
-
-            var msObject = new MSBuildAPIUtility(logger: new TestLogger());
+            var logger = new TestLogger();
+            var msObject = new MSBuildAPIUtility(logger: logger);
             // Getting all the item groups in a given project
             var itemGroups = msObject.GetItemGroups(project);
             // Getting an existing item group that has package reference(s)
@@ -183,6 +183,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             string updatedProjectFile = File.ReadAllText(Path.Combine(testDirectory, "projectA.csproj"));
             Assert.Contains(@$"<PackageReference Include=""X"" />", updatedProjectFile);
             Assert.DoesNotContain(@$"<Version = ""1.0.0"" />", updatedProjectFile);
+            Assert.Contains(string.Format(Strings.Info_AddPkgCPM, "X", project.FullPath, project.GetPropertyValue("DirectoryPackagesPropsPath")), logger.InformationMessages);
         }
 
         [PlatformFact(Platform.Windows)]
