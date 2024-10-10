@@ -881,7 +881,7 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(NuGetLogCode.NU1105, additionalMessage.Code);
             Assert.Equal(projectFullPath, additionalMessage.ProjectPath);
             Assert.Equal(projectFullPath, additionalMessage.FilePath);
-            Assert.Contains(string.Format(CultureInfo.CurrentCulture, Resources.PropertyDoesNotHaveSingleValue, "PackageId", "PackageId.net46, PackageId.netcoreapp1.0"), additionalMessage.Message);
+            additionalMessage.Message.Should().Contain(string.Format(CultureInfo.CurrentCulture, Resources.PropertyDoesNotHaveSingleValue, "PackageId", "PackageId.netcoreapp1.0, PackageId.net46"));
         }
 
         [Fact]
