@@ -4,7 +4,7 @@ pr: none
 trigger:
   branches:
     include:
-    - dev-*
+    - dev
 
 parameters:
 # build parameters
@@ -76,8 +76,6 @@ stages:
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.QBuildSessionId']]
     - name: RunSettingsDrop
       value: $[stageDependencies.Build.Build.outputs['dartlab_variables.RunSettingsDrop']]
-    - name: GitHubStatusName
-      value: Apex Tests On Windows
     baseBuildDrop: $(VsBaseBuildDrop)
     bootstrapperUrl: $(VsBootstrapperUrl)
     dartLabEnvironment: ${{parameters.DartLabEnvironment}}
