@@ -9,7 +9,6 @@
   xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
-  DataContextChanged="PackageMetadataReadmeControl_DataContextChanged"
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">

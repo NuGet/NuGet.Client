@@ -83,7 +83,6 @@ namespace NuGet.PackageManagement.UI
                 _loadCts.Cancel();
                 _loadCts.Dispose();
                 _markdownPreview?.Dispose();
-                ReadmeViewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
             }
 
             _disposed = true;
@@ -114,23 +113,13 @@ namespace NuGet.PackageManagement.UI
                 .RunAsync(async () =>
                 {
                     await ReadmeViewModel.LoadReadmeAsync(newValue, _renderLocalReadme, _loadCts.Token);
+                    await UpdateMarkdownAsync();
                 })
                 .PostOnFailure(nameof(PackageMetadataReadmeControl));
             }
         }
 
-        private void PackageMetadataReadmeControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.OldValue is ReadmePreviewViewModel oldViewModel && oldViewModel is not null)
-            {
-                oldViewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
-            }
-            ReadmeViewModel.PropertyChanged += ViewModel_PropertyChangedAsync;
-        }
-
-#pragma warning disable VSTHRD100 // Avoid async void methods
-        private async void ViewModel_PropertyChangedAsync(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-#pragma warning restore VSTHRD100 // Avoid async void methods
+        private async Task UpdateMarkdownAsync()
         {
             var markdown = string.Empty;
             if (ReadmeViewModel?.CanDetermineReadmeDefined == true)
@@ -143,7 +132,8 @@ namespace NuGet.PackageManagement.UI
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                await UpdateMarkdownAsync(markdown);
+                await _markdownPreview.UpdateContentAsync(markdown, ScrollHint.None);
+                descriptionMarkdownPreview.Visibility = string.IsNullOrEmpty(markdown) ? Visibility.Collapsed : Visibility.Visible;
             }
             catch (Exception ex)
             {
@@ -152,22 +142,6 @@ namespace NuGet.PackageManagement.UI
                 await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
             }
 #pragma warning restore CA1031 // Do not catch general exception types
-        }
-
-        private async Task UpdateMarkdownAsync(string markDown)
-        {
-            if (_markdownPreview is null)
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                _markdownPreview = new PreviewBuilder().Build();
-                descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
-            if (DataContext is ReadmePreviewViewModel viewModel && markDown is not null)
-            {
-                await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
-                descriptionMarkdownPreview.Visibility = string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
-            }
         }
     }
 }
