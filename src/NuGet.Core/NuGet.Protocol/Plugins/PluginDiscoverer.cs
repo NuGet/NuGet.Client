@@ -18,7 +18,8 @@ namespace NuGet.Protocol.Plugins
     {
         private bool _isDisposed;
         private List<PluginFile> _pluginFiles;
-        private readonly string _envVariablePluginPaths;
+        private readonly string _envVariableNetCoreAndNetFXPluginPaths;
+        private readonly string _envVariableNuGetPluginPaths;
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
         private readonly EmbeddedSignatureVerifier _verifier;
@@ -45,10 +46,11 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(verifier));
             }
 
-            _envVariablePluginPaths = rawPluginPaths;
+            _environmentVariableReader = environmentVariableReader;
+            _envVariableNetCoreAndNetFXPluginPaths = rawPluginPaths;
+            _envVariableNuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
             _verifier = verifier;
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
@@ -97,11 +99,11 @@ namespace NuGet.Protocol.Plugins
 
                 _pluginFiles = GetPluginFiles(cancellationToken);
 
-                if (string.IsNullOrEmpty(_envVariablePluginPaths))
+                if (string.IsNullOrEmpty(_envVariableNetCoreAndNetFXPluginPaths))
                 {
                     // Nuget plugin configuration environmental variables: NUGET_NETFX_PLUGIN_PATHS, NUGET_NETCORE_PLUGIN_PATHS
                     // were not used to point to the credential provider plugins.
-                    _pluginFiles.AddRange(GetPluginsInNuGetPluginPathsAndPath());
+                    _pluginFiles.AddRange(GetPluginsInNuGetPluginPathsAndPath() ?? new List<PluginFile>());
                 }
 
                 var results = new List<PluginDiscoveryResult>();
@@ -283,7 +285,7 @@ namespace NuGet.Protocol.Plugins
 
         private IEnumerable<string> GetPluginFilePaths()
         {
-            if (string.IsNullOrEmpty(_envVariablePluginPaths))
+            if (string.IsNullOrEmpty(_envVariableNetCoreAndNetFXPluginPaths) && string.IsNullOrEmpty(_envVariableNuGetPluginPaths))
             {
                 var directories = new List<string> { PluginDiscoveryUtility.GetNuGetHomePluginsPath() };
 #if IS_DESKTOP
@@ -293,7 +295,7 @@ namespace NuGet.Protocol.Plugins
                 return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
             }
 
-            return _envVariablePluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            return _envVariableNetCoreAndNetFXPluginPaths != null ? _envVariableNetCoreAndNetFXPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) : new List<string>();
         }
     }
 }
