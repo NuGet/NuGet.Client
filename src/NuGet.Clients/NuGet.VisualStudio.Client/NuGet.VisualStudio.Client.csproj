@@ -274,6 +274,10 @@
     <VsixIgnoreFile Include=".vsixignore" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <CIOnlyFileExtension>.resources.dll</CIOnlyFileExtension>
+  </PropertyGroup>
+
   <!--
     Copies NuGet's VSIX and symbols to the appropriate artifact locations
   -->
@@ -301,6 +305,7 @@
       <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
     </ReadLinesFromFile>
     <ItemGroup>
+      <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'$(IsCIBuild)' != 'true' AND '%(Identity)' != '' AND $([System.String]::new('%(Identity)').EndsWith('$(CIOnlyFileExtension)'))" />
       <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
     </ItemGroup>
   </Target>
