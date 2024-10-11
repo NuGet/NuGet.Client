@@ -4106,7 +4106,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(isSdk, packageSpec.RestoreMetadata.UsingMicrosoftNETSdk);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/13849")]
         public void GetPackageSpec_WithInvalidUsingMicrosoftNetSdk_ThrowsAnException()
         {
             // Arrange
