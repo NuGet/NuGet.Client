@@ -101,7 +101,17 @@ namespace NuGet.ProjectModel
             // This must exist in the external references
             if (_externalProjectsByUniqueName.TryGetValue(name, out ExternalProjectReference externalReference))
             {
-                packageSpec = externalReference.PackageSpec;
+                // A library with a null version range means that all versions should match.
+                if (externalReference.PackageSpec == null ||
+                    libraryRange.VersionRange == null ||
+                    libraryRange.VersionRange.FindBestMatch(new NuGetVersion[] { externalReference.PackageSpec.Version }) != null)
+                {
+                    packageSpec = externalReference.PackageSpec;
+                }
+                else
+                {
+                    externalReference = null;
+                }
             }
 
             if (externalReference == null && packageSpec == null)
