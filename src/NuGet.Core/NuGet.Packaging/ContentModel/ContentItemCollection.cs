@@ -20,6 +20,10 @@ namespace NuGet.ContentModel
 
         private List<Asset>? _assets;
         private ConcurrentDictionary<ReadOnlyMemory<char>, string?>? _assemblyRelatedExtensions;
+
+        private readonly SimplePool<List<Asset>> _listAssetPool = new(() => new List<Asset>());
+        private readonly SimplePool<Dictionary<ContentItem, List<Asset>>> _groupAssetsPool = new(() => new(GroupComparer.DefaultComparer));
+
         /// <summary>
         /// True if lib/contract exists
         /// </summary>
@@ -125,34 +129,47 @@ namespace NuGet.ContentModel
             {
                 throw new ArgumentNullException(nameof(contentItemGroupList));
             }
-            if (_assets != null && _assets.Count > 0)
+            if (_assets == null || _assets.Count == 0)
             {
-                var groupPatterns = definition.GroupExpressions;
+                return;
+            }
 
-                List<(ContentItem Item, Asset Asset)>? groupAssets = null;
+            var groupPatterns = definition.GroupExpressions;
 
-                foreach (var asset in _assets)
+            Dictionary<ContentItem, List<Asset>>? groupAssets = null;
+            foreach (var asset in _assets)
+            {
+                foreach (var groupPattern in groupPatterns)
                 {
-                    foreach (var groupPattern in groupPatterns)
+                    var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                    if (item != null)
                     {
-                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
-                        if (item != null)
+                        groupAssets ??= _groupAssetsPool.Allocate();
+                        if (!groupAssets.TryGetValue(item, out var assets))
                         {
-                            groupAssets ??= new List<(ContentItem Item, Asset Asset)>(capacity: 1);
-                            groupAssets.Add((item, asset));
+                            assets = _listAssetPool.Allocate();
+                            groupAssets[item] = assets;
                         }
+
+                        assets.Add(asset);
                     }
+                }
+            }
+
+            if (groupAssets != null)
+            {
+                foreach (var (item, assets) in groupAssets)
+                {
+                    contentItemGroupList.Add(new ContentItemGroup(
+                        properties: item.Properties,
+                        items: FindItemsImplementation(definition, assets)));
+
+                    assets.Clear();
+                    _listAssetPool.Free(assets);
                 }
 
-                if (groupAssets?.Count > 0)
-                {
-                    foreach (var grouping in groupAssets.GroupBy(key => key.Item, GroupComparer.DefaultComparer))
-                    {
-                        contentItemGroupList.Add(new ContentItemGroup(
-                            properties: grouping.Key.Properties,
-                            items: FindItemsImplementation(definition, grouping.Select(match => match.Asset))));
-                    }
-                }
+                groupAssets.Clear();
+                _groupAssetsPool.Free(groupAssets);
             }
         }
 
