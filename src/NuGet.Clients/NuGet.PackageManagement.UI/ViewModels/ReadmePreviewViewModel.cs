@@ -6,7 +6,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -17,12 +16,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
     {
         private bool _canDetermineReadmeDefined;
         private bool _errorLoadingReadme;
-        private IServiceBroker _serviceBroker;
+        private INuGetPackageFileService _nugetPackageFileService;
         private string _rawReadme;
 
-        public ReadmePreviewViewModel(IServiceBroker serviceBroker)
+        public ReadmePreviewViewModel(INuGetPackageFileService packageFileService)
         {
-            _serviceBroker = serviceBroker ?? throw new ArgumentNullException(nameof(serviceBroker));
+            Assumes.NotNull(packageFileService);
+            _nugetPackageFileService = packageFileService;
             _errorLoadingReadme = false;
             _canDetermineReadmeDefined = true;
             _rawReadme = string.Empty;
@@ -71,17 +71,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
             await ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await TaskScheduler.Default;
-                using (var packageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, default, cancellationToken))
-                using (var readmeStream = await packageFileService.GetReadmeAsync(readmeUrl, cancellationToken))
+                using var readmeStream = await _nugetPackageFileService.GetReadmeAsync(readmeUrl, cancellationToken);
+                if (readmeStream is null)
                 {
-                    if (readmeStream is null)
-                    {
-                        return;
-                    }
-
-                    using StreamReader streamReader = new StreamReader(readmeStream);
-                    readme = await streamReader.ReadToEndAsync();
+                    return;
                 }
+
+                using StreamReader streamReader = new StreamReader(readmeStream);
+                readme = await streamReader.ReadToEndAsync();
             });
 
             ReadmeMarkdown = readme;

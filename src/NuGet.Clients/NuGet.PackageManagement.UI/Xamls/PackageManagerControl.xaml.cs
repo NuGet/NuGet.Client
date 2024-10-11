@@ -68,6 +68,8 @@ namespace NuGet.PackageManagement.UI
         private bool _disposed = false;
         private IPackageVulnerabilityService _packageVulnerabilityService;
         private INuGetFeatureFlagService _nugetFeatureFlagService;
+        private INuGetPackageFileService _nugetPackageFileService;
+
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
 
@@ -144,7 +146,10 @@ namespace NuGet.PackageManagement.UI
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
             var isReadmeTabEnabled = await _nugetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
-            _packageDetail._packageMetadataControl.InitializedReadmePreviewViewModel(Model.Context.ServiceBroker);
+
+            _nugetPackageFileService?.Dispose();
+            _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
+            _packageDetail._packageMetadataControl.InitializeReadmePreviewViewModel(_nugetPackageFileService);
             _packageDetail._packageMetadataControl.SetReadmeTabVisibility(isReadmeTabEnabled ? Visibility.Visible : Visibility.Collapsed);
             _packageDetail._packageMetadataControl._packageMetadataReadmeControl.OnTabFilterChange(_topPanel.Filter);
             InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
@@ -1857,6 +1862,7 @@ namespace NuGet.PackageManagement.UI
 
             if (disposing)
             {
+                _nugetPackageFileService.Dispose();
                 CleanUp();
             }
 

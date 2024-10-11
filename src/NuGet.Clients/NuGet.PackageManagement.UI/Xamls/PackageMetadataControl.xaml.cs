@@ -4,8 +4,8 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.ServiceHub.Framework;
 using NuGet.PackageManagement.UI.ViewModels;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,9 +39,9 @@ namespace NuGet.PackageManagement.UI
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 
-        internal void InitializedReadmePreviewViewModel(IServiceBroker serviceBroker)
+        internal void InitializeReadmePreviewViewModel(INuGetPackageFileService nugetPackageFileService)
         {
-            ReadmePreviewViewModel = new ReadmePreviewViewModel(serviceBroker);
+            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService);
             _packageMetadataReadmeControl.DataContext = ReadmePreviewViewModel;
             ReadmePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
         }

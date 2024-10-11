@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Moq;
 using NuGet.PackageManagement.UI.ViewModels;
@@ -32,13 +31,9 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
-            var mockServiceBroker = new Mock<IServiceBroker>();
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockFileService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
+
             //Act
-            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
@@ -54,14 +49,10 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
-            var mockServiceBroker = new Mock<IServiceBroker>();
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockFileService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
-            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = readmeUrl;
+
             //Act
             await target.LoadReadmeAsync(package, false, CancellationToken.None);
 
@@ -79,12 +70,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var mockServiceBroker = new Mock<IServiceBroker>();
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockFileService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
-            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
 
@@ -106,12 +92,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var mockServiceBroker = new Mock<IServiceBroker>();
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockFileService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
-            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
 
@@ -131,12 +112,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).Returns(null);
-            var mockServiceBroker = new Mock<IServiceBroker>();
-#pragma warning disable ISB001 // Dispose of proxies
-            mockServiceBroker.Setup(x => x.GetProxyAsync<INuGetPackageFileService>(It.IsAny<ServiceRpcDescriptor>(), It.IsAny<ServiceActivationOptions>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(mockFileService.Object);
-#pragma warning restore ISB001 // Dispose of proxies
-            var target = new ReadmePreviewViewModel(mockServiceBroker.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
 

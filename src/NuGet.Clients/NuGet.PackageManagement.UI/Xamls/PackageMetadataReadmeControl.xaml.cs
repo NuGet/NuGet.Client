@@ -41,6 +41,10 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
             _loadCts = new CancellationTokenSource();
+#pragma warning disable CS0618 // Type or member is obsolete
+            _markdownPreview = new PreviewBuilder().Build();
+#pragma warning restore CS0618 // Type or member is obsolete
+            descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
         }
 
         public void Dispose()
@@ -79,8 +83,7 @@ namespace NuGet.PackageManagement.UI
                 _loadCts.Cancel();
                 _loadCts.Dispose();
                 _markdownPreview?.Dispose();
-                var viewModel = (ReadmePreviewViewModel)DataContext;
-                viewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
+                ReadmeViewModel.PropertyChanged -= ViewModel_PropertyChangedAsync;
             }
 
             _disposed = true;
@@ -107,7 +110,6 @@ namespace NuGet.PackageManagement.UI
                 oldCts?.Cancel();
                 oldCts?.Dispose();
 
-
                 NuGetUIThreadHelper.JoinableTaskFactory
                 .RunAsync(async () =>
                 {
@@ -131,14 +133,11 @@ namespace NuGet.PackageManagement.UI
 #pragma warning restore VSTHRD100 // Avoid async void methods
         {
             var markdown = string.Empty;
-            if (ReadmeViewModel is not null)
+            if (ReadmeViewModel?.CanDetermineReadmeDefined == true)
             {
-                if (ReadmeViewModel.CanDetermineReadmeDefined)
-                {
-                    markdown = string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown)
-                        ? UI.Resources.Text_NoReadme
-                        : ReadmeViewModel.ReadmeMarkdown;
-                }
+                markdown = string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown)
+                    ? UI.Resources.Text_NoReadme
+                    : ReadmeViewModel.ReadmeMarkdown;
             }
 
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -164,13 +163,10 @@ namespace NuGet.PackageManagement.UI
                 descriptionMarkdownPreview.Content = _markdownPreview.VisualElement;
 #pragma warning restore CS0618 // Type or member is obsolete
             }
-            if (DataContext is ReadmePreviewViewModel viewModel)
+            if (DataContext is ReadmePreviewViewModel viewModel && markDown is not null)
             {
-                if (markDown is not null)
-                {
-                    await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
-                    descriptionMarkdownPreview.Visibility = string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
-                }
+                await _markdownPreview.UpdateContentAsync(markDown, ScrollHint.None);
+                descriptionMarkdownPreview.Visibility = string.IsNullOrEmpty(markDown) ? Visibility.Collapsed : Visibility.Visible;
             }
         }
     }
