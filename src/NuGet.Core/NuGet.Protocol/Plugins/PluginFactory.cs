@@ -136,7 +136,7 @@ namespace NuGet.Protocol.Plugins
             var lazyTask = _plugins.GetOrAdd(
                 filePath,
                 (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, sessionCancellationToken)));
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isDotnetTools: false, sessionCancellationToken)));
 
             await lazyTask.Value;
 
@@ -149,36 +149,60 @@ namespace NuGet.Protocol.Plugins
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
+            bool isDotnetTools,
             CancellationToken sessionCancellationToken)
         {
             var args = string.Join(" ", arguments);
+
+            ProcessStartInfo startInfo;
+
+            if (!isDotnetTools)
+            {
 #if IS_DESKTOP
-            var startInfo = new ProcessStartInfo(filePath)
-            {
-                Arguments = args,
-                UseShellExecute = false,
-                RedirectStandardError = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                WindowStyle = ProcessWindowStyle.Hidden,
-            };
+                startInfo = new ProcessStartInfo(filePath)
+                {
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
 #else
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
-                           (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
-                                "dotnet.exe" :
-                                "dotnet"),
-                Arguments = $"\"{filePath}\" " + args,
-                UseShellExecute = false,
-                RedirectStandardError = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                WindowStyle = ProcessWindowStyle.Hidden,
-            };
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
+                    (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
+                    "dotnet.exe" :
+                    "dotnet"),
+                    Arguments = $"\"{filePath}\" " + args,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
 #endif
+            }
+            else
+            {
+                // A dotnet tools plugin. Execute it directly.
+
+                startInfo = new ProcessStartInfo(filePath)
+                {
+                    FileName = filePath,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardError = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                };
+            }
+
             var pluginProcess = new PluginProcess(startInfo);
             string pluginId = Plugin.CreateNewId();
 
@@ -454,6 +478,46 @@ namespace NuGet.Protocol.Plugins
             logger.Write(new EnvironmentVariablesLogMessage(logger.Now));
             logger.Write(new ProcessLogMessage(logger.Now));
             logger.Write(new ThreadPoolLogMessage(logger.Now));
+        }
+
+        public async Task<IPlugin> GetOrCreateNetToolsPluginAsync(string filePath, IEnumerable<string> arguments, IRequestHandlers requestHandlers, ConnectionOptions options, CancellationToken sessionCancellationToken)
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(PluginFactory));
+            }
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
+            }
+
+            if (arguments == null)
+            {
+                throw new ArgumentNullException(nameof(arguments));
+            }
+
+            if (requestHandlers == null)
+            {
+                throw new ArgumentNullException(nameof(requestHandlers));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            sessionCancellationToken.ThrowIfCancellationRequested();
+
+            var lazyTask = _plugins.GetOrAdd(
+                filePath,
+                (path) => new Lazy<Task<IPlugin>>(
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isDotnetTools: true, sessionCancellationToken)));
+
+            await lazyTask.Value;
+
+            // Manage plugin lifetime by its idleness.  Thus, don't allow callers to prematurely dispose of a plugin.
+            return new NoOpDisposePlugin(lazyTask.Value.Result);
         }
     }
 }
