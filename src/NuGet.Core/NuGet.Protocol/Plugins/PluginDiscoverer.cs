@@ -97,13 +97,31 @@ namespace NuGet.Protocol.Plugins
                     return _results;
                 }
 
-                _pluginFiles = GetPluginFiles(cancellationToken);
-
-                if (string.IsNullOrEmpty(_envVariableNetCoreAndNetFXPluginPaths))
+                if (!string.IsNullOrEmpty(_envVariableNetCoreAndNetFXPluginPaths))
                 {
-                    // Nuget plugin configuration environmental variables: NUGET_NETFX_PLUGIN_PATHS, NUGET_NETCORE_PLUGIN_PATHS
-                    // were not used to point to the credential provider plugins.
-                    _pluginFiles.AddRange(GetPluginsInNuGetPluginPathsAndPath() ?? new List<PluginFile>());
+                    // NUGET_NETFX_PLUGIN_PATHS, NUGET_NETCORE_PLUGIN_PATHS have been set.
+                    var filePaths = _envVariableNetCoreAndNetFXPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    _pluginFiles = GetPluginFiles(filePaths, cancellationToken);
+                }
+                else if (!string.IsNullOrEmpty(_envVariableNuGetPluginPaths))
+                {
+                    // NUGET_PLUGIN_PATHS has been set
+                    _pluginFiles = GetPluginsInNuGetPluginPaths();
+                }
+                else
+                {
+                    // restore to default plugins search.
+                    // Search for plugins in %user%/.nuget/plugins
+                    var directories = new List<string> { PluginDiscoveryUtility.GetNuGetHomePluginsPath() };
+#if IS_DESKTOP
+                    // Internal plugins are only supported for .NET Framework scenarios, namely msbuild.exe
+                    directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
+#endif
+                    var filePaths = PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
+                    _pluginFiles = GetPluginFiles((string[])filePaths, cancellationToken);
+
+                    // Search for .Net tools plugins in PATH
+                    _pluginFiles.AddRange(GetPluginsInPATH() ?? new List<PluginFile>());
                 }
 
                 var results = new List<PluginDiscoveryResult>();
@@ -127,11 +145,9 @@ namespace NuGet.Protocol.Plugins
             return _results;
         }
 
-        private List<PluginFile> GetPluginFiles(CancellationToken cancellationToken)
+        private List<PluginFile> GetPluginFiles(string[] filePaths, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-
-            var filePaths = GetPluginFilePaths();
 
             var files = new List<PluginFile>();
 
@@ -155,58 +171,96 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Retrieves authentication plugins by searching through directories specified in the `NuGET_PLUGIN_PATHS` and `PATH` 
-        /// environment variables. The method looks for files prefixed with 'nuget-plugin-' and verifies their validity for .net tools plugins.
+        /// Retrieves authentication plugins by searching through directories and files specified in the `NuGET_PLUGIN_PATHS`
+        /// environment variable. The method looks for files prefixed with 'nuget-plugin-' and verifies their validity for .net tools plugins.
         /// </summary>
         /// <returns>A list of valid <see cref="PluginFile"/> objects representing the discovered plugins.</returns>
-        internal List<PluginFile> GetPluginsInNuGetPluginPathsAndPath()
+        internal List<PluginFile> GetPluginsInNuGetPluginPaths()
         {
             var pluginFiles = new List<PluginFile>();
-            var nugetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
-            string[] paths;
-
-            if (string.IsNullOrEmpty(nugetPluginPaths))
-            {
-                nugetPluginPaths = _environmentVariableReader.GetEnvironmentVariable("PATH");
-            }
-
-            paths = nugetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            string[] paths = _envVariableNuGetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             foreach (var path in paths)
             {
-                if (File.Exists(path))
+                if (PathValidator.IsValidLocalPath(path) || PathValidator.IsValidUncPath(path))
                 {
-                    FileInfo fileInfo = new FileInfo(path);
-                    if (fileInfo.Name.StartsWith("nuget-plugin-", StringComparison.CurrentCultureIgnoreCase))
+                    if (File.Exists(path))
                     {
-                        // A DotNet tool plugin
-                        if (IsValidPluginFile(fileInfo))
+                        FileInfo fileInfo = new FileInfo(path);
+                        if (fileInfo.Name.StartsWith("nuget-plugin-", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            PluginFile pluginFile = new PluginFile(fileInfo.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
-                            pluginFiles.Add(pluginFile);
+                            // A DotNet tool plugin
+                            if (IsValidPluginFile(fileInfo))
+                            {
+                                PluginFile pluginFile = new PluginFile(fileInfo.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
+                                pluginFiles.Add(pluginFile);
+                            }
+                        }
+                        else
+                        {
+                            // A non DotNet tool plugin file
+                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(fileInfo.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
+                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state));
                         }
                     }
-                    else
+                    else if (Directory.Exists(path))
                     {
-                        // A non DotNet tool plugin file
-                        var state = new Lazy<PluginFileState>(() => _verifier.IsValid(fileInfo.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
-                        pluginFiles.Add(new PluginFile(fileInfo.FullName, state));
+                        var directoryInfo = new DirectoryInfo(path);
+                        var files = directoryInfo.GetFiles("nuget-plugin-*");
+
+                        foreach (var file in files)
+                        {
+                            if (IsValidPluginFile(file))
+                            {
+                                // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
+                                PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
+                                pluginFiles.Add(pluginFile);
+                            }
+                        }
                     }
                 }
-                else if (Directory.Exists(path))
+                else
                 {
-                    var directoryInfo = new DirectoryInfo(path);
-                    var files = directoryInfo.GetFiles("nuget-plugin-*");
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
+                }
+            }
 
-                    foreach (var file in files)
+            return pluginFiles;
+        }
+
+        /// <summary>
+        /// Retrieves .NET tools authentication plugins by searching through directories specified in `PATH` 
+        /// </summary>
+        /// <returns>A list of valid <see cref="PluginFile"/> objects representing the discovered plugins.</returns>
+        internal List<PluginFile> GetPluginsInPATH()
+        {
+            var pluginFiles = new List<PluginFile>();
+            var nugetPluginPaths = _environmentVariableReader.GetEnvironmentVariable("PATH");
+            string[] paths = nugetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+
+            foreach (var path in paths)
+            {
+                if (PathValidator.IsValidLocalPath(path) || PathValidator.IsValidUncPath(path))
+                {
+                    if (Directory.Exists(path))
                     {
-                        if (IsValidPluginFile(file))
+                        var directoryInfo = new DirectoryInfo(path);
+                        var files = directoryInfo.GetFiles("nuget-plugin-*");
+
+                        foreach (var file in files)
                         {
-                            // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
-                            PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
-                            pluginFiles.Add(pluginFile);
+                            if (IsValidPluginFile(file))
+                            {
+                                // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
+                                PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
+                                pluginFiles.Add(pluginFile);
+                            }
                         }
                     }
+                }
+                else
+                {
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
                 }
             }
 
@@ -282,20 +336,5 @@ namespace NuGet.Protocol.Plugins
 #pragma warning restore CA1031 // Do not catch general exception types
         }
 #endif
-
-        private IEnumerable<string> GetPluginFilePaths()
-        {
-            if (string.IsNullOrEmpty(_envVariableNetCoreAndNetFXPluginPaths) && string.IsNullOrEmpty(_envVariableNuGetPluginPaths))
-            {
-                var directories = new List<string> { PluginDiscoveryUtility.GetNuGetHomePluginsPath() };
-#if IS_DESKTOP
-                // Internal plugins are only supported for .NET Framework scenarios, namely msbuild.exe
-                directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
-#endif
-                return PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
-            }
-
-            return _envVariableNetCoreAndNetFXPluginPaths != null ? _envVariableNetCoreAndNetFXPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) : new List<string>();
-        }
     }
 }
