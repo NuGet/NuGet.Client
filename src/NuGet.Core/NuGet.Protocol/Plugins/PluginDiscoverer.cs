@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -118,7 +119,7 @@ namespace NuGet.Protocol.Plugins
                     directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
 #endif
                     var filePaths = PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
-                    _pluginFiles = GetPluginFiles((string[])filePaths, cancellationToken);
+                    _pluginFiles = GetPluginFiles(filePaths.ToArray(), cancellationToken);
 
                     // Search for .Net tools plugins in PATH
                     _pluginFiles.AddRange(GetPluginsInPATH() ?? new List<PluginFile>());
