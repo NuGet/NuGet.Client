@@ -376,7 +376,7 @@ namespace NuGet.Packaging.Test
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
-                $"Test.Utility.compiler.resources.{name}",
+                $"Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
                 typeof(SigningTestUtility));
         }
 
