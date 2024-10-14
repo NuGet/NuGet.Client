@@ -23,7 +23,6 @@ namespace NuGet.ContentModel
 
         private List<Asset>? _assets;
         private ConcurrentDictionary<ReadOnlyMemory<char>, string?>? _assemblyRelatedExtensions;
-
         /// <summary>
         /// True if lib/contract exists
         /// </summary>
@@ -108,14 +107,20 @@ namespace NuGet.ContentModel
                     }
                 }
 
-                if (groupAssets?.Count > 0)
+                if (groupAssets != null)
                 {
                     foreach (var (item, assets) in groupAssets)
                     {
                         yield return new ContentItemGroup(
                             properties: item.Properties,
                             items: FindItemsImplementation(definition, assets));
+
+                        assets.Clear();
+                        ListAssetPool.Free(assets);
                     }
+
+                    groupAssets.Clear();
+                    GroupAssetsPool.Free(groupAssets);
                 }
             }
         }
@@ -134,47 +139,45 @@ namespace NuGet.ContentModel
             {
                 throw new ArgumentNullException(nameof(contentItemGroupList));
             }
-            if (_assets == null || _assets.Count == 0)
+            if (_assets != null && _assets.Count > 0)
             {
-                return;
-            }
+                var groupPatterns = definition.GroupExpressions;
 
-            var groupPatterns = definition.GroupExpressions;
-
-            Dictionary<ContentItem, List<Asset>>? groupAssets = null;
-            foreach (var asset in _assets)
-            {
-                foreach (var groupPattern in groupPatterns)
+                Dictionary<ContentItem, List<Asset>>? groupAssets = null;
+                foreach (var asset in _assets)
                 {
-                    var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
-                    if (item != null)
+                    foreach (var groupPattern in groupPatterns)
                     {
-                        groupAssets ??= GroupAssetsPool.Allocate();
-                        if (!groupAssets.TryGetValue(item, out var assets))
+                        var item = groupPattern.Match(asset.Path, definition.PropertyDefinitions);
+                        if (item != null)
                         {
-                            assets = ListAssetPool.Allocate();
-                            groupAssets[item] = assets;
-                        }
+                            groupAssets ??= GroupAssetsPool.Allocate();
+                            if (!groupAssets.TryGetValue(item, out var assets))
+                            {
+                                assets = ListAssetPool.Allocate();
+                                groupAssets[item] = assets;
+                            }
 
-                        assets.Add(asset);
+                            assets.Add(asset);
+                        }
                     }
                 }
-            }
 
-            if (groupAssets != null)
-            {
-                foreach (var (item, assets) in groupAssets)
+                if (groupAssets != null)
                 {
-                    contentItemGroupList.Add(new ContentItemGroup(
-                        properties: item.Properties,
-                        items: FindItemsImplementation(definition, assets)));
+                    foreach (var (item, assets) in groupAssets)
+                    {
+                        contentItemGroupList.Add(new ContentItemGroup(
+                            properties: item.Properties,
+                            items: FindItemsImplementation(definition, assets)));
 
-                    assets.Clear();
-                    ListAssetPool.Free(assets);
+                        assets.Clear();
+                        ListAssetPool.Free(assets);
+                    }
+
+                    groupAssets.Clear();
+                    GroupAssetsPool.Free(groupAssets);
                 }
-
-                groupAssets.Clear();
-                GroupAssetsPool.Free(groupAssets);
             }
         }
 
