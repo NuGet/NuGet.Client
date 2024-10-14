@@ -1,2 +1,1 @@
 #nullable enable
-~NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer(string rawPluginPaths) -> void
