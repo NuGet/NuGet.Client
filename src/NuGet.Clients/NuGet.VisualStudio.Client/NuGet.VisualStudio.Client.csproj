@@ -343,6 +343,8 @@
       <MissingIgnoredAssemblies Include="@(IgnoreVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
       <VSIXSourceItem Remove="@(SuppressPackaging->'%(SourceFile)')" />
       <VSIXSourceItem Remove="@(AllVsixSymbols->'%(SourceFile)')" />
+      <!-- Don't get Lucene.Net from a project reference -->
+      <VSIXSourceItem Remove="@(VSIXSourceItem)" Condition="'%(Filename)%(Extension)' == 'Lucene.Net.dll' And '%(VSIXSourceItem.ReferenceSourceTarget)' == 'ProjectReference'" />
     </ItemGroup>
     <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
     <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
