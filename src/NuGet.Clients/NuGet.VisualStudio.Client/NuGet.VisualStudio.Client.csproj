@@ -274,10 +274,6 @@
     <VsixIgnoreFile Include=".vsixignore" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <CIOnlyFileExtension>.resources.dll</CIOnlyFileExtension>
-  </PropertyGroup>
-
   <!--
     Copies NuGet's VSIX and symbols to the appropriate artifact locations
   -->
@@ -305,7 +301,6 @@
       <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
     </ReadLinesFromFile>
     <ItemGroup>
-      <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'$(IsCIBuild)' != 'true' AND '%(Identity)' != '' AND $([System.String]::new('%(Identity)').EndsWith('$(CIOnlyFileExtension)'))" />
       <IncludeVsixFilesList Remove="@(IncludeVsixFilesList)" Condition="'%(Identity)' != '' AND $([System.String]::new('%(Identity)').StartsWith('#'))" />
     </ItemGroup>
   </Target>
@@ -345,6 +340,9 @@
       <VSIXSourceItem Remove="@(AllVsixSymbols->'%(SourceFile)')" />
       <!-- Don't get Lucene.Net from a project reference -->
       <VSIXSourceItem Remove="@(VSIXSourceItem)" Condition="'%(Filename)%(Extension)' == 'Lucene.Net.dll' And '%(VSIXSourceItem.ReferenceSourceTarget)' == 'ProjectReference'" />
+      
+      <!-- Remove resource assemblies because they will be added later by GetLocalizedDlls -->
+      <VSIXSourceItem Remove="@(VSIXSourceItem)" Condition="$([System.String]::new('%(Identity)').EndsWith('.resources.dll'))" />
     </ItemGroup>
     <Message Text="Suppressed file '%(SuppressPackaging.SourceFile)'" Condition=" '@(SuppressPackaging)' != '' " />
     <Message Text="Included file '%(VSIXSourceItem.Identity)'" Condition=" '@(VSIXSourceItem)' != '' " />
