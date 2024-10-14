@@ -1,2 +1,1 @@
 #nullable enable
-~NuGet.Protocol.Core.Types.SourceRepository.GetServiceIndexV3FromCache(out NuGet.Protocol.ServiceIndexResourceV3 result) -> bool
