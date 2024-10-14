@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public sealed class IssueCertificateOptions
     {

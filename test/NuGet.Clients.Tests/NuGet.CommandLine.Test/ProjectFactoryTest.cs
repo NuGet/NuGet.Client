@@ -19,6 +19,7 @@ using Xunit;
 namespace NuGet.CommandLine
 {
     using global::Test.Utility;
+    using Internal.NuGet.Testing.SignedPackages.ChildProcess;
     using NuGet.Packaging;
     using Xunit.Abstractions;
 

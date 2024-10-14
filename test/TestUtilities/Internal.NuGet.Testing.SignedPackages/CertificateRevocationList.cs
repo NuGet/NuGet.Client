@@ -12,7 +12,7 @@ using System.Security.Cryptography;
 #endif
 using System.Security.Cryptography.X509Certificates;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public sealed class CertificateRevocationList : IDisposable
     {

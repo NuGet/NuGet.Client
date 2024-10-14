@@ -5,7 +5,7 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public interface IRootX509Store
     {

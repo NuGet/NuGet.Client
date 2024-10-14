@@ -3,7 +3,7 @@
 
 #pragma warning disable CS1591
 
-namespace Test.Utility
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class ErrorConstants
     {

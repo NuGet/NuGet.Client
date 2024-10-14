@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Internal.NuGet.Testing.SignedPackages;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;

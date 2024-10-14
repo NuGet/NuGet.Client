@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 using System;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     internal sealed class TimestampingRootX509Store : IRootX509Store
     {

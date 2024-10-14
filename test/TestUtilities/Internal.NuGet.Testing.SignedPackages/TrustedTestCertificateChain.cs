@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public class TrustedTestCertificateChain : IDisposable
     {

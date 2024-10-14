@@ -7,7 +7,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class DerGeneralizedTimeUtility
     {

@@ -6,6 +6,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Internal.NuGet.Testing.SignedPackages;
+using Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
 using Xunit;

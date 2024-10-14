@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Internal.NuGet.Testing.SignedPackages;
 using NuGet.Packaging.Signing;
-using Test.Utility.Signing;
 
 namespace NuGet.Packaging.FuncTest
 {
-    using X509StorePurpose = global::Test.Utility.Signing.X509StorePurpose;
+    using X509StorePurpose = Internal.NuGet.Testing.SignedPackages.X509StorePurpose;
 
     /// <summary>
     /// Used to bootstrap functional tests for signing.

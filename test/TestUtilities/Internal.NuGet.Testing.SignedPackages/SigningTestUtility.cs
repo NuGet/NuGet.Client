@@ -16,10 +16,9 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
 using Xunit;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class SigningTestUtility
     {
@@ -310,7 +309,7 @@ namespace Test.Utility.Signing
         public static X509CertificateWithKeyInfo GenerateCertificateWithKeyInfo(
             string subjectName,
             Action<TestCertificateGenerator> modifyGenerator,
-            NuGet.Common.HashAlgorithmName hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256,
+            global::NuGet.Common.HashAlgorithmName hashAlgorithm = global::NuGet.Common.HashAlgorithmName.SHA256,
             RSASignaturePaddingMode paddingMode = RSASignaturePaddingMode.Pkcs1,
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
@@ -327,7 +326,7 @@ namespace Test.Utility.Signing
         public static X509Certificate2 GenerateCertificate(
             string subjectName,
             Action<TestCertificateGenerator> modifyGenerator,
-            NuGet.Common.HashAlgorithmName hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256,
+            global::NuGet.Common.HashAlgorithmName hashAlgorithm = global::NuGet.Common.HashAlgorithmName.SHA256,
             RSASignaturePaddingMode paddingMode = RSASignaturePaddingMode.Pkcs1,
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
@@ -347,7 +346,7 @@ namespace Test.Utility.Signing
             string subjectName,
             Action<TestCertificateGenerator> modifyGenerator,
             RSA rsa,
-            NuGet.Common.HashAlgorithmName hashAlgorithm,
+            global::NuGet.Common.HashAlgorithmName hashAlgorithm,
             RSASignaturePaddingMode paddingMode,
             ChainCertificateRequest chainCertificateRequest)
         {
@@ -616,7 +615,7 @@ namespace Test.Utility.Signing
         public static SignedCms GenerateRepositoryCountersignedSignedCms(X509Certificate2 cert, byte[] content)
         {
             var contentInfo = new ContentInfo(content);
-            var hashAlgorithm = NuGet.Common.HashAlgorithmName.SHA256;
+            var hashAlgorithm = global::NuGet.Common.HashAlgorithmName.SHA256;
 
             using (var primarySignatureRequest = new AuthorSignPackageRequest(new X509Certificate2(cert), hashAlgorithm))
             using (var countersignatureRequest = new RepositorySignPackageRequest(new X509Certificate2(cert), hashAlgorithm, hashAlgorithm, new Uri("https://api.nuget.org/v3/index.json"), null))
@@ -759,12 +758,12 @@ namespace Test.Utility.Signing
 #endif
         }
 
-        public static byte[] GetHash(X509Certificate2 certificate, NuGet.Common.HashAlgorithmName hashAlgorithm)
+        public static byte[] GetHash(X509Certificate2 certificate, global::NuGet.Common.HashAlgorithmName hashAlgorithm)
         {
             return hashAlgorithm.ComputeHash(certificate.RawData);
         }
 
-        public static void VerifySerialNumber(X509Certificate2 certificate, NuGet.Packaging.Signing.IssuerSerial issuerSerial)
+        public static void VerifySerialNumber(X509Certificate2 certificate, global::NuGet.Packaging.Signing.IssuerSerial issuerSerial)
         {
             ReadOnlySpan<byte> serialNumber = certificate.GetSerialNumberBigEndian();
 
@@ -821,7 +820,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline));
+                issue.Message.Contains(global::NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline));
         }
 
         public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
@@ -834,7 +833,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline));
+                issue.Message.Contains(global::NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)

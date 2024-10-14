@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
 using NuGet.Common;

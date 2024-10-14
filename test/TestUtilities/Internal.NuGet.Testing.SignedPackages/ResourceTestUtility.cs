@@ -6,7 +6,7 @@
 using System;
 using System.IO;
 
-namespace NuGet.Test.Utility
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class ResourceTestUtility
     {

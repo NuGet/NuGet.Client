@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Xml.Linq;
+using Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Shared;
 using NuGet.Test.Utility;
 using Xunit;

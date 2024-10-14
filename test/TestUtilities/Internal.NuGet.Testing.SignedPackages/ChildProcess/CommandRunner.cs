@@ -8,7 +8,7 @@ using System.IO;
 using System.Text;
 using Xunit.Abstractions;
 
-namespace NuGet.Test.Utility
+namespace Internal.NuGet.Testing.SignedPackages.ChildProcess
 {
     /// <summary>
     /// Represents a class to run an executable and capture the output and error streams.

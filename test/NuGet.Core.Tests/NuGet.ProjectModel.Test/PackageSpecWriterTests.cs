@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -11,7 +12,6 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;

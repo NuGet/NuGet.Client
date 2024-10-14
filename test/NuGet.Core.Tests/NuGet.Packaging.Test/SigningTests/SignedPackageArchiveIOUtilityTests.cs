@@ -5,10 +5,9 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
-using NuGet.Test.Utility;
-using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.Test

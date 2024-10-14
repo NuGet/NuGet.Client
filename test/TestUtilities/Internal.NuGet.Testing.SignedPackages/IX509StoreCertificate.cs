@@ -5,7 +5,7 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     /// <summary>
     /// Represents an X.509 certificate in a specific X.509 store.  No trust is implied.

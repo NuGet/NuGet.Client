@@ -7,7 +7,8 @@
 
 using System.Formats.Asn1;
 using System.Numerics;
-using Test.Utility.Signing;
+using Internal.NuGet.Testing.SignedPackages;
+using Internal.NuGet.Testing.SignedPackages.Asn1;
 
 namespace System.Security.Cryptography.X509Certificates
 {
@@ -498,14 +499,14 @@ namespace System.Security.Cryptography.X509Certificates
                             case UniversalTagNumber.UnrestrictedCharacterString:
                                 if (!tag.IsConstructed)
                                 {
-                                    throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
+                                    throw new CryptographicException("ASN1 corrupted data.");
                                 }
 
                                 break;
                             default:
                                 if (tag.IsConstructed)
                                 {
-                                    throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding);
+                                    throw new CryptographicException("ASN1 corrupted data.");
                                 }
 
                                 break;
@@ -523,7 +524,7 @@ namespace System.Security.Cryptography.X509Certificates
             }
             catch (AsnContentException e)
             {
-                throw new CryptographicException(SR.Cryptography_Der_Invalid_Encoding, e);
+                throw new CryptographicException("ASN1 corrupted data.", e);
             }
         }
     }

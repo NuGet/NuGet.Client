@@ -7,7 +7,7 @@ using System;
 using System.Formats.Asn1;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     internal sealed class X509AuthorityInformationAccessExtension : X509Extension
     {

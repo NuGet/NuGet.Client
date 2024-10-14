@@ -3,14 +3,14 @@
 
 using System.Formats.Asn1;
 using System.Security.Cryptography;
+using Internal.NuGet.Testing.SignedPackages;
 using NuGet.Packaging.Signing;
-using Test.Utility.Signing;
 using Xunit;
 using PolicyInformation = NuGet.Packaging.Signing.PolicyInformation;
 using SigningCertificate = NuGet.Packaging.Signing.SigningCertificate;
-using TestEssCertId = Test.Utility.Signing.EssCertId;
-using TestPolicyInformation = Test.Utility.Signing.PolicyInformation;
-using TestSigningCertificate = Test.Utility.Signing.SigningCertificate;
+using TestEssCertId = Internal.NuGet.Testing.SignedPackages.Asn1.EssCertId;
+using TestPolicyInformation = Internal.NuGet.Testing.SignedPackages.Asn1.PolicyInformation;
+using TestSigningCertificate = Internal.NuGet.Testing.SignedPackages.Asn1.SigningCertificate;
 
 namespace NuGet.Packaging.Test
 {

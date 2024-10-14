@@ -18,10 +18,10 @@ using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Packaging.Signing;
 #if IS_SIGNING_SUPPORTED
-using TestTstInfo = Test.Utility.Signing.TstInfo;
+using Internal.NuGet.Testing.SignedPackages.Asn1;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     // https://tools.ietf.org/html/rfc3161
     public sealed class TimestampService : HttpResponder
@@ -182,8 +182,8 @@ namespace Test.Utility.Signing
             DateTime generalizedTime)
         {
             AsnWriter writer = new(AsnEncodingRules.DER);
-            Accuracy? accuracy = FromTimeSpan(_options.Accuracy);
-            TestTstInfo tstInfo = new(
+            Asn1.Accuracy? accuracy = FromTimeSpan(_options.Accuracy);
+            Asn1.TstInfo tstInfo = new(
                 BigInteger.One,
                 _options.Policy,
                 request.MessageImprint,
@@ -212,7 +212,7 @@ namespace Test.Utility.Signing
 
             if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V1))
             {
-                SigningCertificate signingCertificate = SigningCertificate.Create(_options.SigningCertificateV1Hash ?? Certificate.GetCertHash(), Certificate);
+                Asn1.SigningCertificate signingCertificate = Asn1.SigningCertificate.Create(_options.SigningCertificateV1Hash ?? Certificate.GetCertHash(), Certificate);
 
                 writer.Reset();
                 signingCertificate.Encode(writer);
@@ -222,7 +222,7 @@ namespace Test.Utility.Signing
 
             if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V2))
             {
-                SigningCertificateV2 signingCertificate = SigningCertificateV2.Create(HashAlgorithmName.SHA256, Certificate);
+                Asn1.SigningCertificateV2 signingCertificate = Asn1.SigningCertificateV2.Create(HashAlgorithmName.SHA256, Certificate);
 
                 writer.Reset();
                 signingCertificate.Encode(writer);
@@ -248,7 +248,7 @@ namespace Test.Utility.Signing
             return signedCms;
         }
 
-        private static Accuracy? FromTimeSpan(TimeSpan? timespan)
+        private static Asn1.Accuracy? FromTimeSpan(TimeSpan? timespan)
         {
             if (timespan is null)
             {
@@ -269,7 +269,7 @@ namespace Test.Utility.Signing
                 }
             }
 
-            return new Accuracy(seconds, milliseconds, microseconds);
+            return new Asn1.Accuracy(seconds, milliseconds, microseconds);
         }
 #endif
     }

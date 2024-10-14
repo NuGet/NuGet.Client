@@ -15,8 +15,11 @@ using System.Security.Cryptography;
 #endif
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+#if IS_SIGNING_SUPPORTED
+using Internal.NuGet.Testing.SignedPackages.Asn1;
+#endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     // https://tools.ietf.org/html/rfc6960
     public sealed class OcspResponder : HttpResponder

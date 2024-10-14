@@ -9,7 +9,7 @@ using System.IO;
 using System.Net;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public abstract class HttpResponder : IHttpResponder
     {

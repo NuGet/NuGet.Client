@@ -10,7 +10,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Test.Server
+namespace Internal.NuGet.Testing.SignedPackages.TestServer
 {
     /// <summary>
     /// This class allocates ports while ensuring that:

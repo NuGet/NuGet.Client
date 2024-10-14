@@ -10,12 +10,13 @@ using System.Net;
 using System.Threading;
 #endif
 using System.Threading.Tasks;
+
 #if IS_SIGNING_SUPPORTED
+using Internal.NuGet.Testing.SignedPackages.TestServer;
 using NuGet.Common;
-using NuGet.Test.Server;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public sealed class SigningTestServer : ISigningTestServer, IDisposable
     {

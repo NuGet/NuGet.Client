@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;

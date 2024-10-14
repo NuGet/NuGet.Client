@@ -5,7 +5,7 @@
 
 using System;
 
-namespace NuGet.Test.Utility
+namespace Internal.NuGet.Testing.SignedPackages.ChildProcess
 {
     public class CommandRunnerResult
     {

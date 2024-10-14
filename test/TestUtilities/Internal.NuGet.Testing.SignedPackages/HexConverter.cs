@@ -7,7 +7,7 @@
 using System;
 using System.Linq;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class HexConverter
     {

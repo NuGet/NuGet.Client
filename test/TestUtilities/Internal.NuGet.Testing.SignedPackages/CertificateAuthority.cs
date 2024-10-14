@@ -11,9 +11,10 @@ using System.Net;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Internal.NuGet.Testing.SignedPackages.Asn1;
 using NuGet.Packaging.Signing;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public sealed class CertificateAuthority : HttpResponder
     {

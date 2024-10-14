@@ -3,7 +3,7 @@
 
 using System;
 using FluentAssertions;
-using NuGet.Test.Utility;
+using Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Xunit;
 using Xunit.Abstractions;
 

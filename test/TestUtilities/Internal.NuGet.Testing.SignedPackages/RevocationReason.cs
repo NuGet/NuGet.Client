@@ -3,7 +3,7 @@
 
 #pragma warning disable CS1591
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     // https://tools.ietf.org/html/rfc5280#section-5.3.1
     public enum RevocationReason

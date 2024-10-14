@@ -6,7 +6,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public sealed class DisposableList<T> : List<T>, IDisposable
         where T : IDisposable

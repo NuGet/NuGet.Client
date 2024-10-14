@@ -7,7 +7,8 @@
 
 using System.Collections.Generic;
 using System.Formats.Asn1;
-using Test.Utility.Signing;
+using Internal.NuGet.Testing.SignedPackages;
+using Internal.NuGet.Testing.SignedPackages.Asn1;
 
 namespace System.Security.Cryptography.X509Certificates
 {

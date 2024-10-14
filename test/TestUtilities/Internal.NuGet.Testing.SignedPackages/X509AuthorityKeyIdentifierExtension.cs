@@ -8,8 +8,8 @@
 #nullable enable
 
 using System.Formats.Asn1;
-using Test.Utility.Signing;
-using GeneralName = Test.Utility.Signing.GeneralName;
+using Internal.NuGet.Testing.SignedPackages;
+using Internal.NuGet.Testing.SignedPackages.Asn1;
 
 namespace System.Security.Cryptography.X509Certificates
 {

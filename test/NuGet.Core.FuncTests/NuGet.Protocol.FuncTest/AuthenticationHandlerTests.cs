@@ -12,11 +12,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Internal.NuGet.Testing.SignedPackages.TestServer;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Test.Server;
 using Xunit;
 using Xunit.Abstractions;
 

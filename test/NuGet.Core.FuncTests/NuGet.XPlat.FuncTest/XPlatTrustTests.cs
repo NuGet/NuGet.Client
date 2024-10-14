@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.CommandLine.XPlat;
 using NuGet.Common;

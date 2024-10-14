@@ -10,6 +10,9 @@ using System.Text;
 #endif
 using System.Threading;
 using System.Threading.Tasks;
+#if IS_SIGNING_SUPPORTED
+using Internal.NuGet.Testing.SignedPackages;
+#endif
 using Moq;
 using NuGet.Common;
 using NuGet.Frameworks;

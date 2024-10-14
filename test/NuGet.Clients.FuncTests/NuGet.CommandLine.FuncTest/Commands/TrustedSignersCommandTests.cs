@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Internal.NuGet.Testing.SignedPackages;
+using Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Moq;
 using NuGet.CommandLine.Commands;
 using NuGet.CommandLine.Test;

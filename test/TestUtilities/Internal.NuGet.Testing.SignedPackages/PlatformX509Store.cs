@@ -4,10 +4,10 @@
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Common;
-using NuGet.Test.Utility;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     internal sealed class PlatformX509Store : IX509Store, IRootX509Store
     {

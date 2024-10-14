@@ -8,7 +8,7 @@ using NuGet.Packaging.Signing;
 using NuGet.Common;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public sealed class TestFallbackCertificateBundleX509ChainFactories
     {

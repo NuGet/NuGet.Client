@@ -15,7 +15,7 @@ using NuGet.Packaging.Signing;
 using Xunit;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class SignatureTestUtility
     {

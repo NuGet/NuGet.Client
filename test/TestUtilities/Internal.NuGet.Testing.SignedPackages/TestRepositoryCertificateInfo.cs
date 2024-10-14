@@ -6,7 +6,7 @@
 using System;
 using NuGet.Packaging.Core;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public class TestRepositoryCertificateInfo : IRepositoryCertificateInfo
     {

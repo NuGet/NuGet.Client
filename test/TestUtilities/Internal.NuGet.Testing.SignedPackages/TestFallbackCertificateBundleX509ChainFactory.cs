@@ -7,7 +7,7 @@ using System.Text;
 using NuGet.Packaging.Signing;
 #endif
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     internal sealed class TestFallbackCertificateBundleX509ChainFactory
 #if NET5_0_OR_GREATER

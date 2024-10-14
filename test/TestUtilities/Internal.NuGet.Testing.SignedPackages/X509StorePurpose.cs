@@ -3,12 +3,12 @@
 
 #pragma warning disable CS1591
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     // Only exists so as to avoid requiring NuGet.Packaging.Signing.X509StorePurpose from being public.
     public enum X509StorePurpose
     {
-        CodeSigning = NuGet.Packaging.Signing.X509StorePurpose.CodeSigning,
-        Timestamping = NuGet.Packaging.Signing.X509StorePurpose.Timestamping
+        CodeSigning = global::NuGet.Packaging.Signing.X509StorePurpose.CodeSigning,
+        Timestamping = global::NuGet.Packaging.Signing.X509StorePurpose.Timestamping
     }
 }

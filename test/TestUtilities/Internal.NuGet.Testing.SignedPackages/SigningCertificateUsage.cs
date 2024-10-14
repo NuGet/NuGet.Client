@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     [Flags]
     public enum SigningCertificateUsage

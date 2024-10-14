@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Test.Utility
+namespace Internal.NuGet.Testing.SignedPackages
 {
     internal sealed class SystemToolException : Exception
     {

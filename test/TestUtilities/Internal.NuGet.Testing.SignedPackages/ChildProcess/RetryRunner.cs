@@ -6,7 +6,7 @@
 using System;
 using Xunit.Abstractions;
 
-namespace NuGet.Test.Utility
+namespace Internal.NuGet.Testing.SignedPackages.ChildProcess
 {
     public class RetryRunner
     {

@@ -5,7 +5,7 @@
 
 using System.Security.Cryptography;
 
-namespace Test.Utility.Signing
+namespace Internal.NuGet.Testing.SignedPackages
 {
     public static class TestOids
     {
