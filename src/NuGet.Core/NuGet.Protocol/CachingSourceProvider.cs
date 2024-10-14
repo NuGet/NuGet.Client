@@ -93,7 +93,6 @@ namespace NuGet.Protocol
 
         public void AddSourceRepository(SourceRepository source)
         {
-            // Update or add to the dictionary
             _cachedSources.TryAdd(source.PackageSource.Source, source);
         }
 

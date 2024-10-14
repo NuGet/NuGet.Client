@@ -342,7 +342,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Assert.Equal(searchResult.PackageSearchItems.First().Title, "NuGet.Core1", ignoreCase: true);
                 Assert.Equal(continueSearchResult.PackageSearchItems.First().Title, "NuGet.Core27", ignoreCase: true);
 
-                TelemetryEvent[] events = eventsQueue.Where(e => e.Name != "ServiceIndexHttpResourcesSummary").ToArray();
+                TelemetryEvent[] events = eventsQueue.ToArray();
                 Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
                 TelemetryEvent search = Assert.Single(events, e => e.Name == "Search");
@@ -376,98 +376,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        [Fact]
-        public async Task SearchAsync_WithHTTPSearchResource_Logs1SourceInServiceIndexHttpResourcesSummary()
-        {
-            var telemetryService = new Mock<INuGetTelemetryService>();
-            var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
-            telemetryService
-                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
-
-            TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
-            var testFeedUrl = "https://test2/v3/index.json";
-            var query = "http://test2/SearchQueryService";
-            var responses = new Dictionary<string, string>
-            {
-                { testFeedUrl, CreateServiceIndexWithHTTPResource() },
-                { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
-                { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
-                { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
-                { "http://test2/RegistrationsBaseUrl/3.6.0/nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) },
-                { "http://test2/RegistrationsBaseUrl/3.6.0/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
-            };
-
-            SourceRepository sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
-
-            using (NuGetPackageSearchService searchService = SetupSearchService(sourceRepository))
-            {
-                SearchResultContextInfo searchResult = await searchService.SearchAsync(
-                    _projects,
-                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(sourceRepository.PackageSource) },
-                    targetFrameworks: new List<string>() { "net45", "net5.0" },
-                    searchText: "nuget",
-                    new SearchFilter(includePrerelease: true),
-                    ItemFilter.All,
-                    isSolution: false,
-                    useRecommender: false,
-                    CancellationToken.None);
-
-                TelemetryEvent[] events = eventsQueue.ToArray();
-                TelemetryEvent resourcesEvent = Assert.Single(events, e => e.Name == "ServiceIndexHttpResourcesSummary");
-
-                // Assert
-                Assert.Equal(1, resourcesEvent["NumHTTPSSources"]);
-                Assert.Equal(1, resourcesEvent["NumHTTPSSourcesWithAnHTTPResource"]);
-            }
-        }
-
-        [Fact]
-        public async Task SearchAsync_WithHTTPSSearchResource_Logs0SourceInServiceIndexHttpResourcesSummary()
-        {
-            var telemetryService = new Mock<INuGetTelemetryService>();
-            var eventsQueue = new ConcurrentQueue<TelemetryEvent>();
-            telemetryService
-                .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
-
-            TelemetryActivity.NuGetTelemetryService = telemetryService.Object;
-            var testFeedUrl = "https://test3/v3/index.json";
-            var query = "https://test3/SearchQueryService";
-            var responses = new Dictionary<string, string>
-            {
-                { testFeedUrl, CreateServiceIndexWithHTTPSResource() },
-                { query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage1.json", GetType()) },
-                { query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetSearchPage2.json", GetType()) },
-                { query + "?q=&skip=0&take=26&prerelease=true&semVerLevel=2.0.0", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.blankSearchPage.json", GetType()) },
-                { "https://test3/RegistrationsBaseUrl/3.6.0/nuget.core/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.nugetCoreIndex.json", GetType()) },
-                { "https://test3/RegistrationsBaseUrl/3.6.0/microsoft.extensions.logging.abstractions/index.json", ProtocolUtility.GetResource("NuGet.PackageManagement.VisualStudio.Test.compiler.resources.loggingAbstractions.json", GetType()) }
-            };
-
-            SourceRepository sourceRepository = StaticHttpHandler.CreateSource(testFeedUrl, Repository.Provider.GetCoreV3(), responses);
-
-            using (NuGetPackageSearchService searchService = SetupSearchService(sourceRepository))
-            {
-                SearchResultContextInfo searchResult = await searchService.SearchAsync(
-                    _projects,
-                    new List<PackageSourceContextInfo> { PackageSourceContextInfo.Create(sourceRepository.PackageSource) },
-                    targetFrameworks: new List<string>() { "net45", "net5.0" },
-                    searchText: "nuget",
-                    new SearchFilter(includePrerelease: true),
-                    ItemFilter.All,
-                    isSolution: false,
-                    useRecommender: false,
-                    CancellationToken.None);
-
-                TelemetryEvent[] events = eventsQueue.ToArray();
-                TelemetryEvent resourcesEvent = Assert.Single(events, e => e.Name == "ServiceIndexHttpResourcesSummary");
-
-                // Assert
-                Assert.Equal(1, resourcesEvent["NumHTTPSSources"]);
-                Assert.Equal(0, resourcesEvent["NumHTTPSSourcesWithAnHTTPResource"]);
-            }
-        }
-
         [Theory]
         [InlineData(ItemFilter.All, true, typeof(MultiSourcePackageFeed))]
         [InlineData(ItemFilter.All, false, typeof(MultiSourcePackageFeed))]
@@ -497,20 +405,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Null(recommender);
         }
 
-        private NuGetPackageSearchService SetupSearchService(SourceRepository sourceRepository = null)
+        private NuGetPackageSearchService SetupSearchService()
         {
-            if (sourceRepository == null)
-            {
-                sourceRepository = _sourceRepository;
-            }
-
             ClearSearchCache();
 
             var packageSourceProvider = new Mock<IPackageSourceProvider>();
-            packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { sourceRepository.PackageSource });
+            packageSourceProvider.Setup(x => x.LoadPackageSources()).Returns(new List<PackageSource> { _sourceRepository.PackageSource });
             var sourceRepositoryProvider = new Mock<ISourceRepositoryProvider>();
-            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>())).Returns(sourceRepository);
-            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>(), It.IsAny<FeedType>())).Returns(sourceRepository);
+            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>())).Returns(_sourceRepository);
+            sourceRepositoryProvider.Setup(x => x.CreateRepository(It.IsAny<PackageSource>(), It.IsAny<FeedType>())).Returns(_sourceRepository);
             sourceRepositoryProvider.SetupGet(x => x.PackageSourceProvider).Returns(packageSourceProvider.Object);
             var solutionManager = new Mock<IVsSolutionManager>();
             solutionManager.SetupGet(x => x.SolutionDirectory).Returns("z:\\SomeRandomPath");
@@ -572,54 +475,6 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 NuGetPackageSearchService.PackageSearchMetadataMemoryCache.Remove(cacheKey);
             }
-        }
-
-        private static string CreateServiceIndexWithHTTPResource()
-        {
-            var obj = new JObject
-            {
-                { "version", "3.1.0-beta" },
-                { "resources", new JArray
-                    {
-                        new JObject
-                        {
-                            { "@type", "SearchQueryService" },
-                            { "@id", "http://test2/SearchQueryService" },
-                        },
-                        new JObject
-                        {
-                            { "@type", "RegistrationsBaseUrl/3.6.0" },
-                            { "@id", "http://test2/RegistrationsBaseUrl/3.6.0" },
-                        },
-                    }
-                }
-            };
-
-            return obj.ToString();
-        }
-
-        private static string CreateServiceIndexWithHTTPSResource()
-        {
-            var obj = new JObject
-            {
-                { "version", "3.1.0-beta" },
-                { "resources", new JArray
-                    {
-                        new JObject
-                        {
-                            { "@type", "SearchQueryService" },
-                            { "@id", "https://test3/SearchQueryService" },
-                        },
-                        new JObject
-                        {
-                            { "@type", "RegistrationsBaseUrl/3.6.0" },
-                            { "@id", "https://test3/RegistrationsBaseUrl/3.6.0" },
-                        },
-                    }
-                }
-            };
-
-            return obj.ToString();
         }
     }
 }
