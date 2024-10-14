@@ -417,7 +417,7 @@ namespace NuGet.PackageManagement
             IRestoreProgressReporter progressReporter)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
-            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
+            var caching = new CachingSourceProvider(sources, new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
 #pragma warning restore CS0618 // Type or member is obsolete
             foreach (var source in sources)
             {

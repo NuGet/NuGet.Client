@@ -199,10 +199,6 @@ namespace NuGet.VisualStudio.Telemetry
         public async Task SendTelemetryAsync()
         {
             var parentId = _parentId.ToString();
-            int NumberOfHTTPSSourcesWithHTTPResource = 0;
-            int NumberOfHTTPSSources = 0;
-            bool sendResourceTelemetry = false;
-
             foreach (var kvp in _data)
             {
                 Data data = kvp.Value;
@@ -213,63 +209,12 @@ namespace NuGet.VisualStudio.Telemetry
                     sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
-                Uri sourceUri = null;
-                bool hasAnHttpResource = false;
-
-                try
-                {
-                    sourceUri = new Uri(source);
-                }
-                catch (ArgumentException)
-                {
-
-                }
-                catch (UriFormatException)
-                {
-
-                }
-                finally
-                {
-                    if (sourceUri != null)
-                    {
-                        if (sourceUri.Scheme == Uri.UriSchemeHttps)
-                        {
-                            NumberOfHTTPSSources++;
-                        }
-                    }
-                }
-
-
-                if (sourceRepository.GetServiceIndexV3FromCache(out ServiceIndexResourceV3 resource))
-                {
-                    sendResourceTelemetry |= true;
-                    var entries = resource.Entries;
-
-                    foreach (var entry in entries)
-                    {
-                        var resourceUri = entry.Uri;
-
-                        if (sourceUri != null && resourceUri.Scheme == Uri.UriSchemeHttp && resourceUri.Scheme != Uri.UriSchemeHttps)
-                        {
-                            hasAnHttpResource |= true;
-                        }
-                    }
-                }
-
-                NumberOfHTTPSSourcesWithHTTPResource += hasAnHttpResource ? 1 : 0;
-
                 var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName, _packageSourceMappingConfiguration);
 
                 if (telemetry != null)
                 {
                     TelemetryActivity.EmitTelemetryEvent(telemetry);
                 }
-            }
-
-            if (sendResourceTelemetry)
-            {
-                var resourceTelemetry = new ServiceIndexHttpResourcesTelemetry(NumberOfHTTPSSources, NumberOfHTTPSSourcesWithHTTPResource, "ServiceIndexHttpResourcesSummary");
-                TelemetryActivity.EmitTelemetryEvent(resourceTelemetry);
             }
         }
 
@@ -376,15 +321,6 @@ namespace NuGet.VisualStudio.Telemetry
             }
 
             return subevent;
-        }
-
-        private class ServiceIndexHttpResourcesTelemetry : TelemetryEvent
-        {
-            public ServiceIndexHttpResourcesTelemetry(int numberOfSources, int numberOfHttpsSourcesWithHttpAnResource, string eventName) : base(eventName)
-            {
-                this["NumHTTPSSources"] = numberOfSources;
-                this["NumHTTPSSourcesWithAnHTTPResource"] = numberOfHttpsSourcesWithHttpAnResource;
-            }
         }
 
         internal static string GetMsFeed(PackageSource source)
