@@ -11,7 +11,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class ReadmePreviewViewModel : ViewModelBase
+    public sealed class ReadmePreviewViewModel : TabViewModelBase
     {
         private bool _errorLoadingReadme;
         private INuGetPackageFileService _nugetPackageFileService;
@@ -27,6 +27,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _errorLoadingReadme = false;
             _rawReadme = string.Empty;
             _packageMetadata = null;
+            Header = Resources.Label_Readme_Tab;
+            Visible = true;
+            PackageMetadataTab = PackageMetadataTab.Readme;
         }
 
         public bool ErrorLoadingReadme
@@ -46,7 +49,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get => _currentItemFilter != ItemFilter.All;
         }
 
-        public async Task SetCurrentFilter(ItemFilter filter)
+        public async Task SetCurrentFilterAsync(ItemFilter filter)
         {
             var oldRenderLocalReadmer = RenderLocalReadme;
             _currentItemFilter = filter;

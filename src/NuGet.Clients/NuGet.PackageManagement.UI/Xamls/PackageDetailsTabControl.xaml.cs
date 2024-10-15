@@ -2,108 +2,56 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.UI.ViewModels;
-using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI
 {
 
     /// <summary>
-    /// Interaction logic for PackageMetadataControl.xaml
+    /// Interaction logic for PackageDetailsTabControl.xaml
     /// </summary>
     public partial class PackageDetailsTabControl : UserControl, IDisposable
     {
-        private bool _disposed = false;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        public static readonly DependencyProperty DetailControlModelProperty =
+            DependencyProperty.Register(
+                name: "DetailControlModel",
+                propertyType: typeof(DetailControlModel),
+                ownerType: typeof(PackageDetailsTabControl),
+                new PropertyMetadata(OnPropertyChanged)
+                );
 
-        private TabItem SelectedTabItem
+        public DetailControlModel DetailControlModel
         {
-            get
-            {
-                return tabsPackageDetails.SelectedItem as TabItem;
-            }
-            set
-            {
-                tabsPackageDetails.SelectedItem = value;
-            }
+            get => (DetailControlModel)GetValue(DetailControlModelProperty);
+            set => SetValue(DetailControlModelProperty, value);
         }
 
-        internal PackageMetadataTab SelectedTab { get => (PackageMetadataTab)SelectedTabItem?.Tag; }
+        public PackageDetailsTabViewModel PackageDetailsTabViewModel
+        {
+            get => DataContext as PackageDetailsTabViewModel;
+        }
 
+        private bool _disposed = false;
+
+        private static void OnPropertyChanged(
+            DependencyObject dependencyObject,
+            DependencyPropertyChangedEventArgs e)
+        {
+            var control = dependencyObject as PackageDetailsTabControl;
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await control?.PackageDetailsTabViewModel.SetPackageMetadataAsync(control.DetailControlModel, CancellationToken.None);
+            });
+        }
 
         public PackageDetailsTabControl()
         {
             InitializeComponent();
-            Visibility = Visibility.Collapsed;
-
-            DataContextChanged += PackageMetadataControl_DataContextChanged;
-            if (DataContext is DetailControlModel detailControlModel)
-            {
-                detailControlModel.PropertyChanged += ContextPropertyChange;
-            }
-        }
-
-        private void ContextPropertyChange(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(DetailControlModel.PackageMetadata))
-            {
-                ThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    var newToken = new CancellationTokenSource();
-                    var oldCts = Interlocked.Exchange(ref _cancellationTokenSource, newToken);
-                    oldCts?.Cancel();
-                    oldCts?.Dispose();
-                    await ReadmePreviewViewModel?.SetPackageMetadataAsync((DataContext as DetailControlModel).PackageMetadata, _cancellationTokenSource.Token);
-                });
-            }
-        }
-
-        internal async Task InitializeReadmePreviewViewModel(INuGetPackageFileService nugetPackageFileService, ItemFilter currentFilter)
-        {
-            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter);
-            _packageReadmeControl.DataContext = ReadmePreviewViewModel;
-            await ReadmePreviewViewModel.SetPackageMetadataAsync((DataContext as DetailControlModel)?.PackageMetadata, _cancellationTokenSource.Token);
-            ReadmePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
-        }
-
-        private void ReadMePreviewViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (ReadmePreviewViewModel is not null
-                && e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
-            {
-                SetReadmeTabVisibility(!string.IsNullOrWhiteSpace(ReadmePreviewViewModel.ReadmeMarkdown) ? Visibility.Visible : Visibility.Collapsed);
-                if (string.IsNullOrWhiteSpace(ReadmePreviewViewModel.ReadmeMarkdown))
-                {
-                    SelectTab(PackageMetadataTab.PackageDetails);
-                }
-            }
-        }
-
-        public ReadmePreviewViewModel ReadmePreviewViewModel { get; set; }
-
-        public void SelectTab(PackageMetadataTab selectedTab)
-        {
-            switch (selectedTab)
-            {
-                case PackageMetadataTab.PackageDetails:
-                    SelectedTabItem = tabPackageDetails;
-                    break;
-                case PackageMetadataTab.Readme:
-                default:
-                    SelectedTabItem = tabReadMe;
-                    break;
-            }
-        }
-
-        public void SetReadmeTabVisibility(Visibility visibility)
-        {
-            tabReadMe.Visibility = visibility;
+            DataContext = new PackageDetailsTabViewModel();
         }
 
         public void Dispose()
@@ -120,35 +68,9 @@ namespace NuGet.PackageManagement.UI
             }
             if (disposing)
             {
-                _cancellationTokenSource.Dispose();
-                _packageReadmeControl?.Dispose();
-                ReadmePreviewViewModel.PropertyChanged -= ReadMePreviewViewModel_PropertyChanged;
-
-                if (DataContext is DetailControlModel detailControlModel)
-                {
-                    detailControlModel.PropertyChanged -= ContextPropertyChange;
-                }
-
+                PackageDetailsTabViewModel.Dispose();
             }
             _disposed = true;
-        }
-
-        private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.OldValue is DetailControlModel oldDetailControlModel)
-            {
-                oldDetailControlModel.PropertyChanged -= ContextPropertyChange;
-            }
-
-            if (DataContext is DetailControlModel detailControlModel)
-            {
-                Visibility = Visibility.Visible;
-                detailControlModel.PropertyChanged += ContextPropertyChange;
-            }
-            else
-            {
-                Visibility = Visibility.Collapsed;
-            }
         }
     }
 }

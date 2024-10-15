@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.VisualStudio.Markdown.Platform;
+using Microsoft.VisualStudio.Shell;
 using NuGet.PackageManagement.UI.ViewModels;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -91,6 +92,19 @@ namespace NuGet.PackageManagement.UI
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             ReadmeViewModel.PropertyChanged += ReadmeViewModel_PropertyChanged;
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Dispose();
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                await UpdateMarkdownAsync();
+            });
         }
     }
 }

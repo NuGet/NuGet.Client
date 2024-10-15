@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             await target.SetPackageMetadataAsync(package, CancellationToken.None);
 
             //Act
-            await target.SetCurrentFilter(ItemFilter.All);
+            await target.SetCurrentFilterAsync(ItemFilter.All);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             await target.SetPackageMetadataAsync(package, CancellationToken.None);
 
             //Act
-            await target.SetCurrentFilter(filter);
+            await target.SetCurrentFilterAsync(filter);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);

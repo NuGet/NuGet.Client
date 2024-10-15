@@ -8,7 +8,6 @@
   xmlns:vm="clr-namespace:NuGet.PackageManagement.UI.ViewModels"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-  d:DataContext="{d:DesignInstance Type=nuget:PackageDetailControlModel}"
   xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
   Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
@@ -25,6 +24,8 @@
   </UserControl.Resources>
   <TabControl
     Grid.Row="0"
+    ItemsSource="{Binding Tabs}"
+    SelectedItem="{Binding SelectedTab}"
     x:Name="tabsPackageDetails">
     <TabControl.Resources>
       <Style TargetType="TabItem">
@@ -122,24 +123,36 @@
         </Setter>
       </Style>
     </TabControl.Resources>
-    <TabItem
-      x:Name="tabReadMe"
-      IsSelected="True"
-      Visibility="Visible"
-      Tag="{x:Static nuget:PackageMetadataTab.Readme}"
-      Header="{x:Static nuget:Resources.Label_Readme_Tab}" >
-      <nuget:PackageReadmeControl
-        x:Name="_packageReadmeControl"
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"/>
-    </TabItem>
-    <TabItem
-      x:Name="tabPackageDetails"
-      Tag="{x:Static nuget:PackageMetadataTab.PackageDetails}"
-      Header="{x:Static nuget:Resources.Label_PackageDetails}">
-      <nuget:PackageMetadataControl
-        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-        DataContext="{Binding}"
-        Margin="0,12,0,0"/>
-    </TabItem>
+    <TabControl.ItemTemplate>
+      <DataTemplate>
+        <TextBlock Text="{Binding Header}" />
+        <DataTemplate.Triggers>
+          <DataTrigger Binding="{Binding Visible}" Value="False">
+            <Setter Property="Visibility" Value="Collapsed" />
+          </DataTrigger>
+        </DataTemplate.Triggers>
+      </DataTemplate>
+    </TabControl.ItemTemplate>
+    <TabControl.ContentTemplate>
+      <DataTemplate>
+        <!-- Customize the content of the tabs here -->
+        <ContentControl Content="{Binding}">
+          <ContentControl.Resources>
+            <DataTemplate DataType="{x:Type nuget:DetailControlModel}">
+              <nuget:PackageMetadataControl
+                AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
+                DataContext="{Binding}"
+                Margin="0,12,0,0"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vm:ReadmePreviewViewModel}">
+              <nuget:PackageReadmeControl
+                DataContext="{Binding}"
+                x:Name="_packageReadmeControl"
+                AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"/>
+            </DataTemplate>
+          </ContentControl.Resources>
+        </ContentControl>
+      </DataTemplate>
+    </TabControl.ContentTemplate>
   </TabControl>
 </UserControl>
