@@ -102,7 +102,7 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: 
+    displayName: Msbuild.Integration.Test on Windows (.NET Framework 4.7.2)
     dependsOn: []
     jobs:
     - template: pr.job.yml
