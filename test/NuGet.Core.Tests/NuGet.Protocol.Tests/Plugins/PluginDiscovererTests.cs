@@ -25,6 +25,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(rawPluginPaths);
             using (new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object))
             {
             }
@@ -35,6 +36,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns("");
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns("");
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new PluginDiscoverer(verifier: null, environmentalVariableReader.Object));
 
@@ -46,6 +48,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns("");
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns("");
             using (var discoverer = new PluginDiscoverer(
                 verifier: Mock.Of<EmbeddedSignatureVerifier>(),
                 environmentalVariableReader.Object))
@@ -63,6 +66,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var pluginPath = Path.Combine(testDirectory.Path, "a");
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(pluginPath);
                 File.WriteAllText(pluginPath, string.Empty);
 
                 using (var discoverer = new PluginDiscoverer(new FallbackEmbeddedSignatureVerifier(), environmentalVariableReader.Object))
@@ -79,6 +83,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(";");
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(";");
             using (var discoverer = new PluginDiscoverer(
                 verifier: new FallbackEmbeddedSignatureVerifier(),
                 environmentalVariableReader.Object))
@@ -99,6 +104,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(pluginPath, string.Empty);
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(pluginPath);
 
                 var responses = new Dictionary<string, bool>()
                 {
@@ -134,6 +140,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(pluginPath, string.Empty);
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(pluginPath);
                 var responses = new Dictionary<string, bool>()
                 {
                     { pluginPath, true }
@@ -177,6 +184,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var rawPluginPaths = string.Join(";", responses.Keys);
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(rawPluginPaths);
                 using (var discoverer = new PluginDiscoverer(verifierStub, environmentalVariableReader.Object))
                 {
                     var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
@@ -209,6 +217,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var verifierStub = new EmbeddedSignatureVerifierStub(responses);
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(pluginPath);
             using (var discoverer = new PluginDiscoverer(verifierStub, environmentalVariableReader.Object))
             {
                 var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
@@ -229,6 +238,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(pluginPath, string.Empty);
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(pluginPath);
                 var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
 
                 verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
