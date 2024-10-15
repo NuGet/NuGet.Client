@@ -23,30 +23,15 @@ namespace NuGet.Protocol.Plugins
         private readonly string _nuGetPluginPaths;
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
-        private readonly EmbeddedSignatureVerifier _verifier;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
-        public PluginDiscoverer(EmbeddedSignatureVerifier verifier)
-            : this(verifier, EnvironmentVariableWrapper.Instance)
+        public PluginDiscoverer()
+            : this(EnvironmentVariableWrapper.Instance)
         {
         }
 
-        /// <summary>
-        /// Instantiates a new <see cref="PluginDiscoverer" /> class.
-        /// </summary>
-        /// <param name="rawPluginPaths">The raw semicolon-delimited list of supposed plugin file paths.</param>
-        public PluginDiscoverer(string rawPluginPaths)
-        /// <param name="verifier">An embedded signature verifier.</param>
-        /// <param name="environmentVariableReader"> A reader for environmental varibales. </param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="verifier" /> is <see langword="null" />.</exception>
-        internal PluginDiscoverer(EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader)
+        internal PluginDiscoverer(IEnvironmentVariableReader environmentVariableReader)
         {
-            _rawPluginPaths = rawPluginPaths;
-            if (verifier == null)
-            {
-                throw new ArgumentNullException(nameof(verifier));
-            }
-
             _environmentVariableReader = environmentVariableReader;
 #if IS_DESKTOP
             _netCoreAndNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
@@ -54,7 +39,6 @@ namespace NuGet.Protocol.Plugins
             _netCoreAndNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
 #endif
             _nuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
-            _verifier = verifier;
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         }
 
@@ -157,7 +141,7 @@ namespace NuGet.Protocol.Plugins
             return _results;
         }
 
-        private List<PluginFile> GetPluginFiles(string[] filePaths, CancellationToken cancellationToken)
+        private static List<PluginFile> GetPluginFiles(string[] filePaths, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -211,7 +195,7 @@ namespace NuGet.Protocol.Plugins
                         else
                         {
                             // A non DotNet tool plugin file
-                            var state = new Lazy<PluginFileState>(() => _verifier.IsValid(fileInfo.FullName) ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature);
+                            var state = new Lazy<PluginFileState>(() => PluginFileState.Valid);
                             pluginFiles.Add(new PluginFile(fileInfo.FullName, state));
                         }
                     }
@@ -224,8 +208,6 @@ namespace NuGet.Protocol.Plugins
                         {
                             if (IsValidPluginFile(file))
                             {
-                                // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
-                                // As a result the plugin created here has PluginFileState.Valid.
                                 PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
                                 pluginFiles.Add(pluginFile);
                             }
@@ -264,7 +246,6 @@ namespace NuGet.Protocol.Plugins
                         {
                             if (IsValidPluginFile(file))
                             {
-                                // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
                                 PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
                                 pluginFiles.Add(pluginFile);
                             }

@@ -350,9 +350,7 @@ namespace NuGet.Protocol.Plugins
 
         private PluginDiscoverer InitializeDiscoverer()
         {
-            var verifier = EmbeddedSignatureVerifier.Create();
-
-            return new PluginDiscoverer(verifier);
+            return new PluginDiscoverer();
         }
 
         private bool IsPluginPossiblyAvailable()
