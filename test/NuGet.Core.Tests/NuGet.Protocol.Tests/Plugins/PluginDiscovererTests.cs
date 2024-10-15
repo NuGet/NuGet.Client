@@ -510,8 +510,8 @@ namespace NuGet.Protocol.Plugins.Tests
         public void GetPluginsInNuGetPluginPaths_WithNuGetPluginPathsSet_ReturnsPluginsInNuGetPluginPathOnly()
         {
             // Arrange
-            TestDirectory pluginPathDirectory = TestDirectory.Create();
-            TestDirectory pathDirectory = TestDirectory.Create();
+            using TestDirectory pluginPathDirectory = TestDirectory.Create();
+            using TestDirectory pathDirectory = TestDirectory.Create();
             var pluginInNuGetPluginPathDirectoryFilePath = Path.Combine(pluginPathDirectory.Path, "nuget-plugin-auth.exe");
             var pluginInPathDirectoryFilePath = Path.Combine(pathDirectory.Path, "nuget-plugin-in-path-directory.exe");
             File.Create(pluginInNuGetPluginPathDirectoryFilePath);
@@ -534,7 +534,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void GetPluginsInNuGetPluginPaths_WithoutNuGetPluginPaths_ReturnsEmpty()
         {
             // Arrange
-            var pathDirectory = TestDirectory.Create();
+            using var pathDirectory = TestDirectory.Create();
             var pluginFilePath = Path.Combine(pathDirectory.Path, "nuget-plugin-fallback.exe");
             File.Create(pluginFilePath);
 
@@ -554,8 +554,8 @@ namespace NuGet.Protocol.Plugins.Tests
         public void GetPluginsInPATH_WithPATHSet_ReturnsPlugin()
         {
             // Arrange
-            TestDirectory pluginPathDirectory = TestDirectory.Create();
-            TestDirectory pathDirectory = TestDirectory.Create();
+            using TestDirectory pluginPathDirectory = TestDirectory.Create();
+            using TestDirectory pathDirectory = TestDirectory.Create();
             var pluginInNuGetPluginPathDirectoryFilePath = Path.Combine(pluginPathDirectory.Path, "nuget-plugin-auth.exe");
             var pluginInPathDirectoryFilePath = Path.Combine(pathDirectory.Path, "nuget-plugin-in-path-directory.exe");
             File.Create(pluginInNuGetPluginPathDirectoryFilePath);
@@ -578,7 +578,8 @@ namespace NuGet.Protocol.Plugins.Tests
         public void GetPluginsInNuGetPluginPaths_NuGetPluginPathsPointsToAFile_TreatsAsPlugin()
         {
             // Arrange
-            var pluginFilePath = Path.Combine(TestDirectory.Create().Path, "nuget-plugin-auth.exe");
+            using TestDirectory testDirectory = TestDirectory.Create();
+            var pluginFilePath = Path.Combine(testDirectory.Path, "nuget-plugin-auth.exe");
             File.Create(pluginFilePath);
 
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
@@ -600,7 +601,8 @@ namespace NuGet.Protocol.Plugins.Tests
         public void GetPluginsInNuGetPluginPaths_NuGetPluginPathsPointsToAFileThatDoesNotStartWithNugetPlugin_ReturnsNonDotnetPlugin()
         {
             // Arrange
-            var pluginFilePath = Path.Combine(TestDirectory.Create().Path, "other-plugin.exe");
+            using TestDirectory testDirectory = TestDirectory.Create();
+            var pluginFilePath = Path.Combine(testDirectory.Path, "other-plugin.exe");
             File.Create(pluginFilePath);
 
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
@@ -659,7 +661,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void IsValidPluginFile_ExeFile_ReturnsTrue()
         {
             // Arrange
-            TestDirectory testDirectory = TestDirectory.Create();
+            using TestDirectory testDirectory = TestDirectory.Create();
             var workingPath = testDirectory.Path;
             var pluginFilePath = Path.Combine(workingPath, "plugin.exe");
             File.Create(pluginFilePath);
@@ -676,7 +678,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void IsValidPluginFile_Windows_NonExecutableFile_ReturnsFalse()
         {
             // Arrange
-            TestDirectory testDirectory = TestDirectory.Create();
+            using TestDirectory testDirectory = TestDirectory.Create();
             var workingPath = testDirectory.Path;
             var nonPluginFilePath = Path.Combine(workingPath, "plugin.txt");
             File.Create(nonPluginFilePath);
@@ -693,7 +695,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void IsValidPluginFile_Unix_ExecutableFile_ReturnsTrue()
         {
             // Arrange
-            TestDirectory testDirectory = TestDirectory.Create();
+            using TestDirectory testDirectory = TestDirectory.Create();
             var workingPath = testDirectory.Path;
             var pluginFilePath = Path.Combine(workingPath, "plugin");
             File.Create(pluginFilePath).Dispose();
@@ -726,7 +728,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void IsExecutable_FileIsExecutable_ReturnsTrue()
         {
             // Arrange
-            TestDirectory testDirectory = TestDirectory.Create();
+            using TestDirectory testDirectory = TestDirectory.Create();
             var workingPath = testDirectory.Path;
             var pluginFilePath = Path.Combine(workingPath, "plugin");
             File.Create(pluginFilePath);
@@ -753,7 +755,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void IsExecutable_FileIsNotExecutable_ReturnsFalse()
         {
             // Arrange
-            TestDirectory testDirectory = TestDirectory.Create();
+            using TestDirectory testDirectory = TestDirectory.Create();
             var workingPath = testDirectory.Path;
             var pluginFilePath = Path.Combine(workingPath, "plugin");
             File.Create(pluginFilePath);
