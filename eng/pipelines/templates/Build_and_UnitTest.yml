@@ -191,8 +191,7 @@ steps:
   name: "EnsureAllPackagesExist"
   inputs:
     scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\EnsureAllPackagesExist.ps1"
-    arguments: "-BuildRTM $(BuildRTM) -NupkgOutputPath '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'"
-  condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
+    arguments: "-BuildRTM:$$(BuildRTM) -NupkgOutputPath '$(Build.Repository.LocalPath)\\artifacts\\$(NupkgOutputDir)'"
 
 - task: MSBuild@1
   displayName: "Ensure all Nupkgs and Symbols are created"
