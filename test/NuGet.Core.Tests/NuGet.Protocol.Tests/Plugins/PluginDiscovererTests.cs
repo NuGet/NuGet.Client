@@ -23,15 +23,32 @@ namespace NuGet.Protocol.Plugins.Tests
         [InlineData(" ")]
         public void Constructor_AcceptsAnyString(string rawPluginPaths)
         {
-            using (new PluginDiscoverer(rawPluginPaths))
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
+            using (new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object))
             {
             }
         }
 
         [Fact]
+        public void DiscoverAsync_ThrowsForNullVerifier()
+        {
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns("");
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new PluginDiscoverer(verifier: null, environmentalVariableReader.Object));
+
+            Assert.Equal("verifier", exception.ParamName);
+        }
+
+        [Fact]
         public async Task DiscoverAsync_ThrowsIfCancelled()
         {
-            using (var discoverer = new PluginDiscoverer(rawPluginPaths: ""))
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns("");
+            using (var discoverer = new PluginDiscoverer(
+                verifier: Mock.Of<EmbeddedSignatureVerifier>(),
+                environmentalVariableReader.Object))
             {
                 await Assert.ThrowsAsync<OperationCanceledException>(
                     () => discoverer.DiscoverAsync(new CancellationToken(canceled: true)));
@@ -39,9 +56,32 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DiscoverAsync_ThrowsPlatformNotSupportedIfEmbeddedSignatureVerifierIsRequired()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPath = Path.Combine(testDirectory.Path, "a");
+                var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                File.WriteAllText(pluginPath, string.Empty);
+
+                using (var discoverer = new PluginDiscoverer(new FallbackEmbeddedSignatureVerifier(), environmentalVariableReader.Object))
+                {
+                    var plugins = await discoverer.DiscoverAsync(CancellationToken.None);
+                    Assert.Throws<PlatformNotSupportedException>(
+                        () => plugins.SingleOrDefault().PluginFile.State.Value);
+                }
+            }
+        }
+
+        [Fact]
         public async Task DiscoverAsync_DoesNotThrowIfNoValidFilePathsAndFallbackEmbeddedSignatureVerifier()
         {
-            using (var discoverer = new PluginDiscoverer(rawPluginPaths: ";"))
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(";");
+            using (var discoverer = new PluginDiscoverer(
+                verifier: new FallbackEmbeddedSignatureVerifier(),
+                environmentalVariableReader.Object))
             {
                 var pluginFiles = await discoverer.DiscoverAsync(CancellationToken.None);
 
@@ -57,13 +97,15 @@ namespace NuGet.Protocol.Plugins.Tests
                 var pluginPath = Path.Combine(testDirectory.Path, "a");
 
                 File.WriteAllText(pluginPath, string.Empty);
+                var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
 
                 var responses = new Dictionary<string, bool>()
                 {
                     { pluginPath, true }
                 };
 
-                using (var discoverer = new PluginDiscoverer(pluginPath))
+                using (var discoverer = new PluginDiscoverer(verifierStub, environmentalVariableReader.Object))
                 {
                     var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
@@ -77,6 +119,37 @@ namespace NuGet.Protocol.Plugins.Tests
                     results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
                     Assert.Equal(1, results.Length);
+                    Assert.Equal(1, verifierStub.IsValidCallCount);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DiscoverAsync_SignatureIsVerifiedLazily()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var pluginPath = Path.Combine(testDirectory.Path, "a");
+
+                File.WriteAllText(pluginPath, string.Empty);
+                var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                var responses = new Dictionary<string, bool>()
+                {
+                    { pluginPath, true }
+                };
+                var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+
+                using (var discoverer = new PluginDiscoverer(verifierStub, environmentalVariableReader.Object))
+                {
+                    var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
+
+                    Assert.Equal(1, results.Length);
+                    Assert.Equal(0, verifierStub.IsValidCallCount);
+
+                    var pluginState = results.SingleOrDefault().PluginFile.State.Value;
+
+                    Assert.Equal(1, verifierStub.IsValidCallCount);
                 }
             }
         }
@@ -92,10 +165,19 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 File.WriteAllText(pluginPaths[1], string.Empty);
 
-                string rawPluginPaths =
-                    $"{pluginPaths[0]};{pluginPaths[1]};c";
-
-                using (var discoverer = new PluginDiscoverer(rawPluginPaths))
+                var responses = new Dictionary<string, bool>()
+                {
+                    { pluginPaths[0], false },
+                    { pluginPaths[1], false },
+                    { pluginPaths[2], true },
+                    { pluginPaths[3], false },
+                    { "e", true }
+                };
+                var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+                var rawPluginPaths = string.Join(";", responses.Keys);
+                var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
+                using (var discoverer = new PluginDiscoverer(verifierStub, environmentalVariableReader.Object))
                 {
                     var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
@@ -124,8 +206,10 @@ namespace NuGet.Protocol.Plugins.Tests
         public async Task DiscoverAsync_DisallowsNonRootedFilePaths(string pluginPath)
         {
             var responses = new Dictionary<string, bool>() { { pluginPath, true } };
-
-            using (var discoverer = new PluginDiscoverer(pluginPath))
+            var verifierStub = new EmbeddedSignatureVerifierStub(responses);
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+            using (var discoverer = new PluginDiscoverer(verifierStub, environmentalVariableReader.Object))
             {
                 var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
 
@@ -143,8 +227,14 @@ namespace NuGet.Protocol.Plugins.Tests
                 var pluginPath = Path.Combine(testDirectory.Path, "a");
 
                 File.WriteAllText(pluginPath, string.Empty);
+                var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
+                var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
 
-                using (var discoverer = new PluginDiscoverer(pluginPath))
+                verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
+                    .Returns(true);
+
+                using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                 {
                     var firstResult = await discoverer.DiscoverAsync(CancellationToken.None);
                     var firstState = firstResult.SingleOrDefault().PluginFile.State.Value;
@@ -169,14 +259,14 @@ namespace NuGet.Protocol.Plugins.Tests
                 Directory.CreateDirectory(pluginPath);
                 var myPlugin = Path.Combine(pluginPath, fileName);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(It.IsAny<string>())).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
 
                 File.WriteAllText(myPlugin, string.Empty);
                 var verifierSpy = new Mock<EmbeddedSignatureVerifier>();
                 verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                     .Returns(true);
 
-                using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                 {
                     // Act
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -213,7 +303,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                     .Returns(true);
 
-                using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                 {
                     // Act
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -250,7 +340,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                     .Returns(true);
 
-                using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                 {
                     // Act
                     var result = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -297,7 +387,7 @@ namespace NuGet.Protocol.Plugins.Tests
                         verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                             .Returns(true);
 
-                        using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                        using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                         {
                             // Act
                             var result = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -347,7 +437,7 @@ namespace NuGet.Protocol.Plugins.Tests
                         verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                             .Returns(true);
 
-                        using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                        using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                         {
                             // Act
                             var result = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -396,7 +486,7 @@ namespace NuGet.Protocol.Plugins.Tests
                         verifierSpy.Setup(spy => spy.IsValid(It.IsAny<string>()))
                             .Returns(true);
 
-                        using (var discoverer = new PluginDiscoverer("", verifierSpy.Object, environmentalVariableReader.Object))
+                        using (var discoverer = new PluginDiscoverer(verifierSpy.Object, environmentalVariableReader.Object))
                         {
                             // Act
                             var result = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -429,7 +519,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(Directory.GetParent(pluginInNuGetPluginPathDirectoryFilePath).FullName);
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(Directory.GetParent(pluginInPathDirectoryFilePath).FullName);
-            PluginDiscoverer pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            PluginDiscoverer pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
@@ -451,7 +541,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(pathDirectory.Path);
 
-            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            var pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
@@ -473,7 +563,7 @@ namespace NuGet.Protocol.Plugins.Tests
             Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(Directory.GetParent(pluginInNuGetPluginPathDirectoryFilePath).FullName);
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(Directory.GetParent(pluginInPathDirectoryFilePath).FullName);
-            PluginDiscoverer pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            PluginDiscoverer pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInPATH();
@@ -495,7 +585,7 @@ namespace NuGet.Protocol.Plugins.Tests
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginFilePath);
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(string.Empty);
 
-            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            var pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
@@ -517,7 +607,7 @@ namespace NuGet.Protocol.Plugins.Tests
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginFilePath);
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(string.Empty);
 
-            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            var pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();
@@ -531,7 +621,7 @@ namespace NuGet.Protocol.Plugins.Tests
         public void GetPluginsInPATH_PATHPointsToADirectory_ContainsValidPluginFiles()
         {
             // Arrange
-            var pluginPathDirectory = TestDirectory.Create();
+            using var pluginPathDirectory = TestDirectory.Create();
             var validPluginFile = Path.Combine(pluginPathDirectory.Path, "nuget-plugin-auth.exe");
             var invalidPluginFile = Path.Combine(pluginPathDirectory.Path, "not-a-nuget-plugin.exe");
             File.Create(validPluginFile);
@@ -540,7 +630,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATH")).Returns(pluginPathDirectory.Path);
 
-            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            var pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInPATH();
@@ -556,7 +646,7 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             // Arrange
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-            var pluginDiscoverer = new PluginDiscoverer("", Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
+            var pluginDiscoverer = new PluginDiscoverer(Mock.Of<EmbeddedSignatureVerifier>(), environmentalVariableReader.Object);
 
             // Act
             var plugins = pluginDiscoverer.GetPluginsInNuGetPluginPaths();

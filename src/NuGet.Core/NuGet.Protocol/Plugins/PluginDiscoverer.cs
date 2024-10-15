@@ -25,7 +25,6 @@ namespace NuGet.Protocol.Plugins
         private readonly SemaphoreSlim _semaphore;
         private readonly EmbeddedSignatureVerifier _verifier;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
-        private readonly string _pluginPaths;
 
         public PluginDiscoverer(EmbeddedSignatureVerifier verifier)
             : this(verifier, EnvironmentVariableWrapper.Instance)
