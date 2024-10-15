@@ -1,16 +1,19 @@
-# assemblies not to be included in VSIX
+# The VS SDK automatically includes alot of assemblies in the VSIX. This list represents
+# assemblies that should be removed from the list but does not imply that the assembly is
+# completely left out of the VSIX.  NuGet.VisualStudio.Client.csproj will manually add
+# some of the assemblies itself, even if they are listed here
 
 Azure.Core.dll
 Ben.Demystifier.dll
 Microsoft.DataAI.NuGetRecommender.Contracts.dll
-Microsoft.IdentityModel.Clients.ActiveDirectory.dll
+Microsoft.IO.Redist.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll
+Microsoft.IdentityModel.Clients.ActiveDirectory.dll
 Microsoft.IdentityModel.JsonWebTokens.dll
 Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
 Microsoft.Internal.VisualStudio.Shell.Framework.dll
 Microsoft.Internal.VisualStudio.Shell.Framework.resources.dll
-Microsoft.IO.Redist.dll
 Microsoft.NET.StringTools.dll
 Microsoft.TeamFoundation.Build.Client.dll
 Microsoft.TeamFoundation.Build.Client.resources.dll
@@ -52,16 +55,16 @@ Microsoft.TeamFoundation.TestManagement.Client.resources.dll
 Microsoft.TeamFoundation.TestManagement.Common.dll
 Microsoft.TeamFoundation.TestManagement.WebApi.dll
 Microsoft.TeamFoundation.VersionControl.Client.dll
-Microsoft.TeamFoundation.VersionControl.Common.dll
 Microsoft.TeamFoundation.VersionControl.Common.Integration.dll
 Microsoft.TeamFoundation.VersionControl.Common.Integration.resources.dll
+Microsoft.TeamFoundation.VersionControl.Common.dll
 Microsoft.TeamFoundation.VersionControl.Common.resources.dll
 Microsoft.TeamFoundation.Wiki.WebApi.dll
 Microsoft.TeamFoundation.Work.WebApi.dll
 Microsoft.TeamFoundation.WorkItemTracking.Client.DataStoreLoader.dll
-Microsoft.TeamFoundation.WorkItemTracking.Client.dll
 Microsoft.TeamFoundation.WorkItemTracking.Client.QueryLanguage.dll
 Microsoft.TeamFoundation.WorkItemTracking.Client.QueryLanguage.resources.dll
+Microsoft.TeamFoundation.WorkItemTracking.Client.dll
 Microsoft.TeamFoundation.WorkItemTracking.Client.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.Common.dll
 Microsoft.TeamFoundation.WorkItemTracking.Common.resources.dll
@@ -69,15 +72,14 @@ Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.dll
 Microsoft.TeamFoundation.WorkItemTracking.Proxy.resources.dll
 Microsoft.TeamFoundation.WorkItemTracking.WebApi.dll
-Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
-
-Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.Debugger.UI.Interfaces.dll
+Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
 Microsoft.VisualStudio.HotReload.Components.dll
-Microsoft.VisualStudio.ProjectSystem.Managed.dll
-Microsoft.VisualStudio.ProjectSystem.Managed.resources.dll
+Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
 Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll
 Microsoft.VisualStudio.ProjectSystem.Managed.VS.resources.dll
+Microsoft.VisualStudio.ProjectSystem.Managed.dll
+Microsoft.VisualStudio.ProjectSystem.Managed.resources.dll
 Microsoft.VisualStudio.ProjectSystem.Query.dll
 Microsoft.VisualStudio.ProjectSystem.Query.resources.dll
 Microsoft.VisualStudio.Services.TestManagement.TestPlanning.WebApi.dll
@@ -93,36 +95,5 @@ System.Text.Encodings.Web.dll
 System.Text.Json.dll
 System.Web.Http.dll
 
-NuGet.Console.resources.dll
-NuGet.Credentials.resources.dll
-NuGet.PackageManagement.PowerShellCmdlets.resources.dll
-NuGet.PackageManagement.VisualStudio.resources.dll
-NuGet.SolutionRestoreManager.resources.dll
-NuGet.Tools.resources.dll
-NuGet.VisualStudio.resources.dll
-NuGet.VisualStudio.Common.resources.dll
-NuGet.VisualStudio.Contracts.resources.dll
-NuGet.VisualStudio.Interop.resources.dll
-NuGet.VisualStudio.Implementation.resources.dll
-NuGet.VisualStudio.Internal.Contracts.resources.dll
-NuGet.VisualStudio.OnlineEnvironment.Client.resources.dll
-
-Microsoft.Build.NuGetSdkResolver.resources.dll
-NuGet.Build.Tasks.resources.dll
-NuGet.Commands.resources.dll
-NuGet.Common.resources.dll
-NuGet.Configuration.resources.dll
-NuGet.DependencyResolver.Core.resources.dll
-NuGet.Frameworks.resources.dll
-NuGet.Indexing.resources.dll
-NuGet.LibraryModel.resources.dll
-NuGet.PackageManagement.resources.dll
-NuGet.PackageManagement.UI.resources.dll
-NuGet.Packaging.resources.dll
-NuGet.ProjectModel.resources.dll
-NuGet.Protocol.resources.dll
-NuGet.Resolver.resources.dll
-NuGet.Versioning.resources.dll
-
-# Ignore the Lucene.Net.dll that the VS SDK adds because this project will manually add the signed one.
+# Ignore third party assemblies because we sign them in a specific location on disk and manually add them to the list
 Lucene.Net.dll

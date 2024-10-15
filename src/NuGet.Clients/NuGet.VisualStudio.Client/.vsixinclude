@@ -5,13 +5,13 @@ NuGet.PackageManagement.PowerShellCmdlets.dll
 NuGet.PackageManagement.VisualStudio.dll
 NuGet.SolutionRestoreManager.dll
 NuGet.Tools.dll
-NuGet.VisualStudio.dll
 NuGet.VisualStudio.Common.dll
 NuGet.VisualStudio.Contracts.dll
-NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
 NuGet.VisualStudio.Internal.Contracts.dll
+NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.OnlineEnvironment.Client.dll
+NuGet.VisualStudio.dll
 
 # MS delay signed assemblies
 Microsoft.Build.NuGetSdkResolver.dll
@@ -23,8 +23,8 @@ NuGet.DependencyResolver.Core.dll
 NuGet.Frameworks.dll
 NuGet.Indexing.dll
 NuGet.LibraryModel.dll
-NuGet.PackageManagement.dll
 NuGet.PackageManagement.UI.dll
+NuGet.PackageManagement.dll
 NuGet.Packaging.dll
 NuGet.ProjectModel.dll
 NuGet.Protocol.dll
@@ -36,6 +36,3 @@ Microsoft.Extensions.FileProviders.Abstractions.dll
 Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll
 Microsoft.Web.XmlTransform.dll
-Newtonsoft.Json.dll
-
-
