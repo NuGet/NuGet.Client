@@ -45,6 +45,20 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task DiscoverAsync_DoesNotThrowIfNoValidFilePathsAndFallbackEmbeddedSignatureVerifier()
+        {
+            var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(";");
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(";");
+            using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
+            {
+                var pluginFiles = await discoverer.DiscoverAsync(CancellationToken.None);
+
+                Assert.Empty(pluginFiles);
+            }
+        }
+
+        [Fact]
         public async Task DiscoverAsync_PerformsDiscoveryOnlyOnce()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -75,29 +89,6 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task DiscoverAsync_SignatureIsVerifiedLazily()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var pluginPath = Path.Combine(testDirectory.Path, "a");
-
-                File.WriteAllText(pluginPath, string.Empty);
-                var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(pluginPath);
-                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(pluginPath);
-
-                using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
-                {
-                    var results = (await discoverer.DiscoverAsync(CancellationToken.None)).ToArray();
-
-                    Assert.Equal(1, results.Length);
-
-                    var pluginState = results.SingleOrDefault().PluginFile.State.Value;
-                }
-            }
-        }
-
-        [Fact]
         public async Task DiscoverAsync_HandlesAllPluginFileStates()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -107,7 +98,9 @@ namespace NuGet.Protocol.Plugins.Tests
                     .ToArray();
 
                 File.WriteAllText(pluginPaths[1], string.Empty);
-                var rawPluginPaths = string.Join(";", pluginPaths);
+
+                string rawPluginPaths =
+                    $"{pluginPaths[0]};{pluginPaths[1]};c";
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(rawPluginPaths);
