@@ -49,6 +49,7 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
+        internal const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
         private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
@@ -244,7 +245,7 @@ namespace NuGet.ProjectModel
                 : new List<CentralTransitiveDependencyGroup>();
 
             var logMessage = (flags & LockFileReadFlags.LogMessages) == LockFileReadFlags.LogMessages
-                ? ReadLogMessageArray(cursor[CacheFileProperties.LogsProperty] as JArray, packagesSpec?.RestoreMetadata?.ProjectPath)
+                ? ReadLogMessageArray(cursor[LogsProperty] as JArray, packagesSpec?.RestoreMetadata?.ProjectPath)
                 : Array.Empty<IAssetsLogMessage>();
 
             var lockFile = new LockFile()
