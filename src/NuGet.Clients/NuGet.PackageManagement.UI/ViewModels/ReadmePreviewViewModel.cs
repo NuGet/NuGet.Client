@@ -51,9 +51,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public async Task SetCurrentFilterAsync(ItemFilter filter)
         {
-            var oldRenderLocalReadmer = RenderLocalReadme;
+            var oldRenderLocalReadme = RenderLocalReadme;
             _currentItemFilter = filter;
-            if (RenderLocalReadme != oldRenderLocalReadmer)
+            if (RenderLocalReadme != oldRenderLocalReadme)
             {
                 if (_packageMetadata != null)
                 {
