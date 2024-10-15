@@ -379,7 +379,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
                 File.WriteAllText(myPlugin, string.Empty);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(It.IsAny<string>())).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
 
                 using (var process = new Process())
                 {
@@ -428,7 +428,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
                 File.WriteAllText(myPlugin, string.Empty);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("NUGET_PLUGIN_PATHS")).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable("PATHS")).Returns("");
 
                 using (var process = new Process())
@@ -478,7 +478,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var myPlugin = Path.Combine(pluginPath, "nuget-plugin-MyPlugin");
                 File.WriteAllText(myPlugin, string.Empty);
                 Mock<IEnvironmentVariableReader> environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(It.IsAny<string>())).Returns(pluginPath);
+                environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths)).Returns(pluginPath);
 
                 using (var process = new Process())
                 {
