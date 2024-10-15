@@ -19,15 +19,16 @@ namespace NuGet.Protocol.Plugins
     {
         private bool _isDisposed;
         private List<PluginFile> _pluginFiles;
-        private readonly string _envVariableNetCoreAndNetFXPluginPaths;
-        private readonly string _envVariableNuGetPluginPaths;
+        private readonly string _netCoreAndNetFXPluginPaths;
+        private readonly string _nuGetPluginPaths;
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
         private readonly EmbeddedSignatureVerifier _verifier;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
+        private readonly string _pluginPaths;
 
-        public PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier)
-            : this(rawPluginPaths, verifier, EnvironmentVariableWrapper.Instance)
+        public PluginDiscoverer(EmbeddedSignatureVerifier verifier)
+            : this(verifier, EnvironmentVariableWrapper.Instance)
         {
         }
 
@@ -39,7 +40,7 @@ namespace NuGet.Protocol.Plugins
         /// <param name="verifier">An embedded signature verifier.</param>
         /// <param name="environmentVariableReader"> A reader for environmental varibales. </param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="verifier" /> is <see langword="null" />.</exception>
-        internal PluginDiscoverer(string rawPluginPaths, EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader)
+        internal PluginDiscoverer(EmbeddedSignatureVerifier verifier, IEnvironmentVariableReader environmentVariableReader)
         {
             _rawPluginPaths = rawPluginPaths;
             if (verifier == null)
@@ -48,8 +49,12 @@ namespace NuGet.Protocol.Plugins
             }
 
             _environmentVariableReader = environmentVariableReader;
-            _envVariableNetCoreAndNetFXPluginPaths = rawPluginPaths;
-            _envVariableNuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
+#if IS_DESKTOP
+            _netCoreAndNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
+#else
+            _netCoreAndNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
+#endif
+            _nuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
             _verifier = verifier;
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         }
@@ -98,13 +103,13 @@ namespace NuGet.Protocol.Plugins
                     return _results;
                 }
 
-                if (!string.IsNullOrEmpty(_envVariableNetCoreAndNetFXPluginPaths))
+                if (!string.IsNullOrEmpty(_netCoreAndNetFXPluginPaths))
                 {
                     // NUGET_NETFX_PLUGIN_PATHS, NUGET_NETCORE_PLUGIN_PATHS have been set.
-                    var filePaths = _envVariableNetCoreAndNetFXPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    var filePaths = _netCoreAndNetFXPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
                     _pluginFiles = GetPluginFiles(filePaths, cancellationToken);
                 }
-                else if (!string.IsNullOrEmpty(_envVariableNuGetPluginPaths))
+                else if (!string.IsNullOrEmpty(_nuGetPluginPaths))
                 {
                     // NUGET_PLUGIN_PATHS has been set
                     _pluginFiles = GetPluginsInNuGetPluginPaths();
@@ -122,7 +127,14 @@ namespace NuGet.Protocol.Plugins
                     _pluginFiles = GetPluginFiles(filePaths.ToArray(), cancellationToken);
 
                     // Search for .Net tools plugins in PATH
-                    _pluginFiles.AddRange(GetPluginsInPATH() ?? new List<PluginFile>());
+                    if (_pluginFiles != null)
+                    {
+                        _pluginFiles.AddRange(GetPluginsInPATH() ?? new List<PluginFile>());
+                    }
+                    else
+                    {
+                        _pluginFiles = GetPluginsInPATH() ?? new List<PluginFile>();
+                    }
                 }
 
                 var results = new List<PluginDiscoveryResult>();
@@ -179,7 +191,7 @@ namespace NuGet.Protocol.Plugins
         internal List<PluginFile> GetPluginsInNuGetPluginPaths()
         {
             var pluginFiles = new List<PluginFile>();
-            string[] paths = _envVariableNuGetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+            string[] paths = _nuGetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             foreach (var path in paths)
             {
@@ -214,6 +226,7 @@ namespace NuGet.Protocol.Plugins
                             if (IsValidPluginFile(file))
                             {
                                 // .NET SDK recently package signature verification for .NET tools, as a result we expect them to be valid.
+                                // As a result the plugin created here has PluginFileState.Valid.
                                 PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
                                 pluginFiles.Add(pluginFile);
                             }

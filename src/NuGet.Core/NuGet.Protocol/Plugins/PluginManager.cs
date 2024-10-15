@@ -33,7 +33,6 @@ namespace NuGet.Protocol.Plugins
         private IPluginFactory _pluginFactory;
         private ConcurrentDictionary<PluginRequestKey, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
         private ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>> _pluginUtilities;
-        private string _envVariablePluginPaths;
 
         private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
         private Lazy<string> _pluginsCacheDirectoryPath;
@@ -119,7 +118,7 @@ namespace NuGet.Protocol.Plugins
             var pluginCreationResults = new List<PluginCreationResult>();
 
             // Fast path
-            if (source.PackageSource.IsHttp)
+            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable())
             {
                 var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
 
@@ -312,11 +311,7 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ArgumentNullException(nameof(pluginFactoryCreator));
             }
-#if IS_DESKTOP
-            _envVariablePluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
-#else
-            _envVariablePluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
-#endif
+
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
             var idleTimeoutInSeconds = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.IdleTimeout);
@@ -357,12 +352,20 @@ namespace NuGet.Protocol.Plugins
         {
             var verifier = EmbeddedSignatureVerifier.Create();
 
-            return new PluginDiscoverer(_envVariablePluginPaths, verifier);
+            return new PluginDiscoverer(verifier);
         }
 
         private bool IsPluginPossiblyAvailable()
         {
-            return !string.IsNullOrEmpty(_envVariablePluginPaths);
+            string pluginEnvVariable;
+
+#if IS_DESKTOP
+            pluginEnvVariable = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
+#else
+            pluginEnvVariable = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
+#endif
+            pluginEnvVariable ??= EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
+            return !string.IsNullOrEmpty(pluginEnvVariable);
         }
 
         private void OnPluginClosed(object sender, EventArgs e)
