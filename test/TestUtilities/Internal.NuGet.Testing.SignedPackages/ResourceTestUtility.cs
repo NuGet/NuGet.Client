@@ -12,7 +12,13 @@ namespace Internal.NuGet.Testing.SignedPackages
     {
         public static string GetResource(string name, Type type)
         {
-            using (var reader = new StreamReader(type.Assembly.GetManifestResourceStream(name)))
+            using Stream resourceStream = type.Assembly.GetManifestResourceStream(name);
+            if (resourceStream is null)
+            {
+                throw new ArgumentException($"Couldn't find resource '{name}' in assembly {type.Assembly.FullName}");
+            }
+
+            using (var reader = new StreamReader(resourceStream))
             {
                 return reader.ReadToEnd();
             }
@@ -27,7 +33,13 @@ namespace Internal.NuGet.Testing.SignedPackages
 
         public static byte[] GetResourceBytes(string name, Type type)
         {
-            using (var reader = new BinaryReader(type.Assembly.GetManifestResourceStream(name)))
+            using Stream resourceStream = type.Assembly.GetManifestResourceStream(name);
+            if (resourceStream is null)
+            {
+                throw new ArgumentException($"Couldn't find resource '{name}' in assembly {type.Assembly.FullName}");
+            }
+
+            using (var reader = new BinaryReader(resourceStream))
             {
                 return reader.ReadBytes((int)reader.BaseStream.Length);
             }

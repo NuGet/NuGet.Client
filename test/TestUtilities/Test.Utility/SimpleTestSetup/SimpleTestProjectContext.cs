@@ -441,10 +441,10 @@ namespace NuGet.Test.Utility
         public XDocument GetXML()
         {
             var sampleCSProjPath = (Type == ProjectStyle.PackageReference && ToolingVersion15) ?
-                "Test.Utility.compiler.resources.project2.csproj" :
-                "Test.Utility.compiler.resources.project1.csproj";
+                "Internal.NuGet.Testing.SignedPackages.compiler.resources.project2.csproj" :
+                "Internal.NuGet.Testing.SignedPackages.compiler.resources.project1.csproj";
 
-            var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(SimpleTestProjectContext));
+            var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(ResourceTestUtility));
             var xml = XDocument.Parse(s);
 
             //  MSBuildProjectExtensionsPath needs to be set before Microsoft.Common.props is imported, so add a new
