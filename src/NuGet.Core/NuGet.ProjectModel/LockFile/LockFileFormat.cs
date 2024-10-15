@@ -305,7 +305,7 @@ namespace NuGet.ProjectModel
                 if (lockFile.LogMessages.Count > 0)
                 {
                     var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
-                    writer.WritePropertyName(CacheFileProperties.LogsProperty);
+                    writer.WritePropertyName(LogsProperty);
                     WriteLogMessages(writer, lockFile.LogMessages, projectPath);
                 }
             }
