@@ -97,3 +97,34 @@ System.Web.Http.dll
 
 # Ignore third party assemblies because we sign them in a specific location on disk and manually add them to the list
 Lucene.Net.dll
+
+# Assembly XML Documentation isn't needed in the VSIX
+Microsoft.Build.NuGetSdkResolver.xml
+NuGet.Build.Tasks.xml
+NuGet.Commands.xml
+NuGet.Common.xml
+NuGet.Configuration.xml
+NuGet.Console.xml
+NuGet.Credentials.xml
+NuGet.DependencyResolver.Core.xml
+NuGet.Frameworks.xml
+NuGet.Indexing.xml
+NuGet.LibraryModel.xml
+NuGet.PackageManagement.PowerShellCmdlets.xml
+NuGet.PackageManagement.UI.xml
+NuGet.PackageManagement.VisualStudio.xml
+NuGet.PackageManagement.xml
+NuGet.Packaging.xml
+NuGet.ProjectModel.xml
+NuGet.Protocol.xml
+NuGet.Resolver.xml
+NuGet.SolutionRestoreManager.xml
+NuGet.Tools.xml
+NuGet.Versioning.xml
+NuGet.VisualStudio.Common.xml
+NuGet.VisualStudio.Contracts.xml
+NuGet.VisualStudio.Implementation.xml
+NuGet.VisualStudio.Internal.Contracts.xml
+NuGet.VisualStudio.Interop.xml
+NuGet.VisualStudio.OnlineEnvironment.Client.xml
+NuGet.VisualStudio.xml
