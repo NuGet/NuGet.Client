@@ -102,12 +102,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET Framework 4.7.2) Msbuild.Integration.Test
+    displayName: 
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET Framework 4.7.2) Msbuild.Integration.Test
+        displayName: Msbuild.Integration.Test on Windows (.NET Framework 4.7.2)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -120,12 +120,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET Framework 4.7.2) NuGet.CommandLine.FuncTest
+    displayName: NuGet.CommandLine.FuncTest on Windows (.NET Framework 4.7.2)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET Framework 4.7.2) NuGet.CommandLine.FuncTest
+        displayName: NuGet.CommandLine.FuncTest on Windows (.NET Framework 4.7.2)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -138,12 +138,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET Framework 4.7.2) NuGet.CommandLine.Test
+    displayName: NuGet.CommandLine.Test on Windows (.NET Framework 4.7.2)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET Framework 4.7.2) NuGet.CommandLine.Test
+        displayName: NuGet.CommandLine.Test on Windows (.NET Framework 4.7.2)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -158,12 +158,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET Framework 4.7.2) NuGet.Packaging.FuncTest
+    displayName: NuGet.Packaging.FuncTest on Windows (.NET Framework 4.7.2)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET Framework 4.7.2) NuGet.Packaging.FuncTest
+        displayName: NuGet.Packaging.FuncTest on Windows (.NET Framework 4.7.2)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -176,12 +176,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET 8.0) Dotnet.Integration.Test
+    displayName: Dotnet.Integration.Test on Windows (.NET 8.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET 8.0) Dotnet.Integration.Test
+        displayName: Dotnet.Integration.Test on Windows (.NET 8.0)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
@@ -195,12 +195,12 @@ stages:
 
 - ${{ if eq(parameters.RunFunctionalTestsOnWindows, true) }}:
   - stage:
-    displayName: Functional Tests on Windows (.NET 8.0) NuGet.Packaging.FuncTest
+    displayName: NuGet.Packaging.FuncTest on Windows (.NET 8.0)
     dependsOn: []
     jobs:
     - template: pr.job.yml
       parameters:
-        displayName: Functional Tests on Windows (.NET 8.0) NuGet.Packaging.FuncTest
+        displayName: NuGet.Packaging.FuncTest on Windows (.NET 8.0)
         osName: Windows
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           agentPool: NetCore-Public
