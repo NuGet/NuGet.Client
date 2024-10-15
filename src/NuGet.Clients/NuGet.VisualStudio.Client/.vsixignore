@@ -123,3 +123,6 @@ NuGet.ProjectModel.resources.dll
 NuGet.Protocol.resources.dll
 NuGet.Resolver.resources.dll
 NuGet.Versioning.resources.dll
+
+# Ignore the Lucene.Net.dll that the VS SDK adds because this project will manually add the signed one.
+Lucene.Net.dll

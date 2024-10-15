@@ -32,7 +32,6 @@ NuGet.Resolver.dll
 NuGet.Versioning.dll
 
 # 3rd party dlls to keep
-Lucene.Net.dll
 Microsoft.Extensions.FileProviders.Abstractions.dll
 Microsoft.Extensions.FileSystemGlobbing.dll
 Microsoft.Extensions.Primitives.dll

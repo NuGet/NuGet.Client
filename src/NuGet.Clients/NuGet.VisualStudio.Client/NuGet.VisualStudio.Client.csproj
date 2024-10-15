@@ -338,9 +338,7 @@
       <MissingIgnoredAssemblies Include="@(IgnoreVsixFilesList)" Exclude="@(AllVsixAssemblies)" />
       <VSIXSourceItem Remove="@(SuppressPackaging->'%(SourceFile)')" />
       <VSIXSourceItem Remove="@(AllVsixSymbols->'%(SourceFile)')" />
-      <!-- Don't get Lucene.Net from a project reference -->
-      <VSIXSourceItem Remove="@(VSIXSourceItem)" Condition="'%(Filename)%(Extension)' == 'Lucene.Net.dll' And '%(VSIXSourceItem.ReferenceSourceTarget)' == 'ProjectReference'" />
-      
+
       <!-- Remove resource assemblies because they will be added later by GetLocalizedDlls -->
       <VSIXSourceItem Remove="@(VSIXSourceItem)" Condition="$([System.String]::new('%(Identity)').EndsWith('.resources.dll'))" />
     </ItemGroup>
