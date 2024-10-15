@@ -9,6 +9,7 @@
   xmlns:imagingTheme="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
+  DataContextChanged="UserControl_DataContextChanged"
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">
@@ -24,11 +25,12 @@
       x:Name="descriptionMarkdownPreview"
       x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
+      Visibility="{Binding Path=ErrorLoadingReadme, Mode=OneWay, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
     />
     <TextBlock
       TextWrapping="Wrap"
       Text="{x:Static nuget:Resources.Error_UnableToLoadReadme}"
-      Visibility="{Binding Path=IsErrorWithReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
+      Visibility="{Binding Path=ErrorLoadingReadme, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}"
       />
   </Grid>
 </UserControl>

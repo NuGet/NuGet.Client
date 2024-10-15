@@ -149,9 +149,8 @@ namespace NuGet.PackageManagement.UI
 
             _nugetPackageFileService?.Dispose();
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
-            _packageDetail._packageMetadataControl.InitializeReadmePreviewViewModel(_nugetPackageFileService);
+            await _packageDetail._packageMetadataControl.InitializeReadmePreviewViewModel(_nugetPackageFileService, _topPanel.Filter);
             _packageDetail._packageMetadataControl.SetReadmeTabVisibility(isReadmeTabEnabled ? Visibility.Visible : Visibility.Collapsed);
-            _packageDetail._packageMetadataControl._packageMetadataReadmeControl.OnTabFilterChange(_topPanel.Filter);
             InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
@@ -1284,7 +1283,6 @@ namespace NuGet.PackageManagement.UI
                 // Collapse the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
-                _packageDetail._packageMetadataControl._packageMetadataReadmeControl.OnTabFilterChange(_topPanel.Filter);
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
@@ -1295,6 +1293,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
+                    await _packageDetail._packageMetadataControl._packageMetadataReadmeControl.ReadmeViewModel.SetCurrentFilter(_topPanel.Filter);
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
