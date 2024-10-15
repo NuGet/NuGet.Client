@@ -360,9 +360,7 @@ namespace NuGet.Protocol.Plugins
 
         private PluginDiscoverer InitializeDiscoverer()
         {
-            var verifier = EmbeddedSignatureVerifier.Create();
-
-            return new PluginDiscoverer(_rawPluginPaths, verifier);
+            return new PluginDiscoverer(_rawPluginPaths);
         }
 
         private bool IsPluginPossiblyAvailable()
