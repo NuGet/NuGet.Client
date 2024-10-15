@@ -15,16 +15,16 @@ namespace NuGet.PackageManagement.UI
 {
 
     /// <summary>
-    /// Interaction logic for PackageMetadataReadmeControl.xaml
+    /// Interaction logic for PackageReadmeControl.xaml
     /// </summary>
-    public partial class PackageMetadataReadmeControl : UserControl, IDisposable
+    public partial class PackageReadmeControl : UserControl, IDisposable
     {
 #pragma warning disable CS0618 // Type or member is obsolete
         private IMarkdownPreview _markdownPreview;
 #pragma warning restore CS0618 // Type or member is obsolete
         private bool _disposed = false;
 
-        public PackageMetadataReadmeControl()
+        public PackageReadmeControl()
         {
             InitializeComponent();
 #pragma warning disable CS0618 // Type or member is obsolete

@@ -1,15 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.ComponentModel;
+using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.VisualStudio.Shell;
-using NuGet.PackageManagement.UI.ViewModels;
-using NuGet.VisualStudio.Internal.Contracts;
+using System.Windows.Documents;
+using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -17,137 +15,73 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageMetadataControl.xaml
     /// </summary>
-    public partial class PackageMetadataControl : UserControl, IDisposable
+    public partial class PackageMetadataControl : UserControl
     {
-        private bool _disposed = false;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-
-        private TabItem SelectedTabItem
-        {
-            get
-            {
-                return tabsPackageDetails.SelectedItem as TabItem;
-            }
-            set
-            {
-                tabsPackageDetails.SelectedItem = value;
-            }
-        }
-
-        internal PackageMetadataTab SelectedTab { get => (PackageMetadataTab)SelectedTabItem?.Tag; }
-
-
         public PackageMetadataControl()
         {
             InitializeComponent();
+
             Visibility = Visibility.Collapsed;
 
             DataContextChanged += PackageMetadataControl_DataContextChanged;
+        }
+
+        private void ViewLicense_Click(object sender, RoutedEventArgs e)
+        {
             if (DataContext is DetailControlModel detailControlModel)
             {
-                detailControlModel.PropertyChanged += ContextPropertyChange;
-            }
-        }
-
-        private void ContextPropertyChange(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(DetailControlModel.PackageMetadata))
-            {
-                ThreadHelper.JoinableTaskFactory.Run(async () =>
+                var metadata = detailControlModel.PackageMetadata;
+                var window = new LicenseFileWindow()
                 {
-                    var newToken = new CancellationTokenSource();
-                    var oldCts = Interlocked.Exchange(ref _cancellationTokenSource, newToken);
-                    oldCts?.Cancel();
-                    oldCts?.Dispose();
-                    await ReadmePreviewViewModel?.SetPackageMetadataAsync((DataContext as DetailControlModel).PackageMetadata, _cancellationTokenSource.Token);
-                });
-            }
-        }
+                    DataContext = new LicenseFileData
+                    {
+                        LicenseHeader = string.Format(CultureInfo.CurrentCulture, UI.Resources.WindowTitle_LicenseFileWindow, metadata.Id),
+                        LicenseText = new FlowDocument(new Paragraph(new Run(UI.Resources.LicenseFile_Loading)))
+                    }
+                };
 
-        internal async Task InitializeReadmePreviewViewModel(INuGetPackageFileService nugetPackageFileService, ItemFilter currentFilter)
-        {
-            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter);
-            _packageMetadataReadmeControl.DataContext = ReadmePreviewViewModel;
-            await ReadmePreviewViewModel.SetPackageMetadataAsync((DataContext as DetailControlModel)?.PackageMetadata, _cancellationTokenSource.Token);
-            ReadmePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
-        }
-
-        private void ReadMePreviewViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (ReadmePreviewViewModel is not null
-                && e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
-            {
-                SetReadmeTabVisibility(!string.IsNullOrWhiteSpace(ReadmePreviewViewModel.ReadmeMarkdown) ? Visibility.Visible : Visibility.Collapsed);
-                if (string.IsNullOrWhiteSpace(ReadmePreviewViewModel.ReadmeMarkdown))
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    SelectTab(PackageMetadataTab.PackageDetails);
-                }
+                    string content = await PackageLicenseUtilities.GetEmbeddedLicenseAsync(new Packaging.Core.PackageIdentity(metadata.Id, metadata.Version), CancellationToken.None);
+
+                    var flowDoc = new FlowDocument();
+                    flowDoc.Blocks.AddRange(PackageLicenseUtilities.GenerateParagraphs(content));
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    (window.DataContext as LicenseFileData).LicenseText = flowDoc;
+                }).PostOnFailure(nameof(PackageDetailsTabControl), nameof(ViewLicense_Click));
+
+                window.ShowModal();
             }
-        }
-
-        public ReadmePreviewViewModel ReadmePreviewViewModel { get; set; }
-
-        public void SelectTab(PackageMetadataTab selectedTab)
-        {
-            switch (selectedTab)
-            {
-                case PackageMetadataTab.PackageDetails:
-                    SelectedTabItem = tabPackageDetails;
-                    break;
-                case PackageMetadataTab.Readme:
-                default:
-                    SelectedTabItem = tabReadMe;
-                    break;
-            }
-        }
-
-        public void SetReadmeTabVisibility(Visibility visibility)
-        {
-            tabReadMe.Visibility = visibility;
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            if (disposing)
-            {
-                _cancellationTokenSource.Dispose();
-                _packageMetadataReadmeControl?.Dispose();
-                ReadmePreviewViewModel.PropertyChanged -= ReadMePreviewViewModel_PropertyChanged;
-
-                if (DataContext is DetailControlModel detailControlModel)
-                {
-                    detailControlModel.PropertyChanged -= ContextPropertyChange;
-                }
-
-            }
-            _disposed = true;
         }
 
         private void PackageMetadataControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.OldValue is DetailControlModel oldDetailControlModel)
-            {
-                oldDetailControlModel.PropertyChanged -= ContextPropertyChange;
-            }
-
-            if (DataContext is DetailControlModel detailControlModel)
+            if (DataContext is DetailControlModel)
             {
                 Visibility = Visibility.Visible;
-                detailControlModel.PropertyChanged += ContextPropertyChange;
             }
             else
             {
                 Visibility = Visibility.Collapsed;
+            }
+        }
+
+        // capture each item as it is selected, so we can unselect when treeview lostfocus
+        private void OnItemSelected(object sender, RoutedEventArgs e)
+        {
+            _dependencies.Tag = e.OriginalSource;
+        }
+
+        private void TreeView_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // hide focus highlight when treeview lostfocus
+            if (_dependencies.SelectedItem != null)
+            {
+                TreeViewItem selectedTVI = _dependencies.Tag as TreeViewItem;
+                if (selectedTVI != null)
+                {
+                    selectedTVI.IsSelected = false;
+                }
             }
         }
     }

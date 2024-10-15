@@ -149,8 +149,8 @@ namespace NuGet.PackageManagement.UI
 
             _nugetPackageFileService?.Dispose();
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
-            await _packageDetail._packageMetadataControl.InitializeReadmePreviewViewModel(_nugetPackageFileService, _topPanel.Filter);
-            _packageDetail._packageMetadataControl.SetReadmeTabVisibility(isReadmeTabEnabled ? Visibility.Visible : Visibility.Collapsed);
+            await _packageDetail._packageDetailsTabControl.InitializeReadmePreviewViewModel(_nugetPackageFileService, _topPanel.Filter);
+            _packageDetail._packageDetailsTabControl.SetReadmeTabVisibility(isReadmeTabEnabled ? Visibility.Visible : Visibility.Collapsed);
             InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
@@ -479,7 +479,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     settings.SelectedPackageMetadataTab = PackageMetadataTab.PackageDetails;
                 }
-                _packageDetail._packageMetadataControl.SelectTab(settings.SelectedPackageMetadataTab);
+                _packageDetail._packageDetailsTabControl.SelectTab(settings.SelectedPackageMetadataTab);
             }
         }
 
@@ -702,7 +702,7 @@ namespace NuGet.PackageManagement.UI
                 IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true,
                 SelectedFilter = _topPanel.Filter,
                 OptionsExpanded = _packageDetail._optionsControl.IsExpanded,
-                SelectedPackageMetadataTab = _packageDetail._packageMetadataControl.SelectedTab
+                SelectedPackageMetadataTab = _packageDetail._packageDetailsTabControl.SelectedTab
             };
             _packageDetail._solutionView.SaveSettings(settings);
 
@@ -1293,7 +1293,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await _packageDetail._packageMetadataControl._packageMetadataReadmeControl.ReadmeViewModel.SetCurrentFilter(_topPanel.Filter);
+                    await _packageDetail._packageDetailsTabControl._packageReadmeControl.ReadmeViewModel.SetCurrentFilter(_topPanel.Filter);
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
