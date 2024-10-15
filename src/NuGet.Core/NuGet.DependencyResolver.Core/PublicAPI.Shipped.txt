@@ -1,10 +1,10 @@
 #nullable enable
 NuGet.DependencyResolver.AnalyzeResult<TItem>
 NuGet.DependencyResolver.AnalyzeResult<TItem>.AnalyzeResult() -> void
-~NuGet.DependencyResolver.AnalyzeResult<TItem>.Combine(NuGet.DependencyResolver.AnalyzeResult<TItem> result) -> void
-~NuGet.DependencyResolver.AnalyzeResult<TItem>.Cycles.get -> System.Collections.Generic.List<NuGet.DependencyResolver.GraphNode<TItem>>
-~NuGet.DependencyResolver.AnalyzeResult<TItem>.Downgrades.get -> System.Collections.Generic.List<NuGet.DependencyResolver.DowngradeResult<TItem>>
-~NuGet.DependencyResolver.AnalyzeResult<TItem>.VersionConflicts.get -> System.Collections.Generic.List<NuGet.DependencyResolver.VersionConflictResult<TItem>>
+NuGet.DependencyResolver.AnalyzeResult<TItem>.Combine(NuGet.DependencyResolver.AnalyzeResult<TItem>! result) -> void
+NuGet.DependencyResolver.AnalyzeResult<TItem>.Cycles.get -> System.Collections.Generic.List<NuGet.DependencyResolver.GraphNode<TItem>!>!
+NuGet.DependencyResolver.AnalyzeResult<TItem>.Downgrades.get -> System.Collections.Generic.List<NuGet.DependencyResolver.DowngradeResult<TItem>!>!
+NuGet.DependencyResolver.AnalyzeResult<TItem>.VersionConflicts.get -> System.Collections.Generic.List<NuGet.DependencyResolver.VersionConflictResult<TItem>!>!
 NuGet.DependencyResolver.Disposition
 NuGet.DependencyResolver.Disposition.Acceptable = 0 -> NuGet.DependencyResolver.Disposition
 NuGet.DependencyResolver.Disposition.Accepted = 2 -> NuGet.DependencyResolver.Disposition
@@ -90,7 +90,6 @@ NuGet.DependencyResolver.LockFileCacheKey
 NuGet.DependencyResolver.PackagingUtility
 NuGet.DependencyResolver.RemoteDependencyWalker
 ~NuGet.DependencyResolver.RemoteDependencyWalker.RemoteDependencyWalker(NuGet.DependencyResolver.RemoteWalkContext context) -> void
-~NuGet.DependencyResolver.RemoteDependencyWalker.WalkAsync(NuGet.LibraryModel.LibraryRange library, NuGet.Frameworks.NuGetFramework framework, string runtimeIdentifier, NuGet.RuntimeModel.RuntimeGraph runtimeGraph, bool recursive) -> System.Threading.Tasks.Task<NuGet.DependencyResolver.GraphNode<NuGet.DependencyResolver.RemoteResolveResult>>
 NuGet.DependencyResolver.RemoteMatch
 ~NuGet.DependencyResolver.RemoteMatch.Equals(NuGet.DependencyResolver.RemoteMatch other) -> bool
 ~NuGet.DependencyResolver.RemoteMatch.Library.get -> NuGet.LibraryModel.LibraryIdentity

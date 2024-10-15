@@ -237,6 +237,7 @@ namespace NuGet.Commands
                     AddPackageReferences(result, items, isCentralPackageManagementEnabled);
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
+                    AddPrunedPackageReferences(result, items);
 
                     // Store the original framework strings for msbuild conditionals
                     result.TargetFrameworks.ForEach(tfi =>
@@ -687,6 +688,43 @@ namespace NuGet.Commands
             if (isCpvmEnabled)
             {
                 AddCentralPackageVersions(spec, items);
+            }
+        }
+
+        internal static void AddPrunedPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            foreach (var item in GetItemByType(items, "PrunedPackageReference"))
+            {
+                var id = item.GetProperty("Id");
+                var versionString = item.GetProperty("VersionRange");
+
+                if (string.IsNullOrEmpty(versionString))
+                {
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, "PrunedPackageReference is missing a version: {0}.", id));
+                }
+
+                NuGetVersion version = NuGetVersion.Parse(versionString);
+                HashSet<string> tfms = GetFrameworks(item);
+
+                if (tfms.Count > 0)
+                {
+                    foreach (var frameworkInfo in spec.TargetFrameworks)
+                    {
+                        AddPackageToPrune(id, version, frameworkInfo);
+                    }
+                }
+                else
+                {
+                    foreach (var targetAlias in tfms)
+                    {
+                        var frameworkInfo = spec.TargetFrameworks.Single(e => e.TargetAlias.Equals(targetAlias, StringComparison.Ordinal));
+                        AddPackageToPrune(id, version, frameworkInfo);
+                    }
+                }
+            }
+            static void AddPackageToPrune(string id, NuGetVersion version, TargetFrameworkInformation frameworkInfo)
+            {
+                frameworkInfo.PackagesToPrune.Add(id, new VersionRange(maxVersion: version, includeMaxVersion: true));
             }
         }
 

@@ -1,1 +1,4 @@
 #nullable enable
+NuGet.ProjectModel.TargetFrameworkInformation.EnablePackagePruning.get -> bool
+NuGet.ProjectModel.TargetFrameworkInformation.EnablePackagePruning.set -> void
+~NuGet.ProjectModel.TargetFrameworkInformation.PackagesToPrune.get -> System.Collections.Generic.IDictionary<string, NuGet.Versioning.VersionRange>

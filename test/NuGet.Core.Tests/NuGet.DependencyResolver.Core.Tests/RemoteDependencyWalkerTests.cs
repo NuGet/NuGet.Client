@@ -2192,7 +2192,7 @@ namespace NuGet.DependencyResolver.Tests
                 VersionRange = new VersionRange(new NuGetVersion("1.0"))
             };
 
-            return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
+            return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, prunablePackages: new());
 
         }
 

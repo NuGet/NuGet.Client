@@ -26,17 +26,21 @@ namespace NuGet.DependencyResolver
             _context = context;
         }
 
-        public async Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
+        public async Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, Dictionary<string, VersionRange> prunablePackages)
         {
+            if (library == null) throw new ArgumentNullException(nameof(library));
+            if (framework == null) throw new ArgumentNullException(nameof(framework));
+
             var transitiveCentralPackageVersions = new TransitiveCentralPackageVersions();
             var rootNode = await CreateGraphNodeAsync(
                 libraryRange: library,
                 framework: framework,
                 runtimeName: runtimeIdentifier,
                 runtimeGraph: runtimeGraph,
-                predicate: _ => (recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, null),
+                predicate: _ => (DependencyResult.Acceptable, null),
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions,
+                prunablePackages: prunablePackages,
                 hasParentNodes: false);
 
             // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
@@ -57,7 +61,7 @@ namespace NuGet.DependencyResolver
                     // as the nodes are created more parents can be added for a single central transitive node
                     // keep the list of the nodes created and add the parents's references at the end
                     // the parent references are needed to keep track of possible rejected parents
-                    transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependency, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions));
+                    transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependency, framework, runtimeIdentifier, runtimeGraph, prunablePackages, transitiveCentralPackageVersions));
                 }
             }
             transitiveCentralPackageVersionNodes.ForEach(node => transitiveCentralPackageVersions.AddParentsToNode(node));
@@ -73,6 +77,7 @@ namespace NuGet.DependencyResolver
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult> outerEdge,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions,
+            Dictionary<string, VersionRange> prunablePackages,
             bool hasParentNodes)
 
         {
@@ -87,13 +92,15 @@ namespace NuGet.DependencyResolver
             {
                 EvaluateRuntimeDependencies(ref libraryRange, runtimeName, runtimeGraph, ref rootRuntimeDependencies);
             }
-
+            // TODO NK - Here. // Do we skip it completely? How I pretend it's skipped.
             var rootItem = await ResolverUtility.FindLibraryCachedAsync(
                 libraryRange,
                 framework,
                 runtimeName,
                 _context,
                 CancellationToken.None);
+
+            // Here we have the package. We need to prune the dependencies.
 
             bool rootHasInnerNodes = (rootItem.Data.Dependencies.Count + (rootRuntimeDependencies == null ? 0 : rootRuntimeDependencies.Count)) > 0;
             GraphNode<RemoteResolveResult> rootNode = new GraphNode<RemoteResolveResult>(libraryRange, rootHasInnerNodes, hasParentNodes)
@@ -137,6 +144,15 @@ namespace NuGet.DependencyResolver
                             continue;
                         }
 
+                        if (prunablePackages.TryGetValue(dependency.Name, out VersionRange prunableVersion))
+                        {
+                            if (dependency.LibraryRange.VersionRange.Satisfies(prunableVersion.MaxVersion))
+                            {
+                                _context.Logger.LogDebug($"Pruning {dependency.Name} {dependency.LibraryRange.VersionRange.OriginalString}. Max prunable version: {prunableVersion.MaxVersion}"); //TODO NK - This will double log.
+                                continue;
+                            }
+                        }
+
                         // Skip dependencies if the dependency edge has 'all' excluded and
                         // the node is not a direct dependency.
                         if (currentOuterEdge == null
@@ -164,7 +180,7 @@ namespace NuGet.DependencyResolver
                                 {
                                     EvaluateRuntimeDependencies(ref dependencyLibraryRange, runtimeName, runtimeGraph, ref runtimeDependencies);
                                 }
-
+                                // TODO NK - here
                                 var newGraphItemTask = ResolverUtility.FindLibraryCachedAsync(
                                     dependencyLibraryRange,
                                     framework,
@@ -553,6 +569,7 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeIdentifier,
             RuntimeGraph runtimeGraph,
+            Dictionary<string, VersionRange> prunablePackages,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             GraphNode<RemoteResolveResult> node = await CreateGraphNodeAsync(
@@ -563,6 +580,7 @@ namespace NuGet.DependencyResolver
                     predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions,
+                    prunablePackages: prunablePackages,
                     hasParentNodes: true);
 
             node.OuterNode = rootNode;
