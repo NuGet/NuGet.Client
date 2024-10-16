@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         [InlineData(ItemFilter.Installed)]
         [InlineData(ItemFilter.Consolidate)]
         [InlineData(ItemFilter.UpdatesAvailable)]
-        public async Task SetCurrentFilter_ItemFilterRenderingLocaReadme_ReadmeReturned(ItemFilter filter)
+        public async Task SetCurrentFilter_ItemFilterRenderingLocalReadme_ReadmeReturned(ItemFilter filter)
         {
             //Arrange
             var readmeContents = "readme contents";
@@ -146,7 +146,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_FileNotFound_Null()
+        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_FileNotFound_NoReadmeFoundTextReturned()
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
