@@ -280,7 +280,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (string.IsNullOrWhiteSpace(clonedResult.PackagePath))
             {
-                clonedResult.PackagePath = completed.Select(m => (m as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackagePath).FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+                clonedResult.PackagePath = completed.Select(m => (m as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackagePath).FirstOrDefault(uri => !string.IsNullOrWhiteSpace(uri));
             }
 
             return clonedResult;
