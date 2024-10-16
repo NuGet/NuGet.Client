@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _rawReadme = string.Empty;
             _packageMetadata = null;
             Header = Resources.Label_Readme_Tab;
-            Visible = true;
+            IsVisible = true;
             PackageMetadataTab = PackageMetadataTab.Readme;
         }
 

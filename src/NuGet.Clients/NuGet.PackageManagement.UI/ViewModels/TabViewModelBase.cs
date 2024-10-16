@@ -12,13 +12,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
-        private bool _visible;
-        public bool Visible
+        private bool _isVisible;
+        public bool IsVisible
         {
-            get => _visible;
+            get => _isVisible;
             set
             {
-                SetAndRaisePropertyChanged(ref _visible, value);
+                SetAndRaisePropertyChanged(ref _isVisible, value);
             }
         }
 

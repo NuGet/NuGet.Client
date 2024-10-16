@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public void Initialize(DetailControlModel detailControlModel, INuGetPackageFileService nugetPackageFileService, ItemFilter currentFilter, bool readmeTabAvailable)
         {
             ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter);
-            ReadmePreviewViewModel.Visible = readmeTabAvailable;
+            ReadmePreviewViewModel.IsVisible = readmeTabAvailable;
             DetailControlModel = detailControlModel;
             _readmeTabEnabled = readmeTabAvailable;
 
@@ -45,8 +45,8 @@ namespace NuGet.PackageManagement.UI.ViewModels
             if (ReadmePreviewViewModel is not null
                 && e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
-                Tabs[0].Visible = !string.IsNullOrWhiteSpace(ReadmePreviewViewModel.ReadmeMarkdown);
-                if (!Tabs[0].Visible)
+                Tabs[0].IsVisible = !string.IsNullOrWhiteSpace(ReadmePreviewViewModel.ReadmeMarkdown);
+                if (!Tabs[0].IsVisible)
                 {
                     SelectedTab = Tabs[1];
                 }

@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
             _versions = new ItemsChangeObservableCollection<DisplayVersion>();
 
             Header = Resources.Label_PackageDetails;
-            Visible = true;
+            IsVisible = true;
             PackageMetadataTab = PackageMetadataTab.PackageDetails;
         }
 
