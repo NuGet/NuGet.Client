@@ -7,7 +7,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Test.Utility;
 
 namespace NuGet.Packaging.FuncTest.SigningTests

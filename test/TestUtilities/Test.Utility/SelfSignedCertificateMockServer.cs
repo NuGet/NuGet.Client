@@ -12,7 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Internal.NuGet.Testing.SignedPackages.TestServer;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.TestServer;
 using Newtonsoft.Json;
 using Xunit.Abstractions;
 

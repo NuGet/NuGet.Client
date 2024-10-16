@@ -9,7 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;

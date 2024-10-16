@@ -7,7 +7,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;

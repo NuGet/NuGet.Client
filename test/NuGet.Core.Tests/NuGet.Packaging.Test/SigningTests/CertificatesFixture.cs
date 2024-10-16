@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Packaging.Signing;
 
 namespace NuGet.Packaging.Test

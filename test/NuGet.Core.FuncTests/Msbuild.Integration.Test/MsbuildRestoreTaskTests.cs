@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
-using Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;

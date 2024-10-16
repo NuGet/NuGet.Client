@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;

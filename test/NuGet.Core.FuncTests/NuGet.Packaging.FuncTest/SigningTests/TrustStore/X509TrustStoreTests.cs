@@ -4,7 +4,7 @@
 #if IS_SIGNING_SUPPORTED
 
 using System;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;

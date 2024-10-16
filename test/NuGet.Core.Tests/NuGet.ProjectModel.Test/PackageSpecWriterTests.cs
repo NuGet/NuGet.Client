@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -179,7 +179,7 @@ namespace NuGet.ProjectModel.Test
         public void Write_ReadWriteWarningProperties()
         {
             // Arrange
-            var json = @"{  
+            var json = @"{
                             ""restore"": {
     ""projectUniqueName"": ""projectUniqueName"",
     ""projectName"": ""projectName"",
@@ -564,7 +564,7 @@ namespace NuGet.ProjectModel.Test
                                 ""autoReferenced"": true
                             }
                         },
-                        ""runtimeIdentifierGraphPath"": ""path\\to\\sdk\\3.0.100\\runtime.json"" 
+                        ""runtimeIdentifierGraphPath"": ""path\\to\\sdk\\3.0.100\\runtime.json""
                     },
                     ""netcoreapp3.1"": {
                         ""dependencies"": {
@@ -573,7 +573,7 @@ namespace NuGet.ProjectModel.Test
                                 ""autoReferenced"": true
                             }
                         },
-                        ""runtimeIdentifierGraphPath"": ""path\\to\\sdk\\3.1.100\\runtime.json"" 
+                        ""runtimeIdentifierGraphPath"": ""path\\to\\sdk\\3.1.100\\runtime.json""
                     }
                   }
                 }";
@@ -648,7 +648,7 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void RoundTripTargetFrameworkAliases()
         {
-            var json = @"{  
+            var json = @"{
                         ""restore"": {
                         ""projectUniqueName"": ""projectUniqueName"",
                         ""projectName"": ""projectName"",
@@ -785,7 +785,7 @@ namespace NuGet.ProjectModel.Test
         public void RestoreMetadataWithMacros_RoundTrips()
         {
             // Arrange
-            var json = @"{  
+            var json = @"{
                             ""restore"": {
     ""projectUniqueName"": ""C:\\users\\me\\source\\code\\project.csproj"",
     ""projectName"": ""project"",

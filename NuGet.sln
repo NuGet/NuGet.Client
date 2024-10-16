@@ -341,7 +341,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ensure-nupkg-dependencies-o
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tests.Apex.Daily", "test\NuGet.Tests.Apex\NuGet.Tests.Apex.Daily\NuGet.Tests.Apex.Daily.csproj", "{9DD99D1D-6C9A-40BF-A650-3F14AA8B1275}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Internal.NuGet.Testing.SignedPackages", "test\TestUtilities\Internal.NuGet.Testing.SignedPackages\Internal.NuGet.Testing.SignedPackages.csproj", "{E41384AA-ED2D-4251-A571-F5C924CE2913}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Internal.NuGet.Testing.SignedPackages", "test\TestUtilities\Microsoft.Internal.NuGet.Testing.SignedPackages\Microsoft.Internal.NuGet.Testing.SignedPackages.csproj", "{E41384AA-ED2D-4251-A571-F5C924CE2913}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

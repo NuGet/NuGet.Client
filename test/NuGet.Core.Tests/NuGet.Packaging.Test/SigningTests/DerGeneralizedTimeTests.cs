@@ -3,7 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Packaging.Signing.DerEncoding;
 using Xunit;
 

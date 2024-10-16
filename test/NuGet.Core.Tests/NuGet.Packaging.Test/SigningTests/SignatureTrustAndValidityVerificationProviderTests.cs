@@ -10,7 +10,7 @@ using Test.Utility;
 using Xunit;
 
 #if IS_SIGNING_SUPPORTED
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 #endif
 
 namespace NuGet.Packaging.Test

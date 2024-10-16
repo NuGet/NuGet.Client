@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
 using NuGet.Configuration;
 using NuGet.Test.Utility;

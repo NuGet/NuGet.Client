@@ -3,7 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 
 namespace NuGet.Commands.Test
 {

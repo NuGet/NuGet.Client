@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 #if IS_SIGNING_SUPPORTED
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 #endif
 using Moq;
 using NuGet.Common;

@@ -33,7 +33,7 @@
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Commands\NuGet.Commands.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Resolver\NuGet.Resolver.csproj" />
     <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
-   <ProjectReference Include="..\Internal.NuGet.Testing.SignedPackages\Internal.NuGet.Testing.SignedPackages.csproj" />
+    <ProjectReference Include="..\Microsoft.Internal.NuGet.Testing.SignedPackages\Microsoft.Internal.NuGet.Testing.SignedPackages.csproj" />
   </ItemGroup>
 
   <ItemGroup>

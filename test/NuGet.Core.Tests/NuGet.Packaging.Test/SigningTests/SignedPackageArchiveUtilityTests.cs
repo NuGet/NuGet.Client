@@ -9,7 +9,7 @@ using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Xunit;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 
 
 #if IS_SIGNING_SUPPORTED

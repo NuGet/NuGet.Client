@@ -4,7 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.XPlat;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;

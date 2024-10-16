@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 
 namespace Dotnet.Integration.Test
 {
-    using X509StorePurpose = Internal.NuGet.Testing.SignedPackages.X509StorePurpose;
-
     public sealed class X509StoreCertificate : IX509StoreCertificate, IDisposable
     {
         private bool _isDisposed;

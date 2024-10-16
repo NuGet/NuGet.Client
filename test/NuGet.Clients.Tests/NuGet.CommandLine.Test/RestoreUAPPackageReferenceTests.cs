@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.ProjectModel;

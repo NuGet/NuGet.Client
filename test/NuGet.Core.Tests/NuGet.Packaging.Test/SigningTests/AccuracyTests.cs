@@ -8,7 +8,7 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    using Asn1Tags = Internal.NuGet.Testing.SignedPackages.Asn1.Asn1Tags;
+    using Asn1Tags = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.Asn1Tags;
 
     public class AccuracyTests
     {

@@ -6,11 +6,11 @@ using System.Formats.Asn1;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Xunit;
 using IssuerSerial = NuGet.Packaging.Signing.IssuerSerial;
-using TestGeneralName = Internal.NuGet.Testing.SignedPackages.Asn1.GeneralName;
-using TestIssuerSerial = Internal.NuGet.Testing.SignedPackages.Asn1.IssuerSerial;
+using TestGeneralName = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.GeneralName;
+using TestIssuerSerial = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.IssuerSerial;
 
 namespace NuGet.Packaging.Test
 {

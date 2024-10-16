@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Test.Utility;
 
 namespace NuGet.Signing.CrossFramework.Test

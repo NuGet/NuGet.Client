@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Internal.NuGet.Testing.SignedPackages.ChildProcess;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
@@ -121,7 +121,7 @@ namespace Dotnet.Integration.Test
 
                 string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>net46</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -175,7 +175,7 @@ namespace Dotnet.Integration.Test
 
                 string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>net46</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -227,7 +227,7 @@ namespace Dotnet.Integration.Test
 
                 string projectContent =
 @$"<Project  Sdk=""Microsoft.NET.Sdk"">
-<PropertyGroup>                   
+<PropertyGroup>
 	<TargetFramework>net46</TargetFramework>
 	</PropertyGroup>
     <ItemGroup>
@@ -488,7 +488,7 @@ namespace Dotnet.Integration.Test
                     $"restore {projectA.ProjectName}.csproj",
                     testOutputHelper: _testOutputHelper);
 
-                //the assets file should generate 4 sections in Targets: 1 for TFM only , and 3 for TFM + RID combinations 
+                //the assets file should generate 4 sections in Targets: 1 for TFM only , and 3 for TFM + RID combinations
                 var assetsFile = projectA.AssetsFile;
                 Assert.Equal(4, assetsFile.Targets.Count);
 

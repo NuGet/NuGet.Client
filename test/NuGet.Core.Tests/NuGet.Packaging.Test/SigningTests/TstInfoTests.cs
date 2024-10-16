@@ -9,14 +9,14 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 using Xunit;
-using TestAccuracy = Internal.NuGet.Testing.SignedPackages.Asn1.Accuracy;
-using TestAlgorithmIdentifier = Internal.NuGet.Testing.SignedPackages.Asn1.AlgorithmIdentifier;
-using TestGeneralName = Internal.NuGet.Testing.SignedPackages.Asn1.GeneralName;
-using TestMessageImprint = Internal.NuGet.Testing.SignedPackages.Asn1.MessageImprint;
-using TestTstInfo = Internal.NuGet.Testing.SignedPackages.Asn1.TstInfo;
+using TestAccuracy = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.Accuracy;
+using TestAlgorithmIdentifier = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.AlgorithmIdentifier;
+using TestGeneralName = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.GeneralName;
+using TestMessageImprint = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.MessageImprint;
+using TestTstInfo = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.TstInfo;
 using TstInfo = NuGet.Packaging.Signing.TstInfo;
 
 namespace NuGet.Packaging.Test

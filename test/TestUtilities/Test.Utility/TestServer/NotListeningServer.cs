@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Internal.NuGet.Testing.SignedPackages.TestServer;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.TestServer;
 
 namespace NuGet.Test.Server
 {

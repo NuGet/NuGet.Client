@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 #if IS_SIGNING_SUPPORTED
 using System.Threading;
 using System.Threading.Tasks;

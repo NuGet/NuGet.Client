@@ -6,15 +6,15 @@ using System.Formats.Asn1;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Xunit;
 using EssCertIdV2 = NuGet.Packaging.Signing.EssCertIdV2;
-using TestAlgorithmIdentifier = Internal.NuGet.Testing.SignedPackages.Asn1.AlgorithmIdentifier;
-using TestEssCertIdV2 = Internal.NuGet.Testing.SignedPackages.Asn1.EssCertIdV2;
-using TestGeneralName = Internal.NuGet.Testing.SignedPackages.Asn1.GeneralName;
-using TestIssuerSerial = Internal.NuGet.Testing.SignedPackages.Asn1.IssuerSerial;
+using TestAlgorithmIdentifier = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.AlgorithmIdentifier;
+using TestEssCertIdV2 = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.EssCertIdV2;
+using TestGeneralName = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.GeneralName;
+using TestIssuerSerial = Microsoft.Internal.NuGet.Testing.SignedPackages.Asn1.IssuerSerial;
 
 namespace NuGet.Packaging.Test
 {
