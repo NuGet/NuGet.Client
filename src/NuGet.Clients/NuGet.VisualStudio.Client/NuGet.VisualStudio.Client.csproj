@@ -331,6 +331,9 @@
       <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixAssemblies>
+      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.xml' ">
+        <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
+      </AllVsixAssemblies>
     </ItemGroup>
     <ItemGroup>
       <SuppressPackaging Include="@(AllVsixAssemblies)" Exclude="@(IncludeVsixFilesList)" />
