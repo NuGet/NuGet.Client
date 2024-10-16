@@ -438,8 +438,8 @@
         </DataTemplate>
       </TreeView.Resources>
       <TreeViewItem Header="{x:Static nuget:Resources.Label_Dependencies}"
-                ItemsSource="{Binding Path=PackageMetadata.DependencySets}"
-                Style="{StaticResource TreeViewItemHeaderStyle}">
+            ItemsSource="{Binding Path=PackageMetadata.DependencySets}"
+            Style="{StaticResource TreeViewItemHeaderStyle}">
       </TreeViewItem>
     </TreeView>
   </Grid>
