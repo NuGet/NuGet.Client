@@ -127,7 +127,7 @@
       <DataTemplate>
         <TextBlock Text="{Binding Header}" />
         <DataTemplate.Triggers>
-          <DataTrigger Binding="{Binding Visible}" Value="False">
+          <DataTrigger Binding="{Binding IsVisible}" Value="False">
             <Setter Property="Visibility" Value="Collapsed" />
           </DataTrigger>
         </DataTemplate.Triggers>
