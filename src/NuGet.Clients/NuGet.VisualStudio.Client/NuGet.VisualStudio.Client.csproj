@@ -328,10 +328,7 @@
       <AllVsixSymbols Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.pdb' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixSymbols>
-      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
-        <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
-      </AllVsixAssemblies>
-      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.xml' ">
+      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' Or '%(Extension)' == '.xml' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixAssemblies>
     </ItemGroup>
