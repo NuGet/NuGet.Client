@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public DetailControlModel DetailControlModel { get; private set; }
 
-        public IReadOnlyList<TabViewModelBase> Tabs { get; private set; }
+        public ObservableCollection<TabViewModelBase> Tabs { get; private set; }
 
         private TabViewModelBase _selectedTab;
         public TabViewModelBase SelectedTab
