@@ -29,6 +29,8 @@ namespace NuGet.Packaging
         /// <param name="parentId">Telemetry parent ID.</param>
         /// <returns>A collection of files that were extracted.</returns>
         /// <exception cref="ArgumentNullException">If packageReader, packagePathResolver, or packageExtractionContext are null.</exception>
+        /// <exception cref="ArgumentException">If packageStream is not seekable.</exception>
+        /// <exception cref="SignatureException">If the package signature couldn't be validated. See exception message for more details.</exception>
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             string source,
             Stream packageStream,
@@ -165,6 +167,8 @@ namespace NuGet.Packaging
         /// <param name="parentId">Telemetry parent ID.</param>
         /// <returns>A collection of files that were extracted.</returns>
         /// <exception cref="ArgumentNullException">If packageReader, packagePathResolver, or packageExtractionContext are null.</exception>
+        /// <exception cref="ArgumentException">If packagestream is not seekable.</exception>
+        /// <exception cref="SignatureException">If the package signature couldn't be validated. See exception message for more details.</exception>
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             string source,
             PackageReaderBase packageReader,
@@ -278,6 +282,7 @@ namespace NuGet.Packaging
         /// <param name="parentId">Telemetry parent ID.</param>
         /// <returns>A collection of files that were extracted.</returns>
         /// <exception cref="ArgumentNullException">If packageReader, packagePathResolver, or packageExtractionContext are null.</exception>
+        /// <exception cref="SignatureException">If the package signature couldn't be validated. See exception message for more details.</exception>
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
             string source,
             PackageReaderBase packageReader,
@@ -391,6 +396,8 @@ namespace NuGet.Packaging
         /// True if the package was installed. False if the package already exists and therefore
         /// resulted in no copy operation.
         /// </returns>
+        /// <exception cref="ArgumentNullException">If copyToAsync or packageExtractionContext is null.</exception>
+        /// <exception cref="SignatureException">If the package signature couldn't be validated. See exception message for more details.</exception>
         public static async Task<bool> InstallFromSourceAsync(
             string source,
             PackageIdentity packageIdentity,
@@ -651,6 +658,8 @@ namespace NuGet.Packaging
         /// True if the package was installed. False if the package already exists and therefore
         /// resulted in no copy operation.
         /// </returns>
+        /// <exception cref="ArgumentNullException">If packageDownlaoder or packageExtractionContext is null.</exception>
+        /// <exception cref="SignatureException">If the package signature couldn't be validated. See exception message for more details.</exception>
         public static async Task<bool> InstallFromSourceAsync(
             PackageIdentity packageIdentity,
             IPackageDownloader packageDownloader,
