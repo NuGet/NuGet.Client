@@ -441,8 +441,8 @@ namespace NuGet.Test.Utility
         public XDocument GetXML()
         {
             var sampleCSProjPath = (Type == ProjectStyle.PackageReference && ToolingVersion15) ?
-                "Internal.NuGet.Testing.SignedPackages.compiler.resources.project2.csproj" :
-                "Internal.NuGet.Testing.SignedPackages.compiler.resources.project1.csproj";
+                "Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.project2.csproj" :
+                "Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.project1.csproj";
 
             var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(ResourceTestUtility));
             var xml = XDocument.Parse(s);

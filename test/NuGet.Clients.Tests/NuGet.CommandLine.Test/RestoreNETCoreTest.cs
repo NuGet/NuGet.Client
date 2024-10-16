@@ -11577,7 +11577,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
-                $"Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
+                $"Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
                 typeof(ResourceTestUtility));
         }
     }

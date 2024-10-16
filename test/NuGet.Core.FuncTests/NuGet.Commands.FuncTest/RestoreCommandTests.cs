@@ -4290,7 +4290,7 @@ namespace NuGet.Commands.FuncTest
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
-                $"Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
+                $"Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
                 typeof(ResourceTestUtility));
         }
 
