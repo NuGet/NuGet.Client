@@ -265,11 +265,11 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<IPackageSearchMetadata> completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            var metadataBuilder = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
+            IPackageSearchMetadata packageSearchMetadataBase = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
                 ?? completed.FirstOrDefault()
                 ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
-            var clonedResult = metadataBuilder
+            var clonedResult = packageSearchMetadataBase
                   .WithVersions(() => MergeVersionsAsync(identity, completed)) as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
 
             if (string.IsNullOrWhiteSpace(clonedResult.ReadmeFileUrl))
