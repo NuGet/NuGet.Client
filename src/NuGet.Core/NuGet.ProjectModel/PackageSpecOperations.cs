@@ -36,7 +36,6 @@ namespace NuGet.ProjectModel
 
             for (var i = 0; i < spec.Dependencies.Count; i++)
             {
-                // existingDependency.LibraryRange.VersionRange = range;
                 var existingDependency = spec.Dependencies[i];
 
                 bool updateVersionOverride = spec.RestoreMetadata?.CentralPackageVersionsEnabled == true && !existingDependency.VersionCentrallyManaged && existingDependency.VersionOverride is not null;
