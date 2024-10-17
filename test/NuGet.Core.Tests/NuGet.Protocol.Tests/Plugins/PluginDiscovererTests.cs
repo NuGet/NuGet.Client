@@ -48,8 +48,8 @@ namespace NuGet.Protocol.Plugins.Tests
         public async Task DiscoverAsync_DoesNotThrowIfNoValidFilePathsAndFallbackEmbeddedSignatureVerifier()
         {
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
-            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(";");
-            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(";");
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(Path.PathSeparator.ToString());
+            environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(Path.PathSeparator.ToString());
             using (var discoverer = new PluginDiscoverer(environmentalVariableReader.Object))
             {
                 var pluginFiles = await discoverer.DiscoverAsync(CancellationToken.None);
@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 File.WriteAllText(pluginPaths[1], string.Empty);
 
                 string rawPluginPaths =
-                    $"{pluginPaths[0]};{pluginPaths[1]};c";
+                    $"{pluginPaths[0]}{Path.PathSeparator}{pluginPaths[1]}{Path.PathSeparator}c";
                 var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
                 environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(rawPluginPaths);

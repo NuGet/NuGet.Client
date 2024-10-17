@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ namespace NuGet.Protocol.Plugins
     {
         private bool _isDisposed;
         private List<PluginFile> _pluginFiles;
-        private readonly string _netCoreAndNetFXPluginPaths;
+        private readonly string _netCoreOrNetFXPluginPaths;
         private readonly string _nuGetPluginPaths;
         private IEnumerable<PluginDiscoveryResult> _results;
         private readonly SemaphoreSlim _semaphore;
@@ -34,9 +33,9 @@ namespace NuGet.Protocol.Plugins
         {
             _environmentVariableReader = environmentVariableReader;
 #if IS_DESKTOP
-            _netCoreAndNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
+            _netCoreOrNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
 #else
-            _netCoreAndNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
+            _netCoreOrNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
 #endif
             _nuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
@@ -86,10 +85,10 @@ namespace NuGet.Protocol.Plugins
                     return _results;
                 }
 
-                if (!string.IsNullOrEmpty(_netCoreAndNetFXPluginPaths))
+                if (!string.IsNullOrEmpty(_netCoreOrNetFXPluginPaths))
                 {
                     // NUGET_NETFX_PLUGIN_PATHS, NUGET_NETCORE_PLUGIN_PATHS have been set.
-                    var filePaths = _netCoreAndNetFXPluginPaths.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+                    var filePaths = _netCoreOrNetFXPluginPaths.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
                     _pluginFiles = GetPluginFiles(filePaths, cancellationToken);
                 }
                 else if (!string.IsNullOrEmpty(_nuGetPluginPaths))
@@ -107,7 +106,7 @@ namespace NuGet.Protocol.Plugins
                     directories.Add(PluginDiscoveryUtility.GetInternalPlugins());
 #endif
                     var filePaths = PluginDiscoveryUtility.GetConventionBasedPlugins(directories);
-                    _pluginFiles = GetPluginFiles(filePaths.ToArray(), cancellationToken);
+                    _pluginFiles = GetPluginFiles(filePaths, cancellationToken);
 
                     // Search for .Net tools plugins in PATH
                     if (_pluginFiles != null)
@@ -141,11 +140,16 @@ namespace NuGet.Protocol.Plugins
             return _results;
         }
 
-        private static List<PluginFile> GetPluginFiles(string[] filePaths, CancellationToken cancellationToken)
+        private static List<PluginFile> GetPluginFiles(IEnumerable<string> filePaths, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var files = new List<PluginFile>();
+
+            if (filePaths == null)
+            {
+                return files;
+            }
 
             foreach (var filePath in filePaths)
             {
