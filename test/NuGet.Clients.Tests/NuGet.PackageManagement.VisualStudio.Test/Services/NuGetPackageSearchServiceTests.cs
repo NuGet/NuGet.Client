@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.ServiceHub.Framework.Services;
 using Microsoft.VisualStudio.ComponentModelHost;
-using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Sdk.TestFramework;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -22,7 +21,6 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.PackageManagement.VisualStudio.PackageFeeds;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol;
@@ -404,7 +402,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             // Assert
             Assert.IsType(expectedFeedType, packageFeed);
-            Assert.IsNotType<CombinedPackageFeed>(packageFeed);
+            Assert.IsNotType<RecommenderPackageFeed>(packageFeed);
         }
 
         private NuGetPackageSearchService SetupSearchService()

@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             bool recommendPackages = false;
             IReadOnlyCollection<SourceRepository> sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            IPackageFeed packageFeed = await CreatePackageFeedAsync(
+            IPackageFeed? packageFeed = await CreatePackageFeedAsync(
                 projectContextInfos,
                 targetFrameworks,
                 itemFilter,
@@ -263,7 +263,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(searchFilter);
 
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            IPackageFeed packageFeed = await CreatePackageFeedAsync(
+            IPackageFeed? packageFeed = await CreatePackageFeedAsync(
                 projectContextInfos,
                 targetFrameworks,
                 itemFilter,
@@ -300,7 +300,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.NotNull(searchFilter);
 
             IReadOnlyCollection<SourceRepository>? sourceRepositories = await _sharedServiceState.GetRepositoriesAsync(packageSources, cancellationToken);
-            IPackageFeed packageFeed = await CreatePackageFeedAsync(projectContextInfos, targetFrameworks, itemFilter, isSolution, recommendPackages: false, sourceRepositories, cancellationToken);
+            IPackageFeed? packageFeed = await CreatePackageFeedAsync(projectContextInfos, targetFrameworks, itemFilter, isSolution, recommendPackages: false, sourceRepositories, cancellationToken);
             Assumes.NotNull(packageFeed);
 
             SourceRepository packagesFolderSourceRepository = await _packagesFolderLocalRepositoryLazy.GetValueAsync(cancellationToken);
@@ -382,7 +382,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return allLocalFolders;
         }
 
-        internal async Task<IPackageFeed> CreatePackageFeedAsync(
+        internal async Task<IPackageFeed?> CreatePackageFeedAsync(
             IReadOnlyCollection<IProjectContextInfo> projectContextInfos,
             IReadOnlyCollection<string> targetFrameworks,
             ItemFilter itemFilter,
@@ -458,11 +458,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 return packageFeed;
             }
 
-            //// Search all / updates available cannot work without a source repo
-            //if (sourceRepositories == null)
-            //{
-            //    return packageFeed;
-            //}
+            // Search all / updates available cannot work without a source repo
+            if (sourceRepositories == null)
+            {
+                return packageFeed;
+            }
 
             if (itemFilter == ItemFilter.UpdatesAvailable)
             {
