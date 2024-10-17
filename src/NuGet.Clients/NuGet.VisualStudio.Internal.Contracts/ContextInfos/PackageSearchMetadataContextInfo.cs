@@ -44,16 +44,12 @@ namespace NuGet.VisualStudio.Internal.Contracts
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata)
         {
-            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null, knownOwners: null);
+            return Create(packageSearchMetadata, knownOwners: null);
         }
 
         public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, IReadOnlyList<KnownOwner>? knownOwners)
         {
-            return Create(packageSearchMetadata, isRecommended: false, recommenderVersion: null, knownOwners);
-        }
-
-        public static PackageSearchMetadataContextInfo Create(IPackageSearchMetadata packageSearchMetadata, bool isRecommended, (string, string)? recommenderVersion, IReadOnlyList<KnownOwner>? knownOwners)
-        {
+            var recommendedPackageSearchMetadata = packageSearchMetadata as RecommendedPackageSearchMetadata;
             return new PackageSearchMetadataContextInfo()
             {
                 Title = packageSearchMetadata.Title,
@@ -65,8 +61,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 LicenseUrl = packageSearchMetadata.LicenseUrl,
                 ReadmeUrl = packageSearchMetadata.ReadmeUrl,
                 LicenseMetadata = packageSearchMetadata.LicenseMetadata,
-                IsRecommended = isRecommended,
-                RecommenderVersion = recommenderVersion,
+                IsRecommended = recommendedPackageSearchMetadata?.IsRecommended ?? false,
+                RecommenderVersion = recommendedPackageSearchMetadata?.RecommenderVersion,
                 ProjectUrl = packageSearchMetadata.ProjectUrl,
                 Published = packageSearchMetadata.Published,
                 OwnersList = packageSearchMetadata.OwnersList,

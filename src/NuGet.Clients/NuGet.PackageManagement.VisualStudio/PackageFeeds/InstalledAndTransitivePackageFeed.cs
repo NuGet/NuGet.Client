@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return PackageSearchMetadataBuilder.FromIdentity(identity).Build();
         }
 
-        internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync<T>(T identity, bool includePrerelease, CancellationToken cancellationToken)
+        internal override async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
