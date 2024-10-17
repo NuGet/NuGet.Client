@@ -67,6 +67,9 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
         private IPackageVulnerabilityService _packageVulnerabilityService;
+        private INuGetFeatureFlagService _nugetFeatureFlagService;
+        private INuGetPackageFileService _nugetPackageFileService;
+
 
         private PackageManagerInstalledTabData _installedTabTelemetryData;
 
@@ -90,6 +93,7 @@ namespace NuGet.PackageManagement.UI
             _sinceLastRefresh = Stopwatch.StartNew();
 
             _installedTabTelemetryData = new PackageManagerInstalledTabData();
+            _nugetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
 
             Model = model;
             _uiLogger = uiLogger;
@@ -141,6 +145,12 @@ namespace NuGet.PackageManagement.UI
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
+            var isReadmeTabEnabled = await _nugetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
+
+            _nugetPackageFileService?.Dispose();
+            _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
+            _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.Initialize(_detailModel, _nugetPackageFileService, _topPanel.Filter, isReadmeTabEnabled);
+            InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
@@ -460,6 +470,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void InitializeSelectedPackageMetadataTab(UserSettings settings, bool isReadmeTabEnabled)
+        {
+            if (settings != null)
+            {
+                if (!isReadmeTabEnabled)
+                {
+                    settings.SelectedPackageMetadataTab = PackageMetadataTab.PackageDetails;
+                }
+                _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SelectTab(settings.SelectedPackageMetadataTab);
+            }
+        }
+
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => PackageManagerLoadedAsync())
@@ -678,7 +700,8 @@ namespace NuGet.PackageManagement.UI
                 FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action,
                 IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true,
                 SelectedFilter = _topPanel.Filter,
-                OptionsExpanded = _packageDetail._optionsControl.IsExpanded
+                OptionsExpanded = _packageDetail._optionsControl.IsExpanded,
+                SelectedPackageMetadataTab = _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SelectedTab.PackageMetadataTab
             };
             _packageDetail._solutionView.SaveSettings(settings);
 
@@ -1269,6 +1292,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
+                    await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SetCurrentFilterAsync(_topPanel.Filter);
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1836,6 +1860,7 @@ namespace NuGet.PackageManagement.UI
 
             if (disposing)
             {
+                _nugetPackageFileService.Dispose();
                 CleanUp();
             }
 
