@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -244,7 +245,7 @@ namespace NuGet.Test.Utility
                     .Select(f => new TargetFrameworkInformation()
                     {
                         FrameworkName = f.Framework,
-                        Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToList(),
+                        Dependencies = f.PackageReferences.Select(e => new LibraryDependency() { LibraryRange = new LibraryRange(e.Id, VersionRange.Parse(e.Version), LibraryDependencyTarget.Package) }).ToImmutableArray(),
                         TargetAlias = f.TargetAlias,
                     }).ToList());
                 _packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
