@@ -196,6 +196,87 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task LocalPackageSearchResource_MatchOnPackageTypeAsync()
+        {
+            using (var root = TestDirectory.Create())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+
+                var nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myPackage</id>
+                            <version>1.0.0-alpha.1.2+5</version>
+                            <description>package description</description>
+                            <tags>apple orange</tags>
+                            <packageTypes>
+                              <packageType name=""test"" />
+                            </packageTypes>
+                        </metadata>
+                        </package>");
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "myPackage",
+                    Version = "1.0.0-alpha.1.2+5",
+                    Nuspec = nuspec
+                };
+
+                var nuspec2 = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>myOtherPackage</id>
+                            <version>1.0.0-alpha.1.3+5</version>
+                            <description>package description</description>
+                            <tags>grape</tags>
+                        </metadata>
+                        </package>");
+
+                var packageA2 = new SimpleTestPackageContext()
+                {
+                    Id = "myOtherPackage",
+                    Version = "1.0.0-alpha.1.3+5",
+                    Nuspec = nuspec2
+                };
+
+                var packageContexts = new SimpleTestPackageContext[]
+                {
+                    packageA,
+                    packageA2
+                };
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(root, packageContexts);
+
+                var localResource = new FindLocalPackagesResourceV2(root);
+                var resource = new LocalPackageSearchResource(localResource);
+
+                var filter = new SearchFilter(includePrerelease: true)
+                {
+                    PackageTypes = new[] { "test" }
+                };
+
+                // Act
+                var packages = (await resource.SearchAsync(
+                        "",
+                        filter,
+                        skip: 0,
+                        take: 30,
+                        log: testLogger,
+                        token: CancellationToken.None))
+                        .OrderBy(p => p.Identity.Id)
+                        .ToList();
+
+                var package = packages.First();
+
+                // Assert
+                Assert.Equal(1, packages.Count);
+                Assert.Equal("myPackage", package.Identity.Id);
+                Assert.Equal("1.0.0-alpha.1.2+5", package.Identity.Version.ToFullString());
+            }
+        }
+
+        [Fact]
         public async Task LocalPackageSearchResource_MatchOnDescriptionAsync()
         {
             using (var root = TestDirectory.Create())
