@@ -27,7 +27,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             Tabs.Add(ReadmePreviewViewModel);
             Tabs.Add(DetailControlModel);
 
-
             DetailControlModel.PropertyChanged += DetailControlModel_PropertyChanged;
             ReadmePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
         }
