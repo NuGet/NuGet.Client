@@ -88,6 +88,8 @@ jobs:
     displayName: Run $(TestType) Tests 
     condition: succeeded()
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    env:
+      VSTEST_TESTHOST_SHUTDOWN_TIMEOUT: 1000
     inputs:
       command: test
       arguments: --no-restore --restore:false --no-build --framework $(TestTargetFramework) --binarylogger:"$(BinlogDirectory)02-RunTests.binlog"

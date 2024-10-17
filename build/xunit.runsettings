@@ -14,11 +14,6 @@
 
     <!-- Specify a Boolean value, which defines the exit code when no tests are discovered. If the value is true and no tests are discovered, a nonzero exit code is returned. Otherwise, zero is returned. -->
     <TreatNoTestsAsError>true</TreatNoTestsAsError>
-
-    <EnvironmentVariables>
-      <!-- Changes the default timeout in VSTest for shutdown to 1000ms instead of 100ms which can cause intermittent failures in CI. -->
-      <VSTEST_TESTHOST_SHUTDOWN_TIMEOUT>1000</VSTEST_TESTHOST_SHUTDOWN_TIMEOUT>
-    </EnvironmentVariables>
   </RunConfiguration>
 
   <!-- https://xunit.net/docs/runsettings -->
