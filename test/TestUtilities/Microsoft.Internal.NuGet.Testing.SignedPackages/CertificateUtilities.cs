@@ -69,7 +69,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                     rng.GetBytes(bytes);
 
                     // Treat the byte array as a little-endian integer.
-                    // Ensure the number is non-negative by setting the highest bit of the first byte to 0.
+                    // Ensure the number is non-negative by setting the highest bit of the first byte (little-endian) to 0.
                     bytes[bytes.Length - 1] &= 0x7F;
 
                     BigInteger serialNumber = new(bytes);
