@@ -55,11 +55,20 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
         internal static byte[] GenerateSerialNumber(HashSet<BigInteger>? uniqueSerialNumbers = null)
         {
             // See https://www.rfc-editor.org/rfc/rfc5280#section-4.1.2.2
+            //
             // A serial number MUST be:
+            //
             //    * a non-negative integer
             //    * unique for that CA
             //    * <= 20 bytes
             //    * big-endian encoded
+            //
+            // To enforce uniqueness, we'll use BigInteger.
+            //
+            // Endianness here is dictated by .NET API's not the CPU architecture running this code.
+            //
+            //    * BigInteger's constructor requires an array of bytes interpreted as an integer in little-endian order.
+            //    * CertificateRequest.Create(...) requires an array of bytes interpreted as an unsigned integer in big-endian order.
             byte[] bytes = new byte[20];
 
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
