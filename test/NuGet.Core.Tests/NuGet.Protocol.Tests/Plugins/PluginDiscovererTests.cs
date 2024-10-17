@@ -680,6 +680,34 @@ namespace NuGet.Protocol.Plugins.Tests
             // Assert
             Assert.False(result);
         }
+
+        [PlatformFact(Platform.Linux)]
+        public void IsExecutable_FileWithSpace_ReturnsTrue()
+        {
+            // Arrange
+            using TestDirectory testDirectory = TestDirectory.Create();
+            var workingPath = testDirectory.Path;
+            var pluginFilePath = Path.Combine(workingPath, "plugin with space");
+            File.Create(pluginFilePath).Dispose();
+
+            // Set execute permissions
+            var process = new Process();
+            process.StartInfo.FileName = "/bin/bash";
+            process.StartInfo.Arguments = $"-c \"chmod +x '{pluginFilePath}'\"";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.Start();
+            process.WaitForExit();
+
+            var fileInfo = new FileInfo(pluginFilePath);
+
+            // Act
+            bool result = PluginDiscoverer.IsExecutable(fileInfo);
+
+            // Assert
+            Assert.True(result);
+        }
+
 #endif
     }
 }

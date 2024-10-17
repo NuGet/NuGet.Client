@@ -89,7 +89,7 @@ namespace NuGet.Protocol.Plugins
                 if (!string.IsNullOrEmpty(_netCoreAndNetFXPluginPaths))
                 {
                     // NUGET_NETFX_PLUGIN_PATHS, NUGET_NETCORE_PLUGIN_PATHS have been set.
-                    var filePaths = _netCoreAndNetFXPluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    var filePaths = _netCoreAndNetFXPluginPaths.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
                     _pluginFiles = GetPluginFiles(filePaths, cancellationToken);
                 }
                 else if (!string.IsNullOrEmpty(_nuGetPluginPaths))
@@ -201,17 +201,7 @@ namespace NuGet.Protocol.Plugins
                     }
                     else if (Directory.Exists(path))
                     {
-                        var directoryInfo = new DirectoryInfo(path);
-                        var files = directoryInfo.GetFiles("nuget-plugin-*");
-
-                        foreach (var file in files)
-                        {
-                            if (IsValidPluginFile(file))
-                            {
-                                PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
-                                pluginFiles.Add(pluginFile);
-                            }
-                        }
+                        pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
                     }
                 }
                 else
@@ -237,24 +227,33 @@ namespace NuGet.Protocol.Plugins
             {
                 if (PathValidator.IsValidLocalPath(path) || PathValidator.IsValidUncPath(path))
                 {
-                    if (Directory.Exists(path))
-                    {
-                        var directoryInfo = new DirectoryInfo(path);
-                        var files = directoryInfo.GetFiles("nuget-plugin-*");
-
-                        foreach (var file in files)
-                        {
-                            if (IsValidPluginFile(file))
-                            {
-                                PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
-                                pluginFiles.Add(pluginFile);
-                            }
-                        }
-                    }
+                    pluginFiles.AddRange(GetNetToolsPluginsInDirectory(path) ?? new List<PluginFile>());
                 }
                 else
                 {
                     pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
+                }
+            }
+
+            return pluginFiles;
+        }
+
+        private static List<PluginFile> GetNetToolsPluginsInDirectory(string directoryPath)
+        {
+            var pluginFiles = new List<PluginFile>();
+
+            if (Directory.Exists(directoryPath))
+            {
+                var directoryInfo = new DirectoryInfo(directoryPath);
+                var files = directoryInfo.GetFiles("nuget-plugin-*");
+
+                foreach (var file in files)
+                {
+                    if (IsValidPluginFile(file))
+                    {
+                        PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
+                        pluginFiles.Add(pluginFile);
+                    }
                 }
             }
 
@@ -307,17 +306,18 @@ namespace NuGet.Protocol.Plugins
                 {
                     // Use a shell command to check if the file is executable
                     process.StartInfo.FileName = "/bin/bash";
-                    process.StartInfo.Arguments = $" -c \"if [ -x {fileInfo.FullName} ]; then echo yes; else echo no; fi\"";
+                    process.StartInfo.Arguments = $" -c \"if [ -x '{fileInfo.FullName}' ]; then echo yes; else echo no; fi\"";
                     process.StartInfo.UseShellExecute = false;
                     process.StartInfo.RedirectStandardOutput = true;
 
                     process.Start();
+                    output = process.StandardOutput.ReadToEnd().Trim();
+
                     if (!process.WaitForExit(1000) || process.ExitCode != 0)
                     {
+                        process.Kill();
                         return false;
                     }
-
-                    output = process.StandardOutput.ReadToEnd().Trim();
                 }
 
                 // Check if the output is "yes"
