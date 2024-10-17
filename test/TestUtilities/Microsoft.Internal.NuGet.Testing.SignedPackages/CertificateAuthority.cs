@@ -21,8 +21,9 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
         private readonly Dictionary<string, X509Certificate2> _issuedCertificates;
         private readonly Dictionary<string, RevokedInfo> _revokedCertificates;
         private readonly Lazy<OcspResponder> _ocspResponder;
-        private BigInteger _nextSerialNumber;
+        private readonly HashSet<BigInteger> _assignedSerialNumbers;
         private byte[] _dnHash;
+        private byte[] _keyHash;
 
         /// <summary>
         /// This base URI is shared amongst all HTTP responders hosted by the same web host instance.
@@ -57,7 +58,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
             CertificateUri = new Uri(Url, $"{fingerprint}.cer");
             OcspResponderUri = GenerateRandomUri();
             Parent = parentCa;
-            _nextSerialNumber = new BigInteger(2);
+            _assignedSerialNumbers = new HashSet<BigInteger>();
             // The key is the certificate serial number in hexadecimal; therefore, lookups should be case insensitive.
             _issuedCertificates = new Dictionary<string, X509Certificate2>(StringComparer.InvariantCultureIgnoreCase);
             _revokedCertificates = new Dictionary<string, RevokedInfo>(StringComparer.InvariantCultureIgnoreCase);
@@ -181,10 +182,12 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                             critical: true));
                 };
 
+            byte[] serialNumber = CertificateUtilities.GenerateSerialNumber();
+
             X509Certificate2 certificate = CreateCertificate(
                 options.KeyPair,
                 options.KeyPair,
-                BigInteger.One,
+                serialNumber,
                 options.SubjectName,
                 options.SubjectName,
                 options.NotBefore,
@@ -198,29 +201,52 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
         {
             certificate = null;
 
-            if (certId.AlgorithmIdentifier.Algorithm.Value != Oids.Sha1)
-            {
-                return CertStatus.FromUnknown();
-            }
+            Oid hashAlgorithmOid = certId.AlgorithmIdentifier.Algorithm;
 
-            if (_dnHash == null)
+            if (hashAlgorithmOid.Value == Oids.Sha1)
             {
-                using (SHA1 sha1 = SHA1.Create())
+                // SHA-1 is obsolete.  We'll rely on serial number only for matching.
+            }
+            else if (IsSupportedHashAlgorithm(hashAlgorithmOid))
+            {
+                if (_dnHash is null || _keyHash is null)
                 {
-                    _dnHash = sha1.ComputeHash(Certificate.SubjectName.RawData);
+                    using (HashAlgorithm hashAlgorithm = CreateHashAlgorithm(hashAlgorithmOid))
+                    {
+                        _dnHash = hashAlgorithm.ComputeHash(Certificate.SubjectName.RawData);
+                        _keyHash = hashAlgorithm.ComputeHash(Certificate.GetPublicKey());
+                    }
+                }
+
+                if (!certId.IssuerNameHash.Span.SequenceEqual(_dnHash))
+                {
+                    return CertStatus.FromUnknown();
+                }
+
+                if (!certId.IssuerKeyHash.Span.SequenceEqual(_keyHash))
+                {
+                    return CertStatus.FromUnknown();
                 }
             }
-
-            if (!certId.IssuerNameHash.Span.SequenceEqual(_dnHash))
+            else
             {
                 return CertStatus.FromUnknown();
             }
 
-            string serialNumber = BitConverter.ToString(certId.SerialNumber.ToByteArray()).Replace("-", "");
+            byte[] serialNumberBytes = certId.SerialNumber.ToByteArray();
+
+            // Convert to big-endian.
+            Array.Reverse(serialNumberBytes);
+
+            string serialNumber = BitConverter.ToString(serialNumberBytes).Replace("-", "");
 
             if (_issuedCertificates.TryGetValue(serialNumber, out X509Certificate2 issuedCertificate))
             {
                 certificate = issuedCertificate;
+            }
+            else
+            {
+                return CertStatus.FromUnknown();
             }
 
             if (_revokedCertificates.Count == 0)
@@ -254,7 +280,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
             IssueCertificateOptions options,
             Action<CertificateRequest> customizeCertificate)
         {
-            BigInteger serialNumber = _nextSerialNumber;
+            byte[] serialNumber = CertificateUtilities.GenerateSerialNumber(_assignedSerialNumbers);
             DateTimeOffset notAfter = options.NotAfter;
             DateTimeOffset issuerNotAfter = DateTime.SpecifyKind(Certificate.NotAfter, DateTimeKind.Local);
 
@@ -274,7 +300,6 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 notAfter,
                 options.CustomizeCertificate ?? customizeCertificate);
 
-            _nextSerialNumber += BigInteger.One;
             _issuedCertificates.Add(certificate.SerialNumber, certificate);
 
             return certificate;
@@ -283,7 +308,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
         private static X509Certificate2 CreateCertificate(
             RSA certificateKeyPair,
             RSA issuingCertificateKeyPair,
-            BigInteger serialNumber,
+            byte[] serialNumber,
             X500DistinguishedName issuerName,
             X500DistinguishedName subjectName,
             DateTimeOffset notBefore,
@@ -301,7 +326,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 signatureGenerator,
                 notBefore,
                 notAfter,
-                serialNumber.ToByteArray()))
+                serialNumber))
             {
                 return CertificateUtilities.GetCertificateWithPrivateKey(certificate, certificateKeyPair);
             }
@@ -319,6 +344,26 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 RevocationDate = revocationDate;
                 Reason = reason;
             }
+        }
+
+        private static bool IsSupportedHashAlgorithm(Oid oid)
+        {
+            return oid.Value switch
+            {
+                Oids.Sha256 or Oids.Sha384 or Oids.Sha512 => true,
+                _ => false,
+            };
+        }
+
+        private static HashAlgorithm CreateHashAlgorithm(Oid oid)
+        {
+            return oid.Value switch
+            {
+                Oids.Sha256 => SHA256.Create(),
+                Oids.Sha384 => SHA384.Create(),
+                Oids.Sha512 => SHA512.Create(),
+                _ => throw new ArgumentException($"Hash algorithm {oid.Value} is unsupported."),
+            };
         }
     }
 }

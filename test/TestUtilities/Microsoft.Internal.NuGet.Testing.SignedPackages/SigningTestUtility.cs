@@ -412,10 +412,8 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
             certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
             certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
 
-            var random = new Random();
-            var serial = random.Next();
-            var serialNumber = BitConverter.GetBytes(serial);
-            Array.Reverse(serialNumber);
+            byte[] serialNumber = CertificateUtilities.GenerateSerialNumber();
+
             certGen.SetSerialNumber(serialNumber);
 
             certGen.Extensions.Add(
