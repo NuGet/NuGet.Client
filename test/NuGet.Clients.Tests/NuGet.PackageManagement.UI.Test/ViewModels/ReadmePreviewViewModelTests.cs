@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         [InlineData(ItemFilter.Installed)]
         [InlineData(ItemFilter.Consolidate)]
         [InlineData(ItemFilter.UpdatesAvailable)]
-        public async Task SetCurrentFilter_ItemFilterRenderingLocalReadme_ReadmeReturned(ItemFilter filter)
+        public async Task SetCurrentFilter_ItemFilterRenderingLocalReadme_LocalReadmeReturned(ItemFilter filter)
         {
             //Arrange
             var readmeContents = "readme contents";
@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_RenderLocalReadmeTrue_ReadmeReturned()
+        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_RenderLocalReadmeTrue_LocalReadmeReturned()
         {
             //Arrange
             var readmeContents = "readme contents";
@@ -126,7 +126,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         }
 
         [Fact]
-        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_RenderLocalReadmeFalse_ReadmeReturned()
+        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_RenderLocalReadmeFalse_NoLocalReadmeReturned()
         {
             //Arrange
             var readmeContents = "readme contents";
