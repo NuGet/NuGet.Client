@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -440,10 +441,10 @@ namespace NuGet.Test.Utility
         public XDocument GetXML()
         {
             var sampleCSProjPath = (Type == ProjectStyle.PackageReference && ToolingVersion15) ?
-                "Test.Utility.compiler.resources.project2.csproj" :
-                "Test.Utility.compiler.resources.project1.csproj";
+                "Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.project2.csproj" :
+                "Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.project1.csproj";
 
-            var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(SimpleTestProjectContext));
+            var s = ResourceTestUtility.GetResource(sampleCSProjPath, typeof(ResourceTestUtility));
             var xml = XDocument.Parse(s);
 
             //  MSBuildProjectExtensionsPath needs to be set before Microsoft.Common.props is imported, so add a new

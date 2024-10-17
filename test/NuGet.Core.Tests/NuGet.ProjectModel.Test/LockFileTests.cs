@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using FluentAssertions;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 

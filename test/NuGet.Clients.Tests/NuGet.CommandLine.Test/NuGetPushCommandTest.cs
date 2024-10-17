@@ -8,6 +8,7 @@ using System.Net;
 using System.Security.Principal;
 using System.Text;
 using FluentAssertions;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;

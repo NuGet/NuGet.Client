@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -11575,7 +11577,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
-                $"Test.Utility.compiler.resources.{name}",
+                $"Microsoft.Internal.NuGet.Testing.SignedPackages.compiler.resources.{name}",
                 typeof(ResourceTestUtility));
         }
     }

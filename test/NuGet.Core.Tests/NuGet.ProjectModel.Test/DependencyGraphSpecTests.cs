@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Internal.NuGet.Testing.SignedPackages;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -598,7 +599,7 @@ namespace NuGet.ProjectModel.Test
             dgSpec.AddRestore("a");
             dgSpec.AddProject(packageSpec);
 
-            // Act 
+            // Act
             var packageSpecFromDGSpec = dgSpec.GetProjectSpec("a");
 
             // Assert
