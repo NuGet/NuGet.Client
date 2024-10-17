@@ -146,10 +146,13 @@ namespace NuGet.Packaging
             var manifest = ManifestReader.ReadManifest(document);
 
             // Update manifest metadata version if version was provided by the CLI command
-            var version = propertyProvider("version");
-            if (version is not null)
+            if (propertyProvider is not null)
             {
-                manifest.Metadata.Version = NuGetVersion.Parse(version);
+                var version = propertyProvider("version");
+                if (version is not null)
+                {
+                    manifest.Metadata.Version = NuGetVersion.Parse(version);
+                }
             }
 
             // Validate before returning
