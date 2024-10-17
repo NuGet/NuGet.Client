@@ -227,12 +227,6 @@ namespace NuGet.Common
                     return null;
             }
         }
-
-        private static string GetDotNetHome()
-        {
-            return Environment.GetEnvironmentVariable(DotNetHome);
-        }
-
 #else
 
         internal static string GetFolderPath(SpecialFolder folder)
@@ -284,37 +278,30 @@ namespace NuGet.Common
         private static string GetHome()
         {
 #if IS_CORECLR
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? GetHomeWindows(), UserProfile, DotNetHome);
-            }
-            else
-            {
-                return GetValueOrThrowMissingEnvVarsDotnet(() => GetDotNetHome() ?? Environment.GetEnvironmentVariable(Home), Home, DotNetHome);
-            }
+            return Environment.GetEnvironmentVariable(DotNetHome) ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
             if (RuntimeEnvironmentHelper.IsWindows)
             {
                 return GetValueOrThrowMissingEnvVar(() => GetHomeWindows(), UserProfile);
+
+                static string GetHomeWindows()
+                {
+                    var userProfile = Environment.GetEnvironmentVariable(UserProfile);
+                    if (!string.IsNullOrEmpty(userProfile))
+                    {
+                        return userProfile;
+                    }
+                    else
+                    {
+                        return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
+                    }
+                }
             }
             else
             {
                 return GetValueOrThrowMissingEnvVar(() => Environment.GetEnvironmentVariable(Home), Home);
             }
 #endif
-        }
-
-        private static string GetHomeWindows()
-        {
-            var userProfile = Environment.GetEnvironmentVariable(UserProfile);
-            if (!string.IsNullOrEmpty(userProfile))
-            {
-                return userProfile;
-            }
-            else
-            {
-                return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
-            }
         }
 
         /// <summary>
