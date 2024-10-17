@@ -39,7 +39,8 @@ namespace NuGet.Build.Tasks.Pack
                 NoPackageAnalysis = request.NoPackageAnalysis,
                 NoDefaultExcludes = request.NoDefaultExcludes,
                 WarningProperties = WarningProperties.GetWarningProperties(request.TreatWarningsAsErrors, request.WarningsAsErrors, request.NoWarn, request.WarningsNotAsErrors),
-                PackTargetArgs = new MSBuildPackTargetArgs()
+                PackTargetArgs = new MSBuildPackTargetArgs(),
+                Version = request.PackageVersion,
             };
 
             packArgs.Logger = new PackCollectorLogger(request.Logger, packArgs.WarningProperties, _packageSpecificWarningProperties);
