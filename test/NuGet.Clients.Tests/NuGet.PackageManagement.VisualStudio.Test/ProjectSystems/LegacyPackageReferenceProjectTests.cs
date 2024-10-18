@@ -1927,6 +1927,67 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             tfi.Dependencies[3].VersionOverride.Should().Be(VersionRange.Parse("3.0.0"));
         }
 
+        [Fact]
+        public async Task GetPackageSpecAsync_WithDifferentCasingPackageVersionAndPackageReference_CombinesCorrectly()
+        {
+            // Arrange
+            var tfm = NuGetFramework.Parse("net472");
+            var packageA = (PackageId: "packageA", Version: "1.2.3");
+            var packageAUpperCase = (PackageId: "PACKAGEA", Version: "1.2.3");
+
+            var projectNames = new ProjectNames(
+                        fullName: "projectName",
+                        uniqueName: "projectName",
+                        shortName: "projectName",
+                        customUniqueName: "projectName",
+                        projectId: Guid.NewGuid().ToString());
+
+            var projectServices = new TestProjectSystemServices();
+            projectServices.SetupInstalledPackages(
+                    tfm,
+                    new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange(
+                            packageA.PackageId,
+                            null,
+                            LibraryDependencyTarget.Package),
+                    });
+
+            var vsProjectAdapter = new TestVSProjectAdapter(
+                        "projectPath",
+                        projectNames,
+                        "net472",
+                        restorePackagesWithLockFile: null,
+                        nuGetLockFilePath: null,
+                        restoreLockedMode: false,
+                        projectPackageVersions: new List<(string Id, string Version)>() { packageAUpperCase },
+                        isCentralPackageVersionOverrideEnabled: "true");
+
+            var legacyPRProject = new LegacyPackageReferenceProject(
+                       vsProjectAdapter,
+                       Guid.NewGuid().ToString(),
+                       projectServices,
+                       _threadingService);
+
+            var settings = NullSettings.Instance;
+            var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+            var packageSpecs = await legacyPRProject.GetPackageSpecsAsync(context);
+
+            packageSpecs.Should().HaveCount(1);
+            PackageSpec spec = packageSpecs[0];
+            spec.TargetFrameworks.Should().HaveCount(1);
+            TargetFrameworkInformation tfi = spec.TargetFrameworks[0];
+            tfi.FrameworkName.Should().Be(tfm);
+            tfi.CentralPackageVersions.Should().HaveCount(1);
+            tfi.Dependencies.Should().HaveCount(1);
+
+            tfi.Dependencies[0].Name.Should().Be(packageA.PackageId);
+            tfi.Dependencies[0].VersionCentrallyManaged.Should().BeTrue();
+            tfi.Dependencies[0].LibraryRange.VersionRange.Should().Be(VersionRange.Parse(packageA.Version));
+            tfi.Dependencies[0].VersionOverride.Should().BeNull();
+        }
+
         private LegacyPackageReferenceProject CreateLegacyPackageReferenceProject(TestDirectory testDirectory, string range)
         {
             return ProjectFactories.CreateLegacyPackageReferenceProject(testDirectory, Guid.NewGuid().ToString(), range, _threadingService);

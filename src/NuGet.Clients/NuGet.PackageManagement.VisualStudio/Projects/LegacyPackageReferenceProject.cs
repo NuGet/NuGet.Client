@@ -141,7 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return packageVersions
                 .Select(item => ToCentralPackageVersion(item.PackageId, item.Version))
                 .Distinct(CentralPackageVersionNameComparer.Default)
-                .ToDictionary(cpv => cpv.Name);
+                .ToDictionary(cpv => cpv.Name, StringComparer.OrdinalIgnoreCase);
         }
 
         private CentralPackageVersion ToCentralPackageVersion(string packageId, string version)
