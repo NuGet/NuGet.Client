@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                new ReadmePreviewViewModel(null, ItemFilter.All);
+                new ReadmePreviewViewModel(null, ItemFilter.All, true);
             });
         }
 
@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockFileService = new Mock<INuGetPackageFileService>();
 
             //Act
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All, true);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = readmeUrl;
 
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
             await target.SetPackageMetadataAsync(package, CancellationToken.None);
@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All, true);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
             await target.SetPackageMetadataAsync(package, CancellationToken.None);
@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
 
@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All, true);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
 
@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).Returns(null);
-            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
             var package = new DetailedPackageMetadata();
             package.ReadmeFileUrl = "C://path/to/readme.md";
 

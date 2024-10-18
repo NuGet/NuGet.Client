@@ -11,7 +11,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class ReadmePreviewViewModel : RenderedViewModelBase
+    public sealed class ReadmePreviewViewModel : TitledPageViewModelBase
     {
         private bool _errorLoadingReadme;
         private INuGetPackageFileService _nugetPackageFileService;
@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private DetailedPackageMetadata _packageMetadata;
         private ItemFilter _currentItemFilter;
 
-        public ReadmePreviewViewModel(INuGetPackageFileService packageFileService, ItemFilter itemFilter)
+        public ReadmePreviewViewModel(INuGetPackageFileService packageFileService, ItemFilter itemFilter, bool isReadmeFeatureEnabled)
         {
             _nugetPackageFileService = packageFileService ?? throw new ArgumentNullException(nameof(packageFileService));
             _currentItemFilter = itemFilter;
@@ -27,8 +27,8 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _errorLoadingReadme = false;
             _rawReadme = string.Empty;
             _packageMetadata = null;
-            Header = Resources.Label_Readme_Tab;
-            IsVisible = true;
+            Title = Resources.Label_Readme_Tab;
+            IsVisible = !isReadmeFeatureEnabled;
         }
 
         public bool ErrorLoadingReadme

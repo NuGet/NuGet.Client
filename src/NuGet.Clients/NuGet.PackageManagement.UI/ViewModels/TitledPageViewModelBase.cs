@@ -1,14 +1,14 @@
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public class RenderedViewModelBase : ViewModelBase
+    public class TitledPageViewModelBase : ViewModelBase
     {
-        private string _header;
-        public string Header
+        private string _title;
+        public string Title
         {
-            get => _header;
+            get => _title;
             set
             {
-                SetAndRaisePropertyChanged(ref _header, value);
+                SetAndRaisePropertyChanged(ref _title, value);
             }
         }
 
@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public bool IsVisible
         {
             get => _isVisible;
-            set
+            protected set
             {
                 SetAndRaisePropertyChanged(ref _isVisible, value);
             }

@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI
     /// The base class of PackageDetailControlModel and PackageSolutionDetailControlModel.
     /// When user selects an action, this triggers version list update.
     /// </summary>
-    public abstract class DetailControlModel : RenderedViewModelBase, IDisposable
+    public abstract class DetailControlModel : TitledPageViewModelBase, IDisposable
     {
         private static readonly string StarAll = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*"), VersionRangeFormatter.Instance);
         private static readonly string StarAllFloating = VersionRangeFormatter.Instance.Format("p", VersionRange.Parse("*-*"), VersionRangeFormatter.Instance);
@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.UI
 
             _versions = new ItemsChangeObservableCollection<DisplayVersion>();
 
-            Header = Resources.Label_PackageDetails;
+            Title = Resources.Label_PackageDetails;
             IsVisible = true;
         }
 

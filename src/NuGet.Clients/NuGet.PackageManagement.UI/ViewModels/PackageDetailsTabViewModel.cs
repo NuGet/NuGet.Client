@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
@@ -19,10 +20,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public DetailControlModel DetailControlModel { get; private set; }
 
-        public ObservableCollection<RenderedViewModelBase> Tabs { get; private set; }
+        public ObservableCollection<TitledPageViewModelBase> Tabs { get; private set; }
 
-        private RenderedViewModelBase _selectedTab;
-        public RenderedViewModelBase SelectedTab
+        private TitledPageViewModelBase _selectedTab;
+        public TitledPageViewModelBase SelectedTab
         {
             get => _selectedTab;
             set
@@ -34,7 +35,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public PackageDetailsTabViewModel()
         {
             _readmeTabEnabled = true;
-            Tabs = new ObservableCollection<RenderedViewModelBase>();
+            Tabs = new ObservableCollection<TitledPageViewModelBase>();
         }
 
         public PackageMetadataTab GetSelectedTab()
@@ -47,19 +48,29 @@ namespace NuGet.PackageManagement.UI.ViewModels
             var nuGetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
             _readmeTabEnabled = await nuGetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
 
-            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter);
-            ReadmePreviewViewModel.IsVisible = _readmeTabEnabled;
+            ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter, _readmeTabEnabled);
             DetailControlModel = detailControlModel;
 
             Tabs.Add(ReadmePreviewViewModel);
             Tabs.Add(DetailControlModel);
 
-            SelectedTab = _readmeTabEnabled && initialSelectedTab == PackageMetadataTab.Readme
-                ? ReadmePreviewViewModel
-                : DetailControlModel;
+            SelectedTab = Tabs.FirstOrDefault(t => IsVmForTab(initialSelectedTab, t)) ?? Tabs.FirstOrDefault(t => t.IsVisible);
 
             DetailControlModel.PropertyChanged += DetailControlModel_PropertyChanged;
-            ReadmePreviewViewModel.PropertyChanged += ReadMePreviewViewModel_PropertyChanged;
+            ReadmePreviewViewModel.PropertyChanged += IsVisible_PropertyChanged;
+        }
+
+        private static bool IsVmForTab(PackageMetadataTab tab, TitledPageViewModelBase vm)
+        {
+            switch (tab)
+            {
+                case PackageMetadataTab.PackageDetails:
+                    return vm is DetailControlModel && vm.IsVisible;
+                case PackageMetadataTab.Readme:
+                    return vm is ReadmePreviewViewModel && vm.IsVisible;
+                default:
+                    return false;
+            }
         }
 
         public async Task SetCurrentFilterAsync(ItemFilter filter)
@@ -80,14 +91,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
             DetailControlModel.PropertyChanged -= DetailControlModel_PropertyChanged;
         }
 
-        private void ReadMePreviewViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void IsVisible_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (ReadmePreviewViewModel is not null
-                && e.PropertyName == nameof(ReadmePreviewViewModel.IsVisible))
+            if (e.PropertyName == nameof(TitledPageViewModelBase.IsVisible))
             {
-                if (!ReadmePreviewViewModel.IsVisible)
+                if (!SelectedTab.IsVisible)
                 {
-                    SelectedTab = DetailControlModel;
+                    SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible);
                 }
             }
         }
@@ -101,6 +111,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     await ReadmePreviewViewModel.SetPackageMetadataAsync(DetailControlModel.PackageMetadata, CancellationToken.None);
                 }
             });
+            IsVisible_PropertyChanged(sender, e);
         }
     }
 }

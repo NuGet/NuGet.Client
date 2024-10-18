@@ -63,7 +63,10 @@ namespace NuGet.PackageManagement.UI
             if (disposing)
             {
                 _markdownPreview?.Dispose();
-                ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
+                if (ReadmeViewModel is not null)
+                {
+                    ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
+                }
             }
 
             _disposed = true;
@@ -91,7 +94,10 @@ namespace NuGet.PackageManagement.UI
             {
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
-            ReadmeViewModel.PropertyChanged += ReadmeViewModel_PropertyChanged;
+            if (ReadmeViewModel is not null)
+            {
+                ReadmeViewModel.PropertyChanged += ReadmeViewModel_PropertyChanged;
+            }
         }
 
         private void PackageReadmeControl_Unloaded(object sender, RoutedEventArgs e)
