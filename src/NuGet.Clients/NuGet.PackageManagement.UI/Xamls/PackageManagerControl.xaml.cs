@@ -67,7 +67,6 @@ namespace NuGet.PackageManagement.UI
         private IServiceBroker _serviceBroker;
         private bool _disposed = false;
         private IPackageVulnerabilityService _packageVulnerabilityService;
-        private INuGetFeatureFlagService _nugetFeatureFlagService;
         private INuGetPackageFileService _nugetPackageFileService;
 
 
@@ -93,7 +92,6 @@ namespace NuGet.PackageManagement.UI
             _sinceLastRefresh = Stopwatch.StartNew();
 
             _installedTabTelemetryData = new PackageManagerInstalledTabData();
-            _nugetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
 
             Model = model;
             _uiLogger = uiLogger;
@@ -145,12 +143,12 @@ namespace NuGet.PackageManagement.UI
             _settingsKey = await GetSettingsKeyAsync(CancellationToken.None);
             UserSettings settings = LoadSettings();
             InitializeFilterList(settings);
-            var isReadmeTabEnabled = await _nugetFeatureFlagService.IsFeatureEnabledAsync(NuGetFeatureFlagConstants.RenderReadmeInPMUI);
 
             _nugetPackageFileService?.Dispose();
             _nugetPackageFileService = await _serviceBroker.GetProxyAsync<INuGetPackageFileService>(NuGetServices.PackageFileService, CancellationToken.None);
-            _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.Initialize(_detailModel, _nugetPackageFileService, _topPanel.Filter, isReadmeTabEnabled);
-            InitializeSelectedPackageMetadataTab(settings, isReadmeTabEnabled);
+
+            await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.InitializeAsync(_detailModel, _nugetPackageFileService, _topPanel.Filter, settings.SelectedPackageMetadataTab);
+
             await InitPackageSourcesAsync(settings, CancellationToken.None);
             ApplySettings(settings, Settings);
             _initialized = true;
@@ -467,18 +465,6 @@ namespace NuGet.PackageManagement.UI
             if (settings != null)
             {
                 _topPanel.SelectFilter(settings.SelectedFilter);
-            }
-        }
-
-        private void InitializeSelectedPackageMetadataTab(UserSettings settings, bool isReadmeTabEnabled)
-        {
-            if (settings != null)
-            {
-                if (!isReadmeTabEnabled)
-                {
-                    settings.SelectedPackageMetadataTab = PackageMetadataTab.PackageDetails;
-                }
-                _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SelectTab(settings.SelectedPackageMetadataTab);
             }
         }
 

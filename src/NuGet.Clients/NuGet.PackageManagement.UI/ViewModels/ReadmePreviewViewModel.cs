@@ -76,6 +76,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             if (string.IsNullOrWhiteSpace(_packageMetadata.ReadmeFileUrl))
             {
                 ReadmeMarkdown = RenderLocalReadme && !string.IsNullOrWhiteSpace(_packageMetadata.PackagePath) ? Resources.Text_NoReadme : string.Empty;
+                IsVisible = !string.IsNullOrWhiteSpace(ReadmeMarkdown);
                 ErrorLoadingReadme = false;
                 return;
             }
@@ -84,6 +85,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             if (!RenderLocalReadme && readmeUrl.IsFile)
             {
                 ReadmeMarkdown = string.Empty;
+                IsVisible = false;
                 ErrorLoadingReadme = false;
                 return;
             }
@@ -105,6 +107,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             if (!cancellationToken.IsCancellationRequested)
             {
                 ReadmeMarkdown = readme;
+                IsVisible = !string.IsNullOrWhiteSpace(readme);
                 ErrorLoadingReadme = false;
             }
         }

@@ -140,15 +140,13 @@
           <ContentControl.Resources>
             <DataTemplate DataType="{x:Type nuget:DetailControlModel}">
               <nuget:PackageMetadataControl
-                AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
                 DataContext="{Binding}"
                 Margin="0,12,0,0"/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReadmePreviewViewModel}">
               <nuget:PackageReadmeControl
                 DataContext="{Binding}"
-                x:Name="_packageReadmeControl"
-                AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"/>
+                x:Name="_packageReadmeControl"/>
             </DataTemplate>
           </ContentControl.Resources>
         </ContentControl>

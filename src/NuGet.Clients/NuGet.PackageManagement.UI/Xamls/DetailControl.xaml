@@ -183,8 +183,7 @@
         x:Name="_packageDetailsTabControl"
         Grid.Row="4"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
-        Margin="0,12,0,0"
-        DetailControlModel="{Binding}" />
+        Margin="0,12,0,0"/>
     </Grid>
   </ScrollViewer>
 </UserControl>
