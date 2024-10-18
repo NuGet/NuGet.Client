@@ -13,7 +13,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
     public class PackageDetailsTabViewModel : ViewModelBase, IDisposable
     {
         private bool _disposed = false;
-
         private bool _readmeTabEnabled;
 
         public ReadmePreviewViewModel ReadmePreviewViewModel { get; private set; }
@@ -38,11 +37,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             Tabs = new ObservableCollection<TitledPageViewModelBase>();
         }
 
-        public PackageMetadataTab GetSelectedTab()
-        {
-            return ConvertFromVm(SelectedTab);
-        }
-
         public async Task InitializeAsync(DetailControlModel detailControlModel, INuGetPackageFileService nugetPackageFileService, ItemFilter currentFilter, PackageMetadataTab initialSelectedTab)
         {
             var nuGetFeatureFlagService = await ServiceLocator.GetComponentModelServiceAsync<INuGetFeatureFlagService>();
@@ -54,13 +48,17 @@ namespace NuGet.PackageManagement.UI.ViewModels
             Tabs.Add(ReadmePreviewViewModel);
             Tabs.Add(DetailControlModel);
 
-            SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible && ConvertFromVm(t) == initialSelectedTab) ?? Tabs.FirstOrDefault(t => t.IsVisible);
+            SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible && ConvertFromTabType(t) == initialSelectedTab) ?? Tabs.FirstOrDefault(t => t.IsVisible);
 
             DetailControlModel.PropertyChanged += DetailControlModel_PropertyChanged;
-            ReadmePreviewViewModel.PropertyChanged += IsVisible_PropertyChanged;
+
+            foreach (var tab in Tabs)
+            {
+                tab.PropertyChanged += IsVisible_PropertyChanged;
+            }
         }
 
-        private static PackageMetadataTab ConvertFromVm(TitledPageViewModelBase vm)
+        public static PackageMetadataTab ConvertFromTabType(TitledPageViewModelBase vm)
         {
             if (vm is DetailControlModel)
             {
@@ -85,13 +83,23 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
             _disposed = true;
             DetailControlModel.PropertyChanged -= DetailControlModel_PropertyChanged;
+
+            foreach (var tab in Tabs)
+            {
+                tab.PropertyChanged -= IsVisible_PropertyChanged;
+            }
         }
 
         private void IsVisible_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(TitledPageViewModelBase.IsVisible))
             {
-                if (!SelectedTab.IsVisible)
+                if (SelectedTab == null)
+                {
+                    SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible);
+                }
+                else if (SelectedTab == sender
+                    && !SelectedTab.IsVisible)
                 {
                     SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible);
                 }
@@ -107,7 +115,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
                     await ReadmePreviewViewModel.SetPackageMetadataAsync(DetailControlModel.PackageMetadata, CancellationToken.None);
                 }
             });
-            IsVisible_PropertyChanged(sender, e);
         }
     }
 }
