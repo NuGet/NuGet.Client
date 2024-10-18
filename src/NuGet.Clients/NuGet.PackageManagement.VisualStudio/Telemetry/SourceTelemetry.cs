@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.VisualStudio.Telemetry;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -28,25 +29,25 @@ namespace NuGet.PackageManagement.Telemetry
 
         public static TelemetryEvent GetRestoreSourceSummaryEvent(
             Guid parentId,
-            IEnumerable<PackageSource> packageSources,
+            IEnumerable<SourceRepository> sourceRepositories,
             PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             return GetSourceSummaryEvent(
                 "RestorePackageSourceSummary",
                 parentId,
-                packageSources,
+                sourceRepositories,
                 protocolDiagnosticTotals);
         }
 
         public static TelemetryEvent GetSearchSourceSummaryEvent(
             Guid parentId,
-            IEnumerable<PackageSource> packageSources,
+            IEnumerable<SourceRepository> sourceRepositories,
             PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             return GetSourceSummaryEvent(
                 "SearchPackageSourceSummary",
                 parentId,
-                packageSources,
+                sourceRepositories,
                 protocolDiagnosticTotals);
         }
 
@@ -56,7 +57,7 @@ namespace NuGet.PackageManagement.Telemetry
         private static TelemetryEvent GetSourceSummaryEvent(
             string eventName,
             Guid parentId,
-            IEnumerable<PackageSource> packageSources,
+            IEnumerable<SourceRepository> sourceRepositories,
             PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             var local = 0;
@@ -67,11 +68,21 @@ namespace NuGet.PackageManagement.Telemetry
             var dotnetCuratedFeed = false;
             var httpsV2 = 0;
             var httpsV3 = 0;
+            int numberOfHTTPSSourcesWithHTTPResource = 0;
+            bool serviceIndexCacheAvailable = false;
 
-            if (packageSources != null)
+            if (sourceRepositories != null)
             {
-                foreach (var source in packageSources)
+                foreach (var sourceRepository in sourceRepositories)
                 {
+                    var source = sourceRepository.PackageSource;
+
+                    if (sourceRepository.GetServiceIndexV3FromCache(out ServiceIndexResourceV3 resource))
+                    {
+                        serviceIndexCacheAvailable |= true;
+                        numberOfHTTPSSourcesWithHTTPResource += DoesServiceIndexHaveHttpResource(resource) && source.IsHttps ? 1 : 0;
+                    }
+
                     // Ignore disabled sources
                     if (source.IsEnabled)
                     {
@@ -142,7 +153,24 @@ namespace NuGet.PackageManagement.Telemetry
                 dotnetCuratedFeed,
                 protocolDiagnosticTotals,
                 httpsV2,
-                httpsV3);
+                httpsV3,
+                serviceIndexCacheAvailable,
+                numberOfHTTPSSourcesWithHTTPResource);
+        }
+
+        private static bool DoesServiceIndexHaveHttpResource(ServiceIndexResourceV3 resource)
+        {
+            foreach (var entry in resource.Entries)
+            {
+                var resourceUri = entry.Uri;
+
+                if (resourceUri.Scheme == Uri.UriSchemeHttp && resourceUri.Scheme != Uri.UriSchemeHttps)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -158,6 +186,8 @@ namespace NuGet.PackageManagement.Telemetry
         /// protocol.duration
         /// NumHTTPSv2Feeds
         /// NumHTTPSv3Feeds
+        /// ServiceIndexCacheAvailable
+        /// NumHTTPSSourcesWithAnHTTPResource
         /// </summary>
         private class SourceSummaryTelemetryEvent : TelemetryEvent
         {
@@ -172,7 +202,9 @@ namespace NuGet.PackageManagement.Telemetry
                 bool dotnetCuratedFeed,
                 PackageSourceTelemetry.Totals protocolDiagnosticTotals,
                 int httpsV2,
-                int httpsV3)
+                int httpsV3,
+                bool serviceIndexCacheAvailable,
+                int numberOfHttpsSourcesWithHttpResource)
                 : base(eventName)
             {
                 this["NumLocalFeeds"] = local;
@@ -187,6 +219,8 @@ namespace NuGet.PackageManagement.Telemetry
                 this["protocol.requests"] = protocolDiagnosticTotals.Requests;
                 this["protocol.bytes"] = protocolDiagnosticTotals.Bytes;
                 this["protocol.duration"] = protocolDiagnosticTotals.Duration.TotalMilliseconds;
+                this["ServiceIndexCacheAvailable"] = serviceIndexCacheAvailable;
+                this["NumHTTPSSourcesWithAnHTTPResource"] = numberOfHttpsSourcesWithHttpResource;
             }
         }
     }

@@ -26,7 +26,6 @@ using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
-using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Shared;
 using NuGet.VisualStudio;
@@ -335,7 +334,6 @@ namespace NuGet.SolutionRestoreManager
             var packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(_settings);
             bool isPackageSourceMappingEnabled = packageSourceMapping?.IsEnabled ?? false;
             var packageSources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
-            var repositories = _sourceRepositoryProvider.GetRepositories().ToList();
 
             int NumHTTPFeeds = 0;
             int NumLocalFeeds = 0;
@@ -389,35 +387,8 @@ namespace NuGet.SolutionRestoreManager
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
-            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, packageSources, protocolDiagnosticTotals);
+            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, _sourceRepositoryProvider.GetRepositories(), protocolDiagnosticTotals);
 
-            int NumberOfHTTPSSourcesWithHTTPResource = 0;
-            bool sendResourceTelemetry = false;
-
-            foreach (var repository in repositories)
-            {
-                bool hasAnHttpResource = false;
-
-                if (repository.GetServiceIndexV3FromCache(out ServiceIndexResourceV3 resource))
-                {
-                    sendResourceTelemetry |= true;
-                    var entries = resource.Entries;
-
-                    foreach (var entry in entries)
-                    {
-                        var resourceUri = entry.Uri;
-
-                        if (resourceUri.Scheme == Uri.UriSchemeHttp && resourceUri.Scheme != Uri.UriSchemeHttps)
-                        {
-                            hasAnHttpResource |= true;
-                        }
-                    }
-                }
-
-                NumberOfHTTPSSourcesWithHTTPResource += hasAnHttpResource ? 1 : 0;
-            }
-
-            sourceEvent["NumHTTPSSourcesWithAnHTTPResource"] = NumberOfHTTPSSourcesWithHTTPResource;
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
 
