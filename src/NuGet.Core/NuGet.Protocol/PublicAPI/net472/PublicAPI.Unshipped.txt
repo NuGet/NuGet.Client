@@ -1,2 +1,4 @@
 #nullable enable
+~NuGet.Protocol.CachingSourceProvider.CachingSourceProvider(System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> loadedRepositories, NuGet.Configuration.IPackageSourceProvider sourceProvider) -> void
 ~NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer(string rawPluginPaths) -> void
+~virtual NuGet.Protocol.Core.Types.SourceRepository.GetServiceIndexV3FromCache(out NuGet.Protocol.ServiceIndexResourceV3 result) -> bool
