@@ -120,7 +120,7 @@ namespace NuGet.SolutionRestoreManager
                     centralPackageVersions = packageVersions
                         .Select(ToCentralPackageVersion)
                         .Distinct(CentralPackageVersionNameComparer.Default)
-                        .ToDictionary(cpv => cpv.Name);
+                        .ToDictionary(cpv => cpv.Name, StringComparer.OrdinalIgnoreCase);
                 }
 
                 if (targetFrameworkInfo.Items.TryGetValue(ProjectItems.PackageReference, out var packageReferences))

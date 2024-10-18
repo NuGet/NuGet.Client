@@ -279,7 +279,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>An <see cref="IEnumerable{CentralPackageVersion}" /> containing the package versions for the specified project.</returns>
         internal static Dictionary<string, CentralPackageVersion> GetCentralPackageVersions(IMSBuildProject project)
         {
-            var result = new Dictionary<string, CentralPackageVersion>();
+            var result = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
             IEnumerable<IMSBuildItem> packageVersionItems = GetDistinctItemsOrEmpty(project, "PackageVersion");
 
             foreach (var projectItemInstance in packageVersionItems)
