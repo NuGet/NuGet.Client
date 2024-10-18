@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _rawReadme = string.Empty;
             _packageMetadata = null;
             Title = Resources.Label_Readme_Tab;
-            IsVisible = !isReadmeFeatureEnabled;
+            IsVisible = isReadmeFeatureEnabled;
         }
 
         public bool ErrorLoadingReadme

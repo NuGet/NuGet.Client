@@ -40,7 +40,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public PackageMetadataTab GetSelectedTab()
         {
-            return SelectedTab is DetailControlModel ? PackageMetadataTab.PackageDetails : PackageMetadataTab.Readme;
+            return ConvertFromVm(SelectedTab);
         }
 
         public async Task InitializeAsync(DetailControlModel detailControlModel, INuGetPackageFileService nugetPackageFileService, ItemFilter currentFilter, PackageMetadataTab initialSelectedTab)
@@ -54,23 +54,19 @@ namespace NuGet.PackageManagement.UI.ViewModels
             Tabs.Add(ReadmePreviewViewModel);
             Tabs.Add(DetailControlModel);
 
-            SelectedTab = Tabs.FirstOrDefault(t => IsVmForTab(initialSelectedTab, t)) ?? Tabs.FirstOrDefault(t => t.IsVisible);
+            SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible && ConvertFromVm(t) == initialSelectedTab) ?? Tabs.FirstOrDefault(t => t.IsVisible);
 
             DetailControlModel.PropertyChanged += DetailControlModel_PropertyChanged;
             ReadmePreviewViewModel.PropertyChanged += IsVisible_PropertyChanged;
         }
 
-        private static bool IsVmForTab(PackageMetadataTab tab, TitledPageViewModelBase vm)
+        private static PackageMetadataTab ConvertFromVm(TitledPageViewModelBase vm)
         {
-            switch (tab)
+            if (vm is DetailControlModel)
             {
-                case PackageMetadataTab.PackageDetails:
-                    return vm is DetailControlModel && vm.IsVisible;
-                case PackageMetadataTab.Readme:
-                    return vm is ReadmePreviewViewModel && vm.IsVisible;
-                default:
-                    return false;
+                return PackageMetadataTab.PackageDetails;
             }
+            return PackageMetadataTab.Readme;
         }
 
         public async Task SetCurrentFilterAsync(ItemFilter filter)
