@@ -234,9 +234,7 @@ namespace NuGet.Commands
                         {
                             importRefItem.LibraryRangeIndex = currentRefRangeIndex = libraryRangeInterningTable.Intern(libraryRange);
 
-                            currentRef = currentRef.Clone();
-
-                            currentRef.LibraryRange = libraryRange;
+                            currentRef = new LibraryDependency(currentRef) { LibraryRange = libraryRange };
 
                             importRefItem.LibraryDependency = currentRef;
 
@@ -654,9 +652,10 @@ namespace NuGet.Commands
 
                         if (isCentrallyPinnedTransitiveDependency)
                         {
-                            actualLibraryDependency = dep.Clone();
-
-                            actualLibraryDependency.LibraryRange.VersionRange = pinnedVersionRange;
+                            actualLibraryDependency = new LibraryDependency(dep)
+                            {
+                                LibraryRange = new LibraryRange(actualLibraryDependency.LibraryRange) { VersionRange = pinnedVersionRange },
+                            };
 
                             isCentrallyPinnedTransitiveDependency = true;
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
+using Microsoft.Internal.NuGet.Testing.SignedPackages.ChildProcess;
 using NuGet.CommandLine.Test;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -298,7 +299,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         /// <summary>
-        /// When pushing a snupkg wildcard where no matching files exist, show a File Not Found error. 
+        /// When pushing a snupkg wildcard where no matching files exist, show a File Not Found error.
         /// </summary>
         [Fact]
         public void PushCommand_Server_Snupkg_ByWildcard_FindsNothing_FileNotFoundError()
@@ -333,7 +334,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         /// <summary>
-        /// When pushing a nupkg by filename where no matching files exist, show a File Not Found error. 
+        /// When pushing a nupkg by filename where no matching files exist, show a File Not Found error.
         /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByFilename_FindsNothing_FileNotFoundError()
@@ -368,7 +369,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         /// <summary>
-        /// When pushing a nupkg by wildcard where no matching files exist, show a File Not Found error. 
+        /// When pushing a nupkg by wildcard where no matching files exist, show a File Not Found error.
         /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByWildcard_FindsNothing_FileNotFoundError()
@@ -403,7 +404,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
         }
 
         /// <summary>
-        /// When pushing a nupkg by filename to a Symbol Server with no matching snupkg, do not show a File Not Found error. 
+        /// When pushing a nupkg by filename to a Symbol Server with no matching snupkg, do not show a File Not Found error.
         /// </summary>
         [Fact]
         public void PushCommand_Server_Nupkg_ByFilename_SnupkgDoesNotExist_NoFileNotFoundError()

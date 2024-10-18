@@ -5,7 +5,7 @@
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion Condition="'$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)' == ''">3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
     <NewtonsoftJsonPackageVersion Condition="'$(NewtonsoftJsonPackageVersion)' == ''">13.0.3</NewtonsoftJsonPackageVersion>
     <SystemFormatsAsn1PackageVersion Condition="'$(SystemFormatsAsn1PackageVersion)' == ''">8.0.1</SystemFormatsAsn1PackageVersion>
-    <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.4</SystemTextJsonVersion>
+    <SystemTextJsonVersion Condition="'$(SystemTextJsonVersion)' == ''">8.0.5</SystemTextJsonVersion>
     <SystemPackagesVersion Condition="'$(SystemPackagesVersion)' == ''">4.3.0</SystemPackagesVersion>
     <SystemCommandLineVersion Condition="'$(SystemCommandLineVersion)' == ''">2.0.0-beta4.23307.1</SystemCommandLineVersion>
     <MSTestPackageVersion>3.4.3</MSTestPackageVersion>
@@ -76,7 +76,7 @@
     <PackageVersion Include="Microsoft.VisualStudio.TemplateWizardInterface" Version="17.10.40170" />
     <PackageVersion Include="Microsoft.VisualStudio.VCProjectEngine" Version="17.10.40173" />
     <PackageVersion Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
-    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.0.1600" />
+    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.12.2069" />
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Moq" Version="4.18.1" />
     <PackageVersion Include="MSTest.TestAdapter" Version="$(MSTestPackageVersion)" />
@@ -87,6 +87,7 @@
     <PackageVersion Include="NuGetValidator" version="2.1.1" />
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
     <PackageVersion Include="System.Collections" Version="$(SystemPackagesVersion)" />
+    <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1PackageVersion)" />
@@ -190,6 +191,7 @@
       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileSystemGlobbing" />
       <_allowBuildFromSourcePackage Include="Microsoft.Web.Xdt" />
       <_allowBuildFromSourcePackage Include="Newtonsoft.Json" />
+      <_allowBuildFromSourcePackage Include="System.Collections.Immutable" />
       <_allowBuildFromSourcePackage Include="System.CommandLine" />
       <_allowBuildFromSourcePackage Include="System.ComponentModel.Composition" />
       <_allowBuildFromSourcePackage Include="System.Formats.Asn1" />
