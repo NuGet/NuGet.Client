@@ -687,7 +687,7 @@ namespace NuGet.PackageManagement.UI
                 IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true,
                 SelectedFilter = _topPanel.Filter,
                 OptionsExpanded = _packageDetail._optionsControl.IsExpanded,
-                SelectedPackageMetadataTab = _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SelectedTab.PackageMetadataTab
+                SelectedPackageMetadataTab = _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.GetSelectedTab()
             };
             _packageDetail._solutionView.SaveSettings(settings);
 

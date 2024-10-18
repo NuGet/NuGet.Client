@@ -11,7 +11,7 @@ using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class ReadmePreviewViewModel : TabViewModelBase
+    public sealed class ReadmePreviewViewModel : RenderedViewModelBase
     {
         private bool _errorLoadingReadme;
         private INuGetPackageFileService _nugetPackageFileService;
@@ -29,7 +29,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _packageMetadata = null;
             Header = Resources.Label_Readme_Tab;
             IsVisible = true;
-            PackageMetadataTab = PackageMetadataTab.Readme;
         }
 
         public bool ErrorLoadingReadme

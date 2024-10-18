@@ -20,10 +20,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public DetailControlModel DetailControlModel { get; private set; }
 
-        public ObservableCollection<TabViewModelBase> Tabs { get; private set; }
+        public ObservableCollection<RenderedViewModelBase> Tabs { get; private set; }
 
-        private TabViewModelBase _selectedTab;
-        public TabViewModelBase SelectedTab
+        private RenderedViewModelBase _selectedTab;
+        public RenderedViewModelBase SelectedTab
         {
             get => _selectedTab;
             set
@@ -35,7 +35,12 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public PackageDetailsTabViewModel()
         {
             _readmeTabEnabled = true;
-            Tabs = new ObservableCollection<TabViewModelBase>();
+            Tabs = new ObservableCollection<RenderedViewModelBase>();
+        }
+
+        public PackageMetadataTab GetSelectedTab()
+        {
+            return SelectedTab is DetailControlModel ? PackageMetadataTab.PackageDetails : PackageMetadataTab.Readme;
         }
 
         public async Task InitializeAsync(DetailControlModel detailControlModel, INuGetPackageFileService nugetPackageFileService, ItemFilter currentFilter, PackageMetadataTab initialSelectedTab)

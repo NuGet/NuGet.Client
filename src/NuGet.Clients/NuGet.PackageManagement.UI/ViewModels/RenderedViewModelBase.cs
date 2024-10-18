@@ -1,6 +1,6 @@
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public class TabViewModelBase : ViewModelBase
+    public class RenderedViewModelBase : ViewModelBase
     {
         private string _header;
         public string Header
@@ -21,7 +21,5 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 SetAndRaisePropertyChanged(ref _isVisible, value);
             }
         }
-
-        public PackageMetadataTab PackageMetadataTab { get; set; }
     }
 }
