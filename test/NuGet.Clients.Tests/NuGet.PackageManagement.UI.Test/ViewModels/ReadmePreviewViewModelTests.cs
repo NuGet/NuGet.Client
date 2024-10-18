@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
         {
             Assert.Throws<ArgumentNullException>(() =>
             {
-                new ReadmePreviewViewModel(null);
+                new ReadmePreviewViewModel(null, ItemFilter.All, true);
             });
         }
 
@@ -33,50 +33,134 @@ namespace NuGet.PackageManagement.UI.Test.ViewModels
             var mockFileService = new Mock<INuGetPackageFileService>();
 
             //Act
-            var target = new ReadmePreviewViewModel(mockFileService.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All, true);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
             Assert.Equal(string.Empty, target.ReadmeMarkdown);
-            Assert.True(target.CanDetermineReadmeDefined);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData(" ")]
-        public async Task LoadReadmeAsync_WithoutReadmeUrl_NoReadmeReturned(string readmeUrl)
+        public async Task SetPackageMetadataAsync_WithoutReadmeUrl_NoReadmeReturned(string readmeUrl)
         {
             //Arrange
             var mockFileService = new Mock<INuGetPackageFileService>();
-            var target = new ReadmePreviewViewModel(mockFileService.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = readmeUrl;
 
             //Act
-            await target.LoadReadmeAsync(readmeUrl, CancellationToken.None);
+            await target.SetPackageMetadataAsync(package, CancellationToken.None);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
             Assert.Equal(string.Empty, target.ReadmeMarkdown);
-            Assert.False(target.CanDetermineReadmeDefined);
         }
 
         [Fact]
-        public async Task LoadReadmeAsync_WithReadmeUrl_ReadmeReturned()
+        public async Task SetCurrentFilter_ItemFilterAll_NoLocalReadmeReturned()
         {
             //Arrange
             var readmeContents = "readme contents";
             using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
             var mockFileService = new Mock<INuGetPackageFileService>();
             mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
-            var target = new ReadmePreviewViewModel(mockFileService.Object);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+            await target.SetPackageMetadataAsync(package, CancellationToken.None);
 
             //Act
-            await target.LoadReadmeAsync("C://path/to/readme.md", CancellationToken.None);
+            await target.SetCurrentFilterAsync(ItemFilter.All);
+
+            //Assert
+            Assert.False(target.ErrorLoadingReadme);
+            Assert.Equal(string.Empty, target.ReadmeMarkdown);
+        }
+
+        [Theory]
+        [InlineData(ItemFilter.Installed)]
+        [InlineData(ItemFilter.Consolidate)]
+        [InlineData(ItemFilter.UpdatesAvailable)]
+        public async Task SetCurrentFilter_ItemFilterRenderingLocalReadme_LocalReadmeReturned(ItemFilter filter)
+        {
+            //Arrange
+            var readmeContents = "readme contents";
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
+            var mockFileService = new Mock<INuGetPackageFileService>();
+            mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All, true);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+            await target.SetPackageMetadataAsync(package, CancellationToken.None);
+
+            //Act
+            await target.SetCurrentFilterAsync(filter);
 
             //Assert
             Assert.False(target.ErrorLoadingReadme);
             Assert.Equal(readmeContents, target.ReadmeMarkdown);
-            Assert.True(target.CanDetermineReadmeDefined);
+        }
+
+        [Fact]
+        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_RenderLocalReadmeTrue_LocalReadmeReturned()
+        {
+            //Arrange
+            var readmeContents = "readme contents";
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
+            var mockFileService = new Mock<INuGetPackageFileService>();
+            mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+
+            //Act
+            await target.SetPackageMetadataAsync(package, CancellationToken.None);
+
+            //Assert
+            Assert.False(target.ErrorLoadingReadme);
+            Assert.Equal(readmeContents, target.ReadmeMarkdown);
+        }
+
+        [Fact]
+        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_RenderLocalReadmeFalse_NoLocalReadmeReturned()
+        {
+            //Arrange
+            var readmeContents = "readme contents";
+            using Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(readmeContents));
+            var mockFileService = new Mock<INuGetPackageFileService>();
+            mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).ReturnsAsync(stream);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.All, true);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+
+            //Act
+            await target.SetPackageMetadataAsync(package, CancellationToken.None);
+
+            //Assert
+            Assert.False(target.ErrorLoadingReadme);
+            Assert.Equal(string.Empty, target.ReadmeMarkdown);
+        }
+
+        [Fact]
+        public async Task SetPackageMetadataAsync_WithLocalReadmeUrl_FileNotFound_NoReadmeFoundTextReturned()
+        {
+            //Arrange
+            var mockFileService = new Mock<INuGetPackageFileService>();
+            mockFileService.Setup(x => x.GetReadmeAsync(It.IsAny<Uri>(), It.IsAny<CancellationToken>())).Returns(null);
+            var target = new ReadmePreviewViewModel(mockFileService.Object, ItemFilter.Installed, true);
+            var package = new DetailedPackageMetadata();
+            package.ReadmeFileUrl = "C://path/to/readme.md";
+
+            //Act
+            await target.SetPackageMetadataAsync(package, CancellationToken.None);
+
+            //Assert
+            Assert.False(target.ErrorLoadingReadme);
+            Assert.Equal(Resources.Text_NoReadme, target.ReadmeMarkdown);
         }
     }
 }
