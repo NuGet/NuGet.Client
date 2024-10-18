@@ -23,8 +23,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class RecommenderPackageFeed : IPackageFeed
     {
-        private static readonly IdentityIdEqualityComparer IdEqualityComparer = new();
-
         public bool IsMultiSource => _decoratedPackageFeed.IsMultiSource;
 
         private readonly IPackageFeed _decoratedPackageFeed;
@@ -104,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
             SearchResult<IPackageSearchMetadata> decoratedResults = await _decoratedPackageFeed.SearchAsync(searchText, searchFilter, cancellationToken);
 
             // Add the recommended results to the top of the decorated feed's results, deduplicating any packages in the decorated feed.
-            IReadOnlyList<IPackageSearchMetadata> combinedResults = recommenderResults.Items.Union(decoratedResults.Items, IdEqualityComparer).ToList();
+            IReadOnlyList<IPackageSearchMetadata> combinedResults = recommenderResults.Items.Union(decoratedResults.Items, IdentityIdEqualityComparer.Instance).ToList();
             SearchResult<IPackageSearchMetadata> result = SearchResult.FromItems(combinedResults);
             // We want to make sure we can continue searching the decorated feed and its sources' search statuses are accurately represented.
             result.NextToken = decoratedResults.NextToken;
@@ -215,6 +213,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private class IdentityIdEqualityComparer : IEqualityComparer<IPackageSearchMetadata>
         {
+            public static IdentityIdEqualityComparer Instance = new();
+
+            private IdentityIdEqualityComparer()
+            {
+            }
+
             public bool Equals(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
                 return x.Identity.Id.Equals(y.Identity.Id);
