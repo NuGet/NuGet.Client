@@ -1950,7 +1950,6 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             result.Success.Should().BeTrue(because: result.AllOutput);
             projectA.AssetsFile.LogMessages.Should().HaveCount(0);
             projectA.AssetsFile.Targets[0].Libraries.Should().HaveCount(1);
-            projectA.AssetsFile.Targets[0].Libraries.Should().HaveCount(1);
             projectA.AssetsFile.Targets[0].Libraries[0].Name.Should().Be(packageX.Id);
         }
     }

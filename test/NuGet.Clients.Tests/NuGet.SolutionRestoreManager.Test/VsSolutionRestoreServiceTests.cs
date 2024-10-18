@@ -2695,7 +2695,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public void ToPackageSpec_WithCPMAndPackageReferenceWithDifferentCasing_CombinesDataCorrect()
+        public void ToPackageSpec_WithCPMAndPackageReferenceWithDifferentCasing_CombinesCorrectly()
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "projectC", Guid.NewGuid().ToString());
