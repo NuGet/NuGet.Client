@@ -10,8 +10,8 @@
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Utilities"
   DataContextChanged="UserControl_DataContextChanged"
-  Unloaded="UserControl_Unloaded"
-  Loaded="UserControl_Loaded"
+  Unloaded="PackageReadmeControl_Unloaded"
+  Loaded="PackageReadmeControl_Loaded"
   mc:Ignorable="d"
   d:DesignHeight="300"
   d:DesignWidth="300">

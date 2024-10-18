@@ -94,12 +94,12 @@ namespace NuGet.PackageManagement.UI
             ReadmeViewModel.PropertyChanged += ReadmeViewModel_PropertyChanged;
         }
 
-        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        private void PackageReadmeControl_Unloaded(object sender, RoutedEventArgs e)
         {
             Dispose();
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)
         {
             ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
