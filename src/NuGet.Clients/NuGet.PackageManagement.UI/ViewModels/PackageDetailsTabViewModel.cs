@@ -1,7 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
@@ -88,7 +87,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             {
                 if (!ReadmePreviewViewModel.IsVisible)
                 {
-                    SelectedTab = Tabs.Where(t => t is DetailControlModel).FirstOrDefault();
+                    SelectedTab = DetailControlModel;
                 }
             }
         }
