@@ -36,6 +36,32 @@ namespace NuGet.Protocol
                 .ToList();
         }
 
+        public CachingSourceProvider(IEnumerable<SourceRepository> loadedRepositories, IPackageSourceProvider sourceProvider)
+        {
+            _packageSourceProvider = sourceProvider;
+            _resourceProviders.AddRange(Repository.Provider.GetCoreV3());
+
+            var sourcesFromNewSourceProvider = _packageSourceProvider.LoadPackageSources()
+                .Where(source => source.IsEnabled)
+                .ToList();
+
+            foreach (var repository in loadedRepositories)
+            {
+                if (repository.PackageSource.IsEnabled && !_repositories.Contains(repository))
+                {
+                    _repositories.Add(_cachedSources.GetOrAdd(repository.PackageSource.Name, repository));
+                }
+            }
+
+            foreach (PackageSource source in sourcesFromNewSourceProvider)
+            {
+                if (source.IsEnabled && !_cachedSources.ContainsKey(source.Name))
+                {
+                    _repositories.Add(_cachedSources.GetOrAdd(source.Name, new SourceRepository(source, _resourceProviders, FeedType.Undefined)));
+                }
+            }
+        }
+
         /// <summary>
         /// Retrieve repositories that have been cached.
         /// </summary>

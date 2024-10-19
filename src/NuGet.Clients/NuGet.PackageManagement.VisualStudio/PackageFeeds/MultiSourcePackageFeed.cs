@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var protocolDiagnosticTotals = packageSourceTelemetry.GetTotals();
                     _telemetryService.EmitTelemetryEvent(SourceTelemetry.GetSearchSourceSummaryEvent(
                         searchOperationId,
-                        _sourceRepositories.Select(x => x.PackageSource),
+                        _sourceRepositories,
                         protocolDiagnosticTotals));
                 }
             }

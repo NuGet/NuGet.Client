@@ -387,7 +387,7 @@ namespace NuGet.SolutionRestoreManager
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
-            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, packageSources, protocolDiagnosticTotals);
+            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, _sourceRepositoryProvider.GetRepositories(), protocolDiagnosticTotals);
 
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
