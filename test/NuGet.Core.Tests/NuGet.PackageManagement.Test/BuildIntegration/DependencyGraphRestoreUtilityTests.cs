@@ -724,7 +724,7 @@ namespace NuGet.PackageManagement.Test
             // Arrange - Setup project
             var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageA);
-            var sources = new PackageSource[] { new PackageSource(pathContext.PackageSource) };
+            var sources = new PackageSource[] { new PackageSource(pathContext.PackageSource, "source") };
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(sources);
             var settings = Settings.LoadDefaultSettings(pathContext.SolutionRoot);
             var mockProjectCache = new Mock<IProjectSystemCache>();
