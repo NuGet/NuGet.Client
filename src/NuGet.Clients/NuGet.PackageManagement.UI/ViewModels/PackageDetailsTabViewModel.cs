@@ -94,12 +94,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             if (e.PropertyName == nameof(TitledPageViewModelBase.IsVisible))
             {
-                if (SelectedTab == null)
-                {
-                    SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible);
-                }
-                else if (SelectedTab == sender
-                    && !SelectedTab.IsVisible)
+                if (SelectedTab == null || (SelectedTab == sender && !SelectedTab.IsVisible))
                 {
                     SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible);
                 }
