@@ -21,6 +21,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public Uri? IconUrl { get; internal set; }
         public string? Tags { get; internal set; }
         public Uri? LicenseUrl { get; internal set; }
+        public string? ReadmeFileUrl { get; internal set; }
         public Uri? ReadmeUrl { get; internal set; }
         public Uri? ProjectUrl { get; internal set; }
         public DateTimeOffset? Published { get; internal set; }
@@ -59,6 +60,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
                 Tags = packageSearchMetadata.Tags,
                 Identity = packageSearchMetadata.Identity,
                 LicenseUrl = packageSearchMetadata.LicenseUrl,
+                ReadmeFileUrl = packageSearchMetadata.ReadmeFileUrl,
                 ReadmeUrl = packageSearchMetadata.ReadmeUrl,
                 LicenseMetadata = packageSearchMetadata.LicenseMetadata,
                 IsRecommended = recommendedPackageSearchMetadata?.IsRecommended ?? false,

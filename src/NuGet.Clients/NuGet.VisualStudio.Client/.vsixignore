@@ -5,6 +5,7 @@
 
 Azure.Core.dll
 Ben.Demystifier.dll
+Markdig.Signed.dll
 Microsoft.DataAI.NuGetRecommender.Contracts.dll
 Microsoft.IO.Redist.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll
@@ -76,6 +77,9 @@ Microsoft.VisualStudio.Debugger.UI.Interfaces.dll
 Microsoft.VisualStudio.Extensibility.Editor.Contracts.dll
 Microsoft.VisualStudio.HotReload.Components.dll
 Microsoft.VisualStudio.Linux.ConnectionManager.Store.dll
+Microsoft.VisualStudio.Markdown.Core.dll
+Microsoft.VisualStudio.Markdown.Platform.dll
+Microsoft.VisualStudio.Markdown.Platform.resources.dll
 Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll
 Microsoft.VisualStudio.ProjectSystem.Managed.VS.resources.dll
 Microsoft.VisualStudio.ProjectSystem.Managed.dll

@@ -1,2 +1,12 @@
 #nullable enable
+<<<<<<< HEAD
 ~NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer(string rawPluginPaths) -> void
+=======
+~const NuGet.Protocol.JsonProperties.ReadmeFileUrl = "readmeFileUrl" -> string
+~NuGet.Protocol.Core.Types.IPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.Core.Types.PackageSearchMetadataBuilder.ClonedPackageSearchMetadata.ReadmeFileUrl.set -> void
+~NuGet.Protocol.LocalPackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.PackageSearchMetadata.ReadmeFileUrl.get -> string
+~NuGet.Protocol.PackageSearchMetadataV2Feed.ReadmeFileUrl.get -> string
+>>>>>>> 8dba8d28d (Updated PM UI to render the README inside of a tab in the README Details pane.  (#6094))
