@@ -59,6 +59,21 @@ namespace NuGet.Protocol
                     query = query.Where(package => ContainsAnyTerm(terms, package));
                 }
 
+                // Filter on package types
+                if (filters?.PackageTypes != null
+                    && filters.PackageTypes.Any())
+                {
+                    foreach (var packageTypeName in filters.PackageTypes)
+                    {
+                        query = query
+                            .Where(package => package.Nuspec
+                                .GetPackageTypes()
+                                .Any(packageType => StringComparer.OrdinalIgnoreCase.Equals(
+                                    packageType.Name,
+                                    packageTypeName)));
+                    }
+                }
+
                 // Collapse to the highest version per id, if necessary
                 var collapsedQuery = filters?.Filter == SearchFilterType.IsLatestVersion ||
                                      filters?.Filter == SearchFilterType.IsAbsoluteLatestVersion
