@@ -35,6 +35,7 @@
     <Compile Include="$(SharedDirectory)\NullableAttributes.cs" />
     <Compile Include="$(SharedDirectory)\RequiredModifierAttributes.cs" />
     <Compile Include="$(SharedDirectory)\SharedExtensions.cs" />
+    <Compile Include="$(SharedDirectory)\SimplePool.cs" />
     <Compile Include="$(SharedDirectory)\TaskResult.cs" />
     <Compile Include="$(SharedDirectory)\XmlUtility.cs" />
   </ItemGroup>
