@@ -183,7 +183,6 @@
         <ColumnDefinition Width="2*"/>
         <ColumnDefinition MinWidth="192" />
       </Grid.ColumnDefinitions>
-      
       <Grid
         Grid.Column="0">
         <Grid.ColumnDefinitions>

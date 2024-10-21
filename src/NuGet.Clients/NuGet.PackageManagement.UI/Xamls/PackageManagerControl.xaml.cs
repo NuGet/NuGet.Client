@@ -1278,7 +1278,7 @@ namespace NuGet.PackageManagement.UI
 
                 NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
-                    await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SetCurrentFilterAsync(_topPanel.Filter);
+                    await _packageDetail._packageDetailsTabControl.PackageDetailsTabViewModel.SetCurrentFilterAsync(ActiveFilter);
                     await RunAndEmitRefreshAsync(async () =>
                     {
                         await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
