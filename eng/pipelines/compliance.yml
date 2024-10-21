@@ -57,7 +57,7 @@ jobs:
           APIScan: true
           ToolLogsNotFoundAction: "Standard"
 
-      - task: TSAUpload@1
+      - task: TSAUpload@2
         displayName: "Upload to TSA"
         inputs:
           tsaVersion: "TsaV2"
