@@ -89,6 +89,7 @@ Microsoft.VisualStudio.ProjectSystem.Query.resources.dll
 Microsoft.VisualStudio.Services.TestManagement.TestPlanning.WebApi.dll
 Microsoft.VisualStudio.Services.TestResults.WebApi.dll
 System.Configuration.ConfigurationManager.dll
+System.Drawing.Common.dll
 System.IdentityModel.Tokens.Jwt.dll
 System.Management.Automation.dll
 System.Memory.Data.dll
