@@ -1621,11 +1621,11 @@ namespace NuGet.Commands.FuncTest
             using var pathContext = new SimpleTestPathContext();
 
             // Setup packages
-            var packageA = new SimpleTestPackageContext("Microsoft.VisualStudio.Copilot.UI.Apex", "17.13.37-alpha")
+            var packageA = new SimpleTestPackageContext("packageA", "17.13.37-alpha")
             {
-                Dependencies = [new SimpleTestPackageContext("MessagePack", "2.5.168"), new SimpleTestPackageContext("Project2", "17.5.33530.100")]
+                Dependencies = [new SimpleTestPackageContext("packageB", "2.5.168"), new SimpleTestPackageContext("ProjectAndPackage", "17.5.33530.100")]
             };
-            var packageB = new SimpleTestPackageContext("MessagePack", "2.5.187");
+            var packageB = new SimpleTestPackageContext("packageB", "2.5.187");
 
             await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                 pathContext.PackageSource,
@@ -1634,72 +1634,72 @@ namespace NuGet.Commands.FuncTest
                 packageB);
 
             var rootProject = @"
-                {
-                    ""restore"": {
-                                    ""centralPackageVersionsManagementEnabled"": true,
-                    },
-                  ""frameworks"": {
-                    ""net472"": {
-                        ""dependencies"": {
-                                ""Microsoft.VisualStudio.Copilot.UI.Apex"": {
-                                    ""version"": ""[17.13.37-alpha,)"",
-                                    ""target"": ""Package"",
-                                    ""versionCentrallyManaged"": true
-                                },
+        {
+            ""restore"": {
+                            ""centralPackageVersionsManagementEnabled"": true,
+            },
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[17.13.37-alpha,)"",
+                            ""target"": ""Package"",
+                            ""versionCentrallyManaged"": true
                         },
-                        ""centralPackageVersions"": {
-                            ""Microsoft.VisualStudio.Copilot.UI.Apex"": ""[17.13.37-alpha,)"",
-                            ""MessagePack"": ""[2.5.187,)""
-                        }
-                    }
-                  }
-                }";
+                },
+                ""centralPackageVersions"": {
+                    ""packageA"": ""[17.13.37-alpha,)"",
+                    ""packageB"": ""[2.5.187,)""
+                }
+            }
+          }
+        }";
 
             var baseEmptyProject = @"
-                {
-                    ""restore"": {
-                                    ""centralPackageVersionsManagementEnabled"": true,
-                                    ""CentralPackageTransitivePinningEnabled"": true,
-                    },
-                  ""frameworks"": {
-                    ""net472"": {
-                        ""dependencies"": {
-                        },
-                        ""centralPackageVersions"": {
-                            ""Microsoft.VisualStudio.Copilot.UI.Apex"": ""[17.13.37-alpha,)"",
-                            ""MessagePack"": ""[2.5.187,)""
-                        }
-                    }
-                  }
-                }";
+        {
+            ""restore"": {
+                            ""centralPackageVersionsManagementEnabled"": true,
+                            ""CentralPackageTransitivePinningEnabled"": true,
+            },
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                },
+                ""centralPackageVersions"": {
+                    ""packageA"": ""[17.13.37-alpha,)"",
+                    ""packageB"": ""[2.5.187,)""
+                }
+            }
+          }
+        }";
 
             var leafProject = @"
-                {
-                    ""version"": ""17.13.35421.60"",
-                    ""restore"": {
-                                    ""centralPackageVersionsManagementEnabled"": true,
-                                    ""CentralPackageTransitivePinningEnabled"": true,
-                    },
-                  ""frameworks"": {
-                    ""net472"": {
-                        ""dependencies"": {
-                                ""MessagePack"": {
-                                    ""version"": ""[2.5.187,)"",
-                                    ""target"": ""Package"",
-                                    ""versionCentrallyManaged"": true
-                                },
+        {
+            ""version"": ""17.13.35421.60"",
+            ""restore"": {
+                            ""centralPackageVersionsManagementEnabled"": true,
+                            ""CentralPackageTransitivePinningEnabled"": true,
+            },
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageB"": {
+                            ""version"": ""[2.5.187,)"",
+                            ""target"": ""Package"",
+                            ""versionCentrallyManaged"": true
                         },
-                        ""centralPackageVersions"": {
-                            ""Microsoft.VisualStudio.Copilot.UI.Apex"": ""[17.13.37-alpha,)"",
-                            ""MessagePack"": ""[2.5.187,)""
-                        }
-                    }
-                  }
-                }";
+                },
+                ""centralPackageVersions"": {
+                    ""packageA"": ""[17.13.37-alpha,)"",
+                    ""packageB"": ""[2.5.187,)""
+                }
+            }
+          }
+        }";
 
             // Setup project
             var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
-            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project2", pathContext.SolutionRoot, baseEmptyProject);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("ProjectAndPackage", pathContext.SolutionRoot, baseEmptyProject);
             var projectSpec3 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project3", pathContext.SolutionRoot, baseEmptyProject);
             var projectSpec4 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project4", pathContext.SolutionRoot, leafProject);
             projectSpec3 = projectSpec3.WithTestProjectReference(projectSpec4);
@@ -1712,9 +1712,9 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.PackageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled.Should().BeFalse();
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(5);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("MessagePack");
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageB");
             result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.5.187"));
-            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project2");
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("ProjectAndPackage");
             result.LockFile.Targets[0].Libraries[2].Type.Should().Be("project");
             result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project3");
             result.LockFile.Targets[0].Libraries[4].Name.Should().Be("Project4");
