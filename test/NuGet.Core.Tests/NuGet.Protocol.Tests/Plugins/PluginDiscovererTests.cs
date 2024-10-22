@@ -469,7 +469,7 @@ namespace NuGet.Protocol.Plugins.Tests
             PluginDiscoverer pluginDiscoverer = new PluginDiscoverer(environmentalVariableReader.Object);
 
             // Act
-            var plugins = pluginDiscoverer.GetPluginsInPATH();
+            var plugins = pluginDiscoverer.GetPluginsInPath();
 
             // Assert
             Assert.Single(plugins);
@@ -538,7 +538,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var pluginDiscoverer = new PluginDiscoverer(environmentalVariableReader.Object);
 
             // Act
-            var plugins = pluginDiscoverer.GetPluginsInPATH();
+            var plugins = pluginDiscoverer.GetPluginsInPath();
 
             // Assert
             Assert.Single(plugins);

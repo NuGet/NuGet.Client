@@ -37,7 +37,12 @@ namespace NuGet.Protocol.Plugins
 #else
             _netCoreOrNetFXPluginPaths = environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
 #endif
-            _nuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
+
+            if (string.IsNullOrEmpty(_netCoreOrNetFXPluginPaths))
+            {
+                _nuGetPluginPaths = _environmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
+            }
+
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         }
 
@@ -111,11 +116,11 @@ namespace NuGet.Protocol.Plugins
                     // Search for .Net tools plugins in PATH
                     if (_pluginFiles != null)
                     {
-                        _pluginFiles.AddRange(GetPluginsInPATH() ?? new List<PluginFile>());
+                        _pluginFiles.AddRange(GetPluginsInPath());
                     }
                     else
                     {
-                        _pluginFiles = GetPluginsInPATH() ?? new List<PluginFile>();
+                        _pluginFiles = GetPluginsInPath();
                     }
                 }
 
@@ -221,7 +226,7 @@ namespace NuGet.Protocol.Plugins
         /// Retrieves .NET tools authentication plugins by searching through directories specified in `PATH` 
         /// </summary>
         /// <returns>A list of valid <see cref="PluginFile"/> objects representing the discovered plugins.</returns>
-        internal List<PluginFile> GetPluginsInPATH()
+        internal List<PluginFile> GetPluginsInPath()
         {
             var pluginFiles = new List<PluginFile>();
             var nugetPluginPaths = _environmentVariableReader.GetEnvironmentVariable("PATH");
