@@ -17,12 +17,12 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private INuGetPackageFileService _nugetPackageFileService;
         private string _rawReadme;
         private DetailedPackageMetadata _packageMetadata;
-        private ItemFilter _currentItemFilter;
+        private bool _canRenderLocalReadme;
 
         public ReadmePreviewViewModel(INuGetPackageFileService packageFileService, ItemFilter itemFilter, bool isReadmeFeatureEnabled)
         {
             _nugetPackageFileService = packageFileService ?? throw new ArgumentNullException(nameof(packageFileService));
-            _currentItemFilter = itemFilter;
+            _canRenderLocalReadme = CanRenderLocalReadme(itemFilter);
             _nugetPackageFileService = packageFileService;
             _errorLoadingReadme = false;
             _rawReadme = string.Empty;
@@ -43,16 +43,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
             set => SetAndRaisePropertyChanged(ref _rawReadme, value);
         }
 
-        public bool RenderLocalReadme
+        public async Task ItemFilterChangedAsync(ItemFilter filter)
         {
-            get => _currentItemFilter != ItemFilter.All;
-        }
-
-        public async Task SetCurrentFilterAsync(ItemFilter filter)
-        {
-            var oldRenderLocalReadme = RenderLocalReadme;
-            _currentItemFilter = filter;
-            if (RenderLocalReadme != oldRenderLocalReadme)
+            var oldRenderLocalReadme = _canRenderLocalReadme;
+            _canRenderLocalReadme = CanRenderLocalReadme(filter);
+            if (_canRenderLocalReadme != oldRenderLocalReadme)
             {
                 if (_packageMetadata != null)
                 {
@@ -70,18 +65,23 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
         }
 
+        private static bool CanRenderLocalReadme(ItemFilter filter)
+        {
+            return filter != ItemFilter.All;
+        }
+
         private async Task LoadReadmeAsync(CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(_packageMetadata.ReadmeFileUrl))
             {
-                ReadmeMarkdown = RenderLocalReadme && !string.IsNullOrWhiteSpace(_packageMetadata.PackagePath) ? Resources.Text_NoReadme : string.Empty;
+                ReadmeMarkdown = _canRenderLocalReadme && !string.IsNullOrWhiteSpace(_packageMetadata.PackagePath) ? Resources.Text_NoReadme : string.Empty;
                 IsVisible = !string.IsNullOrWhiteSpace(ReadmeMarkdown);
                 ErrorLoadingReadme = false;
                 return;
             }
 
             var readmeUrl = new Uri(_packageMetadata.ReadmeFileUrl);
-            if (!RenderLocalReadme && readmeUrl.IsFile)
+            if (!_canRenderLocalReadme && readmeUrl.IsFile)
             {
                 ReadmeMarkdown = string.Empty;
                 IsVisible = false;

@@ -14,7 +14,6 @@ using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
-
     /// <summary>
     /// Interaction logic for PackageReadmeControl.xaml
     /// </summary>
@@ -40,10 +39,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await UpdateMarkdownAsync();
-                });
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(UpdateMarkdownAsync);
             }
         }
 
@@ -74,18 +70,19 @@ namespace NuGet.PackageManagement.UI
 
         private async Task UpdateMarkdownAsync()
         {
-#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
+                if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
+                {
+                    await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
+                }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
                 ReadmeViewModel.ErrorLoadingReadme = true;
                 ReadmeViewModel.ReadmeMarkdown = string.Empty;
                 await TelemetryUtility.PostFaultAsync(ex, nameof(ReadmePreviewViewModel));
             }
-#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

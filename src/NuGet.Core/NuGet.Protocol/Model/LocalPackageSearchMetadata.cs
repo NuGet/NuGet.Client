@@ -212,14 +212,12 @@ namespace NuGet.Protocol
         private string GetReadmeUri()
         {
             string embeddedReadme = _nuspec.GetReadme();
-
             if (embeddedReadme == null)
             {
                 return null;
             }
 
             var baseUri = Convert(_package.Path);
-
             UriBuilder builder = new UriBuilder(baseUri)
             {
                 Fragment = embeddedReadme

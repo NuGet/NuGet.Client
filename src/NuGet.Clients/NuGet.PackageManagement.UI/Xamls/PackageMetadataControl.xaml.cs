@@ -22,7 +22,6 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
 
             Visibility = Visibility.Collapsed;
-
             DataContextChanged += PackageMetadataControl_DataContextChanged;
         }
 

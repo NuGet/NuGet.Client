@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         public ReadmePreviewViewModel ReadmePreviewViewModel { get; private set; }
 
-        public DetailControlModel DetailControlModel { get; private set; }
+        private DetailControlModel DetailControlModel { get; set; }
 
         public ObservableCollection<TitledPageViewModelBase> Tabs { get; private set; }
 
@@ -25,10 +25,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public TitledPageViewModelBase SelectedTab
         {
             get => _selectedTab;
-            set
-            {
-                SetAndRaisePropertyChanged(ref _selectedTab, value);
-            }
+            set => SetAndRaisePropertyChanged(ref _selectedTab, value);
         }
 
         public PackageDetailsTabViewModel()
@@ -67,14 +64,6 @@ namespace NuGet.PackageManagement.UI.ViewModels
             return PackageMetadataTab.Readme;
         }
 
-        public async Task SetCurrentFilterAsync(ItemFilter filter)
-        {
-            if (_readmeTabEnabled)
-            {
-                await ReadmePreviewViewModel.SetCurrentFilterAsync(filter);
-            }
-        }
-
         public void Dispose()
         {
             if (_disposed)
@@ -103,13 +92,13 @@ namespace NuGet.PackageManagement.UI.ViewModels
 
         private void DetailControlModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 if (_readmeTabEnabled)
                 {
                     await ReadmePreviewViewModel.SetPackageMetadataAsync(DetailControlModel.PackageMetadata, CancellationToken.None);
                 }
-            });
+            }).PostOnFailure(nameof(PackageDetailsTabViewModel), nameof(DetailControlModel_PropertyChanged));
         }
     }
 }

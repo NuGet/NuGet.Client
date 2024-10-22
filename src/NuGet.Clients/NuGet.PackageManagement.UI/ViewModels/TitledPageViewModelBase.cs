@@ -6,20 +6,14 @@ namespace NuGet.PackageManagement.UI.ViewModels
         public string Title
         {
             get => _title;
-            set
-            {
-                SetAndRaisePropertyChanged(ref _title, value);
-            }
+            protected set => SetAndRaisePropertyChanged(ref _title, value);
         }
 
         private bool _isVisible;
         public bool IsVisible
         {
             get => _isVisible;
-            protected set
-            {
-                SetAndRaisePropertyChanged(ref _isVisible, value);
-            }
+            protected set => SetAndRaisePropertyChanged(ref _isVisible, value);
         }
     }
 }
