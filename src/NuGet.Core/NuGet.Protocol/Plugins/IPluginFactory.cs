@@ -42,5 +42,12 @@ namespace NuGet.Protocol.Plugins
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
             CancellationToken sessionCancellationToken);
+
+        Task<IPlugin> GetOrCreateNetToolsPluginAsync(
+           string filePath,
+           IEnumerable<string> arguments,
+           IRequestHandlers requestHandlers,
+           ConnectionOptions options,
+           CancellationToken sessionCancellationToken);
     }
 }
