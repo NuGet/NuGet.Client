@@ -26,9 +26,15 @@ namespace NuGet.Protocol.Plugins.Tests
             var environmentalVariableReader = new Mock<IEnvironmentVariableReader>();
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths)).Returns(rawPluginPaths);
             environmentalVariableReader.Setup(env => env.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths)).Returns(rawPluginPaths);
-            using (new PluginDiscoverer())
+
+            Exception exception = Record.Exception(() =>
             {
-            }
+                using (new PluginDiscoverer())
+                {
+                }
+            });
+
+            Assert.Null(exception);
         }
 
         [Fact]

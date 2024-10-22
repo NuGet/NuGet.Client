@@ -322,15 +322,19 @@ namespace NuGet.Protocol.Plugins
                     process.Start();
                     output = process.StandardOutput.ReadToEnd().Trim();
 
-                    if (!process.WaitForExit(1000) || process.ExitCode != 0)
+                    if (!process.HasExited && !process.WaitForExit(1000))
                     {
                         process.Kill();
                         return false;
                     }
-                }
+                    else if (process.ExitCode != 0)
+                    {
+                        return false;
+                    }
 
-                // Check if the output is "yes"
-                return output.Equals("yes", StringComparison.OrdinalIgnoreCase);
+                    // Check if the output is "yes"
+                    return output.Equals("yes", StringComparison.OrdinalIgnoreCase);
+                }
             }
             catch
             {
