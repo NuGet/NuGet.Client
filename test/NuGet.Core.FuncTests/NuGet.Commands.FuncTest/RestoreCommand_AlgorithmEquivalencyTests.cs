@@ -1712,12 +1712,14 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.PackageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled.Should().BeFalse();
             result.LockFile.Targets.Should().HaveCount(1);
             result.LockFile.Targets[0].Libraries.Should().HaveCount(5);
-            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageB");
-            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.5.187"));
-            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("ProjectAndPackage");
-            result.LockFile.Targets[0].Libraries[2].Type.Should().Be("project");
-            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project3");
-            result.LockFile.Targets[0].Libraries[4].Name.Should().Be("Project4");
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.5.187"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project4");
+            result.LockFile.Targets[0].Libraries[4].Name.Should().Be("ProjectAndPackage");
+            result.LockFile.Targets[0].Libraries[4].Type.Should().Be("project");
+
         }
 
         // Here's why package driven dependencies should flow.
