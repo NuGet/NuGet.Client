@@ -33,7 +33,6 @@ namespace NuGet.Protocol.Plugins
         private IPluginFactory _pluginFactory;
         private ConcurrentDictionary<PluginRequestKey, Lazy<Task<IReadOnlyList<OperationClaim>>>> _pluginOperationClaims;
         private ConcurrentDictionary<string, Lazy<IPluginMulticlientUtilities>> _pluginUtilities;
-        private string _rawPluginPaths;
 
         private static Lazy<int> _currentProcessId = new Lazy<int>(GetCurrentProcessId);
         private Lazy<string> _pluginsCacheDirectoryPath;
@@ -312,15 +311,6 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ArgumentNullException(nameof(pluginFactoryCreator));
             }
-#if IS_DESKTOP
-            _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
-#else
-            _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
-#endif
-            if (string.IsNullOrEmpty(_rawPluginPaths))
-            {
-                _rawPluginPaths = reader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
-            }
 
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
@@ -360,12 +350,20 @@ namespace NuGet.Protocol.Plugins
 
         private PluginDiscoverer InitializeDiscoverer()
         {
-            return new PluginDiscoverer(_rawPluginPaths);
+            return new PluginDiscoverer();
         }
 
         private bool IsPluginPossiblyAvailable()
         {
-            return !string.IsNullOrEmpty(_rawPluginPaths);
+            string pluginEnvVariable;
+
+#if IS_DESKTOP
+            pluginEnvVariable = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.DesktopPluginPaths);
+#else
+            pluginEnvVariable = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.CorePluginPaths);
+#endif
+            pluginEnvVariable ??= EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.PluginPaths);
+            return !string.IsNullOrEmpty(pluginEnvVariable);
         }
 
         private void OnPluginClosed(object sender, EventArgs e)
