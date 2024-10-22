@@ -62,14 +62,7 @@ namespace NuGet.Commands.Test
                 };
                 var runner = new PackCommandRunner(args, createProjectFactory: null);
 
-                try
-                {
-                    var result = runner.RunPackageBuild();
-                }
-                catch (Exception e)
-                {
-                    Assert.Equal(e.Message, "Version is required.");
-                }
+                Assert.Throws<Exception>(() => runner.RunPackageBuild());
 
                 var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.1.0.0.nupkg");
                 Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
@@ -77,7 +70,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void RunPackageBuild_WithValidNuspec_WithVersionAsArgumentSucceds()
+        public void RunPackageBuild_WithValidNuspec_WithVersionAsArgument_PackSucceeds()
         {
             using (var test = DefaultExclusionsTest.Create(validNuspec: true))
             {
@@ -91,22 +84,16 @@ namespace NuGet.Commands.Test
                 };
                 var runner = new PackCommandRunner(args, createProjectFactory: null);
 
-                try
-                {
-                    var result = runner.RunPackageBuild();
-                }
-                catch (Exception e)
-                {
-                    Assert.Equal(e.Message, "Version is required.");
-                }
+                var result = runner.RunPackageBuild();
+                Assert.True(result);
 
-                var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.1.0.0.nupkg");
-                Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
+                var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.3.1.2.nupkg");
+                Assert.True(File.Exists(nupkgPath), "nuspec file does not exist");
             }
         }
 
         [Fact]
-        public void RunPackageBuild_WithInvalidNuspec_WithVersionAsArgumentSucceds()
+        public void RunPackageBuild_WithInvalidNuspec_WithVersionAsArgument_PackSucceeds()
         {
             using (var test = DefaultExclusionsTest.Create(validNuspec: false))
             {
@@ -122,7 +109,7 @@ namespace NuGet.Commands.Test
                 var result = runner.RunPackageBuild();
 
                 var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.3.1.2.nupkg");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
+                Assert.True(File.Exists(nupkgPath), "nuspec file does not exist");
             }
         }
 
@@ -223,9 +210,7 @@ namespace NuGet.Commands.Test
                 else
                 {
                     InvaidNuspecNoVersion(nuspecFile.FullName, packageId, pattern);
-
                 }
-
 
                 var nupkgFile = new FileInfo(Path.Combine(currentDirectory.FullName, $"{packageId}.{packageVersion}.nupkg"));
 
