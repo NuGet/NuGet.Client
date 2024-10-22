@@ -44,7 +44,6 @@ namespace NuGet.Protocol.Plugins
             }
 
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-            _environmentVariableReader = environmentVariableReader;
         }
 
         /// <summary>
@@ -185,8 +184,6 @@ namespace NuGet.Protocol.Plugins
         {
             var pluginFiles = new List<PluginFile>();
             string[] paths = _nuGetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
-
-            paths = nugetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
             foreach (var path in paths)
             {

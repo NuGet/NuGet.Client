@@ -118,7 +118,7 @@ namespace NuGet.Protocol.Plugins
             var pluginCreationResults = new List<PluginCreationResult>();
 
             // Fast path
-            if (source.PackageSource.IsHttp)
+            if (source.PackageSource.IsHttp && IsPluginPossiblyAvailable())
             {
                 var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(cancellationToken);
 
@@ -325,6 +325,7 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ArgumentNullException(nameof(pluginFactoryCreator));
             }
+
             _connectionOptions = ConnectionOptions.CreateDefault(reader);
 
             var idleTimeoutInSeconds = EnvironmentVariableReader.GetEnvironmentVariable(EnvironmentVariableConstants.IdleTimeout);
