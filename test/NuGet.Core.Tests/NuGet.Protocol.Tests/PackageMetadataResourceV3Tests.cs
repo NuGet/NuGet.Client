@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentAssertions;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -315,7 +316,7 @@ namespace NuGet.Protocol.Tests
 
             var resource = await repo.GetResourceAsync<PackageMetadataResource>(CancellationToken.None);
 
-            var package = new PackageIdentity("dependencyedgecases", NuGetVersion.Parse("0.0.0"));
+            var package = new PackageIdentity("dependencyedgecases", NuGetVersion.Parse("0.1.0"));
 
             // Act
             using (var sourceCacheContext = new SourceCacheContext())
@@ -323,7 +324,11 @@ namespace NuGet.Protocol.Tests
                 var result = await resource.GetMetadataAsync(package, sourceCacheContext, Common.NullLogger.Instance, CancellationToken.None);
 
                 // Assert
-                Assert.NotNull(result);
+                result.Should().NotBeNull();
+                result.DependencySets.Should().HaveCount(1);
+                var dependencySets = result.DependencySets.ToList();
+                dependencySets[0].Packages.Should().HaveCount(3);
+                dependencySets[0].Packages.All(p => p.VersionRange == VersionRange.All).Should().BeTrue();
             }
         }
     }

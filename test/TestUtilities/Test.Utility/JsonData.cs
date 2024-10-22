@@ -4879,7 +4879,7 @@ namespace Test.Utility
                             ""@type"": ""PackageDependency"",
                             ""id"": ""SampleDependency2"",
                             ""registration"": ""https://apidev.nugettest.org/v3-registration3-gz-semver2/sampledependency2/index.json""
-                        }
+                        },
                         {
                             ""@id"": ""https://api.nuget.org/v3/catalog0/data/2015.02.03.09.41.00/dependencyedgecases.0.1.0.json#dependencygroup/sampledependency"",
                             ""@type"": ""PackageDependency"",
