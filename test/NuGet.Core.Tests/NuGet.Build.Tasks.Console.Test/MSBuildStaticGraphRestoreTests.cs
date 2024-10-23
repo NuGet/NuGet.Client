@@ -23,6 +23,34 @@ namespace NuGet.Build.Tasks.Console.Test
 {
     public class MSBuildStaticGraphRestoreTests
     {
+        [Theory]
+        [InlineData(true, "", "", "LogFile=nuget.binlog")]
+        [InlineData(true, "", "LogFile=custom.binlog%3BProjectImports=zip", "LogFile=custom.binlog%3BProjectImports=zip")]
+        [InlineData(false, "", "UserValue", null)]
+        [InlineData(true, "EnvironmentValue", "User%3BValue", "EnvironmentValue")]
+        [InlineData(false, "EnvironmentValue", "User%3BValue", "EnvironmentValue")]
+        public void GetBinaryLoggerParameters_WhenBinaryLoggerEnabled_ReturnsDefaultParameters(bool? enabled, string environmentVariable, string parameters, string expected)
+        {
+            Dictionary<string, string> options = new(StringComparer.OrdinalIgnoreCase);
+
+            IEnvironmentVariableReader environment = new TestEnvironmentVariableReader(
+                new Dictionary<string, string>
+                {
+                    [MSBuildStaticGraphRestore.BinaryLoggerParameterEnvironmentVariable] = environmentVariable
+                });
+
+            if (enabled.HasValue)
+            {
+                options.Add(nameof(RestoreTaskEx.EnableBinaryLogger), enabled.ToString());
+            };
+
+            if (parameters != null)
+            {
+                options.Add(nameof(RestoreTaskEx.BinaryLoggerParameters), parameters);
+            }
+
+            MSBuildStaticGraphRestore.GetBinaryLoggerParameters(environment, options).Should().Be(expected);
+        }
         [Fact]
         public void GetFrameworkReferences_WhenDuplicatesExist_DuplicatesIgnored()
         {
