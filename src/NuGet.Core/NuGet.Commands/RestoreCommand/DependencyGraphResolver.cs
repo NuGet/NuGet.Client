@@ -291,79 +291,73 @@ namespace NuGet.Commands
 
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
+                            bool isParentCentrallyPinned = false;
 
-                            //if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
-                            //                            if (chosenRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal)
-                            if (true)
+                            if (isCentralPackageTransitivePinningEnabled && importRefItem.Path.Length > 1)
                             {
-                                bool isParentCentrallyPinned = false;
-
-                                if (isCentralPackageTransitivePinningEnabled && importRefItem.Path.Length > 1)
+                                for (int pathIndex = importRefItem.Path.Length - 1; pathIndex > 0; pathIndex--)
                                 {
-                                    for (int pathIndex = importRefItem.Path.Length - 1; pathIndex > 0; pathIndex--)
+                                    LibraryRangeIndex parentLibraryRangeIndex = importRefItem.Path[pathIndex];
+
+                                    if (findLibraryEntryCache.TryGetValue(parentLibraryRangeIndex, out Task<FindLibraryEntryResult>? parentCacheEntryTask))
                                     {
-                                        LibraryRangeIndex parentLibraryRangeIndex = importRefItem.Path[pathIndex];
+                                        FindLibraryEntryResult result = await parentCacheEntryTask;
 
-                                        if (findLibraryEntryCache.TryGetValue(parentLibraryRangeIndex, out Task<FindLibraryEntryResult>? parentCacheEntryTask))
+                                        if (chosenResolvedItems.TryGetValue(result.DependencyIndex, out var parentChosenResolvedItem))
                                         {
-                                            FindLibraryEntryResult result = await parentCacheEntryTask;
+                                            isParentCentrallyPinned = parentChosenResolvedItem.IsCentrallyPinnedTransitivePackage;
 
-                                            if (chosenResolvedItems.TryGetValue(result.DependencyIndex, out var parentChosenResolvedItem))
+                                            if (isParentCentrallyPinned)
                                             {
-                                                isParentCentrallyPinned = parentChosenResolvedItem.IsCentrallyPinnedTransitivePackage;
-
-                                                if (isParentCentrallyPinned)
-                                                {
-                                                    break;
-                                                }
+                                                break;
                                             }
                                         }
                                     }
                                 }
+                            }
 
-                                if (!isParentCentrallyPinned)
+                            if (!isParentCentrallyPinned)
+                            {
+                                if (chosenResolvedItem.Parents != null)
                                 {
-                                    if (chosenResolvedItem.Parents != null)
+                                    bool atLeastOneCommonAncestor = false;
+
+                                    foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.Parents.NoAllocEnumerate())
                                     {
-                                        bool atLeastOneCommonAncestor = false;
-
-                                        foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.Parents.NoAllocEnumerate())
+                                        if (importRefItem.Path.Length > 2 && importRefItem.Path[importRefItem.Path.Length - 2] == parentRangeIndex)
                                         {
-                                            if (importRefItem.Path.Length > 2 && importRefItem.Path[importRefItem.Path.Length - 2] == parentRangeIndex)
-                                            {
-                                                atLeastOneCommonAncestor = true;
-                                                break;
-                                            }
-                                        }
-
-                                        if (atLeastOneCommonAncestor)
-                                        {
-                                            continue;
+                                            atLeastOneCommonAncestor = true;
+                                            break;
                                         }
                                     }
 
-                                    if (HasCommonAncestor(chosenResolvedItem.Path, importRefItem.Path))
+                                    if (atLeastOneCommonAncestor)
                                     {
                                         continue;
                                     }
+                                }
 
-                                    if (chosenResolvedItem.ParentPathsThatHaveBeenEclipsed != null)
+                                if (HasCommonAncestor(chosenResolvedItem.Path, importRefItem.Path))
+                                {
+                                    continue;
+                                }
+
+                                if (chosenResolvedItem.ParentPathsThatHaveBeenEclipsed != null)
+                                {
+                                    bool hasAlreadyBeenEclipsed = false;
+
+                                    foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.ParentPathsThatHaveBeenEclipsed)
                                     {
-                                        bool hasAlreadyBeenEclipsed = false;
-
-                                        foreach (LibraryRangeIndex parentRangeIndex in chosenResolvedItem.ParentPathsThatHaveBeenEclipsed)
+                                        if (importRefItem.Path.Contains(parentRangeIndex))
                                         {
-                                            if (importRefItem.Path.Contains(parentRangeIndex))
-                                            {
-                                                hasAlreadyBeenEclipsed = true;
-                                                break;
-                                            }
+                                            hasAlreadyBeenEclipsed = true;
+                                            break;
                                         }
+                                    }
 
-                                        if (hasAlreadyBeenEclipsed)
-                                        {
-                                            continue;
-                                        }
+                                    if (hasAlreadyBeenEclipsed)
+                                    {
+                                        continue;
                                     }
                                 }
                             }

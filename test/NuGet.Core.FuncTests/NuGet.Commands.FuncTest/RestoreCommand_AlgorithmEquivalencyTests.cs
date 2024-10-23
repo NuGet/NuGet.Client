@@ -1616,7 +1616,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithAMixOfTransitivePinningAndNoPinning_VerifiesEquivalency()
+        public async Task RestoreCommand_WithSameIdProjectAndPackage_AndHigherVersionPackage_VerifiesEquivalency()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1722,7 +1722,7 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
-        public async Task RestoreCommand_WithAMixOfTransitivePinningAndNoPinningAndLesserVersion_VerifiesEquivalency()
+        public async Task RestoreCommand_WithSameIdProjectAndPackage_AndLowerVersionPackage_VerifiesEquivalency()
         {
             using var pathContext = new SimpleTestPathContext();
 
@@ -1826,6 +1826,112 @@ namespace NuGet.Commands.FuncTest
             result.LockFile.Targets[0].Libraries[4].Name.Should().Be("ProjectAndPackage");
             result.LockFile.Targets[0].Libraries[4].Type.Should().Be("project");
 
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithSameIdTransitiveProjectAndPackage_AndHigherVersionPackage_VerifiesEquivalency()
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("packageA", "17.13.37-alpha")
+            {
+                Dependencies = [new SimpleTestPackageContext("packageB", "2.5.168"), new SimpleTestPackageContext("ProjectAndPackage", "17.5.33530.100")]
+            };
+            var packageB = new SimpleTestPackageContext("packageB", "2.5.187");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var rootProject = @"
+        {
+            ""restore"": {
+                            ""centralPackageVersionsManagementEnabled"": true,
+            },
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[17.13.37-alpha,)"",
+                            ""target"": ""Package"",
+                            ""versionCentrallyManaged"": true
+                        },
+                },
+                ""centralPackageVersions"": {
+                    ""packageA"": ""[17.13.37-alpha,)"",
+                    ""packageB"": ""[2.5.187,)""
+                }
+            }
+          }
+        }";
+
+            var baseEmptyProject = @"
+        {
+            ""restore"": {
+                            ""centralPackageVersionsManagementEnabled"": true,
+                            ""CentralPackageTransitivePinningEnabled"": true,
+            },
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                },
+                ""centralPackageVersions"": {
+                    ""packageA"": ""[17.13.37-alpha,)"",
+                    ""packageB"": ""[2.5.187,)""
+                }
+            }
+          }
+        }";
+
+            var leafProject = @"
+        {
+            ""version"": ""17.13.35421.60"",
+            ""restore"": {
+                            ""centralPackageVersionsManagementEnabled"": true,
+                            ""CentralPackageTransitivePinningEnabled"": true,
+            },
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageB"": {
+                            ""version"": ""[2.5.187,)"",
+                            ""target"": ""Package"",
+                            ""versionCentrallyManaged"": true
+                        },
+                },
+                ""centralPackageVersions"": {
+                    ""packageA"": ""[17.13.37-alpha,)"",
+                    ""packageB"": ""[2.5.187,)""
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project3", pathContext.SolutionRoot, baseEmptyProject);
+            var projectSpec3 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("ProjectAndPackage", pathContext.SolutionRoot, baseEmptyProject);
+            var projectSpec4 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project4", pathContext.SolutionRoot, leafProject);
+            projectSpec3 = projectSpec3.WithTestProjectReference(projectSpec4);
+            projectSpec2 = projectSpec2.WithTestProjectReference(projectSpec3);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2, projectSpec3, projectSpec4);
+            result.LockFile.PackageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled.Should().BeFalse();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(5);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.5.187"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project4");
+            result.LockFile.Targets[0].Libraries[4].Name.Should().Be("ProjectAndPackage");
+            result.LockFile.Targets[0].Libraries[4].Type.Should().Be("project");
         }
 
         // Here's why package driven dependencies should flow.
