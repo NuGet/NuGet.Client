@@ -63,7 +63,7 @@
         </MultiBinding>
       </DockPanel.MinWidth>
 
-      <nuget:PackageManagerTopPanel
+    <nuget:PackageManagerTopPanel
       DockPanel.Dock="Top"
       x:Name="_topPanel"
       Margin="0,0,24,17"
@@ -73,7 +73,7 @@
       VulnerabilitiesCheckChanged="CheckboxVulnerabilties_CheckChanged"
       SourceRepoListSelectionChanged="SourceRepoList_SelectionChanged" />
 
-      <Border
+    <Border
       DockPanel.Dock="Top"
       BorderThickness="0,1,0,0"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
@@ -157,7 +157,9 @@
           <nuget:DetailControl
             x:Name="_packageDetail"
             AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackagesDetails}"
-            Grid.Column="2" Grid.ColumnSpan="2" Margin="4,0,0,0" />
+            Grid.Column="2"
+            Grid.ColumnSpan="2"
+            Margin="4,0,0,0" />
         </Grid>
       </Border>
     </DockPanel>
