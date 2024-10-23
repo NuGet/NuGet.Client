@@ -33,6 +33,7 @@ namespace NuGet.VisualStudio.Internal.Contracts
         public PackageIdentity Identity => _inner.Identity;
         public Uri LicenseUrl => _inner.LicenseUrl;
         public Uri ProjectUrl => _inner.ProjectUrl;
+        public string ReadmeFileUrl => _inner.ReadmeFileUrl;
         public Uri ReadmeUrl => _inner.ReadmeUrl;
         public Uri ReportAbuseUrl => _inner.ReportAbuseUrl;
         public Uri PackageDetailsUrl => _inner.PackageDetailsUrl;
