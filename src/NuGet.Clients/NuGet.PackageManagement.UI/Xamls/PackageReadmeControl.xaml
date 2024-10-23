@@ -27,6 +27,7 @@
       x:Name="descriptionMarkdownPreview"
       x:Uid="descriptionMarkdownPreview"
       ClipToBounds="True"
+      Focusable="False"
       Visibility="{Binding Path=ErrorLoadingReadme, Mode=OneWay, Converter={StaticResource NegatedBooleanToVisibilityConverter}}"
     />
     <TextBlock

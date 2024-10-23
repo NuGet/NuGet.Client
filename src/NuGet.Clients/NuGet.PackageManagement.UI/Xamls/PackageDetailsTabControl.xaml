@@ -111,10 +111,9 @@
                     ClipToBounds="True"
                     x:Name="actualContentPresenter"
                     ContentSource="SelectedContent"
-                    Focusable="True"
                     HorizontalAlignment="Stretch"
+                    Focusable="False"
                     Margin="{TemplateBinding Padding}"
-                    RecognizesAccessKey="True"
                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                     VerticalAlignment="Stretch"/>
               </Grid>
@@ -136,7 +135,7 @@
     <TabControl.ContentTemplate>
       <DataTemplate>
         <!-- Customize the content of the tabs here -->
-        <ContentControl Content="{Binding}">
+        <ContentControl Content="{Binding}" Focusable="False">
           <ContentControl.Resources>
             <DataTemplate DataType="{x:Type nuget:DetailControlModel}">
               <nuget:PackageMetadataControl
