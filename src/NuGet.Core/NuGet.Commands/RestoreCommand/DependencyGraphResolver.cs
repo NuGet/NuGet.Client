@@ -292,8 +292,9 @@ namespace NuGet.Commands
                         if (evictOnTypeConstraint || !RemoteDependencyWalker.IsGreaterThanOrEqualTo(ovr, nvr))
                         {
 
-                            if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
+                            //if (chosenRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package) && currentRef.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
 //                            if (chosenRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package && currentRef.LibraryRange.TypeConstraint == LibraryDependencyTarget.PackageProjectExternal)
+                            if(true)
                             {
                                 bool isParentCentrallyPinned = false;
 
