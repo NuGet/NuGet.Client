@@ -199,7 +199,7 @@
           AutomationProperties.LabeledBy="{Binding ElementName=_ownersLabel}"
           Focusable="False"
           Margin="8,8,0,0"
-          AlternationCount="{Binding RelativeSource={RelativeSource Self}, Path=PackageMetadata.Items.Count}">
+          AlternationCount="{Binding RelativeSource={RelativeSource Self}, Path=Items.Count}">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
               <WrapPanel Orientation="Horizontal" />
@@ -209,19 +209,19 @@
             <DataTemplate>
               <TextBlock TextWrapping="Wrap">
                 <Hyperlink
-                  NavigateUri="{Binding PackageMetadata.Link, Mode=OneWay}"
-                  ToolTip="{Binding PackageMetadata.Link, Mode=OneWay}"
+                  NavigateUri="{Binding Link, Mode=OneWay}"
+                  ToolTip="{Binding Link, Mode=OneWay}"
                   Style="{StaticResource HyperlinkStyle}"
                   AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_Owner}"
                   Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                   CommandParameter="{x:Static nugettel:HyperlinkType.OwnerProfileDetailsPane}">
-                  <Run Text="{Binding PackageMetadata.Name, Mode=OneTime}" />
+                  <Run Text="{Binding Name, Mode=OneTime}" />
                 </Hyperlink>
                 <TextBlock Margin="0,0,2,0" Text=",">
                   <TextBlock.Visibility>
                     <MultiBinding Converter="{StaticResource LastItemToVisibilityConverter}">
                       <Binding RelativeSource="{RelativeSource Mode=TemplatedParent}" Path="(ItemsControl.AlternationIndex)" />
-                      <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}" Path="PackageMetadata.Items.Count" />
+                      <Binding RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}" Path="Items.Count" />
                     </MultiBinding>
                   </TextBlock.Visibility>
                 </TextBlock>
