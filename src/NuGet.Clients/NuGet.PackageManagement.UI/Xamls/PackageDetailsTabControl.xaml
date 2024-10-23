@@ -109,10 +109,9 @@
                 <ContentPresenter
                     Grid.Row="2"
                     ClipToBounds="True"
-                    x:Name="actualContentPresenter"
+                    x:Name="PART_SelectedContentHost"
                     ContentSource="SelectedContent"
                     HorizontalAlignment="Stretch"
-                    Focusable="False"
                     Margin="{TemplateBinding Padding}"
                     SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
                     VerticalAlignment="Stretch"/>
@@ -139,6 +138,7 @@
           <ContentControl.Resources>
             <DataTemplate DataType="{x:Type nuget:DetailControlModel}">
               <nuget:PackageMetadataControl
+                Focusable="True"
                 Margin="0,12,0,0"/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReadmePreviewViewModel}">
