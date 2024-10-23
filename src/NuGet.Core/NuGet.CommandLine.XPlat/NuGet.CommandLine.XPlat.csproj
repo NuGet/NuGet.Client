@@ -33,7 +33,6 @@
   </Choose>
 
   <ItemGroup>
-    <Compile Remove="external\*" />
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
