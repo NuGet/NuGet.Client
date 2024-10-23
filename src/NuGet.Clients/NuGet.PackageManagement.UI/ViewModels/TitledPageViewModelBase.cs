@@ -15,5 +15,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
             get => _isVisible;
             protected set => SetAndRaisePropertyChanged(ref _isVisible, value);
         }
+
+        public override string ToString()
+        {
+            return Title;
+        }
     }
 }

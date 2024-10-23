@@ -42,7 +42,11 @@ namespace NuGet.PackageManagement.UI.ViewModels
             ReadmePreviewViewModel = new ReadmePreviewViewModel(nugetPackageFileService, currentFilter, _readmeTabEnabled);
             DetailControlModel = detailControlModel;
 
-            Tabs.Add(ReadmePreviewViewModel);
+            if (_readmeTabEnabled)
+            {
+                Tabs.Add(ReadmePreviewViewModel);
+            }
+
             Tabs.Add(DetailControlModel);
 
             SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible && ConvertFromTabType(t) == initialSelectedTab) ?? Tabs.FirstOrDefault(t => t.IsVisible);
@@ -83,6 +87,18 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             if (e.PropertyName == nameof(TitledPageViewModelBase.IsVisible))
             {
+                if (_readmeTabEnabled && sender is ReadmePreviewViewModel)
+                {
+                    if (ReadmePreviewViewModel.IsVisible)
+                    {
+                        Tabs.Insert(0, ReadmePreviewViewModel);
+                    }
+                    else
+                    {
+                        Tabs.Remove(ReadmePreviewViewModel);
+                    }
+                }
+
                 if (SelectedTab == null || (SelectedTab == sender && !SelectedTab.IsVisible))
                 {
                     SelectedTab = Tabs.FirstOrDefault(t => t.IsVisible);
