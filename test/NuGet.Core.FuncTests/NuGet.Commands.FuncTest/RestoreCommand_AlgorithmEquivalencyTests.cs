@@ -1615,6 +1615,158 @@ namespace NuGet.Commands.FuncTest
             result.Success.Should().BeFalse();
         }
 
+
+        // Project1 -> (project) ProjectAndPackage 1.0.0 -> Project3 -> Project4 -> PackageB 2.0.0
+        //          -> packageA 1.0.0 -> PackageB 1.0.0
+        //                            -> ProjectAndPackage 2.0.0
+        [Theory]
+        [InlineData("3.0.0")]
+        [InlineData("0.9.0")]
+        public async Task RestoreCommand_WithSameIdProjectAndPackage_PrefersProject_AndVerifiesEquivalency(string projectAndPackageVersion)
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0"), new SimpleTestPackageContext("ProjectAndPackage", projectAndPackageVersion)]
+            };
+            var packageB = new SimpleTestPackageContext("packageB", "2.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                }
+            }
+          }
+        }";
+
+            var leafProject = @"
+        {
+          ""version"": ""4.0.0"",
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageB"": {
+                            ""version"": ""[2.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("ProjectAndPackage", framework: "net472");
+            var projectSpec3 = ProjectTestHelpers.GetPackageSpec("Project3", framework: "net472");
+            var projectSpec4 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project4", pathContext.SolutionRoot, leafProject);
+            projectSpec3 = projectSpec3.WithTestProjectReference(projectSpec4);
+            projectSpec2 = projectSpec2.WithTestProjectReference(projectSpec3);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2, projectSpec3, projectSpec4);
+            result.LockFile.PackageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled.Should().BeFalse();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(5);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project4");
+            result.LockFile.Targets[0].Libraries[4].Name.Should().Be("ProjectAndPackage");
+            result.LockFile.Targets[0].Libraries[4].Type.Should().Be("project");
+        }
+
+        // Project1 -> Project3 -> (project) ProjectAndPackage 1.0.0 -> Project4 -> PackageB 2.0.0
+        //          -> packageA 1.0.0 -> PackageB 1.0.0
+        //                            -> ProjectAndPackage 2.0.0
+        [Theory]
+        [InlineData("3.0.0")]
+        [InlineData("0.9.0")]
+        public async Task RestoreCommand_WithTransitiveSameIdProjectAndPackage_PrefersProject_AndVerifiesEquivalency(string projectAndPackageVersion)
+        {
+            using var pathContext = new SimpleTestPathContext();
+
+            // Setup packages
+            var packageA = new SimpleTestPackageContext("packageA", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("packageB", "1.0.0"), new SimpleTestPackageContext("ProjectAndPackage", projectAndPackageVersion)]
+            };
+            var packageB = new SimpleTestPackageContext("packageB", "2.0.0");
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageA,
+                packageB);
+
+            var rootProject = @"
+        {
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageA"": {
+                            ""version"": ""[1.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                }
+            }
+          }
+        }";
+
+            var leafProject = @"
+        {
+          ""version"": ""4.0.0"",
+          ""frameworks"": {
+            ""net472"": {
+                ""dependencies"": {
+                        ""packageB"": {
+                            ""version"": ""[2.0.0,)"",
+                            ""target"": ""Package"",
+                        },
+                }
+            }
+          }
+        }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, rootProject);
+            var projectSpec2 = ProjectTestHelpers.GetPackageSpec("Project3", framework: "net472");
+            var projectSpec3 = ProjectTestHelpers.GetPackageSpec("ProjectAndPackage", framework: "net472");
+            var projectSpec4 = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project4", pathContext.SolutionRoot, leafProject);
+            projectSpec3 = projectSpec3.WithTestProjectReference(projectSpec4);
+            projectSpec2 = projectSpec2.WithTestProjectReference(projectSpec3);
+            projectSpec = projectSpec.WithTestProjectReference(projectSpec2);
+
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec, projectSpec2, projectSpec3, projectSpec4);
+            result.LockFile.PackageSpec.RestoreMetadata.CentralPackageTransitivePinningEnabled.Should().BeFalse();
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(5);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("packageA");
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("packageB");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("2.0.0"));
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("Project3");
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("Project4");
+            result.LockFile.Targets[0].Libraries[4].Name.Should().Be("ProjectAndPackage");
+            result.LockFile.Targets[0].Libraries[4].Type.Should().Be("project");
+        }
+
         // Here's why package driven dependencies should flow.
         // Say we have P1 -> P2 -> P3 -> A 1.0.0 -> B 2.0.0
         //                            -> B 1.5.0
