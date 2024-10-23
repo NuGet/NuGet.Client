@@ -216,8 +216,7 @@
                   Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                   CommandParameter="{x:Static nugettel:HyperlinkType.OwnerProfileDetailsPane}">
                   <Run Text="{Binding Name, Mode=OneTime}" />
-                </Hyperlink>
-                <TextBlock Margin="-3,0,2,0" Text=",">
+                </Hyperlink><TextBlock Margin="0,0,2,0" Text=",">
                   <TextBlock.Visibility>
                     <MultiBinding Converter="{StaticResource LastItemToVisibilityConverter}">
                       <Binding RelativeSource="{RelativeSource Mode=TemplatedParent}" Path="(ItemsControl.AlternationIndex)" />
