@@ -111,6 +111,44 @@ namespace NuGet.Protocol.Tests
             package.Vulnerabilities.Should().BeEmpty();
         }
 
+
+        [Fact]
+        public async Task PackageSearchResourceV3_SearchPackageType()
+        {
+            // Arrange
+            var serviceAddress = ProtocolUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(
+                serviceAddress + "?q=package&skip=0&take=1&prerelease=false&packageType=test&semVerLevel=2.0.0",
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.V3Search.json", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            var packageSearchResourceV3 = new PackageSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) });
+
+            var searchFilter = new SearchFilter(includePrerelease: false)
+            {
+                PackageTypes = new[] { "test" }
+            };
+
+            // Act
+            var packages = await packageSearchResourceV3.Search(
+                        "package",
+                        searchFilter,
+                        skip: 0,
+                        take: 1,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
+            var packagesArray = packages.ToArray();
+
+            // Assert
+            // Verify that the url matches the one in the response dictionary
+            Assert.True(packagesArray.Length > 0);
+        }
+
         [Fact]
         public async Task PackageSearchResourceV3_UsesReferenceCache()
         {
