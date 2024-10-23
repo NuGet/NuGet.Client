@@ -36,6 +36,11 @@ namespace NuGet.Build.Tasks.Console
 {
     internal sealed class MSBuildStaticGraphRestore : IDisposable
     {
+        /// <summary>
+        /// Represents the name of the environment variable that user can set to specify MSBuild binary logger parameters.
+        /// </summary>
+        public const string BinaryLoggerParameterEnvironmentVariable = "RESTORE_TASK_BINLOG_PARAMETERS";
+
         private static readonly Lazy<IMachineWideSettings> MachineWideSettingsLazy = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
         /// <summary>
@@ -46,24 +51,20 @@ namespace NuGet.Build.Tasks.Console
             "_CollectRestoreInputs"
         };
 
+        private readonly IEnvironmentVariableReader _environment;
+
         private readonly Lazy<ConsoleLoggingQueue> _loggingQueueLazy;
 
         private readonly Lazy<MSBuildLogger> _msBuildLoggerLazy;
 
         private readonly SettingsLoadingContext _settingsLoadContext = new SettingsLoadingContext();
 
-        public MSBuildStaticGraphRestore(bool debug = false)
+        public MSBuildStaticGraphRestore(IEnvironmentVariableReader environment = null)
         {
-            Debug = debug;
-
+            _environment = environment ?? EnvironmentVariableWrapper.Instance;
             _loggingQueueLazy = new Lazy<ConsoleLoggingQueue>(() => new ConsoleLoggingQueue(LoggerVerbosity.Normal));
             _msBuildLoggerLazy = new Lazy<MSBuildLogger>(() => new MSBuildLogger(LoggingQueue.TaskLoggingHelper));
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating if this application is being debugged.
-        /// </summary>
-        public bool Debug { get; }
 
         /// <summary>
         /// Gets a <see cref="ConsoleLoggingQueue" /> object to be used for logging.
@@ -98,7 +99,9 @@ namespace NuGet.Build.Tasks.Console
         {
             bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive);
+            string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
+
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -181,7 +184,9 @@ namespace NuGet.Build.Tasks.Console
         {
             bool interactive = IsOptionTrue(nameof(RestoreTaskEx.Interactive), options);
 
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive);
+            string binaryLoggerParameters = GetBinaryLoggerParameters(_environment, options);
+
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties, interactive, binaryLoggerParameters);
 
             try
             {
@@ -206,6 +211,37 @@ namespace NuGet.Build.Tasks.Console
                 LogErrorFromException(e);
             }
             return false;
+        }
+
+        /// <summary>
+        /// Gets parameters for the MSBuild binary logger.
+        /// </summary>
+        /// <param name="environment">An <see cref="IEnvironmentVariableReader" /> to use when reading environment variables.</param>
+        /// <param name="options">The <see cref="IReadOnlyCollection{TKey, TValue}" /> containing user supplied options.</param>
+        /// <returns>A <see cref="string" /> containing the parameters for the MSBuild binary logger if specified, otherwise <see langword="null" />.</returns>
+        internal static string GetBinaryLoggerParameters(IEnvironmentVariableReader environment, IReadOnlyDictionary<string, string> options)
+        {
+            string binaryLoggerParameters = environment.GetEnvironmentVariable(BinaryLoggerParameterEnvironmentVariable);
+
+            if (!string.IsNullOrEmpty(binaryLoggerParameters))
+            {
+                return binaryLoggerParameters;
+            }
+
+            // Return null if the binary logger is not enabled
+            if (!IsOptionTrue(nameof(RestoreTaskEx.EnableBinaryLogger), options))
+            {
+                return null;
+            }
+
+            if (options.TryGetValue(nameof(RestoreTaskEx.BinaryLoggerParameters), out binaryLoggerParameters) && !string.IsNullOrWhiteSpace(binaryLoggerParameters))
+            {
+                // User supplied the parameters
+                return binaryLoggerParameters;
+            }
+
+            // Default parameters
+            return binaryLoggerParameters = "LogFile=nuget.binlog";
         }
 
         /// <summary>
@@ -708,7 +744,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive)
+        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties, bool interactive, string binaryLoggerParameters)
         {
             try
             {
@@ -717,7 +753,7 @@ namespace NuGet.Build.Tasks.Console
                 var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
 
                 // Load the projects via MSBuild and create an array of them since Parallel.ForEach is optimized for arrays
-                var projects = LoadProjects(entryProjects, interactive)?.ToArray();
+                var projects = LoadProjects(entryProjects, interactive, binaryLoggerParameters)?.ToArray();
 
                 // If no projects were loaded, return an empty DependencyGraphSpec
                 if (projects == null || projects.Length == 0)
@@ -953,8 +989,9 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="entryProjects">An <see cref="IEnumerable{ProjectGraphEntryPoint}" /> containing the entry projects to load.</param>
         /// <param name="interactive"><see langword="true" /> if the build is allowed to interact with the user, otherwise <see langword="false" />.</param>
+        /// <param name="binaryLoggerParameters">Optional parameters to use for the MSBuild binary log.</param>
         /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
-        private ICollection<ProjectWithInnerNodes> LoadProjects(IEnumerable<ProjectGraphEntryPoint> entryProjects, bool interactive)
+        private ICollection<ProjectWithInnerNodes> LoadProjects(IEnumerable<ProjectGraphEntryPoint> entryProjects, bool interactive, string binaryLoggerParameters)
         {
             try
             {
@@ -963,18 +1000,18 @@ namespace NuGet.Build.Tasks.Console
                     LoggingQueue
                 };
 
-                // Get user specified parameters for a binary logger
-                string binlogParameters = Environment.GetEnvironmentVariable("RESTORE_TASK_BINLOG_PARAMETERS");
+                bool logTaskInputs = false;
 
-                // Attach the binary logger if Debug or binlog parameters were specified
-                bool useBinlog = Debug || !string.IsNullOrWhiteSpace(binlogParameters);
-                if (useBinlog)
+                // Attach the binary logger if parameters were specified
+                if (!string.IsNullOrWhiteSpace(binaryLoggerParameters))
                 {
                     loggers.Add(new BinaryLogger
                     {
-                        // Default the binlog parameters if only the debug option was specified
-                        Parameters = binlogParameters ?? "LogFile=nuget.binlog"
+                        Parameters = Uri.UnescapeDataString(binaryLoggerParameters)
                     });
+
+                    // Log task inputs when the binary logger is attached
+                    logTaskInputs = true;
                 }
 
                 var projects = new ConcurrentDictionary<string, ProjectWithInnerNodes>(StringComparer.OrdinalIgnoreCase);
@@ -1019,7 +1056,7 @@ namespace NuGet.Build.Tasks.Console
                 {
                     // Use the same loggers as the project collection
                     Loggers = projectCollection.Loggers,
-                    LogTaskInputs = useBinlog
+                    LogTaskInputs = logTaskInputs
                 };
 
                 try
