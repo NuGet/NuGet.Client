@@ -1,2 +1,6 @@
 #nullable enable
+NuGet.Common.EnvironmentVariableWrapper.SetEnvironmentVariable(string! name, string? value) -> void
+NuGet.Common.IEnvironmentVariableReaderWriter
+NuGet.Common.IEnvironmentVariableReaderWriter.SetEnvironmentVariable(string! name, string? value) -> void
+static NuGet.Common.EnvironmentVariableWrapper.ReaderWriter.get -> NuGet.Common.IEnvironmentVariableReaderWriter!
 static NuGet.Common.MSBuildStringUtility.GetNuGetLogCodes(string! s) -> System.Collections.Immutable.ImmutableArray<NuGet.Common.NuGetLogCode>

@@ -25,6 +25,8 @@ namespace NuGet.Configuration
             return new ConfigurationDefaults(machineWideSettingsDir, ConfigurationConstants.ConfigurationDefaultsFile);
         }
 
+        internal static IEnvironmentVariableReader EnvironmentVariableReader { get; set; } = EnvironmentVariableWrapper.Instance;
+
         /// <summary>
         /// An internal constructor MAINLY INTENDED FOR TESTING THE CLASS. But, the product code is only expected to
         /// use the static Instance property
@@ -71,7 +73,7 @@ namespace NuGet.Configuration
             foreach (var source in sourceItems)
             {
                 bool isEnabled = !disabledPackageSources.Any(p => p.Key.Equals(source.Key, StringComparison.OrdinalIgnoreCase));
-                PackageSource packageSource = PackageSourceProvider.ReadPackageSource(source, isEnabled, _settingsManager);
+                PackageSource packageSource = PackageSourceProvider.ReadPackageSource(source, isEnabled, _settingsManager, EnvironmentVariableReader);
                 packageSource.IsOfficial = true;
                 sources.Add(packageSource);
             }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 
 namespace NuGet.Build.Tasks.Console
 {
@@ -10,6 +11,8 @@ namespace NuGet.Build.Tasks.Console
     /// </summary>
     internal static class MSBuildFeatureFlags
     {
+        public static IEnvironmentVariableReaderWriter EnvironmentVariableReaderWriter { get; set; } = EnvironmentVariableWrapper.ReaderWriter;
+
         /// <summary>
         /// Represents a regular expression that matches any file spec that contains a wildcard * or ? and does not end in "proj".
         /// </summary>
@@ -23,8 +26,8 @@ namespace NuGet.Build.Tasks.Console
         /// </remarks>
         public static bool EnableCacheFileEnumerations
         {
-            get => string.Equals(Environment.GetEnvironmentVariable("MSBuildCacheFileEnumerations"), "1", StringComparison.Ordinal);
-            set => Environment.SetEnvironmentVariable("MSBuildCacheFileEnumerations", value ? "1" : null);
+            get => string.Equals(EnvironmentVariableReaderWriter.GetEnvironmentVariable("MSBuildCacheFileEnumerations"), "1", StringComparison.Ordinal);
+            set => EnvironmentVariableReaderWriter.SetEnvironmentVariable("MSBuildCacheFileEnumerations", value ? "1" : null);
         }
 
         /// <summary>
@@ -36,8 +39,8 @@ namespace NuGet.Build.Tasks.Console
         /// </remarks>
         public static bool LoadAllFilesAsReadonly
         {
-            get => string.Equals(Environment.GetEnvironmentVariable("MSBuildLoadAllFilesAsReadonly"), "1", StringComparison.Ordinal);
-            set => Environment.SetEnvironmentVariable("MSBuildLoadAllFilesAsReadonly", value ? "1" : null);
+            get => string.Equals(EnvironmentVariableReaderWriter.GetEnvironmentVariable("MSBuildLoadAllFilesAsReadonly"), "1", StringComparison.Ordinal);
+            set => EnvironmentVariableReaderWriter.SetEnvironmentVariable("MSBuildLoadAllFilesAsReadonly", value ? "1" : null);
         }
 
         /// <summary>
@@ -50,8 +53,8 @@ namespace NuGet.Build.Tasks.Console
         /// </remarks>
         public static string MSBuildExeFilePath
         {
-            get => Environment.GetEnvironmentVariable("MSBUILD_EXE_PATH");
-            set => Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", value);
+            get => EnvironmentVariableReaderWriter.GetEnvironmentVariable("MSBUILD_EXE_PATH");
+            set => EnvironmentVariableReaderWriter.SetEnvironmentVariable("MSBUILD_EXE_PATH", value);
         }
 
         /// <summary>
@@ -72,8 +75,8 @@ namespace NuGet.Build.Tasks.Console
         /// </remarks>
         public static bool SkipEagerWildcardEvaluations
         {
-            get => !string.Equals(Environment.GetEnvironmentVariable("MSBuildSkipEagerWildCardEvaluationRegexes"), null, StringComparison.Ordinal);
-            set => Environment.SetEnvironmentVariable("MSBuildSkipEagerWildCardEvaluationRegexes", SkipWildcardRegularExpression);
+            get => !string.Equals(EnvironmentVariableReaderWriter.GetEnvironmentVariable("MSBuildSkipEagerWildCardEvaluationRegexes"), null, StringComparison.Ordinal);
+            set => EnvironmentVariableReaderWriter.SetEnvironmentVariable("MSBuildSkipEagerWildCardEvaluationRegexes", SkipWildcardRegularExpression);
         }
     }
 }

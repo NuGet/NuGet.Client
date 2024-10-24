@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 
 namespace NuGet.Protocol.Plugins
@@ -23,6 +24,7 @@ namespace NuGet.Protocol.Plugins
         private readonly IPluginLogger _logger;
         private readonly TimeSpan _pluginIdleTimeout;
         private readonly ConcurrentDictionary<string, Lazy<Task<IPlugin>>> _plugins;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// Instantiates a new <see cref="PluginFactory" /> class.
@@ -31,7 +33,14 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="pluginIdleTimeout" />
         /// is less than <see cref="Timeout.InfiniteTimeSpan" />.</exception>
         public PluginFactory(TimeSpan pluginIdleTimeout)
+            : this(pluginIdleTimeout, EnvironmentVariableWrapper.Instance)
         {
+        }
+
+        internal PluginFactory(TimeSpan pluginIdleTimeout, IEnvironmentVariableReader environmentVariableReader)
+        {
+            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
+
             if (pluginIdleTimeout < Timeout.InfiniteTimeSpan)
             {
                 throw new ArgumentOutOfRangeException(
@@ -166,7 +175,7 @@ namespace NuGet.Protocol.Plugins
 #else
             var startInfo = new ProcessStartInfo
             {
-                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
+                FileName = _environmentVariableReader.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
                            (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
                                 "dotnet.exe" :
                                 "dotnet"),

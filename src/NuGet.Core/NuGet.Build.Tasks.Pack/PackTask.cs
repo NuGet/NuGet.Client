@@ -16,6 +16,16 @@ namespace NuGet.Build.Tasks.Pack
 {
     public class PackTask : Microsoft.Build.Utilities.Task, IPackTaskRequest<ITaskItem>
     {
+        public PackTask()
+            : this(EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal PackTask(IEnvironmentVariableReader environmentVariableReader)
+        {
+            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
+        }
+
         [Required]
         public ITaskItem PackItem { get; set; }
 
@@ -82,6 +92,7 @@ namespace NuGet.Build.Tasks.Pack
         public ILogger Logger => new MSBuildLogger(Log);
 
         private IPackTaskLogic _packTaskLogic;
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
 
         /// <summary>
         /// This property is only used for testing.
@@ -109,7 +120,7 @@ namespace NuGet.Build.Tasks.Pack
             try
             {
 #if DEBUG
-                var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_PACK_TASK");
+                var debugPackTask = _environmentVariableReader.GetEnvironmentVariable("DEBUG_PACK_TASK");
                 if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
                     Debugger.Launch();

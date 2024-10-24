@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Plugins
         /// Gets an environment variable reader.
         /// </summary>
         /// <remarks>This is non-private only to facilitate testing.</remarks>
-        public IEnvironmentVariableReader EnvironmentVariableReader { get; private set; }
+        internal IEnvironmentVariableReader EnvironmentVariableReader { get; set; }
 
         private PluginManager()
         {

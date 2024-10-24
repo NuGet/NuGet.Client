@@ -7,6 +7,7 @@ using System.Security;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.VisualStudio;
 
 namespace NuGetConsole
@@ -15,14 +16,29 @@ namespace NuGetConsole
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class ConsoleInitializer : IConsoleInitializer
     {
-        private readonly AsyncLazy<Action> _initializeTask = new AsyncLazy<Action>(GetInitializeTaskAsync, NuGetUIThreadHelper.JoinableTaskFactory);
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<Action> _initializeTask;
+
+        public ConsoleInitializer()
+            : this(EnvironmentVariableWrapper.ReaderWriter)
+        {
+        }
+
+        internal ConsoleInitializer(IEnvironmentVariableReaderWriter environmentVariableReaderWriter)
+        {
+            if (environmentVariableReaderWriter is null)
+            {
+                throw new ArgumentNullException(nameof(environmentVariableReaderWriter));
+            }
+
+            _initializeTask = new Microsoft.VisualStudio.Threading.AsyncLazy<Action>(() => GetInitializeTaskAsync(environmentVariableReaderWriter), NuGetUIThreadHelper.JoinableTaskFactory);
+        }
 
         public Task<Action> Initialize()
         {
             return _initializeTask.GetValueAsync();
         }
 
-        private static async Task<Action> GetInitializeTaskAsync()
+        private static async Task<Action> GetInitializeTaskAsync(IEnvironmentVariableReaderWriter environmentVariableReaderWriter)
         {
             var comSvc = await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync();
             if (comSvc == null)
@@ -34,8 +50,7 @@ namespace NuGetConsole
             {
                 // HACK: Short cut to set the Powershell execution policy for this process to RemoteSigned.
                 // This is so that we can initialize the PowerShell host and load our modules successfully.
-                Environment.SetEnvironmentVariable(
-                    "PSExecutionPolicyPreference", "RemoteSigned", EnvironmentVariableTarget.Process);
+                environmentVariableReaderWriter.SetEnvironmentVariable("PSExecutionPolicyPreference", "RemoteSigned");
             }
             catch (SecurityException)
             {

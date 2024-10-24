@@ -52,6 +52,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly string _name;
         private readonly IRestoreEvents _restoreEvents;
         private readonly IRunspaceManager _runspaceManager;
+        private readonly IEnvironmentVariableReaderWriter _environmentVariableReaderWriter;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<ISettings> _settings;
@@ -105,10 +106,11 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         /// </summary>
         private SolutionRestoredEventArgs _currentRestore;
 
-        protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager)
+        protected PowerShellHost(string name, IRestoreEvents restoreEvents, IRunspaceManager runspaceManager, IEnvironmentVariableReaderWriter environmentVariableReaderWriter)
         {
             _restoreEvents = restoreEvents;
             _runspaceManager = runspaceManager;
+            _environmentVariableReaderWriter = environmentVariableReaderWriter ?? throw new ArgumentNullException(nameof(environmentVariableReaderWriter));
 
             // TODO: Take these as ctor arguments
             var componentModel = NuGetUIThreadHelper.JoinableTaskFactory.Run(ServiceLocator.GetComponentModelAsync);
@@ -423,7 +425,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     // if there is no solution open, we set the active directory to be user profile folder
                     var targetDir = await _solutionManager.Value.IsSolutionOpenAsync() ?
                         await _solutionManager.Value.GetSolutionDirectoryAsync() :
-                        Environment.GetEnvironmentVariable("USERPROFILE");
+                        _environmentVariableReaderWriter.GetEnvironmentVariable("USERPROFILE");
 
                     Runspace.ChangePSDirectory(targetDir);
                 }
@@ -490,7 +492,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 var toolsPath = Path.Combine(installPath, "tools");
                 if (Directory.Exists(toolsPath))
                 {
-                    AddPathToEnvironment(toolsPath);
+                    AddPathToEnvironment(toolsPath, _environmentVariableReaderWriter);
 
                     var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
                     if (File.Exists(scriptPath))
@@ -525,9 +527,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             }
         }
 
-        private static void AddPathToEnvironment(string path)
+        private static void AddPathToEnvironment(string path, IEnvironmentVariableReaderWriter environmentVariableReaderWriter)
         {
-            var currentPath = Environment.GetEnvironmentVariable("path", EnvironmentVariableTarget.Process);
+            var currentPath = environmentVariableReaderWriter.GetEnvironmentVariable("path");
 
             var currentPaths = new HashSet<string>(
                 currentPath.Split(Path.PathSeparator).Select(p => p.Trim()),
@@ -536,7 +538,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (currentPaths.Add(path))
             {
                 var newPath = currentPath + Path.PathSeparator + path;
-                Environment.SetEnvironmentVariable("path", newPath, EnvironmentVariableTarget.Process);
+                environmentVariableReaderWriter.SetEnvironmentVariable("path", newPath);
             }
         }
 

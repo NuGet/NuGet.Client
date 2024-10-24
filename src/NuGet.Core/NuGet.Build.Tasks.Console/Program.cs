@@ -12,6 +12,7 @@ using System.Reflection;
 #endif
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Common;
 
 namespace NuGet.Build.Tasks.Console
 {
@@ -34,12 +35,23 @@ namespace NuGet.Build.Tasks.Console
         /// The main entry point to the console application.
         /// </summary>
         /// <param name="args">The command-line arguments.</param>
-        /// <returns><code>0</code> if the application ran successfully with no errors, otherwise <code>1</code>.</returns>
+        /// <returns><c>0</c> if the application ran successfully with no errors, otherwise <c>1</c>.</returns>
         public static async Task<int> Main(string[] args)
+        {
+            return await MainInternal(args, EnvironmentVariableWrapper.Instance);
+        }
+
+        /// <summary>
+        /// The main entry point to the console application.
+        /// </summary>
+        /// <param name="args">The command-line arguments.</param>
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> to use when reading environment variables.</param>
+        /// <returns><c>0</c> if the application ran successfully with no errors, otherwise <c>1</c>.</returns>
+        internal static async Task<int> MainInternal(string[] args, IEnvironmentVariableReader environmentVariableReader)
         {
             try
             {
-                if (string.Equals(Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(environmentVariableReader.GetEnvironmentVariable("DEBUG_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
                     Debugger.Launch();
                 }

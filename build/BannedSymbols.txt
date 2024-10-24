@@ -21,3 +21,9 @@ M:System.IO.Path.GetTempPath(); Use NuGetEnvironment.GetFolderPath(NuGetFolderPa
 
 M:NuGet.Protocol.Core.Types.SourceRepository.GetResource`1(); Pass a cancellation token
 M:NuGet.Protocol.Core.Types.SourceRepository.GetResourceAsync`1(); Pass a cancellation token
+
+M:System.Environment.GetEnvironmentVariable(System.String); Use IEnvironmentVariableReader
+M:System.Environment.GetEnvironmentVariable(System.String,System.EnvironmentVariableTarget); Use IEnvironmentVariableReader
+
+M:System.Environment.SetEnvironmentVariable(System.String,System.String); Use IEnvironmentVariableReaderWriter
+M:System.Environment.SetEnvironmentVariable(System.String,System.String,System.EnvironmentVariableTarget); Use IEnvironmentVariableReaderWriter

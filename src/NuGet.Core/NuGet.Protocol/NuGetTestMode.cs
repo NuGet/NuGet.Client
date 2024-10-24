@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Common;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -10,6 +11,7 @@ namespace NuGet.Protocol.Core.Types
         private const string _testModeEnvironmentVariableName = "NuGetTestModeEnabled";
         public const string NuGetTestClientName = "NuGet Test Client";
 
+        internal static IEnvironmentVariableReader EnvironmentVariableReader { get; set; } = EnvironmentVariableWrapper.Instance;
         static NuGetTestMode()
         {
             // cached for the life-time of the app domain
@@ -20,14 +22,14 @@ namespace NuGet.Protocol.Core.Types
 
         private static bool FromEnvironmentVariable()
         {
-            var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
-            if (String.IsNullOrEmpty(testMode))
+            var testMode = EnvironmentVariableReader.GetEnvironmentVariable(_testModeEnvironmentVariableName);
+            if (string.IsNullOrEmpty(testMode))
             {
                 return false;
             }
 
             bool isEnabled;
-            return Boolean.TryParse(testMode, out isEnabled) && isEnabled;
+            return bool.TryParse(testMode, out isEnabled) && isEnabled;
         }
 
 

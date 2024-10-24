@@ -3,13 +3,11 @@
 
 namespace NuGet.Common
 {
-    public interface IEnvironmentVariableReader
+    public interface IEnvironmentVariableReaderWriter : IEnvironmentVariableReader
     {
-
 #pragma warning disable RS0030 // Do not use banned APIs
-        /// <inheritdoc cref="System.Environment.GetEnvironmentVariable(string)" />
+        /// <inheritdoc cref="System.Environment.SetEnvironmentVariable(string, string)"/>
 #pragma warning restore RS0030 // Do not use banned APIs
-        string? GetEnvironmentVariable(string variable);
-
+        void SetEnvironmentVariable(string name, string? value);
     }
 }
