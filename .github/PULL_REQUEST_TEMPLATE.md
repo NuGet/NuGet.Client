@@ -15,5 +15,5 @@ Fixes:
 - [ ] Added tests
 - [ ] Link to an issue or pull request to update docs if this PR changes settings, environment variables, new feature, etc.
 - [ ] If the PR adds UI:
-      - [ ] Accessibility testing completed
-      - [ ] Localization testing completed
+  - [ ] Accessibility testing completed
+  - [ ] Localization testing completed
