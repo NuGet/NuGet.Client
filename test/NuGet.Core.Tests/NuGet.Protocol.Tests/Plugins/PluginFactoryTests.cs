@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Test.Utility;
@@ -144,57 +143,97 @@ namespace NuGet.Protocol.Plugins.Tests
             using TestDirectory testDirectory = TestDirectory.Create();
             string pluginPath = Path.Combine(testDirectory.Path, "nuget-plugin-batFile.bat");
 
-            string outputFilePath = Path.Combine(testDirectory.Path, "output.txt");
-            File.WriteAllText(outputFilePath, "");
-
             // Create the .bat file that simulates a plugin
             // Simply waits for a json request that looks like`{"RequestId":"ff52f0ae-28c9-4a19-957d-78db5b68f3f2","Type":"Request","Method":"Handshake","Payload":{"ProtocolVersion":"2.0.0","MinimumProtocolVersion":"1.0.0"}} `
-            // and sends it back with the type changed to `Response`
+            // It then creates a response with the same RequestId and Method, but with the Type changed to `Response` and Adds a Payload with a ResponseCode of 0
+            // It finally sends a handshake request back to the caller. This completes the handshake process.
             string batFileContent = $@"
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
 
-set outputFile={outputFilePath}
+:InputLoop
+set /p jsonLine=
 
-:: Clear the output file initially (if it exists)
-echo. > %outputFile%
+set quote=""
+set comma=,
+set colon=:
+set openCurlyBracket={{
+set closeCurlyBracket=}}
+set key=
+set value=
+set dot=.
+set onKeySearch=true
+set onValueSearch=false
+set enteredQuotes=false
 
-:: Initialize the counter for '}}' characters
-set closingBraceCount=0
-
-:loop
-
-:: Read from stdin (standard input)
-set /p input=""""
-
-:: Count occurrences of '}}' in the input
-for /l %%i in (0,1,1023) do (
-    if ""!input:~%%i,1!""==""}}"" (
-        set /a closingBraceCount+=1
+set pos=0
+:NextChar
+    set index=%pos%
+    set char=!jsonLine:~%pos%,1!
+    if ""!char!""=="""" goto endLoop
+    if %onKeySearch%==true (
+        if %enteredQuotes%==true (
+            if !char!==!quote! (
+                set onKeySearch=false
+                set onValueSearch=true
+                set enteredQuotes=false
+            ) else (
+                set key=!key!!char!
+            )
+        ) else if !char!==!quote! (
+            set enteredQuotes=true
+        )
+    ) else if %onValueSearch%==true (
+        if %enteredQuotes%==true (
+            if !char!==!quote! (
+                set onKeySearch=true
+                set onValueSearch=true
+                set enteredQuotes=false
+                set ""!key!=!value!""
+                set value=
+                set /a pos=pos+1
+                goto ClearKey
+            ) else (
+                set value=!value!!char!
+            )
+        ) else if !char!==!quote! (
+            set enteredQuotes=true
+        ) else if !char!==!openCurlyBracket! (
+            set onKeySearch=true
+            set onValueSearch=false
+            set key=!key!.
+        )
+    ) else (
+        echo neither
     )
+    set /a pos=pos+1
+    if ""!jsonLine:~%pos%,1!"" NEQ """" goto NextChar
+
+:ClearKey
+    if ""!key!""=="""" (
+        goto NextChar
+    )
+    set lastChar=!key:~-1!
+    if !lastChar!==!dot! (
+        goto NextChar
+    ) else (
+        set  key=!key:~0,-1!
+        goto ClearKey
+    )
+    goto NextChar
+
+
+:endLoop
+if ""!RequestId!"" == """" (
+    goto InputLoop
+) else (
+    set HandshakeReponseJsonString={{""RequestId"":""!RequestId!"",""Type"":""Response"",""Method"":""Handshake"",""Payload"":{{""ProtocolVersion"":""2.0.0"",""ResponseCode"":0}}}}
+    set HandshakeRequestJsonString={{""RequestId"":""!RequestId!"",""Type"":""Request"",""Method"":""Handshake"",""Payload"":{{""ProtocolVersion"":""2.0.0"",""MinimumProtocolVersion"":""1.0.0""}}}}
+    echo !HandshakeReponseJsonString!
+    echo !HandshakeRequestJsonString!
 )
+goto InputLoop
 
-:: Write the input to the output file
-echo !input! >> %outputFile%
-
-:: If '}}' has appeared twice (even across multiple inputs), process the output file
-if !closingBraceCount! geq 2 (
-    goto processOutput
-)
-
-:: Go back to the loop to accept more input
-goto loop
-
-:processOutput
-
-for /f ""delims="" %%a in (%outputFile%) do (
-    set ""singleLine=!singleLine! %%a""
-)
-
-:: Perform string replacement (""Request"" -> ""Response"") in the single line
-set modifiedLine=!singleLine:""Type"":""Request""=""Type"":""Response""!
-
-echo !modifiedLine!
 ";
             File.WriteAllText(pluginPath, batFileContent);
 
@@ -205,31 +244,10 @@ echo !modifiedLine!
             var pluginFactory = new PluginFactory(Timeout.InfiniteTimeSpan);
 
             // Act
-            var plugin = Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateNetToolsPluginAsync(pluginPath, args, reqHandler, options, CancellationToken.None));
-            await Task.Delay(10);
+            var plugin = await pluginFactory.GetOrCreateNetToolsPluginAsync(pluginPath, args, reqHandler, options, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(plugin);
-            string jsonOutput = File.ReadAllText(outputFilePath);
-            var jsonDocument = JsonDocument.Parse(jsonOutput);
-            var rootElement = jsonDocument.RootElement;
-            if (rootElement.TryGetProperty("Method", out JsonElement methodElement))
-            {
-                Assert.Equal("Handshake", methodElement.GetString());
-            }
-            else
-            {
-                Assert.Fail("The Method property was not found in the JSON output.");
-            }
-
-            if (rootElement.TryGetProperty("Type", out JsonElement typeElement))
-            {
-                Assert.Equal("Request", typeElement.GetString());
-            }
-            else
-            {
-                Assert.Fail("The Type property was not found in the JSON output.");
-            }
+            Assert.NotNull(plugin.Connection);
         }
 
         [Fact]
