@@ -2081,9 +2081,7 @@ namespace NuGet.PackageManagement.UI {
         /// <summary>
         ///   Looks up a localized string similar to Could not read package README from selected package.
         ///
-        ///Only the package maintainer can add a README.
-        ///
-        ///If you are not the maintainer, please consider filing an issue or contacting the maintainer to request a README.
+        ///Only the package maintainer can add a README. If you are not the maintainer, please consider filing an issue or contacting the maintainer to request a README.
         ///
         ///For instructions on how to add a README, please visit [aka.ms/nuget/readme](https://aka.ms/nuget/readme).
         /// </summary>
