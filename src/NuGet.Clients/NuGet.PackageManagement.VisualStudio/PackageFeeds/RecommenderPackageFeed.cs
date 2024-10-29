@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio
             PackageCollection transitivePackages,
             IReadOnlyCollection<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
-            Common.ILogger logger)
+            ILogger logger)
         {
             if (sourceRepositories == null)
             {
@@ -68,10 +68,10 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // The recommender package feed should only created when one of the sources is nuget.org.
-            if (sourceRepositories.Any(item => UriUtility.IsNuGetOrg(item.PackageSource.Source)))
-            {
-                _sourceRepository = sourceRepositories.First(item => UriUtility.IsNuGetOrg(item.PackageSource.Source));
+            _sourceRepository = sourceRepositories.FirstOrDefault(item => UriUtility.IsNuGetOrg(item.PackageSource.Source));
 
+            if (_sourceRepository != null)
+            {
                 _installedPackages = installedPackages.Select(item => item.Id).ToList();
                 _transitivePackages = transitivePackages.Select(item => item.Id).ToList();
 
@@ -158,7 +158,6 @@ namespace NuGet.PackageManagement.VisualStudio
             int index = 0;
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
             MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
-            PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
             while (index < recommendIds.Count && recommendPackages.Count < MaxRecommended)
             {
                 Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
@@ -221,12 +220,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
             public bool Equals(IPackageSearchMetadata x, IPackageSearchMetadata y)
             {
-                return x.Identity.Id.Equals(y.Identity.Id);
+                return StringComparer.OrdinalIgnoreCase.Equals(x.Identity.Id, y.Identity.Id);
             }
 
             public int GetHashCode(IPackageSearchMetadata obj)
             {
-                return obj.Identity.Id.GetHashCode();
+                return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity.Id);
             }
         }
     }

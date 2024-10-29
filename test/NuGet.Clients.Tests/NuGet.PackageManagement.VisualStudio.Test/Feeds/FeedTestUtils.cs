@@ -24,6 +24,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return provider;
         }
 
+        internal static INuGetResourceProvider CreateResourceProvider<T>(T _metadataResource)
+        {
+            var provider = Mock.Of<INuGetResourceProvider>();
+            Mock.Get(provider)
+                .Setup(x => x.TryCreate(It.IsAny<SourceRepository>(), It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(Tuple.Create(true, (INuGetResource)_metadataResource)));
+            Mock.Get(provider)
+                .Setup(x => x.ResourceType)
+                .Returns(typeof(T));
+
+            return provider;
+        }
+
         internal static FeedSearchContinuationToken CreateInitialToken() => new()
         {
             SearchString = string.Empty,
