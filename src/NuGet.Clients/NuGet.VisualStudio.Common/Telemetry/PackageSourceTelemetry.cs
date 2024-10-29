@@ -72,11 +72,14 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_ServiceIndexEntryEvent(ProtocolDiagnosticServiceIndexEntryEvent pdEvent)
         {
-            if (_data.TryGetValue(pdEvent.Source, out Data data))
+            if (pdEvent.HttpsSourceHasHttpResource)
             {
-                lock (data._lock)
+                if (_data.TryGetValue(pdEvent.Source, out Data data))
                 {
-                    data.HttpSourceHasHttpResource = pdEvent.HttpsSourceHasHttpResource;
+                    lock (data._lock)
+                    {
+                        data.HttpSourceHasHttpResource = pdEvent.HttpsSourceHasHttpResource;
+                    }
                 }
             }
         }
