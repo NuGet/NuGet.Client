@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
@@ -51,7 +52,7 @@ namespace NuGet.Commands.Test
         [Fact]
         public void RunPackageBuild_WithInvalidNuspec_Throws()
         {
-            using (var test = DefaultExclusionsTest.Create(validNuspec: false))
+            using (var test = DefaultExclusionsTest.Create(packageVersion: string.Empty))
             {
                 var args = new PackArgs()
                 {
@@ -65,14 +66,14 @@ namespace NuGet.Commands.Test
                 Assert.Throws<Exception>(() => runner.RunPackageBuild());
 
                 var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.1.0.0.nupkg");
-                Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
+                File.Exists(nupkgPath).Should().BeFalse();
             }
         }
 
         [Fact]
-        public void RunPackageBuild_WithValidNuspec_WithVersionAsArgument_PackSucceeds()
+        public void RunPackageBuild_WithVersionAsArgument_NuspecVersionOverriddenByVersionArgument()
         {
-            using (var test = DefaultExclusionsTest.Create(validNuspec: true))
+            using (var test = DefaultExclusionsTest.Create())
             {
                 var args = new PackArgs()
                 {
@@ -88,14 +89,14 @@ namespace NuGet.Commands.Test
                 Assert.True(result);
 
                 var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.3.1.2.nupkg");
-                Assert.True(File.Exists(nupkgPath), "nuspec file does not exist");
+                File.Exists(nupkgPath).Should().BeTrue();
             }
         }
 
         [Fact]
-        public void RunPackageBuild_WithInvalidNuspec_WithVersionAsArgument_PackSucceeds()
+        public void RunPackageBuild_NuspecWithEmptyVersion_WithVersionAsArgument_PackSucceeds()
         {
-            using (var test = DefaultExclusionsTest.Create(validNuspec: false))
+            using (var test = DefaultExclusionsTest.Create(packageVersion: string.Empty))
             {
                 var args = new PackArgs()
                 {
@@ -109,7 +110,7 @@ namespace NuGet.Commands.Test
                 var result = runner.RunPackageBuild();
 
                 var nupkgPath = Path.Combine(test.CurrentDirectory.FullName, $"DefaultExclusions.3.1.2.nupkg");
-                Assert.True(File.Exists(nupkgPath), "nuspec file does not exist");
+                File.Exists(nupkgPath).Should().BeTrue();
             }
         }
 
@@ -177,7 +178,7 @@ namespace NuGet.Commands.Test
                 UnexpectedEntryNames = unexpectedEntryNames;
             }
 
-            internal static DefaultExclusionsTest Create(bool validNuspec = true)
+            internal static DefaultExclusionsTest Create(string packageVersion = "1.0.0")
             {
                 TestDirectory testDirectory = TestDirectory.Create();
 
@@ -200,17 +201,22 @@ namespace NuGet.Commands.Test
                 string pattern = $"..{Path.DirectorySeparatorChar}{packRootDirectory.Name}{Path.DirectorySeparatorChar}**{Path.DirectorySeparatorChar}*.*";
 
                 const string packageId = "DefaultExclusions";
-                const string packageVersion = "1.0.0";
 
-                if (validNuspec)
-                {
-                    ValidNuspec(nuspecFile.FullName, packageId, packageVersion, pattern);
-
-                }
-                else
-                {
-                    InvaidNuspecNoVersion(nuspecFile.FullName, packageId, pattern);
-                }
+                File.WriteAllText(nuspecFile.FullName, $@"<?xml version=""1.0""?>
+<package>
+    <metadata>
+        <id>{packageId}</id>
+        <version>{packageVersion}</version>
+        <title>title</title>
+        <description>description</description>
+        <authors>author</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <dependencies />
+    </metadata>
+    <files>
+        <file src=""{pattern}"" target="""" />
+    </files>   
+</package>");
 
                 var nupkgFile = new FileInfo(Path.Combine(currentDirectory.FullName, $"{packageId}.{packageVersion}.nupkg"));
 
@@ -249,7 +255,7 @@ namespace NuGet.Commands.Test
                     </package>");
             }
 
-            internal static void InvaidNuspecNoVersion(string nuspecPath, string packageId, string pattern)
+            internal static void InvalidNuspecNoVersion(string nuspecPath, string packageId, string pattern)
             {
                 File.WriteAllText(nuspecPath,
                     $@"<?xml version=""1.0""?>

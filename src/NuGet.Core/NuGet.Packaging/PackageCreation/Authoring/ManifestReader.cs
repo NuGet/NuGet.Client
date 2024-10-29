@@ -86,8 +86,7 @@ namespace NuGet.Packaging
                         manifestMetadata.Id = value;
                         break;
                     case "version":
-                        NuGetVersion version;
-                        if (NuGetVersion.TryParse(value, out version))
+                        if (NuGetVersion.TryParse(value, out NuGetVersion version))
                         {
                             manifestMetadata.Version = version;
                         }
