@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -431,6 +432,43 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             }
         }
 
+        [Fact]
+        public async Task Query_InvokesDiagnosticEventForSourceResources()
+        {
+            // Arrange
+            int eventInvokeCount = 0;
+            List<ProtocolDiagnosticServiceIndexEntryEvent> capturedEvents = new List<ProtocolDiagnosticServiceIndexEntryEvent>();
+
+            ProtocolDiagnostics.ServiceIndexEntryEvent += (pdEvent) =>
+            {
+                eventInvokeCount++;
+                capturedEvents.Add(pdEvent);
+            };
+
+            var source = $"https://test/index.json";
+            var content = CreateServiceIndexWithFourResourceTypesTwoHTTP();
+
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
+            var provider = new ServiceIndexResourceV3Provider();
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                new INuGetResourceProvider[] { httpProvider, provider });
+
+            // Act
+            var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+
+            // Assert
+            int httpSourceCapture = 0;
+
+            foreach (var serviceIndexEvent in capturedEvents)
+            {
+                Assert.Equal(serviceIndexEvent.Source, source);
+                httpSourceCapture += serviceIndexEvent.HttpsSourceHasHttpResource ? 1 : 0;
+            }
+
+            Assert.Equal(2, httpSourceCapture);
+            Assert.Equal(4, eventInvokeCount);
+        }
+
         private static string CreateTestIndex()
         {
             var obj = new JObject
@@ -518,6 +556,44 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                             { "@id", "http://tempuri.org/B" },
                             { "clientVersion", "4.0.0" },
                         }
+                    }
+                }
+            };
+
+            return obj.ToString();
+        }
+
+        private static string CreateServiceIndexWithFourResourceTypesTwoHTTP()
+        {
+            var obj = new JObject
+            {
+                { "version", "3.1.0-beta" },
+                { "resources", new JArray
+                    {
+                        new JObject
+                        {
+                            { "@type", "A" },
+                            { "@id", "http://tempuri.org/A/5.0.0/2" },
+                            { "clientVersion", "5.0.0" },
+                        },
+                        new JObject
+                        {
+                            { "@type", "B" },
+                            { "@id", "http://tempuri.org/A/5.0.0/1" },
+                            { "clientVersion", "5.0.0" },
+                        },
+                        new JObject
+                        {
+                            { "@type", "C" },
+                            { "@id", "https://test" },
+                            { "clientVersion", "4.0.0" },
+                        },
+                        new JObject
+                        {
+                            { "@type", "D" },
+                            { "@id", "https://test" },
+                            { "clientVersion", "5.0.0" },
+                        },
                     }
                 }
             };
