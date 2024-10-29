@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public async Task SearchAsync_WhenNoRecommendedPackages_ReturnsPackagesFromDecoratedFeedAsync()
         {
             // Arrange
-            var sourceRepository = new SourceRepository(new PackageSource("http://fake-source"), [FeedTestUtils.CreateResourceProvider(Mock.Of<PackageMetadataResource>())]);
+            var sourceRepository = new SourceRepository(new PackageSource("http://fake-source"), [FeedTestUtils.CreateTestResourceProvider(Mock.Of<PackageMetadataResource>())]);
             var packageMetadataProvider = new MultiSourcePackageMetadataProvider(sourceRepositories: [sourceRepository], optionalLocalRepository: null, optionalGlobalLocalRepositories: null, logger: _logger);
 
             var decoratedFeed = new Mock<IPackageFeed>();
@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             var packageMetadataResource = Mock.Of<PackageMetadataResource>();
 
-            var sourceRepository = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), [FeedTestUtils.CreateResourceProvider(metadataResource.Object), FeedTestUtils.CreateResourceProvider(packageMetadataResource)]);
+            var sourceRepository = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), [FeedTestUtils.CreateTestResourceProvider(metadataResource.Object), FeedTestUtils.CreateTestResourceProvider(packageMetadataResource)]);
             var packageMetadataProvider = new MultiSourcePackageMetadataProvider(sourceRepositories: [sourceRepository], optionalLocalRepository: null, optionalGlobalLocalRepositories: null, logger: _logger);
 
             var decoratedFeed = new Mock<IPackageFeed>();

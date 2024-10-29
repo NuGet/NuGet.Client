@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public static class FeedTestUtils
     {
-        internal static INuGetResourceProvider CreateResourceProvider<T>(T resource)
+        internal static INuGetResourceProvider CreateTestResourceProvider<T>(T resource)
         {
             var provider = Mock.Of<INuGetResourceProvider>();
             Mock.Get(provider)
