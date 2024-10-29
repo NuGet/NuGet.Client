@@ -24,7 +24,7 @@ namespace NuGet.Protocol
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
         private PackageSource _packageSource;
 
-        public ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
+        internal ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
         {
             _packageSource = packageSource;
             _json = index.ToString();

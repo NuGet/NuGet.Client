@@ -28,7 +28,7 @@ namespace NuGet.Protocol
         /// </summary>
         public SemanticVersion ClientVersion { get; }
 
-        public ServiceIndexEntry(Uri serviceUri, string serviceType, SemanticVersion clientVersion, PackageSource packageSource)
+        internal ServiceIndexEntry(Uri serviceUri, string serviceType, SemanticVersion clientVersion, PackageSource packageSource)
         {
             if (serviceUri == null)
             {

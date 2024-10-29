@@ -6,5 +6,3 @@ static NuGet.Protocol.Events.ProtocolDiagnostics.ServiceIndexEntryEvent -> NuGet
 ~NuGet.Protocol.Events.ProtocolDiagnosticServiceIndexEntryEvent.ProtocolDiagnosticServiceIndexEntryEvent(string source, bool httpsSourceHasHttpResource) -> void
 ~NuGet.Protocol.Events.ProtocolDiagnosticServiceIndexEntryEvent.Source.get -> string
 ~NuGet.Protocol.Plugins.PluginDiscoverer.PluginDiscoverer(string rawPluginPaths) -> void
-~NuGet.Protocol.ServiceIndexEntry.ServiceIndexEntry(System.Uri serviceUri, string serviceType, NuGet.Versioning.SemanticVersion clientVersion, NuGet.Configuration.PackageSource packageSource) -> void
-~NuGet.Protocol.ServiceIndexResourceV3.ServiceIndexResourceV3(Newtonsoft.Json.Linq.JObject index, System.DateTime requestTime, NuGet.Configuration.PackageSource packageSource) -> void
