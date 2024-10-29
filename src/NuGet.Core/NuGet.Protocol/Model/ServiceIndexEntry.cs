@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Configuration;
+using NuGet.Protocol.Events;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -26,7 +28,7 @@ namespace NuGet.Protocol
         /// </summary>
         public SemanticVersion ClientVersion { get; }
 
-        public ServiceIndexEntry(Uri serviceUri, string serviceType, SemanticVersion clientVersion)
+        public ServiceIndexEntry(Uri serviceUri, string serviceType, SemanticVersion clientVersion, PackageSource packageSource)
         {
             if (serviceUri == null)
             {
@@ -43,9 +45,17 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(clientVersion));
             }
 
+            if (packageSource != null)
+            {
+                var resourceIsHttp = serviceUri.Scheme == Uri.UriSchemeHttp && serviceUri.Scheme != Uri.UriSchemeHttps;
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(packageSource.Source, resourceIsHttp && packageSource.IsHttps));
+            }
+
             Uri = serviceUri;
             Type = serviceType;
             ClientVersion = clientVersion;
         }
+
+        public ServiceIndexEntry(Uri serviceUri, string serviceType, SemanticVersion clientVersion) : this(serviceUri, serviceType, clientVersion, null) { }
     }
 }

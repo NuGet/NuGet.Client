@@ -65,8 +65,20 @@ namespace NuGet.VisualStudio.Telemetry
             ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
             ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
             ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
+            ProtocolDiagnostics.ServiceIndexEntryEvent += ProtocolDiagnostics_ServiceIndexEntryEvent;
             _parentId = parentId;
             _actionName = GetActionName(action);
+        }
+
+        private void ProtocolDiagnostics_ServiceIndexEntryEvent(ProtocolDiagnosticServiceIndexEntryEvent pdEvent)
+        {
+            if (_data.TryGetValue(pdEvent.Source, out Data data))
+            {
+                lock (data._lock)
+                {
+                    data.HttpSourceHasHttpResource = pdEvent.HttpsSourceHasHttpResource;
+                }
+            }
         }
 
         private static string GetActionName(TelemetryAction action)
@@ -360,6 +372,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             int requests = 0;
             long bytes = 0;
+            int numberOfSourcesWithAnHttpResource = 0;
             TimeSpan duration = TimeSpan.Zero;
 
             foreach (var source in data)
@@ -374,27 +387,35 @@ namespace NuGet.VisualStudio.Telemetry
 
                     bytes += source.Value.NupkgSize;
                 }
+
+                if (source.Value.HttpSourceHasHttpResource)
+                {
+                    numberOfSourcesWithAnHttpResource++;
+                }
             }
 
-            return new Totals(requests, bytes, duration);
+            return new Totals(requests, bytes, duration, numberOfSourcesWithAnHttpResource);
         }
 
         public class Totals
         {
-            public Totals(int requests, long bytes, TimeSpan duration)
+            public Totals(int requests, long bytes, TimeSpan duration, int numberOfSourcesWithAnHttpResource)
             {
                 Requests = requests;
                 Bytes = bytes;
                 Duration = duration;
+                NumberOfSourcesWithAnHttpResource = numberOfSourcesWithAnHttpResource;
             }
 
             public int Requests { get; }
             public long Bytes { get; }
             public TimeSpan Duration { get; }
+            public int NumberOfSourcesWithAnHttpResource { get; }
         }
 
         internal class Data
         {
+            internal bool HttpSourceHasHttpResource { get; set; }
             internal object _lock;
             internal Dictionary<string, (int count, TimeSpan duration)> Resources { get; }
             internal HttpData Http { get; }
@@ -406,6 +427,7 @@ namespace NuGet.VisualStudio.Telemetry
                 _lock = new object();
                 Resources = new Dictionary<string, (int count, TimeSpan duration)>();
                 Http = new HttpData();
+                HttpSourceHasHttpResource = false;
             }
         }
 
