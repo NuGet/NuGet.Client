@@ -171,6 +171,8 @@ namespace NuGet.Client
                 }
             }
 
+            // We use a heuristic here for common locale codes. Locale codes are often
+            // * two characters for the language: en, es, fr, de
             if (name.Length == 2)
             {
                 if (matchOnly)
@@ -179,7 +181,9 @@ namespace NuGet.Client
                 }
                 return name.ToString();
             }
-            else if (name.Length >= 4 && name.Span[2] == '-')
+
+            // * a language portion that is two or three characters followed by a '-' and a country code
+            else if (name.Length >= 4 && name.Span[2] == '-') // e.g. en-US
             {
                 if (matchOnly)
                 {
@@ -187,6 +191,15 @@ namespace NuGet.Client
                 }
                 return name.ToString();
             }
+            else if (name.Length >= 5 && name.Span[3] == '-') // e.g agq-CM
+            {
+                return name;
+            }
+
+            // there are other variations, but this heuristic doesn't cover them all. A future-proof implementation would make
+            // use of the .NET CultureInfo APIs to compare the locale against the underlying system ICU database. This would
+            // be correct, but potentially more expensive because the CultureInfo APIs are lazily-loaded and throw if an
+            // invalid/unknown locale is used.
 
             return null;
         }
