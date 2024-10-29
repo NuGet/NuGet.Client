@@ -160,7 +160,7 @@ namespace NuGet.Client
         /// If matchOnly is true, then an empty string may be returned as a performance optimization.
         /// If matchOnly is false, the parsed result will be returned.
         /// </summary>
-        private static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly)
+        internal static object Locale_Parser(ReadOnlyMemory<char> name, PatternTable table, bool matchOnly)
         {
             if (table != null)
             {
@@ -173,7 +173,8 @@ namespace NuGet.Client
 
             // We use a heuristic here for common locale codes. Locale codes are often
             // * two characters for the language: en, es, fr, de
-            if (name.Length == 2)
+            // * three characters for the language: agq
+            if (name.Length == 2 || name.Length == 3)
             {
                 if (matchOnly)
                 {
@@ -193,6 +194,10 @@ namespace NuGet.Client
             }
             else if (name.Length >= 5 && name.Span[3] == '-') // e.g agq-CM
             {
+                if (matchOnly)
+                {
+                    return string.Empty;
+                }
                 return name;
             }
 
