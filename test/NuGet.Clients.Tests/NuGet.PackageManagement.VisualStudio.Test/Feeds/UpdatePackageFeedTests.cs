@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             // dependencies and data
             _metadataResource = Mock.Of<PackageMetadataResource>();
 
-            INuGetResourceProvider provider = FeedTestUtils.CreateTestResourceProvider(_metadataResource);
+            INuGetResourceProvider provider = FeedTestUtils.CreateResourceProvider(_metadataResource);
 
             var packageSource = new Configuration.PackageSource("http://fake-source");
             var source = new SourceRepository(packageSource, new[] { provider });

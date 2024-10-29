@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _logger = new TestLogger(testOutputHelper);
 
             var _metadataResource = Mock.Of<PackageMetadataResource>();
-            INuGetResourceProvider provider = FeedTestUtils.CreateTestResourceProvider(_metadataResource);
+            INuGetResourceProvider provider = FeedTestUtils.CreateResourceProvider(_metadataResource);
             var packageSource = new Configuration.PackageSource("http://fake-source");
             var source = new SourceRepository(source: packageSource, providers: new[] { provider });
 
