@@ -198,7 +198,7 @@ namespace NuGet.Client
                 {
                     return string.Empty;
                 }
-                return name;
+                return name.ToString();
             }
 
             // there are other variations, but this heuristic doesn't cover them all. A future-proof implementation would make
