@@ -140,8 +140,6 @@ namespace NuGet.Protocol.Tests
         public async Task HttpRetryHandler_CancelsRequestAfterTimeout()
         {
             // Arrange
-            TimeSpan retryDelay = TimeSpan.Zero;
-
             TestEnvironmentVariableReader testEnvironmentVariableReader = GetEnhancedHttpRetryEnvironmentVariables();
             var requestToken = CancellationToken.None;
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler = async (requestMessage, token) =>
@@ -157,14 +155,14 @@ namespace NuGet.Protocol.Tests
             var request = new HttpRetryHandlerRequest(httpClient, () => new HttpRequestMessage(HttpMethod.Get, TestUrl))
             {
                 MaxTries = 1,
-                RequestTimeout = SmallTimeout,
-                RetryDelay = retryDelay
+                RequestTimeout = TimeSpan.FromSeconds(1),
+                RetryDelay = TimeSpan.Zero
             };
 
             // Act
             Func<Task> actionAsync = () => retryHandler.SendAsync(
                 request,
-                new TestLogger(),
+                new TestLogger(_testOutputHelper),
                 CancellationToken.None);
 
             // Assert
@@ -199,7 +197,7 @@ namespace NuGet.Protocol.Tests
             // Act
             Func<Task> actionAsync = () => retryHandler.SendAsync(
                 request,
-                new TestLogger(),
+                new TestLogger(_testOutputHelper),
                 CancellationToken.None);
 
             // Assert
