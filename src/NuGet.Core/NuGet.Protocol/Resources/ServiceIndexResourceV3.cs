@@ -23,13 +23,11 @@ namespace NuGet.Protocol
         private readonly DateTime _requestTime;
         private static readonly IReadOnlyList<ServiceIndexEntry> _emptyEntries = new List<ServiceIndexEntry>();
         private static readonly SemanticVersion _defaultVersion = new SemanticVersion(0, 0, 0);
-        private PackageSource _packageSource;
 
         internal ServiceIndexResourceV3(JObject index, DateTime requestTime, PackageSource packageSource)
         {
-            _packageSource = packageSource;
             _json = index.ToString();
-            _index = MakeLookup(index);
+            _index = MakeLookup(index, packageSource);
             _requestTime = requestTime;
         }
 
@@ -111,25 +109,7 @@ namespace NuGet.Protocol
             else
             {
                 // Find all entries with the same version.
-                List<ServiceIndexEntry> serviceIndexEntries = new List<ServiceIndexEntry>();
-
-                foreach (var entry in entries)
-                {
-                    if (entry.ClientVersion == bestMatch.ClientVersion)
-                    {
-                        serviceIndexEntries.Add(entry);
-
-                        // Log the service index entry if it is an http resource and the package source is https
-                        var resourceIsHttp = entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps;
-
-                        if (_packageSource != null && resourceIsHttp)
-                        {
-                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(_packageSource.Source, _packageSource.IsHttps));
-                        }
-                    }
-                }
-
-                return serviceIndexEntries;
+                return entries.Where(e => e.ClientVersion == bestMatch.ClientVersion).ToList();
             }
         }
 
@@ -166,7 +146,7 @@ namespace NuGet.Protocol
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
         }
 
-        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index)
+        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
         {
             var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
 
@@ -182,6 +162,16 @@ namespace NuGet.Protocol
                     {
                         // Skip invalid or missing @ids
                         continue;
+                    }
+
+                    List<ServiceIndexEntry> serviceIndexEntries = new List<ServiceIndexEntry>();
+
+                    // Capture if the resource is http & the source is https
+                    var resourceIsHttp = uri.Scheme == Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps;
+
+                    if (packageSource != null && resourceIsHttp && packageSource.IsHttps)
+                    {
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(packageSource.Source, true));
                     }
 
                     var types = GetValues(resource["@type"]).ToArray();
