@@ -136,7 +136,7 @@ namespace NuGet.Protocol.Plugins
             var lazyTask = _plugins.GetOrAdd(
                 filePath,
                 (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isDotnetTools: false, sessionCancellationToken)));
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isRunnablePluginFile: false, sessionCancellationToken)));
 
             await lazyTask.Value;
 
@@ -149,14 +149,14 @@ namespace NuGet.Protocol.Plugins
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
-            bool isDotnetTools,
+            bool isRunnablePluginFile,
             CancellationToken sessionCancellationToken)
         {
             var args = string.Join(" ", arguments);
 
             ProcessStartInfo startInfo;
 
-            if (!isDotnetTools)
+            if (!isRunnablePluginFile)
             {
 #if IS_DESKTOP
                 startInfo = new ProcessStartInfo(filePath)
@@ -511,7 +511,7 @@ namespace NuGet.Protocol.Plugins
             var lazyTask = _plugins.GetOrAdd(
                 filePath,
                 (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isDotnetTools: true, sessionCancellationToken)));
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isRunnablePluginFile: true, sessionCancellationToken)));
 
             await lazyTask.Value;
 
