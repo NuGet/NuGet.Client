@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -28,7 +29,7 @@ namespace NuGet.Protocol
         {
             _packageSource = packageSource;
             _json = index.ToString();
-            _index = MakeLookup(index, _packageSource);
+            _index = MakeLookup(index);
             _requestTime = requestTime;
         }
 
@@ -110,7 +111,25 @@ namespace NuGet.Protocol
             else
             {
                 // Find all entries with the same version.
-                return entries.Where(e => e.ClientVersion == bestMatch.ClientVersion).ToList();
+                List<ServiceIndexEntry> serviceIndexEntries = new List<ServiceIndexEntry>();
+
+                foreach (var entry in entries)
+                {
+                    if (entry.ClientVersion == bestMatch.ClientVersion)
+                    {
+                        serviceIndexEntries.Add(entry);
+
+                        // Log the service index entry if it is an http resource and the package source is https
+                        var resourceIsHttp = entry.Uri.Scheme == Uri.UriSchemeHttp && entry.Uri.Scheme != Uri.UriSchemeHttps;
+
+                        if (_packageSource != null && resourceIsHttp)
+                        {
+                            ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(_packageSource.Source, _packageSource.IsHttps));
+                        }
+                    }
+                }
+
+                return serviceIndexEntries;
             }
         }
 
@@ -147,7 +166,7 @@ namespace NuGet.Protocol
             return GetServiceEntries(clientVersion, orderedTypes).Select(e => e.Uri).ToList();
         }
 
-        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index, PackageSource packageSource)
+        private static IDictionary<string, List<ServiceIndexEntry>> MakeLookup(JObject index)
         {
             var result = new Dictionary<string, List<ServiceIndexEntry>>(StringComparer.Ordinal);
 
@@ -200,7 +219,7 @@ namespace NuGet.Protocol
                                 result.Add(type, entries);
                             }
 
-                            entries.Add(new ServiceIndexEntry(uri, type, version, packageSource));
+                            entries.Add(new ServiceIndexEntry(uri, type, version));
                         }
                     }
                 }
