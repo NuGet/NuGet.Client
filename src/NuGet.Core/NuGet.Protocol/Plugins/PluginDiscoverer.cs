@@ -197,7 +197,7 @@ namespace NuGet.Protocol.Plugins
                             // A DotNet tool plugin
                             if (IsValidPluginFile(fileInfo))
                             {
-                                PluginFile pluginFile = new PluginFile(fileInfo.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
+                                PluginFile pluginFile = new PluginFile(fileInfo.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: true);
                                 pluginFiles.Add(pluginFile);
                             }
                         }
@@ -260,7 +260,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (IsValidPluginFile(file))
                     {
-                        PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isDotnetToolsPlugin: true);
+                        PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: true);
                         pluginFiles.Add(pluginFile);
                     }
                 }

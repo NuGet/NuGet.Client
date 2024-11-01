@@ -214,7 +214,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         IPlugin plugin;
 
-                        if (result.PluginFile.IsDotnetToolsPlugin)
+                        if (result.PluginFile.IsRunnablePluginFile)
                         {
                             plugin = await _pluginFactory.GetOrCreateNetToolsPluginAsync(
                                 filePath: result.PluginFile.Path,
