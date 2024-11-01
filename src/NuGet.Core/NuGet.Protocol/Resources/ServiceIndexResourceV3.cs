@@ -164,8 +164,6 @@ namespace NuGet.Protocol
                         continue;
                     }
 
-                    List<ServiceIndexEntry> serviceIndexEntries = new List<ServiceIndexEntry>();
-
                     // Capture if the resource is http & the source is https
                     var resourceIsHttp = uri.Scheme == Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps;
 
