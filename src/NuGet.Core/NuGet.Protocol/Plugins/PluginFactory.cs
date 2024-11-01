@@ -189,7 +189,6 @@ namespace NuGet.Protocol.Plugins
             else
             {
                 // A dotnet tools plugin. Execute it directly.
-
                 startInfo = new ProcessStartInfo(filePath)
                 {
                     FileName = filePath,

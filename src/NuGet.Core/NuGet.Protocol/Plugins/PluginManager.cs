@@ -217,20 +217,20 @@ namespace NuGet.Protocol.Plugins
                         if (result.PluginFile.IsDotnetToolsPlugin)
                         {
                             plugin = await _pluginFactory.GetOrCreateNetToolsPluginAsync(
-                            result.PluginFile.Path,
-                            PluginConstants.PluginArguments,
-                            new RequestHandlers(),
-                            _connectionOptions,
-                            cancellationToken);
+                                filePath: result.PluginFile.Path,
+                                arguments: PluginConstants.PluginArguments,
+                                requestHandlers: new RequestHandlers(),
+                                options: _connectionOptions,
+                                sessionCancellationToken: cancellationToken);
                         }
                         else
                         {
                             plugin = await _pluginFactory.GetOrCreateAsync(
-                            result.PluginFile.Path,
-                            PluginConstants.PluginArguments,
-                            new RequestHandlers(),
-                            _connectionOptions,
-                            cancellationToken);
+                                filePath: result.PluginFile.Path,
+                                arguments: PluginConstants.PluginArguments,
+                                requestHandlers: new RequestHandlers(),
+                                options: _connectionOptions,
+                                sessionCancellationToken: cancellationToken);
                         }
 
                         var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
