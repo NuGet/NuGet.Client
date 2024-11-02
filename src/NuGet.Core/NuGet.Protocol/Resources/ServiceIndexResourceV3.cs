@@ -165,11 +165,9 @@ namespace NuGet.Protocol
                     }
 
                     // Capture if the resource is http & the source is https
-                    var resourceIsHttp = uri.Scheme == Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps;
-
-                    if (packageSource != null && resourceIsHttp && packageSource.IsHttps)
+                    if (packageSource != null && uri.Scheme != Uri.UriSchemeHttps && packageSource.IsHttps)
                     {
-                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(packageSource.Source, true));
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticServiceIndexEntryEvent(source: packageSource.Source, httpsSourceHasHttpResource: true));
                     }
 
                     var types = GetValues(resource["@type"]).ToArray();
