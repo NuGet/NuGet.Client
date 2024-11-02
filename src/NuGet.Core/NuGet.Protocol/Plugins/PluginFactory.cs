@@ -479,7 +479,7 @@ namespace NuGet.Protocol.Plugins
             logger.Write(new ThreadPoolLogMessage(logger.Now));
         }
 
-        public async Task<IPlugin> GetOrCreateNetToolsPluginAsync(string filePath, IEnumerable<string> arguments, IRequestHandlers requestHandlers, ConnectionOptions options, CancellationToken sessionCancellationToken)
+        public async Task<IPlugin> GetOrCreateRunnablePluginAsync(string filePath, IEnumerable<string> arguments, IRequestHandlers requestHandlers, ConnectionOptions options, CancellationToken sessionCancellationToken)
         {
             if (_isDisposed)
             {

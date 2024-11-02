@@ -158,7 +158,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var pluginFactory = new PluginFactory(Timeout.InfiniteTimeSpan);
 
             // Act
-            var plugin = await Assert.ThrowsAnyAsync<Exception>(() => pluginFactory.GetOrCreateNetToolsPluginAsync(pluginPath, args, reqHandler, options, CancellationToken.None));
+            var plugin = await Assert.ThrowsAnyAsync<Exception>(() => pluginFactory.GetOrCreateRunnablePluginAsync(pluginPath, args, reqHandler, options, CancellationToken.None));
 
             // Assert
             string outputContent = File.ReadAllText(outputPath);

@@ -216,7 +216,7 @@ namespace NuGet.Protocol.Plugins
 
                         if (result.PluginFile.IsRunnablePluginFile)
                         {
-                            plugin = await _pluginFactory.GetOrCreateNetToolsPluginAsync(
+                            plugin = await _pluginFactory.GetOrCreateRunnablePluginAsync(
                                 filePath: result.PluginFile.Path,
                                 arguments: PluginConstants.PluginArguments,
                                 requestHandlers: new RequestHandlers(),
