@@ -78,7 +78,7 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     lock (data._lock)
                     {
-                        data.HttpSourceHasHttpResource = pdEvent.HttpsSourceHasHttpResource;
+                        data.HttpsSourceHasHttpResource = pdEvent.HttpsSourceHasHttpResource;
                     }
                 }
             }
@@ -391,7 +391,7 @@ namespace NuGet.VisualStudio.Telemetry
                     bytes += source.Value.NupkgSize;
                 }
 
-                if (source.Value.HttpSourceHasHttpResource)
+                if (source.Value.HttpsSourceHasHttpResource)
                 {
                     numberOfSourcesWithAnHttpResource++;
                 }
@@ -418,7 +418,7 @@ namespace NuGet.VisualStudio.Telemetry
 
         internal class Data
         {
-            internal bool HttpSourceHasHttpResource { get; set; }
+            internal bool HttpsSourceHasHttpResource { get; set; }
             internal object _lock;
             internal Dictionary<string, (int count, TimeSpan duration)> Resources { get; }
             internal HttpData Http { get; }
@@ -430,7 +430,7 @@ namespace NuGet.VisualStudio.Telemetry
                 _lock = new object();
                 Resources = new Dictionary<string, (int count, TimeSpan duration)>();
                 Http = new HttpData();
-                HttpSourceHasHttpResource = false;
+                HttpsSourceHasHttpResource = false;
             }
         }
 

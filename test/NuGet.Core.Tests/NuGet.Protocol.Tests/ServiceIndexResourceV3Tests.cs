@@ -49,15 +49,15 @@ namespace NuGet.Protocol.Tests
             var result = resource.GetServiceEntries(ServiceTypes.SearchQueryService);
 
             // Assert
-            int httpSourceCapture = 0;
+            int httpResourceCapture = 0;
 
             foreach (var serviceIndexEvent in capturedEvents)
             {
                 Assert.Equal(serviceIndexEvent.Source, source);
-                httpSourceCapture += serviceIndexEvent.HttpsSourceHasHttpResource ? 1 : 0;
+                httpResourceCapture += serviceIndexEvent.HttpsSourceHasHttpResource ? 1 : 0;
             }
 
-            Assert.Equal(2, httpSourceCapture);
+            Assert.Equal(2, httpResourceCapture);
             Assert.Equal(2, eventInvokeCount);
         }
 
