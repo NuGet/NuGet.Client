@@ -60,6 +60,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
         {
             if (packageMetadata != null && (!string.Equals(packageMetadata.Id, _packageMetadata?.Id) || packageMetadata.Version != _packageMetadata?.Version))
             {
+                ReadmeMarkdown = Resources.Text_Loading;
                 _packageMetadata = packageMetadata;
                 await LoadReadmeAsync(cancellationToken);
             }
