@@ -107,7 +107,7 @@ namespace NuGet.Protocol
         public Uri ReadmeUrl { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.ReadmeFileUrl)]
-        public string ReadmeFileUrl { get; private set; }
+        public string ReadmeFileUrl { get; internal set; }
 
         [JsonIgnore]
         public Uri ReportAbuseUrl { get; set; }
