@@ -214,24 +214,13 @@ namespace NuGet.Protocol.Plugins
                     {
                         IPlugin plugin;
 
-                        if (result.PluginFile.IsRunnablePluginFile)
-                        {
-                            plugin = await _pluginFactory.GetOrCreateRunnablePluginAsync(
+                        plugin = await _pluginFactory.GetOrCreateAsync(
                                 filePath: result.PluginFile.Path,
                                 arguments: PluginConstants.PluginArguments,
                                 requestHandlers: new RequestHandlers(),
                                 options: _connectionOptions,
+                                isRunnablePluginFile: result.PluginFile.IsRunnablePluginFile,
                                 sessionCancellationToken: cancellationToken);
-                        }
-                        else
-                        {
-                            plugin = await _pluginFactory.GetOrCreateAsync(
-                                filePath: result.PluginFile.Path,
-                                arguments: PluginConstants.PluginArguments,
-                                requestHandlers: new RequestHandlers(),
-                                options: _connectionOptions,
-                                sessionCancellationToken: cancellationToken);
-                        }
 
                         var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 

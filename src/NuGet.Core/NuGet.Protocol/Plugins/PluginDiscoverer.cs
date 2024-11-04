@@ -168,7 +168,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         return PluginFileState.InvalidFilePath;
                     }
-                }));
+                }), isRunnablePluginFile: false);
                 files.Add(pluginFile);
             }
 
@@ -182,6 +182,11 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A list of valid <see cref="PluginFile"/> objects representing the discovered plugins.</returns>
         internal List<PluginFile> GetPluginsInNuGetPluginPaths()
         {
+            bool isDesktop = false;
+
+#if IS_DESKTOP
+            isDesktop = true;
+#endif
             var pluginFiles = new List<PluginFile>();
             string[] paths = _nuGetPluginPaths?.Split(Path.PathSeparator) ?? Array.Empty<string>();
 
@@ -205,7 +210,7 @@ namespace NuGet.Protocol.Plugins
                         {
                             // A non DotNet tool plugin file
                             var state = new Lazy<PluginFileState>(() => PluginFileState.Valid);
-                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state));
+                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state, isRunnablePluginFile: isDesktop));
                         }
                     }
                     else if (Directory.Exists(path))
@@ -215,7 +220,7 @@ namespace NuGet.Protocol.Plugins
                 }
                 else
                 {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), isRunnablePluginFile: isDesktop));
                 }
             }
 
@@ -240,7 +245,7 @@ namespace NuGet.Protocol.Plugins
                 }
                 else
                 {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath)));
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), isRunnablePluginFile: false));
                 }
             }
 

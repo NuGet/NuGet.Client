@@ -12,6 +12,18 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginFactoryTests
     {
+        public bool IsDesktop
+        {
+            get
+            {
+#if IS_DESKTOP
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         [Fact]
         public void Constructor_ThrowsForTimeSpanBelowMinimum()
         {
@@ -52,6 +64,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     PluginConstants.PluginArguments,
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     CancellationToken.None));
 
             Assert.Equal("filePath", exception.ParamName);
@@ -68,6 +81,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     arguments: null,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal("arguments", exception.ParamName);
@@ -84,6 +98,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: null,
                     options: ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal("requestHandlers", exception.ParamName);
@@ -100,6 +115,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: null,
+                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal("options", exception.ParamName);
@@ -116,6 +132,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: new CancellationToken(canceled: true)));
         }
 
@@ -132,6 +149,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal(nameof(PluginFactory), exception.ObjectName);
@@ -158,7 +176,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var pluginFactory = new PluginFactory(Timeout.InfiniteTimeSpan);
 
             // Act
-            var plugin = await Assert.ThrowsAnyAsync<Exception>(() => pluginFactory.GetOrCreateRunnablePluginAsync(pluginPath, args, reqHandler, options, CancellationToken.None));
+            var plugin = await Assert.ThrowsAnyAsync<Exception>(() => pluginFactory.GetOrCreateAsync(pluginPath, args, reqHandler, options, isRunnablePluginFile: true, CancellationToken.None));
 
             // Assert
             string outputContent = File.ReadAllText(outputPath);

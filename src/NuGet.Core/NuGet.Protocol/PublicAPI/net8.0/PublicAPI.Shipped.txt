@@ -1016,7 +1016,6 @@ NuGet.Protocol.Plugins.IPlugin.Closed -> System.EventHandler
 NuGet.Protocol.Plugins.IPluginDiscoverer
 ~NuGet.Protocol.Plugins.IPluginDiscoverer.DiscoverAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Plugins.PluginDiscoveryResult>>
 NuGet.Protocol.Plugins.IPluginFactory
-~NuGet.Protocol.Plugins.IPluginFactory.GetOrCreateAsync(string filePath, System.Collections.Generic.IEnumerable<string> arguments, NuGet.Protocol.Plugins.IRequestHandlers requestHandlers, NuGet.Protocol.Plugins.ConnectionOptions options, System.Threading.CancellationToken sessionCancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Plugins.IPlugin>
 NuGet.Protocol.Plugins.IPluginManager
 ~NuGet.Protocol.Plugins.IPluginManager.CreatePluginsAsync(NuGet.Protocol.Core.Types.SourceRepository source, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Plugins.PluginCreationResult>>
 ~NuGet.Protocol.Plugins.IPluginManager.FindAvailablePluginsAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Plugins.PluginDiscoveryResult>>
@@ -1212,11 +1211,9 @@ NuGet.Protocol.Plugins.PluginException
 ~NuGet.Protocol.Plugins.PluginException.PluginException(string message, System.Exception innerException) -> void
 NuGet.Protocol.Plugins.PluginFactory
 NuGet.Protocol.Plugins.PluginFactory.Dispose() -> void
-~NuGet.Protocol.Plugins.PluginFactory.GetOrCreateAsync(string filePath, System.Collections.Generic.IEnumerable<string> arguments, NuGet.Protocol.Plugins.IRequestHandlers requestHandlers, NuGet.Protocol.Plugins.ConnectionOptions options, System.Threading.CancellationToken sessionCancellationToken) -> System.Threading.Tasks.Task<NuGet.Protocol.Plugins.IPlugin>
 NuGet.Protocol.Plugins.PluginFactory.PluginFactory(System.TimeSpan pluginIdleTimeout) -> void
 NuGet.Protocol.Plugins.PluginFile
 ~NuGet.Protocol.Plugins.PluginFile.Path.get -> string
-~NuGet.Protocol.Plugins.PluginFile.PluginFile(string filePath, System.Lazy<NuGet.Protocol.Plugins.PluginFileState> state) -> void
 ~NuGet.Protocol.Plugins.PluginFile.State.get -> System.Lazy<NuGet.Protocol.Plugins.PluginFileState>
 NuGet.Protocol.Plugins.PluginFileState
 NuGet.Protocol.Plugins.PluginFileState.InvalidEmbeddedSignature = 3 -> NuGet.Protocol.Plugins.PluginFileState

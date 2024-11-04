@@ -31,23 +31,14 @@ namespace NuGet.Protocol.Plugins
         /// <param name="filePath">The plugin's file path.</param>
         /// <param name="state">A lazy that evaluates the plugin file state.</param>
         /// <param name="isRunnablePluginFile">Is the plugin file, a runnable plugin file?</param>
-        internal PluginFile(string filePath, Lazy<PluginFileState> state, bool isRunnablePluginFile) : this(filePath, state)
-        {
-            IsRunnablePluginFile = isRunnablePluginFile;
-        }
-
-        /// <summary>
-        /// Instantiates a new <see cref="PluginFile" /> class.
-        /// </summary>
-        /// <param name="filePath">The plugin's file path.</param>
-        /// <param name="state">A lazy that evaluates the plugin file state.</param>
-        public PluginFile(string filePath, Lazy<PluginFileState> state)
+        public PluginFile(string filePath, Lazy<PluginFileState> state, bool isRunnablePluginFile)
         {
             if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
+            IsRunnablePluginFile = isRunnablePluginFile;
             Path = filePath;
             State = state;
         }

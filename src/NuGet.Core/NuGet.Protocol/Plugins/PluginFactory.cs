@@ -81,6 +81,7 @@ namespace NuGet.Protocol.Plugins
         /// <param name="arguments">Command-line arguments to be supplied to the plugin.</param>
         /// <param name="requestHandlers">Request handlers.</param>
         /// <param name="options">Connection options.</param>
+        /// <param name="isRunnablePluginFile">Is the file a runnable file.</param>
         /// <param name="sessionCancellationToken">A cancellation token for the plugin's lifetime.</param>
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="Plugin" />
@@ -104,6 +105,7 @@ namespace NuGet.Protocol.Plugins
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
+            bool isRunnablePluginFile,
             CancellationToken sessionCancellationToken)
         {
             if (_isDisposed)
@@ -136,7 +138,7 @@ namespace NuGet.Protocol.Plugins
             var lazyTask = _plugins.GetOrAdd(
                 filePath,
                 (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isRunnablePluginFile: false, sessionCancellationToken)));
+                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isRunnablePluginFile: isRunnablePluginFile, sessionCancellationToken)));
 
             await lazyTask.Value;
 
@@ -158,18 +160,6 @@ namespace NuGet.Protocol.Plugins
 
             if (!isRunnablePluginFile)
             {
-#if IS_DESKTOP
-                startInfo = new ProcessStartInfo(filePath)
-                {
-                    Arguments = args,
-                    UseShellExecute = false,
-                    RedirectStandardError = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                };
-#else
                 startInfo = new ProcessStartInfo
                 {
                     FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
@@ -184,14 +174,12 @@ namespace NuGet.Protocol.Plugins
                     StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
                     WindowStyle = ProcessWindowStyle.Hidden,
                 };
-#endif
             }
             else
             {
-                // A dotnet tools plugin. Execute it directly.
+                // Execute file directly.
                 startInfo = new ProcessStartInfo(filePath)
                 {
-                    FileName = filePath,
                     Arguments = args,
                     UseShellExecute = false,
                     RedirectStandardError = false,
@@ -477,46 +465,6 @@ namespace NuGet.Protocol.Plugins
             logger.Write(new EnvironmentVariablesLogMessage(logger.Now));
             logger.Write(new ProcessLogMessage(logger.Now));
             logger.Write(new ThreadPoolLogMessage(logger.Now));
-        }
-
-        public async Task<IPlugin> GetOrCreateRunnablePluginAsync(string filePath, IEnumerable<string> arguments, IRequestHandlers requestHandlers, ConnectionOptions options, CancellationToken sessionCancellationToken)
-        {
-            if (_isDisposed)
-            {
-                throw new ObjectDisposedException(nameof(PluginFactory));
-            }
-
-            if (string.IsNullOrEmpty(filePath))
-            {
-                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
-            }
-
-            if (arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments));
-            }
-
-            if (requestHandlers == null)
-            {
-                throw new ArgumentNullException(nameof(requestHandlers));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            sessionCancellationToken.ThrowIfCancellationRequested();
-
-            var lazyTask = _plugins.GetOrAdd(
-                filePath,
-                (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isRunnablePluginFile: true, sessionCancellationToken)));
-
-            await lazyTask.Value;
-
-            // Manage plugin lifetime by its idleness.  Thus, don't allow callers to prematurely dispose of a plugin.
-            return new NoOpDisposePlugin(lazyTask.Value.Result);
         }
     }
 }
