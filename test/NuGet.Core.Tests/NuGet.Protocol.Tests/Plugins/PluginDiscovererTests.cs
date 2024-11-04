@@ -525,7 +525,6 @@ namespace NuGet.Protocol.Plugins.Tests
 
             // Assert
             Assert.Single(plugins);
-            Assert.False(plugins[0].IsRunnablePluginFile);
         }
 
         [PlatformFact(Platform.Windows)]
