@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-
+#pragma warning disable RS0030 // Do not used banned APIs.  This class is allowed to get and set environment variables.
 namespace NuGet.Build.Tasks.Console
 {
     /// <summary>
