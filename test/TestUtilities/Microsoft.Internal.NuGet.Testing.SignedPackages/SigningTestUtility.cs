@@ -336,6 +336,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
                 IsCA = true
             };
 
+            // CodeQL [SM03797] This is test code. Some tests use weak keys to test the product's rejection of weak keys. See internal bug 2287165.
             using (var rsa = RSA.Create(publicKeyLength))
             {
                 return GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);

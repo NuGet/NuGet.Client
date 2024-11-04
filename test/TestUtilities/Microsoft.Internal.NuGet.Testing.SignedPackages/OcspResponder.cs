@@ -229,6 +229,7 @@ namespace Microsoft.Internal.NuGet.Testing.SignedPackages
 
             byte[] tbsResponseData = writer.Encode();
 
+            // CodeQL [SM03799] This is test code. This is a test OCSP responder for local testing of various signing and verification scenarios in the product. We need to support the default for CMS and X.509 signing, which is PKCS #1 v1.5. See internal bug 2287166.
             return CertificateAuthority.KeyPair.SignData(tbsResponseData, hashAlgorithmName, RSASignaturePadding.Pkcs1);
         }
 #endif
