@@ -66,6 +66,18 @@ namespace NuGet.Credentials.Test
 
     internal sealed class PluginManagerMock : IDisposable
     {
+        public static bool IsDesktop
+        {
+            get
+            {
+#if IS_DESKTOP
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         private readonly Mock<IConnection> _connection;
         private readonly TestExpectation _expectations;
         private readonly Mock<IPluginFactory> _factory;
@@ -238,7 +250,7 @@ namespace NuGet.Credentials.Test
             _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[]
                     {
-                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState)))
+                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), isRunnablePluginFile: IsDesktop))
                     });
         }
 
@@ -285,6 +297,7 @@ namespace NuGet.Credentials.Test
                     It.IsNotNull<IEnumerable<string>>(),
                     It.IsNotNull<IRequestHandlers>(),
                     It.IsNotNull<ConnectionOptions>(),
+                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_plugin.Object);
         }

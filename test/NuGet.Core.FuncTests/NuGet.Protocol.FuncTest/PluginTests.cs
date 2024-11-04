@@ -26,6 +26,18 @@ namespace NuGet.Protocol.FuncTest
 {
     public class PluginTests
     {
+        public static bool IsDesktop
+        {
+            get
+            {
+#if IS_DESKTOP
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         private static readonly FileInfo PluginFile;
         private static readonly ushort PortNumber = 11000;
         private static readonly IEnumerable<string> PluginArguments = PluginConstants.PluginArguments
@@ -64,6 +76,7 @@ namespace NuGet.Protocol.FuncTest
                     PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Unhandled" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.True(
@@ -85,6 +98,7 @@ namespace NuGet.Protocol.FuncTest
                     PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Handled" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.True(
@@ -106,6 +120,7 @@ namespace NuGet.Protocol.FuncTest
                     PluginConstants.PluginArguments.Concat(new[] { "-Freeze" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.True(
@@ -127,6 +142,7 @@ namespace NuGet.Protocol.FuncTest
                     PluginConstants.PluginArguments.Concat(new[] { "-CauseProtocolException" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
+                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.Equal("Plugin 'Plugin.Testable' failed with the exception:  The plugin handshake failed.", exception.Message);
@@ -322,6 +338,7 @@ namespace NuGet.Protocol.FuncTest
                     PluginArguments,
                     new RequestHandlers(),
                     options,
+                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token);
                 var responseSender = new ResponseSender(PortNumber);
 
