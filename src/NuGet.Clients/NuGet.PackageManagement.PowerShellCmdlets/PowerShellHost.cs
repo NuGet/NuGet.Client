@@ -538,9 +538,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             if (currentPaths.Add(path))
             {
                 var newPath = currentPath + Path.PathSeparator + path;
-#pragma warning disable RS0030 // Do not use banned APIs
+#pragma warning disable RS0030 // Do not use banned APIs (This add a path to the PATH environment variable just for the PowerShell console session)
                 Environment.SetEnvironmentVariable("path", newPath);
-#pragma warning restore RS0030 // Do not use banned APIs
+#pragma warning restore RS0030 // Do not use banned APIs (This add a path to the PATH environment variable just for the PowerShell console session)
             }
         }
 

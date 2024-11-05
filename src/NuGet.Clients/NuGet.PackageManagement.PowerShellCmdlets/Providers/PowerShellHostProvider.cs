@@ -30,7 +30,6 @@ namespace NuGetConsole.Host
         private readonly IRestoreEvents _restoreEvents;
         private readonly IEnvironmentVariableReader _environmentVariableReader;
 
-
         [ImportingConstructor]
         public PowerShellHostProvider(IRestoreEvents restoreEvents)
             : this(restoreEvents, EnvironmentVariableWrapper.Instance)
