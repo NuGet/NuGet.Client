@@ -1209,7 +1209,6 @@ NuGet.Protocol.Plugins.PluginException
 ~NuGet.Protocol.Plugins.PluginException.PluginException(string message) -> void
 ~NuGet.Protocol.Plugins.PluginException.PluginException(string message, System.Exception innerException) -> void
 NuGet.Protocol.Plugins.PluginFactory
-NuGet.Protocol.Plugins.PluginFactory.Dispose() -> void
 NuGet.Protocol.Plugins.PluginFactory.PluginFactory(System.TimeSpan pluginIdleTimeout) -> void
 NuGet.Protocol.Plugins.PluginFile
 ~NuGet.Protocol.Plugins.PluginFile.Path.get -> string

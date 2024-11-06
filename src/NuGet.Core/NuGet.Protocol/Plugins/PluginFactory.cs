@@ -17,12 +17,14 @@ namespace NuGet.Protocol.Plugins
     /// <summary>
     /// A plugin factory.
     /// </summary>
-    public sealed class PluginFactory : IPluginFactory
+    public class PluginFactory : IPluginFactory
     {
         private bool _isDisposed;
         private readonly IPluginLogger _logger;
         private readonly TimeSpan _pluginIdleTimeout;
         private readonly ConcurrentDictionary<string, Lazy<Task<IPlugin>>> _plugins;
+
+        internal PluginFactory() { }
 
         /// <summary>
         /// Instantiates a new <see cref="PluginFactory" /> class.
@@ -48,7 +50,7 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Disposes of this instance.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (_isDisposed)
             {
@@ -99,7 +101,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ProtocolException">Thrown if a plugin protocol error occurs.</exception>
         /// <exception cref="PluginException">Thrown for a plugin failure during creation.</exception>
         /// <remarks>This is intended to be called by NuGet client tools.</remarks>
-        public async Task<IPlugin> GetOrCreateAsync(
+        public virtual async Task<IPlugin> GetOrCreateAsync(
             PluginFile pluginFile,
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
