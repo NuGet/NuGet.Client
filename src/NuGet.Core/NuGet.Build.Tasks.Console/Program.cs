@@ -39,9 +39,7 @@ namespace NuGet.Build.Tasks.Console
         {
             try
             {
-                var debug = IsDebug();
-
-                if (debug)
+                if (string.Equals(Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
                 {
                     Debugger.Launch();
                 }
@@ -87,14 +85,14 @@ namespace NuGet.Build.Tasks.Console
                 // Check whether the ask is to generate the restore graph file.
                 if (MSBuildStaticGraphRestore.IsOptionTrue("GenerateRestoreGraphFile", arguments.Options))
                 {
-                    using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
+                    using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore())
                     {
                         return dependencyGraphSpecGenerator.WriteDependencyGraphSpec(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
                     }
                 }
 
                 // Otherwise run restore!
-                using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
+                using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore())
                 {
                     return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
                 }
@@ -111,15 +109,6 @@ namespace NuGet.Build.Tasks.Console
 
                 return -1;
             }
-        }
-
-        /// <summary>
-        /// Determines if a user specified that the current process is being debugged.
-        /// </summary>
-        /// <returns><code>true</code> if the user specified to debug the current process, otherwise <code>false</code>.</returns>
-        private static bool IsDebug()
-        {
-            return string.Equals(Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

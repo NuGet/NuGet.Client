@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void GetDirectoryBuildPropsRootElementWhenItExists_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
 
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
@@ -76,7 +76,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void AddPackageReferenceIntoProjectFileWhenItemGroupDoesNotExist_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
                             remoteLoggers: null,
@@ -130,7 +130,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void AddPackageReferenceIntoProjectFileWhenItemGroupDoesExist_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
                             remoteLoggers: null,
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void AddPackageVersionIntoPropsFileWhenItemGroupDoesNotExist_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
                             remoteLoggers: null,
@@ -255,7 +255,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void AddPackageVersionIntoPropsFileWhenItemGroupExists_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
                             remoteLoggers: null,
@@ -324,7 +324,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void UpdatePackageVersionInPropsFileWhenItExists_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
                             remoteLoggers: null,
@@ -393,7 +393,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public void UpdateVersionOverrideInPropsFileWhenItExists_Success()
         {
             // Arrange
-            var testDirectory = TestDirectory.Create();
+            using var testDirectory = TestDirectory.Create();
             var projectCollection = new ProjectCollection(
                             globalProperties: null,
                             remoteLoggers: null,
@@ -620,13 +620,13 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new TargetFrameworkInformation
                     {
                         FrameworkName = net8,
-                        Dependencies = new[]
-                        {
+                        Dependencies =
+                        [
                             new LibraryDependency
                             {
                                 LibraryRange = new LibraryRange("myPackage")
                             }
-                        }
+                        ]
                     }
                 })
                 {
@@ -695,13 +695,13 @@ namespace NuGet.CommandLine.Xplat.Tests
                     new TargetFrameworkInformation
                     {
                         FrameworkName = net8,
-                        Dependencies = new[]
-                        {
+                        Dependencies =
+                        [
                             new LibraryDependency
                             {
                                 LibraryRange = new LibraryRange("myPackage")
                             }
-                        }
+                        ]
                     }
                 })
                 {
