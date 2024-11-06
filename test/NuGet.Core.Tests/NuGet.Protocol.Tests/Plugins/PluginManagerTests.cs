@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Plugins.Tests
             const string message = "b";
 
             var reader = Mock.Of<IEnvironmentVariableReader>();
-            var pluginFactory = new Mock<IPluginFactory>(MockBehavior.Strict);
+            var pluginFactory = new Mock<PluginFactory>(MockBehavior.Strict);
             var exception = new Exception(message);
 
             pluginFactory.Setup(x => x.GetOrCreateAsync(
@@ -259,7 +259,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 }
             }
             private readonly Mock<IConnection> _connection;
-            private readonly Mock<IPluginFactory> _factory;
+            private readonly Mock<PluginFactory> _factory;
             private readonly Mock<IPlugin> _plugin;
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly Mock<IEnvironmentVariableReader> _reader;
@@ -349,7 +349,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _plugin.SetupGet(x => x.Id)
                     .Returns("id");
 
-                _factory = new Mock<IPluginFactory>(MockBehavior.Strict);
+                _factory = new Mock<PluginFactory>(MockBehavior.Strict);
 
                 _factory.Setup(x => x.Dispose());
                 _factory.Setup(x => x.GetOrCreateAsync(

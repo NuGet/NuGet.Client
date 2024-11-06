@@ -80,7 +80,7 @@ namespace NuGet.Credentials.Test
 
         private readonly Mock<IConnection> _connection;
         private readonly TestExpectation _expectations;
-        private readonly Mock<IPluginFactory> _factory;
+        private readonly Mock<PluginFactory> _factory;
         private readonly Mock<IPlugin> _plugin;
         private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
         private readonly Mock<IEnvironmentVariableReader> _reader;
@@ -111,7 +111,7 @@ namespace NuGet.Credentials.Test
             _plugin = new Mock<IPlugin>(MockBehavior.Strict);
             EnsurePluginSetupCalls();
 
-            _factory = new Mock<IPluginFactory>(MockBehavior.Strict);
+            _factory = new Mock<PluginFactory>(MockBehavior.Strict);
             EnsureFactorySetupCalls(pluginFilePath);
 
             // Setup connection

@@ -11,7 +11,7 @@ namespace NuGet.Protocol.Plugins
     /// <summary>
     /// A plugin factory.
     /// </summary>
-    public interface IPluginFactory : IDisposable
+    internal interface IPluginFactory : IDisposable
     {
         /// <summary>
         /// Asynchronously gets an existing plugin instance or creates a new instance and connects to it.

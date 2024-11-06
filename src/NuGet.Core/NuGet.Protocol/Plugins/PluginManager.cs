@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Plugins
         public PluginManager(
             IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
-            Func<TimeSpan, IPluginFactory> pluginFactoryCreator,
+            Func<TimeSpan, PluginFactory> pluginFactoryCreator,
             Lazy<string> pluginsCacheDirectoryPath)
         {
             Initialize(

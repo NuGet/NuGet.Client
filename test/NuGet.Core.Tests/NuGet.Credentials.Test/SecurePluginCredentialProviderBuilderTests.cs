@@ -167,7 +167,7 @@ namespace NuGet.Credentials.Test
                 PluginManager = new PluginManager(
                     reader.Object,
                     new Lazy<IPluginDiscoverer>(() => pluginDiscoverer.Object),
-                    (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                    (TimeSpan idleTimeout) => Mock.Of<PluginFactory>(),
                     new Lazy<string>(() => _testDirectory.Path));
             }
 
@@ -194,7 +194,7 @@ namespace NuGet.Credentials.Test
             return new PluginManager(
                 Mock.Of<IEnvironmentVariableReader>(),
                 new Lazy<IPluginDiscoverer>(),
-                (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                (TimeSpan idleTimeout) => Mock.Of<PluginFactory>(),
                 new Lazy<string>(() => _testDirectory.Path));
         }
     }

@@ -417,7 +417,7 @@ namespace NuGet.Credentials.Test
             return new PluginManager(
                 Mock.Of<IEnvironmentVariableReader>(),
                 new Lazy<IPluginDiscoverer>(),
-                (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                (TimeSpan idleTimeout) => Mock.Of<PluginFactory>(),
                 new Lazy<string>(() => _testDirectory.Path));
         }
 

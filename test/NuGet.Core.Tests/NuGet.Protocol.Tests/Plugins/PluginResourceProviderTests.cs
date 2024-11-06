@@ -284,7 +284,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _pluginManager = new PluginManager(
                     _environmentVariableReader.Object,
                     new Lazy<IPluginDiscoverer>(() => _pluginDiscoverer.Object),
-                    (TimeSpan idleTimeout) => Mock.Of<IPluginFactory>(),
+                    (TimeSpan idleTimeout) => Mock.Of<PluginFactory>(),
                     new Lazy<string>(() => _testDirectory.Path));
                 Provider = new PluginResourceProvider(_pluginManager);
             }
@@ -333,7 +333,7 @@ namespace NuGet.Protocol.Plugins.Tests
             }
             private readonly Mock<IConnection> _connection;
             private readonly IEnumerable<PositiveTestExpectation> _expectations;
-            private readonly Mock<IPluginFactory> _factory;
+            private readonly Mock<PluginFactory> _factory;
             private readonly Mock<IPlugin> _plugin;
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly Mock<IEnvironmentVariableReader> _reader;
@@ -429,7 +429,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _plugin.SetupGet(x => x.Id)
                     .Returns("id");
 
-                _factory = new Mock<IPluginFactory>(MockBehavior.Strict);
+                _factory = new Mock<PluginFactory>(MockBehavior.Strict);
 
                 _factory.Setup(x => x.Dispose());
                 _factory.Setup(x => x.GetOrCreateAsync(
