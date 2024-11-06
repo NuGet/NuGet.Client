@@ -250,7 +250,7 @@ namespace NuGet.Credentials.Test
             _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new[]
                     {
-                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), isRunnablePluginFile: IsDesktop))
+                        new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), requiresDotnetHost: !IsDesktop))
                     });
         }
 
@@ -293,11 +293,10 @@ namespace NuGet.Credentials.Test
         {
             _factory.Setup(x => x.Dispose());
             _factory.Setup(x => x.GetOrCreateAsync(
-                    It.Is<string>(p => p == pluginFilePath),
+                    It.Is<PluginFile>(p => p.Path == pluginFilePath),
                     It.IsNotNull<IEnumerable<string>>(),
                     It.IsNotNull<IRequestHandlers>(),
                     It.IsNotNull<ConnectionOptions>(),
-                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(_plugin.Object);
         }
