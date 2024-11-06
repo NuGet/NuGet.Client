@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Constructor_InitializesProperties()
         {
-            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.InvalidEmbeddedSignature), isRunnablePluginFile: IsDesktop);
+            var pluginFile = new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.InvalidEmbeddedSignature), requiresDotnetHost: !IsDesktop);
 
             var result = new PluginDiscoveryResult(pluginFile);
 

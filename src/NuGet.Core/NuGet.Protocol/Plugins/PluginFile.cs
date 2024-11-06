@@ -21,24 +21,24 @@ namespace NuGet.Protocol.Plugins
         public Lazy<PluginFileState> State { get; }
 
         /// <summary>
-        /// Indicates if the plugin file is runnable, such as an executable or a script.
+        /// Indicates if the plugin file requires a dotnet host.
         /// </summary>
-        internal bool IsRunnablePluginFile { get; }
+        internal bool RequiresDotnetHost { get; }
 
         /// <summary>
         /// Instantiates a new <see cref="PluginFile" /> class.
         /// </summary>
         /// <param name="filePath">The plugin's file path.</param>
         /// <param name="state">A lazy that evaluates the plugin file state.</param>
-        /// <param name="isRunnablePluginFile">Is the plugin file, a runnable plugin file?</param>
-        public PluginFile(string filePath, Lazy<PluginFileState> state, bool isRunnablePluginFile)
+        /// <param name="requiresDotnetHost">Indicates if the plugin file requires a dotnet host.</param>
+        public PluginFile(string filePath, Lazy<PluginFileState> state, bool requiresDotnetHost)
         {
             if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
-            IsRunnablePluginFile = isRunnablePluginFile;
+            RequiresDotnetHost = requiresDotnetHost;
             Path = filePath;
             State = state;
         }

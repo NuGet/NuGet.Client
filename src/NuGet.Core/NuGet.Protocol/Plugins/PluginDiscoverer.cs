@@ -168,7 +168,7 @@ namespace NuGet.Protocol.Plugins
                     {
                         return PluginFileState.InvalidFilePath;
                     }
-                }), isRunnablePluginFile: false);
+                }), requiresDotnetHost: true);
                 files.Add(pluginFile);
             }
 
@@ -202,7 +202,7 @@ namespace NuGet.Protocol.Plugins
                             // A DotNet tool plugin
                             if (IsValidPluginFile(fileInfo))
                             {
-                                PluginFile pluginFile = new PluginFile(fileInfo.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: true);
+                                PluginFile pluginFile = new PluginFile(fileInfo.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: false);
                                 pluginFiles.Add(pluginFile);
                             }
                         }
@@ -210,7 +210,7 @@ namespace NuGet.Protocol.Plugins
                         {
                             // A non DotNet tool plugin file
                             var state = new Lazy<PluginFileState>(() => PluginFileState.Valid);
-                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state, isRunnablePluginFile: isDesktop));
+                            pluginFiles.Add(new PluginFile(fileInfo.FullName, state, requiresDotnetHost: !isDesktop));
                         }
                     }
                     else if (Directory.Exists(path))
@@ -220,7 +220,7 @@ namespace NuGet.Protocol.Plugins
                 }
                 else
                 {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), isRunnablePluginFile: isDesktop));
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), requiresDotnetHost: !isDesktop));
                 }
             }
 
@@ -245,7 +245,7 @@ namespace NuGet.Protocol.Plugins
                 }
                 else
                 {
-                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), isRunnablePluginFile: false));
+                    pluginFiles.Add(new PluginFile(path, new Lazy<PluginFileState>(() => PluginFileState.InvalidFilePath), requiresDotnetHost: false));
                 }
             }
 
@@ -265,7 +265,7 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (IsValidPluginFile(file))
                     {
-                        PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: true);
+                        PluginFile pluginFile = new PluginFile(file.FullName, new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: false);
                         pluginFiles.Add(pluginFile);
                     }
                 }

@@ -39,11 +39,10 @@ namespace NuGet.Protocol.Plugins.Tests
             var exception = new Exception(message);
 
             pluginFactory.Setup(x => x.GetOrCreateAsync(
-                    It.Is<string>(filePath => string.Equals(filePath, PluginFilePath, StringComparison.Ordinal)),
+                    It.Is<PluginFile>(pluginFile => string.Equals(pluginFile.Path, PluginFilePath, StringComparison.Ordinal)),
                     It.Is<IEnumerable<string>>(arguments => arguments != null && arguments.Any()),
                     It.IsNotNull<IRequestHandlers>(),
                     It.IsNotNull<ConnectionOptions>(),
-                    It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                 .ThrowsAsync(exception);
             pluginFactory.Setup(x => x.Dispose());
@@ -58,7 +57,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: IsDesktop));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop));
 
                 Tuple<bool, PluginCreationResult> result = await pluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -89,7 +88,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: IsDesktop));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -127,7 +126,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: IsDesktop));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -176,7 +175,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: IsDesktop));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -226,7 +225,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 var discoveryResult = new PluginDiscoveryResult(
                     new PluginFile(
                         PluginFilePath,
-                        new Lazy<PluginFileState>(() => PluginFileState.Valid), isRunnablePluginFile: IsDesktop));
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop));
 
                 Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
                     discoveryResult,
@@ -312,7 +311,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new[]
                         {
-                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), isRunnablePluginFile: IsDesktop))
+                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), requiresDotnetHost : ! IsDesktop))
                         });
 
                 _connection = new Mock<IConnection>(MockBehavior.Strict);
@@ -354,11 +353,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 _factory.Setup(x => x.Dispose());
                 _factory.Setup(x => x.GetOrCreateAsync(
-                        It.Is<string>(p => p == pluginFilePath),
+                        It.Is<PluginFile>(p => p.Path == pluginFilePath),
                         It.IsNotNull<IEnumerable<string>>(),
                         It.IsNotNull<IRequestHandlers>(),
                         It.IsNotNull<ConnectionOptions>(),
-                        It.IsAny<bool>(),
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(_plugin.Object);
 

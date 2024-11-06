@@ -77,16 +77,15 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Asynchronously gets an existing plugin instance or creates a new instance and connects to it.
         /// </summary>
-        /// <param name="filePath">The file path of the plugin.</param>
+        /// <param name="pluginFile">A plugin file.</param>
         /// <param name="arguments">Command-line arguments to be supplied to the plugin.</param>
         /// <param name="requestHandlers">Request handlers.</param>
         /// <param name="options">Connection options.</param>
-        /// <param name="isRunnablePluginFile">Is the file a runnable file.</param>
         /// <param name="sessionCancellationToken">A cancellation token for the plugin's lifetime.</param>
         /// <returns>A task that represents the asynchronous operation.
         /// The task result (<see cref="Task{TResult}.Result" />) returns a <see cref="Plugin" />
         /// instance.</returns>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="filePath" />
+        /// <exception cref="ArgumentException">Thrown if <paramref name="pluginFile.Path" />
         /// is either <see langword="null" /> or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="arguments" />
         /// is <see langword="null" />.</exception>
@@ -101,11 +100,10 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="PluginException">Thrown for a plugin failure during creation.</exception>
         /// <remarks>This is intended to be called by NuGet client tools.</remarks>
         public async Task<IPlugin> GetOrCreateAsync(
-            string filePath,
+            PluginFile pluginFile,
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
-            bool isRunnablePluginFile,
             CancellationToken sessionCancellationToken)
         {
             if (_isDisposed)
@@ -113,9 +111,9 @@ namespace NuGet.Protocol.Plugins
                 throw new ObjectDisposedException(nameof(PluginFactory));
             }
 
-            if (string.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(pluginFile.Path))
             {
-                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(filePath));
+                throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(pluginFile.Path));
             }
 
             if (arguments == null)
@@ -136,9 +134,9 @@ namespace NuGet.Protocol.Plugins
             sessionCancellationToken.ThrowIfCancellationRequested();
 
             var lazyTask = _plugins.GetOrAdd(
-                filePath,
+                pluginFile.Path,
                 (path) => new Lazy<Task<IPlugin>>(
-                    () => CreatePluginAsync(filePath, arguments, requestHandlers, options, isRunnablePluginFile: isRunnablePluginFile, sessionCancellationToken)));
+                    () => CreatePluginAsync(pluginFile, arguments, requestHandlers, options, sessionCancellationToken)));
 
             await lazyTask.Value;
 
@@ -147,18 +145,17 @@ namespace NuGet.Protocol.Plugins
         }
 
         private async Task<IPlugin> CreatePluginAsync(
-            string filePath,
+            PluginFile pluginFile,
             IEnumerable<string> arguments,
             IRequestHandlers requestHandlers,
             ConnectionOptions options,
-            bool isRunnablePluginFile,
             CancellationToken sessionCancellationToken)
         {
             var args = string.Join(" ", arguments);
 
             ProcessStartInfo startInfo;
 
-            if (!isRunnablePluginFile)
+            if (pluginFile.RequiresDotnetHost)
             {
                 startInfo = new ProcessStartInfo
                 {
@@ -166,7 +163,7 @@ namespace NuGet.Protocol.Plugins
                     (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
                     "dotnet.exe" :
                     "dotnet"),
-                    Arguments = $"\"{filePath}\" " + args,
+                    Arguments = $"\"{pluginFile.Path}\" " + args,
                     UseShellExecute = false,
                     RedirectStandardError = false,
                     RedirectStandardInput = true,
@@ -178,7 +175,7 @@ namespace NuGet.Protocol.Plugins
             else
             {
                 // Execute file directly.
-                startInfo = new ProcessStartInfo(filePath)
+                startInfo = new ProcessStartInfo(pluginFile.Path)
                 {
                     Arguments = args,
                     UseShellExecute = false,
@@ -230,7 +227,7 @@ namespace NuGet.Protocol.Plugins
                 connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
 
                 var plugin = new Plugin(
-                    filePath,
+                    pluginFile.Path,
                     connection,
                     pluginProcess,
                     isOwnProcess: false,

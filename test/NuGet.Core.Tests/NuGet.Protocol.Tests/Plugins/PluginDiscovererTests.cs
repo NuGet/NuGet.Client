@@ -436,7 +436,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Assert
             Assert.Single(plugins);
             Assert.Equal(pluginInNuGetPluginPathDirectoryFilePath, plugins[0].Path);
-            Assert.True(plugins[0].IsRunnablePluginFile);
+            Assert.False(plugins[0].RequiresDotnetHost);
         }
 
         [PlatformFact(Platform.Windows)]
@@ -480,7 +480,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Assert
             Assert.Single(plugins);
             Assert.Equal(pluginInPathDirectoryFilePath, plugins[0].Path);
-            Assert.True(plugins[0].IsRunnablePluginFile);
+            Assert.False(plugins[0].RequiresDotnetHost);
         }
 
         [PlatformFact(Platform.Windows)]
@@ -503,7 +503,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Assert
             Assert.Single(plugins);
             Assert.Equal(pluginFilePath, plugins[0].Path);
-            Assert.True(plugins[0].IsRunnablePluginFile);
+            Assert.False(plugins[0].RequiresDotnetHost);
         }
 
         [PlatformFact(Platform.Windows)]
@@ -548,7 +548,7 @@ namespace NuGet.Protocol.Plugins.Tests
             // Assert
             Assert.Single(plugins);
             Assert.Equal(validPluginFile, plugins[0].Path);
-            Assert.True(plugins[0].IsRunnablePluginFile);
+            Assert.False(plugins[0].RequiresDotnetHost);
         }
 
         [PlatformFact(Platform.Windows)]

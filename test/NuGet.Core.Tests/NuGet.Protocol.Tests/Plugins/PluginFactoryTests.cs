@@ -60,11 +60,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentException>(
                 () => factory.GetOrCreateAsync(
-                    filePath,
+                    new PluginFile(filePath: filePath, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     PluginConstants.PluginArguments,
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     CancellationToken.None));
 
             Assert.Equal("filePath", exception.ParamName);
@@ -77,11 +76,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => factory.GetOrCreateAsync(
-                    filePath: "a",
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     arguments: null,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal("arguments", exception.ParamName);
@@ -94,11 +92,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => factory.GetOrCreateAsync(
-                    filePath: "a",
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: null,
                     options: ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal("requestHandlers", exception.ParamName);
@@ -111,11 +108,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                 () => factory.GetOrCreateAsync(
-                    filePath: "a",
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: null,
-                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal("options", exception.ParamName);
@@ -128,11 +124,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             await Assert.ThrowsAsync<OperationCanceledException>(
                 () => factory.GetOrCreateAsync(
-                    filePath: "a",
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: new CancellationToken(canceled: true)));
         }
 
@@ -145,11 +140,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var exception = await Assert.ThrowsAsync<ObjectDisposedException>(
                 () => factory.GetOrCreateAsync(
-                    filePath: "a",
+                    new PluginFile(filePath: "a", state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     arguments: PluginConstants.PluginArguments,
                     requestHandlers: new RequestHandlers(),
                     options: ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     sessionCancellationToken: CancellationToken.None));
 
             Assert.Equal(nameof(PluginFactory), exception.ObjectName);
@@ -176,7 +170,7 @@ namespace NuGet.Protocol.Plugins.Tests
             var pluginFactory = new PluginFactory(Timeout.InfiniteTimeSpan);
 
             // Act
-            var plugin = await Assert.ThrowsAnyAsync<Exception>(() => pluginFactory.GetOrCreateAsync(pluginPath, args, reqHandler, options, isRunnablePluginFile: true, CancellationToken.None));
+            var plugin = await Assert.ThrowsAnyAsync<Exception>(() => pluginFactory.GetOrCreateAsync(new PluginFile(filePath: pluginPath, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: false), args, reqHandler, options, CancellationToken.None));
 
             // Assert
             string outputContent = File.ReadAllText(outputPath);

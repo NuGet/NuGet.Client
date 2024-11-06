@@ -72,11 +72,10 @@ namespace NuGet.Protocol.FuncTest
             using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
             {
                 var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
-                    PluginFile.FullName,
+                    new PluginFile(filePath: PluginFile.FullName, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Unhandled" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.True(
@@ -94,11 +93,10 @@ namespace NuGet.Protocol.FuncTest
             using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
             {
                 var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
-                    PluginFile.FullName,
+                    new PluginFile(filePath: PluginFile.FullName, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Handled" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.True(
@@ -116,11 +114,10 @@ namespace NuGet.Protocol.FuncTest
             using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
             {
                 var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
-                    PluginFile.FullName,
+                    new PluginFile(filePath: PluginFile.FullName, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     PluginConstants.PluginArguments.Concat(new[] { "-Freeze" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.True(
@@ -138,11 +135,10 @@ namespace NuGet.Protocol.FuncTest
             using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
             {
                 var exception = await Assert.ThrowsAsync<ProtocolException>(() => pluginFactory.GetOrCreateAsync(
-                    PluginFile.FullName,
+                    new PluginFile(filePath: PluginFile.FullName, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     PluginConstants.PluginArguments.Concat(new[] { "-CauseProtocolException" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
-                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token));
 
                 Assert.Equal("Plugin 'Plugin.Testable' failed with the exception:  The plugin handshake failed.", exception.Message);
@@ -334,11 +330,10 @@ namespace NuGet.Protocol.FuncTest
                 var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
                 var options = ConnectionOptions.CreateDefault();
                 var plugin = await pluginFactory.GetOrCreateAsync(
-                    PluginFile.FullName,
+                    new PluginFile(filePath: PluginFile.FullName, state: new Lazy<PluginFileState>(() => PluginFileState.Valid), requiresDotnetHost: !IsDesktop),
                     PluginArguments,
                     new RequestHandlers(),
                     options,
-                    isRunnablePluginFile: IsDesktop,
                     cancellationTokenSource.Token);
                 var responseSender = new ResponseSender(PortNumber);
 

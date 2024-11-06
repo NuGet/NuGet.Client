@@ -310,7 +310,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 foreach (var path in pluginPaths.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var state = path == "a" ? PluginFileState.Valid : PluginFileState.InvalidEmbeddedSignature;
-                    var file = new PluginFile(path, new Lazy<PluginFileState>(() => state), isRunnablePluginFile: IsDesktop);
+                    var file = new PluginFile(path, new Lazy<PluginFileState>(() => state), requiresDotnetHost: !IsDesktop);
                     results.Add(new PluginDiscoveryResult(file));
                 }
 
@@ -377,7 +377,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _pluginDiscoverer.Setup(x => x.DiscoverAsync(It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new[]
                         {
-                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), isRunnablePluginFile: IsDesktop))
+                            new PluginDiscoveryResult(new PluginFile(pluginFilePath, new Lazy<PluginFileState>(() => pluginFileState), requiresDotnetHost : ! IsDesktop))
                         });
 
                 _connection = new Mock<IConnection>(MockBehavior.Strict);
@@ -433,11 +433,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 _factory.Setup(x => x.Dispose());
                 _factory.Setup(x => x.GetOrCreateAsync(
-                        It.Is<string>(p => p == pluginFilePath),
+                        It.Is<PluginFile>(p => p.Path == pluginFilePath),
                         It.IsNotNull<IEnumerable<string>>(),
                         It.IsNotNull<IRequestHandlers>(),
                         It.IsNotNull<ConnectionOptions>(),
-                        It.IsAny<bool>(),
                         It.IsAny<CancellationToken>()))
                     .ReturnsAsync(_plugin.Object);
 
