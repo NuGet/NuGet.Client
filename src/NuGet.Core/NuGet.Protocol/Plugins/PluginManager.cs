@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Plugins
         public PluginManager(
             IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
-            Func<TimeSpan, IPluginFactory> pluginFactoryCreator,
+            Func<TimeSpan, PluginFactory> pluginFactoryCreator,
             Lazy<string> pluginsCacheDirectoryPath)
         {
             Initialize(
@@ -212,12 +212,14 @@ namespace NuGet.Protocol.Plugins
                 {
                     if (result.PluginFile.State.Value == PluginFileState.Valid)
                     {
-                        var plugin = await _pluginFactory.GetOrCreateAsync(
-                            result.PluginFile.Path,
-                            PluginConstants.PluginArguments,
-                            new RequestHandlers(),
-                            _connectionOptions,
-                            cancellationToken);
+                        IPlugin plugin;
+
+                        plugin = await _pluginFactory.GetOrCreateAsync(
+                                pluginFile: result.PluginFile,
+                                arguments: PluginConstants.PluginArguments,
+                                requestHandlers: new RequestHandlers(),
+                                options: _connectionOptions,
+                                sessionCancellationToken: cancellationToken);
 
                         var utilities = await PerformOneTimePluginInitializationAsync(plugin, cancellationToken);
 
