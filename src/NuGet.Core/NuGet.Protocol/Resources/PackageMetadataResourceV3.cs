@@ -280,7 +280,10 @@ namespace NuGet.Protocol
                 {
                     catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
-                    catalogEntry.ReadmeFileUrl = _readmeUriTemplateResource?.GetReadmeUrl(catalogEntry.PackageId, catalogEntry.Version);
+                    if (string.IsNullOrWhiteSpace(catalogEntry.ReadmeFileUrl))
+                    {
+                        catalogEntry.ReadmeFileUrl = _readmeUriTemplateResource?.GetReadmeUrl(catalogEntry.PackageId, catalogEntry.Version);
+                    }
                     catalogEntry = metadataCache.GetObject(catalogEntry);
                     results.Add(catalogEntry);
                 }

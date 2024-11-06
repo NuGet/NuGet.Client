@@ -20,11 +20,11 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Gets a URL for reporting package abuse. The URL will not be verified to exist.
+        /// Get  the URL for downloading the readme file.
         /// </summary>
-        /// <param name="id">The package id (natural casing)</param>
+        /// <param name="id">The package id</param>
         /// <param name="version">The package version</param>
-        /// <returns>The first URL from the resource, with the URI template applied.</returns>
+        /// <returns>URL to download README, built using the URI template.</returns>
         public string GetReadmeUrl(string id, NuGetVersion version)
         {
             if (_uriTemplate == null)
