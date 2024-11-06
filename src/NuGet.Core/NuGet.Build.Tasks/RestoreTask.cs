@@ -22,7 +22,17 @@ namespace NuGet.Build.Tasks
     public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly IEnvironmentVariableReader _environmentVariableReader;
         private bool _disposed = false;
+
+        public RestoreTask()
+            : this(EnvironmentVariableWrapper.Instance)
+        {
+        }
+        internal RestoreTask(IEnvironmentVariableReader environmentVariableReader)
+        {
+            _environmentVariableReader = environmentVariableReader ?? throw new ArgumentNullException(nameof(environmentVariableReader));
+        }
 
         /// <summary>
         /// DG file entries
@@ -122,7 +132,7 @@ namespace NuGet.Build.Tasks
 
         public override bool Execute()
         {
-            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
+            var debugRestoreTask = _environmentVariableReader.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
             if (!string.IsNullOrEmpty(debugRestoreTask) &&
                 (debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase) || debugRestoreTask == "1"))
             {

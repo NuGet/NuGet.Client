@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Common;
 
 namespace NuGet.Build.Tasks
 {
@@ -11,6 +12,15 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public sealed class RestoreTaskEx : StaticGraphRestoreTaskBase
     {
+        public RestoreTaskEx()
+            : this(EnvironmentVariableWrapper.Instance)
+        {
+        }
+
+        internal RestoreTaskEx(IEnvironmentVariableReader environmentVariableReader)
+            : base(environmentVariableReader)
+        {
+        }
         /// <summary>
         /// Gets or sets a value representing the parameters to use for the MSBuild binary logger.
         /// </summary>
