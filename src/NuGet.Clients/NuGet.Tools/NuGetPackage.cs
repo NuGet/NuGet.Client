@@ -19,10 +19,12 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
+using Microsoft.VisualStudio.Utilities.UnifiedSettings;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.Options;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackageManagement.VisualStudio.Services;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
@@ -51,10 +53,11 @@ namespace NuGetVSExtension
         Style = VsDockStyle.Tabbed,
         Window = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}", // this is the guid of the Output tool window, which is present in both VS and VWD
         Orientation = ToolWindowOrientation.Right)]
-    [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true)]
+    [ProvideOptionPage(typeof(GeneralOptionPage), "NuGet Package Manager", "General", 113, 115, true, IsInUnifiedSettings = true)]
     [ProvideOptionPage(typeof(ConfigurationFilesOptionsPage), "NuGet Package Manager", "Configuration Files", 113, 117, true, Sort = 0)]
     [ProvideOptionPage(typeof(PackageSourceOptionsPage), "NuGet Package Manager", "Package Sources", 113, 114, true, Sort = 1)]
     [ProvideOptionPage(typeof(PackageSourceMappingOptionsPage), "NuGet Package Manager", "Package Source Mapping", 113, 116, true, Sort = 2)]
+    [ProvideSettingsManifest]
     [ProvideSearchProvider(typeof(NuGetSearchProvider), "NuGet Search")]
     // UI Context rule for a project that could be upgraded to PackageReference from packages.config based project.
     // Only exception is this UI context doesn't get enabled for right-click on Reference since there is no extension point on references
@@ -79,8 +82,9 @@ namespace NuGetVSExtension
     [ProvideBrokeredService(BrokeredServicesUtilities.ProjectUpgraderServiceName, BrokeredServicesUtilities.ProjectUpgraderServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.PackageFileServiceName, BrokeredServicesUtilities.PackageFileServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
     [ProvideBrokeredService(BrokeredServicesUtilities.SearchServiceName, BrokeredServicesUtilities.SearchServiceVersion, Audience = ServiceAudience.Local | ServiceAudience.RemoteExclusiveClient)]
+    [ProvideService(typeof(IExternalSettingsProvider), IsCacheable = true, IsAsyncQueryable = true, IsFreeThreaded = true)]
     [Guid(GuidList.guidNuGetPkgString)]
-    public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
+    public sealed partial class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts, IExternalSettingsProvider
     {
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
@@ -101,9 +105,48 @@ namespace NuGetVSExtension
         private bool _initialized;
         private NuGetPowerShellUsageCollector _nuGetPowerShellUsageCollector;
 
+        public event EventHandler<ExternalSettingsChangedEventArgs> SettingValuesChanged;
+        public event EventHandler<EnumSettingChoicesChangedEventArgs> EnumSettingChoicesChanged;
+        public event EventHandler<DynamicMessageTextChangedEventArgs> DynamicMessageTextChanged;
+        public event EventHandler ErrorConditionResolved;
+
         public NuGetPackage()
         {
+            AddService(typeof(IExternalSettingsProvider),
+                (container, ct, serviceType) => Task.FromResult<object>(new ExternalSettingsProviderService()),
+                promote: true);
             ServiceLocator.InitializePackageServiceProvider(this);
+
+            SettingValuesChanged += NuGetPackage_SettingValuesChanged;
+            EnumSettingChoicesChanged += NuGetPackage_EnumSettingChoicesChanged;
+            DynamicMessageTextChanged += NuGetPackage_DynamicMessageTextChanged;
+            ErrorConditionResolved += NuGetPackage_ErrorConditionResolved;
+
+            DynamicMessageTextChanged.Invoke(this, new DynamicMessageTextChangedEventArgs(""));
+            SettingValuesChanged.Invoke(this, ExternalSettingsChangedEventArgs.SomeOrAll);
+            EnumSettingChoicesChanged.Invoke(this, new EnumSettingChoicesChangedEventArgs(""));
+            ErrorConditionResolved.Invoke(this, EventArgs.Empty);
+
+        }
+
+        private void NuGetPackage_ErrorConditionResolved(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void NuGetPackage_DynamicMessageTextChanged(object sender, DynamicMessageTextChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void NuGetPackage_EnumSettingChoicesChanged(object sender, EnumSettingChoicesChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void NuGetPackage_SettingValuesChanged(object sender, ExternalSettingsChangedEventArgs e)
+        {
+            //throw new NotImplementedException();
         }
 
         [Import]
@@ -1326,6 +1369,36 @@ namespace NuGetVSExtension
             {
                 base.Dispose(disposing);
             }
+        }
+
+        public Task<ExternalSettingOperationResult<T>> GetValueAsync<T>(string moniker, CancellationToken cancellationToken) where T : notnull
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ExternalSettingOperationResult> SetValueAsync<T>(string moniker, T value, CancellationToken cancellationToken) where T : notnull
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetMessageTextAsync(string messageId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ExternalSettingOperationResult<IReadOnlyList<EnumChoice>>> GetEnumChoicesAsync(string enumSettingMoniker, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OpenBackingStoreAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }
