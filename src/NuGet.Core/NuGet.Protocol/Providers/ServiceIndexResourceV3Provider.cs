@@ -21,7 +21,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class ServiceIndexResourceV3Provider : ResourceProvider
     {
-        private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
+        private static readonly TimeSpan DefaultCacheDuration = TimeSpan.FromMinutes(40);
         private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         private readonly EnhancedHttpRetryHelper _enhancedHttpRetryHelper;
@@ -40,7 +40,7 @@ namespace NuGet.Protocol
                   NuGetResourceProviderPositions.Last)
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
-            MaxCacheDuration = _defaultCacheDuration;
+            MaxCacheDuration = DefaultCacheDuration;
             _enhancedHttpRetryHelper = new EnhancedHttpRetryHelper(environmentVariableReader);
         }
 
@@ -85,10 +85,10 @@ namespace NuGet.Protocol
                     }
                     finally
                     {
-                            _semaphore.Release();
-                        }
+                        _semaphore.Release();
                     }
                 }
+            }
 
             if (index == null && cacheInfo != null)
             {
