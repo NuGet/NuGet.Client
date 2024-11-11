@@ -62,15 +62,10 @@ namespace NuGet.Protocol
                 if (!_cache.TryGetValue(url, out cacheInfo) ||
                     entryValidCutoff > cacheInfo.CachedTime)
                 {
-                    // Track if the semaphore needs to be released
-                    var release = false;
+                    await _semaphore.WaitAsync(token);
+
                     try
                     {
-                        await _semaphore.WaitAsync(token);
-                        release = true;
-
-                        token.ThrowIfCancellationRequested();
-
                         // check the cache again, another thread may have finished this one waited for the lock
                         if (!_cache.TryGetValue(url, out cacheInfo) ||
                             entryValidCutoff > cacheInfo.CachedTime)
@@ -90,13 +85,10 @@ namespace NuGet.Protocol
                     }
                     finally
                     {
-                        if (release)
-                        {
                             _semaphore.Release();
                         }
                     }
                 }
-            }
 
             if (index == null && cacheInfo != null)
             {
