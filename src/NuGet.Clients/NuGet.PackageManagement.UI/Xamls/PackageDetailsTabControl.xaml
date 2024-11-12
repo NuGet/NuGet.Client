@@ -131,11 +131,11 @@
             <DataTemplate DataType="{x:Type nuget:DetailControlModel}">
               <nuget:PackageMetadataControl
                 Focusable="True"
-                Margin="0,12,0,0"/>
+                Margin="0,5,0,0"/>
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ReadmePreviewViewModel}">
               <nuget:PackageReadmeControl
-                Margin="22,0,0,0"
+                Margin="22,5,0,0"
                 x:Name="_packageReadmeControl"/>
             </DataTemplate>
           </ContentControl.Resources>
