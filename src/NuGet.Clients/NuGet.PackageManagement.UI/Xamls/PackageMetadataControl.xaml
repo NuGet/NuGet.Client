@@ -9,6 +9,7 @@
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
   xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+  AutomationProperties.Name=" "
   Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
