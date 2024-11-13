@@ -280,7 +280,6 @@
   <ItemGroup>
     <VsixIncludeFile Include=".vsixinclude" />
     <VsixIgnoreFile Include=".vsixignore" />
-    <VsixIgnoreFile Include=".vsixignore.CI" Condition="'$(IsCIBuild)' == 'true'" />
   </ItemGroup>
 
   <!--
@@ -306,7 +305,7 @@
     Read the .vsixinclude file and generate an IncludeVsixFilesList item per line
   -->
   <Target Name="ReadVsixIncludeListFromFile">
-    <ReadLinesFromFile File="%(VsixIncludeFile.Identity)">
+    <ReadLinesFromFile File="@(VsixIncludeFile)">
       <Output TaskParameter="Lines" ItemName="IncludeVsixFilesList" />
     </ReadLinesFromFile>
     <ItemGroup>
@@ -318,7 +317,7 @@
     Read the .vsixignore file and generate an IgnoreVsixFilesList item per line
   -->
   <Target Name="ReadVsixIgnoreListFromFile">
-    <ReadLinesFromFile File="%(VsixIgnoreFile.Identity)">
+    <ReadLinesFromFile File="@(VsixIgnoreFile)">
       <Output TaskParameter="Lines" ItemName="IgnoreVsixFilesList" />
     </ReadLinesFromFile>
     <ItemGroup>
@@ -336,7 +335,7 @@
       <AllVsixSymbols Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.pdb' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixSymbols>
-      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' Or '%(Extension)' == '.xml' ">
+      <AllVsixAssemblies Include="@(VSIXSourceItem->'%(FileName)%(Extension)')" Condition=" '%(Extension)' == '.dll' ">
         <SourceFile>%(VSIXSourceItem.Identity)</SourceFile>
       </AllVsixAssemblies>
     </ItemGroup>
@@ -361,7 +360,7 @@
     VSIX, which are not available when localization was not run (for example, local builds).
     The IsCIBuild property is passed on CI
   -->
-  <Target Name="AddLocalizedDllsToVsix" AfterTargets="RemoveUnsolicitedVsixAssemblies" Condition="'$(IsCIBuild)' =='true'">
+  <Target Name="GetLocalizedDlls" AfterTargets="GetVsixSourceItems" Condition="'$(IsCIBuild)' =='true'">
     <MSBuild Projects="@(SolutionProjectsWithoutVSIX)" Targets="GetLocalizedFilesForVsix" Properties="IsVsixBuild=true;BuildProjectReferences=false;">
       <Output TaskParameter="TargetOutputs" ItemName="LocalizedFilesForVsix" />
     </MSBuild>
@@ -379,9 +378,9 @@
   <!--
     Adds NuGet.Build.Tasks.Console.exe.config to the Vsix
   -->
-  <Target Name="AddAppConfigToVsix" AfterTargets="RemoveUnsolicitedVsixAssemblies" DependsOnTargets="ResolveAssemblyReferences">
+  <Target Name="AddAppConfigToVsix" BeforeTargets="GetVsixSourceItems" DependsOnTargets="ResolveAssemblyReferences">
     <ItemGroup>
-      <VSIXSourceItem Include="@(_ReferenceRelatedPaths)" TargetPath="%(Filename)%(Extension)" Condition="'%(_ReferenceRelatedPaths.Name)' == 'NuGet.Build.Tasks.Console' And '%(_ReferenceRelatedPaths.Extension)' == '.config'" />
+      <Content Include="@(_ReferenceRelatedPaths)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" Condition="'%(_ReferenceRelatedPaths.Name)' == 'NuGet.Build.Tasks.Console' And '%(_ReferenceRelatedPaths.Extension)' == '.config'" />
     </ItemGroup>
   </Target>
 
@@ -417,11 +416,11 @@
   <!--
     Add 3rd party libraries to VSIX
   -->
-  <Target Name="AddThirdPartyAssembliesToVsix"
-          AfterTargets="RemoveUnsolicitedVsixAssemblies"
+  <Target Name="IncludeThirdPartyAssembliesInVsix"
+          BeforeTargets="GetVsixSourceItems"
           DependsOnTargets="GetThirdPartyAssemblies">
     <ItemGroup>
-      <VSIXSourceItem Include="%(ThirdPartyAssembly.TargetPath)" TargetPath="%(Filename)%(Extension)" />
+      <Content Include="%(ThirdPartyAssembly.TargetPath)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
