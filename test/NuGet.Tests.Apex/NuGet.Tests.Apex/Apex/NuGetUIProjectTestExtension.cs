@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.TeamFoundation.Common;
 using Microsoft.Test.Apex.Services;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.UI.TestContract;
@@ -74,6 +75,11 @@ namespace NuGet.Tests.Apex
 
             package.PackageLevel.Should().Be(packageLevel);
             package.Id.Should().Be(packageId);
+        }
+
+        public bool AssertPackageListIsNullIninsatlltab()
+        {
+            return _uiproject.PackageItems.IsNullOrEmpty();
         }
 
         public bool InstallPackageFromUI(string packageId, string version)
