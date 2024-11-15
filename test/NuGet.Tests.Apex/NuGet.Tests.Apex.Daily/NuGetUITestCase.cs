@@ -499,7 +499,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task SearchTopLevelPackageInInstalledTabFromUI_WhenThePackageHasTransitivePackage()
+        public async Task SearchTopLevelPackageInInstalledTabFromUI()
         {
             // Arrange
             var transitivePackageName = "Contoso.B";
@@ -533,7 +533,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task InstallTopLevelPackage_WhenHasTransitivePackageFromUI()
+        public async Task InstallTopLevelPackage()
         {
             // Arrange
             var transitivePackageName = "Contoso.B";
@@ -563,7 +563,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallTopLevelPackage_WhenHasTransitivePackage()
+        public async Task UninstallTopLevelPackage()
         {
             // Arrange
             var transitivePackageName = "Contoso.B";
