@@ -533,7 +533,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task InstallTopLevelPackage()
+        public async Task InstallTopLevelPackageFromUI()
         {
             // Arrange
             var transitivePackageName = "Contoso.B";
@@ -563,7 +563,7 @@ namespace NuGet.Tests.Apex.Daily
 
         [TestMethod]
         [Timeout(DefaultTimeout)]
-        public async Task UninstallTopLevelPackage()
+        public async Task UninstallTopLevelPackageFromUI()
         {
             // Arrange
             var transitivePackageName = "Contoso.B";
