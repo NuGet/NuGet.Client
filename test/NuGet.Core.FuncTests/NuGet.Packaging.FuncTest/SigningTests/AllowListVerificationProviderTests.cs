@@ -33,7 +33,7 @@ namespace NuGet.Packaging.FuncTest
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             // Do not dispose this.  The fixture will dispose it.
-            _trustedRepoTestCert = fixture.TrustedTestCertificate;
+            _trustedRepoTestCert = fixture.TrustedRepositoryCertificate;
         }
 
         [CIOnlyFact]
