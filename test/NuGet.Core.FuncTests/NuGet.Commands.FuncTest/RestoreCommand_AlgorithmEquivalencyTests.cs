@@ -61,6 +61,246 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Fact]
+        // Project 1 -> f 1.0.0 -> a 1.0.0 -> b 1.0.0
+        //                                 -> c 1.0.0 -> b 2.0.0
+        // Centrally managed versions f & a, f 1.0.0 and a 1.0.0
+        public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinning_RespectsDowngrade_AndRaisesWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageF = new SimpleTestPackageContext("f", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0"),
+                        new SimpleTestPackageContext("c", "1.0.0")
+                        {
+                            Dependencies = new() { new SimpleTestPackageContext("b", "2.0.0") }
+                        }]
+                }]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageF);
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""f"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[1.0.0,)"",
+                            ""f"": ""[1.0.0,)"",
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec);
+
+            result.Success.Should().BeTrue();
+            result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1605]);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("f");
+            result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        [Fact]
+        // Project 1 -> f 1.0.0 -> a 1.0.0 -> b 1.0.0
+        //                                 -> c 1.0.0 -> b 2.0.0
+        // Centrally managed versions f & a, f 1.0.0 and a 2.0.0
+        public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinningToHigherVersion_RespectsDowngrade_AndRaisesWarning()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageF = new SimpleTestPackageContext("f", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0"),
+                        new SimpleTestPackageContext("c", "1.0.0")
+                        {
+                            Dependencies = new() { new SimpleTestPackageContext("b", "2.0.0") }
+                        }]
+                }]
+            };
+
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0")
+            {
+                Dependencies = [
+                    new SimpleTestPackageContext("b", "1.0.0"),
+                    new SimpleTestPackageContext("c", "1.0.0")
+                    {
+                        Dependencies = new() { new SimpleTestPackageContext("b", "2.0.0") }
+                    }]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageF,
+                packageA200);
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""f"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[2.0.0,)"",
+                            ""f"": ""[1.0.0,)"",
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+
+
+            // Act & Assert
+            (var result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec);
+
+            result.Success.Should().BeTrue();
+            result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1605]);
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
+
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("f");
+            result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        [Fact]
+        // Project 1 -> f 1.0.0 -> a 1.0.0 -> b 1.0.0
+        //                                 -> c 1.0.0 -> b 2.0.0
+        // Centrally managed versions f & a, b, f 1.0.0, a 2.0.0 and b 1.0.0
+        public async Task RestoreCommand_WithPackageDrivenDowngradeAndTransitivePinningToDowngradedVersion_Fails()
+        {
+            // Arrange
+            using var pathContext = new SimpleTestPathContext();
+            var packageF = new SimpleTestPackageContext("f", "1.0.0")
+            {
+                Dependencies = [new SimpleTestPackageContext("a", "1.0.0")
+                {
+                    Dependencies = [new SimpleTestPackageContext("b", "1.0.0"),
+                        new SimpleTestPackageContext("c", "1.0.0")
+                        {
+                            Dependencies = new() { new SimpleTestPackageContext("b", "2.0.0") }
+                        }]
+                }]
+            };
+
+            var packageA200 = new SimpleTestPackageContext("a", "2.0.0")
+            {
+                Dependencies = [
+                    new SimpleTestPackageContext("b", "1.0.0"),
+                    new SimpleTestPackageContext("c", "1.0.0")
+                    {
+                        Dependencies = new() { new SimpleTestPackageContext("b", "2.0.0") }
+                    }]
+            };
+
+            await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                pathContext.PackageSource,
+                PackageSaveMode.Defaultv3,
+                packageF,
+                packageA200);
+
+            var project1 = @"
+                {
+                    ""restore"": {
+                                    ""centralPackageVersionsManagementEnabled"": true,
+                                    ""CentralPackageTransitivePinningEnabled"": true,
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""f"": {
+                                    ""version"": ""[1.0.0,)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                        },
+                        ""centralPackageVersions"": {
+                            ""a"": ""[2.0.0,)"",
+                            ""f"": ""[1.0.0,)"",
+                            ""b"": ""[1.0.0,)"",
+                        }
+                    }
+                  }
+                }";
+
+            // Setup project
+            var projectSpec = ProjectTestHelpers.GetPackageSpecWithProjectNameAndSpec("Project1", pathContext.SolutionRoot, project1);
+
+
+            // Act & Assert
+            (RestoreResult result, _) = await ValidateRestoreAlgorithmEquivalency(pathContext, projectSpec);
+
+            result.Success.Should().BeFalse();
+            result.LogMessages.Select(e => e.Code).Should().BeEquivalentTo([NuGetLogCode.NU1109]);
+
+            result.LockFile.Targets.Should().HaveCount(1);
+            result.LockFile.Targets[0].Libraries.Should().HaveCount(4);
+            result.LockFile.Targets[0].Libraries[0].Name.Should().Be("a");
+            result.LockFile.Targets[0].Libraries[0].Version.Should().Be(new NuGetVersion("2.0.0"));
+
+            result.LockFile.Targets[0].Libraries[1].Name.Should().Be("b");
+            result.LockFile.Targets[0].Libraries[1].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[2].Name.Should().Be("c");
+            result.LockFile.Targets[0].Libraries[2].Version.Should().Be(new NuGetVersion("1.0.0"));
+
+            result.LockFile.Targets[0].Libraries[3].Name.Should().Be("f");
+            result.LockFile.Targets[0].Libraries[3].Version.Should().Be(new NuGetVersion("1.0.0"));
+        }
+
+        [Fact]
         // Project 1 -> a 1.0.0 -> b 1.0.0
         //                      -> c 1.0.0 -> -> d 1.0.0 -> b 2.0.0
         public async Task RestoreCommand_WithPackageDrivenDowngradeAndDepthDifferenceMoreThanOne_RespectsDowngrade_AndRaisesWarning()
