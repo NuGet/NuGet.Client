@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework.Xunit" />
-    <PackageReference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="Microsoft.NET.StringTools" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="17.12.6" />
+    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="17.12.6" />
   </ItemGroup>
 
   <ItemGroup>
