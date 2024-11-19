@@ -22,11 +22,11 @@ namespace Msbuild.Integration.Test
 
         [Theory]
         // .NET 9 SDK
-        [InlineData("9.0.100", "true", "all")]
+        [InlineData("9.0.100", "true", "direct")]
         // .NET 8 SDK
         [InlineData(null, "true", "direct")]
         // non-SDK style project
-        [InlineData(null, null, "all")]
+        [InlineData(null, null, "direct")]
         // non-SDK style project explicit opt-out
         [InlineData("8.0", null, "direct")]
         public void NuGetAuditModeDefaults(string SdkAnalysisLevel, string UsingMicrosoftNETSdk, string expected)
