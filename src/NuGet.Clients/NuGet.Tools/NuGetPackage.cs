@@ -345,6 +345,10 @@ namespace NuGetVSExtension
                 var generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
 
+                var clearNuGetLocalResourcesCommandID = new CommandID(GuidList.guidClearNuGetLocalResourcesCmdSet, PkgCmdIDList.cmdidClearNuGetLocalResources);
+                var clearNuGetLocalResourcesCommand = new OleMenuCommand(ExecuteClearNuGetLocalResourcesCommand, clearNuGetLocalResourcesCommandID);
+                _mcs.AddCommand(clearNuGetLocalResourcesCommand);
+
                 // menu command for the Update option on each package or a selection of packages
                 var updatePackageDialogCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpdatePackage);
                 var updatePackageDialogCommand = new OleMenuCommand(ShowUpdatePackageDialog, changeHandler: null, BeforeQueryStatusForAddPackageDialog, updatePackageDialogCommandID);
@@ -1218,6 +1222,16 @@ namespace NuGetVSExtension
         private void ShowGeneralSettingsOptionPage(object sender, EventArgs args)
         {
             ShowOptionPageSafe(typeof(GeneralOptionPage));
+        }
+
+        private void ExecuteClearNuGetLocalResourcesCommand(object sender, EventArgs e)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                MessageHelper.ShowWarningMessage("Let's clear the NuGet Local Resources....", "Clear NuGet Local Resources");
+            })
+          .PostOnFailure(nameof(NuGetPackage), nameof(ExecuteClearNuGetLocalResourcesCommand));
         }
 
         private void ShowOptionPageSafe(Type optionPageType)

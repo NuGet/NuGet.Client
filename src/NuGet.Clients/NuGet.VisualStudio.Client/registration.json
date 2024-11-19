@@ -89,8 +89,8 @@
         {
           "vsct": {
             "text": "@clearLocalResources;{5fcc8577-4feb-4d04-ad72-d6c629b083cc}",
-            "set": "25fd982b-8cae-4cbd-a440-e03ffccde106", // guidDialogCmdSet
-            "id": 512 // cmdidAddPackagesForSolution
+            "set": "54A0AC88-A025-4A62-8D48-6C1848E4F545", // guidClearNuGetLocalResourcesCmdSetString
+            "id": 256 // cmdidClearNuGetLocalResources
           }
         }
       ]
