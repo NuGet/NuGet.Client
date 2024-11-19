@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
 {
@@ -36,6 +37,29 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
 
             if (topLevelReferencesByFramework.Count > 0)
             {
+                foreach (KeyValuePair<string, RuntimeDescription> keyValuePair in assetsFile.PackageSpec.RuntimeGraph.Runtimes)
+                {
+                    foreach (var (targetFrameworkAlias, topLevelReferences) in topLevelReferencesByFramework)
+                    {
+                        LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: keyValuePair.Key);
+
+                        // get all package libraries for the framework
+                        IList<LockFileTargetLibrary>? packageLibraries = target?.Libraries;
+
+                        // if the project has a dependency on the target package, get the dependency graph
+                        if (packageLibraries?.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true) == true)
+                        {
+                            doesProjectHaveDependencyOnPackage = true;
+                            dependencyGraphPerFramework.Add($"{targetFrameworkAlias} / {keyValuePair.Key}",
+                                                            GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
+                        }
+                        else
+                        {
+                            dependencyGraphPerFramework.Add(targetFrameworkAlias, null);
+                        }
+                    }
+                }
+
                 foreach (var (targetFrameworkAlias, topLevelReferences) in topLevelReferencesByFramework)
                 {
                     LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: null);
