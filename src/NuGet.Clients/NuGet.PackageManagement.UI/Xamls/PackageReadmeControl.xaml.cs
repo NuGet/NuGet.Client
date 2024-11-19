@@ -25,14 +25,6 @@ namespace NuGet.PackageManagement.UI
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
 
-        public FrameworkElement MarkdownPreviewControl
-        {
-            get => (FrameworkElement)GetValue(MarkdownPreviewControlProperty);
-            set => SetValue(MarkdownPreviewControlProperty, value);
-        }
-        public static readonly DependencyProperty MarkdownPreviewControlProperty =
-            DependencyProperty.Register(nameof(MarkdownPreviewControl), typeof(FrameworkElement), typeof(PackageReadmeControl));
-
         private void ReadmeViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ReadmePreviewViewModel.ReadmeMarkdown))
