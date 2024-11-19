@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.ProjectModel;
-using NuGet.RuntimeModel;
 
 namespace NuGet.CommandLine.XPlat.Commands.Why
 {
@@ -32,16 +31,20 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
             var dependencyGraphPerFramework = new Dictionary<string, List<DependencyNode>?>(assetsFile.Targets.Count);
             bool doesProjectHaveDependencyOnPackage = false;
 
+            // add null to the list of runtime identifiers to account for projects that do not have a runtime identifier
+            var runtimeIdentifiers = assetsFile.PackageSpec.RuntimeGraph.Runtimes.Keys
+                .Append(null)
+                .ToList();
             // get all top-level package and project references for the project, categorized by target framework alias
             Dictionary<string, List<string>> topLevelReferencesByFramework = GetTopLevelPackageAndProjectReferences(assetsFile, userInputFrameworks);
 
             if (topLevelReferencesByFramework.Count > 0)
             {
-                foreach (KeyValuePair<string, RuntimeDescription> keyValuePair in assetsFile.PackageSpec.RuntimeGraph.Runtimes)
+                foreach (var (targetFrameworkAlias, topLevelReferences) in topLevelReferencesByFramework)
                 {
-                    foreach (var (targetFrameworkAlias, topLevelReferences) in topLevelReferencesByFramework)
+                    foreach (var runtimeIdentifier in runtimeIdentifiers)
                     {
-                        LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: keyValuePair.Key);
+                        LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: runtimeIdentifier);
 
                         // get all package libraries for the framework
                         IList<LockFileTargetLibrary>? packageLibraries = target?.Libraries;
@@ -50,33 +53,21 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                         if (packageLibraries?.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true) == true)
                         {
                             doesProjectHaveDependencyOnPackage = true;
-                            dependencyGraphPerFramework.Add($"{targetFrameworkAlias} / {keyValuePair.Key}",
+                            if (runtimeIdentifier != null)
+                            {
+                                dependencyGraphPerFramework.Add($"{targetFrameworkAlias}/{runtimeIdentifier}",
                                                             GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
+                            }
+                            else
+                            {
+                                dependencyGraphPerFramework.Add(targetFrameworkAlias,
+                                                            GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
+                            }
                         }
                         else
                         {
                             dependencyGraphPerFramework.Add(targetFrameworkAlias, null);
                         }
-                    }
-                }
-
-                foreach (var (targetFrameworkAlias, topLevelReferences) in topLevelReferencesByFramework)
-                {
-                    LockFileTarget? target = assetsFile.GetTarget(targetFrameworkAlias, runtimeIdentifier: null);
-
-                    // get all package libraries for the framework
-                    IList<LockFileTargetLibrary>? packageLibraries = target?.Libraries;
-
-                    // if the project has a dependency on the target package, get the dependency graph
-                    if (packageLibraries?.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true) == true)
-                    {
-                        doesProjectHaveDependencyOnPackage = true;
-                        dependencyGraphPerFramework.Add(targetFrameworkAlias,
-                                                        GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
-                    }
-                    else
-                    {
-                        dependencyGraphPerFramework.Add(targetFrameworkAlias, null);
                     }
                 }
             }

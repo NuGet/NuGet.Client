@@ -226,10 +226,10 @@ namespace NuGet.CommandLine.Xplat.Tests.Commands.Why
             var dependencyGraphs = DependencyGraphFinder.GetAllDependencyGraphsForTarget(assetsFile, targetPackage, frameworks);
 
             // Assert
-            Assert.Contains(dependencyGraphs["net9.0 / win-x64"], dep => (dep.Id == "System.AppContext") && (dep.Version == "4.3.0"));
-            Assert.Contains(dependencyGraphs["net9.0 / win-x64"].First().Children, dep => (dep.Id == "System.Runtime") && (dep.Version == "4.3.0"));
-            Assert.Contains(dependencyGraphs["net9.0 / win-x64"].First().Children.First().Children, dep => (dep.Id == "runtime.any.System.Runtime") && (dep.Version == "4.3.0"));
-            Assert.Contains(dependencyGraphs["net9.0 / win-x64"].First().Children.First().Children.First().Children, dep => (dep.Id == "System.Private.Uri") && (dep.Version == "4.3.0"));
+            Assert.Contains(dependencyGraphs["net9.0/win-x64"], dep => (dep.Id == "System.AppContext") && (dep.Version == "4.3.0"));
+            Assert.Contains(dependencyGraphs["net9.0/win-x64"].First().Children, dep => (dep.Id == "System.Runtime") && (dep.Version == "4.3.0"));
+            Assert.Contains(dependencyGraphs["net9.0/win-x64"].First().Children.First().Children, dep => (dep.Id == "runtime.any.System.Runtime") && (dep.Version == "4.3.0"));
+            Assert.Contains(dependencyGraphs["net9.0/win-x64"].First().Children.First().Children.First().Children, dep => (dep.Id == "System.Private.Uri") && (dep.Version == "4.3.0"));
         }
 
         private static void ConvertRelevantWindowsPathsToUnix(LockFile assetsFile)
