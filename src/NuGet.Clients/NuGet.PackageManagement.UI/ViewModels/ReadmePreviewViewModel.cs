@@ -5,19 +5,21 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Markdown.Platform;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.UI.ViewModels
 {
-    public sealed class ReadmePreviewViewModel : TitledPageViewModelBase
+    public sealed class ReadmePreviewViewModel : TitledPageViewModelBase, IDisposable
     {
         private bool _errorWithReadme;
         private INuGetPackageFileService _nugetPackageFileService;
         private string _rawReadme;
         private DetailedPackageMetadata _packageMetadata;
         private bool _canRenderLocalReadme;
+        private bool _disposed = false;
         private bool _isBusy;
 
         public ReadmePreviewViewModel(INuGetPackageFileService packageFileService, ItemFilter itemFilter, bool isReadmeFeatureEnabled)
@@ -31,6 +33,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _packageMetadata = null;
             Title = Resources.Label_Readme_Tab;
             IsVisible = isReadmeFeatureEnabled;
+#pragma warning disable CS0618 // Type or member is obsolete
+            MarkdownPreview = new PreviewBuilder().Build();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public bool IsReadmeReady { get => !IsBusy && !ErrorWithReadme; }
@@ -54,6 +59,10 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 RaisePropertyChanged(nameof(IsReadmeReady));
             }
         }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        public IMarkdownPreview MarkdownPreview { get; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         public string ReadmeMarkdown
         {
@@ -81,6 +90,16 @@ namespace NuGet.PackageManagement.UI.ViewModels
                 _packageMetadata = packageMetadata;
                 await LoadReadmeAsync(cancellationToken);
             }
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
+            MarkdownPreview.Dispose();
         }
 
         private static bool CanRenderLocalReadme(ItemFilter filter)

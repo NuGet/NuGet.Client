@@ -16,22 +16,22 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Interaction logic for PackageReadmeControl.xaml
     /// </summary>
-    public partial class PackageReadmeControl : UserControl, IDisposable
+    public partial class PackageReadmeControl : UserControl
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        private IMarkdownPreview _markdownPreview;
-#pragma warning restore CS0618 // Type or member is obsolete
-        private bool _disposed = false;
-
         public PackageReadmeControl()
         {
             InitializeComponent();
-#pragma warning disable CS0618 // Type or member is obsolete
-            _markdownPreview = new PreviewBuilder().Build();
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         public ReadmePreviewViewModel ReadmeViewModel { get => (ReadmePreviewViewModel)DataContext; }
+
+        public FrameworkElement MarkdownPreviewControl
+        {
+            get => (FrameworkElement)GetValue(MarkdownPreviewControlProperty);
+            set => SetValue(MarkdownPreviewControlProperty, value);
+        }
+        public static readonly DependencyProperty MarkdownPreviewControlProperty =
+            DependencyProperty.Register(nameof(MarkdownPreviewControl), typeof(FrameworkElement), typeof(PackageReadmeControl));
 
         private void ReadmeViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -41,31 +41,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            if (disposing)
-            {
-                _markdownPreview?.Dispose();
-                if (ReadmeViewModel is not null)
-                {
-                    ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
-                }
-            }
-
-            _disposed = true;
-        }
-
         private async Task UpdateMarkdownAsync()
         {
             try
@@ -73,7 +48,7 @@ namespace NuGet.PackageManagement.UI
                 descriptionMarkdownPreview.Content = descriptionMarkdownPreview.Content ?? _markdownPreview.VisualElement;
                 if (!string.IsNullOrWhiteSpace(ReadmeViewModel.ReadmeMarkdown))
                 {
-                    await _markdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
+                    await ReadmeViewModel.MarkdownPreview.UpdateContentAsync(ReadmeViewModel.ReadmeMarkdown, ScrollHint.None);
                 }
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
@@ -88,17 +63,29 @@ namespace NuGet.PackageManagement.UI
         {
             if (e.OldValue is ReadmePreviewViewModel oldMetadata)
             {
+                ThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await oldMetadata.MarkdownPreview.UpdateContentAsync("", ScrollHint.None);
+                });
                 oldMetadata.PropertyChanged -= ReadmeViewModel_PropertyChanged;
             }
             if (ReadmeViewModel is not null)
             {
+                descriptionMarkdownPreview.Content = ReadmeViewModel.MarkdownPreview.VisualElement;
                 ReadmeViewModel.PropertyChanged += ReadmeViewModel_PropertyChanged;
             }
         }
 
         private void PackageReadmeControl_Unloaded(object sender, RoutedEventArgs e)
         {
-            Dispose();
+            if (ReadmeViewModel is not null)
+            {
+                ThreadHelper.JoinableTaskFactory.Run(async () =>
+                {
+                    await ReadmeViewModel.MarkdownPreview.UpdateContentAsync("", ScrollHint.None);
+                });
+                ReadmeViewModel.PropertyChanged -= ReadmeViewModel_PropertyChanged;
+            }
         }
 
         private void PackageReadmeControl_Loaded(object sender, RoutedEventArgs e)

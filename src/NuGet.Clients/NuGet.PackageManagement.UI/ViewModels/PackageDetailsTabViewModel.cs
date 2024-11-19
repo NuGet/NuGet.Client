@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             }
             _disposed = true;
             DetailControlModel.PropertyChanged -= DetailControlModel_PropertyChanged;
-
+            ReadmePreviewViewModel.Dispose();
             foreach (var tab in Tabs)
             {
                 tab.PropertyChanged -= IsVisible_PropertyChanged;
