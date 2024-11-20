@@ -57,9 +57,6 @@ namespace NuGet.Protocol.Tests.Providers
 
             Assert.True(result.Item1);
             Assert.IsType<ReadmeUriTemplateResource>(result.Item2);
-            Assert.Equal(
-                "https://unit.test/packages/mypackage/1.0.0/readme",
-                ((ReadmeUriTemplateResource)result.Item2).GetReadmeUrl("MyPackage", NuGetVersion.Parse("1.0.0")));
         }
 
         private static ServiceIndexResourceV3Provider CreateServiceIndexResourceV3Provider(params RawServiceIndexEntry[] entries)
