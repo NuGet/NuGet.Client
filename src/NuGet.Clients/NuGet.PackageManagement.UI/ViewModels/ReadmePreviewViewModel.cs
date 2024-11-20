@@ -22,7 +22,9 @@ namespace NuGet.PackageManagement.UI.ViewModels
         private bool _disposed = false;
         private bool _isBusy;
 
-        public ReadmePreviewViewModel(INuGetPackageFileService packageFileService, ItemFilter itemFilter, bool isReadmeFeatureEnabled)
+#pragma warning disable CS0618 // Type or member is obsolete
+        public ReadmePreviewViewModel(INuGetPackageFileService packageFileService, ItemFilter itemFilter, IMarkdownPreview markdownPreview, bool isReadmeFeatureEnabled)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             _nugetPackageFileService = packageFileService ?? throw new ArgumentNullException(nameof(packageFileService));
             _canRenderLocalReadme = CanRenderLocalReadme(itemFilter);
@@ -33,9 +35,7 @@ namespace NuGet.PackageManagement.UI.ViewModels
             _packageMetadata = null;
             Title = Resources.Label_Readme_Tab;
             IsVisible = isReadmeFeatureEnabled;
-#pragma warning disable CS0618 // Type or member is obsolete
-            MarkdownPreview = new PreviewBuilder().Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+            MarkdownPreview = markdownPreview;
         }
 
         public bool IsReadmeReady { get => !IsBusy && !ErrorWithReadme; }
