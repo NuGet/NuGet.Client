@@ -53,16 +53,9 @@ namespace NuGet.CommandLine.XPlat.Commands.Why
                         if (packageLibraries?.Any(l => l?.Name?.Equals(targetPackage, StringComparison.OrdinalIgnoreCase) == true) == true)
                         {
                             doesProjectHaveDependencyOnPackage = true;
-                            if (runtimeIdentifier != null)
-                            {
-                                dependencyGraphPerFramework.Add($"{targetFrameworkAlias}/{runtimeIdentifier}",
-                                                            GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
-                            }
-                            else
-                            {
-                                dependencyGraphPerFramework.Add(targetFrameworkAlias,
-                                                            GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
-                            }
+                            var targetFrameworkDisplayName = runtimeIdentifier == null ? targetFrameworkAlias : $"{targetFrameworkAlias}/{runtimeIdentifier}";
+                            dependencyGraphPerFramework.Add(targetFrameworkDisplayName,
+                                GetDependencyGraphForTargetPerFramework(topLevelReferences, packageLibraries, targetPackage));
                         }
                         else
                         {
